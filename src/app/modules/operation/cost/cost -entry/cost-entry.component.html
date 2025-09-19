@@ -67,128 +67,9 @@
     </div>
   </div>
 
-  <!-- Modern Table Container -->
-  <!-- Cost Table -->
-  <!-- <div class="modern-table-container" *ngIf="selectedTab === 'Cost'">
-    <div class="table-toolbar">
-      <div class="toolbar-left">
-        <button class="table-action-btn primary" (click)="openModalBasedOnTab(rateModal)">
-          <i class="fas fa-plus"></i> Add Cost
-        </button>
-        <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
-          <i class="fas fa-plus"></i> Get Tariff
-        </button>
-      </div>
-      <div class="toolbar-right">
-        <button class="table-action-btn export" (click)="reportCostRates()">
-          <i class="fas fa-download"></i> Export
-        </button>
-       
-      </div>
-    </div>
-    @if(costDataLength > 0){
-    <div class="modern-table-wrapper">
-      <table class="modern-table">
-        <thead>
-          <tr>
-            <th width="10%">Actions</th>
-            <th>Sno</th>
-            <th>Charge</th>
-            <th>Charge Desc</th>
-            <th>PP/CC</th>
-            <th>Unit</th>
-            <th>No of Unit</th>
-            <th>Dr/Cr</th>
-            <th>Curr</th>
-            <th>Ex Rate</th>
-            <th>Rate</th>
-            <th>Amount</th>
-            <th>Local Amount</th>
-            <th>Billing Party</th>
-            <th>Voucher No</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for(rate of slicedCostFormArray ; track rate ; let rateIndex = $index){
-          <tr class="table-row">
-            <td class="actions-cell">
-              <div class="action-buttons">
-                <button class="action-icon edit" (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-icon copy" (click)="copyRate(rateModal,rate)">
-                  <i class="fas fa-copy"></i>
-                </button>
-                <button class="action-icon delete" (click)="deleteRate(rateIndex,'Cost',rate.BookingRatesSid)">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
-            <td>{{rateIndex + 1}}</td>
-            <td>
-              <div class="charge-code-cell">
-                <span class="code">{{getChargeCode(rate.ChargeMasterSid)}}</span>
-                <span class="code-desc">{{getChargeName(rate.ChargeMasterSid)}}</span>
-              </div>
-            </td>
-            <td>{{rate.ChargeDescription}}</td>
-            <td>
-              @if(rate.PrepaidCollect === "Collect"){
-              <span class="type-badge type-collect">COLLECT</span>
-              }
-              @else{
-              <span class="type-badge type-prepaid">PREPAID</span>
-              }
-            </td>
-            <td>{{getUnitCode(rate.ChargeUomSid)}}</td>
-            <td>{{rate.NumberOfUnit}}</td>
-            <td>{{rate.DrCr === 'D' ? 'Debit' : 'Credit'}}</td>
-            <td>
-              <div class="currency-cell">
-                <span class="currency">
-                  {{getCurrencyCode(rate.CurrencyMasterSid)}}
-                </span>
-                <button class="currency-remove">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td>{{rate.ExchangeRate}}</td>
-            <td>{{rate.Rate}}</td>
-            <td>{{rate.Amount}}</td>
-            <td>{{rate.LocalAmount}}</td>
-            <td>
-              <div class="party-cell" *ngIf="getCustomerName(rate.CustomerMasterSid)">
-                <div class="party-indicator active"></div> <span>{{getCustomerName(rate.CustomerMasterSid)}}</span>
-              </div>
-            </td>
-            <td>{{rate.VoucherHeaderSid}}</td>
-            <td>{{getDocTypeName(rate.VoucherTypeSid)}}</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-      <div class="mt-2">
-        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="costDataLength" [pageSize]="pageSize"
-          [(page)]="page" (pageChange)="updateCostPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
-        </ngb-pagination>
-      </div>
-    </div>
-    } @else {
-    <div class="col-12">
-      <div class="alert alert-info text-center">No Cost Rate added yet.</div>
-    </div>
-    }
-  </div> -->
-
   <div class="modern-table-container" *ngIf="selectedTab === 'Sales and cost'">
-    <!-- Revenue Table -->
     <div class="table-toolbar">
       <div class="toolbar-left">
-        <!-- <button class="table-action-btn primary" (click)="openModalBasedOnTab(rateModal)">
-          <i class="fas fa-plus"></i> Add Revenue
-        </button> -->
         <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
           <i class="fas fa-plus"></i> Get Tariff
         </button>
@@ -199,6 +80,9 @@
         </button>
         <button class="table-action-btn export" (click)="reportRevenueRates()">
           <i class="fas fa-download"></i> Export
+        </button>
+        <button class="table-action-btn print" (click)="save()">
+          <i class="fas fa-print"></i> Save
         </button>
         <!-- <button class="table-action-btn print">
           <i class="fas fa-print"></i> Print
@@ -242,7 +126,6 @@
                     bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
                     (change)="onChargeChange($event)" appendTo="body">
                   </ng-select>
-
                 </div>
               </td>
               <td>
@@ -262,7 +145,7 @@
               </td>
               <td>
                 <div class="custom-form-group custom-form-group-select">
-                  <ng-select formControlName="" [items]="uomList" bindLabel="UOMName" bindValue="ChargeMasterSid"
+                  <ng-select formControlName="" [items]="uomList" bindLabel="UOMName" bindValue="ChargeUomSid"
                     placeholder="Select Unit" appendTo="body">
                   </ng-select>
 
@@ -296,9 +179,9 @@
                 <th style="background-color: #00b09b;" class="table-header">Billing Party<span
                     class="text-danger">*</span></th>
 
-                <th class="table-header">Tax Group</th>
-                <th class="table-header">Reference</th>
-                <th class="table-header">Type</th>
+                <!-- <th class="table-header">Tax Group</th> -->
+                <!-- <th class="table-header">Reference</th> -->
+                <!-- <th class="table-header">Type</th> -->
 
                 <th style="background-color: rgb(216, 143, 179);" class="table-header">Curr</th>
                 <th style="background-color: rgb(216, 143, 179);" class="table-header">Ex Rate <span
@@ -309,50 +192,50 @@
                 <th style="background-color: rgb(216, 143, 179);" class="table-header">Local Amt</th>
                 <th style="background-color: rgb(216, 143, 179);" class="table-header">Creditor<span
                     class="text-danger">*</span></th>
-                <th class="table-header">Tax Group</th>
+                <!-- <th class="table-header">Tax Group</th>
                 <th class="table-header">Reference</th>
-                <th class="table-header">Gross Profit</th>
+                <th class="table-header">Gross Profit</th> -->
                 <th class="table-header">Status</th>
                 <th class="table-header">Remarks</th>
-                <th class="table-header">Show Type</th>
+                <!-- <th class="table-header">Show Type</th>
                 <th class="table-header">DisSeq</th>
                 <th class="table-header">Dept</th>
                 <th class="table-header"> Profit Share</th>
                 <th class="table-header">Neutral</th>
-                <th class="table-header">Shipment No</th>
+                <th class="table-header">Shipment No</th> -->
               </tr>
             </thead>
             <tbody #rightTableBody>
               <tr *ngFor="let row of revenueRows">
                 <td>
                    <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-            formControlName="CurrencyMasterSid" placeholder="Select Curr" (change)="onCurrencyChange($event)" appendTo="body">
+                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CostCurrencyMasterSid"
+            formControlName="CostCurrencyMasterSid" placeholder="Select Curr" (change)="onCurrencyChange($event)" appendTo="body">
                     </ng-select>
 
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" formControlName="CostExchangeRate" placeholder="" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" placeholder="" formControlName="CostNumberOfUnit" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" placeholder="" formControlName="CostAmount" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="drcr" bindLabel="name" bindValue="value" formControlName="DrCr" class="ng-select"
+                    <ng-select formControlName="" [items]="drcr" formControlName="CostDrCr" bindLabel="name" bindValue="value" formControlName="DrCr" class="ng-select"
             placeholder="Select Dr/Cr"
                       container="body" appendTo="body">
                     </ng-select>
@@ -360,7 +243,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" placeholder="" formControlName="CostLocalAmount" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
@@ -374,7 +257,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" placeholder=""
+                    <ng-select formControlName="Status" [items]="" bindLabel="name" bindValue="id" placeholder=""
                       container="body" appendTo="body">
                     </ng-select>
 
@@ -382,45 +265,45 @@
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" formControlName="Remarks" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
-                <td>
+                 <!-- <td>
                   <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm ">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
-                </td>
+                </td> -->
                 <td>
                    <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-            formControlName="CurrencyMasterSid" placeholder="Select Currency" (change)="onCurrencyChange($event)" appendTo="body">
+                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="RevenueCurrencyMasterSid"
+            formControlName="RevenueCurrencyMasterSid" placeholder="Select Currency" (change)="onCurrencyChange($event)" appendTo="body">
                     </ng-select>
 
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" formControlName="RevenueExchangeRate" placeholder="" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" formControlName="RevenueNumberOfUnit" placeholder="" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" formControlName="RevenueAmount" placeholder="" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="drcr" bindLabel="name" bindValue="name" formControlName="DrCr" class="ng-select"
+                    <ng-select formControlName="" formControlName="RevenueDrCr" [items]="drcr" bindLabel="name" bindValue="name" formControlName="DrCr" class="ng-select"
             placeholder="Select Dr/Cr"
                       container="body" appendTo="body">
                     </ng-select>
@@ -439,7 +322,7 @@
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
-                <td>
+                <!-- <td>
                   <div class="custom-form-group custom-form-group-select">
                     <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" placeholder=""
                       container="body" appendTo="body">
@@ -532,7 +415,7 @@
                 <td></td>
                 <td></td>
                 <td class="fw-bold">Total Cost :</td>
-                <td>0</td>
+                <td>0</td> -->
               </tr>
             </tbody>
           </table>

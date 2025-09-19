@@ -254,21 +254,34 @@ syncScroll(event: Event) {
 
   initRateForm() {
     this.rateForm = this.fb.group({
+      BookingRatesSid: [null],
       CostRevenueChargesSid: [null],
       TransactionSid : [null],
       SerialNumber: [{ value: '', disabled: true }],
       ChargeMasterSid: [null],
       ChargeDescription: [''],
-      PrepaidCollect: [null],
       ChargeUomSid: [null],
       NumberOfUnit: [''],
-      DrCr: [null],
-      CurrencyMasterSid: [null],
-      ExchangeRate: [{ value: '', disabled: true }],
-      Rate: [''],
-      Amount: [{ value: '', disabled: true }],
-      CostRevenue: [''],
-      LocalAmount: [{ value: '', disabled: true }],
+      PrepaidCollect: [''],
+      Status:[''],
+      Remarks:[''],
+      CostDrCr: [''],
+      RevenueDrCr: [''],
+
+      RevenueCurrencyMasterSid: [null], 
+      CostCurrencyMasterSid: [null],
+
+      RevenueExchangeRate:[''],
+      CostExchangeRate: [''],
+
+      RevenueRate:[''],
+      CostRate: [''],
+
+      RevenueAmount:[''],
+      CostAmount:[''],
+
+      RevenueLocalAmount: [''],
+      CostLocalAmount: [''],
       CustomerMasterSid: [null],
       CustomerBranchSid: [null],
       VoucherHeaderSid: [null],
@@ -305,6 +318,10 @@ syncScroll(event: Event) {
 
   createRateFormGroup(data?: any): FormGroup {
     return this.fb.group({
+      BookingRatesSid: [data?.BookingRatesSid || null],
+      BookingHeaderSid: [data?.BookingHeaderSid || null],
+      CompanyMasterSid: [data?.CompanyMasterSid || null],
+      BranchMasterSid: [data?.BranchMasterSid || null],
       CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
       TransactionSid : [data?.TransactionSid || null],
       SerialNumber: [data?.SerialNumber || ''],
@@ -313,17 +330,25 @@ syncScroll(event: Event) {
       PrepaidCollect: [data?.PrepaidCollect || null],
       ChargeUomSid: [data?.ChargeUomSid || null],
       NumberOfUnit: [data?.NumberOfUnit || ''],
-      DrCr: [data?.DrCr || null],
-      CurrencyMasterSid: [data?.CurrencyMasterSid || null],
-      ExchangeRate: [Number(data?.ExchangeRate).toFixed(2) || ''],
-      Rate: [Number(data?.Rate).toFixed(2) || ''],
-      Amount: [Number(data?.Amount).toFixed(2) || ''],
-      CostRevenue: [data?.CostRevenue || ''],
-      LocalAmount: [Number(data?.LocalAmount).toFixed(2) || ''],
+      CostDrCr: [data?.CostDrCr || null],
+      RevenueDrCr: [data?.RevenueDrCr || null],
+      CostCurrencyMasterSid: [data?.CostCurrencyMasterSid || null],
+      RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid || null],
+      CostExchangeRate: [Number(data?.CostExchangeRate).toFixed(2) || ''],
+      RevenueExchangeRate: [Number(data?.RevenueExchangeRate).toFixed(2) || ''],
+      CostRate: [Number(data?.CostRate).toFixed(2) || ''],
+      RevenueRate: [Number(data?.RevenueRate).toFixed(2) || ''],
+      CostAmount: [Number(data?.CostAmount).toFixed(2) || ''],
+      RevenueAmount: [Number(data?.RevenueAmount).toFixed(2) || ''],
+      // CostRevenue: [data?.CostRevenue || ''],
+      CostLocalAmount: [Number(data?.CostLocalAmount).toFixed(2) || ''],
+      RevenueLocalAmount: [Number(data?.RevenueLocalAmount).toFixed(2) || ''],
       CustomerMasterSid: [data?.CustomerMasterSid || null],
       CustomerBranchSid: [data?.CustomerBranchSid || null],
       VoucherHeaderSid: [data?.VoucherHeaderSid || null],
       VoucherTypeSid: [data?.VoucherTypeSid || null],
+      Status:[data?.Status],
+      Remarks:[data?.Remarks]
     });
   }
 
@@ -508,15 +533,6 @@ syncScroll(event: Event) {
     }
   }
 
-  onCurrencyChange(currency) {
-    if (!currency) {
-      this.rateForm.get('ExchangeRate')?.setValue('');
-      this.rateForm.get('LocalAmount')?.setValue('');
-      return;
-    }
-    this.getExchangeRate();
-  }
-
   adjustRevenuePageAfterDelete() {
     const totalPages = Math.ceil(this.revenueDataLength / this.pageSize1);
     if (this.page1 > totalPages && totalPages > 0) {
@@ -525,6 +541,20 @@ syncScroll(event: Event) {
       this.page1 = 1;
     }
   }
+
+  onCurrencyChange(currency) {
+    if (!currency) {
+      this.rateForm.get('CostExchangeRate')?.setValue('');
+      this.rateForm.get('CostLocalAmount')?.setValue('');
+      this.rateForm.get('RevenueLocalAmount')?.setValue('');
+      this.rateForm.get('RevenueLocalAmount')?.setValue('');
+
+      return;
+    }
+    this.getExchangeRate();
+  }
+
+  
 
   getExchangeRate() {
     const fromCurrency = Number(this.rateForm.get('CurrencyMasterSid')?.value);
@@ -535,7 +565,8 @@ syncScroll(event: Event) {
       return;
     }
     if (fromCurrencyCode === toCurrencyCode) {
-      this.rateForm.get('ExchangeRate')?.setValue(1);
+      this.rateForm.get('RevenueExchangeRate')?.setValue(1);
+      this.rateForm.get('CostExchangeRate')?.setValue(1);
       this.calculateLocalAmount();
       return;
     }
@@ -546,7 +577,9 @@ syncScroll(event: Event) {
     this.operationService.getExchangeRate(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.rateForm.get('ExchangeRate')?.setValue(resp.data ? resp.data : '');
+          this.rateForm.get('CostExchangeRate')?.setValue(resp.data ? resp.data : '');
+          this.rateForm.get('RevenueExchangeRate')?.setValue(resp.data ? resp.data : '');
+
           this.calculateLocalAmount();
         } else {
           this.appSettingService.showWarning('Error fetching exchange rate');
@@ -556,30 +589,70 @@ syncScroll(event: Event) {
   }
 
   calculateLocalAmount() {
-    const noOfUnit = this.rateForm.get('NumberOfUnit')?.value;
-    const rate = this.rateForm.get('Rate')?.value;
-    const exrate = this.rateForm.get('ExchangeRate')?.value;
-    const ctrl = this.rateForm.get('LocalAmount');
-    if (!noOfUnit || !rate || !exrate) {
-      ctrl.setValue('');
+    const CostnoOfUnit = this.rateForm.get('CostNumberOfUnit')?.value;
+    const RevenuenoOfUnit = this.rateForm.get('RevenueNumberOfUnit')?.value;
+
+    
+    const Costrate = this.rateForm.get('CostRate')?.value;
+    const Revenuerate = this.rateForm.get('RevenueRate')?.value;
+
+    const excostrate = this.rateForm.get('CostExchangeRate')?.value;
+    const exrevenuerate = this.rateForm.get('RevenueExchangeRate')?.value;
+
+    const Costctrl = this.rateForm.get('CostLocalAmount');
+    const Revenuectrl = this.rateForm.get('RevenueLocalAmount');
+
+    if (!CostnoOfUnit || !Costrate || !excostrate) {
+      Costctrl.setValue('');
       return;
     }
-    const LocalAmount = (Number(noOfUnit) * Number(rate) * Number(exrate)).toFixed(3);
-    ctrl.setValue(LocalAmount);
-    ctrl.updateValueAndValidity();
+
+    if (!RevenuenoOfUnit || !Revenuerate || !exrevenuerate) {
+      Revenuectrl.setValue('');
+      return;
+    }
+    const LocalCostAmount = (Number(CostnoOfUnit) * Number(Costrate) * Number(excostrate)).toFixed(3);
+    const LocalRevenueAmount = (Number(RevenuenoOfUnit) * Number(Revenuerate) * Number(exrevenuerate)).toFixed(3);
+
+    Costctrl.setValue(LocalCostAmount);
+    Revenuectrl.setValue(LocalRevenueAmount);
+
+    Costctrl.updateValueAndValidity();
+    Revenuectrl.updateValueAndValidity();
   }
 
+
   calculateAmount() {
-    const noOfUnit = this.rateForm.get('NumberOfUnit')?.value;
-    const rate = this.rateForm.get('Rate')?.value;
-    const ctrl = this.rateForm.get('Amount');
-    if (!noOfUnit || !rate) {
-      ctrl.setValue('');
+    const CostnoOfUnit = this.rateForm.get('CostNumberOfUnit')?.value;
+    const RevenuenoOfUnit = this.rateForm.get('RevenueNumberOfUnit')?.value;
+    const Costrate = this.rateForm.get('CostRate')?.value;
+    const Revenuerate = this.rateForm.get('RevenueRate')?.value;
+
+    const Costctrl = this.rateForm.get('CostAmount');
+    const Revenuectrl = this.rateForm.get('RevenueAmount');
+
+    if (!CostnoOfUnit || !Costrate) {
+      Costctrl.setValue('');
       return;
     }
-    const amount = (Number(noOfUnit) * Number(rate)).toFixed(3);
-    ctrl.setValue(amount);
-    ctrl.updateValueAndValidity();
+
+    if (!RevenuenoOfUnit || !Revenuerate) {
+      Revenuectrl.setValue('');
+      return;
+    }
+    
+    const Costamount = (Number(CostnoOfUnit) * Number(Revenuerate)).toFixed(3);
+    const Revenueamount = (Number(RevenuenoOfUnit) * Number(Revenuerate)).toFixed(3);
+    Costctrl.setValue(Costamount);
+    Revenuectrl.setValue(Revenueamount);
+    
+    Costctrl.updateValueAndValidity();
+    Revenuectrl.updateValueAndValidity();
+
+  }
+
+  save(){
+    console.log(this.rateForm.getRawValue())
   }
 
 
