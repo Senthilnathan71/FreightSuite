@@ -55,7 +55,7 @@
   select:not([value=""]) + .input-label,
   textarea:focus + .input-label,
   textarea:not(:placeholder-shown) + .input-label,
-  .custom-form-group-select .input-label {
+  .custom-form-group-select .input-label ,.custom-form-group-select-date .input-label {
     top: 0;
     font-size: 11px;
     color: var(--bs-blue);

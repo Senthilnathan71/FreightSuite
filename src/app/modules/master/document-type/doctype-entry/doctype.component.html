@@ -9,7 +9,7 @@
                     </div>
                     <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Document Type</h5>
                     @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                         <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                     }
@@ -150,9 +150,9 @@
                             </div>
                         </aside>
                         <aside class="col-md-12">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('CurrencyCode')?.value">
                                 <ng-select formControlName="CurrencyCode" [items]="currencyList" bindLabel="currencyName"
-                                    bindValue="currencyCode" class="ng-select" placeholder="Select Currency" [textWithNumbers]="3">
+                                    bindValue="currencyCode" class="ng-select" placeholder="" [textWithNumbers]="3">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Currency <span
                                         class="text-danger">*</span></label>
@@ -169,12 +169,12 @@
                         </aside>
                         <!-- COA Ledger Dropdown -->
 <aside class="col-md-12">
-    <div class="custom-form-group custom-form-group-select">
+    <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('COALedger')?.value">
         <ng-select formControlName="COALedger" 
                   [items]="coaList" 
                   bindLabel="LedgerName"
                   bindValue="COAMasterSid" 
-                  placeholder="Select COA Ledger"
+                  placeholder=""
                   (change)="onCOASelected($event)"
                   >
         </ng-select>
@@ -191,12 +191,12 @@
 
 <!-- Subledger Dropdown -->
 <aside class="col-md-12">
-    <div class="custom-form-group custom-form-group-select">
+    <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('Subledger')?.value">
         <ng-select formControlName="Subledger" 
                   [items]="subledgerList" 
                   bindLabel="SubledgerName"
                   bindValue="SubledgerMasterSid" 
-                  placeholder="Select Subledger"
+                  placeholder=""
                   [disabled]="!documentForm.get('COALedger').value">
         </ng-select>
         <label for="text-input" class="input-label">Subledger <span class="text-danger"></span></label>
@@ -239,7 +239,7 @@
                         </aside>
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('status')?.value">
                                 @if(isEditMode){
                                 <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
                                     <ng-option value="Active">Active</ng-option>
@@ -248,7 +248,7 @@
                                 } @else {
                                 <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input" readonly>
                                 }
-                                <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
+                                <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
                                 @if(documentForm.get('status').touched && documentForm.get('status').invalid){
                                     <div class="error-message">
                                         @if(documentForm.get('status').hasError('required')){
@@ -294,9 +294,9 @@
                             </div>
                         </aside>
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('DocumentSeparator')?.value">
                                 <ng-select formControlName="DocumentSeparator" [items]="documentSeparators" bindLabel="separator"
-                                    bindValue="value" placeholder="Select Separator">
+                                    bindValue="value" placeholder="">
                                 </ng-select>
                                 <label for="" class="input-label">Separator <span class="text-danger">*</span></label>
                                 @if(documentForm.get('DocumentSeparator').touched && documentForm.get('DocumentSeparator').invalid){
@@ -329,9 +329,9 @@
                             </div>
                         </aside>
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('ResetValue')?.value">
                                 <ng-select formControlName="ResetValue" [items]="resetValues" bindLabel="value"
-                                    bindValue="value"  placeholder="Select Reset Value">
+                                    bindValue="value"  placeholder="">
                                 </ng-select>
                                 <label for="" class="input-label">Reset Value <span class="text-danger">*</span></label>
                                 @if(documentForm.get('ResetValue').touched && documentForm.get('ResetValue').invalid){
@@ -442,7 +442,7 @@
 
                             </div>
                         </aside>
-                        <div class="d-flex justify-content-end mt-4 mb-2">
+                        <div class="d-flex justify-content-end mt-2 mb-2">
                             <button type="button" class="btn btn-info btn-sm dofi-min-w-full dofi-max-w-full" (click)="openSampleModal(sampleTemplate)">
                                 Sample Voucher Number
                             </button>

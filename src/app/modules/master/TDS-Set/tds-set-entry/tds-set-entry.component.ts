@@ -110,6 +110,16 @@ export class TdsSetEntryComponent implements OnInit {
     currentCompany: any;
     currentBranch: any;
 
+    tab = [
+        { name: "TDSDetail", icon: "fas fa-file-invoice" },
+        { name: "Exemption Detail", icon: "fas fa-percent" }
+    ];
+    
+    
+    selectTab(tab: string) {
+        this.selectedTab = tab;
+    }
+    selectedTab = this.tab[0].name;
 
 
     auditLogs: any[] = []; // Stores audit logs
