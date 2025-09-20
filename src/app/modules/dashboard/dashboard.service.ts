@@ -5,9 +5,13 @@ import {
   DashboardData,
   DashboardMetrics,
   SalesMetrics,
+  CustomerServiceMetrics,
   ClientMeeting,
   MeetingWithFollowup,
   RateRequest,
+  TodaysActivity,
+  ApprovedQuotation,
+  BookingListItem,
   Salesperson,
   DashboardFilters
 } from './interfaces/dashboard.interfaces';
@@ -185,6 +189,156 @@ export class DashboardService {
     }
   ];
 
+  // Customer Service Data
+  private todaysActivities: TodaysActivity[] = [
+    {
+      id: '1',
+      bookingNumber: 'BKG-20250915-01',
+      jobNumber: 'JOB-20250914-07',
+      activity: 'Document Verification',
+      date: new Date('2025-09-15'),
+      status: 'Completed'
+    },
+    {
+      id: '2',
+      bookingNumber: 'BKG-20250915-05',
+      jobNumber: 'JOB-20250913-03',
+      activity: 'Pickup Coordination',
+      date: new Date('2025-09-15'),
+      status: 'In Progress'
+    },
+    {
+      id: '3',
+      bookingNumber: 'BKG-20250911-08',
+      jobNumber: 'JOB-20250914-09',
+      activity: 'Customs Clearance Follow-up',
+      date: new Date('2025-09-15'),
+      status: 'Pending'
+    },
+    {
+      id: '4',
+      bookingNumber: 'BKG-20250911-20',
+      jobNumber: 'JOB-20250915-04',
+      activity: 'POD Upload',
+      date: new Date('2025-09-15'),
+      status: 'Completed'
+    },
+    {
+      id: '5',
+      bookingNumber: 'BKG-20250909-04',
+      jobNumber: 'JOB-20250912-06',
+      activity: 'Client Escalation Response',
+      date: new Date('2025-09-15'),
+      status: 'In Progress'
+    }
+  ];
+
+  private approvedQuotations: ApprovedQuotation[] = [
+    {
+      id: '1',
+      quotationNumber: 'QTN-20250901-001',
+      status: 'Approved',
+      approvedBy: 'Sarah Kim',
+      date: new Date('2025-09-10'),
+      option: 'Option A'
+    },
+    {
+      id: '2',
+      quotationNumber: 'QTN-20250903-002',
+      status: 'Approved',
+      approvedBy: 'Mark Rivera',
+      date: new Date('2025-09-11'),
+      option: 'Option B'
+    },
+    {
+      id: '3',
+      quotationNumber: 'QTN-20250904-003',
+      status: 'Approved',
+      approvedBy: 'Linda Gomez',
+      date: new Date('2025-09-12'),
+      option: 'Option A'
+    },
+    {
+      id: '4',
+      quotationNumber: 'QTN-20250905-004',
+      status: 'Approved',
+      approvedBy: 'James O\'Neil',
+      date: new Date('2025-09-13'),
+      option: 'Option C'
+    },
+    {
+      id: '5',
+      quotationNumber: 'QTN-20250906-005',
+      status: 'Approved',
+      approvedBy: 'Linda Gomez',
+      date: new Date('2025-09-12'),
+      option: 'Option B'
+    }
+  ];
+
+  private bookingList: BookingListItem[] = [
+    {
+      id: '1',
+      bookingNumber: 'BKG-20250901-10',
+      jobNumber: 'JOB-20250901-05',
+      shipmentStatus: 'In Transit',
+      date: new Date('2025-09-13'),
+      pol: 'Shanghai',
+      pod: 'Los Angeles',
+      salesperson: 'Sarah Kim',
+      assignedTo: 'Mike Johnson',
+      invoicing: 'Yes'
+    },
+    {
+      id: '2',
+      bookingNumber: 'BKG-20250902-14',
+      jobNumber: 'JOB-20250902-08',
+      shipmentStatus: 'Delivered',
+      date: new Date('2025-09-14'),
+      pol: 'Rotterdam',
+      pod: 'New York',
+      salesperson: 'Mark Rivera',
+      assignedTo: 'Anna Smith',
+      invoicing: 'Yes'
+    },
+    {
+      id: '3',
+      bookingNumber: 'BKG-20250903-09',
+      jobNumber: 'JOB-20250903-07',
+      shipmentStatus: 'Pending',
+      date: new Date('2025-09-15'),
+      pol: 'Hamburg',
+      pod: 'Singapore',
+      salesperson: 'Anita Desai',
+      assignedTo: 'John Lee',
+      invoicing: 'No'
+    },
+    {
+      id: '4',
+      bookingNumber: 'BKG-20250904-12',
+      jobNumber: 'JOB-20250904-10',
+      shipmentStatus: 'In Transit',
+      date: new Date('2025-09-13'),
+      pol: 'Antwerp',
+      pod: 'Dubai',
+      salesperson: 'James O\'Neil',
+      assignedTo: 'Sarah Kim',
+      invoicing: 'Yes'
+    },
+    {
+      id: '5',
+      bookingNumber: 'BKG-20250905-07',
+      jobNumber: 'JOB-20250905-06',
+      shipmentStatus: 'Delivered',
+      date: new Date('2025-09-14'),
+      pol: 'Busan',
+      pod: 'Seattle',
+      salesperson: 'Linda Gomez',
+      assignedTo: 'Mike Johnson',
+      invoicing: 'Yes'
+    }
+  ];
+
   constructor() { }
 
   getDashboardData(filters?: DashboardFilters): Observable<DashboardData> {
@@ -211,12 +365,25 @@ export class DashboardService {
       bookingQuotation: 1
     };
 
+    const customerServiceMetrics: CustomerServiceMetrics = {
+      documentsVerified: 24,
+      customsClearances: 12,
+      shipmentsInTransit: 18,
+      deliveriesCompleted: 31,
+      pendingActions: 8,
+      customerQueries: 15
+    };
+
     const dashboardData: DashboardData = {
       metrics,
       salesMetrics,
+      customerServiceMetrics,
       clientMeetings: filteredData.clientMeetings,
       meetingsWithFollowup: filteredData.meetingsWithFollowup,
       rateRequests: filteredData.rateRequests,
+      todaysActivities: filteredData.todaysActivities,
+      approvedQuotations: filteredData.approvedQuotations,
+      bookingList: filteredData.bookingList,
       salespeople: this.salespeople
     };
 
@@ -231,6 +398,9 @@ export class DashboardService {
     let filteredClientMeetings = this.clientMeetings;
     let filteredMeetingsWithFollowup = this.meetingsWithFollowup;
     let filteredRateRequests = this.rateRequests;
+    let filteredTodaysActivities = this.todaysActivities;
+    let filteredApprovedQuotations = this.approvedQuotations;
+    let filteredBookingList = this.bookingList;
 
     if (filters) {
       if (filters.salesperson) {
@@ -273,7 +443,10 @@ export class DashboardService {
     return {
       clientMeetings: filteredClientMeetings,
       meetingsWithFollowup: filteredMeetingsWithFollowup,
-      rateRequests: filteredRateRequests
+      rateRequests: filteredRateRequests,
+      todaysActivities: filteredTodaysActivities,
+      approvedQuotations: filteredApprovedQuotations,
+      bookingList: filteredBookingList
     };
   }
 }

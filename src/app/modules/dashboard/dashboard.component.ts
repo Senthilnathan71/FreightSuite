@@ -8,7 +8,10 @@ import {
   DashboardFilters,
   ClientMeeting,
   MeetingWithFollowup,
-  RateRequest
+  RateRequest,
+  TodaysActivity,
+  ApprovedQuotation,
+  BookingListItem
 } from './interfaces/dashboard.interfaces';
 
 @Component({
@@ -24,18 +27,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dashboardData: DashboardData | null = null;
   isLoading = false;
 
+  // User type to determine which dashboard to show
+  userType: 'sales' | 'customer-service' = 'sales'; // Default to sales, should come from auth service
+
   filters: DashboardFilters = {};
   dateFromString = '';
   dateToString = '';
 
+  // Sales dashboard data
   filteredClientMeetings: ClientMeeting[] = [];
   filteredFollowups: MeetingWithFollowup[] = [];
   filteredRateRequests: RateRequest[] = [];
 
+  // Customer Service dashboard data
+  filteredTodaysActivities: TodaysActivity[] = [];
+  filteredApprovedQuotations: ApprovedQuotation[] = [];
+  filteredBookingList: BookingListItem[] = [];
+
+  // Sales dashboard search terms
   meetingSearchTerm = '';
   followupSearchTerm = '';
   rateRequestSearchTerm = '';
 
+  // Customer Service dashboard search terms
+  activitySearchTerm = '';
+  quotationSearchTerm = '';
+  bookingSearchTerm = '';
+
+  // Sales dashboard sort fields
   meetingSortField = '';
   meetingSortDirection: 'asc' | 'desc' = 'asc';
   followupSortField = '';
@@ -43,9 +62,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   rateRequestSortField = '';
   rateRequestSortDirection: 'asc' | 'desc' = 'asc';
 
+  // Customer Service dashboard sort fields
+  activitySortField = '';
+  activitySortDirection: 'asc' | 'desc' = 'asc';
+  quotationSortField = '';
+  quotationSortDirection: 'asc' | 'desc' = 'asc';
+  bookingSortField = '';
+  bookingSortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
+    // TODO: Get user type from authentication service
+    // this.userType = this.authService.getUserType();
+    this.filters.userType = this.userType;
     this.loadDashboardData();
   }
 
@@ -74,13 +104,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   updateFilteredData(): void {
     if (!this.dashboardData) return;
 
-    this.filteredClientMeetings = [...this.dashboardData.clientMeetings];
-    this.filteredFollowups = [...this.dashboardData.meetingsWithFollowup];
-    this.filteredRateRequests = [...this.dashboardData.rateRequests];
+    if (this.userType === 'sales') {
+      this.filteredClientMeetings = [...this.dashboardData.clientMeetings];
+      this.filteredFollowups = [...this.dashboardData.meetingsWithFollowup];
+      this.filteredRateRequests = [...this.dashboardData.rateRequests];
 
-    this.filterMeetings();
-    this.filterFollowups();
-    this.filterRateRequests();
+      this.filterMeetings();
+      this.filterFollowups();
+      this.filterRateRequests();
+    } else if (this.userType === 'customer-service') {
+      this.filteredTodaysActivities = [...this.dashboardData.todaysActivities];
+      this.filteredApprovedQuotations = [...this.dashboardData.approvedQuotations];
+      this.filteredBookingList = [...this.dashboardData.bookingList];
+
+      this.filterActivities();
+      this.filterQuotations();
+      this.filterBookings();
+    }
   }
 
   onDateFromChange(event: any): void {
@@ -98,12 +138,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    this.filters = {};
+    this.filters = { userType: this.userType };
     this.dateFromString = '';
     this.dateToString = '';
+
+    // Reset sales search terms
     this.meetingSearchTerm = '';
     this.followupSearchTerm = '';
     this.rateRequestSearchTerm = '';
+
+    // Reset customer service search terms
+    this.activitySearchTerm = '';
+    this.quotationSearchTerm = '';
+    this.bookingSearchTerm = '';
+
     this.loadDashboardData();
   }
 
@@ -285,5 +333,183 @@ export class DashboardComponent implements OnInit, OnDestroy {
   navigateToBookings(): void {
     console.log('Navigate to Bookings');
     // Add navigation logic here
+  }
+
+  // Customer Service filtering methods
+  filterActivities(): void {
+    if (!this.dashboardData) return;
+
+    this.filteredTodaysActivities = this.dashboardData.todaysActivities.filter(activity =>
+      this.activitySearchTerm === '' ||
+      activity.bookingNumber.toLowerCase().includes(this.activitySearchTerm.toLowerCase()) ||
+      activity.jobNumber.toLowerCase().includes(this.activitySearchTerm.toLowerCase()) ||
+      activity.activity.toLowerCase().includes(this.activitySearchTerm.toLowerCase()) ||
+      activity.status.toLowerCase().includes(this.activitySearchTerm.toLowerCase())
+    );
+
+    if (this.activitySortField) {
+      this.applySortToActivities();
+    }
+  }
+
+  filterQuotations(): void {
+    if (!this.dashboardData) return;
+
+    this.filteredApprovedQuotations = this.dashboardData.approvedQuotations.filter(quotation =>
+      this.quotationSearchTerm === '' ||
+      quotation.quotationNumber.toLowerCase().includes(this.quotationSearchTerm.toLowerCase()) ||
+      quotation.approvedBy.toLowerCase().includes(this.quotationSearchTerm.toLowerCase()) ||
+      quotation.option.toLowerCase().includes(this.quotationSearchTerm.toLowerCase())
+    );
+
+    if (this.quotationSortField) {
+      this.applySortToQuotations();
+    }
+  }
+
+  filterBookings(): void {
+    if (!this.dashboardData) return;
+
+    this.filteredBookingList = this.dashboardData.bookingList.filter(booking =>
+      this.bookingSearchTerm === '' ||
+      booking.bookingNumber.toLowerCase().includes(this.bookingSearchTerm.toLowerCase()) ||
+      booking.jobNumber.toLowerCase().includes(this.bookingSearchTerm.toLowerCase()) ||
+      booking.shipmentStatus.toLowerCase().includes(this.bookingSearchTerm.toLowerCase()) ||
+      booking.pol.toLowerCase().includes(this.bookingSearchTerm.toLowerCase()) ||
+      booking.pod.toLowerCase().includes(this.bookingSearchTerm.toLowerCase()) ||
+      booking.salesperson.toLowerCase().includes(this.bookingSearchTerm.toLowerCase()) ||
+      booking.assignedTo.toLowerCase().includes(this.bookingSearchTerm.toLowerCase())
+    );
+
+    if (this.bookingSortField) {
+      this.applySortToBookings();
+    }
+  }
+
+  // Customer Service sorting methods
+  sortActivities(field: keyof TodaysActivity): void {
+    if (this.activitySortField === field) {
+      this.activitySortDirection = this.activitySortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.activitySortField = field;
+      this.activitySortDirection = 'asc';
+    }
+    this.applySortToActivities();
+  }
+
+  sortQuotations(field: keyof ApprovedQuotation): void {
+    if (this.quotationSortField === field) {
+      this.quotationSortDirection = this.quotationSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.quotationSortField = field;
+      this.quotationSortDirection = 'asc';
+    }
+    this.applySortToQuotations();
+  }
+
+  sortBookings(field: keyof BookingListItem): void {
+    if (this.bookingSortField === field) {
+      this.bookingSortDirection = this.bookingSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.bookingSortField = field;
+      this.bookingSortDirection = 'asc';
+    }
+    this.applySortToBookings();
+  }
+
+  private applySortToActivities(): void {
+    this.filteredTodaysActivities.sort((a, b) => {
+      const aValue = this.getNestedPropertyValue(a, this.activitySortField);
+      const bValue = this.getNestedPropertyValue(b, this.activitySortField);
+
+      if (aValue < bValue) {
+        return this.activitySortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.activitySortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  private applySortToQuotations(): void {
+    this.filteredApprovedQuotations.sort((a, b) => {
+      const aValue = this.getNestedPropertyValue(a, this.quotationSortField);
+      const bValue = this.getNestedPropertyValue(b, this.quotationSortField);
+
+      if (aValue < bValue) {
+        return this.quotationSortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.quotationSortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  private applySortToBookings(): void {
+    this.filteredBookingList.sort((a, b) => {
+      const aValue = this.getNestedPropertyValue(a, this.bookingSortField);
+      const bValue = this.getNestedPropertyValue(b, this.bookingSortField);
+
+      if (aValue < bValue) {
+        return this.bookingSortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.bookingSortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  // Customer Service navigation methods
+  navigateToDocuments(): void {
+    console.log('Navigate to Documents');
+    // Add navigation logic here
+  }
+
+  navigateToCustomsClearance(): void {
+    console.log('Navigate to Customs Clearance');
+    // Add navigation logic here
+  }
+
+  navigateToShipments(): void {
+    console.log('Navigate to Shipments');
+    // Add navigation logic here
+  }
+
+  navigateToDeliveries(): void {
+    console.log('Navigate to Deliveries');
+    // Add navigation logic here
+  }
+
+  navigateToPendingActions(): void {
+    console.log('Navigate to Pending Actions');
+    // Add navigation logic here
+  }
+
+  navigateToCustomerQueries(): void {
+    console.log('Navigate to Customer Queries');
+    // Add navigation logic here
+  }
+
+  // Switch dashboard type (for testing purposes)
+  switchDashboard(type: 'sales' | 'customer-service'): void {
+    this.userType = type;
+    this.filters.userType = type;
+    this.resetFilters();
+  }
+
+  // Helper methods for template expressions
+  getCompletedActivitiesCount(): number {
+    return this.filteredTodaysActivities.filter(a => a.status === 'Completed').length;
+  }
+
+  getPendingActivitiesCount(): number {
+    return this.filteredTodaysActivities.filter(a => a.status === 'Pending').length;
+  }
+
+  getInProgressActivitiesCount(): number {
+    return this.filteredTodaysActivities.filter(a => a.status === 'In Progress').length;
   }
 }

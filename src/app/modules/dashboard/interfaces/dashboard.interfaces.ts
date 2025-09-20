@@ -26,6 +26,15 @@ export interface SalesMetrics {
   bookingQuotation: number;
 }
 
+export interface CustomerServiceMetrics {
+  documentsVerified: number;
+  customsClearances: number;
+  shipmentsInTransit: number;
+  deliveriesCompleted: number;
+  pendingActions: number;
+  customerQueries: number;
+}
+
 export interface ClientMeeting {
   id: string;
   client: string;
@@ -60,17 +69,53 @@ export interface RateRequest {
   amount?: number;
 }
 
+export interface TodaysActivity {
+  id: string;
+  bookingNumber: string;
+  jobNumber: string;
+  activity: string;
+  date: Date;
+  status: 'Completed' | 'In Progress' | 'Pending';
+}
+
+export interface ApprovedQuotation {
+  id: string;
+  quotationNumber: string;
+  status: 'Approved';
+  approvedBy: string;
+  date: Date;
+  option: string;
+}
+
+export interface BookingListItem {
+  id: string;
+  bookingNumber: string;
+  jobNumber: string;
+  shipmentStatus: string;
+  date: Date;
+  pol: string;
+  pod: string;
+  salesperson: string;
+  assignedTo: string;
+  invoicing: 'Yes' | 'No';
+}
+
 export interface DashboardFilters {
   salesperson?: string;
   dateFrom?: Date;
   dateTo?: Date;
+  userType?: 'sales' | 'customer-service';
 }
 
 export interface DashboardData {
   metrics: DashboardMetrics;
   salesMetrics: SalesMetrics;
+  customerServiceMetrics: CustomerServiceMetrics;
   clientMeetings: ClientMeeting[];
   meetingsWithFollowup: MeetingWithFollowup[];
   rateRequests: RateRequest[];
+  todaysActivities: TodaysActivity[];
+  approvedQuotations: ApprovedQuotation[];
+  bookingList: BookingListItem[];
   salespeople: Salesperson[];
 }
