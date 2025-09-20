@@ -1,185 +1,215 @@
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">Spilt Booking</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
-                        <i class="fas fa-history me-1"></i>Logs
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-
-                </div>
-            </div>
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-code-branch"></i>
+          </div>
+          <h4 class="page-title mb-0">Spilt Booking</h4>
         </div>
-    </div>
-
-    <div class="col-md-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body pb-0">
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Booking No <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <!-- <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">Booking Date <span class="text-danger"></span>
-                            </label>
-
-                        </div>
-                    </aside> -->
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Customer <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Shipper <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Consignee <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">POL <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">POD <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-
-                </div>
-            </div>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="bookingForm.reset()">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSplit()">
+            <i class="fas fa-save me-1"></i>Save
+          </button>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="col-12 mt-2">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
+  <div class="col-md-12">
+    <div class="card h-100 mb-0">
+      <div class="card-body pb-0">
+        <!-- START: Form wrapping both booking details and products -->
+        <form [formGroup]="bookingForm">
+
+          <!-- Booking Details Row -->
+          <div class="row">
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
+                <ng-select class="ng-select"
+                           [items]="departments"
+                           bindLabel="departmentName"
+                           bindValue="DepartmentMasterSid"
+                           formControlName="DepartmentMasterSid"
+                           (change)="onDeptChange($event)">
+                </ng-select>
+                <label class="input-label">Department<span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('BookingHeaderSid')?.value">
+                <ng-select class="ng-select"
+                           [items]="bookings"
+                           bindLabel="BookingNo"
+                           bindValue="BookingHeaderSid"
+                           formControlName="BookingHeaderSid"
+                           (change)="onBookingChange($event)">
+                </ng-select>
+                <label class="input-label">Booking No <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+           <aside class="col-md-4">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
+                    <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
+                      bindValue="CustomerMasterSid" formControlName="CustomerMasterSid"
+                      [disabled]="true">
+                    </ng-select>
+                    <label class="input-label">Customer <span class="text-danger"></span></label>
+                  </div>
+                </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input class="form-control custom-input-field sm" type="text" formControlName="ShipperName">
+                <label class="input-label">Shipper <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input class="form-control custom-input-field sm" type="text" formControlName="ConsigneeName">
+                <label class="input-label">Consignee <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POL')?.value">
+                <ng-select class="ng-select"
+                           [items]="ports"
+                           bindLabel="PortName"
+                           bindValue="PortCode"
+                           formControlName="POL"
+                           [disabled]="true">
+                </ng-select>
+                <label class="input-label">POL <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POD')?.value">
+                <ng-select class="ng-select"
+                           [items]="ports"
+                           bindLabel="PortName"
+                           bindValue="PortCode"
+                           formControlName="POD"
+                           [disabled]="true">
+                </ng-select>
+                <label class="input-label">POD <span class="text-danger"></span></label>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Products Section -->
+          <div class="col-12 mt-2">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+              <div class="col-md-4 d-flex pb-1">
                 <h5 class="page-title pt-1">Product</h5>
+              </div>
             </div>
-        </div>
-    </div>
-    <div class="mx-0">
-        <div class="col-md-12   bg-white py-2 rounded shadow-sm p-2">
-            <div class="table-responsive">
+          </div>
+
+          <div class="mx-0" *ngIf="products?.length > 0">
+            <div class="col-md-12 bg-white py-2 rounded shadow-sm p-2">
+              <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Commodity</th>
-                            <th class="bg-transparent text-light" scope="col">Shipping Bill No</th>
-                            <th class="bg-transparent text-light" scope="col">Date</th>
-                            <th class="bg-transparent text-light" scope="col">External Pkg</th>
-                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
-                            <th class="bg-transparent text-light" scope="col">Gross Weight</th>
-                            <th class="bg-transparent text-light" scope="col">Net Weight</th>
-                            <th class="bg-transparent text-light" scope="col">CBM</th>
-                            <th class="bg-transparent text-light" scope="col" width="5%"></th>
-                            <th class="bg-transparent text-light" scope="col" width="10%"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
+                  <thead>
+                    <tr class="bg-info">
+                      <th class="bg-transparent text-light">Commodity</th>
+                      <th class="bg-transparent text-light">Shipping Bill No</th>
+                      <th class="bg-transparent text-light">Shipping Bill Date</th>
+                      <th class="bg-transparent text-light">External Pkg</th>
+                      <th class="bg-transparent text-light">No of Pkg</th>
+                      <th class="bg-transparent text-light">Gross Weight</th>
+                      <th class="bg-transparent text-light">CBM</th>
+                      <th class="bg-transparent text-light">Tick</th>
+                      <th class="bg-transparent text-light">Full/Part</th>
+                    </tr>
+                  </thead>
 
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+                  <tbody formArrayName="products">
+                    <ng-container *ngFor="let product of products.controls; let i = index" [formGroupName]="i">
+                      <!-- Main product row -->
+                      <tr>
+                        <td>{{ product.get('ProductName')?.value }}</td>
+                        <td>{{ product.get('ShippingBillNo')?.value }}</td>
+                        <td>{{ product.get('ShippingBillDate')?.value | date:'dd-MM-yyyy' }}</td>
+                        <td>{{ product.get('ExternaPkg')?.value }}</td>
+                        <td>{{ product.get('ExternlQty')?.value }}</td>
+                        <td>{{ product.get('GrossWeight')?.value }}</td>
+                        <td>{{ product.get('Volume')?.value }}</td>
 
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;padding-left: 20px;">
-                                <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="" class="focus-ring form-check-input sm p-0 cursor-pointer"
-                                        [checked]="selectedIndex === $index" (change)="onSelectRow($index)">
-                                </div>
-                            </td>
-                            <td
-                                style="padding-top: 1px; padding-bottom: 1px; line-height: 1.5; margin-bottom: 5px;">
-                                <div class="custom-form-group custom-form-group-select p-0 m-0">
-                                    <ng-select [items]="modeofpart" bindLabel="name" bindValue="name" class="p-0 m-0"
-                                        appendTo="body" style="max-height:34px ">
-                                    </ng-select>
-                                </div>
-                            </td>
+                        <td class="text-center">
+                          <input type="checkbox"
+                                 class="form-check-input"
+                                 formControlName="selected"
+                                 (change)="onSelectRow(i)">
+                        </td>
 
-                        </tr>
-                        }
-                    </tbody>
+                        <td>
+                          <ng-select [items]="splitType"
+                                     bindLabel="name"
+                                     bindValue="value"
+                                     formControlName="splitType"
+                                     (change)="onSplitModeChange($event, i)"
+                                     [appendTo]="'body'">
+                          </ng-select>
+                        </td>
+                      </tr>
+
+                      <!-- Part fields row -->
+                      <tr *ngIf="product.get('splitType')?.value === 'part' && product.get('selected')?.value">
+                        <td colspan="7" class="bg-light p-2">
+                          <div class="row g-2">
+                            <div class="col-md-4">
+                              <label>No. of Pkg</label>
+                              <input type="number" class="form-control form-control-sm"
+                                     formControlName="PartPackages"
+                                     min="0"
+                                     [max]="product.get('ExternlQty')?.value">
+                            </div>
+                            <div class="col-md-4">
+                              <label>Gross Weight</label>
+                              <input type="number" class="form-control form-control-sm"
+                                     formControlName="PartGrossWeight"
+                                     min="0"
+                                     [max]="product.get('GrossWeight')?.value">
+                            </div>
+                            <div class="col-md-4">
+                              <label>CBM</label>
+                              <input type="number" class="form-control form-control-sm"
+                                     formControlName="PartCBM"
+                                     min="0"
+                                     [max]="product.get('Volume')?.value">
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
                 </table>
+              </div>
+
+              <div class="d-flex justify-content-end mt-2">
+                <button type="button" class="btn btn-info btn-sm" (click)="onSplit()">
+                  <i class="fas fa-code-branch me-1"></i> Split
+                </button>
+              </div>
             </div>
-        </div>
-        <div class="d-flex justify-content-end mt-2">
-
-            <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80">Split</button>
-        </div>
+          </div>
+        </form>
+        <!-- END: Form -->
+      </div>
     </div>
-
-</div>
+  </div>
+</div> 
