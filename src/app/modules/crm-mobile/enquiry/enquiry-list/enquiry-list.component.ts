@@ -224,9 +224,22 @@ import { VoiceEnquiryComponent } from '../voice-enquiry/voice-enquiry.component'
 
 
     navigateQuotation(response: any) {
+    const polList = response.enquiryRoute.map(route => route.POLSid);
+    const podList = response.enquiryRoute.map(route => route.PODSid);
+
+    let cargoTypeList: string[] = [];
+
+    if (Array.isArray(response.enquiryCargo)) {
+      cargoTypeList.push(...response.enquiryCargo.map(cargo => cargo.CargoType));
+    }
+
+    response.enquiryRoute.forEach(route => {
+      if (Array.isArray(route.enquiryCargo)) {
+        cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
+      }
+    });
       console.log(response);
       const dept = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
-      console.log(dept);
       let selectedFCLLCL;
       if (dept?.departmentType === "Sea") {
         selectedFCLLCL = dept?.FCLLCL;
@@ -254,16 +267,31 @@ import { VoiceEnquiryComponent } from '../voice-enquiry/voice-enquiry.component'
       });
 
       const enqData = {
+        // EnquirySid: response?.EnquiryHeaderSid,
+        // EnquiryNumber: response?.EnquiryNumber,
+        // CustomerMasterSid: response?.CustomerMasterSid,
+        // CustomerName: response?.CustomerName,
+        // CustomerAddress: response?.CustomerAddress,
+        // Email: response?.Email,
+        // DepartmentMasterSid: response.DepartmentMasterSid,
+        // segment: selectedFCLLCL,
+        // rateRequest: true,
+        // enqRoutes: routeDetails
+
         EnquirySid: response?.EnquiryHeaderSid,
-        EnquiryNumber: response?.EnquiryNumber,
-        CustomerMasterSid: response?.CustomerMasterSid,
-        CustomerName: response?.CustomerName,
-        CustomerAddress: response?.CustomerAddress,
-        Email: response?.Email,
-        DepartmentMasterSid: response.DepartmentMasterSid,
-        segment: selectedFCLLCL,
-        rateReq: true,
-        enqRoutes: routeDetails
+        EnquiryNumber: response.EnquiryNumber,
+      CustomerAddress: response.CustomerAddress,
+      CustomerName: response.CustomerName,
+      Email: response.Email,
+      CustomerMasterSid: response.CustomerMasterSid,
+      DepartmentMasterSid: response.DepartmentMasterSid,
+      polList: polList,  // Sending as an array
+      podList: podList,  // Sending as an array
+      status: response.status,
+      cargoTypeList: cargoTypeList,  // Merging from both possible sources
+      ShipmentType: selectedFCLLCL,
+      rateRequest: true,
+      quoteRoutes:routeDetails,
       };
       this.leadService.clearQuotationData();
       this.leadService.setQuotationData(enqData);

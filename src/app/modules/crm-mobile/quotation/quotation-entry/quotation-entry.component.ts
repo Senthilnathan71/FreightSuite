@@ -131,9 +131,9 @@ auditLogs: any[] = []; // Stores audit logs
     { value : "Rejected" , name : "Rejected"}
   ]
 
-  tabs: string[] = ['Quotation', 'Charge Details'];
+  tabs: string[] = ['Quotation', 'Route Details'];
   selectedTab = 'Quotation';
-
+dataFromEnqPage:any;
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
@@ -164,11 +164,12 @@ auditLogs: any[] = []; // Stores audit logs
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
 
     this.loadAllLookUps().subscribe(() => {
-      const dataFromEnqPage = this.leadService.getQuotationData();
+      this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
-      if (dataFromEnqPage?.rateRequest) {
-        console.log(dataFromEnqPage,'dataFromEnqPage171')
-        this.patchEnqPageValues(dataFromEnqPage);
+
+      if (this.dataFromEnqPage?.rateRequest) {
+        console.log(this.dataFromEnqPage,'dataFromEnqPage171')
+        this.patchEnqPageValues(this.dataFromEnqPage);
         this.minEffDate = this.todayDate;
         this.f['status']?.disable();
       } else {
@@ -736,7 +737,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
-      this.selectedTab = 'Charge Details';
+      this.selectedTab = 'Route Details';
       return;
     }
     if (this.quotationForm.invalid) {

@@ -5,7 +5,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { SettingsService } from '../../settings.service';
-// import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -73,7 +73,7 @@ private footerTemplate = `
     private fb: FormBuilder,
     private appSettingService: AppSettingsService,
     private settingsService: SettingsService,
-    // private activeModal: NgbActiveModal,
+    private activeModal: NgbActiveModal,
     private spinner: NgxSpinnerService
   ) {
     this.initMailForm();
@@ -151,7 +151,7 @@ private footerTemplate = `
 
   closeModal() {
     console.log('Modal closed');
-    // this.activeModal.close();
+    this.activeModal.close();
   }
 
   resetForm() {

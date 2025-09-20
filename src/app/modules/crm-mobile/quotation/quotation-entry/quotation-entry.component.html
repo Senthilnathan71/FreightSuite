@@ -99,7 +99,8 @@
               <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !enquiryNumber
-                              }">Enquiry No<span class="text-danger"></span></label>
+                              }">  {{ dataFromEnqPage?.rateRequest ? 'Enquiry No' : 'Quotation No' }}
+<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
@@ -170,7 +171,7 @@
       </div>
     </div>
   </div>
-  <div [hidden]="selectedTab !== 'Charge Details'" [formGroup]="quotationForm">
+  <div [hidden]="selectedTab !== 'Route Details'" [formGroup]="quotationForm">
     <div class="row">
       <div class="col-12 mb-2">
 

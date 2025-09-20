@@ -45,6 +45,7 @@ export class QuotationViewComponent {
   totalLengthOfCollection1: number;
   searchText: string = '';
   quoteItems: any[] = [];
+  filteredEnquiryItems:any[]=[]
   isMobile: boolean = false;
   quoteData: any
   enquiryItems: any[] = [];
@@ -54,6 +55,8 @@ export class QuotationViewComponent {
   selectedItem: any;
   currentDate = new Date().toLocaleDateString(); // or any formatted string
   filterValue : any = ''
+  filterEnqValue : any = ''
+
   userData : any
   currentCompany: any;
   currentBranch: any;
@@ -110,6 +113,7 @@ export class QuotationViewComponent {
   }
 
 
+
   // Method to load the leads
   loadQuotes(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -131,29 +135,19 @@ export class QuotationViewComponent {
     );
   }
   searchEnquiry(): void {
-   
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
+   const text = this.searchText.toLowerCase();
 
-    if (!searchQuery) {
-      this.quoteItems = [...this.quoteData]; // Reset to original leads when search is empty
-    } else {
-      this.quoteItems = this.quoteData.filter((enq) => {
-        // Convert date to a standardized format (YYYY-MM-DD)
-        const formattedDate = enq.ShipmentExpectedDate
-          ? new Date(enq.ShipmentExpectedDate).toISOString().split('T')[0]
-          : '';
+    this.filteredEnquiryItems = this.enquiryItems.filter(enq =>
+      (enq.EnquiryNumber    ?? '').toLowerCase().includes(text) ||
+      (enq.CustomerName     ?? '').toLowerCase().includes(text) ||
+      (enq.ShipmentType     ?? '').toLowerCase().includes(text) ||
+      (enq.POLCode          ?? '').toLowerCase().includes(text) ||
+      (enq.PODCode          ?? '').toLowerCase().includes(text) ||
+      (enq.Date             ?? '').toString().toLowerCase().includes(text)
+    );
 
-        return (
-          enq.CustomerName?.toLowerCase().includes(searchQuery) ||
-          formattedDate.includes(searchQuery) ||  // Date search
-          enq.ShipmentType?.toLowerCase().includes(searchQuery) ||
-          enq.EnquiryNumber?.toLowerCase().includes(searchQuery)
-        );
-      });
-    }
-
-
-    this.totalLengthOfCollection = this.quoteItems.length;
+    this.totalLengthOfCollection1 = this.filteredEnquiryItems.length;
+    this.page1 = 1; // reset to first page when searching
   }
 
 
@@ -164,10 +158,9 @@ export class QuotationViewComponent {
     this.leadService.getAllEnquiries(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
-        this.enquiryData = resp['data'];
-
-        console.log(this.enquiryData,'this.enquiryData')
-        this.enquiryItems = [...this.enquiryData]
+        this.enquiryData = resp['data'];  // On success, store the leads data in the component
+        this.filteredEnquiryItems = [...this.enquiryData]
+        // this.enquiryItems = [...this.enquiryData]
         this.totalLengthOfCollection1 = this.enquiryData.length || 0;
         this.updateEnquiryPaginatedData();  // Update paginated data
         this.mapPortsToEnquiries();
@@ -234,8 +227,12 @@ export class QuotationViewComponent {
     this.searchQuotation();
   }
 
+   clearFilterEnqValue(){
+    this.filterEnqValue = '';
+    this.searchEnquiry();
+  }
+
   createNew() {
-    this.leadService.clearQuotationData()
     this.route.navigate(['crm/quotation/entry'])
   }
 
@@ -244,6 +241,8 @@ export class QuotationViewComponent {
   }
 
   createQuotation(enq: any) {
+    console.log(enq);
+
     const polList = enq.enquiryRoute.map(route => route.POLSid);
     const podList = enq.enquiryRoute.map(route => route.PODSid);
 
@@ -265,21 +264,14 @@ export class QuotationViewComponent {
     // Remove duplicates (optional)
     cargoTypeList = [...new Set(cargoTypeList)];
     this.leadService.clearQuotationData();  // <-- Add this line to clear previous data
+
     this.leadService.setQuotationData({
-      EnquiryNumber: enq.EnquiryNumber,
-      CustomerAddress: enq.CustomerAddress,
-      CustomerName: enq.CustomerName,
-      Email: enq.Email,
-      CustomerMasterSid: enq.CustomerMasterSid,
-      DepartmentMasterSid: enq.DepartmentMasterSid,
+      customerId: enq.CustomerMasterSid,
+      departmentId: enq.DepartmentMasterSid,
       polList: polList,  // Sending as an array
       podList: podList,  // Sending as an array
-      status: enq.status,
       cargoTypeList: cargoTypeList,  // Merging from both possible sources
-      EnquirySid: enq.EnquiryHeaderSid,
-      ShipmentType: enq.ShipmentType,
       rateRequest: true,
-      quoteRoutes:enq.enquiryRoute,
       active: 2
     });
 

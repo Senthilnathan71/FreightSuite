@@ -11,8 +11,36 @@
     <li [ngbNavItem]="1">
         <button ngbNavLink>Pending Rate Request</button>
         <ng-template ngbNavContent>
+            <div class="col-md pb-2">
+                            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                                <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
+                                    <div class="form-outline flex-grow-1 position-relative">
+                                        <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                            [(ngModel)]="filterValue"  aria-label="Search input">
+                                        <button 
+                                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                            tabindex="0" aria-label="Clear search"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                            onfocus="this.classList.replace('text-secondary','text-danger')"
+                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                <div class="mt-md-0 mt-1">
+                                    <button type="submit" 
+                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchQuotation()">
+                                        <i class="fas fa-search me-1"></i> Search
+                                    </button>
+                                </div>
+
+                                    </div>
+                                </form>
+                            </div>
+                <div class="col-12">
+
             <div *ngIf="isMobile; else rrdesktopTemplate">
                 <ng-container *ngTemplateOutlet="rrmobileTemplate"></ng-container>
+            </div>
             </div>
         </ng-template>
     </li>
@@ -39,20 +67,20 @@
                             <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                                 <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                                     <div class="form-outline flex-grow-1 position-relative">
-                                        <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterValue"  aria-label="Search input">
+                                        <input name="filterEnqValue" type="text" class="form-control pe-5" placeholder="Search"
+                                            [(ngModel)]="filterEnqValue"  aria-label="Search input">
                                         <button 
                                             class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                             tabindex="0" aria-label="Clear search"
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                             onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
+                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterEnqValue()">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
                                 <div class="mt-md-0 mt-1">
                                     <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchQuotation()">
+                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchEnquiry()">
                                         <i class="fas fa-search me-1"></i> Search
                                     </button>
                                 </div>
@@ -171,7 +199,7 @@
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
-                                    <th class="bg-transparent text-light" scope="col">Quote Status</th>
+                                    <!-- <th class="bg-transparent text-light" scope="col">Quote Status</th> -->
                                     <th class="bg-transparent text-light" scope="col">Booking No.</th>
                                     <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
@@ -231,14 +259,14 @@
                                     </td>
                                     
                                      
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <!-- <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            N/A
+                                            NA
                                         </div>
-                                    </td>
+                                    </td> -->
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            N/A
+                                            NA
                                         </div>
                                     </td>
                                     <!--<td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -368,15 +396,15 @@
                                     <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Rate Request No</th>
                                     <th class="bg-transparent text-light" scope="col">Customer</th>
-
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
+                                    <th class="bg-transparent text-light">Date</th>
 
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let enq of enquiryItems">
+                                <tr *ngFor="let enq of filteredEnquiryItems">
                                     <td data-label="Action"  class="text-center"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
 
                                         <section class="action-items">
@@ -408,6 +436,12 @@
                                     <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.PODCode || '' }}
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            Date
                                         </div>
                                     </td>
 
