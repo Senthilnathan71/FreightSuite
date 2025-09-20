@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component,OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -12,7 +12,11 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-currency-exchange-list',
   standalone: true,
@@ -24,28 +28,29 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     NgbPaginationModule,
     CustomDatePipe,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+     CommonPaginationComponent
   ],
   templateUrl: './currency-exchange-list.component.html',
   styleUrl: './currency-exchange-list.component.scss'
 })
-export class CurrencyExchangeListComponent {
+export class CurrencyExchangeListComponent extends BaseListComponent implements OnInit {
   searchType = 'FromCurrency';
-  filterValue = '';
+  // filterValue = '';
   allResults: any[] = []; // Store all results for pagination and sorting
   currencyExchangeList: any[] = []; // Store paginated results
-  searchPerformed = false;
+  // searchPerformed = false;
   loading: boolean = false;
   userData: any;
 
   // pagination
-  page = 1;
-  pageSize = 10;
-  totalLengthOfCollection: number = 0;
+  // page = 1;
+  // pageSize = 10;
+  // totalLengthOfCollection: number = 0;
 
-  // sorting
-  sortColumn: string = 'EffectiveFrom'; // default sort column
-  sortDirection: string = 'desc'; // default sort direction (newest first)
+  //  sorting
+  // sortColumn: string = 'EffectiveFrom'; 
+  // sortDirection: string = 'desc'; 
   isFavorite: boolean = false;
   // Company
   currentCompany : any;
@@ -54,15 +59,28 @@ export class CurrencyExchangeListComponent {
     this.isFavorite = !this.isFavorite;
   }
   
+   protected config: ListComponentConfig = {
+    storageKey: 'currencyExchange-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'LedgerName',
+    defaultSortDirection: 'asc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  get allCurrencyExchange() { return this.allItems; }
   constructor(
     private accountService: AccountsService, 
     private router: Router,
     private appSettingService: AppSettingsService, 
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService
-  ) { }
-  ngOnInit(): void {
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ){
+    super(paginationService);
+}
+  override ngOnInit(): void {
   //    this.appSettingService.getUser().subscribe(user => {
   //   if (user) {
   //     this.userData = user;
@@ -74,110 +92,167 @@ export class CurrencyExchangeListComponent {
 		if(userProfile){
 			this.userData = userProfile;
 		}
-  this.loadCurrencyExchanges();
+  // this.loadCurrencyExchanges();
+   super.ngOnInit();
 }
 
-loadCurrencyExchanges(): void {
-  this.spinner.show();
-  this.loading = true;
-  let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  let BranchMasterSid=this.currentBranch?.BranchMasterSid;
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize,
-    sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection,
-    activeCompanyId : CompanyMasterSid,
-    activeBranchId: BranchMasterSid,
-  };
+// loadCurrencyExchanges(): void {
+//   this.spinner.show();
+//   this.loading = true;
+//   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+//   let BranchMasterSid=this.currentBranch?.BranchMasterSid;
+//   const params = {
+//     search: this.filterValue?.trim() || '',
+//     page: this.page,
+//     pageSize: this.pageSize,
+//     sortColumn: this.sortColumn,
+//     sortDirection: this.sortDirection,
+//     activeCompanyId : CompanyMasterSid,
+//     activeBranchId: BranchMasterSid,
+//   };
 
-  this.accountService.searchCurrencyExchangeList(params).subscribe({
-    next: (response) => {
-      if(response.status) {
-        this.currencyExchangeList = response.data.items || response.data || [];
-        this.totalLengthOfCollection = response.data.totalCount || response.length || 0;
-        this.applySorting();
-        this.searchPerformed = true;
-      }else {
-        this.appSettingService.showError(response.message);
-      }
-      this.spinner.hide();
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error fetching currency exchanges:', err);
-      this.currencyExchangeList = [];
-      this.totalLengthOfCollection = 0;
-      this.loading = false;
-    }
-  });
-}
+//   this.accountService.searchCurrencyExchangeList(params).subscribe({
+//     next: (response) => {
+//       if(response.status) {
+//         this.currencyExchangeList = response.data.items || response.data || [];
+//         this.totalLengthOfCollection = response.data.totalCount || response.length || 0;
+//         this.applySorting();
+//         this.searchPerformed = true;
+//       }else {
+//         this.appSettingService.showError(response.message);
+//       }
+//       this.spinner.hide();
+//       this.loading = false;
+//     },
+//     error: (err) => {
+//       console.error('Error fetching currency exchanges:', err);
+//       this.currencyExchangeList = [];
+//       this.totalLengthOfCollection = 0;
+//       this.loading = false;
+//     }
+//   });
+// }
+ protected searchItems(): Observable<any> {
+    this.spinner.show();
+    return this.accountService.searchCurrencyExchangeList(this.getSearchParams());
+  }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      // Reverse the sort direction if clicking the same column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items;
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
     } else {
-      // Set new sort column and default to ascending
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+      this.appSettingService.showError('Error fetching Chart of Accounts.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
     }
-    this.loadCurrencyExchanges();
-    this.applySorting();
-    this.updatePaginatedData();
+  }
+  
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error fetching Chart of Accounts.');
+    console.error('Error fetching Chart of Accounts', error);
+    super.handleSearchError(error);
   }
 
-  applySorting() {
-    this.currencyExchangeList.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-      
-      // Handle null/undefined values
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-      
-      // Special handling for dates
-      if (this.sortColumn === 'EffectiveFrom') {
-        valueA = new Date(valueA).getTime();
-        valueB = new Date(valueB).getTime();
-      }
-      
-      // Special handling for numeric values
-      if (this.sortColumn === 'SellRate' || this.sortColumn === 'BuyRate') {
-        valueA = Number(valueA);
-        valueB = Number(valueB);
-      }
-      
-      // Convert to string for case-insensitive comparison if not date/number
-      if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
-        valueA = valueA.toString().toLowerCase();
-        valueB = valueB.toString().toLowerCase();
-      }
-      
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
+
+  searchCurrencyExchange() {
+    this.page=1;
+    this.search();
   }
+
   clearFilterValue() {
-  this.filterValue = '';
-  this.loadCurrencyExchanges();
-}
-
-  updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.loadCurrencyExchanges();
+    this.clearFilter();
   }
 
-  trackByExchangeId(index: number, item: any): number {
-    return item.ExchangeRateSid || index;
+  updatePaginationData(): void {
+    this.search();
   }
+   trackByExchangeId(index: number, item: any): number {
+    return index;
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.LedgerSid || index;
+  }
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+    
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+      
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.loadCurrencyExchanges();
+  //   this.applySorting();
+  //   this.updatePaginatedData();
+  // }
+
+  // applySorting() {
+  //   this.currencyExchangeList.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
+      
+     
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
+      
+
+  //     if (this.sortColumn === 'EffectiveFrom') {
+  //       valueA = new Date(valueA).getTime();
+  //       valueB = new Date(valueB).getTime();
+  //     }
+      
+     
+  //     if (this.sortColumn === 'SellRate' || this.sortColumn === 'BuyRate') {
+  //       valueA = Number(valueA);
+  //       valueB = Number(valueB);
+  //     }
+      
+     
+  //     if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
+  //       valueA = valueA.toString().toLowerCase();
+  //       valueB = valueB.toString().toLowerCase();
+  //     }
+      
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  // }
+//   clearFilterValue() {
+//   this.filterValue = '';
+//   this.loadCurrencyExchanges();
+// }
+
+//   updatePaginatedData(): void {
+//     const startIndex = (this.page - 1) * this.pageSize;
+//     const endIndex = startIndex + this.pageSize;
+//     this.loadCurrencyExchanges();
+//   }
+
+//   trackByExchangeId(index: number, item: any): number {
+//     return item.ExchangeRateSid || index;
+//   }
 
   // deleteCurrencyExchange(id: number) {
   //   const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -202,18 +277,18 @@ loadCurrencyExchanges(): void {
     this.router.navigate(['accounts/currency-exchange/entry']);
   }
 
-  resetPage() {
-    this.filterValue = '';
-    this.searchType = 'FromCurrency';
-    this.page = 1;
-    this.searchPerformed = false;
-    this.allResults = [];
-    this.currencyExchangeList = [];
-    this.totalLengthOfCollection = 0;
-    this.sortColumn = 'EffectiveFrom';
-    this.sortDirection = 'desc';
-    this.loadCurrencyExchanges();
-  }
+  // resetPage() {
+  //   this.filterValue = '';
+  //   this.searchType = 'FromCurrency';
+  //   this.page = 1;
+  //   this.searchPerformed = false;
+  //   this.allResults = [];
+  //   this.currencyExchangeList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.sortColumn = 'EffectiveFrom';
+  //   this.sortDirection = 'desc';
+  //    this.loadCurrencyExchanges();
+  // }
 
   getStatusClass(status: string): string {
     return status === 'A' ? 'badge bg-success' : 'badge bg-danger';

@@ -14,6 +14,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -25,7 +26,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     ReactiveFormsModule,
     NgbDatepickerModule,
     DatePipe,
-    NgbDropdownModule
+    NgbDropdownModule,
+    DecimalPrecisionDirective
   ],
   templateUrl: './currency-exchange-entry.component.html',
   styleUrls: ['./currency-exchange-entry.component.scss'],
@@ -77,7 +79,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       EffectiveFrom: ['', [Validators.required]],
       FromCurrency: ['', [Validators.required]],
       ToCurrency: ['', [Validators.required]],
-      RateFrom: ['', [Validators.required]],
+      RateFrom: [''],
       SellRate: ['', [
         Validators.required,
         Validators.pattern(/^\d+\.?\d{0,5}$/)
@@ -86,7 +88,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         Validators.required,
         Validators.pattern(/^\d+\.?\d{0,5}$/)
       ]],
-      BankName: ['', [Validators.required]],
+      BankName: [''],
 
       Remarks: [''],
       status: [{ value: 'Active', disabled: true }, [Validators.required]],
@@ -218,7 +220,9 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       payload.updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
       this.accountService.updateCurrencyExchangeById(this.CurrencyExchangeSid, payload).subscribe({
         next: (resp) => {
+         
           this.handleSuccess(resp, 'Currency Exchange updated successfully!');
+           this.router.navigate(['accounts/currency-exchange/entry'],resp.data.CurrencyExchangeSid);
         },
         error: (err) => {
           this.handleError(err);
@@ -227,7 +231,9 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     } else {
       this.accountService.createCurrencyExchange(payload).subscribe({
         next: (resp) => {
+          this.loadCurrencyExchangeData(resp.data.CurrencyExchangeSid);
           this.handleSuccess(resp, 'Currency Exchange created successfully!');
+           this.router.navigate(['accounts/currency-exchange/entry'],resp.data.CurrencyExchangeSid);
         },
         error: (err) => {
           this.handleError(err);

@@ -275,7 +275,7 @@ export class VendorTdsEntryComponent {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message)
-            this.router.navigate(['/accounts/supplier-tds/list']);
+            this.router.navigate(['/accounts/supplier-tds/entry'],resp.data.SupplierTdsMappingSid);
           } else {
            this.appSettingService.showError(resp.message);
             console.error(resp.message);
@@ -286,9 +286,9 @@ export class VendorTdsEntryComponent {
       this.accountService.createSupplierTDS(payload).subscribe({
         next: (resp: any) => {
           if (resp.status) {
+            this.loadSupplierTDS[(resp.data.SupplierTdsMappingSid)];
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['/accounts/supplier-tds/list']);
-            
+            this.router.navigate(['/accounts/supplier-tds/entry'],resp.data.SupplierTdsMappingSid);
           } else {
             this.appSettingService.showError(resp.message);
             console.error(resp.message);

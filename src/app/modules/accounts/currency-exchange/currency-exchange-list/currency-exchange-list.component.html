@@ -19,7 +19,7 @@
                     <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
+                                [(ngModel)]="filterValue" aria-label="Search input" (keyup.enter)="searchCurrencyExchange()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
@@ -30,7 +30,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadCurrencyExchanges()"
+                            <button type="submit" (click)="searchCurrencyExchange()"
                                 class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
@@ -98,7 +98,7 @@
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'BuyRate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'BuyRate'}"></i>
                             </th>
                             <th class="bg-transparent text-light" scope="col" (click)="sort('BankName')">
-                                Bank Name
+                                Rate From
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'BankName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'BankName'}"></i>
                             </th>
@@ -106,7 +106,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of currencyExchangeList; let i = index; trackBy: trackByExchangeId">
+                        <tr *ngFor="let item of allCurrencyExchange; let i = index; trackBy: trackByExchangeId">
                             <!-- <td>
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="mx-2 ps-3" [routerLink]="['/accounts/currency-exchange/entry', item.CurrencyExchangeSid]" title="Edit">
@@ -133,7 +133,7 @@
                                 <div class="text-truncate">{{item.BuyRate | number:'1.2-2'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.BankName || 'N/A'}}</div>
+                                <div class="text-truncate">{{item.RateFrom || 'N/A'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){
@@ -153,12 +153,18 @@
                 </table>
             </div>
             <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                <!-- <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                     [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-                </ngb-pagination>
+                </ngb-pagination> -->
+                 <app-common-pagination
+            [config]="paginationConfig"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
-        <div class="alert alert-info text-center">No records found</div>
-    </div>
+ <!-- No Records -->
+<div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
+    <div class="text-center ">No Records Found</div>
+</div>

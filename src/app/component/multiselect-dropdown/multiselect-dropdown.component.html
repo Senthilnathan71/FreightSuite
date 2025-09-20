@@ -74,8 +74,8 @@
   </ng-template>
   <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
     <div class="ng-value" *ngFor="let item of items.slice(0, displayCount)">
-      <span class="ng-value-label bg-info text-white">{{ item[bindLabel] }}</span>
-      <span class="ng-value-icon bg-info text-white" (click)="removeItem(item, $event)">×</span>
+      <span class="ng-value-label" style="background-color: #E9E4F0;color: #333;font-weight: 600;">{{ item[bindLabel] }}</span>
+      <span class="ng-value-icon" style="background-color: #E9E4F0;color: #333; font-weight: 600;" (click)="removeItem(item, $event)">×</span>
     </div>
     <div class="ng-value" *ngIf="items.length > displayCount">
       <span class="ng-value-label bg-info text-white">+{{ items.length - displayCount }} more</span>

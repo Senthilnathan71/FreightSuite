@@ -22,7 +22,7 @@
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                aria-label="Search input">
+                                aria-label="Search input" (keyup.enter)="searchSubledgerMpping()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -33,7 +33,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="loadLedgerMappings()">
+                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchSubledgerMpping()">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
@@ -52,11 +52,11 @@
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!searched" (click)="report()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="totalLengthOfCollection===0" (click)="report()">
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!searched" (click)="resetForm()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="totalLengthOfCollection===0" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                 </form>
@@ -68,7 +68,7 @@
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
+                <table class="table table-hover align-middle no-wrap table-bordered mb-0">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
@@ -94,7 +94,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of ledgerMappingList; let i = index">
+                        <tr *ngFor="let item of allSubledagerMapping; let i = index">
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     <button class="btn btn-sm btn-link text-primary p-0 mx-2" title="Edit"
@@ -138,22 +138,28 @@
                     </tbody>
                 </table>
             </div>
-            <div class="d-flex justify-content-end">
-                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+            <div>
+                <!-- <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
                     (pageChange)="updatePaginationData()">
-                </ngb-pagination>
+                </ngb-pagination> -->
+                 <app-common-pagination
+            [config]="paginationConfig"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div>No records found</div>
-    </div>
+   <!-- No Records -->
+<div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
+    <div class="text-center ">No Records Found</div>
+</div>
 
     <ng-template #content let-modal>
 
         <div class="modal-header bg-info text-white p-2">
             <h5 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Subledger Mapping</h5>
-            <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+            <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()">
                 <i class="fas fa-info-circle fs-6"></i>
             </a>
 
@@ -206,7 +212,7 @@
 
                         <!-- Subledger Type -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('SubledgerType')?.value">
                                 <ng-select [items]="['Customer', 'Charge']" bindLabel="name" bindValue="name"
                                     formControlName="SubledgerType" (change)="onSubledgerTypeChange($event)">
                                 </ng-select>
@@ -222,7 +228,7 @@
                         </aside>
                         <!-- subledgerMapping -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('SubledgerMappingSid')?.value">
                                 <ng-select [items]="subledgerMappingOptions" bindLabel="name" bindValue="id"
                                     formControlName="SubledgerMappingSid">
                                 </ng-select>
@@ -239,7 +245,7 @@
 
                         <!-- CoA master -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('COAMasterSid')?.value">
                                 <ng-select [items]="ledgerList" bindLabel="LedgerName" bindValue="COAMasterSid"
                                     formControlName="COAMasterSid">
                                 </ng-select>
@@ -265,7 +271,7 @@
 
                         <!-- Status -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('Status')?.value">
                                 <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
                                     bindValue="id">
 
@@ -279,7 +285,7 @@
                    </form>
         </div>
 
-                <div class="modal-footer mt-2 p-0 pt-1">
+                <div class="modal-footer mt-2  pt-1">
                      <!-- @if(isEditMode){
                         <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
                             <i class="fas fa-file-alt me-1"></i> e-Doc
