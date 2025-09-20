@@ -35,6 +35,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     currentMenuPermissions: any = {};
     currentCompany: any;
     currentBranch: any;
+    selectedRowId: string | null = null;
 
     protected config: ListComponentConfig = {
         storageKey: 'booking-list-state',
@@ -44,6 +45,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         pageSizeOptions: [10, 20, 50, 100, 500],
         maxPagesToShow: 3
     };
+
+    private readonly SELECTED_ROW_KEY = 'booking-list-selected-row';
 
     // Alias for compatibility with existing template
     get allBookings() { return this.allItems; }
@@ -68,6 +71,10 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 this.checkPermissions();
             }
         });
+
+        // Restore selected row before data load
+        this.restoreSelectedRow();
+        console.log('Restored selected row ID:', this.selectedRowId);
 
         // Initialize base component
         super.ngOnInit();
@@ -123,6 +130,9 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;
             this.applySorting();
+
+            console.log('Data loaded, current selectedRowId:', this.selectedRowId);
+            console.log('Available booking IDs:', this.allItems.map(item => item.BookingHeaderSid));
         } else {
             this.appSettingService.showError('Error searching bookings.');
             this.allItems = [];
@@ -154,6 +164,62 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
 
     override trackBy(index: number, item: any): number {
         return item.BookingHeaderSid || index;
+    }
+
+    selectRow(booking: any): void {
+        const bookingId = String(booking.BookingHeaderSid);
+        this.selectedRowId = this.selectedRowId === bookingId ? null : bookingId;
+        console.log('Selected row changed to:', this.selectedRowId);
+        this.saveSelectedRow();
+    }
+
+    isRowSelected(booking: any): boolean {
+        // Convert both to strings for comparison to avoid type issues
+        const selectedId = this.selectedRowId ? String(this.selectedRowId) : null;
+        const bookingId = booking.BookingHeaderSid ? String(booking.BookingHeaderSid) : null;
+        const isSelected = selectedId === bookingId;
+
+        if (isSelected) {
+            console.log('Row is selected:', booking.BookingHeaderSid, 'selectedRowId:', this.selectedRowId);
+        }
+        return isSelected;
+    }
+
+    private saveSelectedRow(): void {
+        try {
+            if (this.selectedRowId) {
+                const idToSave = String(this.selectedRowId);
+                localStorage.setItem(this.SELECTED_ROW_KEY, idToSave);
+                console.log('Saved selected row ID:', idToSave, 'original:', this.selectedRowId);
+            } else {
+                localStorage.removeItem(this.SELECTED_ROW_KEY);
+                console.log('Cleared selected row');
+            }
+        } catch (error) {
+            console.error('Error saving selected row:', error);
+        }
+    }
+
+    private restoreSelectedRow(): void {
+        try {
+            const savedRowId = localStorage.getItem(this.SELECTED_ROW_KEY);
+            console.log('Found saved row ID in localStorage:', savedRowId);
+            if (savedRowId) {
+                this.selectedRowId = savedRowId;
+            }
+        } catch (error) {
+            console.error('Error restoring selected row:', error);
+        }
+    }
+
+    viewBooking(booking: any): void {
+        console.log('ViewBooking called for:', booking.BookingHeaderSid, 'type:', typeof booking.BookingHeaderSid);
+        // Save the selected row before navigation (ensure it's string)
+        this.selectedRowId = String(booking.BookingHeaderSid);
+        this.saveSelectedRow();
+
+        // Navigate to the booking entry page
+        this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
     }
 
     navigateToCreate() {
