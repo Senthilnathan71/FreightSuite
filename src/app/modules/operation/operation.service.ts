@@ -583,4 +583,20 @@ searchInvoices(payload: any) {
       })
     );
   }
+
+  getAllBookingForSpliting(payload: any) {
+    return this.http.post<{ data: any[] }>('splitbooking/allBookings', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  splitBooking(payload: any) {
+    return this.http.post<{ data: any[] }>('splitbooking/split', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 }
