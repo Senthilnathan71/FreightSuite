@@ -388,7 +388,7 @@ private meetingNoteValidator(control: AbstractControl) {
 
     // Set PreCustomerMeetingSid if found
     if (selectedCustomer) {
-      this.meetingForm.get('PreCustomerMeetingid')?.setValue(selectedCustomer.CustomerMasterSid);
+      this.meetingForm.get('PreCustomerMeetingid')?.setValue(selectedCustomer.PreCustomerMasterSid);
     } else {
       this.meetingForm.get('PreCustomerMeetingid')?.setValue(null); // Reset if no match
     }

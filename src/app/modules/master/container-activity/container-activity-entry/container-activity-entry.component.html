@@ -102,7 +102,7 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containerActivityForm.get('ContainerMoveStatus')?.value">
                                 <ng-select formControlName="ContainerMoveStatus" [items]="containerMoveStatusList"
                                     bindLabel="name" bindValue="id"
                                     [class.is-invalid]="containerActivityForm.get('ContainerMoveStatus')?.invalid && containerActivityForm.get('ContainerMoveStatus')?.touched">
@@ -119,7 +119,7 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containerActivityForm.get('MoveType')?.value">
                                 <ng-select formControlName="MoveType" [items]="moveTypeList" bindLabel="name"
                                     bindValue="id"
                                     [class.is-invalid]="containerActivityForm.get('MoveType')?.invalid && containerActivityForm.get('MoveType')?.touched">
@@ -159,7 +159,7 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containerActivityForm.get('Status')?.value">
                                 <ng-select formControlName="Status" [items]="statusList" bindLabel="name" bindValue="id"
                                     [class.is-invalid]="containerActivityForm.get('Status')?.invalid && containerActivityForm.get('Status')?.touched">
                                 </ng-select>

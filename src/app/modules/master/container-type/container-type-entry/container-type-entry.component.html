@@ -86,11 +86,11 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" mic-btn"
+                                <!-- <button type="button" class=" mic-btn"
                                     (click)="startVoiceRecognitionFor('ContainerName')"> <i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'ContainerName' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
                                     </i>
-                                </button>
+                                </button> -->
                             </div>
 
                         </aside>
@@ -112,10 +112,10 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('ContainerCode')"> <i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'ContainerCode' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
 
@@ -203,7 +203,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="GrossWeight" type="number" placeholder=""
+                                <input formControlName="GrossWeight" type="text" placeholder=""
                                     class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8"
                                     [DecimalPrecisionAfter]="3" max="999.999">
                                 <label for="" class="input-label">Gross Weight <span
@@ -219,16 +219,16 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('GrossWeight')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'GrossWeight' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="TareWeight" type="number" placeholder=""
+                                <input formControlName="TareWeight" type="text" placeholder=""
                                     class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6"
                                     [DecimalPrecisionAfter]="3" max="99.999">
                                 <label for="" class="input-label">Tare Weight <span
@@ -244,16 +244,16 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('TareWeight')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'TareWeight' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="MaxVolume" type="number" placeholder=""
+                                <input formControlName="MaxVolume" type="text" placeholder=""
                                     class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="3"
                                     [DecimalPrecisionAfter]="0" max="999">
                                 <label for="" class="input-label"> Max Volume <span
@@ -269,17 +269,17 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('MaxVolume')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'MaxVolume' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Length" type="number" placeholder=""
-                                    class="custom-input-field sm text-end">
+                                <input formControlName="Length" type="text" placeholder=""
+                                    class="custom-input-field sm text-end"[onlyNumbers]="10">
                                 <label for="" class="input-label"> Length <span
                                         class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Length')?.touched &&
@@ -289,54 +289,54 @@
                                     <span>Required</span>
                                     } @else if(containertypeForm.get('Length')?.hasError('min')){
                                     <span>Must be positive number</span>
-                                    } @else if(containertypeForm.get('Length')?.hasError('pattern')){
-                                    <span>Must be a whole number</span>
+                                    } @else if(containertypeForm.get('Length')?.hasError('onlyNumbers')){
+                                    <span>Only numbers allowed</span>
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('Length')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'Length' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Width" type="number" placeholder=""
-                                    class="custom-input-field sm text-end">
+                                <input formControlName="Width" type="text" placeholder=""
+                                    class="custom-input-field sm text-end" [onlyNumbers]="10">
                                 <label for="" class="input-label"> Width <span
                                         class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Width')?.hasError('pattern')){
-                                    <span>Only whole numbers allowed</span>
+                                    @if(containertypeForm.get('Width')?.hasError('onlyNumbers')){
+                                    <span>Only numbers allowed</span>
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('Width')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'Width' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Height" type="number" placeholder=""
-                                    class="custom-input-field sm text-end">
+                                <input formControlName="Height" type="text" placeholder=""
+                                    class="custom-input-field sm text-end"[onlyNumbers]="10">
                                 <label for="" class="input-label"> Height <span
                                         class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Height')?.touched &&
                                 containertypeForm.get('Height')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Height')?.hasError('pattern')){
-                                    <span>Only whole numbers allowed</span>
+                                    @if(containertypeForm.get('Height')?.hasError('onlyNumbers')){
+                                    <span>Only numbers allowed</span>
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('Height')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'Height' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
 
@@ -372,15 +372,15 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
+                                <!-- <button type="button" class=" ms-2 mic-btn"
                                     (click)="startVoiceRecognitionFor('Remarks')"><i class="fas fa-microphone"
                                         [ngStyle]="{'color': activeControl === 'Remarks' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
+                                    </i></button> -->
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containertypeForm.get('status')?.value">
                                 <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                     [class.is-invalid]="containertypeForm.get('status')?.invalid && containertypeForm.get('status')?.touched"
                                     [disabled]="containertypeForm.get('status')?.disabled">

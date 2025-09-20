@@ -18,6 +18,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -36,7 +37,8 @@ interface IWindow extends Window {
     DatePipe,
     PreventMultiClickDirective,
     NgbDropdownModule,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    OnlyNumbersDirective,
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
