@@ -3,12 +3,16 @@ import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { OperationService } from '../../operation.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-booking-list',
@@ -18,37 +22,44 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
         CommonModule,
         FormsModule,
         RouterModule,
-        NgbPaginationModule,
         FavoriteStarComponent,
-        NgxSpinnerModule
+        NgxSpinnerModule,
+        CommonPaginationComponent
     ],
     templateUrl: './booking-list.component.html',
     styleUrl: './booking-list.component.scss'
 })
-export class BookingListComponent implements OnInit {
-    filterValue = '';
-    allBookings: any[] = [];
-    searchPerformed: boolean = false;
+export class BookingListComponent extends BaseListComponent implements OnInit {
     userData: any;
     permissions: string[] = [];
     currentMenuPermissions: any = {};
-    page = 1;
-    pageSize = 10;
-    totalLengthOfCollection: number = 0;
-    sortColumn: string = 'BookingNo';
-    sortDirection: string = 'desc';
     currentCompany: any;
     currentBranch: any;
+
+    protected config: ListComponentConfig = {
+        storageKey: 'booking-list-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'BookingNo',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
+
+    // Alias for compatibility with existing template
+    get allBookings() { return this.allItems; }
 
     constructor(
         private operationService: OperationService,
         private router: Router,
         private appSettingService: AppSettingsService,
         private excelReportService: ExcelExportService,
-         private spinner: NgxSpinnerService
-    ) {}
+        private spinner: NgxSpinnerService,
+        paginationService: PaginationService
+    ) {
+        super(paginationService);
+    }
 
-    ngOnInit(): void {
+    override ngOnInit(): void {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.appSettingService.getUser().subscribe(user => {
@@ -57,7 +68,9 @@ export class BookingListComponent implements OnInit {
                 this.checkPermissions();
             }
         });
-        this.searchBookings();
+
+        // Initialize base component
+        super.ngOnInit();
     }
 
     checkPermissions() {
@@ -79,93 +92,68 @@ export class BookingListComponent implements OnInit {
         return this.permissions.includes(permission);
     }
 
-    searchBookings() {
+    // Implement abstract methods from BaseListComponent
+    protected searchItems(): Observable<any> {
         this.spinner.show();
-        const params = {
+        return this.operationService.searchBooking(this.getSearchParams());
+    }
+
+    protected getSearchParams(): SearchParams {
+        return {
             search: this.filterValue.trim(),
-            page: this.page,
-            pageSize: this.pageSize,
+            page: Number(this.page),
+            pageSize: Number(this.pageSize),
             activeCompanyId: this.currentCompany?.CompanyMasterSid,
             activeBranchId: this.currentBranch?.BranchMasterSid,
+            sortColumn: this.sortColumn,
+            sortDirection: this.sortDirection
         };
-        this.operationService.searchBooking(params).subscribe({
-            next: (resp: any) => {
-                if (resp.status) {
-                  this.allBookings = resp.data.items.map(item => {
-                    return {
-                      ...item,
-                      Dept: item.departmentMaster?.departmentName,
-                      vslvoy: `${item.VesselName} / ${item.VoyageNo}`,
-                      milestone: item.Milestone?.MilestoneName,
-                      salesman : item.salesman?.userName,
-                      status: item.status === 'A' ? 'Active' : 'Suspended'
-                    }
-                  });
-                    this.totalLengthOfCollection = resp.data.totalCount || 0;
-                    this.applySorting();
-                    this.searchPerformed = true;
-                } else {
-                    this.appSettingService.showError('Error searching bookings.');
-                    this.allBookings = [];
-                    this.totalLengthOfCollection = 0;
-                }
-                this.spinner.hide();
-            },
-            error: (error: any) => {
-                this.appSettingService.showError('Error searching bookings.');
-                console.error('Error searching bookings', error);
-            }
-        });
     }
 
-
-    sort(column: string) {
-        if (this.sortColumn === column) {
-            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    protected processSearchResults(response: any): void {
+        this.spinner.hide();
+        if (response.status) {
+            this.allItems = response.data.items.map(item => ({
+                ...item,
+                Dept: item.departmentMaster?.departmentName,
+                vslvoy: `${item.VesselName} / ${item.VoyageNo}`,
+                milestone: item.Milestone?.MilestoneName,
+                salesman: item.salesman?.userName,
+                status: item.status === 'A' ? 'Active' : 'Suspended'
+            }));
+            this.totalLengthOfCollection = response.data.totalCount || 0;
+            this.applySorting();
         } else {
-            this.sortColumn = column;
-            this.sortDirection = 'asc';
+            this.appSettingService.showError('Error searching bookings.');
+            this.allItems = [];
+            this.totalLengthOfCollection = 0;
         }
-        this.applySorting();
     }
 
-    applySorting() {
-        this.allBookings.sort((a, b) => {
-            let valueA = a[this.sortColumn] || '';
-            let valueB = b[this.sortColumn] || '';
-            if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
-                valueA = valueA.toString().toLowerCase();
-                valueB = valueB.toString().toLowerCase();
-            }
-            return valueA < valueB
-                ? this.sortDirection === 'asc' ? -1 : 1
-                : valueA > valueB
-                ? this.sortDirection === 'asc' ? 1 : -1
-                : 0;
-        });
+    protected override handleSearchError(error: any): void {
+        this.spinner.hide();
+        this.appSettingService.showError('Error searching bookings.');
+        console.error('Error searching bookings', error);
+        super.handleSearchError(error);
+    }
+
+    // Legacy method for template compatibility
+    searchBookings() {
+        this.search();
+    }
+
+
+    // Legacy methods for template compatibility
+    clearFilterValue() {
+        this.clearFilter();
     }
 
     updatePaginationData(): void {
-        this.searchBookings();
+        this.search();
     }
 
-    trackBy(index: number, item: any): number {
+    override trackBy(index: number, item: any): number {
         return item.BookingHeaderSid || index;
-    }
-
-    clearFilterValue() {
-        this.filterValue = '';
-        this.searchBookings();
-    }
-
-    resetPage() {
-        this.filterValue = '';
-        this.page = 1;
-        this.searchPerformed = false;
-        this.allBookings = [];
-        this.totalLengthOfCollection = 0;
-        this.sortColumn = 'BookingNo';
-        this.sortDirection = 'desc';
     }
 
     navigateToCreate() {

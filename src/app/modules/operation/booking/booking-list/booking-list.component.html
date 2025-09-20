@@ -17,8 +17,8 @@
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                aria-label="Search input" [(ngModel)]="filterValue">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search Booking No, POL, POD, Salesman..."
+                                aria-label="Search input" [(ngModel)]="filterValue" (keyup.enter)="searchBookings()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -168,11 +168,12 @@
                 </table>
             </div>
         </div>
-        <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
-            </ngb-pagination>
-        </div>
+        <!-- Reusable Pagination Component -->
+        <app-common-pagination
+            [config]="paginationConfig"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
         <div class="col-12" *ngIf="totalLengthOfCollection === 0">
             <div class="alert alert-info text-center">No records found</div>
         </div>
