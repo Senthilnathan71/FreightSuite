@@ -8,16 +8,15 @@
           <div class="col-lg-8">
             <div class="hero-text-compact">
               <h1 class="hero-title mb-3">
-                <i class="bi bi-speedometer2 me-3"></i>
                 Sales Dashboard
               </h1>
               <div class="hero-stats-compact">
                 <div class="stat-pill bg-light-primary text-primary">
-                  <i class="bi bi-calendar-check text-success"></i>
+                  <i class="fas fa-calendar-check"></i>
                   <span>Today: {{getCurrentDate()}}</span>
                 </div>
                 <div class="stat-pill bg-light-warning text-warning">
-                  <i class="bi bi-people text-primary"></i>
+                  <i class="fas fa-user"></i>
                   <span>{{dashboardData?.salespeople?.length || 0}} Sales Team Members</span>
                 </div>
               </div>
@@ -45,14 +44,14 @@
       <div class="filter-section">
         <div class="filter-card">
           <div class="filter-header">
-            <h5><i class="bi bi-funnel-fill me-2"></i>Smart Filters</h5>
+            <h5><i class="bi bi-funnel-fill me-1"></i>Smart Filters</h5>
           </div>
           <div class="filter-body">
             <div class="row g-4 align-items-end">
               <div class="col-md-4">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="fas fa-user me-2"></i>Sales Person
+                    <i class="fas fa-user me-1"></i>Sales Person
                   </label>
                   <div class="custom-select-wrapper">
                     <select class="custom-select" [(ngModel)]="filters.salesperson" (change)="applyFilters()">
@@ -67,7 +66,7 @@
               <div class="col-md-3">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="fas fa-calendar-check me-2"></i>Date From
+                    <i class="fas fa-calendar-check me-1"></i>Date From
                   </label>
                   <input type="date" class="custom-input" [(ngModel)]="dateFromString" (change)="onDateFromChange($event)">
                 </div>
@@ -75,7 +74,7 @@
               <div class="col-md-3">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="fas fa-calendar-check me-2"></i>Date To
+                    <i class="fas fa-calendar-check me-1"></i>Date To
                   </label>
                   <input type="date" class="custom-input" [(ngModel)]="dateToString" (change)="onDateToChange($event)">
                 </div>
@@ -83,10 +82,10 @@
               <div class="col-md-2">
                 <div class="filter-actions">
                   <button class="btn-apply" (click)="applyFilters()">
-                    <i class="fas fa-search me-2"></i>Apply Filters
+                    <i class="fas fa-search me-1"></i>Apply Filters
                   </button>
                   <button class="btn-reset" (click)="resetFilters()">
-                    <i class="fas fa-times me-2"></i>Reset
+                    <i class="fas fa-times me-1"></i>Reset
                   </button>
                 </div>
               </div>
@@ -106,7 +105,7 @@
           <div class="col-lg-8">
             <div class="hero-text-compact">
               <h1 class="hero-title mb-3">
-                <i class="bi bi-headset me-3"></i>
+                <i class="bi bi-headset me-1"></i>
                 Customer Service Dashboard
               </h1>
               <div class="hero-stats-compact">
@@ -143,14 +142,14 @@
       <div class="filter-section">
         <div class="filter-card cs-filter-card">
           <div class="filter-header">
-            <h5><i class="bi bi-funnel-fill me-2"></i>Smart Filters</h5>
+            <h5><i class="bi bi-funnel-fill me-1"></i>Smart Filters</h5>
           </div>
           <div class="filter-body">
             <div class="row g-4 align-items-end">
               <div class="col-md-4">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="bi bi-person-badge me-2"></i>User
+                    <i class="bi bi-person-badge me-1"></i>User
                   </label>
                   <div class="custom-select-wrapper">
                     <select class="custom-select" [(ngModel)]="filters.salesperson" (change)="applyFilters()">
@@ -165,7 +164,7 @@
               <div class="col-md-3">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="bi bi-calendar-range me-2"></i>Date From
+                    <i class="bi bi-calendar-range me-1"></i>Date From
                   </label>
                   <input type="date" class="custom-input" [(ngModel)]="dateFromString" (change)="onDateFromChange($event)">
                 </div>
@@ -173,7 +172,7 @@
               <div class="col-md-3">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="bi bi-calendar-check me-2"></i>Date To
+                    <i class="bi bi-calendar-check me-1"></i>Date To
                   </label>
                   <input type="date" class="custom-input" [(ngModel)]="dateToString" (change)="onDateToChange($event)">
                 </div>
@@ -181,10 +180,10 @@
               <div class="col-md-2">
                 <div class="filter-actions">
                   <button class="btn-apply" (click)="applyFilters()">
-                    <i class="bi bi-search me-2"></i>Apply Filters
+                    <i class="bi bi-search me-1"></i>Apply Filters
                   </button>
                   <button class="btn-reset" (click)="resetFilters()">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
                   </button>
                 </div>
               </div>
@@ -209,13 +208,13 @@
       class="btn btn-outline-info btn-sm"
       [class.active]="userType === 'sales'"
       (click)="switchDashboard('sales')">
-      <i class="bi bi-graph-up me-2"></i>Sales Dashboard
+      <i class="fas fa-chart-pie me-1"></i>Sales Dashboard
     </button>
     <button
       class="btn btn-outline-info btn-sm"
       [class.active]="userType === 'customer-service'"
       (click)="switchDashboard('customer-service')">
-      <i class="bi bi-headset me-2"></i>Customer Service Dashboard
+      <i class="fas fa-headset me-1"></i>Customer Service Dashboard
     </button>
   </div>
 
@@ -226,7 +225,7 @@
       <!-- Section 1: TO & Pending Section -->
       <div class="container-fluid dashboard-section to-pending-section">
         <div class="section-header-main text-info">
-          <h4 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>TODO & Pending</h4>
+          <h4 class="mb-0"><i class="fas fa-clipboard-check me-1"></i>TODO & Pending</h4>
         </div>
 
         <!-- Enhanced Client Meetings Table -->
@@ -234,7 +233,7 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="fas fa-users me-3"></i>Client Meetings</h4>
+                <h4><i class="fas fa-users me-1"></i>Client Meetings</h4>
                 <p>Track and manage client interactions</p>
               </div>
               <div class="section-actions">
@@ -248,7 +247,7 @@
                     (input)="filterMeetings()">
                 </div>
                 <button class="action-btn primary">
-                  <i class="bi bi-plus-circle me-2"></i>New Meeting
+                  <i class="bi bi-plus-circle me-1"></i>New Meeting
                 </button>
               </div>
             </div>
@@ -273,16 +272,16 @@
                     <thead class="table-light">
                       <tr>
                         <th (click)="sortMeetings('client')" class="sortable">
-                          Client <i class="bi bi-arrow-up-down ms-1"></i>
+                          Client <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortMeetings('agenda')" class="sortable">
-                          Agenda <i class="bi bi-arrow-up-down ms-1"></i>
+                          Agenda <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortMeetings('salesperson')" class="sortable">
-                          Salesperson <i class="bi bi-arrow-up-down ms-1"></i>
+                          Salesperson <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortMeetings('date')" class="sortable">
-                          Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Status</th>
                       </tr>
@@ -321,7 +320,7 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-arrow-repeat me-3"></i>Meetings with Follow-up</h4>
+                <h4><i class="bi bi-arrow-repeat me-1"></i>Meetings with Follow-up</h4>
                 <p>Track follow-up activities</p>
               </div>
               <div class="section-actions">
@@ -343,20 +342,20 @@
                     <thead class="table-light">
                       <tr>
                         <th (click)="sortFollowups('client')" class="sortable">
-                          Client <i class="bi bi-arrow-up-down ms-1"></i>
+                          Client <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortFollowups('salesperson')" class="sortable">
-                          Sales Person <i class="bi bi-arrow-up-down ms-1"></i>
+                          Sales Person <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortFollowups('meetingType')" class="sortable">
-                          Meeting Type <i class="bi bi-arrow-up-down ms-1"></i>
+                          Meeting Type <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortFollowups('meetingDate')" class="sortable">
-                          Meeting Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Meeting Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Follow-up Type</th>
                         <th (click)="sortFollowups('followupDate')" class="sortable">
-                          Follow-up Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Follow-up Date <i class="fas fa-sort ms-1"></i>
                         </th>
                       </tr>
                     </thead>
@@ -389,7 +388,7 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-file-earmark-check me-3"></i>Rate Requests & Quotation Approval</h4>
+                <h4><i class="bi bi-file-earmark-check me-1"></i>Rate Requests & Quotation Approval</h4>
                 <p>Manage rate requests and quotation approvals</p>
               </div>
               <div class="section-actions">
@@ -411,19 +410,19 @@
                     <thead class="table-light">
                       <tr>
                         <th (click)="sortRateRequests('rateRequestNumber')" class="sortable">
-                          Rate Request # <i class="bi bi-arrow-up-down ms-1"></i>
+                          Rate Request # <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortRateRequests('date')" class="sortable">
-                          Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortRateRequests('quotationNumber')" class="sortable">
-                          Quotation # <i class="bi bi-arrow-up-down ms-1"></i>
+                          Quotation # <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortRateRequests('quoteDate')" class="sortable">
-                          Quote Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Quote Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortRateRequests('salesperson')" class="sortable">
-                          Salesperson <i class="bi bi-arrow-up-down ms-1"></i>
+                          Salesperson <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Status</th>
                         <th>Approved By</th>
@@ -467,7 +466,7 @@
       <!-- Section 2: Sales Performance Metrics -->
       <div class="dashboard-section sales-metrics-section">
         <div class="section-header-main">
-          <h2><i class="bi bi-graph-up-arrow me-3"></i>Sales Performance Metrics</h2>
+          <h2><i class="bi bi-graph-up-arrow me-1"></i>Sales Performance Metrics</h2>
         </div>
 
         <div class="sales-metrics-grid">
@@ -569,7 +568,7 @@
       <!-- Section 1: TODO & Pending Section -->
       <div class="dashboard-section cs-todo-pending-section">
         <div class="section-header-main">
-          <h4><i class="bi bi-clipboard-data me-3"></i>TODO & Pending</h4>
+          <h4><i class="bi bi-clipboard-data me-1"></i>TODO & Pending</h4>
         </div>
 
         <!-- Today's Activity Table -->
@@ -577,7 +576,7 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-calendar-day me-3"></i>Today's Activity</h4>
+                <h4><i class="bi bi-calendar-day me-1"></i>Today's Activity</h4>
                 <p>Track daily activities and their status</p>
               </div>
               <div class="section-actions">
@@ -591,7 +590,7 @@
                     (input)="filterActivities()">
                 </div>
                 <button class="action-btn primary">
-                  <i class="bi bi-plus-circle me-2"></i>Add Activity
+                  <i class="bi bi-plus-circle me-1"></i>Add Activity
                 </button>
               </div>
             </div>
@@ -616,16 +615,16 @@
                     <thead class="table-light">
                       <tr>
                         <th (click)="sortActivities('bookingNumber')" class="sortable">
-                          Booking Number <i class="bi bi-arrow-up-down ms-1"></i>
+                          Booking Number <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortActivities('jobNumber')" class="sortable">
-                          Job Number <i class="bi bi-arrow-up-down ms-1"></i>
+                          Job Number <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortActivities('activity')" class="sortable">
-                          Activity <i class="bi bi-arrow-up-down ms-1"></i>
+                          Activity <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortActivities('date')" class="sortable">
-                          Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Status</th>
                       </tr>
@@ -663,7 +662,7 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-file-earmark-check me-3"></i>Approved Quotation List</h4>
+                <h4><i class="bi bi-file-earmark-check me-1"></i>Approved Quotation List</h4>
                 <p>Track approved quotations</p>
               </div>
               <div class="section-actions">
@@ -685,14 +684,14 @@
                     <thead class="table-light">
                       <tr>
                         <th (click)="sortQuotations('quotationNumber')" class="sortable">
-                          Quotation Number <i class="bi bi-arrow-up-down ms-1"></i>
+                          Quotation Number <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Status</th>
                         <th (click)="sortQuotations('approvedBy')" class="sortable">
-                          Approved By <i class="bi bi-arrow-up-down ms-1"></i>
+                          Approved By <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortQuotations('date')" class="sortable">
-                          Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Option</th>
                       </tr>
@@ -725,7 +724,7 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-ship me-3"></i>Booking List</h4>
+                <h4><i class="bi bi-ship me-1"></i>Booking List</h4>
                 <p>Comprehensive shipment tracking and management</p>
               </div>
               <div class="section-actions">
@@ -747,16 +746,16 @@
                     <thead class="table-light">
                       <tr>
                         <th (click)="sortBookings('bookingNumber')" class="sortable">
-                          Booking Number <i class="bi bi-arrow-up-down ms-1"></i>
+                          Booking Number <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortBookings('jobNumber')" class="sortable">
-                          Job Number <i class="bi bi-arrow-up-down ms-1"></i>
+                          Job Number <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortBookings('shipmentStatus')" class="sortable">
-                          Shipment Status/Milestone <i class="bi bi-arrow-up-down ms-1"></i>
+                          Shipment Status/Milestone <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th (click)="sortBookings('date')" class="sortable">
-                          Date <i class="bi bi-arrow-up-down ms-1"></i>
+                          Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>POL</th>
                         <th>POD</th>
@@ -807,7 +806,7 @@
       <!-- Section 2: Customer Service Metrics -->
       <div class="dashboard-section cs-metrics-section">
         <div class="section-header-main">
-          <h2><i class="bi bi-bar-chart me-3"></i>Customer Service Metrics</h2>
+          <h2><i class="bi bi-bar-chart me-1"></i>Customer Service Metrics</h2>
         </div>
 
         <div class="cs-metrics-grid">
