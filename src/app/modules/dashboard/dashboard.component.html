@@ -12,11 +12,11 @@
                 Sales Dashboard
               </h1>
               <div class="hero-stats-compact">
-                <div class="stat-pill">
+                <div class="stat-pill bg-light-primary text-primary">
                   <i class="bi bi-calendar-check text-success"></i>
                   <span>Today: {{getCurrentDate()}}</span>
                 </div>
-                <div class="stat-pill">
+                <div class="stat-pill bg-light-warning text-warning">
                   <i class="bi bi-people text-primary"></i>
                   <span>{{dashboardData?.salespeople?.length || 0}} Sales Team Members</span>
                 </div>
@@ -206,13 +206,13 @@
   <!-- User Type Switcher (for testing) -->
   <div class="user-type-switcher">
     <button
-      class="switch-btn"
+      class="btn btn-outline-primary"
       [class.active]="userType === 'sales'"
       (click)="switchDashboard('sales')">
       <i class="bi bi-graph-up me-2"></i>Sales Dashboard
     </button>
     <button
-      class="switch-btn"
+      class="btn btn-outline-primary"
       [class.active]="userType === 'customer-service'"
       (click)="switchDashboard('customer-service')">
       <i class="bi bi-headset me-2"></i>Customer Service Dashboard
