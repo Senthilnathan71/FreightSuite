@@ -28,7 +28,9 @@ export class MeetingComponent {
   salesPersons: any
   lead: any
   minDate: string = '';
-
+  currentCompany : any;
+  currentBranch : any;
+  userData : any;
 
 
   constructor(
@@ -41,6 +43,9 @@ export class MeetingComponent {
   ) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.userData = this.appSettingService.getDecryptedUserProfile();
 
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -106,6 +111,9 @@ export class MeetingComponent {
     this.meetingForm.get('status')?.enable();
     const payload = {
       ...this.meetingForm.value,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      createdBy : this.userData?.userEmail,
       PreCustomerMasterSid: this.PreCustomerMasterSid
     };
     this.btnDisable = true;

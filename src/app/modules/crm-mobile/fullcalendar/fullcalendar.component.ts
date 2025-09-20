@@ -148,6 +148,8 @@ export class FullcalendarComponent implements OnInit {
   TandCList: any;
   currentCompany: any;
   currentBranch: any;
+  leadList : any[] = [];
+
   constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService,private ngbModal: NgbModal) { }
 
   ngOnInit(): void {
@@ -157,6 +159,7 @@ const storedBranch = localStorage.getItem('selected-branch');
 this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.isMobile = this.appService.getDevice()
     this.loadCustomers()
+    this.loadLeads();
     this.loadSalesPersons()
     this.initForm();
     console.log('Default meetingStatus:', this.meetingForm.get('meetingStatus')?.value);
@@ -232,6 +235,17 @@ this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch)
       });
   }
 
+  loadLeads(){
+    const filterOption = { 
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid
+    }
+    this.leadService.fetchAllLeads(filterOption).subscribe(
+      (resp: any) => {
+        this.leadList = resp.data
+      });
+  }
+
   loadSalesPersons() {
     this.leadService.getAllSalesPerson().subscribe(
       (resp: any) => {
@@ -246,9 +260,10 @@ this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch)
     
     // Reset the form completely for new meeting entry
     this.meetingForm.reset({
-    followUp: false,
-    meetingStatus: 'scheduled' // Ensure default is set on reset
-  });
+      LeadOrCustomer: 'L',
+      followUp: false,
+      meetingStatus: 'scheduled' 
+    });
 
     // Ensure the followUp checkbox has a default false value to prevent undefined state
     this.meetingForm.patchValue({ followUp: false });
@@ -290,8 +305,10 @@ this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch)
 
   initForm() {
     this.meetingForm = this.fb.group({
+      LeadOrCustomer: ["L", Validators.required],
       customerName: ['', Validators.required],
-      PreCustomerMeetingid: [''],
+      CustomerMasterSid : [null],
+      PreCustomerMasterSid : [null],
       meetingDate: [''],
       followUpDate: [''],
       followUp: [false],
@@ -358,11 +375,13 @@ private meetingNoteValidator(control: AbstractControl) {
           .filter((meeting) => meeting.meetingStatus !== "confirmed") //excluded the confirmed meeting record
           .map((meeting: any) => {
             const hasFollowUp = !!meeting.followUpDate; // Ensure followUpDate is checked for each meeting
+            const isLead = meeting.LeadOrCustomer === "L";
+            const name = isLead ? meeting?.preCustomerMaster?.preCustomerName : meeting?.customerMaster?.CustomerName || 'Unknown';
             return {
               // start: startOfDay(new Date(meeting.meetingDate)), // Ensure correct format
               start: this.convertUTCToLocal(meeting.meetingDate),
               title: !hasFollowUp ?
-                `Meeting with - ${meeting.preCustomerMaster.preCustomerName}` : `Follow up meeting with - ${meeting.preCustomerMaster.preCustomerName}`,
+                `Meeting with - ${name}` : `Follow up meeting with - ${name}`,
               id: meeting.PreCustomerMeetingSid,
               color: hasFollowUp
                 ? { primary: '#ff5733', secondary: '#ffcccb' } // Red for no follow-up (lighter red background)
@@ -379,20 +398,32 @@ private meetingNoteValidator(control: AbstractControl) {
   selectedCustomerName: any;
 
 
-  onCustomerChange(event: Event): void {
-    const selectedCustomerName = (event.target as HTMLSelectElement).value;
-    this.meetingForm.get('customerName')?.setValue(selectedCustomerName);
+  // onCustomerChange(event: Event): void {
+  //   const selectedCustomerName = (event.target as HTMLSelectElement).value;
+  //   this.meetingForm.get('customerName')?.setValue(selectedCustomerName);
 
-    // Find the selected customer object
-    const selectedCustomer = this.customers.find(cust => cust.CustomerName === selectedCustomerName);
+  //   // Find the selected customer object
+  //   const selectedCustomer = this.customers.find(cust => cust.CustomerName === selectedCustomerName);
 
-    // Set PreCustomerMeetingSid if found
-    if (selectedCustomer) {
-      this.meetingForm.get('PreCustomerMeetingid')?.setValue(selectedCustomer.CustomerMasterSid);
-    } else {
-      this.meetingForm.get('PreCustomerMeetingid')?.setValue(null); // Reset if no match
-    }
-  }
+  //   // Set PreCustomerMeetingSid if found
+  //   if (selectedCustomer) {
+  //     this.meetingForm.get('PreCustomerMeetingid')?.setValue(selectedCustomer.PreCustomerMasterSid);
+  //   } else {
+  //     this.meetingForm.get('PreCustomerMeetingid')?.setValue(null); // Reset if no match
+  //   }
+  // }
+
+  // onPreCustomerChange(event:any){
+  //   const selectedLeadId = (event.target as HTMLSelectElement).value;
+
+  //   const selectedLead = this.leadList.find(lead => lead.PreCustomerMasterSid == selectedLeadId);
+
+  //   if (selectedLead) {
+  //     this.meetingForm.get('PreCustomerMasterSid')?.setValue(selectedLead.PreCustomerMasterSid);
+  //   } else {
+  //     this.meetingForm.get('PreCustomerMasterSid')?.setValue(null);
+  //   }
+  // }
 
 
   onAddMeeting() {
@@ -522,8 +553,11 @@ private meetingNoteValidator(control: AbstractControl) {
 
 
         this.calendarEventData = this.preCustomerMeetingData;
+        const isLead = this.preCustomerMeetingData.LeadOrCustomer === "L";
+        const preCustomerMeeting = this.preCustomerMeetingData;
+        const name = isLead ? preCustomerMeeting.preCustomerMaster?.preCustomerName : preCustomerMeeting.customerMaster?.CustomerName || 'Unknown';
         this.meetingForm.patchValue({
-          customerName: this.preCustomerMeetingData.preCustomerMaster?.preCustomerName || '',
+          customerName: name,
           contactPerson: this.preCustomerMeetingData.preCustomerMaster?.contactPerson || '',
           phone: this.preCustomerMeetingData.preCustomerMaster?.phone || '',
           status: this.preCustomerMeetingData.preCustomerMaster?.status || '',
