@@ -52,7 +52,7 @@
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="HSSACCode,HSSACName"
                                 [(ngModel)]="filterValue" aria-label="Search input">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
@@ -140,7 +140,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of hssacList; trackBy: trackByIndex">
+                        <tr *ngFor="let item of hssacLists; trackBy: trackByIndex">
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
@@ -195,11 +195,11 @@
                     </tbody>
                 </table>
             </div>
-            <div class="d-flex justify-content-end mt-2">
-                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
-                    (pageChange)="updatePaginationData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
-                </ngb-pagination>
-            </div>
+            <app-common-pagination
+            [config]="paginationConfig"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
         </div>
     </div>
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
@@ -303,40 +303,40 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="number" class="custom-input-field sm" formControlName="TaxRate"
-                                    placeholder="">
-                                <label for="" class="input-label">Tax Rate<span class="text-danger">*</span></label>
-                                @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
-                                <div class="error-message">
-                                    @if(hssacForm.get('TaxRate')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(hssacForm.get('TaxRate')?.hasError('min') ||
-                                    hssacForm.get('TaxRate')?.hasError('max')){
-                                    <span>Tax Rate must be between 0 and 100</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="TaxType" [items]="modeOfTaxType" bindLabel="name"
-                                    bindValue="name"></ng-select>
-                                <label class="input-label">Tax Type <span class="text-danger">*</span></label>
-                                @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
-                                <div class="error-message">
-                                    @if(hssacForm.get('TaxRate')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(hssacForm.get('TaxRate')?.hasError('min') ||
-                                    hssacForm.get('TaxRate')?.hasError('max')){
-                                    <span>Tax Rate must be between 0 and 100</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
+<aside class="col-md-6">
+    <div class="custom-form-group custom-form-group-select"[class.filled]="!!hssacForm.get('TaxType')?.value">
+        <ng-select 
+            formControlName="TaxType" 
+            [items]="taxList"
+            bindLabel="TaxCode"
+            bindValue="TaxCode"
+            placeholder="">
+        </ng-select>
+        <label class="input-label">Tax Type <span class="text-danger">*</span></label>
+        @if(hssacForm.get('TaxType')?.touched && hssacForm.get('TaxType')?.invalid){
+            <div class="error-message">
+                @if(hssacForm.get('TaxType')?.hasError('required')){
+                    <span>Required</span>
+                }
+            </div>
+        }
+    </div>
+</aside>
+<aside class="col-md-6">
+    <div class="custom-form-group">
+        <input type="text" class="custom-input-field sm" formControlName="TaxRate" placeholder=""  readonly>
+        <label for="" class="input-label">Tax Rate<span class="text-danger">*</span></label>
+        @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
+            <div class="error-message">
+                @if(hssacForm.get('TaxRate')?.hasError('required')){
+                    <span>Required</span>
+                } @else if(hssacForm.get('TaxRate')?.hasError('min') || hssacForm.get('TaxRate')?.hasError('max')){
+                    <span>Tax Rate must be between 0 and 100</span>
+                }
+            </div>
+        }
+    </div>
+</aside>                        
                         <!-- <aside class="col-md-6">
                             <div class="d-flex">
                                 <div class="custom-form-group custom-form-group-select w-100 mb-0">
@@ -358,7 +358,7 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select-date" [class.filled]="!!hssacForm.get('EffectiveFrom')?.value">
                                 <div class="input-group">
                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="EffectiveFrom"
@@ -397,7 +397,7 @@
                                 <input type="textarea" id="text-input" class="custom-input-field sm"
                                     formControlName="Remarks" placeholder="">
                                 <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger">*</span></label>
+                                        class="text-danger"></span></label>
                                 @if(hssacForm.get('Remarks')?.touched && hssacForm.get('Remarks')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('Remarks')?.hasError('required')){
@@ -412,7 +412,7 @@
                         <!-- ... (keep all existing HTML until the status field) -->
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!hssacForm.get('status')?.value">
                                 <ng-select [items]="statusList" formControlName="status"
                                     [class.is-invalid]="hssacForm.get('status')?.invalid && hssacForm.get('status')?.touched"
                                     [disabled]="hssacForm.get('status')?.disabled">

@@ -23,6 +23,12 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { Observable } from 'rxjs';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 
 @Component({
@@ -42,33 +48,46 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    CommonPaginationComponent,
+    DecimalPrecisionDirective
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
 })
-export class BIclauseComponent implements OnInit {
+export class BIclauseComponent extends BaseListComponent implements OnInit {
   biclauseForm: FormGroup;
   searchType = 'ClauseDescription';
-  filterValue = '';
+  
   clauseList: BLClause[] = [];
   allClauses: BLClause[] = [];
-  searchPerformed = false;
+  
   loading = false;
   btnDisable = false;
   isEditMode = false;
   currentClauseId: number | null = null;
   userData: any;
   blclauseData: any;
-  sortColumn: string = 'ClauseDescription'; 
-  sortDirection: string = 'asc';
+  
    permissions: string[] = [];
   currentMenuPermissions: any = {};
 
   // Pagination
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+ // Alias for compatibility with existing template
+ 
+
+  protected config: ListComponentConfig = {
+        storageKey: 'biclause-type-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'ClauseDescription',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
+
+    // Alias for compatibility with existing template
+    get allClause() { return this.allItems; }
+
   isFavorite: boolean = false;
 
   //Company
@@ -96,19 +115,14 @@ export class BIclauseComponent implements OnInit {
     private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
   ) {
-    this.biclauseForm = this.fb.group({
-      ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
-      Keyword: ['', [Validators.required, Validators.maxLength(5)]],
-      Sortorder: ['', [Validators.pattern('^[0-9]*$')]],
-      DefaultClause: [false],
-      status: [{value: 'A', disabled: false}, Validators.required]
-    });
+    super(paginationService);
   }
   
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     
   //      this.appSettingService.getUser().subscribe(user => {
   //   if(user) {
@@ -116,6 +130,7 @@ export class BIclauseComponent implements OnInit {
   //     this.checkPermissions();
   //   }
   // });
+    this.initForm();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -123,7 +138,7 @@ export class BIclauseComponent implements OnInit {
 			this.userData = userProfile;
       this.checkPermissions();
 		}
-  this.loadAllClauses();
+ super.ngOnInit();
       }
 
       checkPermissions() {
@@ -148,104 +163,63 @@ export class BIclauseComponent implements OnInit {
 }
 
   
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-  this.updatePaginatedData();
-}
-
-applySorting() {
-  this.allClauses.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-
-    // Handle null/undefined values
-    if (valueA == null) valueA = this.sortColumn === 'Sortorder' ? 0 : '';
-    if (valueB == null) valueB = this.sortColumn === 'Sortorder' ? 0 : '';
-
-    // Numeric sorting for Sortorder
-    if (this.sortColumn === 'Sortorder') {
-      valueA = Number(valueA) || 0;
-      valueB = Number(valueB) || 0;
-      
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    } 
-    // String sorting for other columns
-    else {
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
-
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    }
-  });
-}
-  loadAllClauses(): void {
+ // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
     this.spinner.show();
-  this.loading = true;
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize
-  };
+    return this.masterService.searchBlclauselList(this.getSearchParams());
+  }
 
-  this.masterService.searchBlclauselList(params).subscribe({
-    next: (response) => {
-      if(response.status) {
-        
-        this.allClauses = response.data.items;
-        this.applySorting();
-        this.updatePaginatedData();
-        this.clauseList = [...this.allClauses];
-        this.totalLengthOfCollection = response.data.totalCount;
-        
-      } else {
-        this.allClauses = [];
-        this.clauseList = []; 
-        this.totalLengthOfCollection = 0;
-        this.appSettingService.showError(response.message);
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
 
-      }
-      
-      this.searchPerformed = true;
-      this.loading = false;
-     this.spinner.hide(); 
-    },
-    error: (err) => {
-      console.error('Error loading clauses:', err);
-      this.loading = false;
-    }
-  });
-}
-clearFilterValue() {
-  this.filterValue = '';
-  this.loadAllClauses();
- 
+  protected processSearchResults(response: any): void {
+  this.spinner.hide();
+  if (response.status) {
+    this.allItems = response.data.items;  // Remove the status mapping
+    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.applySorting();
+  } else {
+    this.appSettingService.showError('Error searching BI clauses.');
+    this.allItems = [];
+    this.totalLengthOfCollection = 0;
+  }
 }
 
-updatePaginatedData(): void {
-  const startIndex = (this.page - 1) * this.pageSize;
-  const endIndex = startIndex + this.pageSize;
-  this.clauseList = this.allClauses.slice(startIndex, endIndex);
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching BI clauses.');
+    console.error('Error searching BI clauses', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy method for template compatibility
+  loadAllClauses() {
+    this.page = 1;
+    this.search();
+  }
+
+  // Legacy method for template compatibility
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+initForm() {
+ this.biclauseForm = this.fb.group({
+      ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
+      Keyword: ['', [Validators.required, Validators.maxLength(5)]],
+      Sortorder: [''],
+      DefaultClause: [false],
+      status: [{value: 'A', disabled: false}, Validators.required]
+    });
 }
 
   openModal(content: any, clause?: BLClause): void {
@@ -380,18 +354,18 @@ else {
     });
   }
 
-  resetPage(): void {
-    // this.filterValue = '';
-    // this.searchType = 'ClauseDescription';
-    // this.page = 1;
-    this.searchPerformed = false;
-    this.allClauses = [];
-    this.clauseList = [];
-    this.totalLengthOfCollection = 0;
-    this.sortColumn = 'ClauseDescription';
-    this.sortDirection = 'asc';
-    this.loadAllClauses();
-  }
+  // resetPage(): void {
+  //   // this.filterValue = '';
+  //   // this.searchType = 'ClauseDescription';
+  //   // this.page = 1;
+  //   this.searchPerformed = false;
+  //   this.allClauses = [];
+  //   this.clauseList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.sortColumn = 'ClauseDescription';
+  //   this.sortDirection = 'asc';
+  //   this.loadAllClauses();
+  // }
 
   resetForm(): void {
   // If editing an existing clause, reload it (restore original state)
@@ -437,8 +411,8 @@ else {
   }
 
   getStatusText(status: string): string {
-    return status === 'A' ? 'Active' : 'Suspended';
-  }
+  return status === 'A' ? 'Active' : 'Suspended';  // This expects 'A' or 'S'
+}
 
   trackByClauseId(index: number, item: BLClause): number {
     return item.BLClauseMasterSid;

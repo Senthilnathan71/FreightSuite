@@ -393,8 +393,9 @@ export class ContainerActivityEntryComponent implements OnInit {
           this.debugResponse(resp, 'updateContainerActivityById');
           
           if (resp.status) {
+            
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/container-activity/list']);
+            this.router.navigate(['master/container-activity/entry',resp.data.ContainerActivityMasterSid]);
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -413,8 +414,9 @@ export class ContainerActivityEntryComponent implements OnInit {
           this.debugResponse(resp, 'createNewContainerActivity');
           
           if (resp.status) {
+            this.loadContainerActivityData(resp.data.ContainerActivityMasterSid);
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/container-activity/list']);
+            this.router.navigate(['master/container-activity/entry',resp.data.ContainerActivityMasterSid]);
           } else {
             this.appSettingService.showError(resp.message);
           }

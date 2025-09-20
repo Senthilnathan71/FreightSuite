@@ -18,7 +18,7 @@
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="ActivityCode,ActivityName "
                                 [(ngModel)]="filterValue" aria-label="Search input">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
@@ -30,8 +30,8 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadContainerActivities()"
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                                (click)="loadContainerActivities()">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
@@ -71,7 +71,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col" (click)="sort('ActivityCode')">
                                 Activity Code
                                 <i class="fas fa-sort ms-1"
@@ -101,7 +101,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of containerActivityList; let i = index; trackBy: trackByIndex">
+                        <tr *ngFor="let item of containerActivityLists; let i = index; trackBy: trackByIndex">
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
@@ -151,9 +151,11 @@
                 </table>
             </div>
             <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
-                </ngb-pagination>
+               <app-common-pagination
+            [config]="paginationConfig"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
             </div>
         </div>
     </div>

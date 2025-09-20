@@ -12,7 +12,7 @@ import { FeatherModule } from 'angular-feather';
 import { HSSAC } from 'src/app/modules/crm-mobile/Interfaces/hs-sac.interfaces';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { take } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -28,6 +28,10 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
 
 @Component({
   selector: 'app-hs-sac',
@@ -50,7 +54,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    CommonPaginationComponent,
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -59,7 +64,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class HSSACComponent {
+export class HSSACComponent extends BaseListComponent implements OnInit {
   hssacForm!: FormGroup;
   isEditMode: boolean = false;
   hssacs: HSSAC[] = [];
@@ -69,20 +74,10 @@ export class HSSACComponent {
   btnDisable: boolean = false;
   hssacList: any[] = [];
   statusList = ["Active", "Suspended"]
-  modeOfTaxType = [
-    { id: 'VAT', name: 'VAT' },
-    { id: 'UGST', name: 'UGST' },
-    { id: 'CGST', name: 'CGST' },
-    { id: 'IGST', name: 'IGST' },
-    { id: 'Default', name: 'Default' },
-  ];
+  taxList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'HSSACCode';
-  filterValue = '';
-  searchPerformed = false;
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+  
 	userData : any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -91,10 +86,22 @@ export class HSSACComponent {
   hssacData : any;
   currentMenuId: number;
   TandCList: any;
-  sortColumn: string = 'HSSACCode'; 
-  sortDirection: string = 'asc';
+  
   loading = true; 
+  // Alias for compatibility with existing template
+ 
 
+  protected config: ListComponentConfig = {
+        storageKey: 'hssac-type-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'HSSACCode',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
+
+    // Alias for compatibility with existing template
+    get hssacLists() { return this.allItems; }
   isFavorite: boolean = false;
     // Company
   currentCompany : any;
@@ -115,10 +122,14 @@ export class HSSACComponent {
     private userService: authService,
     private excelReportService: ExcelExportService,
     private calendar : NgbCalendar,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
+  
 
-  ngOnInit(): void {
+ override ngOnInit(): void {
     // this.loadHssac()
     this.initForm();
     // this.appSettingService.getUser().subscribe(
@@ -143,7 +154,40 @@ export class HSSACComponent {
         this.loadHssacData(this.HSSACMasterSid);
       }
     });
-    this.loadHssacs();
+    super.ngOnInit();
+     this.loadTaxData();
+  }
+  loadTaxData(): void {
+    this.masterService.getAllTax().subscribe({
+      next: (response: any[]) => {
+        this.taxList = response;
+        console.log('Tax data loaded:', this.taxList);
+      },
+      error: (error) => {
+        console.error('Error loading tax data:', error);
+        this.appSettingService.showError('Failed to load tax data');
+      }
+    });
+  }
+
+  // Add this method to handle tax type selection change
+  onTaxTypeChange(selectedTaxType: string): void {
+    if (selectedTaxType) {
+      // Find the selected tax object from the taxList
+      const selectedTax = this.taxList.find(tax => tax.TaxCode === selectedTaxType);
+      
+      if (selectedTax) {
+        // Auto-fill the TaxRate field with the selected tax's rate
+        this.hssacForm.patchValue({
+          TaxRate: selectedTax.TaxRate
+        });
+      }
+    } else {
+      // Clear TaxRate if no tax type is selected
+      this.hssacForm.patchValue({
+        TaxRate: ''
+      });
+    }
   }
 
   checkPermissions() {
@@ -167,53 +211,59 @@ export class HSSACComponent {
   return this.permissions.includes(permission);
 }
 
-  loadHssacs(): void {
-  this.spinner.show();
-  this.loading = true; 
-  
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize,
-    sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection
-  };
+// Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.spinner.show();
+    return this.masterService.searchHssac(this.getSearchParams());
+  }
 
-  this.masterService.searchHssac(params).subscribe({
-    next: (response) => {
-      if(response.status  ){
-        this.hssacList = response.data.items;
-        this.totalLengthOfCollection = response.data.totalCount;
-        this.applySorting();
-        this.searchPerformed = true;
-      }else {
-        this.appSettingService.showError(response.message);
-      }
-      this.spinner.hide();
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error fetching HS-SAC codes:', err);
-      this.hssacList = [];
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items;
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching HS-SAC codes.');
+      this.allItems = [];
       this.totalLengthOfCollection = 0;
-      this.loading = false;
     }
-  });
-}
+  }
 
-  // loadHssac(): void {
-  //   this.masterService.getAllHssac().subscribe(
-  //     (resp: HSSAC[]) => {
-  //       console.log(resp, 'Hssac')
-  //       this.hssacs = resp['data'];
-  //     },
-  //     (error) => {
-  //       this.errorMessage = error.message;
-  //       console.error('Error loading:', error);
-  //     }
-  //   );
-  // }
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching HS-SAC codes.');
+    console.error('Error searching HS-SAC codes', error);
+    super.handleSearchError(error);
+  }
 
+  // Legacy method for template compatibility
+  loadHssacs() {
+    this.page=1;
+    this.search();
+  }
+
+  // Legacy method for template compatibility
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+
+  
+
+  
   initForm() {
     this.hssacForm = this.fb.group({
       HSSACCode: ['', [Validators.required]],
@@ -222,21 +272,16 @@ export class HSSACComponent {
       TaxRate: ['Default', [Validators.required]],
       TaxType: ['', [Validators.required]],
       EffectiveFrom: ['', [Validators.required]],
-      Remarks: ['', [Validators.required]],
+      Remarks: [''],
       status: [{value: 'Active', disabled: false}, Validators.required], 
     });
+     this.hssacForm.get('TaxType').valueChanges.subscribe(value => {
+      this.onTaxTypeChange(value);
+    });
   }
-  clearFilterValue() {
-    this.filterValue = '';
-     this.loadHssacs();
-  }
+  
 
-  // resetForm(): void {
-  //   this.hssacForm.get('status')?.disable();
-  //   this.hssacForm.reset({
-  //     status: 'Active'
-  //   });
-  // }
+ 
 
   resetForm(): void {
   // If editing an existing HSSAC, reload it (restore original state)
@@ -433,48 +478,7 @@ editHssac(id: number, content: any) {
 
   
 
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  this.loadHssacs();
-  this.applySorting();
-  this.updatePaginationData();
-}
-
-applySorting() {
-  this.hssacList.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
   
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
-  updatePaginationData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.loadHssacs();
-  }
-
   trackByIndex(index: number, item: any): number {
     return index;
   }
@@ -492,18 +496,7 @@ applySorting() {
     });
   }
 
-  resetPage(): void {
-    this.hssacList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'HSSACCode';
-    this.page = 1;
-    this.hssacs = [];
-    this.sortColumn = 'HSSACCode';
-    this.sortDirection = 'asc';
-    this.loadHssacs();
-  }
+  
 
   report(): void {
     const formattedData = this.hssacList.map(item => ({

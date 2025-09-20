@@ -1,12 +1,12 @@
 
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
-import { forkJoin } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -15,6 +15,10 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
 
 @Component({
   selector: 'app-container-activity-list',
@@ -28,27 +32,35 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     ListpageComponent,
     FavoriteStarComponent,
     MatDialogModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    CommonPaginationComponent,
+    
   ],
   templateUrl: './container-activity-list.component.html',
   styleUrl: './container-activity-list.component.scss'
 })
-export class ContainerActivityListComponent {
+export class ContainerActivityListComponent extends BaseListComponent implements OnInit {
   searchType = 'ActivityName';
-  filterValue = '';
+  
   results: any[] = [];
   containerActivityList: any[] = [];
-  searchPerformed = false;
+ 
   companyMap: { [id: number]: string } = {};
   userData: any;
-  sortColumn: string = 'ActivityName';
-  sortDirection: string = 'asc';
+  
   loading = false;
 
   // Pagination 
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+  get containerActivityLists() { return this.allItems; }
+
+  protected config: ListComponentConfig = {
+        storageKey: 'containerActivity-type-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'ActivityCode',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
   isFavorite: boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -68,10 +80,13 @@ export class ContainerActivityListComponent {
     private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService
-  ) { }
+     private spinner: NgxSpinnerService,
+     paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit() {
+ override ngOnInit() {
     this.getAllCompanies();
     
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -83,7 +98,7 @@ export class ContainerActivityListComponent {
       this.checkPermissions();
     }
     
-    this.loadContainerActivities();
+    super.ngOnInit();
   }
 
   checkPermissions() {
@@ -105,42 +120,61 @@ export class ContainerActivityListComponent {
     return this.permissions.includes(permission);
   }
 
-  loadContainerActivities(): void {
+   // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
     this.spinner.show();
-    this.loading = true;
+    return this.masterService.searchContainerActivities(this.getSearchParams());
+  }
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
-
-    this.masterService.searchContainerActivities(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.results = response.data.items || response.data || [];
-          this.containerActivityList = response.data.items || response.data || [];
-          this.totalLengthOfCollection = response.totalCount || this.containerActivityList.length;
-          this.applySorting();
-          this.searchPerformed = true;
-        }
-else {
-        this.appSettingService.showError(response.message);
-      }
-         this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching container activities:', err);
-        this.results = [];
-        this.containerActivityList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
   }
+
+  protected processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended',
+        ContainerMoveStatus: item.ContainerMoveStatus || 'N/A',
+        MoveType: item.MoveType || 'N/A',
+        IsDamageMove: item.IsDamageMove === 'Y' ? 'Yes' : 'No'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching container activities.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching container activities.');
+    console.error('Error searching container activities', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy method for template compatibility
+  loadContainerActivities() {
+    this.page=1;
+    this.search();
+  }
+
+  // Legacy method for template compatibility
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
 
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
@@ -151,44 +185,7 @@ else {
     });
   }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.loadContainerActivities();
-    this.applySorting();
-    this.updatePaginatedData();
-  }
-
-  applySorting() {
-    this.results.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
-
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
-
-  updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.loadContainerActivities();
-  }
+  
 
   trackByIndex(index: number, item: any): number {
     return index;
@@ -210,21 +207,7 @@ else {
     this.router.navigate(['master/container-activity/entry']);
   }
 
-  clearFilterValue() {
-    this.filterValue = '';
-  }
-
-  resetPage(): void {
-    this.containerActivityList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'ActivityName';
-    this.page = 1;
-    this.sortColumn = 'ActivityName';
-    this.sortDirection = 'asc';
-    this.loadContainerActivities();
-  }
+ 
 
   report(): void {
     const formattedData = this.containerActivityList.map(item => ({
