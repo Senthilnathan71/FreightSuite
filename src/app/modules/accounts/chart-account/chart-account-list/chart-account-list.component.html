@@ -1,10 +1,5 @@
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 
@@ -16,114 +11,141 @@
                 <h4 class="page-title mb-0">Chart of Accounts</h4>
             </div>
 
-         
-                    <div class="col-md pb-2">
-                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="d-flex gap-2 col-12 px-0 align-items-center">
-                                <div class="form-outline flex-grow-1 position-relative">
-                                    <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                        [(ngModel)]="filterValue" aria-label="Search input">
-                                    <button *ngIf="filterValue"
-                                        class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                        (click)="clearFilterValue()" tabindex="0" aria-label="Clear search">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="loadChartAccounts()">
-                                    <i class="fas fa-search me-1"></i> Search
-                                </button>
-                            </div>
-                        </form>
+
+            <div class="col-md pb-2">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                    <div class="d-flex gap-2 col-12 px-0 align-items-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                [(ngModel)]="filterValue" aria-label="Search input"
+                                (keyup.enter)="searchChartofAccounts()">
+                            <button *ngIf="filterValue"
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="searchChartofAccounts()">
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
                     </div>
-               
+                </form>
+            </div>
+
 
             <div class="col-md-auto pb-2">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                     <app-favorite-star screenName="Chart of Accounts" class="mt-1 me-1"></app-favorite-star>
+                    <app-favorite-star screenName="Chart of Accounts" class="mt-1 me-1"></app-favorite-star>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToCreate()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
 
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                        [disabled]="!searched">
+                        [disabled]="totalLengthOfCollection===0">
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
-                        [disabled]="!searched">
+                        [disabled]="totalLengthOfCollection===0">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                 </form>
             </div>
 
-           
+
         </div>
     </div>
 
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
-        <div class="col-12 p-0">
-            <div class="card">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                        <thead>
-                            <tr class="bg-info">
-                                <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+    <div class="table-container bg-white rounded shadow-sm px-0" *ngIf="totalLengthOfCollection > 0">
 
-                                <th class="bg-transparent text-light" (click)="sort('LedgerName')">Name
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 enterprise-table">
+                <thead class="enterprise-header">
+                    <tr>
+                        <th class="action-header"></th>
+
+                        <th class="sortable-header" (click)="sort('LedgerName')">
+                            <div class="header-content">
+                                <span>
+                                    Name
+                                </span>
+                                <i class="fas fa-sort sort-icon" [ngClass]="{
                             'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LedgerName',
                             'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LedgerName'
                             }"></i>
-                                </th>
+                            </div>
+                        </th>
 
-                                <th class="bg-transparent text-light" (click)="sort('LedgerCode')">Ledger Code
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
-                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LedgerCode',
-                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LedgerCode'
-                            }"></i>
-                                </th>
+                        <th class="sortable-header" (click)="sort('LedgerCode')">
+                            <div class="header-content">
+                                <span>
+                                    Ledger Code
+                                </span>
+                                <i class="fas fa-sort sort-icon" [ngClass]="{
+                                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LedgerCode',
+                                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LedgerCode'
+                                }"></i>
+                            </div>
+                        </th>
 
-                                <th class="bg-transparent text-light" (click)="sort('GroupName')">Group
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                        <th class="sortable-header" (click)="sort('GroupName')">
+                            <div class="header-content">
+                                <span>
+                                    Group
+                                </span>
+                                <i class="fas fa-sort ms-1" [ngClass]="{
                             'fa-sort-up': sortDirection === 'asc' && sortColumn === 'GroupName',
                             'fa-sort-down': sortDirection === 'desc' && sortColumn === 'GroupName'
                             }"></i>
+                            </div>
 
+                        </th>
 
-                                <th class="bg-transparent text-light" (click)="sort('SubGroupName')">
+                        <th class="sortable-header" (click)="sort('SubGroupName')">
+                            <div class="header-content">
+                                <span>
                                     Sub Group
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                </span>
+                                <i class="fas fa-sort ms-1" [ngClass]="{
                                 'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SubGroupName',
                                 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SubGroupName'
                             }"></i>
-                                </th>
+                            </div>
 
-                                <th class="bg-transparent text-light">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of chartAccountList; let i = index; trackBy: trackByIndex">
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+
+                        </th>
+
+                        <th class="status-header">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- <tr class="enterprise-row" *ngFor="let item of allChartAccounts; let i = index; trackBy: trackByIndex"   [class.selected]="isRowSelected(item)"
+                        (click)="selectRow(item)">
+                                <td class="data-column"> 
                                     <div class="d-flex align-items-center justify-content-center">
                                         <a class="text-info mx-2"
                                             [routerLink]="['/accounts/chart-accounts/entry', item.COAMasterSid]">
                                             <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                         </a>
                                         <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
-                                             (click)="deleteChartAccount(item.COAMasterSid)">
+                                            (click)="deleteChartAccount(item.COAMasterSid)">
                                             <i-feather name="trash-2" class="feather-sm"></i-feather>
                                         </a>
                                     </div>
                                 </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.LedgerName }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.LedgerCode }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.GroupName }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.SubGroupName }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <td class="data-column">{{ item.LedgerName
+                                    }}</td>
+                                <td class="data-column">{{ item.LedgerCode
+                                    }}</td>
+                                <td class="data-column">{{ item.GroupName
+                                    }}</td>
+                                <td class="data-column">{{
+                                    item.SubGroupName }}</td>
+                                <td class="data-column">
                                     @if(item.Status === 'A') {
                                     <div
                                         class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
@@ -138,28 +160,79 @@
                                     </div>
                                     }
                                 </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-                </ngb-pagination>
-            </div>
-            
-  </div>
-</div>
+                            </tr> -->
+                    <tr class="enterprise-row"
+                        *ngFor="let item of allChartAccounts; let i = index; trackBy: trackByIndex"
+                        [class.selected]="isRowSelected(item)" (click)="selectRow(item)">
 
+                        <td class="action-column1 d-flex align-items-center justify-content-center gap-3" (click)="$event.stopPropagation()">
+                            <!-- <div class="d-flex align-items-center justify-content-center">
+                                <a class="text-info mx-2"
+                                    [routerLink]="['/accounts/chart-accounts/entry', item.COAMasterSid]">
+                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
+                                    (click)="deleteChartAccount(item.COAMasterSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div> -->
+                              <button class="action-icon"
+                                    [routerLink]="['/accounts/chart-accounts/entry', item.COAMasterSid]"
+                                    title="View Booking">
+                                <i-feather name="eye"></i-feather>
+                            </button>
+                            <button  (click)="deleteChartAccount(item.COAMasterSid)" class="action-icon text-danger">
+                                <i-feather name="trash-2"></i-feather>
+                            </button>
+                        </td>
+                        <!-- Ledger Name -->
+                        <td class="data-column">{{ item.LedgerName }}</td>
 
-            </div>
-    
+                        <!-- Ledger Code -->
+                        <td class="data-column">{{ item.LedgerCode }}</td>
 
-            
+                        <!-- Group Name -->
+                        <td class="data-column">{{ item.GroupName }}</td>
+
+                        <!-- SubGroup Name -->
+                        <td class="data-column">{{ item.SubGroupName }}</td>
+
+                        <!-- Status -->
+                        <td class="data-column">
+                            <ng-container *ngIf="item.Status === 'A'; else suspendedStatus">
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+                            </ng-container>
+                            <ng-template #suspendedStatus>
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                            </ng-template>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
         </div>
-   
+        <div>
+            <!-- <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                </ngb-pagination> -->
+            <app-common-pagination [config]="paginationConfig" (pageChange)="onPageChange($event)"
+                (pageSizeChange)="onPageSizeChange($event)">
+            </app-common-pagination>
+        </div>
+        <!-- No Records -->
+        <div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
+            <div class="text-center ">No Records Found</div>
+        </div>
 
-    <!-- No Records -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
-        <div>No records found</div>
+
     </div>
+
+
+
+</div>

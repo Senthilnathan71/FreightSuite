@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component,OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -40,7 +40,11 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { TemplateRef } from '@angular/core';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-ledger-mapping',
   standalone: true,
@@ -63,7 +67,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     DetailsComponent,
     CustomDatePipe,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    CommonPaginationComponent
   ],
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss',
@@ -72,20 +77,20 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class LedgerMappingComponent {
+export class LedgerMappingComponent extends BaseListComponent implements OnInit{
   ledgerForm!: FormGroup;
   isEditMode = false;
   modalRef!: NgbModalRef;
-  page = 1;
-  pageSize = 10;
-  totalLengthOfCollection = 0;
+  // page = 1;
+  // pageSize = 10;
+  // totalLengthOfCollection = 0;
   ledgerMappingList: any[] = [];
   results: any[] = [];
-  sortColumn = 'ledgerName';
-  sortDirection = 'asc';
-  isFavorite = false;
-  filterValue = '';
-  searchPerformed = false;
+  // sortColumn = 'ledgerName';
+  // sortDirection = 'asc';
+  // isFavorite = false;
+  // filterValue = '';
+  // searchPerformed = false;
   searched = false;
   ledgerMappingData: any;
   errorMessage = '';
@@ -110,6 +115,16 @@ export class LedgerMappingComponent {
   // Company
   currentCompany : any;
   currentBranch : any;
+   protected config: ListComponentConfig = {
+    storageKey: 'SubledgerMapping-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'LedgerName',
+    defaultSortDirection: 'asc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  get allSubledagerMapping() { return this.allItems; }
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -119,10 +134,13 @@ export class LedgerMappingComponent {
     private userService: authService,
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService
-  ) {}
+     private spinner: NgxSpinnerService,
+  paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+ override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.appSettingService.getUser().subscribe((user) => {
@@ -130,7 +148,7 @@ export class LedgerMappingComponent {
     });
 
     this.initForm();
-    this.loadLedgerMappings();
+    // this.loadLedgerMappings();
     this.getLedgerList();
     this.ledgerForm.get('subledgerType')?.valueChanges.subscribe((value) => {
       this.onSubledgerTypeChange(value);
@@ -143,6 +161,7 @@ export class LedgerMappingComponent {
         this.loadLedgerMappingData(this.LedgerMappingId);
       }
     });
+    super.ngOnInit();
   }
 
   modeOfStatus = [
@@ -161,46 +180,102 @@ export class LedgerMappingComponent {
       SubledgerType: ['', Validators.required],
       SubledgerMappingSid: ['', Validators.required],
       COAMasterSid: ['', Validators.required],
-      Status: ['Active'],
+      Status: ['A'],
       Remarks: [''],
     });
   }
 
-  loadLedgerMappings(): void {
-    this.spinner.show();
-    this.isLoading = true;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadLedgerMappings(): void {
+  //   this.spinner.show();
+  //   this.isLoading = true;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchSubledgerMaster(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.results = response.data.items || [];
-          this.applySorting();
-          // this.updatePaginationData();
-          this.ledgerMappingList = [...this.results];
-          this.searched = true;
-          this.totalLengthOfCollection = response.data.totalCount || 0;
-        } else {
-          this.appSettingService.showError(response.message);
-          this.results = [];
-          this.ledgerMappingList = [];
-          this.totalLengthOfCollection = 0;
-        }
-        this.searchPerformed = true;
-        this.spinner.hide();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading ledger mappings:', err);
-        this.isLoading = false;
-      },
-    });
+  //   this.masterService.searchSubledgerMaster(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.results = response.data.items || [];
+  //         this.applySorting();
+  //         // this.updatePaginationData();
+  //         this.ledgerMappingList = [...this.results];
+  //         this.searched = true;
+  //         this.totalLengthOfCollection = response.data.totalCount || 0;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //         this.results = [];
+  //         this.ledgerMappingList = [];
+  //         this.totalLengthOfCollection = 0;
+  //       }
+  //       this.searchPerformed = true;
+  //       this.spinner.hide();
+  //       this.isLoading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading ledger mappings:', err);
+  //       this.isLoading = false;
+  //     },
+  //   });
+  // }
+  protected searchItems(): Observable<any> {
+    this.spinner.show();
+    return this.masterService.searchSubledgerMaster(this.getSearchParams());
   }
 
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error fetching Chart of Accounts.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+  
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error fetching Chart of Accounts.');
+    console.error('Error fetching Chart of Accounts', error);
+    super.handleSearchError(error);
+  }
+
+
+  searchSubledgerMpping() {
+    this.page=1;
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  updatePaginationData(): void {
+    this.search();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.LedgerSid || index;
+  }
   loadLedgers(): void {
     this.masterService.getAllSuledgermaster().subscribe({
       next: (res) => {
@@ -225,11 +300,11 @@ export class LedgerMappingComponent {
     });
   }
 
-  updatePaginationData(): void {
-    const start = (this.page - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.loadLedgerMappings();
-  }
+  // updatePaginationData(): void {
+  //   const start = (this.page - 1) * this.pageSize;
+  //   const end = start + this.pageSize;
+  //   this.loadLedgerMappings();
+  // }
 
   onSubledgerTypeChange(selectedType: string): void {
     this.ledgerForm.get('SubledgerMappingSid')?.reset();
@@ -385,7 +460,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       if (result === true) {
         this.masterService.deleteSudledgerMaster(id).subscribe(() => {
           this.appSettingService.showSuccess('Deleted!');
-          this.loadLedgerMappings();
+          // this.loadLedgerMappings();
         });
       }
     });
@@ -422,7 +497,7 @@ openAuditLogs(modal: TemplateRef<any>) {
           next: (res: any) => {
             this.appSettingService.showSuccess(res.message);
             this.closeModal();
-            this.loadLedgerMappings();
+            // this.loadLedgerMappings();
           },
           error: () =>
             this.appSettingService.showError('Failed to update Ledger Mapping'),
@@ -432,7 +507,7 @@ openAuditLogs(modal: TemplateRef<any>) {
         next: (res: any) => {
           this.appSettingService.showSuccess(res.message);
           this.closeModal();
-          this.loadLedgerMappings();
+          // this.loadLedgerMappings();
         },
         error: () =>
           this.appSettingService.showError('Failed to create Ledger Mapping'),
@@ -447,7 +522,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.sortDirection = 'asc';
     this.searched = false;
     this.filterValue = '';
-    this.loadLedgerMappings();
+    // this.loadLedgerMappings();
   }
 
   reset(): void {
@@ -479,7 +554,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   this.subledgerMappingOptions = [];
   
   // Reload the list
-  this.loadLedgerMappings();
+  // this.loadLedgerMappings();
 }
 
   closeModal(): void {
@@ -489,26 +564,26 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
  
-  sort(column: string): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.applySorting();
-  }
+  // sort(column: string): void {
+  //   if (this.sortColumn === column) {
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.applySorting();
+  // }
 
-  applySorting(): void {
-    this.ledgerMappingList.sort((a, b) => {
-      const valA = (this.getNestedValue(a, this.sortColumn) ?? '').toString().toLowerCase();
-      const valB = (this.getNestedValue(b, this.sortColumn) ?? '').toString().toLowerCase();
+  // applySorting(): void {
+  //   this.ledgerMappingList.sort((a, b) => {
+  //     const valA = (this.getNestedValue(a, this.sortColumn) ?? '').toString().toLowerCase();
+  //     const valB = (this.getNestedValue(b, this.sortColumn) ?? '').toString().toLowerCase();
 
-      return this.sortDirection === 'asc'
-        ? valA.localeCompare(valB)
-        : valB.localeCompare(valA);
-    });
-  }
+  //     return this.sortDirection === 'asc'
+  //       ? valA.localeCompare(valB)
+  //       : valB.localeCompare(valA);
+  //   });
+  // }
 
   getNestedValue(item: any, column: string): any {
     switch (column) {
@@ -532,10 +607,10 @@ openAuditLogs(modal: TemplateRef<any>) {
     return index;
   }
 
-  clearFilterValue(): void {
-    this.filterValue = '';
-    this.loadLedgerMappings();
-  }
+  // clearFilterValue(): void {
+  //   this.filterValue = '';
+  //   this.loadLedgerMappings();
+  // }
 
 report(): void {
   const formattedData = this.ledgerMappingList.map((item) => ({

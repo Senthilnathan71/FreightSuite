@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -40,7 +40,11 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { ParseFlags } from '@angular/compiler';
 import { CustomDatePipe } from "../../../../core/pipes/custom-date-format.pipe";
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -63,7 +67,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     DetailsComponent,
     CustomDatePipe,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    CommonPaginationComponent
 ],
   templateUrl: './tax-group-list.component.html',
   styleUrl: './tax-group-list.component.scss',
@@ -72,22 +77,22 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class TaxGroupListComponent {
+export class TaxGroupListComponent extends BaseListComponent implements OnInit  {
   taxGroupForm!: FormGroup;
   isEditMode = false;
   modalRef!: NgbModalRef;
   TaxMasterSid!: number;
   results: any[] = [];
   taxGroupList: any[] = [];
-  page = 1;
-  pageSize = 5;
-  totalLengthOfCollection = 0;
+  // page = 1;
+  // pageSize = 5;
+  // totalLengthOfCollection = 0;
   errorMessage = '';
-  searchPerformed = false;
+  // searchPerformed = false;
   searchType = 'TaxName';
-  filterValue = '';
-  sortColumn: string = 'TaxName';
-  sortDirection: string = 'asc';
+  // filterValue = '';
+  // sortColumn: string = 'TaxName';
+  // sortDirection: string = 'asc';
   selectedId!: number;
   isFavorite = false;
   taxGroupData: any;
@@ -103,6 +108,16 @@ export class TaxGroupListComponent {
   // Company
   currentCompany : any;
   currentBranch : any;
+  protected config: ListComponentConfig = {
+    storageKey: 'Tax-group-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'LedgerName',
+    defaultSortDirection: 'asc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  get allTaxGroup() { return this.allItems; }
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -113,57 +128,118 @@ export class TaxGroupListComponent {
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
     private calendar: NgbCalendar,
-     private spinner: NgxSpinnerService
-  ) { }
+     private spinner: NgxSpinnerService,
+  paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
   modeofTaxType = [
     { id: 1, name: 'Input' },
     { id: 2, name: 'Output' },
   ];
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.initForm();
     this.taxGroupForm.valueChanges.subscribe(() => { });
-    this.loadTaxGroups();
+    // this.loadTaxGroups();
+     super.ngOnInit();
   }
 
-  loadTaxGroups(): void {
-    this.spinner.show();
-    this.loading = true;
+  // loadTaxGroups(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
+
+  //   this.masterService.searchTaxGroup(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.taxGroupList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //         this.searched = true;
+  //       }else {
+  //       this.appSettingService.showError(response.message);
+  //     }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching tax groups:', err);
+  //       this.taxGroupList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
+
+   protected searchItems(): Observable<any> {
+    this.spinner.show();
+    return this.masterService.searchTaxGroup(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
-
-    this.masterService.searchTaxGroup(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.taxGroupList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-          this.searched = true;
-        }else {
-        this.appSettingService.showError(response.message);
-      }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching tax groups:', err);
-        this.taxGroupList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
   }
 
+  protected processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error fetching Chart of Accounts.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+  
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error fetching Chart of Accounts.');
+    console.error('Error fetching Chart of Accounts', error);
+    super.handleSearchError(error);
+  }
+
+
+  searchTaxGroup() {
+    this.page=1;
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  updatePaginationData(): void {
+    this.search();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.LedgerSid || index;
+  }
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -373,39 +449,39 @@ export class TaxGroupListComponent {
   //   });
   // }
 
-  sort(column: string): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.loadTaxGroups();
-  }
+  // sort(column: string): void {
+  //   if (this.sortColumn === column) {
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.loadTaxGroups();
+  // }
 
-  applySorting(): void {
-    this.taxGroupList.sort((a, b) => {
-      let valA = (a[this.sortColumn] || '').toString().toLowerCase();
-      let valB = (b[this.sortColumn] || '').toString().toLowerCase();
-      return this.sortDirection === 'asc'
-        ? valA.localeCompare(valB)
-        : valB.localeCompare(valA);
-    });
-  }
+  // applySorting(): void {
+  //   this.taxGroupList.sort((a, b) => {
+  //     let valA = (a[this.sortColumn] || '').toString().toLowerCase();
+  //     let valB = (b[this.sortColumn] || '').toString().toLowerCase();
+  //     return this.sortDirection === 'asc'
+  //       ? valA.localeCompare(valB)
+  //       : valB.localeCompare(valA);
+  //   });
+  // }
 
-  updatePaginationData(): void {
-    const start = (this.page - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.loadTaxGroups();
-  }
+  // updatePaginationData(): void {
+  //   const start = (this.page - 1) * this.pageSize;
+  //   const end = start + this.pageSize;
+  //   this.loadTaxGroups();
+  // }
 
   trackByIndex(index: number): number {
     return index;
   }
-  clearFilterValue() {
-    this.filterValue = '';
-    this.loadTaxGroups();
-  }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  //   this.loadTaxGroups();
+  // }
 
   // softDeleteTaxGroup(id: number): void {
   //   const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -428,17 +504,17 @@ export class TaxGroupListComponent {
 
 
 
-  resetPage(): void {
-    this.taxGroupList = [];
-    this.results = [];
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'TaxName';
-    this.page = 1;
-    this.sortColumn = 'TaxName';
-    this.sortDirection = 'asc';
-    this.loadTaxGroups();
-  }
+  // resetPage(): void {
+  //   this.taxGroupList = [];
+  //   this.results = [];
+  //   this.searchPerformed = false;
+  //   this.filterValue = '';
+  //   this.searchType = 'TaxName';
+  //   this.page = 1;
+  //   this.sortColumn = 'TaxName';
+  //   this.sortDirection = 'asc';
+  //   this.loadTaxGroups();
+  // }
 
   report(): void {
     const formattedData = this.taxGroupList.map((item) => ({

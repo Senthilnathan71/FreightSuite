@@ -4,7 +4,7 @@ $sidebar-icon-size: 17px;
 $sidebar-first-level-padding: 0 0 10px 0;
 $sidebar-first-level-link-padding: 5px 4px;
 $sidebar-first-level-icon-size: 14px;
-
+$sidebasr-left-level:6px;
 /*******************
 Main sidebar
 ******************/
@@ -89,6 +89,7 @@ sidebar navigation
            ******************/
       .first-level {
         padding: $sidebar-first-level-padding;
+        padding-left: $sidebasr-left-level;
         .sidebar-item.active > .sidebar-link {
           opacity: 1;
         }

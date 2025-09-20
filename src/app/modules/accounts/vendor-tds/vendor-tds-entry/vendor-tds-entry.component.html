@@ -1,24 +1,24 @@
 <div class="row compact-form">
-  <div class="col-12">
+  <div class="col-12 px-0">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
-         <div class="d-flex align-items-center gap-2">
-                         <div class="brand-icon">
-                       <i class="fas fa-balance-scale"></i>
-                    </div>
-        <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add' }} Supplier TDS Mapping</h5>
-        @if(isEditMode){
-        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-          <i class="fas fs-6 fa-info-circle"></i>
-        </a>
-        }
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-balance-scale"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add' }} Supplier TDS Mapping</h5>
+          @if(isEditMode){
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+          }
         </div>
       </div>
       <div class="col-md-8 pb-2">
         <div
           class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
+            (click)="openAuditLogs(auditLogModal)">
             <i class="fas fa-history me-1"></i>Logs
           </button>
 
@@ -40,38 +40,44 @@
             {{isEditMode ? 'Edit' : 'Save' }}
           </button>
           <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div>
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+              ngbDropdownToggle>
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                  class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                  class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                  class="fas fa-envelope me-1"></i> Email</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-12" [formGroup]="supplierTDSForm">
-    <div class="card">
+  <div class="col-12 px-0" [formGroup]="supplierTDSForm">
+    <div class="card mb-2">
       <div class="card-body py-2 px-3">
         <div class="row pb-2 rounded border border-top-0">
-             <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-                         <i class="fas fa-balance-scale fs-4"></i>
-                        <h5 class="card-titlename mb-0">Supplier TDS Mapping Information</h5>
-                    </div>
+          <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+            <i class="fas fa-balance-scale fs-4"></i>
+            <h5 class="card-titlename mb-0">Supplier TDS Mapping Information</h5>
+          </div>
 
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!supplierTDSForm.get('CustomerMasterSid')?.value">
               <ng-select class="ng-select" [items]="supplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                placeholder="Select Ledger" formControlName="CustomerMasterSid"
-                (change)="handleLedgerChange($event)"></ng-select>
+                placeholder="" formControlName="CustomerMasterSid" (change)="handleLedgerChange($event)"></ng-select>
               <label for="LedgerName" class="input-label">Ledger Name <span class="text-danger">*</span></label>
-              @if(supplierTDSForm.get('LedgerName')?.touched && supplierTDSForm.get('LedgerName')?.invalid){
+              @if(supplierTDSForm.get('CustomerMasterSid')?.touched &&
+              supplierTDSForm.get('CustomerMasterSid')?.invalid){
               <div class="error-message">
-                @if (supplierTDSForm.get('LedgerName')?.hasError('required')) {
+                @if (supplierTDSForm.get('CustomerMasterSid')?.hasError('required')) {
                 <span>Required</span>
                 }
               </div>
@@ -83,49 +89,39 @@
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="VendorName" placeholder="" class="form-control custom-input-field sm"
-                formControlName="VendorName" readonly>
-              <label for="VendorName" [ngClass]="{
-                'input-label': true,
-                'bg-transparent': !supplierTDSForm.get('VendorName')?.value
-              }">Vendor Name </label>
+                formControlName="VendorName" readonly style="cursor: not-allowed; background-color: white;">
+              <label for="VendorName" class="input-label">Vendor Name</label>
             </div>
           </aside>
+
 
 
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="PlanNO" placeholder="" class="form-control custom-input-field sm"
-                formControlName="PanNO" readonly>
-              <label for="PanNO" [ngClass]="{
-                'input-label': true,
-                'bg-transparent': !supplierTDSForm.get('PanNO')?.value
-              }">Pan No </label>
+                formControlName="PanNO" readonly style="cursor: not-allowed; background-color: white;">
+              <label for="PanNO" class="input-label">Pan No </label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="CompanyType" placeholder="" class="form-control custom-input-field sm"
-                formControlName="CompanyType" readonly>
-              <label for="CompanyType" [ngClass]="{
-                  'input-label': true,
-                  'bg-transparent': !supplierTDSForm.get('CompanyType')?.value
-                }">Person Type</label>
+                formControlName="CompanyType" readonly style="cursor: not-allowed; background-color: white;">
+              <label for="CompanyType" class="input-label">Person Type</label>
             </div>
           </aside>
 
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="CountryName" placeholder="" class="form-control custom-input-field sm"
-                formControlName="CountryName" readonly>
-              <label for="CountryName" [ngClass]="{
-                    'input-label': true,
-                    'bg-transparent': !supplierTDSForm.get('CountryName')?.value
-                  }">Country Name </label>
+                formControlName="CountryName" readonly style="cursor: not-allowed; background-color: white;">
+              <label for="CountryName"  class="input-label">Country Name </label>
             </div>
           </aside>
 
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!supplierTDSForm.get('Status')?.value">
 
               @if(isEditMode){
               <ng-select name="status" class="ng-select" formControlName="Status" id="text-input">
@@ -147,13 +143,10 @@
         </div>
       </div>
     </div>
-  </div>
 
-</div>
-<div class="col-12">
-  <div class="card">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="card">
+    <div class="card-body py-2 px-2">
+      <div class="d-flex justify-content-between align-items-center mb-1">
         <h5 class="card-title mb-0 text-info">TDS Details</h5>
         <div>
           <!-- <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80 me-2" (click)="toggleDelete()">
@@ -166,8 +159,9 @@
         </div>
       </div>
 
-      <div class="table-responsive" style="max-height: 35vh;">
-        <table class="table table-hover align-middle no-wrap table-bordered" [formGroup]="supplierTDSForm" (click)="preventTableTouch($event)">
+      <div class="table-responsive " style="max-height: 35vh;">
+        <table class="table table-hover align-middle no-wrap table-bordered mb-0" [formGroup]="supplierTDSForm"
+          (click)="preventTableTouch($event)">
           <thead>
             <tr class="bg-info">
               <th class="bg-transparent text-light" scope="col" *ngIf="tdsDetailArray.length > 1">Action</th>
@@ -187,165 +181,143 @@
           <tbody formArrayName="TDSDetail" class="compact-form">
             @for (tds of tdsDetailArray.controls; track tds; let i = $index) {
             <tr [formGroupName]="i">
-              <td class="p-2" *ngIf="tdsDetailArray.length > 1">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" *ngIf="tdsDetailArray.length > 1">
                 <a class="text-danger mx-2" title="Delete" (click)="removeTDSDetail(i)">
                   <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
                 </a>
               </td>
-              <td class="p-2">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 {{ cusBranchList.length > 0 ? cusBranchList[0].BranchName : '' }}
               </td>
 
-              <td class="p-2">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 <ng-select class="ng-select" [items]="tdsList" bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
-                  placeholder="Select TDS Set Name" formControlName="TDSSetHeaderSid" (change)="handleTDSChange($event,i)"
-                  [appendTo]="'body'">
+                  placeholder="Select TDS Set Name" formControlName="TDSSetHeaderSid"
+                  (change)="handleTDSChange($event,i)" [appendTo]="'body'">
                 </ng-select>
                 @if(tds.get('TDSSetHeaderSid')?.touched && tds.get('TDSSetHeaderSid')?.invalid){
-                  <div class="text-danger small">
-                    @if (tds.get('TDSSetHeaderSid')?.hasError('required')) {
-                      <span>Required</span>
-                    }
-                  </div>
+                <div class="text-danger small">
+                  @if (tds.get('TDSSetHeaderSid')?.hasError('required')) {
+                  <span>Required</span>
+                  }
+                </div>
                 }
               </td>
 
-              <td class="p-2">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 <input type="text" class="custom-input-field sm" formControlName="ITSecCode" readonly>
               </td>
 
-              <td class="p-2 text-center">
-                <input type="checkbox"
-                       class="form-check-input focus-ring"
-                       formControlName="TaxExempt"
-                       (keydown.enter)="toggleCheckBox($event, i)">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5; text-align: center;">
+                <input type="checkbox" class="form-check-input focus-ring" formControlName="TaxExempt"
+                  (keydown.enter)="toggleCheckBox($event, i)">
               </td>
 
-              <td class="p-2">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 <div>
-                  <input
-                    type="text"
-                    class="custom-input-field sm"
-                    formControlName="TransactionLimit"
-                    DecimalPrecision
-                    [DecimalPrecisionBefore]="8"
-                    [DecimalPrecisionAfter]="2"
-                    max="10000000"
-                  >
-                  @if ((tds.get('TransactionLimit')?.touched || tds.get('TransactionLimit')?.dirty) && tds.get('TransactionLimit')?.invalid) {
-                    <div class="text-danger small">
-                      @if (tds.get('TransactionLimit')?.errors?.['required']) {
-                        <span>Required</span>
-                      } @else if (tds.get('TransactionLimit')?.errors?.['max']) {
-                        <span>Amount cannot exceed 1 crore (10,000,000)</span>
-                      } @else if (tds.get('TransactionLimit')?.errors?.['decimalPrecision']) {
-                        <small>Allowed: 8 Digits before and 2 digits after decimal point</small>
-                      }
-                    </div>
+                  <input type="text" class="custom-input-field sm text-end" formControlName="TransactionLimit"
+                    DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2" max="10000000">
+                  @if ((tds.get('TransactionLimit')?.touched || tds.get('TransactionLimit')?.dirty) &&
+                  tds.get('TransactionLimit')?.invalid) {
+                  <div class="text-danger small">
+                    @if (tds.get('TransactionLimit')?.errors?.['required']) {
+                    <span>Required</span>
+                    } @else if (tds.get('TransactionLimit')?.errors?.['max']) {
+                    <span>Amount cannot exceed 1 crore (10,000,000)</span>
+                    } @else if (tds.get('TransactionLimit')?.errors?.['decimalPrecision']) {
+                    <small>Allowed: 8 Digits before and 2 digits after decimal point</small>
+                    }
+                  </div>
                   }
                 </div>
               </td>
 
-              <td class="p-2">
-                <input type="text" class="custom-input-field sm" formControlName="CertificateNo" [textWithNumbers]="20">
-                @if((tds.get('CertificateNo')?.touched || tds.get('CertificateNo')?.dirty) && tds.get('CertificateNo')?.invalid){
-                  <div class="text-danger small">
-                    @if(tds.get('CertificateNo')?.hasError('required')){
-                      <span>Required</span>
-                    } @else if(tds.get('CertificateNo')?.hasError('maxlength')){
-                      <span>Max 20 Characters allowed</span>
-                    } 
-                  </div>
-                }
-              </td>
-
-              <td class="p-2">
-                <input type="text" class="custom-input-field sm" formControlName="CertificatePercentage" DecimalPrecision
-                    [DecimalPrecisionBefore]="2"
-                    [DecimalPrecisionAfter]="2">
-                @if ((tds.get('CertificatePercentage')?.touched || tds.get('CertificatePercentage')?.dirty) && tds.get('CertificatePercentage')?.invalid) {
-                    <div class="text-danger small">
-                      @if (tds.get('CertificatePercentage')?.errors?.['required']) {
-                        <span>Required</span>
-                      }  @else if (tds.get('CertificatePercentage')?.errors?.['decimalPrecision']) {
-                        <small>Allowed: 2 Digits before & 2 digits after decimal point</small>
-                      }
-                    </div>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" class="custom-input-field sm text-end" formControlName="CertificateNo"
+                  [textWithNumbers]="20">
+                @if((tds.get('CertificateNo')?.touched || tds.get('CertificateNo')?.dirty) &&
+                tds.get('CertificateNo')?.invalid){
+                <div class="text-danger small">
+                  @if(tds.get('CertificateNo')?.hasError('required')){
+                  <span>Required</span>
+                  } @else if(tds.get('CertificateNo')?.hasError('maxlength')){
+                  <span>Max 20 Characters allowed</span>
                   }
-              </td>
-
-              <td class="p-2">
-                <input type="text" class="custom-input-field sm" formControlName="CertificateAmt" [textWithNumbers]="500">
-                @if((tds.get('CertificateAmt')?.touched || tds.get('CertificateAmt')?.dirty) && tds.get('CertificateAmt')?.invalid){
-                  <div class="text-danger small">
-                    @if(tds.get('CertificateAmt')?.hasError('required')){
-                      <span>Required</span>
-                    } @else if(tds.get('CertificateAmt')?.hasError('maxlength')){
-                      <span>Max 500 Characters allowed</span>
-                    } 
-                  </div>
+                </div>
                 }
               </td>
 
-              <td class="p-2">
-                <input class="custom-input-field sm"
-                       placeholder="dd-mm-yyyy"
-                       name="dp"
-                       ngbDatepicker
-                       #d="ngbDatepicker"
-                       (click)="d.toggle()"
-                       (keydown.enter)="d.open()"
-                       (keydown.arrowDown)="d.open()"
-                       (keydown.tab)="d.close()"
-                       readonly
-                       formControlName="EffectiveFrom"
-                       [footerTemplate]="footerTemplate"
-                       [minDate]="minEffectiveFromDate"
-                       [maxDate]="toNgbDateStruct(tds.get('EffectiveTo').value)"
-                       [container]="'body'"/>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" class="custom-input-field sm text-end" formControlName="CertificatePercentage"
+                  DecimalPrecision [DecimalPrecisionBefore]="2" [DecimalPrecisionAfter]="2">
+                @if ((tds.get('CertificatePercentage')?.touched || tds.get('CertificatePercentage')?.dirty) &&
+                tds.get('CertificatePercentage')?.invalid) {
+                <div class="text-danger small">
+                  @if (tds.get('CertificatePercentage')?.errors?.['required']) {
+                  <span>Required</span>
+                  } @else if (tds.get('CertificatePercentage')?.errors?.['decimalPrecision']) {
+                  <small>Allowed: 2 Digits before & 2 digits after decimal point</small>
+                  }
+                </div>
+                }
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" class="custom-input-field sm text-end" formControlName="CertificateAmt"
+                  [textWithNumbers]="500">
+                @if((tds.get('CertificateAmt')?.touched || tds.get('CertificateAmt')?.dirty) &&
+                tds.get('CertificateAmt')?.invalid){
+                <div class="text-danger small">
+                  @if(tds.get('CertificateAmt')?.hasError('required')){
+                  <span>Required</span>
+                  } @else if(tds.get('CertificateAmt')?.hasError('maxlength')){
+                  <span>Max 500 Characters allowed</span>
+                  }
+                </div>
+                }
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker"
+                  (click)="d.toggle()" (keydown.enter)="d.open()" (keydown.arrowDown)="d.open()"
+                  (keydown.tab)="d.close()" readonly formControlName="EffectiveFrom" [footerTemplate]="footerTemplate"
+                  [minDate]="minEffectiveFromDate" [maxDate]="toNgbDateStruct(tds.get('EffectiveTo').value)"
+                  [container]="'body'" />
                 @if(tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid){
-                  <div class="text-danger small">
-                    <span *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
-                    <span *ngIf="tds.get('EffectiveFrom')?.hasError('ngbDate')">Must be before Effective To</span>
-                  </div>
+                <div class="text-danger small">
+                  <span *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
+                  <span *ngIf="tds.get('EffectiveFrom')?.hasError('ngbDate')">Must be before Effective To</span>
+                </div>
                 }
               </td>
 
               <ng-template #footerTemplate>
                 <hr class="my-1" />
                 <div class="d-flex justify-content-between px-2 pb-2">
-                  <button class="btn btn-info btn-sm" (click)="tds.get('EffectiveFrom').setValue(todayDate); d.close()">Today</button>
+                  <button class="btn btn-info btn-sm"
+                    (click)="tds.get('EffectiveFrom').setValue(todayDate); d.close()">Today</button>
                   <button class="btn btn-secondary btn-sm" (click)="d.close()">Close</button>
                 </div>
               </ng-template>
 
-              <td class="p-2">
-                <input class="custom-input-field sm"
-                       placeholder="dd-mm-yyyy"
-                       name="dp"
-                       ngbDatepicker
-                       #d1="ngbDatepicker"
-                       (click)="d1.toggle()"
-                       (keydown.enter)="d1.open()"
-                       (keydown.arrowDown)="d1.open()"
-                       (keydown.tab)="d1.close()"
-                       readonly
-                       formControlName="EffectiveTo"
-                       [footerTemplate]="footerTemplate1"
-                       [minDate]="toNgbDateStruct(tds.get('EffectiveFrom').value)"
-                       [container]="'body'"/>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  #d1="ngbDatepicker" (click)="d1.toggle()" (keydown.enter)="d1.open()" (keydown.arrowDown)="d1.open()"
+                  (keydown.tab)="d1.close()" readonly formControlName="EffectiveTo" [footerTemplate]="footerTemplate1"
+                  [minDate]="toNgbDateStruct(tds.get('EffectiveFrom').value)" [container]="'body'" />
                 @if(tds.get('EffectiveTo')?.touched && tds.get('EffectiveTo')?.invalid){
-                  <div class="text-danger small">
-                    <span *ngIf="tds.get('EffectiveTo')?.hasError('required')">Required</span>
-                    <span *ngIf="tds.get('EffectiveTo')?.hasError('ngbDate')">Must be after Effective From</span>
-                  </div>
+                <div class="text-danger small">
+                  <span *ngIf="tds.get('EffectiveTo')?.hasError('required')">Required</span>
+                  <span *ngIf="tds.get('EffectiveTo')?.hasError('ngbDate')">Must be after Effective From</span>
+                </div>
                 }
               </td>
 
               <ng-template #footerTemplate1>
                 <hr class="my-1" />
                 <div class="d-flex justify-content-between px-2 pb-2">
-                  <button class="btn btn-info btn-sm" (click)="tds.get('EffectiveTo').setValue(todayDate); d1.close()">Today</button>
+                  <button class="btn btn-info btn-sm"
+                    (click)="tds.get('EffectiveTo').setValue(todayDate); d1.close()">Today</button>
                   <button class="btn btn-secondary btn-sm" (click)="d1.close()">Close</button>
                 </div>
               </ng-template>
@@ -356,6 +328,8 @@
       </div>
     </div>
   </div>
+  </div>
+
 </div>
 
 <!-- @if(isEditMode && permissions.length > 0){
@@ -401,47 +375,47 @@
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Changed At</th>
+            <th>Changed By</th>
+            <th>Operation</th>
+            <th class="text-center">Old Value</th>
+            <th class="text-center">New Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.changedAt | date:'medium' }}</td>
+            <td>{{ log.changedBy || '-' }}</td>
+            <td>{{ log.operation }}</td>
+            <td class="bg-light-danger">
+              <ul>
+                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+            <td class="bg-light-success">
+              <ul>
+                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+          </tr>
+          <tr *ngIf="auditLogs.length === 0">
+            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
   </div>
 </ng-template>
 
 <!-- If it is modal kind we need this -->
-  <!-- <div class="col-12 mt-2" [formGroup]="supplierTDSForm">
+<!-- <div class="col-12 mt-2" [formGroup]="supplierTDSForm">
     <div class="card">
       <div class="card-body">
         <h6 class="card-title">TDS Details</h6>

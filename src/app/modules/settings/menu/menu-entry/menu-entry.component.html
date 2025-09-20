@@ -1,5 +1,5 @@
 <div class="row compact-form">
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
@@ -49,8 +49,8 @@
         </div>
     </div>
 
-    <div class="col-12">
-        <div class="card">
+    <div class="col-12 px-0">
+        <div class="card mb-2">
             <div class="card-body py-2 px-3">
                 <div class="row pb-2 rounded border border-top-0" [formGroup]="menuForm">
                     <div class="card-header-title d-flex align-items-center gap-2">
@@ -77,7 +77,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-4 mt-md-4 mt-2">
+                    <aside class="col-md-4 mt-md-3 mt-2">
                         <div class="form-check ">
                             <input class="form-check-input" type="checkbox" id="isSubMenu" [checked]="isSubMenuChecked"
                                 (change)="onParentMenuChange($any($event.target).checked)">
@@ -86,9 +86,9 @@
                     </aside>
 
                     <aside class="col-md-4" *ngIf="isSubMenu && mainMenus.length > 0">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!menuForm.get('parentId')?.value">
                             <ng-select [items]="mainMenus" bindLabel="MenuName" bindValue="MenuMasterSid"
-                                formControlName="parentId" placeholder="Select Parent Menu"
+                                formControlName="parentId" placeholder=""
                                 [class.is-invalid]="menuForm.get('parentId')?.invalid && menuForm.get('parentId')?.touched">
                                 <ng-template ng-option-tmp let-item="item">
                                     {{item.MenuName}}
@@ -124,9 +124,9 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!menuForm.get('ModuleMasterSid')?.value">
                             <ng-select [items]="moduleList" bindLabel="ModuleName" bindValue="ModuleMasterSid"
-                                formControlName="ModuleMasterSid" placeholder="Select Module"
+                                formControlName="ModuleMasterSid" placeholder="" 
                                 [class.is-invalid]="menuForm.get('ModuleMasterSid')?.invalid && menuForm.get('ModuleMasterSid')?.touched">
                             </ng-select>
                             <label class="input-label">Module <span class="text-danger">*</span></label>
@@ -158,9 +158,9 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!menuForm.get('icon')?.value">
                             <ng-select [items]="iconOptions" bindLabel="label" bindValue="value" formControlName="icon"
-                                placeholder="Select an icon">
+                                placeholder="">
                                 <ng-template ng-label-tmp let-item="item">
                                     <i class="{{ item.value }} me-2"></i> <!-- FontAwesome -->
                                     {{ item.label }}
@@ -174,7 +174,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!menuForm.get('status')?.value">
                             <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                 [class.is-invalid]="menuForm.get('status')?.invalid && menuForm.get('status')?.touched">
                             </ng-select>

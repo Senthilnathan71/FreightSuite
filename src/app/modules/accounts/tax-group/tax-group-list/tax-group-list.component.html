@@ -22,7 +22,7 @@
           <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
             <div class="form-outline flex-grow-1 position-relative">
               <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                [(ngModel)]="filterValue" aria-label="Search input">
+                [(ngModel)]="filterValue" aria-label="Search input" (keyup.enter)="searchTaxGroup()">
               <button *ngIf="filterValue"
                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                 (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
@@ -33,7 +33,7 @@
               </button>
             </div>
             <div class="mt-md-0 mt-1">
-              <button type="submit" (click)="loadTaxGroups()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+              <button type="submit" (click)="searchTaxGroup()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                 <i class="fas fa-search me-1"></i> Search
               </button>
             </div>
@@ -50,11 +50,11 @@
             <i class="fas fa-plus me-1"></i> Create
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-            [disabled]="!searched">
+            [disabled]="totalLengthOfCollection===0">
             <i class="fas fa-file-alt me-1"></i> Report
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
-            [disabled]="!searched">
+            [disabled]="totalLengthOfCollection===0">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
         </form>
@@ -121,7 +121,7 @@
           </thead>
 
           <tbody>
-            <tr *ngFor="let item of taxGroupList; trackBy: trackByIndex">
+            <tr *ngFor="let item of allTaxGroup; trackBy: trackByIndex">
               <!-- <td>
               <div class="d-flex align-items-center justify-content-center gap-2">
                 <button class="btn btn-sm btn-link text-primary p-0 mx-2"
@@ -159,18 +159,23 @@
         </table>
       </div>
 
-      <div class="d-flex justify-content-end mt-2">
-        <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+      <div >
+        <!-- <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
           (pageChange)="updatePaginationData()">
-        </ngb-pagination>
+        </ngb-pagination> -->
+              <app-common-pagination 
+              [config]="paginationConfig"
+               (pageChange)="onPageChange($event)"
+                 (pageSizeChange)="onPageSizeChange($event)">
+                    </app-common-pagination>
       </div>
     </div>
   </div>
 
-  <!-- Show this if no records -->
-  <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-    <div>No records found</div>
-  </div>
+  <!-- No Records -->
+<div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
+    <div class="text-center ">No Records Found</div>
+</div>
 
 
   <ng-template #content let-modal>
@@ -186,7 +191,7 @@
       <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div> -->
 
-    <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+    <a *ngIf="isEditMode" class="text-white ps-2 crusor-pointer" (click)="showInfo()">
                 <i class="fas fa-info-circle fs-6"></i>
             </a>
 
@@ -241,7 +246,7 @@
 
           <!-- Tax Type -->
           <aside class="col-md-6">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!taxGroupForm.get('TaxType')?.value">
               <ng-select formControlName="TaxType" [items]="modeofTaxType" bindLabel="name"
                 bindValue="name"></ng-select>
               <label class="input-label">Tax Type <span class="text-danger">*</span></label>
@@ -273,7 +278,7 @@
           </aside> -->
 
           <aside class="col-md-6">
-          <div class="custom-form-group custom-form-group-select">
+          <div class="custom-form-group custom-form-group-select-date">
             <div class="input-group">
               <input 
                 class="form-control mb-0" 
@@ -291,7 +296,7 @@
             </div>
 
              <label class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
-                <div class="error-message pe-4"
+                <div class="error-message pe-4 pb-2"
                   *ngIf="taxGroupForm.get('EffectiveFrom')?.touched && taxGroupForm.get('EffectiveFrom')?.invalid">
                   <span>Required</span>
                 </div>
