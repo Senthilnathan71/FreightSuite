@@ -278,8 +278,11 @@ export class MeetingUpdateListComponent implements OnInit {
     }
 
     this.btnDisable = true;
+    
     const payload = {
       PreCustomerMeetingSid: this.selectedMeeting.id,
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid,
       ...this.meetingForm.getRawValue(),
     };
 

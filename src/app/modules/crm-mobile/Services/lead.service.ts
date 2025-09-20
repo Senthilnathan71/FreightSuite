@@ -383,8 +383,8 @@ export class LeadService {
   }
 
   // LEAD
-  fetchAllLeads() {
-    return this.http.get<{ data: any[] }>('lead').pipe(
+  fetchAllLeads(payload:any) {
+    return this.http.post<{ data: any[] }>('lead',payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
