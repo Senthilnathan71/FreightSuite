@@ -1,6 +1,6 @@
 // Dashboard Styling - Matching App Theme
 .dashboard-container {
-  background: #f8f9fa;
+  // background: #f8f9fa;
   min-height: 100vh;
   padding: 0;
   position: relative;
@@ -1302,7 +1302,7 @@
 
     &:hover {
       background: linear-gradient(135deg, #f7faff 0%, #e3f2fd 100%);
-      transform: translateX(4px);
+      // transform: translateX(4px);
       box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
 
       td {
