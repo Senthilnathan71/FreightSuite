@@ -34,12 +34,11 @@
           <!-- Booking Details Row -->
           <div class="row">
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
                 <ng-select class="ng-select"
                            [items]="departments"
                            bindLabel="departmentName"
                            bindValue="DepartmentMasterSid"
-                           placeholder="Select Dept"
                            formControlName="DepartmentMasterSid"
                            (change)="onDeptChange($event)">
                 </ng-select>
@@ -48,12 +47,11 @@
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('BookingHeaderSid')?.value">
                 <ng-select class="ng-select"
                            [items]="bookings"
                            bindLabel="BookingNo"
                            bindValue="BookingHeaderSid"
-                           placeholder="Select Booking"
                            formControlName="BookingHeaderSid"
                            (change)="onBookingChange($event)">
                 </ng-select>
@@ -61,19 +59,15 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select class="ng-select"
-                           [items]="customers"
-                           bindLabel="CustomerName"
-                           bindValue="CustomerMasterSid"
-                           placeholder="Select Customer"
-                           formControlName="CustomerMasterSid"
-                           [disabled]="true">
-                </ng-select>
-                <label class="input-label">Customer <span class="text-danger"></span></label>
-              </div>
-            </aside>
+           <aside class="col-md-4">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
+                    <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
+                      bindValue="CustomerMasterSid" formControlName="CustomerMasterSid"
+                      [disabled]="true">
+                    </ng-select>
+                    <label class="input-label">Customer <span class="text-danger"></span></label>
+                  </div>
+                </aside>
 
             <aside class="col-md-4">
               <div class="custom-form-group">
@@ -90,12 +84,11 @@
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POL')?.value">
                 <ng-select class="ng-select"
                            [items]="ports"
                            bindLabel="PortName"
                            bindValue="PortCode"
-                           placeholder="Select POL"
                            formControlName="POL"
                            [disabled]="true">
                 </ng-select>
@@ -104,12 +97,11 @@
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POD')?.value">
                 <ng-select class="ng-select"
                            [items]="ports"
                            bindLabel="PortName"
                            bindValue="PortCode"
-                           placeholder="Select POD"
                            formControlName="POD"
                            [disabled]="true">
                 </ng-select>

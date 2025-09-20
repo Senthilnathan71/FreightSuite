@@ -70,11 +70,11 @@ export class SplitBookingEntryComponent implements OnInit {
     this.bookingForm = this.fb.group({
       DepartmentMasterSid: [null, Validators.required],
       BookingHeaderSid: [null, Validators.required],
-      CustomerMasterSid: [null, Validators.required],
+      CustomerMasterSid: [{ value: null, disabled: true }],
       ShipperName: [{ value: null, disabled: true }],
       ConsigneeName: [{ value: null, disabled: true }],
-      POL: [null, Validators.required],
-      POD: [null, Validators.required],
+      POL: [{ value: null, disabled: true }],
+      POD: [{ value: null, disabled: true }],
       products: this.fb.array([])
     });
   }
