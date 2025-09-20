@@ -44,7 +44,7 @@
       <div class="filter-section">
         <div class="filter-card">
           <div class="filter-header">
-            <h5><i class="fas fa-filter me-1"></i>Smart Filters</h5>
+            <h5><i class="fas fa-filter dofi-font-14 me-1"></i>Smart Filters</h5>
           </div>
           <div class="filter-body">
             <div class="row g-4 align-items-end">
@@ -110,11 +110,11 @@
               </h1>
               <div class="hero-stats-compact">
                 <div class="stat-pill">
-                  <i class="fas fa-calendar-check text-success"></i>
+                  <i class="fas fa-calendar-check"></i>
                   <span>Today: {{getCurrentDate()}}</span>
                 </div>
                 <div class="stat-pill">
-                  <i class="fas fa-clipboard-list text-primary"></i>
+                  <i class="fas fa-clipboard-list"></i>
                   <span>{{dashboardData?.todaysActivities?.length || 0}} Today's Activities</span>
                 </div>
               </div>
@@ -353,10 +353,10 @@
                         <th (click)="sortFollowups('meetingDate')" class="sortable">
                           Meeting Date <i class="fas fa-sort ms-1"></i>
                         </th>
-                        <th>Follow-up Type</th>
                         <th (click)="sortFollowups('followupDate')" class="sortable">
                           Follow-up Date <i class="fas fa-sort ms-1"></i>
                         </th>
+                        <th>Follow-up Type</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -365,10 +365,10 @@
                         <td>{{followup.salesperson}}</td>
                         <td>{{followup.meetingType}}</td>
                         <td>{{followup.meetingDate | date:'MMM dd, yyyy'}}</td>
+                        <td>{{followup.followupDate | date:'MMM dd, yyyy'}}</td>
                         <td>
                           <span class="badge bg-info">{{followup.followupType}}</span>
                         </td>
-                        <td>{{followup.followupDate | date:'MMM dd, yyyy'}}</td>
                       </tr>
                       <tr *ngIf="filteredFollowups.length === 0">
                         <td colspan="6" class="text-center py-4 text-muted">
@@ -424,9 +424,9 @@
                         <th (click)="sortRateRequests('salesperson')" class="sortable">
                           Salesperson <i class="fas fa-sort ms-1"></i>
                         </th>
-                        <th>Status</th>
                         <th>Approved By</th>
                         <th>Booking #</th>
+                        <th>Status</th>
                         <th>Amount</th>
                       </tr>
                     </thead>
@@ -437,6 +437,8 @@
                         <td>{{request.quotationNumber}}</td>
                         <td>{{request.quoteDate | date:'MMM dd, yyyy'}}</td>
                         <td>{{request.salesperson}}</td>
+                        <td>{{request.approvedBy || '-'}}</td>
+                        <td>{{request.bookingNumber || '-'}}</td>
                         <td>
                           <span class="badge"
                             [class.bg-warning]="request.status === 'Pending'"
@@ -445,8 +447,6 @@
                             {{request.status}}
                           </span>
                         </td>
-                        <td>{{request.approvedBy || '-'}}</td>
-                        <td>{{request.bookingNumber || '-'}}</td>
                         <td>{{request.amount | currency:'USD':'symbol':'1.0-0'}}</td>
                       </tr>
                       <tr *ngIf="filteredRateRequests.length === 0">
@@ -564,7 +564,7 @@
     </div>
 
     <!-- Customer Service Dashboard Content -->
-    <div *ngIf="userType === 'customer-service'" class="dashboard-sections customer-service-dashboard">
+    <div *ngIf="userType === 'customer-service'" class="container-fluid dashboard-sections customer-service-dashboard">
       <!-- Section 1: TODO & Pending Section -->
       <div class="dashboard-section cs-todo-pending-section">
         <div class="section-header-main">
@@ -686,7 +686,6 @@
                         <th (click)="sortQuotations('quotationNumber')" class="sortable">
                           Quotation Number <i class="fas fa-sort ms-1"></i>
                         </th>
-                        <th>Status</th>
                         <th (click)="sortQuotations('approvedBy')" class="sortable">
                           Approved By <i class="fas fa-sort ms-1"></i>
                         </th>
@@ -694,17 +693,18 @@
                           Date <i class="fas fa-sort ms-1"></i>
                         </th>
                         <th>Option</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr *ngFor="let quotation of filteredApprovedQuotations">
                         <td class="fw-semibold">{{quotation.quotationNumber}}</td>
-                        <td>
-                          <span class="badge bg-success">{{quotation.status}}</span>
-                        </td>
                         <td>{{quotation.approvedBy}}</td>
                         <td>{{quotation.date | date:'MMM dd, yyyy'}}</td>
                         <td>{{quotation.option}}</td>
+                        <td>
+                          <span class="badge bg-success">{{quotation.status}}</span>
+                        </td>
                       </tr>
                       <tr *ngIf="filteredApprovedQuotations.length === 0">
                         <td colspan="5" class="text-center py-4 text-muted">
@@ -751,9 +751,7 @@
                         <th (click)="sortBookings('jobNumber')" class="sortable">
                           Job Number <i class="fas fa-sort ms-1"></i>
                         </th>
-                        <th (click)="sortBookings('shipmentStatus')" class="sortable">
-                          Shipment Status/Milestone <i class="fas fa-sort ms-1"></i>
-                        </th>
+                       
                         <th (click)="sortBookings('date')" class="sortable">
                           Date <i class="fas fa-sort ms-1"></i>
                         </th>
@@ -761,6 +759,9 @@
                         <th>POD</th>
                         <th>Salesperson</th>
                         <th>Assigned To</th>
+                         <th (click)="sortBookings('shipmentStatus')" class="sortable">
+                          Shipment Status/Milestone <i class="fas fa-sort ms-1"></i>
+                        </th>
                         <th>Invoicing</th>
                       </tr>
                     </thead>
@@ -768,6 +769,12 @@
                       <tr *ngFor="let booking of filteredBookingList">
                         <td class="fw-semibold">{{booking.bookingNumber}}</td>
                         <td>{{booking.jobNumber}}</td>
+                        
+                        <td>{{booking.date | date:'MMM dd, yyyy'}}</td>
+                        <td>{{booking.pol}}</td>
+                        <td>{{booking.pod}}</td>
+                        <td>{{booking.salesperson}}</td>
+                        <td>{{booking.assignedTo}}</td>
                         <td>
                           <span class="badge"
                             [class.bg-success]="booking.shipmentStatus === 'Delivered'"
@@ -776,11 +783,6 @@
                             {{booking.shipmentStatus}}
                           </span>
                         </td>
-                        <td>{{booking.date | date:'MMM dd, yyyy'}}</td>
-                        <td>{{booking.pol}}</td>
-                        <td>{{booking.pod}}</td>
-                        <td>{{booking.salesperson}}</td>
-                        <td>{{booking.assignedTo}}</td>
                         <td>
                           <span class="badge"
                             [class.bg-success]="booking.invoicing === 'Yes'"
@@ -804,7 +806,7 @@
       </div>
 
       <!-- Section 2: Customer Service Metrics -->
-      <div class="dashboard-section cs-metrics-section">
+      <div class="container-fluid dashboard-section cs-metrics-section">
         <div class="section-header-main">
           <h4 class="mb-0"><i class="fas fa-chart-bar me-1"></i>Customer Service Metrics</h4>
         </div>
@@ -829,7 +831,7 @@
           <div class="cs-metric-card metric-purple" (click)="navigateToCustomsClearance()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="fas fa-shield-altme"></i>
+                <i class="fas fa-shield-alt"></i>
               </div>
             </div>
             <div class="metric-info">

@@ -154,17 +154,17 @@
     padding: 0.5rem 1rem;
     border-bottom: 1px solid rgba(5, 96, 141, 0.1);
 
-    h5 {
-      color: #05608D;
-      font-weight: 700;
-      margin: 0;
-      font-size: 0.85rem;
+    // h5 {
+    //   color: #05608D;
+    //   font-weight: 700;
+    //   margin: 0;
+    //   font-size: 0.85rem;
 
-      i {
-        color: #3699ff;
-        margin-right: 0.4rem;
-      }
-    }
+    //   i {
+    //     color: #3699ff;
+    //     margin-right: 0.4rem;
+    //   }
+    // }
 
     p {
       color: #6c757d;
@@ -372,20 +372,20 @@
   // }
 
   // CS Metrics Section Specific Styling
-  .cs-metrics-section {
-    .section-header-main {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
-      border: 1px solid rgba(139, 92, 246, 0.2);
+  // .cs-metrics-section {
+  //   // .section-header-main {
+  //   //   // background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+  //   //   // border: 1px solid rgba(139, 92, 246, 0.2);
 
-      h2 {
-        color: #7c3aed;
+  //   //   h2 {
+  //   //     color: #7c3aed;
 
-        i {
-          color: #8b5cf6;
-        }
-      }
-    }
-  }
+  //   //     i {
+  //   //       color: #8b5cf6;
+  //   //     }
+  //   //   }
+  //   // }
+  // }
 }
 
 // CS Hero Header Styling
@@ -397,25 +397,25 @@
 
 // CS Filter Card Styling
 .cs-filter-card {
-  .filter-header {
-    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  // .filter-header {
+  //   background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
 
-    h5 {
-      color: #059669;
+  //   h5 {
+  //     color: #059669;
 
-      i {
-        color: #10b981;
-      }
-    }
-  }
+  //     i {
+  //       color: #10b981;
+  //     }
+  //   }
+  // }
 
-  .filter-label {
-    color: #059669;
+  // .filter-label {
+  //   color: #059669;
 
-    i {
-      color: #10b981;
-    }
-  }
+  //   i {
+  //     color: #10b981;
+  //   }
+  // }
 
   .btn-apply {
     background: linear-gradient(135deg, #059669 0%, #10b981 100%);
@@ -666,7 +666,7 @@
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
-    opacity: 0.3;
+    // opacity: 0.3;
   }
 
   .metric-icon-bg {
@@ -1227,7 +1227,7 @@
     font-weight: 700;
     color: #2d3748;
     border: none;
-    padding: 0.75rem 0.75rem;
+    padding: 0.3rem 0.3rem;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1257,7 +1257,7 @@
   }
 
   td {
-    padding: 0.6rem 0.75rem;
+    padding: 0.3rem 0.3rem;
     border: none;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
