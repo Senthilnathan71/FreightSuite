@@ -192,111 +192,111 @@
         </div>
 
       </div>
-      <div class="col-12" formArrayName="quoteRoutes">
-        <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion">
-          <div ngbAccordionItem *ngFor="let route of quoteRoutes.controls;let routeIndex = index"
-            [formGroupName]="routeIndex" [ngbAccordionItem]="'route-' + routeIndex" class="mb-1"
-            [collapsed]="routeIndex !== 0">
-            <h2 ngbAccordionHeader>
-              <button ngbAccordionButton
-                class="d-flex justify-content-between align-items-center w-100 position-relative">
-                <h6 class="font-bold my-1 text-light">Route Details</h6>
-                @if(quoteRoutes.length > 1){
-                <button class="btn btn-sm waves-effect waves-light text-light"
-                  (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)" [disabled]="f['EnquirySid'].value || disableAllModification">
-                  <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
+        <div class="col-12" formArrayName="quoteRoutes">
+          <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion">
+            <div ngbAccordionItem *ngFor="let route of quoteRoutes.controls;let routeIndex = index"
+              [formGroupName]="routeIndex" [ngbAccordionItem]="'route-' + routeIndex" class="mb-1"
+              [collapsed]="routeIndex !== 0">
+              <h2 ngbAccordionHeader>
+                <button ngbAccordionButton
+                  class="d-flex justify-content-between align-items-center w-100 position-relative">
+                  <h6 class="font-bold my-1 text-light">Route Details</h6>
+                  @if(quoteRoutes.length > 1){
+                  <button class="btn btn-sm waves-effect waves-light text-light"
+                    (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)" [disabled]="f['EnquirySid'].value || disableAllModification">
+                    <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
+                  </button>
+                  }
+                  <span class="ribbon-e text-white">
+
+                    {{ route.value.segmentType || 'LCL' }}
+                  </span>
+
+
                 </button>
-                }
-                <span class="ribbon-e text-white">
+              </h2>
 
-                  {{ route.value.segmentType || 'LCL' }}
-                </span>
+              <div ngbAccordionCollapse [id]="'route-' + routeIndex">
+                <div class="card">
+                  <div class="card-body p-2">
+                    <div class="col-12">
 
+                      <div class="row compact-form">
+                        <aside class="col-md-3">
+                          <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="DepartmentMasterSid" [items]="departments"
+                              bindLabel="departmentName" bindValue="DepartmentMasterSid"
+                              (change)="onDeptChange($event,routeIndex)">
 
-              </button>
-            </h2>
-
-            <div ngbAccordionCollapse [id]="'route-' + routeIndex">
-              <div class="card">
-                <div class="card-body p-2">
-                  <div class="col-12">
-
-                    <div class="row compact-form">
-                      <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select formControlName="DepartmentMasterSid" [items]="departments"
-                            bindLabel="departmentName" bindValue="DepartmentMasterSid"
-                            (change)="onDeptChange($event,routeIndex)">
-
-                          </ng-select>
-                          <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
-                          @if(route.get('DepartmentMasterSid')?.invalid && route.get('DepartmentMasterSid')?.touched){
-                          <div class="error-message">
-                            @if(route.get('DepartmentMasterSid')?.hasError('required')){
-                            <span>Required</span>
+                            </ng-select>
+                            <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+                            @if(route.get('DepartmentMasterSid')?.invalid && route.get('DepartmentMasterSid')?.touched){
+                            <div class="error-message">
+                              @if(route.get('DepartmentMasterSid')?.hasError('required')){
+                              <span>Required</span>
+                              }
+                            </div>
                             }
                           </div>
-                          }
-                        </div>
-                      </aside>
-                      <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
-                            bindValue="PortMasterSid">
+                        </aside>
+                        <aside class="col-md-3">
+                          <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
+                              bindValue="PortMasterSid">
 
-                          </ng-select>
-                          <label for="" class="input-label">POR<span class="text-danger"></span></label>
-                        </div>
-                      </aside>
-                      <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
+                            </ng-select>
+                            <label for="" class="input-label">POR<span class="text-danger"></span></label>
+                          </div>
+                        </aside>
+                        <aside class="col-md-3">
+                          <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
+                              bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
 
-                          </ng-select>
-                          <label for="" class="input-label">POL <span class="text-danger">*</span></label>
-                          @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
-                          <div class="error-message">
-                            @if(route.get('POLSid')?.hasError('required')){
-                            <span>Required</span>
+                            </ng-select>
+                            <label for="" class="input-label">POL <span class="text-danger">*</span></label>
+                            @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
+                            <div class="error-message">
+                              @if(route.get('POLSid')?.hasError('required')){
+                              <span>Required</span>
+                              }
+                            </div>
                             }
                           </div>
-                          }
-                        </div>
-                      </aside>
-                      <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
-                            (change)="onRouteChange(routeIndex)">
+                        </aside>
+                        <aside class="col-md-3">
+                          <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
+                              bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
+                              (change)="onRouteChange(routeIndex)">
 
-                          </ng-select>
-                          <label for="" class="input-label">POD <span class="text-danger">*</span></label>
-                          @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
-                          <div class="error-message">
-                            @if(route.get('PODSid')?.hasError('required')){
-                            <span>Required</span>
+                            </ng-select>
+                            <label for="" class="input-label">POD <span class="text-danger">*</span></label>
+                            @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
+                            <div class="error-message">
+                              @if(route.get('PODSid')?.hasError('required')){
+                              <span>Required</span>
+                              }
+                            </div>
                             }
                           </div>
-                          }
-                        </div>
-                      </aside>
-                      <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
-                            bindValue="PortMasterSid">
+                        </aside>
+                        <aside class="col-md-3">
+                          <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
+                              bindValue="PortMasterSid">
 
-                          </ng-select>
-                          <label for="" class="input-label">FPOD <span class="text-danger">*</span></label>
-                          @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
-                          <div class="error-message">
-                            @if(route.get('FPODSid')?.hasError('required')){
-                            <span>Required</span>
+                            </ng-select>
+                            <label for="" class="input-label">FPOD <span class="text-danger">*</span></label>
+                            @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
+                            <div class="error-message">
+                              @if(route.get('FPODSid')?.hasError('required')){
+                              <span>Required</span>
+                              }
+                            </div>
                             }
                           </div>
-                          }
-                        </div>
-                      </aside>
+                        </aside>
                       <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                           <ng-select formControlName="CarrierMasterSid" [items]="carriers" bindLabel="CustomerName"

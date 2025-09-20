@@ -166,7 +166,8 @@ auditLogs: any[] = []; // Stores audit logs
     this.loadAllLookUps().subscribe(() => {
       const dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
-      if (dataFromEnqPage?.rateReq) {
+      if (dataFromEnqPage?.rateRequest) {
+        console.log(dataFromEnqPage,'dataFromEnqPage171')
         this.patchEnqPageValues(dataFromEnqPage);
         this.minEffDate = this.todayDate;
         this.f['status']?.disable();
@@ -186,40 +187,262 @@ auditLogs: any[] = []; // Stores audit logs
     })
   }
 
-  patchEnqPageValues(enqData: any) {
-    this.enquiryNumber = enqData?.EnquiryNumber;
-    this.quoteRoutes.clear();
+//   patchEnqPageValues(enqData: any) {
+//     debugger
+//     this.enquiryNumber = enqData?.EnquiryNumber;
+//     this.quoteRoutes.clear();
 
-    const headerFields = ['EnquirySid', 'CustomerMasterSid', 'CustomerName', 'CustomerAddress', 'Email'];
-    this.quotationForm.patchValue(
-      headerFields.reduce((obj, field) => ({ ...obj, [field]: enqData?.[field] }), {})
-    );
-    headerFields.forEach(field => this.quotationForm.get(field)?.disable());
+//     const headerFields = ['EnquirySid', 'CustomerMasterSid', 'CustomerName', 'CustomerAddress', 'Email'];
+//     this.quotationForm.patchValue(
+//       headerFields.reduce((obj, field) => ({ ...obj, [field]: enqData?.[field] }), {})
+//     );
+//     headerFields.forEach(field => this.quotationForm.get(field)?.disable());
 
-    // Process routes
-    enqData.enqRoutes.forEach((route, routeIndex) => {
-      const routeData = {
-        ...route,
-        DepartmentMasterSid: enqData.DepartmentMasterSid,
+// const routes = Array.isArray(enqData.quoteRoutes) ? enqData.quoteRoutes : [];
+//   // Example of deriving a segment value if that's your business rule
+// const segment =
+//   enqData.ShipmentType === 'Air Console' ? 'Air' :
+//   enqData.ShipmentType === 'Sea Console' ? 'Sea' :
+//   'Unknown';
+
+//     // Process routes
+//     const processedRoutes = routes.map(route => ({
+//   ...route,
+//   DepartmentMasterSid: enqData.DepartmentMasterSid,
+//   PORSid:  route?.PORSid  ?? null,
+//   POLSid:  route?.POLSid  ?? null,
+//   PODSid:  route?.PODSid  ?? null,
+//   FPODSid: route?.FPODSid ?? null   // double-check the property name
+// }));
+
+//       this.addQuoteRoute({
+//         ...routeData,
+//         segmentType: segment
+//       });
+
+//       this.addQuoteCharge(routeIndex);
+//       this.handleValidationOnDept(routeIndex, segment);
+//       this.onRouteChange(routeIndex);
+
+//       // Disable only the fields we actually patched for this route
+//       const routeGroup = this.quoteRoutes.at(routeIndex);
+//       Object.keys(routeData).forEach(field => {
+//         if (routeGroup.get(field)) {
+//           routeGroup.get(field)?.disable();
+//         }
+//       });
+//     });
+//   }
+
+
+// patchEnqPageValues(enqData: any) {
+//   // --- Header form setup ---------------------------------
+//   this.enquiryNumber = enqData?.EnquiryNumber;
+//   this.quoteRoutes.clear();
+
+//   const headerFields = [
+//     'EnquirySid',
+//     'CustomerMasterSid',
+//     'CustomerName',
+//     'CustomerAddress',
+//     'Email'
+//   ];
+
+//   this.quotationForm.patchValue(
+//     headerFields.reduce(
+//       (obj, field) => ({ ...obj, [field]: enqData?.[field] }),
+//       {}
+//     )
+//   );
+
+//   headerFields.forEach(field => this.quotationForm.get(field)?.disable());
+
+//   // --- Routes array check ---------------------------------
+//   const routes = Array.isArray(enqData?.quoteRoutes)
+//     ? enqData.quoteRoutes
+//     : [];
+
+//   console.log('quoteRoutes value:', enqData?.quoteRoutes);
+//   console.log('routes length:', routes.length);
+
+//   if (!routes.length) {
+//     console.warn('No routes to process');
+//     return; // nothing more to do
+//   }
+
+//   // --- Determine segment type -----------------------------
+//   const segment =
+//   enqData.ShipmentType.includes('Air') ? 'AIR' :
+//   enqData.ShipmentType.includes('Sea') ? 'LCL' : 'Unknown';
+
+
+//   // --- Process each route ---------------------------------
+//   for (const [routeIndex, route] of routes.entries()) {
+//   const cargo = enqData.enquiryCargo?.find(
+//     (c: any) => c.EnquiryRouteSid === route.EnquiryRouteSid
+//   );
+
+//   const routeData = {
+//     QuoteRouteSid: route.QuoteRouteSid ?? null,
+//     DepartmentMasterSid: enqData.DepartmentMasterSid,
+//     PORSid: route.PORSid ?? null,
+//     POLSid: route.POLSid ?? null,
+//     PODSid: route.PODSid ?? null,
+//     FPODSid: route.FPODSid ?? route.FDPSid ?? null,
+
+//     // ✅ Mapped fields
+//     CargoType: cargo?.CargoType ?? route.CargoType ?? null,
+//     ContainerType: cargo?.PackageType ?? null,
+//     ContainerQty: cargo?.PackageQty ?? 1,
+//     CBM: cargo?.Volume ?? 1,
+//     ChargeableWeight: cargo?.ChargeableWeight ?? 0,
+
+//     // ✅ Dates fallback
+//     effDate: route.effDate ? new Date(route.effDate) : this.todayDate,
+//     expDate: route.expDate ? new Date(route.expDate) : null,
+
+//     CarrierMasterSid: route.CarrierMasterSid ?? null,
+//     TransitDays: route.TransitDays ?? '',
+//     ServiceLevel: route.ServiceLevel ?? null,
+//     POLFreeDays: route.POLFreeDays ?? '',
+//     PODFreeDays: route.PODFreeDays ?? '',
+//     CarrierName: route.CarrierName ?? '',
+//     authorizerStatus: route.authorizerStatus ?? 'Pending',
+//     segmentType: segment
+//   };
+
+//   console.log('✅ Final routeData:', routeData);
+
+//   this.addQuoteRoute(routeData);
+//   this.addQuoteCharge(routeIndex);
+//   this.handleValidationOnDept(routeIndex, segment);
+//   this.onRouteChange(routeIndex);
+
+//   const routeGroup = this.quoteRoutes.at(routeIndex);
+//   Object.keys(routeData).forEach(field => {
+//     routeGroup.get(field)?.disable();
+//   });
+// }
+
+// }
+
+
+patchEnqPageValues(enqData: any) { 
+  // --- Header form setup ---------------------------------
+  this.enquiryNumber = enqData?.EnquiryNumber;
+  this.quoteRoutes.clear();
+
+  const headerFields = [
+    'EnquirySid',
+    'CustomerMasterSid',
+    'CustomerName',
+    'CustomerMasterSid',
+    'CustomerAddress',
+    'Email'
+  ];
+
+  this.quotationForm.patchValue(
+    headerFields.reduce(
+      (obj, field) => ({ ...obj, [field]: enqData?.[field] }),
+      {}
+    )
+  );
+
+  headerFields.forEach(field => this.quotationForm.get(field)?.disable());
+
+  // --- Routes array check ---------------------------------
+  const routes = Array.isArray(enqData?.quoteRoutes)
+    ? enqData.quoteRoutes
+    : [];
+
+  console.log('quoteRoutes value:', enqData?.quoteRoutes);
+  console.log('routes length:', routes.length);
+
+  if (!routes.length) {
+    console.warn('No routes to process');
+    return;
+  }
+
+  // --- Determine segment type -----------------------------
+  const segment = this.getSegmentTypeFromShipmentType(enqData.ShipmentType);
+
+  // --- Process each route ---------------------------------
+  for (const [routeIndex, route] of routes.entries()) {
+    console.log('Processing route', routeIndex, route);
+
+    // Process cargo data from the route
+    const cargoData = this.extractCargoData(route.enquiryCargo);
+    
+    const routeData = {
+      QuoteRouteSid: route?.QuoteRouteSid || null,
+      DepartmentMasterSid: enqData.DepartmentMasterSid,
+      PORSid: route?.PORSid || null,
+      POLSid: route?.POLSid || null,
+      PODSid: route?.PODSid || null,
+      FPODSid: route?.FDPSid || null, // Use FDPSid from the actual data
+      CarrierMasterSid: route?.CarrierMasterSid || null,
+      CarrierName: route?.CarrierName || '',
+      CargoType: cargoData?.CargoType || 'General',
+      ContainerType: cargoData?.ContainerType || null,
+      ContainerQty: cargoData?.PackageQty || 1,
+      CBM: cargoData?.Volume || 1,
+      ChargeableWeight: cargoData?.ChargeableWeight || cargoData?.GrossWeight || 0,
+      effDate: new Date(),
+      expDate: '', 
+      TransitDays: route?.TransitDays || '',
+      ServiceLevel: route?.ServiceLevel || null,
+      POLFreeDays: route?.POLFreeDays || '',
+      PODFreeDays: route?.PODFreeDays || '',
+      authorizerStatus: route?.authorizerStatus || 'Pending',
+      segmentType: segment
+    };
+
+    console.log('Processed route data:', routeData);
+
+    // Add the route to the form
+    this.addQuoteRoute(routeData);
+
+    // Handle additional logic
+    this.addQuoteCharge(routeIndex);
+    this.handleValidationOnDept(routeIndex, segment);
+    this.onRouteChange(routeIndex);
+
+    // Disable the patched fields for this route
+    const routeGroup = this.quoteRoutes.at(routeIndex);
+    const fieldsToDisable = [
+      'DepartmentMasterSid', 'PORSid', 'POLSid', 'PODSid', 
+      'FPODSid', 'CargoType', 'ContainerType', 'CBM', 'ChargeableWeight'
+    ];
+    
+    fieldsToDisable.forEach(field => {
+      if (routeData[field] !== null && routeData[field] !== undefined) {
+        routeGroup.get(field)?.disable();
       }
-      this.addQuoteRoute({
-        ...routeData,
-        segmentType: enqData.segment
-      });
-
-      this.addQuoteCharge(routeIndex);
-      this.handleValidationOnDept(routeIndex, enqData.segment);
-      this.onRouteChange(routeIndex);
-
-      // Disable only the fields we actually patched for this route
-      const routeGroup = this.quoteRoutes.at(routeIndex);
-      Object.keys(routeData).forEach(field => {
-        if (routeGroup.get(field)) {
-          routeGroup.get(field)?.disable();
-        }
-      });
     });
   }
+}
+
+private getSegmentTypeFromShipmentType(shipmentType: string): string {
+  if (shipmentType?.includes('Air')) {
+    return 'AIR';
+  } else if (shipmentType?.includes('FCL')) {
+    return 'FCL';
+  } else if (shipmentType?.includes('LCL')) {
+    return 'LCL';
+  }
+  return 'LCL'; // Default
+}
+
+// Helper method to extract cargo data
+private extractCargoData(enquiryCargo: any[]): any {
+  if (!enquiryCargo || !Array.isArray(enquiryCargo) || enquiryCargo.length === 0) {
+    return {};
+  }
+  
+  // Return the first cargo item (you might want to handle multiple cargo items differently)
+  return enquiryCargo[0];
+}
+
 
 
 
@@ -271,7 +494,6 @@ auditLogs: any[] = []; // Stores audit logs
       status: ['Active'],
       SalesmanSid: [null],
       quoteRoutes: this.fb.array([]),
-
       CustomerName: [''],
       CustomerAddress: ['', [Validators.required]],
       QuoteNumber: [''],
@@ -298,10 +520,10 @@ auditLogs: any[] = []; // Stores audit logs
     const routeForm = this.fb.group({
       QuoteRouteSid: [data?.QuoteRouteSid || null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null, [Validators.required]],
-      PORSid: [data?.PORSid || null],
-      POLSid: [data?.POLSid || null, [Validators.required]],
-      PODSid: [data?.PODSid || null, [Validators.required]],
-      FPODSid: [data?.FDPSid || data?.FPODSid || null, [Validators.required]],
+      PORSid: [data?.PORSid ?? null],
+      POLSid: [data?.POLSid ?? null, [Validators.required]],
+      PODSid: [data?.PODSid ?? null, [Validators.required]],
+      FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null, Validators.required],
       CarrierMasterSid: [data?.CarrierMasterSid || null],
       CargoType: [data?.CargoType || null, [Validators.required]],
       ContainerType: [data?.ContainerType || null],
@@ -312,18 +534,16 @@ auditLogs: any[] = []; // Stores audit logs
       ServiceLevel: [data?.ServiceLevel || null],
       POLFreeDays: [data?.POLFreeDays || ''],
       PODFreeDays: [data?.PODFreeDays || ''],
-
       CBM: [data?.CBM || 1],
       ChargeableWeight: [data?.ChargeableWeight || 0],
-
       quoteCharges: this.fb.array([]),
       authorizerStatus: [data?.authorizerStatus || 'Pending'],
-      // For Display purpose
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
       CarrierName: [data?.CarrierName || ''],
     })
     const routeIndex = this.quoteRoutes.length;
     this.quoteRoutes.push(routeForm);
+    
     this.filteredPOLPorts[routeIndex] = [];
     this.filteredPODPorts[routeIndex] = [];
     this.onRouteChange(routeIndex);
@@ -397,14 +617,10 @@ openAuditLogs(modal: TemplateRef<any>) {
       CurrencyMasterSid: [data?.CurrencyMasterSid || null, [Validators.required]],
       perUnit: [data?.perUnit || '', [Validators.required]],
       Amount: [data?.Amount || '', [Validators.required]],
-
       costUnit: [data?.costUnit || null, Validators.required],
       costCurrency: [data?.costCurrency || null, Validators.required],
       costPerUnit: [data?.costPerUnit || '', Validators.required],
-
-      // For showing on report
       ChargeDisplayName: [data?.ChargeDisplayName, [Validators.required]],
-
       TariffDetailSid : [data?.TariffDetailSid || null]  // For filtering purpose
     })
     chargeForm.get('ChargeDisplayName')?.disable();
@@ -476,6 +692,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
   patchValues(response: any) {
+    
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     if (selectedCustomer) {
@@ -497,6 +714,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
     response.quoteRoute.forEach((route, routeIndex) => {
+
       this.addQuoteRoute(route)
       this.handleValidationOnDept(routeIndex, route.segmentType)
       this.onRouteChange(routeIndex);
@@ -773,6 +991,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   onRouteChange(routeIndex: number): void {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    console.log(this.quoteRoutes,'quoteRoutes')
     const polSid = routeForm.get('POLSid')?.value;
     const podSid = routeForm.get('PODSid')?.value;
     const segment = routeForm.get('segmentType')?.value;

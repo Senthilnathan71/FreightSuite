@@ -164,8 +164,9 @@ export class QuotationViewComponent {
     this.leadService.getAllEnquiries(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
-        this.enquiryData = resp['data'];  // On success, store the leads data in the component
+        this.enquiryData = resp['data'];
 
+        console.log(this.enquiryData,'this.enquiryData')
         this.enquiryItems = [...this.enquiryData]
         this.totalLengthOfCollection1 = this.enquiryData.length || 0;
         this.updateEnquiryPaginatedData();  // Update paginated data
@@ -234,6 +235,7 @@ export class QuotationViewComponent {
   }
 
   createNew() {
+    this.leadService.clearQuotationData()
     this.route.navigate(['crm/quotation/entry'])
   }
 
@@ -242,8 +244,6 @@ export class QuotationViewComponent {
   }
 
   createQuotation(enq: any) {
-    console.log(enq);
-
     const polList = enq.enquiryRoute.map(route => route.POLSid);
     const podList = enq.enquiryRoute.map(route => route.PODSid);
 
@@ -265,14 +265,21 @@ export class QuotationViewComponent {
     // Remove duplicates (optional)
     cargoTypeList = [...new Set(cargoTypeList)];
     this.leadService.clearQuotationData();  // <-- Add this line to clear previous data
-
     this.leadService.setQuotationData({
-      customerId: enq.CustomerMasterSid,
-      departmentId: enq.DepartmentMasterSid,
+      EnquiryNumber: enq.EnquiryNumber,
+      CustomerAddress: enq.CustomerAddress,
+      CustomerName: enq.CustomerName,
+      Email: enq.Email,
+      CustomerMasterSid: enq.CustomerMasterSid,
+      DepartmentMasterSid: enq.DepartmentMasterSid,
       polList: polList,  // Sending as an array
       podList: podList,  // Sending as an array
+      status: enq.status,
       cargoTypeList: cargoTypeList,  // Merging from both possible sources
+      EnquirySid: enq.EnquiryHeaderSid,
+      ShipmentType: enq.ShipmentType,
       rateRequest: true,
+      quoteRoutes:enq.enquiryRoute,
       active: 2
     });
 
