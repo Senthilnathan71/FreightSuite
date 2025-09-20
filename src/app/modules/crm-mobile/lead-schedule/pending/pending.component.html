@@ -65,30 +65,30 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let schedule of pendingSchedule">
+                    <tr *ngFor="let schedule of pendingSchedule"> 
                         <td data-label="Name" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">
+                            <div class="text-truncate text-start">
                                 {{ schedule.preCustomerName }}
                             </div>
                         </td>
                         <td data-label="City" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">
+                            <div class="text-truncate text-start">
                                 {{ schedule.cityMaster.cityName }}
                             </div>
                         </td>
                         <td data-label="Contact" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">
+                            <div class="text-truncate text-start">
                                 {{ schedule.contactPerson }}
                             </div>
                         </td>
                         <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">
+                            <div class="text-truncate text-start">
                                 <i-feather name="phone" class="feather-sm"></i-feather> {{ schedule.phone }}
                             </div>
                         </td>
                         <td data-label="Schedule" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <button class="btn btn-sm btn-light-success" (click)="createMeeting(schedule.PreCustomerMasterSid)">
-                                <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
+                                <i-feather name="calendar" class="feather-sm"></i-feather> Schedule Meeting
                             </button>
 
                             <!-- <span class="border-start mx-2">&nbsp;</span> -->

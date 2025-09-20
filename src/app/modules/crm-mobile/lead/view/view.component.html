@@ -100,25 +100,26 @@
                 <!-- #endregion -->
 
                 <div class="card">
-                    <!-- #region lead view -->
+                    <div class="card-body px-2 py-2">
+                          <!-- #region lead view -->
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info text-center">
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Lead Name</th>
                                     <th class="bg-transparent text-light" scope="col">Phone</th>
                                     <th class="bg-transparent text-light" scope="col">Type</th>
-                                    <th class="bg-transparent text-light" scope="col">Schedule</th>
+                                    <th class="bg-transparent text-light" scope="col" width="15%">Schedule</th>
                                     <!-- <th class="bg-transparent text-light" scope="col">Last Met</th>
                                     <th class="bg-transparent text-light" scope="col">Last Booking</th> -->
-                                    <th class="bg-transparent text-light" scope="col">Status</th>
+                                    <th class="bg-transparent text-light" scope="col" width="8%">Status</th>
                                     
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let lead of leads" class="text-center">
-                                     <td data-label="Action">
+                                <tr *ngFor="let lead of leads" >
+                                     <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <section class="action-items">
                                             <div class="d-flex align-items-center justify-content-center">
                                             <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
@@ -128,25 +129,25 @@
                                             </div>
                                         </section>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ lead.preCustomerName }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                              <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ lead.preCustomerType }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone">
-                                        <div class="text-truncate">
-                                            <button class="btn btn-sm btn-light-success" (click)="createMeeting(lead.PreCustomerMasterSid)">
-                                                <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
+                                    <td data-label="Phone" style="padding-top: 1px; padding-bottom: 1px; line-height: 1.5;">
+                                        <div class="text-truncate text-center">
+                                            <button class="btn btn-sm btn-light-success p-1" (click)="createMeeting(lead.PreCustomerMasterSid)">
+                                                <i-feather name="calendar" class="feather-sm"></i-feather> Schedule Meeting
                                             </button>
                                             <!-- <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }} -->
                                         </div>
@@ -159,11 +160,19 @@
                                             <i-feather name="calendar" class="feather-sm"></i-feather> --
                                         </div>
                                     </td> -->
-                                    <td data-label="status">
-                                        <div class="text-truncate">
-                                            {{ lead.status === 'A' ? 'Active' : 'Suspended' }}
-                                              <!-- {{findStatus(lead.status)}} -->
-                                        </div>
+                                    <td data-label="status" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                      <div class="text-truncate">
+  <div
+    class="px-2 rounded-pill d-inline-flex align-items-center gap-1"
+    [ngClass]="lead.status === 'A' ? 'bg-light-success' : 'bg-light-danger'">
+    <span
+      class="dofi-w-4 dofi-h-4 d-inline-block rounded"
+      [ngClass]="lead.status === 'A' ? 'bg-success' : 'bg-danger'">
+    </span>
+    {{ lead.status === 'A' ? 'Active' : 'Suspended' }}
+  </div>
+</div>
+
                                     </td>
                                    
                                 </tr>
@@ -172,13 +181,15 @@
                     </div>
                     <!-- #endregion -->
 
-                    <div class="card-body">
+                    <div class="">
                         <!-- #region Pagination -->
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
                         </ngb-pagination>
                         <!-- #endregion -->
                     </div>
+                    </div>
+                  
                 </div>
 
             </div>

@@ -86,7 +86,7 @@
     <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="row bg-white py-2 rounded shadow-sm mx-auto">
             <div class="col-12">
-                <div class="card">
+                <div class="card mb-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
@@ -146,7 +146,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="card-body">
+                    <div class="">
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
                         </ngb-pagination>
