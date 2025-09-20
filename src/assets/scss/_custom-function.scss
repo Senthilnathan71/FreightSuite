@@ -16,7 +16,7 @@ $prefixVariable: dofi- !default;
 
   .#{$prefixVariable}#{$property-abbreviation}-#{$key},
   .#{$prefixVariable}#{$property-abbreviation}-#{$key}px {
-    #{$property}: #{$value}; // use !important to enforece values, potentially
+    #{$property}: #{$value} !important; // use !important to enforece values, potentially
   }
 }
 

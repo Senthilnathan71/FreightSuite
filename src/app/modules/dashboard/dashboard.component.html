@@ -180,10 +180,10 @@
               <div class="col-md-2">
                 <div class="filter-actions">
                   <button class="btn-apply" (click)="applyFilters()">
-                    <i class="bi bi-search me-1"></i>Apply Filters
+                    <i class="fas fa-search me-1"></i>Apply Filters
                   </button>
                   <button class="btn-reset" (click)="resetFilters()">
-                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                    <i class="fas fa-redo me-1"></i>Reset
                   </button>
                 </div>
               </div>
@@ -238,20 +238,20 @@
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <i class="fas fa-search search-icon"></i>
                   <input
                     type="text"
-                    class="search-input"
+                    class="form-control dofi-ps-44"
                     placeholder="Search meetings, clients, or agenda..."
                     [(ngModel)]="meetingSearchTerm"
                     (input)="filterMeetings()">
                 </div>
-                <button class="action-btn primary">
-                  <i class="bi bi-plus-circle me-1"></i>New Meeting
+                <button class="btn btn-info">
+                  <i class="fas fa-plus-square me-1"></i>New Meeting
                 </button>
               </div>
             </div>
-            <div class="enhanced-table-wrapper">
+            <div class="enhanced-table-wrapper rounded">
               <div class="table-stats">
                 <div class="stat-item">
                   <span class="count">{{filteredClientMeetings.length}}</span>
@@ -320,22 +320,22 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-arrow-repeat me-1"></i>Meetings with Follow-up</h4>
+                <h4><i class="fas fa-sync me-1 dofi-font-14"></i>Meetings with Follow-up</h4>
                 <p>Track follow-up activities</p>
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="bi bi-search search-icon"></i>
+                  <i class="fas fa-search search-icon"></i>
                   <input
                     type="text"
-                    class="search-input"
+                    class="form-control dofi-ps-44"
                     placeholder="Search follow-ups..."
                     [(ngModel)]="followupSearchTerm"
                     (input)="filterFollowups()">
                 </div>
               </div>
             </div>
-            <div class="enhanced-table-wrapper">
+            <div class="enhanced-table-wrapper rounded">
               <div class="card-body p-0">
                 <div class="table-responsive">
                   <table class="table table-hover mb-0">
@@ -393,17 +393,17 @@
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="bi bi-search search-icon"></i>
+                  <i class="fas fa-search search-icon"></i>
                   <input
                     type="text"
-                    class="search-input"
+                    class="form-control dofi-ps-44"
                     placeholder="Search rate requests..."
                     [(ngModel)]="rateRequestSearchTerm"
                     (input)="filterRateRequests()">
                 </div>
               </div>
             </div>
-            <div class="enhanced-table-wrapper">
+            <div class="enhanced-table-wrapper rounded">
               <div class="card-body p-0">
                 <div class="table-responsive">
                   <table class="table table-hover mb-0">
@@ -464,9 +464,9 @@
       </div>
 
       <!-- Section 2: Sales Performance Metrics -->
-      <div class="dashboard-section sales-metrics-section">
+      <div class="container-fluid dashboard-section sales-metrics-section">
         <div class="section-header-main">
-          <h2><i class="bi bi-graph-up-arrow me-1"></i>Sales Performance Metrics</h2>
+          <h2><i class="fas fa-chart-pie me-1"></i>Sales Performance Metrics</h2>
         </div>
 
         <div class="sales-metrics-grid">
@@ -474,7 +474,7 @@
           <div class="sales-metric-card metric-pink" (click)="navigateToClients()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="float-sm-end fa-user"></i>
+                <i class="fas fa-user"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -489,7 +489,7 @@
           <div class="sales-metric-card metric-blue" (click)="navigateToSalesCalls()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="bi bi-telephone-fill"></i>
+                <i class="fas fa-phone-volume"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -504,7 +504,7 @@
           <div class="sales-metric-card metric-red" (click)="navigateToClosedCalls()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="bi bi-telephone-x-fill"></i>
+                <i class="fas fa-phone-slash"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -519,7 +519,7 @@
           <div class="sales-metric-card metric-teal" (click)="navigateToQuotations()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="bi bi-file-earmark-text-fill"></i>
+                <i class="fas fa-file-alt"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -534,7 +534,7 @@
           <div class="sales-metric-card metric-orange" (click)="navigateToApprovedQuotations()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="bi bi-file-earmark-check-fill"></i>
+                <i class="fas fa-file-alt"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -549,7 +549,7 @@
           <div class="sales-metric-card metric-light-blue" (click)="navigateToBookings()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="bi bi-calendar-check-fill"></i>
+                <i class="fas fa-calendar-check"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -568,7 +568,7 @@
       <!-- Section 1: TODO & Pending Section -->
       <div class="dashboard-section cs-todo-pending-section">
         <div class="section-header-main">
-          <h4><i class="bi bi-clipboard-data me-1"></i>TODO & Pending</h4>
+          <h4><i class="fas fa-clipboard me-1"></i>TODO & Pending</h4>
         </div>
 
         <!-- Today's Activity Table -->
@@ -576,25 +576,25 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-calendar-day me-1"></i>Today's Activity</h4>
+                <h4><i class="fas fa-calendar-check me-1"></i>Today's Activity</h4>
                 <p>Track daily activities and their status</p>
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="bi bi-search search-icon"></i>
+                  <i class="fas fa-search search-icon"></i>
                   <input
                     type="text"
-                    class="search-input"
+                    class="form-control dofi-ps-44"
                     placeholder="Search activities..."
                     [(ngModel)]="activitySearchTerm"
                     (input)="filterActivities()">
                 </div>
                 <button class="action-btn primary">
-                  <i class="bi bi-plus-circle me-1"></i>Add Activity
+                  <i class="fas fa-plus-square me-1"></i>Add Activity
                 </button>
               </div>
             </div>
-            <div class="enhanced-table-wrapper">
+            <div class="enhanced-table-wrapper rounded">
               <div class="table-stats">
                 <div class="stat-item">
                   <span class="count">{{filteredTodaysActivities.length}}</span>
@@ -667,17 +667,17 @@
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="bi bi-search search-icon"></i>
+                  <i class="fas fa-search search-icon"></i>
                   <input
                     type="text"
-                    class="search-input"
+                    class="form-control dofi-ps-44"
                     placeholder="Search quotations..."
                     [(ngModel)]="quotationSearchTerm"
                     (input)="filterQuotations()">
                 </div>
               </div>
             </div>
-            <div class="enhanced-table-wrapper">
+            <div class="enhanced-table-wrapper rounded">
               <div class="card-body p-0">
                 <div class="table-responsive">
                   <table class="table table-hover mb-0">
@@ -729,17 +729,17 @@
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="bi bi-search search-icon"></i>
+                  <i class="fas fa-search search-icon"></i>
                   <input
                     type="text"
-                    class="search-input"
+                    class="form-control dofi-ps-44"
                     placeholder="Search bookings..."
                     [(ngModel)]="bookingSearchTerm"
                     (input)="filterBookings()">
                 </div>
               </div>
             </div>
-            <div class="enhanced-table-wrapper">
+            <div class="enhanced-table-wrapper rounded">
               <div class="card-body p-0">
                 <div class="table-responsive">
                   <table class="table table-hover mb-0">
