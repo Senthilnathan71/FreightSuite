@@ -41,7 +41,7 @@
     </div>
 
     <!-- Sales Enhanced Filter Section -->
-    <div class="container-fluid mb-5">
+    <div class="container-fluid">
       <div class="filter-section">
         <div class="filter-card">
           <div class="filter-header">
@@ -52,7 +52,7 @@
               <div class="col-md-4">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="bi bi-person-badge me-2"></i>Sales Person
+                    <i class="fas fa-user me-2"></i>Sales Person
                   </label>
                   <div class="custom-select-wrapper">
                     <select class="custom-select" [(ngModel)]="filters.salesperson" (change)="applyFilters()">
@@ -67,7 +67,7 @@
               <div class="col-md-3">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="bi bi-calendar-range me-2"></i>Date From
+                    <i class="fas fa-calendar-check me-2"></i>Date From
                   </label>
                   <input type="date" class="custom-input" [(ngModel)]="dateFromString" (change)="onDateFromChange($event)">
                 </div>
@@ -75,7 +75,7 @@
               <div class="col-md-3">
                 <div class="filter-group">
                   <label class="filter-label">
-                    <i class="bi bi-calendar-check me-2"></i>Date To
+                    <i class="fas fa-calendar-check me-2"></i>Date To
                   </label>
                   <input type="date" class="custom-input" [(ngModel)]="dateToString" (change)="onDateToChange($event)">
                 </div>
@@ -83,10 +83,10 @@
               <div class="col-md-2">
                 <div class="filter-actions">
                   <button class="btn-apply" (click)="applyFilters()">
-                    <i class="bi bi-search me-2"></i>Apply Filters
+                    <i class="fas fa-search me-2"></i>Apply Filters
                   </button>
                   <button class="btn-reset" (click)="resetFilters()">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                    <i class="fas fa-xmark"></i>Reset
                   </button>
                 </div>
               </div>
@@ -206,13 +206,13 @@
   <!-- User Type Switcher (for testing) -->
   <div class="user-type-switcher">
     <button
-      class="btn btn-outline-primary"
+      class="btn btn-outline-info btn-sm"
       [class.active]="userType === 'sales'"
       (click)="switchDashboard('sales')">
       <i class="bi bi-graph-up me-2"></i>Sales Dashboard
     </button>
     <button
-      class="btn btn-outline-primary"
+      class="btn btn-outline-info btn-sm"
       [class.active]="userType === 'customer-service'"
       (click)="switchDashboard('customer-service')">
       <i class="bi bi-headset me-2"></i>Customer Service Dashboard
@@ -224,9 +224,9 @@
     <!-- Sales Dashboard Content -->
     <div *ngIf="userType === 'sales'" class="dashboard-sections sales-dashboard">
       <!-- Section 1: TO & Pending Section -->
-      <div class="dashboard-section to-pending-section">
-        <div class="section-header-main">
-          <h2><i class="bi bi-clipboard-check me-3"></i>TODO & Pending</h2>
+      <div class="container-fluid dashboard-section to-pending-section">
+        <div class="section-header-main text-info">
+          <h4 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>TODO & Pending</h4>
         </div>
 
         <!-- Enhanced Client Meetings Table -->
@@ -234,12 +234,12 @@
           <div class="data-section">
             <div class="section-header">
               <div class="section-title">
-                <h4><i class="bi bi-people-fill me-3"></i>Client Meetings</h4>
+                <h4><i class="fas fa-users me-3"></i>Client Meetings</h4>
                 <p>Track and manage client interactions</p>
               </div>
               <div class="section-actions">
                 <div class="search-wrapper">
-                  <i class="bi bi-search search-icon"></i>
+                  <i class="fa-solid fa-magnifying-glass"></i>
                   <input
                     type="text"
                     class="search-input"
@@ -475,7 +475,7 @@
           <div class="sales-metric-card metric-pink" (click)="navigateToClients()">
             <div class="metric-icon-container">
               <div class="metric-icon-bg">
-                <i class="bi bi-person-plus-fill"></i>
+                <i class="float-sm-end fa-user"></i>
               </div>
             </div>
             <div class="metric-info">
@@ -569,7 +569,7 @@
       <!-- Section 1: TODO & Pending Section -->
       <div class="dashboard-section cs-todo-pending-section">
         <div class="section-header-main">
-          <h2><i class="bi bi-clipboard-data me-3"></i>TODO & Pending</h2>
+          <h4><i class="bi bi-clipboard-data me-3"></i>TODO & Pending</h4>
         </div>
 
         <!-- Today's Activity Table -->
