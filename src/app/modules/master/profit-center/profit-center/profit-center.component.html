@@ -251,7 +251,7 @@
                                 <input type="textarea" id="text-input" class="custom-input-field sm"
                                     formControlName="Remarks" placeholder="">
                                 <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger">*</span></label>
+                                        class="text-danger"></span></label>
                                                @if(profitCenterForm.get('Remarks')?.touched &&
                                 profitCenterForm.get('Remarks')?.invalid){
                                 <div class="error-message pb-2">
@@ -266,7 +266,7 @@
                         <!-- ... (keep all existing HTML until the status field) -->
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!profitCenterForm.get('Status')?.value">
                                 <ng-select [items]="statusList" formControlName="Status"
                                     [class.is-invalid]="profitCenterForm.get('Status')?.invalid && profitCenterForm.get('Status')?.touched"
                                     [disabled]="profitCenterForm.get('Status')?.disabled">

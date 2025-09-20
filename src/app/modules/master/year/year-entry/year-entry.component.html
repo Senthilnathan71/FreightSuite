@@ -8,7 +8,7 @@
                     </div>
                 <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Year</h5>
                 @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
@@ -112,7 +112,7 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="StartDate"
@@ -154,7 +154,7 @@
                             </div>
                         </aside> -->
                          <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="EndDate" readonly />
@@ -222,7 +222,7 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!yearForm.get('status')?.value">
                                 <ng-select [items]="statusList" formControlName="status" bindLabel="name"
                                     bindValue="name"
                                     [class.is-invalid]="yearForm.get('status')?.invalid && yearForm.get('status')?.touched"

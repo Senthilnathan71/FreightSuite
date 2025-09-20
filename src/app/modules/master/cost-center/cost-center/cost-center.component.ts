@@ -202,7 +202,7 @@ checkPermissions() {
       this.costCenterForm = this.fb.group({
         CostCenterCode: ['', [Validators.required]],
         CostCenterName: ['', [Validators.required]],
-        Remarks: ['', [Validators.required]],
+        Remarks: [''],
         Status: [{value: 'A', disabled: false}, Validators.required]
       });
     }

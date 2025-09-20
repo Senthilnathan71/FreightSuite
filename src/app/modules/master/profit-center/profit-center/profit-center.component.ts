@@ -183,7 +183,7 @@ export class ProfitCenterComponent {
          this.profitCenterForm = this.fb.group({
            ProfitCenterCode: ['', [Validators.required]],
            ProfitCenterName: ['', [Validators.required]],
-           Remarks: ['', [Validators.required]],
+           Remarks: [''],
            Status: [{value: 'A', disabled: false}, Validators.required]
          });
        }
