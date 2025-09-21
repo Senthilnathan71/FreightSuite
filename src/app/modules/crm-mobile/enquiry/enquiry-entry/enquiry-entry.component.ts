@@ -151,8 +151,16 @@ export class EnquiryEntryComponent implements OnInit {
     { id: 5, name: "Palletization" }
   ]
 
+    selectedTab = 'Enquiry';
+ tabs = [
+    { name: 'Enquiry', icon: 'fas fa-file-signature' },
+   { name: 'Other', icon: 'fas fa-layer-group' }
+  ];
 
 
+  selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
 
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
