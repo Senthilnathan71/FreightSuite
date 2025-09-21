@@ -459,7 +459,8 @@
                 [disabled]="!(selectedDepartment) || disableAddButtons">
                 <i class="fas fa-plus me-1"></i> New
                 Route</button>
-            <button *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" class="btn btn-info btn-sm"
+                 <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
+            <button class="btn btn-info btn-sm"
                 (click)="navigateQuotation()" type="button"> <i class="fas fa-plus me-1"></i> Create
                 Quotation</button>
             }
@@ -468,7 +469,8 @@
                 [disabled]="!(selectedDepartment) || disableAddButtons">
                 <i class="fas fa-plus me-1"></i>Add
                 Route</button>
-            <button *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" class="btn btn-info btn-sm"
+                 <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
+            <button class="btn btn-info btn-sm"
                 (click)="navigateQuotation()" type="button"> <i class="fas fa-plus me-1"></i> Create
                 Quotation</button>
             <!-- (click)="addNewRoute()" -->

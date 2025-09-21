@@ -861,38 +861,81 @@ export class EnquiryEntryComponent implements OnInit {
 
   navigateQuotation() {
     const response = this.rateRequestData;
+;
+    const polList = response.enquiryRoute.map(route => route.POLSid);
+    const podList = response.enquiryRoute.map(route => route.PODSid);
 
-    let routeDetails = response.enquiryRoute.flatMap(route => {
-      return route.enquiryCargo.map(cargo => ({
-        PORSid: route.PORSid,
-        POLSid: route.POLSid,
-        PODSid: route.PODSid,
-        FPODSid: route.FDPSid,
-        CargoType: cargo.CargoType,
-        CBM: cargo.Volume,
-        ContainerType: (this.containerTypes.find(con => con.ContainerName === cargo.ContainerType)?.ContainerTypeMasterSid),
-        ChargeableWeight: cargo.ChargeableWeight,
-        ContainerQty: cargo.Qty
-      }));
+    let cargoTypeList: string[] = [];
+
+    if (Array.isArray(response.enquiryCargo)) {
+      cargoTypeList.push(...response.enquiryCargo.map(cargo => cargo.CargoType));
+    }
+
+    response.enquiryRoute.forEach(route => {
+      if (Array.isArray(route.enquiryCargo)) {
+        cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
+      }
     });
+      console.log(response);
+      const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+      let selectedFCLLCL;
+      if (dept?.departmentType === "Sea") {
+        selectedFCLLCL = dept?.FCLLCL;
+      } else {
+        selectedFCLLCL = dept?.departmentType?.toUpperCase();
+      }
 
-    const enqData = {
-      EnquirySid: response?.EnquiryHeaderSid,
-      EnquiryNumber: response?.EnquiryNumber,
-      CustomerMasterSid: response?.CustomerMasterSid,
-      CustomerName: response?.CustomerName,
-      CustomerAddress: response?.CustomerAddress,
-      Email: response?.Email,
+      let routeDetails = response.enquiryRoute.flatMap(route => {
+        return route.enquiryCargo.map(cargo => {
+          const containerTypeId = this.containerTypes.find(
+            con => con.ContainerName === cargo.ContainerType
+          )?.ContainerTypeMasterSid || null;
+          return {
+            PORSid: route.PORSid,
+            POLSid: route.POLSid,
+            PODSid: route.PODSid,
+            FPODSid: route.FDPSid,
+            CargoType: cargo.CargoType,
+            CBM: cargo.Volume,
+            ContainerType: containerTypeId,
+            ChargeableWeight : cargo.ChargeableWeight,
+            ContainerQty: cargo.Qty
+          };
+        });
+      });
+
+      const enqData = {
+        // EnquirySid: response?.EnquiryHeaderSid,
+        // EnquiryNumber: response?.EnquiryNumber,
+        // CustomerMasterSid: response?.CustomerMasterSid,
+        // CustomerName: response?.CustomerName,
+        // CustomerAddress: response?.CustomerAddress,
+        // Email: response?.Email,
+        // DepartmentMasterSid: response.DepartmentMasterSid,
+        // segment: selectedFCLLCL,
+        // rateRequest: true,
+        // enqRoutes: routeDetails
+
+        EnquirySid: response?.EnquiryHeaderSid,
+        EnquiryNumber: response.EnquiryNumber,
+      CustomerAddress: response.CustomerAddress,
+      CustomerName: response.CustomerName,
+      Email: response.Email,
+      CustomerMasterSid: response.CustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
-      segment: this.selectedFCLLCL,
-      rateReq: true,
-      enqRoutes: routeDetails
-    };
+      polList: polList,  // Sending as an array
+      podList: podList,  // Sending as an array
+      status: response.status,
+      cargoTypeList: cargoTypeList,  // Merging from both possible sources
+      ShipmentType: selectedFCLLCL,
+      rateRequest: true,
+      quoteRoutes:routeDetails,
+      };
+      this.leadService.clearQuotationData();
+      this.leadService.setQuotationData(enqData);
+      this.router.navigate(['crm/quotation/entry']);
+    }
 
-    this.leadService.clearQuotationData();
-    this.leadService.setQuotationData(enqData);
-    this.router.navigate(['crm/quotation/entry']);
-  }
 
 
   onRouteChange(routeIndex: number): void {
