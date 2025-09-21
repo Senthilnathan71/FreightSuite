@@ -18,7 +18,7 @@
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" [(ngModel)]="filterValue" class="form-control pe-5"
+                            <input name="filterValue" type="text" [(ngModel)]="filterValue" (keyup.enter)="searchAuthority()" class="form-control pe-5"
                                 placeholder="Search" aria-label="Search input">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
@@ -72,20 +72,20 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('departmentName')">
-                                Department
-                                <i class="fas fa-sort ms-1" [ngClass]="{
-                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'departmentName', 
-                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'departmentName'
-            }"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('MenuName')">
-                                Screen / Menu Name
-                                <i class="fas fa-sort ms-1" [ngClass]="{
-                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'MenuName', 
-                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'MenuName'
-            }"></i>
-                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('DepartmentMaster')">
+  Department
+  <i class="fas fa-sort ms-1" [ngClass]="{
+    'fa-sort-up': sortDirection === 'asc' && sortColumn === 'DepartmentMaster', 
+    'fa-sort-down': sortDirection === 'desc' && sortColumn === 'DepartmentMaster'
+  }"></i>
+</th>
+                           <th class="bg-transparent text-light" scope="col" (click)="sort('menuName')">
+  Screen / Menu Name
+  <i class="fas fa-sort ms-1" [ngClass]="{
+    'fa-sort-up': sortDirection === 'asc' && sortColumn === 'menuName', 
+    'fa-sort-down': sortDirection === 'desc' && sortColumn === 'menuName'
+  }"></i>
+</th>
                             <th class="bg-transparent text-light" scope="col" (click)="sort('branchName')">
                                 Branch
                                 <i class="fas fa-sort ms-1" [ngClass]="{
@@ -139,10 +139,11 @@
                 </table>
             </div>
             <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()" [maxSize]="10"
-                    [rotate]="true" [ellipses]="false">
-                </ngb-pagination>
+                <app-common-pagination
+            [config]="paginationConfig"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
             </div>
         </div>
     </div>

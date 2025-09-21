@@ -82,8 +82,6 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
       this.userData = userProfile;
       this.checkPermissions();
     }
-
-    this.getAllCompanies();
     
     // Initialize base component
     super.ngOnInit();
