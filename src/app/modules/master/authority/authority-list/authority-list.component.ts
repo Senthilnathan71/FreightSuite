@@ -1,9 +1,8 @@
 // authority-list.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -13,6 +12,11 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-authority-list',
@@ -21,21 +25,17 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     CommonModule,
     FeatherModule,
     FormsModule,
-    NgbPaginationModule,
     RouterModule,
     ListpageComponent,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    CommonPaginationComponent
   ],
   templateUrl: './authority-list.component.html',
   styleUrl: './authority-list.component.scss'
 })
-export class AuthorityListComponent {
+export class AuthorityListComponent extends BaseListComponent implements OnInit {
   // Variable Declaring Section
-
-  filterValue = '';
-  authorityList: any[] = [];
-  searchPerformed: boolean;
   userData: any;
 
   // Lookup Related Variable Declaration
@@ -43,28 +43,33 @@ export class AuthorityListComponent {
 
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-
-  // Pagination related Declaring
-  page = 1;
-  pageSize = 10;
-  totalLengthOfCollection: number;
-
-  // Sorting related declaration
-  sortColumn: string = 'DepartmentMaster';
-  sortDirection: string = 'desc';
   // Company
   currentCompany : any;
   currentBranch : any;
+      protected config: ListComponentConfig = {
+        storageKey: 'authority-list-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'DepartmentMaster',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
+
+    // Alias for compatibility with existing template
+    get authorityList() { return this.allItems; }
   constructor(
     private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+        paginationService: PaginationService
+    ) {
+        super(paginationService);
+    }
 
-  ngOnInit() {
+  override ngOnInit() {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userInfo = this.appSettingService.getDecryptedUserProfile();
@@ -72,7 +77,7 @@ export class AuthorityListComponent {
       this.userData = userInfo;
       this.checkPermissions();
     }
-    this.searchAuthority();
+    super.ngOnInit();
   }
 
   checkPermissions() {
@@ -99,97 +104,65 @@ export class AuthorityListComponent {
     return this.permissions.includes(permission);
   }
 
-  searchAuthority() {
+  protected override searchItems(): Observable<any> {
     this.spinner.show();
-    const params = {
-      search: this.filterValue.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-    }
-    this.masterService.searchAuthority(params).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.authorityList = resp.data?.items.map(data => {
-            return {
-              AuthorityMasterSid : data.AuthorityMasterSid,
-              DepartmentMaster: this.formatDepartment(data.DepartmentMaster),
-              menuName: data?.menuMaster?.MenuName || '',
-              branchName: data?.branchMaster?.branchName,
-              status: data.status === 'A' ? 'Active' : 'Suspended'
-            }
-          });
-          console.log(this.authorityList);
-          this.totalLengthOfCollection = resp.data?.totalCount || 0;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(resp.message);
-          console.error('Error searching authorization', resp.message)
-          this.authorityList = [];
-          this.totalLengthOfCollection = 0;
-        }
-        this.spinner.hide();
-      }, error: (error: any) => {
-        console.error(error);
-      }
-    })
+    return this.masterService.searchAuthority(this.getSearchParams());
+  }
+  protected override getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
   }
 
-  formatDepartment(depart: any[]) {
-    return depart.join(" , ")
-  }
+  // formatDepartment(depart: any[]) {
+  //   return depart.join(" , ")
+  // }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      // Reverse the sort direction if clicking the same column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  protected override processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        DepartmentMaster: item.DepartmentMaster,
+        menuName: item.menuMaster?.MenuName,
+        branchName: item.branchMaster?.branchName,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
     } else {
-      // Set new sort column and default to ascending
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+      this.appSettingService.showError('Error searching authority.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
     }
-
-    this.applySorting();
-    this.updatePaginationData();
   }
 
-  applySorting() {
-    this.authorityList.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-
-      // Handle null/undefined values
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-
-      // Convert to string for case-insensitive comparison
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
-
-
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching authority.');
+    console.error('Error searching authority',error);
+    super.handleSearchError(error);
   }
 
-
-  updatePaginationData(): void {
-    this.searchAuthority();
-  }
-
-  clearFilterValue() {
-    this.filterValue = '';
-    this.searchAuthority();
+  searchAuthority() {
+    this.page = 1;
+    this.search();
   }
 
   trackByAuthorityId(index: number, item: any): number {
     return item.AuthorityMasterSid;
   }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
 
   softDelete(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -212,15 +185,12 @@ export class AuthorityListComponent {
     this.router.navigate(['master/authorization/entry']);
   }
 
-  resetPage() {
-    this.filterValue = '';
-    this.page = 1;
-    this.searchPerformed = false;
-    this.authorityList = [];
-    this.totalLengthOfCollection = 0;
-    this.sortColumn = 'DepartmentMaster';
-    this.sortDirection = 'asc';
-    this.searchAuthority();
+  updatePaginationData(): void {
+    this.search();
+  }
+
+  override trackBy(index: number, item: any) {
+    return item.AuthorityMasterSid || index;
   }
 
   report(): void {
