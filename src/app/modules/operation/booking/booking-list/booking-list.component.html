@@ -64,139 +64,20 @@
 
         </div>
     </div>
-    <div class="table-container bg-white rounded shadow-sm" *ngIf="totalLengthOfCollection > 0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 enterprise-table">
-                <thead class="enterprise-header">
-                    <tr>
-                        <th class="action-header"></th>
-                        <th class="sortable-header" (click)="sort('BookingNo')">
-                            <div class="header-content">
-                                <span>Booking No</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'BookingNo'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'BookingNo'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('Dept')">
-                            <div class="header-content">
-                                <span>Department</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'Dept'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'Dept'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('POL')">
-                            <div class="header-content">
-                                <span>POL</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'POL'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'POL'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('POD')">
-                            <div class="header-content">
-                                <span>POD</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'POD'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'POD'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('FPD')">
-                            <div class="header-content">
-                                <span>FDC</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'FPD'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'FPD'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('vslvoy')">
-                            <div class="header-content">
-                                <span>Vessel / Voyage</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'vslvoy'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'vslvoy'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('salesman')">
-                            <div class="header-content">
-                                <span>Salesman</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'salesman'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'salesman'"></i>
-                            </div>
-                        </th>
-                        <th class="sortable-header" (click)="sort('milestone')">
-                            <div class="header-content">
-                                <span>Milestone</span>
-                                <i class="fas fa-sort sort-icon"
-                                   [class.fa-sort-up]="sortDirection === 'asc' && sortColumn === 'milestone'"
-                                   [class.fa-sort-down]="sortDirection === 'desc' && sortColumn === 'milestone'"></i>
-                            </div>
-                        </th>
-                        <th class="status-header">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of allBookings; track $index) {
-                    <tr class="enterprise-row"
-                        [class.selected]="isRowSelected(item)"
-                        (click)="selectRow(item)">
-                        <td class="action-column" (click)="$event.stopPropagation()">
-                            @if(hasPermission('View')) {
-                            <button class="action-icon"
-                                    (click)="viewBooking(item)"
-                                    title="View Booking">
-                                <i-feather name="eye"></i-feather>
-                            </button>
-                            }
-                        </td>
-                        <td class="booking-column">
-                            <button class="booking-link"
-                                    (click)="viewBooking(item); $event.stopPropagation()">
-                                {{item.BookingNo}}
-                            </button>
-                        </td>
-                        <td class="data-column">{{item.Dept}}</td>
-                        <td class="data-column">{{item.POL}}</td>
-                        <td class="data-column">{{item.POD}}</td>
-                        <td class="data-column">{{item.FPD}}</td>
-                        <td class="vessel-column">
-                            <span *ngIf="item.VesselName && item.VoyageNo" class="text-muted">
-                                {{item.vslvoy}}
-                            </span>
-                            <span *ngIf="!item.VesselName || !item.VoyageNo" class="text-muted">
-                                -
-                            </span>
-                        </td>
-                        <td class="data-column">{{item.salesman || '-'}}</td>
-                        <td class="data-column">{{item.milestone}}</td>
-                        <td class="status-column">
-                            @if(item.status === "Active"){
-                            <span class="status-badge active">
-                                <i class="status-dot"></i>
-                                Active
-                            </span>
-                            } @else {
-                            <span class="status-badge inactive">
-                                <i class="status-dot"></i>
-                                Suspended
-                            </span>
-                            }
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <!-- Reusable Pagination Component -->
-        <app-common-pagination
-            [config]="paginationConfig"
-            (pageChange)="onPageChange($event)"
-            (pageSizeChange)="onPageSizeChange($event)">
-        </app-common-pagination>
-        <div class="col-12" *ngIf="totalLengthOfCollection === 0">
-            <div class="alert alert-info text-center">No records found</div>
-        </div>
-    </div>
+    <!-- Reusable Table Component -->
+    <app-reusable-table
+        [config]="tableConfig"
+        [data]="allBookings"
+        [loading]="tableLoading"
+        [totalRecords]="totalLengthOfCollection"
+        [paginationConfig]="paginationConfig"
+        [selectedRows]="selectedTableRows"
+        (actionClick)="onTableActionClick($event)"
+        (rowClick)="onTableRowClick($event)"
+        (rowSelect)="onTableRowSelect($event)"
+        (sortChange)="onTableSortChange($event)"
+        (filterChange)="onTableFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
 </div>

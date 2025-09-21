@@ -10,8 +10,10 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -24,7 +26,8 @@ import { Observable } from 'rxjs';
         RouterModule,
         FavoriteStarComponent,
         NgxSpinnerModule,
-        CommonPaginationComponent
+        CommonPaginationComponent,
+        ReusableTableComponent
     ],
     templateUrl: './booking-list.component.html',
     styleUrl: './booking-list.component.scss'
@@ -36,6 +39,31 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     currentCompany: any;
     currentBranch: any;
     selectedRowId: string | null = null;
+
+    // Table configuration
+    tableConfig: TableConfig = {
+        columns: [],
+        actions: [
+            {
+                icon: 'fas fa-eye',
+                label: 'View',
+                action: 'view',
+                tooltip: 'View Booking',
+                condition: (row: any) => this.hasPermission('View')
+            }
+        ],
+        selectable: false,
+        multiSelect: false,
+        showColumnToggle: true,
+        showFilters: true,
+        showPagination: true,
+        trackByKey: 'BookingHeaderSid',
+        emptyMessage: 'No bookings found',
+        dragAndDrop: true
+    };
+
+    selectedTableRows: any[] = [];
+    tableLoading = false;
 
     protected config: ListComponentConfig = {
         storageKey: 'booking-list-state',
@@ -72,12 +100,18 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             }
         });
 
+        // Initialize table configuration
+        this.initializeTableConfig();
+
         // Restore selected row before data load
         this.restoreSelectedRow();
         console.log('Restored selected row ID:', this.selectedRowId);
 
-        // Initialize base component
+            // Initialize base component
         super.ngOnInit();
+
+        // Update selected rows for table component
+        this.updateSelectedTableRows();
     }
 
     checkPermissions() {
@@ -101,6 +135,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
 
     // Implement abstract methods from BaseListComponent
     protected searchItems(): Observable<any> {
+        this.tableLoading = true;
         this.spinner.show();
         return this.operationService.searchBooking(this.getSearchParams());
     }
@@ -118,6 +153,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
 
     protected processSearchResults(response: any): void {
+        this.tableLoading = false;
         this.spinner.hide();
         if (response.status) {
             this.allItems = response.data.items.map(item => ({
@@ -133,6 +169,9 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
 
             console.log('Data loaded, current selectedRowId:', this.selectedRowId);
             console.log('Available booking IDs:', this.allItems.map(item => item.BookingHeaderSid));
+
+            // Update selected rows for table component
+            this.updateSelectedTableRows();
         } else {
             this.appSettingService.showError('Error searching bookings.');
             this.allItems = [];
@@ -141,6 +180,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
 
     protected override handleSearchError(error: any): void {
+        this.tableLoading = false;
         this.spinner.hide();
         this.appSettingService.showError('Error searching bookings.');
         console.error('Error searching bookings', error);
@@ -226,6 +266,123 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         this.router.navigate(['operation/booking/entry']);
     }
 
+    // Table configuration
+    private initializeTableConfig(): void {
+        this.tableConfig.columns = [
+            {
+                key: 'BookingNo',
+                label: 'Booking No',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                template: 'link',
+                width: '180px',
+                dataType: 'string'
+            },
+            {
+                key: 'Dept',
+                label: 'Department',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'POL',
+                label: 'POL',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'POD',
+                label: 'POD',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'FPD',
+                label: 'FDC',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'vslvoy',
+                label: 'Vessel / Voyage',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string',
+                cellClass: 'vessel-column'
+            },
+            {
+                key: 'salesman',
+                label: 'Salesman',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'milestone',
+                label: 'Milestone',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'status',
+                label: 'Status',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                template: 'status',
+                width: '100px',
+                dataType: 'string',
+                cellClass: 'status-column'
+            }
+        ];
+    }
+
+    // Table event handlers
+    onTableActionClick(event: TableEventData): void {
+        if (event.action === 'view') {
+            this.viewBooking(event.row);
+        }
+    }
+
+    onTableRowClick(row: any): void {
+        this.selectRow(row);
+    }
+
+    onTableRowSelect(rows: any[]): void {
+        this.selectedTableRows = rows;
+        if (rows.length > 0) {
+            this.selectedRowId = String(rows[0].BookingHeaderSid);
+        } else {
+            this.selectedRowId = null;
+        }
+        this.saveSelectedRow();
+    }
+
+    onTableSortChange(sort: TableSortConfig): void {
+        this.sortColumn = sort.column;
+        this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+        this.search();
+    }
+
+    onTableFilterChange(filters: TableFilter[]): void {
+        // For now, we'll handle this with the existing search functionality
+        // In a more advanced implementation, you could apply individual column filters
+        console.log('Filters changed:', filters);
+    }
+
     report(): void {
         const formattedData = this.allBookings;
         const companyName = this.currentCompany?.companyName ?? 'Company';
@@ -245,5 +402,16 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             fileName: 'Booking-Report',
             title: companyName
         });
+    }
+
+    private updateSelectedTableRows(): void {
+        if (this.selectedRowId && this.allItems.length > 0) {
+            const selectedItem = this.allItems.find(item =>
+                String(item.BookingHeaderSid) === String(this.selectedRowId)
+            );
+            this.selectedTableRows = selectedItem ? [selectedItem] : [];
+        } else {
+            this.selectedTableRows = [];
+        }
     }
 }
