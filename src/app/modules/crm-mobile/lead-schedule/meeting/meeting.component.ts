@@ -114,6 +114,7 @@ export class MeetingComponent {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       createdBy : this.userData?.userEmail,
+      LeadOrCustomer : 'L',
       PreCustomerMasterSid: this.PreCustomerMasterSid
     };
     this.btnDisable = true;

@@ -166,7 +166,6 @@ dataFromEnqPage:any;
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
-
       if (this.dataFromEnqPage?.rateRequest) {
         console.log(this.dataFromEnqPage,'dataFromEnqPage171')
         this.patchEnqPageValues(this.dataFromEnqPage);
@@ -337,7 +336,6 @@ patchEnqPageValues(enqData: any) {
     'EnquirySid',
     'CustomerMasterSid',
     'CustomerName',
-    'CustomerMasterSid',
     'CustomerAddress',
     'Email'
   ];
@@ -365,7 +363,7 @@ patchEnqPageValues(enqData: any) {
   }
 
   // --- Determine segment type -----------------------------
-  const segment = this.getSegmentTypeFromShipmentType(enqData.ShipmentType);
+  const segment = enqData?.ShipmentType;
 
   // --- Process each route ---------------------------------
   for (const [routeIndex, route] of routes.entries()) {
@@ -383,11 +381,11 @@ patchEnqPageValues(enqData: any) {
       FPODSid: route?.FDPSid || null, // Use FDPSid from the actual data
       CarrierMasterSid: route?.CarrierMasterSid || null,
       CarrierName: route?.CarrierName || '',
-      CargoType: cargoData?.CargoType || 'General',
-      ContainerType: cargoData?.ContainerType || null,
-      ContainerQty: cargoData?.PackageQty || 1,
-      CBM: cargoData?.Volume || 1,
-      ChargeableWeight: cargoData?.ChargeableWeight || cargoData?.GrossWeight || 0,
+      CargoType: route?.CargoType || 'General',
+      ContainerType: route?.ContainerType || null,
+      ContainerQty: Number(route?.ContainerQty) || 1,
+      CBM: route?.CBM || 1,
+      ChargeableWeight: route?.ChargeableWeight || cargoData?.GrossWeight || 0,
       effDate: new Date(),
       expDate: '', 
       TransitDays: route?.TransitDays || '',
@@ -405,7 +403,7 @@ patchEnqPageValues(enqData: any) {
 
     // Handle additional logic
     this.addQuoteCharge(routeIndex);
-    this.handleValidationOnDept(routeIndex, segment);
+    // this.handleValidationOnDept(routeIndex,segment);
     this.onRouteChange(routeIndex);
 
     // Disable the patched fields for this route

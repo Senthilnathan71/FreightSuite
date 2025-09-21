@@ -180,15 +180,15 @@
                                             <a class="text-info mx-2" (click)="editEnquiry(enq.EnquiryHeaderSid)">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
-                                            @if(enq.authorizerStatus === 'Approved'){
-                                            @if(!enq.quoteNo){
+                                            <!-- @if(enq.authorizerStatus === 'Approved'){
+                                            @if(!enq.quoteNo){ -->
                                             <button class="mx-2 btn btn-sm text-info btn-link border-start ps-3 " style="cursor: pointer;" (click)="goForQuotationCreation(enq.EnquiryHeaderSid)" appPreventMultiClick [isLoading]="loadingEnquiry"
                                             title="Create Quotation"
                                             >
                                                 <i-feather name="file-plus" class="feather-sm"></i-feather>
                                             </button>
-                                            }
-                                            }
+                                            <!-- }
+                                            } -->
                                         </section>
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
