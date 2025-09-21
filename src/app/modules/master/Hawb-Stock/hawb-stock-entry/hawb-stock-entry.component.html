@@ -71,7 +71,7 @@
   </div>
 </aside> -->
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!hawbForm.get('AirwayBillType')?.value">
     <ng-select 
       [items]="['Airline', 'Other']"
       formControlName="AirwayBillType"
@@ -104,13 +104,13 @@
 
                         @if(hawbForm.get('AirwayBillType').value === 'Other') {
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!hawbForm.get('Agent')?.value">
     <ng-select 
       formControlName="Agent"
       [items]="customerList"
       bindLabel="CustomerName"
       bindValue="CustomerMasterSid"
-      placeholder="Select Agent">
+      placeholder="">
     </ng-select>
     <label class="input-label">Agent <span class="text-danger fw-bold">*</span></label>
     <div class="error-message">
@@ -178,7 +178,7 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-4">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                               <input 
                                 class="form-control mb-0" 
@@ -233,7 +233,7 @@
                             </div>
                         </aside> -->
                                                 <aside class="col-md-4">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select" [class.filled]="!!hawbForm.get('StockStatus')?.value">
                             <ng-select 
                               [items]="stockStatusList"
                               formControlName="StockStatus"

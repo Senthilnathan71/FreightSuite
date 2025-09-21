@@ -2,7 +2,7 @@
     <div class="row compact-form">
  
  
-        <div class="col-12">
+        <div class="col-12 px-0">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 d-flex pb-2">
                       <div class="d-flex align-items-center gap-2">
@@ -11,7 +11,7 @@
                     </div>
                     <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Unit</h5>
                     @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer"  (click)="showInfo()">
                         <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                     }
@@ -54,7 +54,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-12 px-0">
  
             <ng-container *ngTemplateOutlet="unitform"></ng-container>
         </div>
@@ -82,7 +82,7 @@
     </div>
  
     <ng-template #unitform>
-        <div class="card">
+        <div class="card mb-0">
             <div class="card-body">
                  <div class="row">
             <div class="col-md-6">
@@ -111,7 +111,7 @@
                                 </div>
                             </aside>
  
-                            <aside class="col-md-4">
+                            <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="unitCode" [textWithNumbers]="4">
@@ -129,8 +129,8 @@
                                 </div>
                             </aside>
  
-                            <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
+                            <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!unitForm.get('containerType')?.value">
     <ng-select 
       formControlName="containerType" 
       [items]="containerTypes" 
@@ -150,14 +150,8 @@
     }
   </div>
 </aside>
-                            <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select formControlName="status" [items]="statusOptions" bindLabel="name" bindValue="value">
-    </ng-select>
-    <label for="" class="input-label">Status</label>
-  </div>
-</aside>
-                            <aside class="col-md-12">
+
+                            <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Remarks" [textWithNumbers]="100">
@@ -174,6 +168,13 @@
                                     }
                                 </div>
                             </aside>
+                                                        <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!unitForm.get('status')?.value">
+    <ng-select formControlName="status" [items]="statusOptions" bindLabel="name" bindValue="value">
+    </ng-select>
+    <label for="" class="input-label">Status</label>
+  </div>
+</aside>
                         </div>
                     </div>
                 </div>
@@ -188,7 +189,7 @@
 </div>
 
                         <div class="col-12   border-bottom">
-                            <label class="form-check-label ms-2 my-2">Job Type <span
+                            <label class="form-check-label ms-2 my-1">Job Type <span
                                     class="text-danger">*</span></label>
                             <div class="col-md-12 d-flex flex-wrap gap-3 mb-3 align-items-center ms-4">
                                 <label *ngFor="let option of jobType">
@@ -208,7 +209,7 @@
  
                         </div>
                         <div class="col-12 ">
-                            <label class="form-check-label ms-2 my-3">Measurement Type <span
+                            <label class="form-check-label ms-2 my-2">Measurement Type <span
                                     class="text-danger">*</span></label>
                             <div class="col-md-12 d-flex flex-wrap gap-3 ms-4">
                                 <label *ngFor="let option of measurementType">

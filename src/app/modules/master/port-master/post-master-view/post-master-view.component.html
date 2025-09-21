@@ -1,6 +1,6 @@
 <form [formGroup]="portForm">
     <div class="row compact-form">
-        <div class="col-12">
+        <div class="col-12 px-0">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 d-flex pb-2">
                     <div class="d-flex align-items-center gap-2">
@@ -9,7 +9,7 @@
                         </div>
                         <h5 class="page-title mb-0  text-info">{{isEditMode ? 'Edit' : 'Add'}} Port Master</h5>
                         @if(isEditMode){
-                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                             <i class="fas fs-6 fa-info-circle"></i>
                         </a>
                         }
@@ -54,13 +54,13 @@
             </div>
         </div>
 
-        <div class="mx-0">
+        <div class="mx-0 px-0">
             <div class="card">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card h-100 mb-0">
-                                <div class="card-body py-2">
+                                <div class="card-body py-1">
                                     <div class="row pb-2 rounded border border-top-0">
                                         <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                                             <i class="fas fa-box fs-4"></i>
@@ -103,10 +103,10 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group custom-form-group-select">
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('CountryMasterSid')?.value">
                                                 <ng-select class="ng-select" [items]="countryList"
                                                     bindLabel="countryName" bindValue="CountryMasterSid"
-                                                    formControlName="CountryMasterSid" placeholder="Select Country"
+                                                    formControlName="CountryMasterSid" placeholder=""
                                                     (change)="filterStateByCountry($event)">
                                                 </ng-select>
                                                 <label for="text-input" class="input-label">Country <span
@@ -121,10 +121,10 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group custom-form-group-select">
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('StateMasterSid')?.value">
                                                 <ng-select class="ng-select" [items]="filteredStateList"
                                                     bindLabel="stateName" bindValue="StateMasterSid"
-                                                    formControlName="StateMasterSid" placeholder="Select State">
+                                                    formControlName="StateMasterSid" placeholder="">
                                                 </ng-select>
 
                                                 <label for="text-input" class="input-label">State</label>
@@ -139,7 +139,7 @@
                                     }
                                 </ng-select> -->
                                                 <ng-select formControlName="ZoneMasterSid" [items]="regionList"
-                                                    bindLabel="ZoneName" bindValue="ZoneMasterSid" class="ng-select">
+                                                    bindLabel="ZoneName" bindValue="ZoneMasterSid" class="ng-select" [class.filled]="!!portForm.get('ZoneMasterSid')?.value">
 
                                                 </ng-select>
                                                 <label for="text-input" class="input-label">Region</label>
@@ -217,8 +217,8 @@
                                             <div class="custom-form-group custom-form-group-select">
                                                 @if(isEditMode){
                                                 <ng-select formControlName="status" [items]="modeOfStatus"
-                                                    bindLabel="name" bindValue="value" placeholder="Select status"
-                                                    class="ng-select">
+                                                    bindLabel="name" bindValue="value" placeholder=""
+                                                    class="ng-select" [class.filled]="!!portForm.get('status')?.value">
                                                 </ng-select>
                                                 } @else {
                                                 <input type="text" name="status" class="custom-input-field sm"
@@ -236,9 +236,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="card h-100 mb-0">
-                                <div class="card-body py-2">
+                                <div class="card-body py-1">
                                     <div class="row pb-2 rounded border border-top-0">
-                                        <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                                        <div class="card-header-title d-flex align-items-center gap-2  mb-2">
                                             <i class="fas fa-ship fs-4"></i>
                                             <h5 class="card-titlename mb-0">Shipment Port Settings</h5>
                                         </div>
@@ -322,7 +322,7 @@
                                         </div>
 
                                         <aside class="col-md-12">
-                                            <div class="custom-form-group ">
+                                            <div class="custom-form-group my-0">
                                                 <textarea id="textarea-input" class="custom-input-field" placeholder=""
                                                     rows="1" formControlName="ExportRestriction"
                                                     [textWithNumbers]="100"></textarea>
@@ -336,7 +336,7 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-12">
-                                            <div class="custom-form-group mt-0">
+                                            <div class="custom-form-group my-0">
                                                 <textarea id="textarea-input" class="custom-input-field" placeholder=""
                                                     rows="1" formControlName="ImportRestriction"
                                                     [textWithNumbers]="100"></textarea>
@@ -350,7 +350,7 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-12">
-                                            <div class="custom-form-group mt-0">
+                                            <div class="custom-form-group my-0">
                                                 <textarea id="textarea-input" class="custom-input-field" placeholder=""
                                                     rows="1" formControlName="Remarks"
                                                     [textWithNumbers]="100"></textarea>

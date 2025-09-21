@@ -90,7 +90,7 @@
                       </aside>
 
                       <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('ShipmentType')?.value">
                           <ng-select [items]="shipmentTypeOptions" bindLabel="label" bindValue="value"
                             formControlName="ShipmentType" id="ShipmentType"
                             [class.is-invalid]="milestoneForm.get('ShipmentType')?.invalid && milestoneForm.get('ShipmentType')?.touched">
@@ -104,7 +104,7 @@
                         </div>
                       </aside>
                       <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('DepartmentMasterSid')?.value">
 
                           <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
                             formControlName="DepartmentMasterSid" placeholder="Select Department">
@@ -201,7 +201,7 @@
                         </div>
                       </aside>
                       <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('status')?.value">
                           <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="status"
                             id="status"></ng-select>
                           <label class="input-label">Status <span class="text-danger">*</span></label>

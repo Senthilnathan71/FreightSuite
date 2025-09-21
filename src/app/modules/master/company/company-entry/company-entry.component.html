@@ -135,10 +135,10 @@
               </div>
             </aside>
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!companyForm.get('CountryMasterSid')?.value">
                 <ng-select class="ng-select" [items]="countryResults" bindLabel="countryName"
                   bindValue="CountryMasterSid" (change)="handlePanControl($event)" (clear)="handlePanControl(-1)"
-                  formControlName="CountryMasterSid" placeholder="Select Country"></ng-select>
+                  formControlName="CountryMasterSid" placeholder=""></ng-select>
                 <!-- <ng-select id="text-input" class="ng-select" placeholder="Select Country"
                   formControlName="CountryMasterSid" (change)="handlePanControl($event)">
                   <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
@@ -164,8 +164,8 @@
               </div>
             </aside>
             <aside class="col-md-4" *ngIf="companyForm.get('companyCode')?.enabled">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select id="text-input" class="ng-select" placeholder="Select Currency"
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!companyForm.get('CurrencyMasterSid')?.value">
+                <ng-select id="text-input" class="ng-select" placeholder=""
                   formControlName="CurrencyMasterSid">
                   <ng-option *ngFor="let currency of currencyResults" [value]="currency.CurrencyMasterSid">
                     {{currency.currencyName}}
@@ -413,7 +413,7 @@
             <!-- isHO? -->
 
             <aside class="col-md-4">
-              <div class="form-check form-check-inline ms-2 mt-4">
+              <div class="form-check form-check-inline mt-3">
                 <input type="checkbox" id="Cash" formControlName="isHo" class="form-check-input" name="HO" value="Cash"
                   (keydown.enter)="toggleCheckbox($event)" />
                 <label for="Cash" class="form-check-label">HO? <span class="text-danger"></span></label>
@@ -448,7 +448,7 @@
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!companyForm.get('status')?.value">
                 @if(isEditMode){
                 <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
                   <ng-option value="Active">Active</ng-option>
@@ -710,8 +710,8 @@
                         </div>
                       </aside>
                       <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select id="branchCountryMasterSid" class="ng-select" placeholder="Select Country"
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!branchForm.get('branchCountryMasterSid')?.value">
+                          <ng-select id="branchCountryMasterSid" class="ng-select" placeholder=""
                             formControlName="branchCountryMasterSid" (change)="getStatesByCountry($event)">
                             <!-- <ng-option value="">Select Country</ng-option> -->
                             <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
@@ -732,8 +732,8 @@
                       </aside>
 
                       <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select id="branchStateMasterSid" class="ng-select" placeholder="Select State"
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!branchForm.get('branchStateMasterSid')?.value">
+                          <ng-select id="branchStateMasterSid" class="ng-select" placeholder=""
                             formControlName="branchStateMasterSid" (change)="getCitiesByState($event)">
                             <!-- <ng-option value="">Select State</ng-option> -->
                             <ng-option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
@@ -754,8 +754,8 @@
                       </aside>
 
                       <aside class="col-md-4 ">
-                        <div class="custom-form-group custom-form-group-select">
-                          <ng-select id="branchCityMasterSid" class="ng-select" placeholder="Select City"
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!branchForm.get('branchCityMasterSid')?.value"> 
+                          <ng-select id="branchCityMasterSid" class="ng-select" placeholder=""
                             formControlName="branchCityMasterSid">
                             <!-- <ng-option value="">Select City</ng-option> -->
                             <ng-option *ngFor="let city of branchCityList" [value]="city.CityMasterSid">
@@ -871,7 +871,7 @@
                       </aside>
 
                       <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!branchForm.get('branchStatus')?.value">
                           @if(isModalEditMode){
                           <ng-select id="branchStatus" class="ng-select" formControlName="branchStatus">
                             <ng-option value="Active">Active</ng-option>
@@ -1434,7 +1434,7 @@
 
               <!-- Status -->
               <aside class="col-12 col-sm-6 col-md-4 ">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!companyForm.get('status')?.value">
                   @if(isBankModalEdit){
                   <ng-select id="bankStatus" class="ng-select" formControlName="status">
                     <ng-option value="Active">Active</ng-option>

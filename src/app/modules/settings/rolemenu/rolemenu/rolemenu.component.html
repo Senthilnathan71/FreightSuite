@@ -79,7 +79,7 @@
         <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Role Menu</h4>
             @if(isEditMode){
-            <a class="text-white ps-2 w-2 h-2" (click)="showInfo()">
+            <a class="text-white ps-2 w-2 h-2 cursor-pointer" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
@@ -93,10 +93,10 @@
                             <section class="row compact-form">
                                 <h6 class="card-title pb-1">Role Access Details</h6>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!roleMenuForm.get('Module')?.value">
                                         <ng-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
                                             bindValue="ModuleName" (change)="filterMenuByModule($event)"
-                                            placeholder="Select Module" formControlName="Module">
+                                            placeholder="" formControlName="Module">
                                         </ng-select>
                                         <label for="text-input" class="input-label">Module <span
                                                 class="text-danger">*</span></label>
@@ -112,9 +112,9 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!roleMenuForm.get('MenuMasterSid')?.value">
                                         <ng-select class="ng-select" [items]="menuList" bindLabel="MenuName"
-                                            bindValue="MenuMasterSid" placeholder="Select Menu"
+                                            bindValue="MenuMasterSid" placeholder=""
                                             formControlName="MenuMasterSid" (change)="getMenuPermissions($event)"
                                             (clear)="clearMenuPermissions()">
                                         </ng-select>
@@ -130,9 +130,9 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!roleMenuForm.get('RoleMasterSid')?.value">
                                         <ng-select class="ng-select" [items]="roleList" bindLabel="UserRoleName"
-                                            bindValue="RoleMasterSid" placeholder="Select Role"
+                                            bindValue="RoleMasterSid" placeholder=""
                                             formControlName="RoleMasterSid">
                                         </ng-select>
                                         <label for="text-input" class="input-label">Role Name <span
@@ -151,7 +151,7 @@
                                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                             formControlName="Remarks" [textWithNumbers]="100">
                                         <label for="text-input" class="input-label">Remarks <span
-                                                class="text-danger">*</span></label>
+                                                class="text-danger"></span></label>
                                         @if(f['Remarks']?.touched && f['Remarks']?.invalid ){
                                         <div class="error-message">
                                             @if(f['Remarks']?.hasError('required')){
@@ -164,10 +164,10 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!roleMenuForm.get('status')?.value">
                                         @if(isEditMode){
                                         <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name"
-                                            placeholder="Select Status" class="ng-select" formControlName="status">
+                                            placeholder="" class="ng-select" formControlName="status">
                                         </ng-select>
                                         } @else {
                                         <input type="text" name="status" class="custom-input-field sm" id="text-input"

@@ -23,7 +23,7 @@
                 </div>
             </div>
         </div> -->
-        <div class="col-12">
+        <div class="col-12 ">
              <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
@@ -33,7 +33,7 @@
                 
                      <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' :'Add'}} UOM Master</h5>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
@@ -80,15 +80,15 @@
        
     </div>
 
-    <div class="col-12">
+    <div class="col-12 ">
 
         <ng-container *ngTemplateOutlet="uomform"></ng-container>
     </div>
     <ng-template #uomform>
-        <div>
+
             <div class="col-12">
                 <div class="card h-100 mb-0">
-                    <div class="card-body">
+                    <div class="card-body py-2">
                         <section class="row compact-form border border-top-0 pb-2 rounded">
                             <div class="card-header-title d-flex align-items-center gap-2  mb-1">
                                  <i class="fas fa-balance-scale"></i>
@@ -123,7 +123,7 @@
                                 </div>
                             </aside>
                             <aside class="col-md-4">
-                                <div class="custom-form-group custom-form-group-select">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!uomForm.get('UOMType')?.value">
 
                                     <ng-select formControlName="UOMType" [items]="modeofUOMtype" bindLabel="name"
                                         bindValue="name">
@@ -139,7 +139,7 @@
                                 </div>
                             </aside>
                             <aside class="col-md-4">
-                                <div class="custom-form-group custom-form-group-select">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!uomForm.get('ShipmentType')?.value">
 
                                     <ng-select formControlName="ShipmentType" [items]="shipmenttypes" bindLabel="name"
                                         bindValue="name">
@@ -277,7 +277,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+       
     </ng-template>
 </form>
 <ng-template #infoContent let-modal>

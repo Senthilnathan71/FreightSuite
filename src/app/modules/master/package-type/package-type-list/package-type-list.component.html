@@ -224,7 +224,7 @@
               </div>
             </aside>
             <aside class="col-md-6">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!packageTypeForm.get('status')?.value">
                 <ng-select [items]="statusList" formControlName="status"
                   [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched"
                   [disabled]="packageTypeForm.get('status')?.disabled">

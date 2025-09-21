@@ -1,6 +1,6 @@
 <div class="row compact-form" [formGroup]="chartForm">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-auto">
             <div class="col-md-4 pb-2">
                   <div class="d-flex align-items-center gap-2">
                          <div class="brand-icon">
@@ -8,7 +8,7 @@
                     </div>
                 <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add' }} Chart of Accounts</h5>
                 @if(isEditMode){
-        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+        <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
         }
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12">
+    <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
             <div class="card-body py-2 px-3">
                 <div class="row pb-2 rounded border border-top-0" >
@@ -85,9 +85,9 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('LedgerCurrency')?.value">
                             <ng-select formControlName="LedgerCurrency" [items]="currencyList" bindLabel="currencyName"
-                                bindValue="CurrencyMasterSid" placeholder="Select Currency">
+                                bindValue="CurrencyMasterSid" placeholder="">
                             </ng-select>
                             <label class="input-label">Currency Code</label>
                         </div>
@@ -185,7 +185,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4 mt-3 mt-md-0">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('Category')?.value">
                             <ng-select formControlName="Category" [items]="modeOfCategory" bindLabel="name"
                                 bindValue="name">
 
@@ -198,7 +198,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4 mt-3 mt-md-0">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('LedgerType')?.value">
                             <ng-select formControlName="LedgerType" [items]="modeOfReportType" bindLabel="name"
                                 bindValue="name">
 
@@ -222,10 +222,10 @@
 
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('Status')?.value">
                             <ng-container *ngIf="isEditMode; else readOnlyStatus">
                                 <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
-                                    bindValue="name" placeholder="Select status" class="ng-select">
+                                    bindValue="name" placeholder="" class="ng-select">
                                 </ng-select>
                             </ng-container>
                             <ng-template #readOnlyStatus>

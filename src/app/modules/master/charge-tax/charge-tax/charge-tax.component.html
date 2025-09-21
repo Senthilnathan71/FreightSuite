@@ -313,7 +313,7 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-6 ">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!chargeTaxForm.get('status')?.value">
                                 <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                     [class.is-invalid]="chargeTaxForm.get('status')?.invalid && chargeTaxForm.get('status')?.touched">
                                 </ng-select>

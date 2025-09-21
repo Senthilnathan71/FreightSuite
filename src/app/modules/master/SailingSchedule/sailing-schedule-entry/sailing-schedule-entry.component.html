@@ -1,5 +1,5 @@
 <div class="row compact-form">
-    <div class="col-12">
+    <div class="col-12 px-0" >
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
@@ -8,7 +8,7 @@
                     </div>
                       <h5 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit':'Add'}} Sailing Schedule</h5>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showHeaderInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
@@ -55,7 +55,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12" [formGroup]="scheduleForm">
+    <div class="col-md-12 px-0" [formGroup]="scheduleForm">
         <div class="card mb-2">
             <div class="card-body px-3 py-3">
                 <div class="row  pb-2 rounded border border-top-0">
@@ -65,8 +65,8 @@
                     </div>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="VesselMasterSid" [items]="vesselList" bindValue="VesselMasterSid" bindLabel="VesselName" placeholder="Select Vessel">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('VesselMasterSid')?.value">
+                            <ng-select class="ng-select" formControlName="VesselMasterSid" [items]="vesselList" bindValue="VesselMasterSid" bindLabel="VesselName" placeholder="">
                             </ng-select>
                             <label for="text-input" class="input-label">Vessel <span class="text-danger">*</span></label>
                             @if(scheduleForm.get('VesselMasterSid').touched && scheduleForm.get('VesselMasterSid').invalid){
@@ -179,7 +179,7 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                             <input 
                                     class="form-control mb-0" 
@@ -251,7 +251,7 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-3">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select-date">
                         <div class="input-group">
                          <input 
                                     class="form-control mb-0" placeholder="dd-mm-yyyy" 
@@ -337,19 +337,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            @if(isEditMode){
-                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name" placeholder="Select status" class="ng-select">
-                            </ng-select>
-                            } @else {
-                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
-                                id="text-input" readonly>
-                            }
-                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
+                  
 
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check">
@@ -361,9 +349,9 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('VoyageType')?.value">
                             <ng-select formControlName="VoyageType" [items]="modeOfVoyageType" bindLabel="name"
-                                bindValue="name" placeholder="Select Voyage Type">
+                                bindValue="name" placeholder="">
 
                             </ng-select>
                             <label for="" class="input-label">Voyage Type <span class="text-danger"></span></label>
@@ -371,8 +359,8 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid" bindLabel="CustomerName" formControlName="Carrier" placeholder="Select Carrier">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('Carrier')?.value">
+                            <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid" bindLabel="CustomerName" formControlName="Carrier" placeholder="">
 
                             </ng-select>
                             <label for="text-input" class="input-label">Carrier <span
@@ -380,12 +368,45 @@
 
                         </div>
                     </aside>
+                      <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('status')?.value">
+                            @if(isEditMode){
+                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name" placeholder="" class="ng-select">
+                            </ng-select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
+
+    <div class="nav-pills-container">
+    <div class="nav-pills">
+      <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
+        (click)="selectTab(tab.name)">
+        <div class="pill-icon">
+          <i [class]="tab.icon" class="fs-4"></i>
+        </div>
+        <span class="pill-label">{{ tab.name }}</span>
+        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+      </div>
+    </div>
+  </div>
+   <div class="content-workspace px-0">
+      <div class="workspace-content" *ngIf="selectedTab === 'Details'">
+            <div class="content-layout">
+                 <ng-container *ngTemplateOutlet="DetailListTemplate"></ng-container>
+            </div>
+      </div>
+   </div>
+    <!-- <div class="row">
         <div class="col-md-12">
         <div class="card">
             <div class="card-body py-2">
@@ -407,7 +428,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 
         <!--Sailing Schedule Details List Template -->
@@ -535,8 +556,8 @@
             Since Sno has changed, please update ETA and ETD before saving.
           </div>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="POLSid" [items]="filteredPOLList" bindLabel="PortCode" bindValue="PortMasterSid" placeholder="Select Port" >
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('POLSid')?.value">
+                            <ng-select formControlName="POLSid" [items]="filteredPOLList" bindLabel="PortCode" bindValue="PortMasterSid" placeholder="" >
                                 <ng-template ng-option-tmp let-item="item">
                                     {{ item.PortName | uppercase }} - {{ item.PortCode }}
                                 </ng-template>
@@ -571,7 +592,7 @@
                     </aside> -->
                      <aside class="col-md-6 mb-1">
                         <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
                                 <input 
                                     class="form-control" 
                                     placeholder="dd-mm-yyyy" 
@@ -648,7 +669,7 @@
                     </ng-template>
                     <aside class="col-md-6 mb-1">
                         <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ETD')?.value">
                                 <input 
                                     class="form-control" 
                                     placeholder="dd-mm-yyyy" 

@@ -248,7 +248,7 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!roleForm.get('status')?.value">
                                         <ng-select [items]="statusList" bindLabel="name" bindValue="id"
                                             formControlName="status"
                                             [class.is-invalid]="roleForm.get('status')?.invalid && roleForm.get('status')?.touched">
