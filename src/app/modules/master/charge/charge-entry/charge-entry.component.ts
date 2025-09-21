@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -17,6 +17,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { forkJoin } from 'rxjs';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 @Component({
   selector: 'app-charge-entry',
@@ -30,7 +32,9 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     DatePipe,
     FormsModule,
     MultiSelectComponent,
-    NgbDropdownModule
+    NgbDropdownModule,
+    TextWithNumbersDirective,
+    DecimalPrecisionDirective
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
@@ -40,10 +44,12 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
   ],
 })
 export class ChargeEntryComponent implements OnInit {
+  tab = [
+  { name: "GST Details", icon: "fas fa-file-invoice" },
+  { name: "TDS Details", icon: "fas fa-percent" }
+];
+selectedTab = this.tab[0].name;
   chargeForm: FormGroup;
-  gstForm: FormGroup;
-  tdsForm: FormGroup;
-  
   isEditMode = false;
   btnDisable = false;
   loading = false;
@@ -54,10 +60,6 @@ export class ChargeEntryComponent implements OnInit {
   currentMenuPermissions: any = {};
   currentMenuId: any;
   TandCList: any;
-  
-  // Modal references
-  gstModalRef: NgbModalRef;
-  tdsModalRef: NgbModalRef;
   
   // Lookup data
   chargeGroupOptions: any[] = [];
@@ -74,18 +76,12 @@ export class ChargeEntryComponent implements OnInit {
     { id: 'S', name: 'Suspended' }
   ];
   currentCompany: any;
-    currentBranch: any;
-
+  currentBranch: any;
 
   // GST and TDS lists
-  gstList: any[] = [];
-  tdsList: any[] = [];
-  currentGstIndex: number;
-  currentTdsIndex: number;
-  isGstEditMode = false;
-  isTdsEditMode = false;
-   auditLogs: any[] = []; // Stores audit logs
+  auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
+
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -100,7 +96,7 @@ export class ChargeEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.chargeID = +params['id'];
@@ -109,19 +105,11 @@ export class ChargeEntryComponent implements OnInit {
       }
     });
 
-    // this.appSettingService.getUser().subscribe(
-    //   user => {
-    //     if (user) {
-    //       this.userData = user;
-    //       this.checkPermissions();
-    //     }
-    //   }
-    // );
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if(userProfile){
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
 
     this.loadLookupData();
   }
@@ -131,8 +119,7 @@ export class ChargeEntryComponent implements OnInit {
     this.chargeForm = this.fb.group({
       chargeCode: ['', [
         Validators.required,
-        Validators.maxLength(5),
-        Validators.pattern(/^[A-Z0-9]+$/)
+        
       ]],
       chargeName: ['', [
         Validators.required,
@@ -146,22 +133,6 @@ export class ChargeEntryComponent implements OnInit {
       chargeTaxMasters: this.fb.array([]),
       chargeTds: this.fb.array([])
     });
-
-    // GST form
-    this.gstForm = this.fb.group({
-      HSNCode: ['', Validators.required],
-      description: [''],
-      TaxGroup: ['', Validators.required],
-      TaxRate: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      Status: ['A', Validators.required]
-    });
-
-    // TDS form
-    this.tdsForm = this.fb.group({
-      TDSSet: ['', Validators.required],
-      EffectiveFrom: ['', Validators.required],
-      Status: ['A', Validators.required]
-    });
   }
 
   get chargeTaxMasters(): FormArray {
@@ -170,6 +141,51 @@ export class ChargeEntryComponent implements OnInit {
 
   get chargeTds(): FormArray {
     return this.chargeForm.get('chargeTds') as FormArray;
+  }
+
+  // GST Form Controls
+  createGstFormGroup(gstData?: any): FormGroup {
+    return this.fb.group({
+      HSNCode: [gstData?.HSNCode || '', Validators.required],
+      description: [gstData?.description || ''],
+      TaxGroup: [gstData?.TaxGroup || '', Validators.required],
+      TaxRate: [gstData?.TaxRate || '', [Validators.required, Validators.min(0), Validators.max(100)]],
+      Status: [gstData?.Status || 'A', Validators.required],
+      ChargeTaxMasterSid: [gstData?.ChargeTaxMasterSid || null]
+    });
+  }
+
+  // TDS Form Controls
+  createTdsFormGroup(tdsData?: any): FormGroup {
+    const eff = tdsData?.EffectiveFrom ? this.toNgbDateStruct(tdsData.EffectiveFrom) : null;
+  // ensure Status casing consistent: prefer 'Status' if present, otherwise fallback to 'status'
+  const statusVal = tdsData?.Status ?? tdsData?.status ?? 'A';
+    return this.fb.group({
+      TDSSet: [tdsData?.TDSSet || '',Validators.required ],
+      EffectiveFrom: [tdsData?.EffectiveFrom ? new Date(tdsData.EffectiveFrom) : '', ],
+      Status: [tdsData?.status || 'A',Validators.required],
+      ChargeTdsSid: [tdsData?.ChargeTdsSid || null]
+    });
+  }
+
+  // Add new GST row
+  addGstRow(gstData?: any) {
+    this.chargeTaxMasters.push(this.createGstFormGroup(gstData));
+  }
+
+  // Add new TDS row
+  addTdsRow(tdsData?: any) {
+    this.chargeTds.push(this.createTdsFormGroup(tdsData));
+  }
+
+  // Remove GST row
+  removeGstRow(index: number) {
+    this.chargeTaxMasters.removeAt(index);
+  }
+
+  // Remove TDS row
+  removeTdsRow(index: number) {
+    this.chargeTds.removeAt(index);
   }
 
   checkPermissions() {
@@ -204,7 +220,10 @@ export class ChargeEntryComponent implements OnInit {
         this.chargeGroupOptions = Array.isArray(chargeGroups) ? chargeGroups : chargeGroups.data;
         this.currencyOptions = currencies.data || currencies;
         this.departmentOptions = departments.data || departments;
-        this.uomOptions = uoms.data || uoms;
+        const allUoms = (uoms && (uoms.data || uoms)) || [];
+      this.uomOptions = Array.isArray(allUoms)
+        ? allUoms.filter((u: any) => String(u.UOMType).toUpperCase() === 'C')
+        : [];
         this.hsnsacOptions = hsnsacs.data || hsnsacs;
         this.tdsOptions = tdsSets.data || tdsSets;
       },
@@ -239,15 +258,24 @@ export class ChargeEntryComponent implements OnInit {
       // Load GST data
       if (charge.chargeTaxMaster && charge.chargeTaxMaster.length > 0) {
         charge.chargeTaxMaster.forEach(gst => {
-          this.addGstToForm(gst);
+          this.addGstRow(gst);
+          // Keep fields enabled for existing records
+          const lastIndex = this.chargeTaxMasters.length - 1;
+          const gstGroup = this.chargeTaxMasters.at(lastIndex) as FormGroup;
+          gstGroup.get('TaxGroup')?.enable();
+          gstGroup.get('TaxRate')?.enable();
         });
+      } else {
+        this.addGstRow(); // Add empty row if no GST data
       }
 
       // Load TDS data
       if (charge.chargeTds && charge.chargeTds.length > 0) {
         charge.chargeTds.forEach(tds => {
-          this.addTdsToForm(tds);
+          this.addTdsRow(tds);
         });
+      } else {
+        this.addTdsRow(); // Add empty row if no TDS data
       }
 
       this.loading = false;
@@ -259,131 +287,6 @@ export class ChargeEntryComponent implements OnInit {
     }
   });
 }
-
-  addGstToForm(gstData?: any) {
-    const gstGroup = this.fb.group({
-      HSNCode: [gstData?.HSNCode || '', Validators.required],
-      description: [gstData?.description || ''],
-      TaxGroup: [gstData?.TaxGroup || '', Validators.required],
-      TaxRate: [gstData?.TaxRate || '', [Validators.required, Validators.min(0), Validators.max(100)]],
-      Status: [gstData?.Status || 'A', Validators.required],
-      ChargeTaxMasterSid: [gstData?.ChargeTaxMasterSid || null]
-    });
-    this.chargeTaxMasters.push(gstGroup);
-  }
-
-  addTdsToForm(tdsData?: any) {
-    const tdsGroup = this.fb.group({
-      TDSSet: [tdsData?.TDSSet || '', Validators.required],
-      EffectiveFrom: [tdsData?.EffectiveFrom ? new Date(tdsData.EffectiveFrom) : '', Validators.required],
-      Status: [tdsData?.status || 'A', Validators.required],
-      ChargeTdsSid: [tdsData?.ChargeTdsSid || null]
-    });
-    this.chargeTds.push(tdsGroup);
-  }
-
-  openGstModal(content: TemplateRef<any>, gstIndex?: number) {
-    if (gstIndex !== undefined) {
-      this.isGstEditMode = true;
-      this.currentGstIndex = gstIndex;
-      const gstData = this.chargeTaxMasters.at(gstIndex).value;
-      this.gstForm.patchValue(gstData);
-    } else {
-      this.isGstEditMode = false;
-      this.currentGstIndex = null;
-      this.gstForm.reset({
-        HSNCode: '',
-        description: '',
-        TaxGroup: '',
-        TaxRate: '',
-        Status: 'A'
-      });
-    }
-
-    this.gstModalRef = this.modalService.open(content, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    });
-  }
-
-  openTdsModal(content: TemplateRef<any>, tdsIndex?: number) {
-    if (tdsIndex !== undefined) {
-      this.isTdsEditMode = true;
-      this.currentTdsIndex = tdsIndex;
-      const tdsData = this.chargeTds.at(tdsIndex).value;
-      this.tdsForm.patchValue({
-        TDSSet: tdsData.TDSSet,
-        EffectiveFrom: tdsData.EffectiveFrom,
-        Status: tdsData.Status
-      });
-    } else {
-      this.isTdsEditMode = false;
-      this.currentTdsIndex = null;
-      this.tdsForm.reset({
-        TDSSet: '',
-        EffectiveFrom: '',
-        Status: 'A'
-      });
-    }
-
-    this.tdsModalRef = this.modalService.open(content, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    });
-  }
-
-  submitGstForm() {
-    if (this.gstForm.invalid) {
-      this.gstForm.markAllAsTouched();
-      return;
-    }
-
-    const gstValue = this.gstForm.value;
-    
-    if (this.isGstEditMode && this.currentGstIndex !== null) {
-      this.chargeTaxMasters.at(this.currentGstIndex).patchValue(gstValue);
-    } else {
-      this.addGstToForm(gstValue);
-    }
-
-    this.gstModalRef.close();
-    this.appSettingService.showSuccess('GST details saved successfully');
-  }
-
-  submitTdsForm() {
-    if (this.tdsForm.invalid) {
-      this.tdsForm.markAllAsTouched();
-      return;
-    }
-
-    const tdsValue = this.tdsForm.value;
-    
-    if (this.isTdsEditMode && this.currentTdsIndex !== null) {
-      this.chargeTds.at(this.currentTdsIndex).patchValue(tdsValue);
-    } else {
-      this.addTdsToForm(tdsValue);
-    }
-
-    this.tdsModalRef.close();
-    this.appSettingService.showSuccess('TDS details saved successfully');
-  }
-
-  deleteGst(index: number) {
-    this.chargeTaxMasters.removeAt(index);
-    this.appSettingService.showSuccess('GST record removed');
-  }
-
-  deleteTds(index: number) {
-    this.chargeTds.removeAt(index);
-    this.appSettingService.showSuccess('TDS record removed');
-  }
-  getTdsSetName(tdsSetId: number): string {
-  const tdsSet = this.tdsOptions.find(item => item.TDSSetHeaderSid === tdsSetId);
-  return tdsSet ? tdsSet.TDSSetName : '';
-}
-
   onSubmit() {
     if (this.chargeForm.invalid) {
         this.markFormGroupTouched(this.chargeForm);
@@ -396,16 +299,17 @@ export class ChargeEntryComponent implements OnInit {
         return;
     }
 
-    // Check if at least one TDS record exists when GST exists
-    if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) {
-        this.appSettingService.showError('Please add at least one TDS record before saving');
-        return;
-    }
+    // // Check if at least one TDS record exists when GST exists
+    // if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) {
+    //     this.appSettingService.showError('Please add at least one TDS record before saving');
+    //     return;
+    // }
 
     this.btnDisable = true;
     this.loading = true;
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const statusValue = this.chargeForm.get('Status')?.value ?? 'A';
     
     const payload = {
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
@@ -415,21 +319,22 @@ export class ChargeEntryComponent implements OnInit {
         ChargeGroupSid: this.chargeForm.value.ChargeGroupSid,
         CurrencyMasterSid: this.chargeForm.value.CurrencyMasterSid,
         DepartmentMasterSid: this.chargeForm.value.DepartmentMasterSid,
-        Status: 'A',
-        chargeTaxMaster: this.chargeTaxMasters.value.map(gst => ({
-            HSNCode: gst.HSNCode,
-            description: gst.description,
-            TaxGroup: gst.TaxGroup,
-            TaxRate: gst.TaxRate,
-            Status: gst.Status,
-            ...(gst.ChargeTaxMasterSid ? { ChargeTaxMasterSid: gst.ChargeTaxMasterSid } : {})
-        })),
-        chargeTds: this.chargeTds.value.map(tds => ({
-            TDSSet: tds.TDSSet,
-            EffectiveFrom: tds.EffectiveFrom,
-            status: tds.status,
-            ...(tds.ChargeTdsSid ? { ChargeTdsSid: tds.ChargeTdsSid } : {})
-        })),
+        Status: statusValue,
+        chargeTaxMaster: this.chargeTaxMasters.getRawValue().map(gst => ({
+    HSNCode: gst.HSNCode,
+    description: gst.description,
+    TaxGroup: gst.TaxGroup,
+    TaxRate: gst.TaxRate,
+    Status: gst.Status,
+    ...(gst.ChargeTaxMasterSid ? { ChargeTaxMasterSid: gst.ChargeTaxMasterSid } : {})
+})),
+        chargeTds: this.chargeTds.getRawValue().map(tds => ({
+  TDSSet: tds.TDSSet,
+  EffectiveFrom: this.fromNgbDateStructToIso(tds.EffectiveFrom),
+  Status: tds.Status,
+  ...(tds.ChargeTdsSid ? { ChargeTdsSid: tds.ChargeTdsSid } : {})
+})),
+
         ...(this.isEditMode ? 
             { updatedBy: currentUserEmail } : 
             { createdBy: currentUserEmail })
@@ -444,18 +349,15 @@ export class ChargeEntryComponent implements OnInit {
             this.loading = false;
             this.btnDisable = false;
             if (resp.status) {
-        
-        this.appSettingService.showSuccess(resp.message);
-      } 
-else {
-        this.appSettingService.showError(resp.message);
-      }
-
-            
-            if (!this.isEditMode && resp.data?.ChargeMasterSid) {
-                this.router.navigate(['/master/charge/entry', resp.data.ChargeMasterSid]);
+                this.appSettingService.showSuccess(resp.message);
             } else {
-                this.router.navigate(['/master/charge/list']);
+                this.appSettingService.showError(resp.message);
+            }
+
+            if (!this.isEditMode && resp.data?.charge?.ChargeMasterSid) {
+                this.router.navigate(['/master/charge/entry', resp.data.charge.ChargeMasterSid]);
+            } else {
+                this.router.navigate(['master/charge/list']);
             }
         },
         error: (err) => {
@@ -479,84 +381,85 @@ else {
             }
         }
     });
-}
+  }
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.chargeData?.ChargeMasterSid) return;
+  openAuditLogs(modal: any) {
+    if (!this.chargeData?.ChargeMasterSid) return;
 
-  this.masterService.getAuditLogsCharge('ChargeMaster', this.chargeData?.ChargeMasterSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
+    this.masterService.getAuditLogsCharge('ChargeMaster', this.chargeData?.ChargeMasterSid.toString()).subscribe({
+      next: (logs: any[]) => {
+        const formatFields = (val: any) => {
+          if (!val) return ['NA'];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          delete obj.updatedOn; // Remove updatedOn field
+          // If no fields exist after deleting updatedOn
+          if (Object.keys(obj).length === 0) return ['NA'];
+          return Object.entries(obj).map(
+            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+          );
+        };
 
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
+        this.auditLogs = logs.map(log => ({
+          ...log,
+          oldValDisplay: formatFields(log.oldVal),
+          newValDisplay: formatFields(log.newVal)
+        }));
 
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
-isChargeFormValid(): boolean {
-    return this.chargeForm.valid;
-}
-canSaveCharge(): boolean {
-    
-    if (this.chargeForm.invalid) return false;
-    
-    // Must have at least one GST record
-    if (this.chargeTaxMasters.controls.length === 0) return false;
-    
-    // Must have at least one TDS record if GST exists
-    if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) return false;
-    
-    return true;
-}
+  isChargeFormValid(): boolean {
+      return this.chargeForm.valid;
+  }
+
+  canSaveCharge(): boolean {
+      if (this.chargeForm.invalid) return false;
+      
+      // Must have at least one GST record
+      if (this.chargeTaxMasters.controls.length === 0) return false;
+      
+      // Must have at least one TDS record if GST exists
+      if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) return false;
+      
+      return true;
+  }
 
   resetForm() {
-  if (this.isEditMode) {
+    if (this.isEditMode) {
+      this.clearFormArrays();
+      this.getChargeById(this.chargeID);
+    } else {
+      this.clearFormArrays();
+      this.chargeForm.reset({
+        chargeCode: '',
+        chargeName: '',
+        UOM: null,
+        ChargeGroupSid: null,
+        CurrencyMasterSid: null,
+        DepartmentMasterSid: [],
+        Status: 'A'
+      });
+      this.chargeForm.get('Status')?.disable();
+      this.selectedDepartments = [];
+      
+      // Add empty rows for GST and TDS
+      this.addGstRow();
+      this.addTdsRow();
+    }
+  }
+
+  clearFormArrays() {
+    while (this.chargeTaxMasters.length !== 0) {
+      this.chargeTaxMasters.removeAt(0);
+    }
     
-    this.clearFormArrays();
-    
-    this.getChargeById(this.chargeID);
-  } else {
-    this.clearFormArrays();
-    this.chargeForm.reset({
-      chargeCode: '',
-      chargeName: '',
-      UOM: null,
-      ChargeGroupSid: null,
-      CurrencyMasterSid: null,
-      DepartmentMasterSid: [],
-      Status: 'A'
-    });
-    this.chargeForm.get('Status')?.disable();
-    this.selectedDepartments = [];
+    while (this.chargeTds.length !== 0) {
+      this.chargeTds.removeAt(0);
+    }
   }
-}
-clearFormArrays() {
-  
-  while (this.chargeTaxMasters.length !== 0) {
-    this.chargeTaxMasters.removeAt(0);
-  }
-  
-  
-  while (this.chargeTds.length !== 0) {
-    this.chargeTds.removeAt(0);
-  }
-}
 
   goBack() {
     this.router.navigate(['master/charge/list']);
@@ -617,30 +520,18 @@ clearFormArrays() {
     });
   }
 
-  // openAuthority() {
-  //   if (!this.chargeData) return;
-  //   const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-  //     size: 'lg', 
-  //     centered: true, 
-  //     backdrop: 'static' 
-  //   });
-  //   modalRef.componentInstance.item = this.chargeData;
-  //   modalRef.componentInstance.idLabel = 'Charge Id';
-  //   modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
-  // }
-
-   openAuthority() {
-      const MenuMasterSid = localStorage.getItem('currentMenuId');
-      if (!MenuMasterSid) return;
-     const modalRef = this.modalService.open(AuthorityLogComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, { 
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
     });
-      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-      modalRef.componentInstance.documentSid = this.chargeID;
-    }
-   
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.chargeID;
+  }
+  
   openEDoc() {
     if (!this.chargeData) return;
     const modalRef = this.modalService.open(EdocComponent, { 
@@ -654,25 +545,60 @@ clearFormArrays() {
   }
 
   onDepartmentChange(selectedNames: string[]) {
-  this.selectedDepartments = selectedNames;
+    this.selectedDepartments = selectedNames;
 
-  const selectedIds = this.departmentOptions
-    .filter(dept => selectedNames.includes(dept.departmentName))
-    .map(dept => dept.DepartmentMasterSid);
+    const selectedIds = this.departmentOptions
+      .filter(dept => selectedNames.includes(dept.departmentName))
+      .map(dept => dept.DepartmentMasterSid);
 
-  this.chargeForm.get('DepartmentMasterSid')?.setValue(selectedIds);
-}
-  
+    this.chargeForm.get('DepartmentMasterSid')?.setValue(selectedIds);
+  }
 
-  onHsnsacSelect(event: any) {
-    if (event) {
-      const selectedHsnsac = this.hsnsacOptions.find(item => item.HSSACCode === event);
-      if (selectedHsnsac) {
-        this.gstForm.patchValue({
-          TaxRate: selectedHsnsac.rate,
-          description: selectedHsnsac.description
-        });
-      }
+  onHsnsacSelect(event: any, index: number) {
+  if (event) {
+    console.log('event')
+    const selectedHsnsac = this.hsnsacOptions.find(item => item.HSSACCode === event.HSSACCode);
+    if (selectedHsnsac) {
+      const gstGroup = this.chargeTaxMasters.at(index) as FormGroup;
+      gstGroup.patchValue({
+        TaxGroup: selectedHsnsac.TaxType,    
+        TaxRate: selectedHsnsac.TaxRate,     
+        description: selectedHsnsac.HSNSACDescription || selectedHsnsac.ServiceName
+      });
+      
+      // Disable the fields since they're auto-populated
+      gstGroup.get('TaxGroup')?.disable();
+      gstGroup.get('TaxRate')?.disable();
     }
   }
+}
+enableGstFields(index: number) {
+  const gstGroup = this.chargeTaxMasters.at(index) as FormGroup;
+  gstGroup.get('TaxGroup')?.enable();
+  gstGroup.get('TaxRate')?.enable();
+}
+
+  getTdsSetName(tdsSetId: number): string {
+    const tdsSet = this.tdsOptions.find(item => item.TDSSetHeaderSid === tdsSetId);
+    return tdsSet ? tdsSet.TDSSetName : '';
+  }
+  selectTab(tab: string) {
+  this.selectedTab = tab;
+}
+// convert various date inputs (string / Date) -> NgbDateStruct
+private toNgbDateStruct(value: any): { year: number; month: number; day: number } | null {
+  if (!value) return null;
+  const d = (value instanceof Date) ? value : new Date(value);
+  if (isNaN(d.getTime())) return null;
+  return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
+}
+
+// convert NgbDateStruct -> ISO string (yyyy-mm-ddT00:00:00.000Z)
+// returns null when no valid value
+private fromNgbDateStructToIso(n: any): string | null {
+  if (!n || !n.year || !n.month || !n.day) return null;
+  const dt = new Date(n.year, n.month - 1, n.day);
+  return dt.toISOString();
+}
+
 }

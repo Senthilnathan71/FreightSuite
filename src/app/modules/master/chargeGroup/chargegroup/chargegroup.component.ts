@@ -23,6 +23,7 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-chargegroup',
@@ -41,7 +42,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    TextWithNumbersDirective
   ],
   templateUrl: './chargegroup.component.html',
   styleUrl: './chargegroup.component.scss',
@@ -200,8 +202,8 @@ export class ChargegroupComponent implements OnInit {
   initForm() {
     this.chargeGroupForm = this.fb.group({
      
-      GroupName: ['', [Validators.required, Validators.maxLength(100)]],
-      Remarks: ['', [Validators.required, Validators.maxLength(100)]],
+      GroupName: ['', [Validators.required]],
+      Remarks: ['', ],
       status: [{ value: 'Active', disabled: false }, Validators.required]
     });
   }

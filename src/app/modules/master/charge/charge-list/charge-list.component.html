@@ -1,28 +1,3 @@
-<!-- <div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div> -->
-
-<!-- <app-listpage
-  [title]="'Charge'"
-  [searchOptions]="[
-    { value: 'chargeName', label: 'Charge Name' },
-    { value: 'chargeCode', label: 'Charge Code' },
-    { value: 'Status', label: 'Status' }
-  ]"
-  [searchPerformed]="searchPerformed"
-  [defaultSearchType]="'chargeName'"
-  (onCreateClick)="navigateToCreateCharge()"
-  (onReportClick)="report()"
-  (onResetClick)="resetPage()"
-  (onSearchClick)="onSearch($event)">
-    </app-listpage> -->
 <ngx-spinner
   bdColor="rgba(0,0,0,0.8)"
   size="medium"
@@ -33,152 +8,78 @@
 </ngx-spinner>
 
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Charge</h4>
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+      <div class="col pb-2">
+        <h4 class="page-title mb-0">Charge</h4>
+      </div>
+
+      <div class="col-md pb-2">
+        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0" (submit)="$event.preventDefault()">
+          <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
+            <div class="form-outline flex-grow-1 position-relative">
+              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search chargeCode, chargeName, UOM"
+                     aria-label="Search input" [(ngModel)]="filterValue">
+              <button *ngIf="filterValue"
+                      class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                      tabindex="0" aria-label="Clear search"
+                      (click)="clearFilterValue()"
+                      onfocus="this.classList.replace('text-secondary','text-danger')"
+                      onblur="this.classList.replace('text-danger','text-secondary')">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
 
-            <div class="col-md pb-2">
-                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-                        <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
-                            <button *ngIf="filterValue"
-                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
-                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadCharges()"
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-search me-1"></i> Search
-                            </button>
-                        </div>
-
-                    </div>
-                </form>
+            <div class="mt-md-0 mt-1">
+              <button type="button" (click)="loadCharges()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                <i class="fas fa-search me-1"></i> Search
+              </button>
             </div>
+          </div>
+        </form>
+      </div>
 
-            <div class="col-md-auto pb-2">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
-                    @if(hasPermission('Add')) {
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="navigateToCreateCharge()">
-                        <i class="fas fa-plus me-1"></i> Create
-                    </button>
-                }
+      <div class="col-md-auto pb-2">
+        <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                        [disabled]="!searchPerformed">
-                        <i class="fas fa-file-alt me-1"></i> Report
-                    </button>
+          <button *ngIf="hasPermission('Add')" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                  (click)="navigateToCreateCharge()">
+            <i class="fas fa-plus me-1"></i> Create
+          </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
-                        [disabled]="!searchPerformed">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </button>
-                </form>
-            </div>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()" [disabled]="!searchPerformed">
+            <i class="fas fa-file-alt me-1"></i> Report
+          </button>
 
-
-        </div>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()" [disabled]="!searchPerformed">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+        </form>
+      </div>
     </div>
+  </div>
 
+  <!-- Reusable Table -->
+  <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+    <app-reusable-table
+      #chargeTable
+      [config]="tableConfig"
+      [data]="chargeLists"
+      [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection"
+      [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)"
+      (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)"
+      (filterChange)="onTableFilterChange($event)"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+  </div>
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('chargeCode')" width="10%">
-                                Charge Code
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'chargeCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'chargeCode'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('chargeName')">
-                                Charge Name
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'chargeName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'chargeName'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('UOM')" width="10%">
-                                UOM
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'UOM', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'UOM'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('SAC')" width="10%">
-                                HSN/SAC
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SAC', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SAC'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('TDSset')">
-                                TDS Set
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TDSset', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TDSset'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let item of chargeList; let i = index; trackBy: trackByChargeId">
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    @if(hasPermission('View')) {
-                                    <a class="text-info mx-2 cursor-pointer"
-                                        [routerLink]="['/master/charge/entry/', item.ChargeMasterSid]">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </a>
-                                }
-                                @if(hasPermission('Delete')) {
-                                    <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
-                                        (click)="deleteCharge(item.ChargeMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                }
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.chargeCode}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.chargeName}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getUomCode(item.UOM)}}</td>
-                            <!-- <td>{{item.HSNSAC}}</td> -->
-                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.HSNSAC}}</td>
-                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.TDSSet}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                @if(item.Status === "A"){
-                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </div>
-                                } @else {
-                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Inactive
-                                </div>
-                                }
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
-                </ngb-pagination>
-            </div>
-        </div>
-    </div>
-
-    <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
-        <div>No records found</div>
-    </div>
+  <!-- No records found -->
+  <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div>No records found</div>
+  </div>
 </div>

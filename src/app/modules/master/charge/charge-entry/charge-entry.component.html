@@ -3,24 +3,23 @@
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
-                      <div class="brand-icon">
-                   <i class="fas fa-credit-card"></i>
+                    <div class="brand-icon">
+                        <i class="fas fa-credit-card"></i>
                     </div>
-                <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Charge</h5>
-                @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
-                }
+                    <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Charge</h5>
+                    @if(isEditMode){
+                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                            <i class="fas fs-6 fa-info-circle"></i>
+                        </a>
+                    }
                 </div>
-               
             </div>
             <div class="col-md-8 pb-2">
                 <div class="d-flex justify-content-end gap-2">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i> Back
                     </button>
@@ -28,13 +27,13 @@
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-    [disabled]="btnDisable || chargeForm.invalid || !canSaveCharge()"
-    [title]="!canSaveCharge() ? 'Please add at least one GST and one TDS record' : ''"
-    *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
-    <i class="fas fa-save me-1"></i>
-    {{ isEditMode ? 'Edit' : 'Save' }}
-</button>
-<div ngbDropdown class="d-inline-block">
+                        [disabled]="btnDisable || chargeForm.invalid || !canSaveCharge()"
+                        [title]="!canSaveCharge() ? 'Please add at least one GST and one TDS record' : ''"
+                        *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+                        <i class="fas fa-save me-1"></i>
+                        {{ isEditMode ? 'Edit' : 'Save' }}
+                    </button>
+                    <div ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
@@ -58,76 +57,73 @@
                         <div class="card-body py-2 px-3">
                             <div class="row pb-2 rounded border border-top-0">
                                 <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-                        <i class="fas fa-credit-card fs-4"></i>
-
-
-                        <h5 class="card-titlename mb-0">Charge Information</h5>
-                    </div>
+                                    <i class="fas fa-credit-card fs-4"></i>
+                                    <h5 class="card-titlename mb-0">Charge Information</h5>
+                                </div>
+                                
                                 <!-- Charge Code -->
                                 <aside class="col-md-4">
-    <div class="custom-form-group">
-        <input type="text" id="chargeCode" formControlName="chargeCode"
-            class="custom-input-field sm" placeholder="" maxlength="5" />
-        <label for="chargeCode" class="input-label">Charge Code <span
-                class="text-danger">*</span></label>
+                                    <div class="custom-form-group">
+                                        <input type="text" id="chargeCode" formControlName="chargeCode"
+                                            class="custom-input-field sm" placeholder="" [textWithNumbers]="5"style="text-transform: uppercase;"/>
+                                        <label for="chargeCode" class="input-label">Charge Code <span
+                                                class="text-danger">*</span></label>
 
-        <div *ngIf="chargeForm.get('chargeCode')?.touched && chargeForm.get('chargeCode')?.invalid"
-            class="error-message">
-            <span *ngIf="chargeForm.get('chargeCode')?.hasError('required')">Required</span>
-            <span *ngIf="chargeForm.get('chargeCode')?.hasError('maxlength')">Maximum 5
-                characters allowed</span>
-            <span *ngIf="chargeForm.get('chargeCode')?.hasError('pattern')">Only uppercase letters and numbers allowed</span>
-            <span *ngIf="chargeForm.get('chargeCode')?.hasError('duplicate')">This charge code already exists</span>
-        </div>
-    </div>
-</aside>
+                                        <div *ngIf="chargeForm.get('chargeCode')?.touched && chargeForm.get('chargeCode')?.invalid"
+                                            class="error-message">
+                                            <span *ngIf="chargeForm.get('chargeCode')?.hasError('required')">Required</span>
+                                            <span *ngIf="chargeForm.get('chargeCode')?.hasError('textWithNumbers')">Maximum 5
+                                                characters allowed</span>
+                                            
+                                            <span *ngIf="chargeForm.get('chargeCode')?.hasError('duplicate')">This charge code already exists</span>
+                                        </div>
+                                    </div>
+                                </aside>
 
                                 <!-- Charge Name -->
                                 <aside class="col-md-4">
-    <div class="custom-form-group">
-        <input type="text" id="chargeName" formControlName="chargeName"
-            class="custom-input-field sm" placeholder="" maxlength="100" />
-        <label for="chargeName" class="input-label">Charge Name <span
-                class="text-danger">*</span></label>
+                                    <div class="custom-form-group">
+                                        <input type="text" id="chargeName" formControlName="chargeName"
+                                            class="custom-input-field sm" placeholder=""  [textWithNumbers]="100"/>
+                                        <label for="chargeName" class="input-label">Charge Name <span
+                                                class="text-danger">*</span></label>
 
-        <div *ngIf="chargeForm.get('chargeName')?.touched && chargeForm.get('chargeName')?.invalid"
-            class="error-message">
-            <span *ngIf="chargeForm.get('chargeName')?.hasError('required')">Required</span>
-            <span *ngIf="chargeForm.get('chargeName')?.hasError('maxlength')">Maximum 100
-                characters allowed</span>
-            <span *ngIf="chargeForm.get('chargeName')?.hasError('duplicate')">This charge name already exists</span>
-        </div>
-    </div>
-</aside>
+                                        <div *ngIf="chargeForm.get('chargeName')?.touched && chargeForm.get('chargeName')?.invalid"
+                                            class="error-message">
+                                            <span *ngIf="chargeForm.get('chargeName')?.hasError('required')">Required</span>
+                                            <span *ngIf="chargeForm.get('chargeName')?.hasError('textWithNumbers')">Maximum 100
+                                                characters allowed</span>
+                                            <span *ngIf="chargeForm.get('chargeName')?.hasError('duplicate')">This charge name already exists</span>
+                                        </div>
+                                    </div>
+                                </aside>
 
                                 <!-- Departments -->
                                 <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <multi-select 
-                                    [items]="departmentOptions" 
-                                    bindLabel="departmentName" 
-                                    bindValue="departmentName" 
-                                    placeholder="Select Departments"
-                                    [control]="chargeForm.get('DepartmentMasterSid')"
-                                    
-                                >
-                                </multi-select>
-                                <label class="input-label">Departments <span class="text-danger fw-semibold">*</span></label>
-                                <div *ngIf="chargeForm.get('DepartmentMasterSid')?.touched && chargeForm.get('DepartmentMasterSid')?.invalid">
-                                    <p *ngIf="chargeForm.get('DepartmentMasterSid')?.errors?.['required']" class="error-message">
-                                        At least one dept is required.
-                                    </p>
-                                </div>
-                            </div>
-                        </aside>
-
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!chargeForm.get('DepartmentMasterSid')?.value">
+                                        <multi-select 
+                                            [items]="departmentOptions" 
+                                            bindLabel="departmentName" 
+                                            bindValue="departmentName" 
+                                            placeholder="Select Departments"
+                                            [control]="chargeForm.get('DepartmentMasterSid')" 
+                                        >
+                                        </multi-select>
+                                        <label class="input-label">Departments <span class="text-danger fw-semibold">*</span></label>
+                                        <div *ngIf="chargeForm.get('DepartmentMasterSid')?.touched && chargeForm.get('DepartmentMasterSid')?.invalid">
+                                            <p *ngIf="chargeForm.get('DepartmentMasterSid')?.errors?.['required']" class="error-message">
+                                                At least one dept is required.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </aside>
 
                                 <!-- UOM -->
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!chargeForm.get('UOM')?.value">
                                         <ng-select formControlName="UOM" [items]="uomOptions" 
-                                            bindLabel="UOMName" bindValue="UOMMasterSid"
-                                            placeholder="Select UOM">
+                                            bindLabel="UOMCode" bindValue="UOMMasterSid"
+                                            placeholder="">
                                         </ng-select>
                                         <label class="input-label">UOM <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('UOM')?.touched && chargeForm.get('UOM')?.invalid"
@@ -139,9 +135,9 @@
 
                                 <!-- Currency -->
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select"[class.filled]="!!chargeForm.get('CurrencyMasterSid')?.value">
                                         <ng-select formControlName="CurrencyMasterSid" [items]="currencyOptions" 
-                                            bindLabel="currencyName" bindValue="CurrencyMasterSid"
+                                            bindLabel="currencyCode" bindValue="CurrencyMasterSid"
                                             placeholder="Select Currency">
                                         </ng-select>
                                         <label class="input-label">Currency <span class="text-danger">*</span></label>
@@ -154,7 +150,7 @@
 
                                 <!-- Charge Group -->
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!chargeForm.get('ChargeGroupSid')?.value">
                                         <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions" 
                                             bindLabel="GroupName" bindValue="ChargeGroupSid"
                                             placeholder="Select Charge Group">
@@ -167,8 +163,6 @@
                                     </div>
                                 </aside>
 
-                                
-
                                 <!-- Status -->
                                 <aside class="col-md-4">
                                     <div *ngIf="!isEditMode" class="custom-form-group">
@@ -176,8 +170,7 @@
                                         <label class="input-label">Status</label>
                                     </div>
 
-
-                                    <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
+                                    <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select" [class.filled]="!!chargeForm.get('Status')?.value">
                                         <ng-select formControlName="Status" [items]="statusOptions" 
                                             bindLabel="name" bindValue="id"
                                             placeholder="Select Status">
@@ -194,377 +187,228 @@
                     </div>
                 </div>
 
-                <!-- GST Section -->
-                <div class="col-md-12 mt-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">GST </h4>
-    <button type="button" class="btn btn-sm btn-info" 
-        (click)="openGstModal(gstModalContent)"
-        [disabled]="chargeForm.invalid">
-        <i class="fas fa-plus me-1"></i> Add GST
-    </button>
-</div>
+                <!-- Tab Navigation for GST and TDS Sections -->
+                <div class="mx-auto mt-2">
+                    <div class="nav-pills-container">
+                        <div class="nav-pills">
+                            <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
+                                (click)="selectTab(tab.name)">
+                                <div class="pill-icon">
+                                    <i [class]="tab.icon"></i>
+                                </div>
+                                <span class="pill-label">{{ tab.name }}</span>
+                                <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-workspace">
+                        <!-- GST Details Tab -->
+                        <div class="workspace-content" *ngIf="selectedTab === 'GST Details'">
+                            <div class="table-toolbar">
+                                <div></div>
+                                <div class="toolbar-right1">
+                                    <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addGstRow()">
+                                        <i class="fas fa-plus"></i> Add GST
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            @if(chargeTaxMasters.controls.length === 0) {
+                                <div class="col-12 text-center py-3 text-danger">
+                                    At least one GST record is required
+                                </div>
+                            }
 
-@if(chargeTaxMasters.controls.length === 0) {
-<div class="col-12 text-center py-3 text-danger">
-    At least one GST record is required
-</div>
-}
-
-                                @if(chargeTaxMasters.controls.length > 0) {
+                            @if(chargeTaxMasters.controls.length > 0) {
                                 <div class="col-12">
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle no-wrap table-bordered table-sm">
                                             <thead class="bg-info">
                                                 <tr>
-                                                    <th class="bg-transparent text-light">Action</th>
-                                                    <th class="bg-transparent text-light">SAC Code</th>
+                                                    <th class="bg-transparent text-light">HSN/SAC Code</th>
                                                     <th class="bg-transparent text-light">Description</th>
-                                                    <th class="bg-transparent text-light">Tax Rate</th>
+                                                    <th class="bg-transparent text-light">Tax Group</th>
+                                                    <th class="bg-transparent text-light">Tax Rate (%)</th>
+                                                    <th class="bg-transparent text-light">Status</th>
+                                                    <th class="bg-transparent text-light">Action</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody formArrayName="chargeTaxMasters">
                                                 @for (gst of chargeTaxMasters.controls; track gst; let i = $index) {
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex">
-                                                             <a class="text-info mx-2 ps-3" (click)="openGstModal(gstModalContent, i)">
-                <i-feather class="feather-sm" name="eye"></i-feather>
-              </a>
-              <!-- Delete button -->
-              <a class="text-danger mx-2 ps-3 border-start" 
-                   (click)="deleteGst(i)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
-                </a>
-
-                                                        </div>
-                                                    </td>
-                                                    <td>{{ gst.value.HSNCode }}</td>
-                                                    <td>{{ gst.value.description }}</td>
-                                                    <td>{{ gst.value.TaxRate }}%</td>
-                                                    
-                                                </tr>
+                                                    <tr [formGroupName]="i">
+                                                        <td>
+                                                            <ng-select [formControlName]="'HSNCode'" [items]="hsnsacOptions" 
+                                                                bindLabel="HSSACCode" bindValue="HSSACCode"
+                                                                placeholder="Select HSN/SAC Code"
+                                                                (change)="onHsnsacSelect($event, i)" appendTo="body" >
+                                                            </ng-select>
+                                                            <div *ngIf="gst.get('HSNCode')?.touched && gst.get('HSNCode')?.invalid"
+                                                                class="error-message">
+                                                                <span *ngIf="gst.get('HSNCode')?.hasError('required')">Required</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text"[textWithNumbers]="100" formControlName="description"
+                                                                class="form-control form-control-sm"/>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="TaxGroup"
+                                                                class="form-control form-control-sm" readonly />
+                                                            <div *ngIf="gst.get('TaxGroup')?.touched && gst.get('TaxGroup')?.invalid"
+                                                                class="error-message">
+                                                                <span *ngIf="gst.get('TaxGroup')?.hasError('required')">Required</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" formControlName="TaxRate"
+                                                                class="form-control form-control-sm text-end" 
+                                                                min="0" max="100" step="0.01" readonly />
+                                                            <div *ngIf="gst.get('TaxRate')?.touched && gst.get('TaxRate')?.invalid"
+                                                                class="error-message"
+                                                                DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]=""
+                max="99.9">
+                                                                <span *ngIf="gst.get('TaxRate')?.hasError('required')">Required</span>
+                                                                <span *ngIf="gst.get('TaxRate')?.hasError('min')">Min 0%</span>
+                                                                <span *ngIf="gst.get('TaxRate')?.hasError('max')">Max 100%</span>
+                                                            </div>
+                                                        </td>   
+                                                        <td>
+                                                            <ng-select [formControlName]="'Status'" [items]="statusOptions" 
+                                                                bindLabel="name" bindValue="id"
+                                                                placeholder="Select Status" appendTo="bady">
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                                (click)="removeGstRow(i)" [disabled]="chargeTaxMasters.controls.length <= 1">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
                                                 }
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-                                } @else {
-                                <div class="col-12 text-center py-3 text-muted">
-                                    No GST details added yet
-                                </div>
-                                }
-                            </div>
+                            }
                         </div>
-                    </div>
-                </div>
+                        
+                        <!-- TDS Details Tab -->
+                        <div class="workspace-content" *ngIf="selectedTab === 'TDS Details'">
+                            <div class="table-toolbar">
+                                <div></div>
+                                <div class="toolbar-right1">
+                                    <button type="button" class="btn btn-sm btn-info" (click)="addTdsRow()"
+                                            [disabled]="chargeTaxMasters.controls.length === 0">
+                                        <i class="fas fa-plus me-1"></i> Add TDS
+                                    </button>
+                                </div>
+                            </div>
+                            
+                          
 
-                <!-- TDS Section -->
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">TDS </h4>
-    <button type="button" class="btn btn-sm btn-info" 
-        (click)="openTdsModal(tdsModalContent)"
-        [disabled]="chargeTaxMasters.controls.length === 0">
-        <i class="fas fa-plus me-1"></i> Add TDS
-    </button>
-</div>
-
-@if(chargeTaxMasters.controls.length > 0 && chargeTds.controls.length === 0) {
-<div class="col-12 text-center py-3 text-danger">
-    At least one TDS record is required when GST records exist
-</div>
-}
-
-                                @if(chargeTds.controls.length > 0) {
+                            
                                 <div class="col-12">
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle no-wrap table-bordered table-sm">
                                             <thead class="bg-info">
                                                 <tr>
-                                                    <th class="bg-transparent text-light">Action</th>
                                                     <th class="bg-transparent text-light">TDS Set</th>
                                                     <th class="bg-transparent text-light">Effective From</th>
+                                                    <th class="bg-transparent text-light">Status</th>
+                                                    <th class="bg-transparent text-light">Action</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody formArrayName="chargeTds">
                                                 @for (tds of chargeTds.controls; track tds; let i = $index) {
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex">
-                                                              <a class="text-info mx-2 ps-3" (click)="openTdsModal(tdsModalContent, i)">
-                <i-feather class="feather-sm" name="eye"></i-feather>
-              </a>
-              <!-- Delete button -->
-              <a class="text-danger mx-2 ps-3 border-start" 
-                   (click)="deleteTds(i)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
-                </a>
-
-                                                        </div>
-                                                    </td>
-                                                   <td>
-  {{ getTdsSetName(tds.value.TDSSet) }}
-</td>
-                                                    <td>
-                                                        {{ tds.value.EffectiveFrom | date:'dd/MM/yyyy' }}
-                                                    </td>
-                                                   
-                                                </tr>
+                                                    <tr [formGroupName]="i">
+                                                        <td>
+                                                            <ng-select [formControlName]="'TDSSet'" [items]="tdsOptions" 
+                                                                bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
+                                                                placeholder="Select TDS Set">
+                                                            </ng-select>
+                                                            <div *ngIf="tds.get('TDSSet')?.touched && tds.get('TDSSet')?.invalid"
+                                                                class="error-message">
+                                                                <span *ngIf="tds.get('TDSSet')?.hasError('required')">Required</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <input type="date" formControlName="EffectiveFrom"
+                                                                class="form-control form-control-sm" />
+                                                            <div *ngIf="tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid"
+                                                                class="error-message">
+                                                                <span *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <ng-select [formControlName]="'Status'" [items]="statusOptions" 
+                                                                bindLabel="name" bindValue="id"
+                                                                placeholder="Select Status" appendTo="bady">
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                                (click)="removeTdsRow(i)" [disabled]="chargeTds.controls.length <= 1">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
                                                 }
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-                                } @else {
-                                <div class="col-12 text-center py-3 text-muted">
-                                    No TDS details added yet
-                                </div>
-                                }
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
             </div>
         </form>
     </div>
-
-    <!-- @if(isEditMode){
-    <div class="col-12 mt-3">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                        @if(hasPermission('Edoc')) {
-                        <button type="button" class="btn btn-outline-info" (click)="openEDoc()">
-                            <i class="fas fa-file-alt me-1"></i> e-Doc
-                        </button>
-                        }
-                        @if(hasPermission('Terms and Condition')) {
-                        <button type="button" class="btn btn-outline-info" (click)="openTandC()">
-                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                        </button>
-                        }
-                        @if(hasPermission('Authority')) {
-                        <button type="button" class="btn btn-outline-info"(click)="openAuthority()">
-                            <i class="fas fa-shield-alt me-1"></i> Authorize
-                        </button>
-                        }
-                        @if(hasPermission('Email')) {
-                        <button type="button" class="btn btn-outline-info me-auto"(click)="openEmail()">
-                            <i class="fas fa-envelope me-1"></i> Email
-                        </button>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    }
-</div> -->
-
-<!-- GST Modal -->
-<ng-template #gstModalContent let-modal>
-    <div class="modal-header bg-info text-white p-2">
-        <h4 class="modal-title">{{ isGstEditMode ? 'Edit' : 'Add' }} GST </h4>
-        <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <form [formGroup]="gstForm">
-            <div class="row compact-form">
-                <!-- HSN/SAC Code -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
-                        <ng-select formControlName="HSNCode" [items]="hsnsacOptions" 
-                            bindLabel="HSSACCode" bindValue="HSSACCode"
-                            placeholder="Select HSN/SAC Code"
-                            (change)="onHsnsacSelect($event)">
-                        </ng-select>
-                        <label class="input-label">HSN/SAC Code <span class="text-danger">*</span></label>
-                        <div *ngIf="gstForm.get('HSNCode')?.touched && gstForm.get('HSNCode')?.invalid"
-                            class="error-message">
-                            <span *ngIf="gstForm.get('HSNCode')?.hasError('required')">Required</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Description -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group">
-                        <input type="text" id="description" formControlName="description"
-                            class="custom-input-field sm" placeholder="" />
-                        <label for="description" class="input-label">Description</label>
-                    </div>
-                </aside>
-
-                <!-- Tax Group -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group">
-                        <input type="text" id="TaxGroup" formControlName="TaxGroup"
-                            class="custom-input-field sm" placeholder="" />
-                        <label for="TaxGroup" class="input-label">Tax Group <span class="text-danger">*</span></label>
-                        <div *ngIf="gstForm.get('TaxGroup')?.touched && gstForm.get('TaxGroup')?.invalid"
-                            class="error-message">
-                            <span *ngIf="gstForm.get('TaxGroup')?.hasError('required')">Required</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Tax Rate -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group">
-                        <input type="number" id="TaxRate" formControlName="TaxRate"
-                            class="custom-input-field sm" placeholder="" min="0" max="100" step="0.01" />
-                        <label for="TaxRate" class="input-label">Tax Rate (%) <span class="text-danger">*</span></label>
-                        <div *ngIf="gstForm.get('TaxRate')?.touched && gstForm.get('TaxRate')?.invalid"
-                            class="error-message">
-                            <span *ngIf="gstForm.get('TaxRate')?.hasError('required')">Required</span>
-                            <span *ngIf="gstForm.get('TaxRate')?.hasError('min')">Minimum value is 0</span>
-                            <span *ngIf="gstForm.get('TaxRate')?.hasError('max')">Maximum value is 100</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Status -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
-                        <ng-select formControlName="Status" [items]="statusOptions" 
-                            bindLabel="name" bindValue="id"
-                            placeholder="Select Status">
-                        </ng-select>
-                        <label class="input-label">Status <span class="text-danger">*</span></label>
-                        <div *ngIf="gstForm.get('Status')?.touched && gstForm.get('Status')?.invalid"
-                            class="error-message">
-                            <span *ngIf="gstForm.get('Status')?.hasError('required')">Required</span>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-        </form>
-    </div>
-    <div class="modal-footer p-2">
-        <button type="button" class="btn btn-light-secondary btn-sm" (click)="modal.dismiss()">
-            Cancel
-        </button>
-        <button type="button" class="btn btn-info btn-sm" (click)="submitGstForm()"
-            [disabled]="gstForm.invalid">
-            {{ isGstEditMode ? 'Edit' : 'Save' }}
-        </button>
-    </div>
-</ng-template>
-
-<!-- TDS Modal -->
-<ng-template #tdsModalContent let-modal>
-    <div class="modal-header bg-info text-white p-2">
-        <h4 class="modal-title">{{ isTdsEditMode ? 'Edit' : 'Add' }} TDS </h4>
-        <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <form [formGroup]="tdsForm">
-            <div class="row compact-form">
-                <!-- TDS Set -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
-                        <ng-select formControlName="TDSSet" [items]="tdsOptions" 
-                            bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
-                            placeholder="Select TDS Set">
-                        </ng-select>
-                        <label class="input-label">TDS Set <span class="text-danger">*</span></label>
-                        <div *ngIf="tdsForm.get('TDSSet')?.touched && tdsForm.get('TDSSet')?.invalid"
-                            class="error-message">
-                            <span *ngIf="tdsForm.get('TDSSet')?.hasError('required')">Required</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Effective From -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group">
-                        <input type="date" id="EffectiveFrom" formControlName="EffectiveFrom"
-                            class="custom-input-field sm" placeholder="" />
-                        <label for="EffectiveFrom" class="input-label">Effective From <span class="text-danger">*</span></label>
-                        <div *ngIf="tdsForm.get('EffectiveFrom')?.touched && tdsForm.get('EffectiveFrom')?.invalid"
-                            class="error-message">
-                            <span *ngIf="tdsForm.get('EffectiveFrom')?.hasError('required')">Required</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Status -->
-                <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
-                        <ng-select formControlName="Status" [items]="statusOptions" 
-                            bindLabel="name" bindValue="id"
-                            placeholder="Select Status">
-                        </ng-select>
-                        <label class="input-label">Status <span class="text-danger">*</span></label>
-                        <div *ngIf="tdsForm.get('Status')?.touched && tdsForm.get('Status')?.invalid"
-                            class="error-message">
-                            <span *ngIf="tdsForm.get('Status')?.hasError('required')">Required</span>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-        </form>
-    </div>
-    <div class="modal-footer p-2">
-        <button type="button" class="btn btn-light-secondary btn-sm" (click)="modal.dismiss()">
-            Cancel
-        </button>
-        <button type="button" class="btn btn-info btn-sm" (click)="submitTdsForm()"
-            [disabled]="tdsForm.invalid">
-            {{ isTdsEditMode ? 'Edit' : 'Save' }}
-        </button>
-    </div>
-</ng-template>
+</div>
 
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
 </ng-template>

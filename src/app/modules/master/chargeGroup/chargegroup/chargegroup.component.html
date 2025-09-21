@@ -239,7 +239,8 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="GroupName" formControlName="GroupName" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm"
+                                    [textWithNumbers]="100">
                                 <label for="GroupName" class="input-label">Group Name <span
                                         class="text-danger fw-bold">*</span></label>
                                 @if(chargeGroupForm.get('GroupName')?.touched &&
@@ -247,7 +248,7 @@
                                 <div class="error-message">
                                     @if(chargeGroupForm.get('GroupName')?.hasError('required')){
                                     <span>Required</span>
-                                    } @else if(chargeGroupForm.get('GroupName')?.hasError('maxlength')){
+                                    } @else if(chargeGroupForm.get('GroupName')?.hasError('textWithNumbers')){
                                     <span>Max 100 Chars</span>
                                     }
                                 </div>
@@ -257,15 +258,13 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="Remarks" formControlName="Remarks" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm"[textWithNumbers]="100">
                                 <label for="Remarks" class="input-label">Remarks <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 @if(chargeGroupForm.get('Remarks')?.touched &&
                                 chargeGroupForm.get('Remarks')?.invalid){
                                 <div class="error-message">
-                                    @if(chargeGroupForm.get('Remarks')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(chargeGroupForm.get('Remarks')?.hasError('maxlength')){
+                                    @if(chargeGroupForm.get('Remarks')?.hasError('textWithNumbers')){
                                     <span>Max 100 Chars</span>
                                     }
                                 </div>
@@ -274,7 +273,7 @@
                         </aside>
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!chargeGroupForm.get('status')?.value" >
                                 <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                     [class.is-invalid]="chargeGroupForm.get('status')?.invalid && chargeGroupForm.get('status')?.touched">
                                 </ng-select>
