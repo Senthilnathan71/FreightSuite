@@ -52,6 +52,7 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 
 @Component({
   selector: 'app-organization-entry',
@@ -605,7 +606,8 @@ openAuditLogs(modal: TemplateRef<any>) {
     private router: Router,
     private modalService: NgbModal,
     private cdRef: ChangeDetectorRef,
-    private calendar : NgbCalendar
+    private calendar : NgbCalendar,
+    private leadService: LeadService
   ) { }
 
 
@@ -1761,7 +1763,7 @@ getCityName(citySid: number): string {
       stateId = state;
     }
 
-    this.masterService.getCityByStateId(stateId).subscribe(
+    this.leadService.getCityByStateId(stateId).subscribe(
       (resp:any)=>{
         if(resp.status){
           this.cityList = resp.data;

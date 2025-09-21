@@ -474,6 +474,7 @@ export class LeadService {
   }
 
   getCityByStateId(StateMasterSid: number) {
+    console.log(StateMasterSid,'StateMasterSid')
     return this.http.get<{ data: any[] }>(`city/fetchByState/${StateMasterSid}`).pipe(
       map((resp) => {
         let response = resp;

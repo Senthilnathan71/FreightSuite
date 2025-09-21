@@ -26,6 +26,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { ConfigComponent } from '../config/config.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -123,7 +124,8 @@ export class CompanyEntryComponent implements OnInit {
 		private currentRoute: ActivatedRoute,
 		private modalService: NgbModal,
 		private matdial: MatDialog,
-		private cdRef: ChangeDetectorRef
+		private cdRef: ChangeDetectorRef,
+		private leadService: LeadService
 	) { }
 
 	// LIFECYCLE HOOK
@@ -957,7 +959,7 @@ export class CompanyEntryComponent implements OnInit {
 			return;
 		}
 
-		this.masterService.getCityByStateId(StateMasterSid).subscribe(
+		this.leadService.getCityByStateId(StateMasterSid).subscribe(
 			(resp: any) => {
 				if (resp.status) {
 					this.branchCityList = resp.data
