@@ -12,6 +12,7 @@
   (blur)="onTouched()"
   (open)="onOpen()"
   (close)="resetFilter()"
+  appendTo="body"
 >
   <ng-template ng-header-tmp>
     <div class="px-2 py-2">
@@ -78,7 +79,7 @@
       <span class="ng-value-icon" style="background-color: #E9E4F0;color: #333; font-weight: 600;" (click)="removeItem(item, $event)">×</span>
     </div>
     <div class="ng-value" *ngIf="items.length > displayCount">
-      <span class="ng-value-label bg-info text-white">+{{ items.length - displayCount }} more</span>
+      <span class="ng-value-label" style="background-color: #E9E4F0;color: #333;font-weight: 600;">+{{ items.length - displayCount }} more</span>
     </div>
   </ng-template>
 </ng-select>

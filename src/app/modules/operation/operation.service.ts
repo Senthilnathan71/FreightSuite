@@ -584,6 +584,14 @@ searchInvoices(payload: any) {
     );
   }
 
+  attachBookingToHouseJob(HouseJobSid: number, payload: any) {
+    return this.http.post<{ data: any }>(`master-job/attach`,payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   getAllBookingForSpliting(payload: any) {
     return this.http.post<{ data: any[] }>('splitbooking/allBookings', payload).pipe(
       map((resp) => {

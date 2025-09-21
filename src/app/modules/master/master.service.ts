@@ -365,6 +365,37 @@ export class MasterService {
     );
   }
 
+  // Customer Milestone
+
+  getAllCustomerMilestone(CustomerMasterSid:number){
+    return this.http.get<{data:any}>(`customer-milestone/fetchByCustomer/${CustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  saveAllCustomerMilestones(payload:any){
+    return this.http.post<{data:any[]}>(`customer-milestone/save`,payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteCustomerMilestoneById(CustomerMilestoneSid:number){
+    return this.http.delete<{data:any}>(`customer-milestone/delete/${CustomerMilestoneSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+
+
 
 
 
@@ -876,7 +907,7 @@ export class MasterService {
   createNewZone(payload: Zone) {
     return this.http.post<{ data: any }>(`zone/create`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -2283,6 +2314,22 @@ getFieldConfiguration() {
       })
     );
   }
+  getAllDoc() {
+    return this.http.get<{ data: any[] }>('ff-user/docs').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  getAllCS() {
+    return this.http.get<{ data: any[] }>('ff-user/cs').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
   getAuditLogsFfUser(tableName: string, recordId?: string) {
     let url = `ff-user/audit-logs?tableName=${tableName}`;
@@ -2419,6 +2466,15 @@ getFieldConfiguration() {
     );
   }
 
+  getAllSalespersonOfCustomer(CustomerMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`customer-salesteam/customer/${CustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   getSalesteamById(CustomerSalesSid: number) {
     return this.http.get<{ data: any }>(`customer-salesteam/fetch/${CustomerSalesSid}`).pipe(
       map((resp) => {
@@ -2468,7 +2524,7 @@ getFieldConfiguration() {
   getAllMilestones(CompanyMasterSid: number, BranchMasterSid: number) {
     return this.http.post<{ data: any[] }>('milestone',{ CompanyMasterSid, BranchMasterSid }).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );

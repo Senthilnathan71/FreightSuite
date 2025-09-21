@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import {
   AbstractControl,
+  FormArray,
   FormBuilder,
   FormGroup,
   FormsModule,
@@ -20,6 +21,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDatepickerModule,
+  NgbDateStruct,
   NgbDropdownModule,
   NgbModal,
   NgbModalModule,
@@ -94,6 +96,27 @@ export class OrganizationEntryComponent {
   displayedCustomerTypes: any[] = [];
   extraCustomerTypesCount = 0;
 
+  selectedTab = 'Party';
+  tabs = [
+    { name : 'Party', icon : 'fas fa-user-tie' },
+    { name : 'Branch', icon : 'fas fa-boxes' },
+    { name : 'Milestone', icon : 'fas fa-rupee-sign' },
+    { name : 'Salesman', icon : 'fas fa-flag-checkered' },
+  ]
+selectedTab1="Contact"
+tab = [
+  { name: 'Contact', icon: 'fas fa-code-branch' },
+  { name: 'Email', icon: 'fas fa-envelope' },
+  { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+];
+
+  selectTab1(tabName : string){
+    this.selectedTab1 = tabName;
+  }
+
+  selectTab(tabName : string){
+    this.selectedTab = tabName;
+  }
 
   active1 = 1;
   active2 = 1;
@@ -149,25 +172,26 @@ export class OrganizationEntryComponent {
   //   { id: '28', name: 'Notify' },
   // ];
   modeOfCustomerType = [
-  { id: 1, name: "Customer" },
-  { id: 2, name: "Vendor" },
-  { id: 3, name: "Agent" },
+  { id: 1, name: "Agent" },
+  { id: 2, name: "Air Line" },
+  { id: 3, name: "Carrier" },
   { id: 4, name: "CFS" },
-  { id: 5, name: "Yard" },
-  { id: 6, name: "Feeder" },
-  { id: 7, name: "NVOCC" },
-  { id: 8, name: "Transporter" },
-  { id: 9, name: "Shipper" },
-  { id: 10, name: "Consignee" },
-  { id: 11, name: "Air Line" },
-  { id: 12, name: "Carrier" },
-  { id: 13, name: "Overseas Agent" },
-  { id: 14, name: "Warehouse" },
-  { id: 15, name: "Shipping Line" },
-  { id: 16, name: "Forwarder" },
-  { id: 17 , name: 'Vendor' },
-  { id: 18, name: "Notify" }
+  { id: 5, name: "Consignee" },
+  { id: 6, name: "Customer" },
+  { id: 7, name: "Forwarder" },
+  { id: 8, name: "Feeder" },
+  { id: 9, name: "NVOCC" },
+  { id: 10, name: "Notify" },
+  { id: 11, name: "Overseas Agent" },
+  { id: 12, name: "Shipper" },
+  { id: 13, name: "Shipping Line" },
+  { id: 14, name: "Transporter" },
+  { id: 15, name: "Yard" },
+  { id: 16, name: "Warehouse" },
+  { id: 17, name: "Vendor" },
+  { id: 18, name: "Consignee" },
 ];
+
 
 
   // isSelected(item: any): boolean {
@@ -193,11 +217,13 @@ export class OrganizationEntryComponent {
   spDepartmentList : any[];
   spBranchList : any[];
   salesPersonList : any[];
+  allDocs : any[] = [];
+  allCS : any[] = [];
   branchList : any[];
   isSalespersonEdit : boolean;
   modalRef10: NgbModalRef;
   today = this.calendar.getToday();
-  todayDate = new Date(this.today.year, this.today.month, this.today.day);
+  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
  
 
 
@@ -215,6 +241,29 @@ export class OrganizationEntryComponent {
 
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+
+
+  // Milestone Related Variable Declaration
+  milestoneListArr : any[] = [];
+  cusMilestoneList : any[] = [];
+  cusMilestoneFormArr : FormArray;
+  realMileIndex : number;
+  cusMilestoneForm!: FormGroup;
+  totalLengthOfCusMile: number;
+  mileForm!: FormGroup;
+  cusMilePage = 1;            // Current page (1-based)
+  cusMilePageSize = 5;        // Number of rows per page
+  totalCusMilePages = 1;      // Total pages calculated
+  slicedCusMilestoneList: any[] = [];  // Current page slice of milestone FormArray
+
+  
+
+  updateTypeList  =[
+    { id: '1', name: 'eMail' },
+    { id: '2', name: 'SMS' },
+    { id: '3', name: 'Whatsapp' },
+    { id: '4', name: 'Phone' }
+  ]
 
 
 //   updateDisplayedCustomerTypes(): void {
@@ -445,6 +494,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
         ContactName: data.ContactName || '',
         MobileNo: data.MobileNo || '',
         Email: data.Email || '',
+        Status : data.status ?  (data.status === "A" ? "Active" : "Suspended" ) : "Active"
       });
       if (data.CusBranchContactSid) {
         this.customerBranchContactForm.addControl(
@@ -608,7 +658,9 @@ openAuditLogs(modal: TemplateRef<any>) {
     private cdRef: ChangeDetectorRef,
     private calendar : NgbCalendar,
     private leadService: LeadService
-  ) { }
+  ) { 
+    this.cusMilestoneFormArr = this.fb.array([]);
+  }
 
 
   ngOnInit(): void {
@@ -638,6 +690,7 @@ openAuditLogs(modal: TemplateRef<any>) {
         this.loadCustomerBranch();
         this.loadCustomerSalesperson();
         this.loadMenus();
+        this.loadCustomerMilestones();
       }
     });
     this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
@@ -705,7 +758,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       CustomerAddress2: [''],
       CountryMasterSid: ['', [Validators.required]], // Dropdown
       // LocalLanguage: ['', [Validators.required]],
-      CompanyType: [{ value: '', disabled: true }],
+      CompanyType: [''],
       PanAvailable: [false],
       PanType: [{ value: '', disabled: true }, [Validators.required,this.panValidator]],
       PanName: [{ value: '', disabled: true }, [Validators.required]],
@@ -714,12 +767,14 @@ openAuditLogs(modal: TemplateRef<any>) {
       paymentType: [''], // or 'Cash' as default if you want
       IsMSME: [''],
       KYCSpecified: [false],
-      RegistrationNo: [{ value: '', disabled: true }],
+      RegistrationNo: [''],
       
       Remarks: [''],
       status: [{value: 'Active', disabled: !this.isEditMode}, Validators.required],
       CustomerType: [{}],
-      Network:['']
+      Network:[''],
+
+      cusMilestone : this.fb.array([])
     });
     
     this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
@@ -766,19 +821,19 @@ updateShortCodeFieldState() {
        
 
 
-    this.customerForm
-      .get('KYCSpecified')
-      ?.valueChanges.subscribe((kycSpecified: boolean) => {
-        const regNo = this.customerForm.get('RegistrationNo');
-        const companyType = this.customerForm.get('CompanyType');
-        if (kycSpecified) {
-          regNo?.enable();
-          companyType?.enable();
-        } else {
-          regNo?.disable();
-          companyType?.disable();
-        }
-      });
+    // this.customerForm
+    //   .get('KYCSpecified')
+    //   ?.valueChanges.subscribe((kycSpecified: boolean) => {
+    //     const regNo = this.customerForm.get('RegistrationNo');
+    //     const companyType = this.customerForm.get('CompanyType');
+    //     if (kycSpecified) {
+    //       regNo?.enable();
+    //       companyType?.enable();
+    //     } else {
+    //       regNo?.disable();
+    //       companyType?.disable();
+    //     }
+    //   });
   }
 
   generateBranchCode() {
@@ -800,11 +855,11 @@ updateShortCodeFieldState() {
   }
 
   // Get first 3 letters of branch name
-  const namePart = branchName.substring(0, 3).toUpperCase();
+  const namePart = branchName.substring(0, 3).trim().toUpperCase();
   // Get first 3 letters of state code
-  const statePart = state.stateCode.substring(0, 3).toUpperCase();
+  const statePart = state.stateCode.substring(0, 3).trim().toUpperCase();
   // Get first 3 letters of city code
-  const cityPart = city.cityCode.substring(0, 3).toUpperCase();
+  const cityPart = city.cityCode.substring(0, 3).trim().toUpperCase();
 
   this.customerBranchForm.get('CustBranchCode')?.setValue(`${namePart}${statePart}${cityPart}`);
 }
@@ -818,6 +873,7 @@ updateShortCodeFieldState() {
       CustBranchName: ['', [Validators.required]],
       CustBranchType: ['', [Validators.required]],
       CustBranchCode: [{ value: '', disabled: true }],
+      Contact_Person: [''],
       CustBranchZipPostCode: [''],
       CustBranchPhone: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
       CustBranchEmail: ['', [Validators.required,EmailValidators.multipleEmails()]],
@@ -884,6 +940,7 @@ loadMenus() {
       ContactName: ['', [Validators.required]],
       MobileNo: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
       Email: ['', [Validators.required, EmailValidators.multipleEmails()]],
+      status : ['Active']
     });
   }
 
@@ -1239,6 +1296,7 @@ getCityName(citySid: number): string {
             CityMasterSid: Number(formValue.CustBranchCity),
             StateMasterSid: Number(formValue.CustBranchState),
             Branch_Code: formValue.CustBranchCode,
+            Contact_Person: formValue.Contact_Person,
             BranchName: formValue.CustBranchName,
             Branch_Type: formValue.CustBranchType,
             Zip_PostBox: String(formValue.CustBranchZipPostCode),
@@ -1408,7 +1466,7 @@ getCityName(citySid: number): string {
       updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
     };
     const formValue = this.customerBranchContactForm.value;
-
+    console.log(formValue)
     const payload =
       this.isModalEditMode && this.CusBranchContactSid
         ? {
@@ -1859,8 +1917,10 @@ getCityName(citySid: number): string {
 
   initSalesPersonForm(){
     this.salespersonForm = this.fb.group({
-      Salesman : [,[Validators.required]],
       DepartmentMasterSid : [,[Validators.required]],
+      Salesman : [,[Validators.required]],
+      CSPerson : [null,[Validators.required]],
+      DocPerson : [null,[Validators.required]],
       CustomerBranchSid : [,[Validators.required]],
       spEffectiveFrom : [,[Validators.required]],
       spstatus : ['Active']
@@ -1904,9 +1964,13 @@ getCityName(citySid: number): string {
     forkJoin({
       departments : this.masterService.getAllDepartments(companyMastersID),
       salesman : this.masterService.getAllSalesperson(),
-    }).subscribe(({departments,salesman})=>{
+      docs : this.masterService.getAllDoc(),
+      cs : this.masterService.getAllCS()
+    }).subscribe(({departments,salesman,docs,cs})=>{
       this.spDepartmentList = departments;
       this.salesPersonList = salesman.data;
+      this.allCS = cs.data;
+      this.allDocs = docs.data;
     })
   }
 
@@ -1925,6 +1989,8 @@ getCityName(citySid: number): string {
       Salesman : formValue.Salesman,
       DepartmentMasterSid : formValue.DepartmentMasterSid,
       CustomerBranchSid : formValue.CustomerBranchSid,
+      DocPerson : formValue.DocPerson,
+      CSPerson : formValue.CSPerson,
       EffectiveFrom : formValue.spEffectiveFrom,
       status : formValue.spstatus === 'Active' ? 'A' : 'S',
       ...(this.isSalespersonEdit ?{updatedBy : updatedBy} : {createdBy : createdBy} )
@@ -1968,8 +2034,8 @@ getCityName(citySid: number): string {
   }
 
   loadCustomerSalesperson(){
-    this.masterService.getAllSalesteam().subscribe(
-      (resp:any)=>{
+    this.masterService.getAllSalespersonOfCustomer(this.CustomerMasterSid).subscribe(
+      (resp : any)=>{
         if(resp.status){
           this.salesTeamList = resp.data;
         } else {
@@ -2035,6 +2101,39 @@ getCityName(citySid: number): string {
     return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
   }
 
+  generateGST(): void {
+    const stateCode = ""+this.getStateGSTCode(this.customerBranchForm.get('CustBranchState')?.value); 
+    const pan = this.customerForm.get('PanType')?.value || ''; 
+    console.log("StateCode",stateCode)
+    console.log(this.getStateGSTCode(this.customerBranchForm.get('CustBranchState')?.value))
+    const thirteenthDigit = (document.getElementById('thirteenthDigit') as HTMLInputElement)?.value || '';
+    const fifteenthDigit = (document.getElementById('fifteenthDigit') as HTMLInputElement)?.value || '';
+    const fourteenthDigit = 'Z'; 
+
+    if (
+      stateCode.trim().length === 2 &&
+      pan.length === 10 &&
+      thirteenthDigit.length === 1 &&
+      fifteenthDigit.length === 1
+    ) {
+      const gstin = `${stateCode.trim()}${pan}${thirteenthDigit}${fourteenthDigit}${fifteenthDigit}`;
+      this.customerBranchForm.get('CustBranchGSTIN')?.setValue(gstin);
+    } else {
+      this.customerBranchForm.get('CustBranchGSTIN')?.setValue('');
+    }
+    console.log(this.customerBranchForm.get('CustBranchGSTIN')?.value);
+  }
+
+  getStateGSTCode(StateMasterSid:number){
+    if(!StateMasterSid || this.stateList.length === 0) return '';
+    const state = this.stateList.find(s => s.StateMasterSid === Number(StateMasterSid));
+    return state ? state.stateGSTCode : '';
+  }
+
+  parseGST(gstin:string,digit:number){
+    if(!gstin || gstin.length !== 15) return '';
+    return gstin[digit];
+  }
 
   // Info Functions
 
@@ -2142,5 +2241,169 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
 }
 
-  
+  get cusMilestone():FormArray{
+    return this.customerForm.get('cusMilestone') as FormArray;
+  }
+
+  // Customer Milestone Related Codes
+  loadCustomerMilestones(){
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!this.milestoneListArr || this.milestoneListArr.length === 0) {
+      this.masterService.getAllMilestones(CompanyMasterSid, BranchMasterSid).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.milestoneListArr = resp.data || [];
+            
+          }
+          else {
+            this.appSettingService.showError('Error loading Milestones')
+          }
+        }
+      )
+    }
+
+    this.masterService.getAllCustomerMilestone(this.CustomerMasterSid).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.cusMilestoneList = resp.data || [];
+          this.cusMilestone?.clear()
+          this.cusMilestoneList.forEach(milestone => {
+            const formWithData = this.createCusMilestoneFormGrp(milestone);
+            this.cusMilestone.push(formWithData);
+          })
+          this.updateCustomerMilestonePagination();
+        }
+        else {
+          this.appSettingService.showError('Error loading Milestones')
+        }
+      }
+    )
+  }
+
+
+
+  createCusMilestoneFormGrp(data ?:any){
+    const formGroup = this.fb.group({
+      CustomerMilestoneSid : [data?.CustomerMilestoneSid || null],
+      MilestoneMasterSid : [data?.MilestoneMasterSid || null,[Validators.required]],
+      UpdateType : [data?.UpdateType || null ,[Validators.required]],
+      ContactInfo : [data?.ContactInfo || '' ,[Validators.required]],
+      EffectiveFrom : [ data ? new Date(data?.EffectiveFrom) : null],
+      Status : [data ? data?.Status === "A" ? "Active" : "Suspended" : 'Active']
+    })
+    return formGroup;
+  }
+
+
+  saveAllCusMilestones(){
+    if(this.cusMilestone.invalid){
+      this.appSettingService.showWarning('Please fill all the required fields correctly');
+      this.cusMilestone.controls.forEach((group :FormGroup) => {
+        group.markAllAsTouched();
+        group.updateValueAndValidity();
+      });
+      return;
+    }
+    const formValue = this.cusMilestone.value;
+    const currentUserEmail = this.userData?.userEmail;
+    const payload = formValue.map(form => {
+      return {
+        CustomerMilestoneSid : form.CustomerMilestoneSid,
+        CustomerMasterSid : this.CustomerMasterSid,
+        MilestoneMasterSid : form.MilestoneMasterSid,
+        UpdateType : form.UpdateType,
+        ContactInfo : form.ContactInfo,
+        EffectiveFrom : form.EffectiveFrom,
+        Status : form.Status === "Active" ? "A" : "S",
+        createdBy : currentUserEmail,
+        updatedBy : currentUserEmail
+      } 
+    })
+
+    this.masterService.saveAllCustomerMilestones(payload).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.appSettingService.showSuccess('Milestones saved successfully')
+          this.loadCustomerMilestones();
+        } else {
+          this.appSettingService.showError('Error saving Milestones')
+        }
+      },
+      (error)=>{
+        console.error('Error saving Milestones',error);
+      }
+    )
+  }
+
+  deleteCustomerMilestone(CustomerMilestoneSid:number,index:number){
+    const actualIndex = this.getActualIndex(index);
+    if (CustomerMilestoneSid) {
+      this.masterService.deleteCustomerMilestoneById(CustomerMilestoneSid).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Customer Milestone Deleted Successfully.')
+            this.cusMilestone.removeAt(actualIndex);
+            this.updateCustomerMilestonePagination();
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+        },
+        (error) => {
+          console.error('Error Deleting Milestone', error);
+        }
+      )
+    } else {
+      this.cusMilestone.removeAt(actualIndex);
+      this.updateCustomerMilestonePagination();
+      this.appSettingService.showSuccess('Customer Milestone Deleted Successfully.')
+    }
+  }
+
+  getMilestoneNameById(MilestoneMasterSid:number){
+    if(!this.milestoneListArr) return '';
+    const milestone = this.milestoneListArr.find(m => m.MilestoneMasterSid === MilestoneMasterSid);
+    return milestone ? milestone.MilestoneName : '';
+  }
+
+  onAddMilestone(){
+    const newGrp = this.createCusMilestoneFormGrp();
+    this.cusMilestone.push(newGrp);
+    this.updateCustomerMilestonePagination();
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    };
+  }
+
+  updateCustomerMilestonePagination() {
+    const totalItems = this.cusMilestone.length;
+    this.totalCusMilePages = Math.ceil(totalItems / this.cusMilePageSize);
+
+    const startIndex = (this.cusMilePage - 1) * this.cusMilePageSize;
+    const endIndex = startIndex + this.cusMilePageSize;
+
+    this.slicedCusMilestoneList = this.cusMilestone.controls.slice(startIndex, endIndex);
+  }
+
+  onPageChange(page: number) {
+    this.cusMilePage = page;
+    this.updateCustomerMilestonePagination();
+  }
+
+  getActualIndex(pageIndex: number): number {
+    return (this.cusMilePage - 1) * this.cusMilePageSize + pageIndex;
+  }
+
+  getCustomerBranchName(BranchSid: number){
+    if(!this.customerBranchData) return '';
+    const branch = this.customerBranchData.find(b => b.CustomerBranchSid === BranchSid);
+    return branch ? branch.BranchName : '';
+  }
+
 }
