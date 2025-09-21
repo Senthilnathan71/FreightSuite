@@ -193,7 +193,7 @@
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div> -->
-        <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+        <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()">
                 <i class="fas fa-info-circle fs-6"></i>
             </a>
 
@@ -282,14 +282,13 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group">
+                            <div class="custom-form-group  custom-form-group-select" [class.filled]="!!cityForm.get('CountryMasterSid')?.value">
                                 <ng-select 
                                 formControlName="CountryMasterSid"
                                 [items]="countryList"
                                 bindLabel="countryName"
                                 bindValue="CountryMasterSid"
-                                placeholder="Select Country"
-                               
+                                placeholder=""
                                 class="custom-input-field sm p-0"
                                 style="border: none;">
                                 </ng-select>
@@ -330,13 +329,13 @@
                         </aside> -->
 
                         <aside class="col-md-6">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!cityForm.get('StateMasterSid')?.value">
                             <ng-select
                             formControlName="StateMasterSid"
                             [items]="stateList"
                             bindLabel="stateName"
                             bindValue="StateMasterSid"
-                            placeholder="Select State"
+                            placeholder=""
                             class="custom-input-field sm p-0"
                             style="border: none;"
                                 >
@@ -357,7 +356,7 @@
                         </aside>
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cityForm.get('status')?.value">
                                 <ng-select [items]="statusList" formControlName="status"
                                     [class.is-invalid]="cityForm.get('status')?.invalid && cityForm.get('status')?.touched"
                                     [disabled]="cityForm.get('status')?.disabled">

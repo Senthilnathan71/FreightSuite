@@ -8,7 +8,7 @@
                     </div>
                 <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : ' Add'}} IMCO</h5>
                 @if(isEditMode){
-                <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+                <a class="text-info ps-2 w-2 h-2 cursor-pointer" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
@@ -182,10 +182,10 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!ImcoForm.get('status')?.value">
                             @if(isEditMode){
                             <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="value" placeholder="Select status" class="ng-select">
+                                bindValue="value" placeholder="" class="ng-select" >
                             </ng-select>
                             } @else {
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"

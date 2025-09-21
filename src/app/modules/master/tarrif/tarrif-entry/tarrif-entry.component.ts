@@ -99,7 +99,13 @@ export class TarrifEntryComponent implements OnInit {
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
-
+ selectedTab = 'Tariff Details';
+  tab=[
+   { name: 'Tariff Details', icon: 'fas fa-info-circle' },
+  ]
+ selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
 
 	cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
 	serviceLevel = ['BreakBulk', 'OOG', 'Tanker']

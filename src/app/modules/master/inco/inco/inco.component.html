@@ -193,7 +193,7 @@
       }
       <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div> -->
-    <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+    <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer pt-1" (click)="showInfo()">
                 <i class="fas fa-info-circle fs-6"></i>
             </a>
 
@@ -263,7 +263,7 @@
 
 
             <aside class="col-md-6">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!incoForm.get('IncoType')?.value">
                 <ng-select formControlName="IncoType" [items]="incoTypeOptions" bindLabel="name"
                   bindValue="name"></ng-select>
                 <label class="input-label">Inco Type <span class="text-danger">*</span></label>
@@ -280,7 +280,7 @@
             </aside>
 
             <aside class="col-md-6">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!incoForm.get('OceanFreight')?.value">
                 <ng-select formControlName="OceanFreight" [items]="oceanFreightOptions" bindLabel="name"
                   bindValue="name"></ng-select>
                 <label class="input-label">Ocean Freight <span class="text-danger">*</span></label>
@@ -330,7 +330,7 @@
             <!-- ... (keep all existing HTML until the status field) -->
 
             <aside class="col-md-6">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!incoForm.get('Status')?.value">
                 <ng-select [items]="statusList" formControlName="Status"
                   [class.is-invalid]="incoForm.get('Status')?.invalid && incoForm.get('Status')?.touched"
                   [disabled]="incoForm.get('Status')?.disabled">

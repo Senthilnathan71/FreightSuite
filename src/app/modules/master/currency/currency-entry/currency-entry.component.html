@@ -501,7 +501,7 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!currencyForm.get('status')?.value">
                             <ng-select 
                             [items]="statusOptions"
                             bindLabel="name" 

@@ -1,5 +1,5 @@
 <div class="row compact-form">
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                  <div class="d-flex align-items-center gap-2">
@@ -8,7 +8,7 @@
                     </div>
                 <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : ' Add'}} Tariff</h5>
                 @if(isEditMode){ 
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showHeaderInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
@@ -57,8 +57,8 @@
     </div>
 
 
-    <div class="mx-0">
-         <div class="card mb-2">
+    <div class="mx-0 px-0">
+         <div class="card mb-1">
         <div class="card-body">
             <div class="row">
                      <div class="col-md-6" [formGroup]="tariffHeaderForm">
@@ -70,8 +70,8 @@
                         <h5 class="card-titlename mb-0">Tarrif Information</h5>
                     </div>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="DepartmentMasterSid" placeholder="Select Department">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('DepartmentMasterSid')?.value">
+                            <ng-select class="ng-select" formControlName="DepartmentMasterSid" placeholder="">
                                 <!-- <ng-option value="">Select Department</ng-option> -->
                                 @for (department of departmentList; track department) {
                                 <ng-option [value]="department.DepartmentMasterSid">{{ department.departmentName
@@ -111,11 +111,11 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('POOSid')?.value">
                             <dofi-searchable-dropdown 
                                 [items]="portList" 
                                 formControlName="POOSid"
-                                [placeholder]="'Select POO'"
+                                [placeholder]="''"
                                 [displayFields]="['PortCode', 'PortName']" 
                                 [displayLabels]="['Port Code', 'Port Name']" 
                                 [labelFields]="['PortName','PortCode']"
@@ -136,11 +136,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('POLSid')?.value">
                             <dofi-searchable-dropdown 
                                 [items]="polList" 
                                 formControlName="POLSid"
-                                [placeholder]="'Select POL'"
+                                [placeholder]="''"
                                 [displayFields]="['PortCode', 'PortName']" 
                                 [displayLabels]="['Port Code', 'Port Name']" 
                                 [labelFields]="['PortName','PortCode']"
@@ -169,11 +169,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('PODSid')?.value">
                             <dofi-searchable-dropdown 
                                 [items]="podList" 
                                 formControlName="PODSid"
-                                [placeholder]="'Select POD'"
+                                [placeholder]="''"
                                 [displayFields]="['PortCode', 'PortName']" 
                                 [displayLabels]="['Port Code', 'Port Name']" 
                                 [labelFields]="['PortName','PortCode']"
@@ -202,11 +202,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('FDCSid')?.value">
                             <dofi-searchable-dropdown 
                                 [items]="portList" 
                                 formControlName="FDCSid"
-                                [placeholder]="'Select FDC'"
+                                [placeholder]="''"
                                 [displayFields]="['PortCode', 'PortName']" 
                                 [displayLabels]="['Port Code', 'Port Name']" 
                                 [labelFields]="['PortName','PortCode']"
@@ -232,11 +232,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('ViaPortSid')?.value">
                             <dofi-searchable-dropdown 
                                 [items]="portList" 
                                 formControlName="ViaPortSid"
-                                [placeholder]="'Select Via Port'"
+                                [placeholder]="''"
                                 [displayFields]="['PortCode', 'PortName']" 
                                 [displayLabels]="['Port Code', 'Port Name']" 
                                 [labelFields]="['PortName','PortCode']"
@@ -261,10 +261,10 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-1">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="POLTerminal" placeholder=""
-                                class="form-control custom-input-field sm" [textWithNumbers]="5" readonly>
+                                class="form-control custom-input-field sm" [textWithNumbers]="5" readonly style="background-color: white;cursor: not-allowed;">
                             <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !tariffHeaderForm.get('POLTerminal')?.value
@@ -282,10 +282,10 @@
                         </div>
                     </aside>
                       
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-1">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
-                                class="form-control custom-input-field sm" [textWithNumbers]="5" readonly>
+                                class="form-control custom-input-field sm" [textWithNumbers]="5" readonly style="background-color: white;cursor: not-allowed;">
                             <label for="text-input"  [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !tariffHeaderForm.get('PODTerminal')?.value
@@ -312,7 +312,7 @@
         <div class="card mb-0">
               <div class="card-body  pb-0">
                         <div class="row compact-form  rounded border border-top-0">
-                           <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                           <div class="card-header-title d-flex align-items-center gap-2 ">
     <i class="fas fa-dollar-sign fs-4"></i>
     <h5 class="card-titlename mb-0">Freight Ledger</h5>
 </div>
@@ -349,8 +349,8 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="MovementType" placeholder="Select Movement Type">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('MovementType')?.value">
+                            <ng-select class="ng-select" formControlName="MovementType" placeholder="">
                                 <ng-option value="Sea">Sea</ng-option>
                                 <ng-option value="Air">Air</ng-option>
                                 <ng-option value="ICD">ICD</ng-option>
@@ -371,8 +371,8 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="Carrier" placeholder="Select Carrier">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('Carrier')?.value">
+                            <ng-select class="ng-select" formControlName="Carrier" placeholder="">
                                 <!-- <ng-option value="">Select Carrier</ng-option> -->
                                 @for (customer of carrierList; track customer) {
                                 @if(customer.CustomerMasterSid !== tariffHeaderForm.get('AgentSid').value){
@@ -392,8 +392,8 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="AgentSid" placeholder="Select Agent">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('AgentSid')?.value">
+                            <ng-select class="ng-select" formControlName="AgentSid" placeholder="">
                                 <!-- <ng-option value="">Select Agent</ng-option> -->
                                 @for (customer of agentList; track customer) {
                                 @if(customer.CustomerMasterSid !== tariffHeaderForm.get('Carrier').value){
@@ -414,8 +414,8 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindValue="IncoName" bindLabel="IncoName" placeholder="Select Inco Terms">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('IncoTerms')?.value">
+                            <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindValue="IncoName" bindLabel="IncoName" placeholder="">
                             </ng-select>
                             <label for="text-input" class="input-label">Inco Terms <span
                                     class="text-danger"></span></label>
@@ -456,7 +456,7 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                           <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
                                     (click)="d2.toggle()" readonly formControlName="EffectiveDate" [footerTemplate]="footerTemplate2"
@@ -473,7 +473,7 @@
                             <label class="input-label" for="dp">Effective Date <span class="text-danger">*</span></label>
                                 @if(tariffHeaderForm.get('EffectiveDate')?.touched &&
                                 tariffHeaderForm.get('EffectiveDate')?.invalid){
-                                <div class="error-message">
+                                <div class="error-message pb-2 pe-3">
                                     @if(tariffHeaderForm.get('EffectiveDate')?.hasError('required')){
                                     <span>Required</span>
                                     }
@@ -493,8 +493,8 @@
                         </button>
                     </ng-template>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="StuffingAt" placeholder="Select Stuffing At">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('StuffingAt')?.value">
+                            <ng-select class="ng-select" formControlName="StuffingAt" placeholder="">
                                 <ng-option value="Dock">Dock</ng-option>
                                 <ng-option value="Factory">Factory</ng-option>
                                 <ng-option value="Both">Both</ng-option>
@@ -573,10 +573,10 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('status')?.value">
                             <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
                             @if(isEditMode){
-                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input" >
                                 <ng-option value="Active">Active</ng-option>
                                 <ng-option value="Suspended">Suspended</ng-option>
                             </ng-select>
@@ -603,8 +603,27 @@
     </div>
     </div>
    
-   
-    <div class="col-12">
+   <div class="nav-pills-container">
+    <div class="nav-pills">
+      <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
+        (click)="selectTab(tab.name)">
+        <div class="pill-icon">
+          <i [class]="tab.icon" class="fs-4"></i>
+        </div>
+        <span class="pill-label">{{ tab.name }}</span>
+        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-workspace px-0">
+      <div class="workspace-content" *ngIf="selectedTab === 'Tariff Details'">
+         <div class="content-layout">
+               <ng-container *ngTemplateOutlet="tariffDetailListTemplate"></ng-container>
+         </div>
+        </div>
+  </div>
+    <!-- <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <div class="row">
@@ -626,7 +645,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
 </div>
 
@@ -850,7 +869,7 @@
                             </ng-template>
                             <aside class="col-md-6 col-lg-4">
                                 <div class="d-flex mb-2 my-lg-0">
-                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
                                         <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
                                             ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
                                             formControlName="detailExpiredOn" [minDate]="toNgbDateStruct(tariffDetailsForm.get('detailEffectiveDate').value)" [footerTemplate]="footerTemplate1"/>
@@ -883,8 +902,8 @@
                             </ng-template>
                             
                             <aside class="col-md-6 col-lg-4">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailChargeCode" (change)="setChargeDetails($event)" [items]="chargeList" (clear)="setChargeDetails()" bindLabel="chargeCode" bindValue="chargeCode" placeholder="Select Charge Code">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailChargeCode')?.value">
+                                    <ng-select class="ng-select" formControlName="detailChargeCode" (change)="setChargeDetails($event)" [items]="chargeList" (clear)="setChargeDetails()" bindLabel="chargeCode" bindValue="chargeCode" placeholder="">
                                     </ng-select>
                                     <label for="charge" class="input-label">Charge Code <span
                                                 class="text-danger">*</span></label>
@@ -919,8 +938,8 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6 col-lg-4">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailCargoType" placeholder="Select Cargo Type">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailCargoType')?.value">
+                                    <ng-select class="ng-select" formControlName="detailCargoType" placeholder="">
                                         <!-- <ng-option value="">Select Cargo Type</ng-option> -->
                                         @for (cargo of cargoTypes; track cargo) {
                                         <ng-option [value]="cargo">{{ cargo }}</ng-option>
@@ -942,8 +961,8 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6 col-lg-4">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="Select UOM">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailUOMSid')?.value">
+                                    <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="">
                                         <!-- <ng-option value="">Select UOM</ng-option> -->
                                         @for(uom of UOMList; track uom){
                                         <ng-option [value]="uom.UOMMasterSid">{{uom.UOMName}}</ng-option>
@@ -963,8 +982,8 @@
                             </aside>
                             
                             <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailSaleCurrency"placeholder="Select Sale Currency">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailSaleCurrency')?.value">
+                                    <ng-select class="ng-select" formControlName="detailSaleCurrency"placeholder="">
                                         <!-- <ng-option value="">Select Sale Currency</ng-option> -->
                                         @for (currency of currencyList; track currency) {
                                         <ng-option [value]="currency.CurrencyMasterSid">{{ currency.currencyName
@@ -1002,9 +1021,9 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailBuyCurrency')?.value">
                                     <ng-select class="ng-select" formControlName="detailBuyCurrency"
-                                    placeholder="Select Buy Currency">
+                                    placeholder="">
                                         <ng-option value="">Select Buy Currency</ng-option>
                                         @for (currency of currencyList; track currency) {
                                         <ng-option [value]="currency.CurrencyMasterSid">{{ currency.currencyName
@@ -1060,7 +1079,7 @@
                             </aside>
                             
                             <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailstatus')?.value">
 
                                     @if(isModalEditMode){
                                     <ng-select name="status" class="ng-select" formControlName="detailstatus" id="text-input">

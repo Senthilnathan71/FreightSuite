@@ -88,6 +88,13 @@ formErrors: any = {};
 originalSno: number | null = null;
 isSnoDuplicate: boolean = false;
 
+  selectedTab = 'Details';
+  tab=[
+   { name: 'Details', icon: 'fas fa-info-circle' },
+  ]
+ selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
 
     modeOfStatus = [
         { id: "Active", name: "Active" },

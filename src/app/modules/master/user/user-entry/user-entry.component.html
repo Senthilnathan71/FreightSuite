@@ -9,7 +9,7 @@
                     </div>
                 <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} User</h5>
                 @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
@@ -145,9 +145,9 @@
                     }
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!userForm.get('department')?.value?.length">
                             <multi-select [control]="userForm.get('department')" [items]="departmentList"
-                                bindLabel="departmentName" bindValue="departmentName" placeholder="Select Department"
+                                bindLabel="departmentName" bindValue="departmentName" placeholder=""
                                 (valueChange)="setDefaultDept()"></multi-select>
                             <label for="" class="input-label">Dept <span class="text-danger"></span></label>
                             @if(userForm.get('department')?.touched && userForm.get('department')?.invalid){
@@ -163,7 +163,7 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm form-control"
-                                formControlName="DefaultDept" [textWithNumbers]="20" readonly>
+                                formControlName="DefaultDept" [textWithNumbers]="20" readonly style="background-color: white;cursor:not-allowed;">
                             <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !userForm.get('DefaultDept')?.value
@@ -190,9 +190,9 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('userTypeId')?.value">
                             <ng-select formControlName="userTypeId" [items]="userTypeList" bindLabel="name"
-                                bindValue="UserTypeSid" placeholder="Select User Type">
+                                bindValue="UserTypeSid" placeholder="">
 
                             </ng-select>
                             <label for="" class="input-label">User Type <span class="text-danger"></span></label>
@@ -229,9 +229,9 @@
 
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!userForm.get('CountryMasterSid')?.value">
                             <ng-select formControlName="CountryMasterSid" [items]="countryList" bindLabel="countryName"
-                                bindValue="CountryMasterSid" placeholder="Select Country">
+                                bindValue="CountryMasterSid" placeholder="">
 
                             </ng-select>
                             <label for="" class="input-label">Country <span class="text-danger"></span></label>
@@ -277,9 +277,9 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('roles')?.value?.length">
                             <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName"
-                                bindValue="RoleMasterSid" placeholder="Select Roles"></multi-select>
+                                bindValue="RoleMasterSid" placeholder=""></multi-select>
                             <label for="" class="input-label">Role <span class="text-danger">*</span></label>
                             @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
                             <div class="error-message">
@@ -293,7 +293,7 @@
 
                     @if(isEditMode){
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('status')?.value">
                             <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
                                 bindValue="name">
                             </ng-select>

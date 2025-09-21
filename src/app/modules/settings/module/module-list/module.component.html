@@ -223,12 +223,12 @@
 
                             <!-- In your modal template (inside the form) -->
 <aside class="col-md-6">
-    <div class="custom-form-group custom-form-group-select">
+    <div class="custom-form-group custom-form-group-select" [class.filled]="!!moduleForm.get('icon')?.value">
         <ng-select [items]="iconOptions" 
                    bindLabel="label" 
                    bindValue="value" 
                    formControlName="icon"
-                   placeholder="Select an icon">
+                   placeholder="">
             <ng-template ng-label-tmp let-item="item">
                 <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
                 {{item.label}}
@@ -245,7 +245,7 @@
 
 
                             <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!moduleForm.get('status')?.value">
                                     <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                         [class.is-invalid]="moduleForm.get('status')?.invalid && moduleForm.get('status')?.touched">
                                     </ng-select>

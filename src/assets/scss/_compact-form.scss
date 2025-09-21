@@ -66,6 +66,19 @@
     }
   }
 
+  multi-select{
+    display: block;
+
+    .ng-value-container {
+      padding-left: 0 !important;
+      padding-top: 0; 
+    }
+
+    .ng-input input {
+      padding-left: 0 !important;
+      padding-top: 0;
+    }
+  }
   .input-label {
     position: absolute;
     left: -5px;  

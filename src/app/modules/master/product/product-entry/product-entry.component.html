@@ -8,7 +8,7 @@
                     </div>
                      <h5 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit' : 'Add'}} Product</h5>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
@@ -118,7 +118,7 @@
 
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('UOMCode')?.value">
                             <ng-select formControlName="UOMCode" [items]="UOMList" bindLabel="UOMCode" bindValue="UOMCode">
 
                             </ng-select>
@@ -174,7 +174,7 @@
 
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ProductType')?.value">
                             <ng-select formControlName="ProductType" [items]="modeOfProductType" bindLabel="name"
                                 bindValue="id">
                                 
@@ -184,9 +184,9 @@
                     </aside>
 
                     <aside class="col-md-3">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('HSNCode')?.value">
                                 <ng-select class="ng-select" [items]="hsnList" bindLabel="HSSACCode" bindValue="HSSACCode"
-                                    formControlName="HSNCode" placeholder="Select HSN Code">
+                                    formControlName="HSNCode" placeholder="">
                                 </ng-select>
                                 <label for="text-input" class="input-label">HSN Code <span
                                         class="text-danger fw-semibold"></span></label>
@@ -194,10 +194,10 @@
                             </div>
                         </aside>
                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('status')?.value">
                             @if(isEditMode){
                             <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="value" placeholder="Select status" class="ng-select">
+                                bindValue="value" placeholder="" class="ng-select">
                             </ng-select>
                             } @else {
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"

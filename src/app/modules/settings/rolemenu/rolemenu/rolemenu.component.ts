@@ -423,7 +423,7 @@ private loadRoleMenuData(data: any) {
 			Module : [,[Validators.required]],
 			MenuMasterSid : [,[Validators.required]],
 			RoleMasterSid : [,[Validators.required]],
-			Remarks : ['',[Validators.required]],
+			Remarks : [''],
 			MenuPermissions : [{}],
 			status : ['Active'],
 			InsertRole : [true],

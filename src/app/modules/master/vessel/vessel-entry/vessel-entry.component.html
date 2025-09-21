@@ -1,5 +1,5 @@
 <div class="row" [formGroup]="vesselForm">
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
@@ -9,7 +9,7 @@
                 
                 <h5 class="page-title mb-0 text-info">{{isEditMode ?'Edit':'Add'}} Vessel</h5>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
@@ -60,9 +60,9 @@
                 {{isEditMode ?'Update':'Save'}}</button>
         </div>
     </div> -->
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="card h-100 mb-0">
-            <div class="card-body">
+            <div class="card-body py-2">
                 <div class="row compact-form  pb-2 rounded border border-top-0">
                     <div class="card-header-title d-flex align-items-center gap-2">
                          <i class="fas fa-ship fs-4"></i>
@@ -233,11 +233,11 @@
                         </div>
                     </aside> -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!vesselForm.get('VesselType')?.value">
                         <ng-select
                             [items]="vesselTypes"
                             formControlName="VesselType"
-                            placeholder="Vessel Type"
+                            placeholder=""
                             [searchable]="false"
                             [clearable]="false">
                         </ng-select>
@@ -321,7 +321,7 @@
                             <input type="text" id="text-input" formControlName="Remarks" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="200">
                             <label for="text-input" class="input-label">Remarks <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('Remarks')?.touched && vesselForm.get('Remarks')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('Remarks')?.hasError('required')){
@@ -349,7 +349,7 @@
                         </div>
                     </aside> -->
                    <aside class="col-md-4">
-  <div class="custom-form-group">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!vesselForm.get('status')?.value">
     <ng-select *ngIf="isEditMode"
       formControlName="status"
       [items]="['Active', 'Suspended']"

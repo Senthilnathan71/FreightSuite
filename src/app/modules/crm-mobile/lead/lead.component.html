@@ -572,9 +572,9 @@
                                         }
                                     </aside>
                                     <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('leadReferredBy')?.value">
                                             <ng-select class="ng-select" formControlName="leadReferredBy"
-                                                [items]="leadSourceList" placeholder="Select Lead From"></ng-select>
+                                                [items]="leadSourceList" placeholder=""></ng-select>
                                             <label for="lead-source" class="input-label">Lead From <span
                                                     class="text-danger">*</span></label>
                                         </div>
@@ -624,9 +624,9 @@
                                     </aside>
                                     @if(isEditMode){
                                     <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('status')?.value">
                                             <ng-select class="ng-select" formControlName="status" [items]="statusList"
-                                                placeholder="Select Status"></ng-select>
+                                                placeholder=""></ng-select>
                                             <label for="lead-status" class="input-label">Status <span
                                                     class="text-danger">*</span></label>
                                         </div>
@@ -712,10 +712,10 @@
                                     }
                                 </aside>
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
                                         <ng-select formControlName="CountryMasterSid" [items]="countryList"
                                             bindLabel="countryName" bindValue="CountryMasterSid"
-                                            placeholder="Select Country"
+                                            placeholder=""
                                             (change)="filterStateByCountryId($event)"></ng-select>
                                         <label for="text-input" class="input-label">Country <span
                                                 class="text-danger">*</span></label>
@@ -731,10 +731,10 @@
                                     }
                                 </aside>
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('StateMasterSid')?.value">
                                         <ng-select class="ng-select" [items]="stateList" bindLabel="stateName"
                                             bindValue="StateMasterSid" formControlName="StateMasterSid"
-                                            placeholder="Select State" (change)="filterCityByStateId($event)">
+                                            placeholder="" (change)="filterCityByStateId($event)">
 
                                         </ng-select>
                                         <label for="text-input" class="input-label">State <span
@@ -750,10 +750,10 @@
                                     }
                                 </aside>
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('CityMasterSid')?.value">
                                         <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid"
                                             bindLabel="cityName" formControlName="CityMasterSid"
-                                            placeholder="Select City">
+                                            placeholder="">
 
                                         </ng-select>
                                         <label for="text-input" class="input-label">City <span
@@ -848,7 +848,7 @@
                                         </div>
                                     </aside> -->
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
+                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('PreferredContactMode')?.value">
                                         <ng-select [items]="modeOfPreferredContactMode" bindLabel="name"
                                             bindValue="name" formControlName="PreferredContactMode">
 

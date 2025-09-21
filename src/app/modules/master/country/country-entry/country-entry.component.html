@@ -13,7 +13,7 @@
                     </div>
             <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Country</h5>
             @if(isEditMode){
-            <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+            <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
               <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
@@ -69,7 +69,7 @@
                <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                        <i class="fas fa-globe fs-4"></i>
 
-                        <h5 class="card-titlename mb-0">Country Information</h5>
+                        <h5 class="card-titlename mb-0 pt-1">Country Information</h5>
                     </div>
 
               <!-- <aside class="col-md-12">
@@ -159,7 +159,7 @@
                 </div>
               </aside> -->
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!countryForm.get('ZoneMasterSid')?.value">
                   <ng-select [items]="zones" bindLabel="ZoneName" bindValue="ZoneMasterSid"
                     formControlName="ZoneMasterSid" placeholder="" [class.is-invalid]="
         countryForm.get('ZoneMasterSid')?.invalid &&
@@ -200,7 +200,7 @@
                 </div>
               </aside> -->
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!countryForm.get('CurrencyMasterSid')?.value">
                   <ng-select [items]="currencies" bindLabel="currencyName" bindValue="CurrencyMasterSid"
                     formControlName="CurrencyMasterSid" placeholder="" [class.is-invalid]="
         countryForm.get('CurrencyMasterSid')?.invalid &&
@@ -232,7 +232,7 @@
                   <label class="input-label">Status <span class="text-danger">*</span></label>
                 </div>
 
-                <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
+                <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select" [class.filled]="!!countryForm.get('status')?.value">
                   <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
                     formControlName="status"></ng-select>
                   <label class="input-label">Status</label>

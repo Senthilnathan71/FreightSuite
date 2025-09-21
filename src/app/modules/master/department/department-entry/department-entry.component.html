@@ -130,9 +130,9 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('departmentType')?.value">
                                 <ng-select class="ng-select" formControlName="departmentType">
-                                    <ng-option value="">Select Department Type</ng-option>
+                                    <!-- <ng-option value="">Select Department Type</ng-option> -->
                                     @for(type of departmentTypeOptions; track type) {
                                     <ng-option [value]="type">{{type}}</ng-option>
                                     }
@@ -156,9 +156,9 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('ExportImport')?.value">
                                 <ng-select class="ng-select" formControlName="ExportImport">
-                                    <ng-option value="">Select Exp/Imp</ng-option>
+                                    <!-- <ng-option value="">Select Exp/Imp</ng-option> -->
                                     <ng-option value="Export">Export</ng-option>
                                     <ng-option value="Import">Import</ng-option>
                                 </ng-select>
@@ -181,9 +181,9 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('FCLLCL')?.value">
                                 <ng-select class="ng-select" formControlName="FCLLCL">
-                                    <ng-option value="">Select FCL/LCL</ng-option>
+                                    <!-- <ng-option value="">Select FCL/LCL</ng-option> -->
                                     <ng-option value="FCL">FCL</ng-option>
                                     <ng-option value="LCL">LCL</ng-option>
                                 </ng-select>
@@ -206,9 +206,9 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('Division')?.value">
                                 <ng-select class="ng-select" formControlName="Division" [onlyText]="20">
-                                    <ng-option value="">Select Division</ng-option>
+                                    <!-- <ng-option value="">Select Division</ng-option> -->
                                     @for(division of divisionList;track division){
                                     <ng-option [value]="division.DivisionName">{{division.DivisionName}}</ng-option>
                                     }
@@ -252,7 +252,7 @@
                             </div>
                         </aside>
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!departmentForm.get('Status')?.value">
     @if(isEditMode){
       <ng-select 
         [items]="['Active', 'Suspended']"

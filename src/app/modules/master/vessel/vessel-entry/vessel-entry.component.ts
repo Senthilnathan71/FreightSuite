@@ -124,7 +124,7 @@ export class VesselEntryComponent implements OnInit {
             VesselOperator: ['', [Validators.required, Validators.maxLength(100)]],
             LengthinMtr: ['', [Validators.required]],
             BreadthinMtr: ['', [Validators.required]],
-            Remarks: ['', [Validators.required, Validators.maxLength(200)]],
+            Remarks: [''],
             status: ['Active']
         })
     }

@@ -220,7 +220,7 @@ auditLogs: any[] = []; // Stores audit logs
       (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess("Chart Account Updated Successfully");
-          this.route.navigate(['/accounts/chart-accounts/list']);
+          this.route.navigate(['accounts/chart-accounts/entry',resp.data.chartMasterSid]);
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -233,8 +233,10 @@ auditLogs: any[] = []; // Stores audit logs
     this.masterServ.createNewCoa(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
+          this.loadChartAccount[(resp.data.chartMasterSid)];
           this.appSettingService.showSuccess(resp.message);
-          this.route.navigate(['/accounts/chart-accounts/list']);
+          
+          this.route.navigate(['accounts/chart-accounts/entry',resp.data.chartMasterSid]);
         } else {
           this.appSettingService.showError(resp.message);
         }

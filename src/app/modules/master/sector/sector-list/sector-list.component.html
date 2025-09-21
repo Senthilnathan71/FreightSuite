@@ -178,7 +178,7 @@
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div> -->
-        <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+        <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()">
                 <i class="fas fa-info-circle fs-6"></i>
             </a>
 
@@ -248,7 +248,7 @@
                             </div>
                         </aside>
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!sectorForm.get('RegionName')?.value">
                                 <ng-select formControlName="RegionName" [items]="filteredZones" bindLabel="ZoneName"
                                     bindValue="ZoneName" placeholder="" container="body">
                                     <!-- <ng-template ng-label-tmp let-item="item">
@@ -278,7 +278,7 @@
                                 </div>
                             </aside> -->
                         <aside class="col-md-6 ">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!sectorForm.get('status')?.value">
                                 <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                     [class.is-invalid]="sectorForm.get('status')?.invalid && sectorForm.get('status')?.touched">
                                 </ng-select>
