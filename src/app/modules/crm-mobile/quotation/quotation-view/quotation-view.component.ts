@@ -60,8 +60,28 @@ export class QuotationViewComponent {
   userData : any
   currentCompany: any;
   currentBranch: any;
+  selectedFCLLCL : string = "LCL"
+  filteredQuoteItems : any[]=[]
+  departments : any[] = [];
+  containerTypes : any[] = [];
+   selectedTab= 'Pending Rate Request';
+   tabs = [
+    { name: 'Pending Rate Request', icon: 'fas fa-file-signature' },
+   { name: 'Quotation', icon: 'fas fa-layer-group' }
+  ];
+  selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
 
-  constructor(private toastr: ToastrService,private excelReportService : ExcelExportService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService, private spinner: NgxSpinnerService) { }
+  constructor(
+    private toastr: ToastrService,
+    private excelReportService : ExcelExportService, 
+    private modalService: NgbModal, 
+    private leadService: LeadService, 
+    private route: Router, 
+    private appService: AppService,
+    private appSettingService : AppSettingsService, 
+    private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     const storedCompany = localStorage.getItem('selected-company');
@@ -70,6 +90,8 @@ export class QuotationViewComponent {
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.isMobile = this.appService.getDevice()
     this.loadPorts()
+    this.loadDepartments();
+    this.loadContainerTypes();
     this.loadEnquiries()
     this.loadUnits();
     // this.loadQuotes();
@@ -80,6 +102,48 @@ export class QuotationViewComponent {
       }
     )
 
+  }
+
+  loadDepartments(){
+    const companyMastersID = this.currentCompany?.CompanyMasterSid;
+    this.leadService.getAllDepartments(companyMastersID).subscribe(
+      (resp: any) => {
+        if (resp) {
+          this.departments = resp;
+        } else {
+          this.appSettingService.showError('Error loading departments.');
+          console.error(resp.message);
+        }
+      }
+    )
+  }
+
+  loadContainerTypes(){
+    this.leadService.getAllContainerTypes().subscribe(
+      (resp: any) => {
+        if (resp) {
+          this.containerTypes = resp;
+        } else {
+          this.appSettingService.showError('Error loading container types.');
+          console.error(resp);
+        }
+      }
+    )
+  }
+
+  filterEnquiry(){
+      const filterValue = this.filterValue.trim() || '';
+      if(!filterValue){
+        this.filteredQuoteItems = [...this.quoteItems];
+      } else {
+        this.filteredQuoteItems = this.quoteItems.filter(enq =>
+          (enq.EnquiryNumber    ?? '').toLowerCase().includes(filterValue) ||
+          (enq.CustomerName     ?? '').toLowerCase().includes(filterValue) ||
+          (enq.POLCode          ?? '').toLowerCase().includes(filterValue) ||
+          (enq.PODCode          ?? '').toLowerCase().includes(filterValue) ||
+          (enq.EnquiryDate      ?? '').toString().toLowerCase().includes(filterValue)
+        );
+      }
   }
 
   searchQuotation() {
@@ -277,6 +341,71 @@ export class QuotationViewComponent {
 
     this.route.navigate(['crm/quotation/entry']);
   }
+
+  navigateQuotation(response: any) {
+    const polList = response.enquiryRoute.map(route => route.POLSid);
+    const podList = response.enquiryRoute.map(route => route.PODSid);
+
+    let cargoTypeList: string[] = [];
+
+    if (Array.isArray(response.enquiryCargo)) {
+      cargoTypeList.push(...response.enquiryCargo.map(cargo => cargo.CargoType));
+    }
+
+    response.enquiryRoute.forEach(route => {
+      if (Array.isArray(route.enquiryCargo)) {
+        cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
+      }
+    });
+      console.log(response);
+      const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+      let selectedFCLLCL;
+      if (dept?.departmentType === "Sea") {
+        selectedFCLLCL = dept?.FCLLCL;
+      } else {
+        selectedFCLLCL = dept?.departmentType?.toUpperCase();
+      }
+
+      let routeDetails = response.enquiryRoute.flatMap(route => {
+        return route.enquiryCargo.map(cargo => {
+          const containerTypeId = this.containerTypes.find(
+            con => con.ContainerName === cargo.ContainerType
+          )?.ContainerTypeMasterSid || null;
+          return {
+            PORSid: route.PORSid,
+            POLSid: route.POLSid,
+            PODSid: route.PODSid,
+            FPODSid: route.FDPSid,
+            CargoType: cargo.CargoType,
+            CBM: cargo.Volume,
+            ContainerType: containerTypeId,
+            ChargeableWeight : cargo.ChargeableWeight,
+            ContainerQty: cargo.Qty
+          };
+        });
+      });
+
+    const enqData = {
+
+      EnquirySid: response?.EnquiryHeaderSid,
+      EnquiryNumber: response.EnquiryNumber,
+      CustomerAddress: response.CustomerAddress,
+      CustomerName: response.CustomerName,
+      Email: response.Email,
+      CustomerMasterSid: response.CustomerMasterSid,
+      DepartmentMasterSid: response.DepartmentMasterSid,
+      polList: polList, 
+      podList: podList, 
+      status: response.status,
+      cargoTypeList: cargoTypeList, 
+      ShipmentType: selectedFCLLCL,
+      rateRequest: true,
+      quoteRoutes: routeDetails,
+    };
+      this.leadService.clearQuotationData();
+      this.leadService.setQuotationData(enqData);
+      this.route.navigate(['crm/quotation/entry']);
+    }
 
   getFormattedPort(PortMasterSid){
     if(!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0 ){

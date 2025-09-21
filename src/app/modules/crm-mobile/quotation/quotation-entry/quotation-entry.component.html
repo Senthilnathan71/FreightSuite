@@ -76,12 +76,12 @@
             </div>
           </aside>
           <div class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select-date">
 
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
                   (click)="d2.toggle()" formControlName="QuoteDate" (keydown.arrowDown)="d2.open()" />
-                <button class="btn btn-info text-white" (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
                     class="feather-sm"></i-feather></button>
               </div>
               <label for="effectiveDate" class="input-label">Quote Date</label>
@@ -95,7 +95,7 @@
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                [value]="enquiryNumber" disabled>
+                [value]="enquiryNumber" disabled style="background-color: white;cursor: not-allowed;">
               <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !enquiryNumber
@@ -111,7 +111,7 @@
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
               <ng-select formControlName="CustomerMasterSid" [items]="customers" bindLabel="CustomerName"
                 bindValue="CustomerMasterSid" (change)="onCustomerChange($event)">
 
@@ -149,7 +149,7 @@
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!quotationForm.get('SalesmanSid')?.value">
               <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
                 bindValue="CustomerSalesSid">
 
@@ -159,11 +159,11 @@
           </aside>
 
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
-              <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!quotationForm.get('status')?.value" >
+              <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name" >
 
               </ng-select>
-              <label for="" class="input-label">Status <span class="text-danger"></span></label>
+              <label for="" class="input-label" >Status <span class="text-danger"></span></label>
             </div>
           </aside>
 
@@ -224,7 +224,7 @@
 
                       <div class="row compact-form">
                         <aside class="col-md-3">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('DepartmentMasterSid')?.value">
                             <ng-select formControlName="DepartmentMasterSid" [items]="departments"
                               bindLabel="departmentName" bindValue="DepartmentMasterSid"
                               (change)="onDeptChange($event,routeIndex)">
@@ -241,7 +241,7 @@
                           </div>
                         </aside>
                         <aside class="col-md-3">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
                             <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
                               bindValue="PortMasterSid">
 
@@ -250,7 +250,7 @@
                           </div>
                         </aside>
                         <aside class="col-md-3">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
                             <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
                               bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
 
@@ -266,7 +266,7 @@
                           </div>
                         </aside>
                         <aside class="col-md-3">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
                             <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
                               bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
                               (change)="onRouteChange(routeIndex)">
@@ -283,7 +283,7 @@
                           </div>
                         </aside>
                         <aside class="col-md-3">
-                          <div class="custom-form-group custom-form-group-select">
+                          <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('FPODSid')?.value">
                             <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
                               bindValue="PortMasterSid">
 
@@ -299,7 +299,7 @@
                           </div>
                         </aside>
                       <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('CarrierMasterSid')?.value">
                           <ng-select formControlName="CarrierMasterSid" [items]="carriers" bindLabel="CustomerName"
                             bindValue="CustomerMasterSid" (change)="onCarrierChange($event,routeIndex)">
 
@@ -309,9 +309,9 @@
                         </div>
                       </aside>
                       <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">
                           <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
-                            bindValue="name" placeholder="Select CargoType">
+                            bindValue="name" placeholder="">
 
                           </ng-select>
                           <label for="" class="input-label">Cargo Type <span class="text-danger">*</span></label>
@@ -326,7 +326,7 @@
                       </aside>
 
                       <div class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select-date">
 
                           <div class="input-group">
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -348,7 +348,7 @@
                         </div>
                       </div>
                       <div class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select-date">
 
                           <div class="input-group">
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -360,7 +360,7 @@
                           <label for="effectiveDate" class="input-label">Exp Date <span
                               class="text-danger">*</span></label>
                           @if(route.get('expDate')?.invalid && route.get('expDate')?.touched){
-                          <div class="error-message">
+                          <div class="error-message pb-2 pe-3">
                             @if(route.get('expDate')?.hasError('required')){
                             <span>Required</span>
                             } @else if(route.get('expDate')?.hasError('ngbDate')){
@@ -400,10 +400,10 @@
                         </div>
                       </aside>
                       <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('ContainerType')?.value">
                           <ng-select [items]="containerTypeList" bindLabel="ContainerName"
                             bindValue="ContainerTypeMasterSid" formControlName="ContainerType"
-                            placeholder="Select Container Type">
+                            placeholder="">
                           </ng-select>
                           <label class="input-label">Container Type <span class="text-danger">*</span></label>
                           @if(route.get('ContainerType')?.invalid && route.get('ContainerType')?.touched){
@@ -439,9 +439,9 @@
                         </div>
                       </aside>
                       <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('ServiceLevel')?.value">
                           <ng-select formControlName="ServiceLevel" [items]="serviceLevel" bindLabel="name"
-                            bindValue="name" placeholder="Select Shipment Terms">
+                            bindValue="name" placeholder="">
 
                           </ng-select>
                           <label for="text-input" class="input-label">Shipment Terms <span
@@ -468,7 +468,7 @@
                       </aside>
                       @if(isEditMode && isAuthorizedUser){
                       <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('authorizerStatus')?.value">
                           <ng-select formControlName="authorizerStatus" [items]="approvalStatus" bindLabel="name"
                             bindValue="value">
 
@@ -552,7 +552,7 @@
                                   <td>
                                     <ng-select [items]="chargeMaster" bindLabel="chargeCode" bindValue="ChargeMasterSid"
                                       appendTo="body" formControlName="ChargeUomSid" class="ng-select"
-                                      (change)="onChargeChange($event,routeIndex,chargeIndex)">
+                                      (change)="onChargeChange($event,routeIndex,chargeIndex)" [class.filled]="!!quoteRoutes.at(routeIndex).get('ChargeUomSid')?.value">
                                     </ng-select>
                                   </td>
                                   <td>
@@ -569,12 +569,12 @@
                                   </td>
                                   <td>
                                     <ng-select [items]="unitMaster" formControlName="UOMMasterSid"
-                                      bindLabel="UOMName" bindValue="UOMMasterSid" appendTo="body">
+                                      bindLabel="UOMName" bindValue="UOMMasterSid" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('UOMMasterSid')?.value">
                                     </ng-select>
                                   </td>
                                   <td>
                                     <ng-select [items]="currencyMaster" bindLabel="currencyName"
-                                      bindValue="CurrencyMasterSid" formControlName="CurrencyMasterSid" appendTo="body">
+                                      bindValue="CurrencyMasterSid" formControlName="CurrencyMasterSid" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('CurrencyMasterSid')?.value">
                                     </ng-select>
                                   </td>
                                   <td>
@@ -591,12 +591,12 @@
                                   </td>
                                   <td>
                                     <ng-select [items]="unitMaster" formControlName="costUnit"
-                                      bindLabel="UOMName" bindValue="UOMCode" appendTo="body">
+                                      bindLabel="UOMName" bindValue="UOMCode" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('costUnit')?.value">
                                     </ng-select>
                                   </td>
                                   <td>
                                     <ng-select [items]="currencyMaster" bindLabel="currencyName"
-                                      bindValue="currencyCode" formControlName="costCurrency" appendTo="body">
+                                      bindValue="currencyCode" formControlName="costCurrency" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('costCurrency')?.value">
                                     </ng-select>
                                   </td>
                                   <td>
