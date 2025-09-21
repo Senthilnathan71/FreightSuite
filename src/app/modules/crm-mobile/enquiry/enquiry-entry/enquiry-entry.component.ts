@@ -354,10 +354,10 @@ export class EnquiryEntryComponent implements OnInit {
   addRoute() {
     const routeForm = this.fb.group(
       {
-        POO: [null, Validators.required],
+        POO: [null, ],
         POL: [null, Validators.required],
         POD: [null, Validators.required],
-        FDC: [null, Validators.required],
+        FDC: [null, ],
         cargo: this.fb.array([]),
       }
     );
@@ -385,7 +385,7 @@ export class EnquiryEntryComponent implements OnInit {
   addCargo(routeIndex: number) {
     const cargoForm = this.fb.group({
       CargoType: [null, [Validators.required]],
-      ProductName: [null, [Validators.required]],
+      ProductName: [null],
       CargoDescription: [''],
       PackageType: [null],
       PackageQty: [''],
@@ -643,10 +643,10 @@ export class EnquiryEntryComponent implements OnInit {
       this.quotationPOD = route.PODSid;
       const routeFormGroup = this.fb.group({
         EnquiryRouteSid: [route.EnquiryRouteSid || null],
-        POO: [route.PORSid, Validators.required],
+        POO: [route.PORSid,],
         POL: [route.POLSid, Validators.required],
         POD: [route.PODSid, Validators.required],
-        FDC: [route.FDPSid, Validators.required],
+        FDC: [route.FDPSid, ],
         cargo: this.fb.array([]),
       });
 
@@ -659,7 +659,7 @@ export class EnquiryEntryComponent implements OnInit {
           this.fb.group({
             EnquiryCargoSid: [cargo.EnquiryCargoSid || null],
             CargoType: [cargo.CargoType, Validators.required],
-            ProductName: [cargo.ProductName, Validators.required],
+            ProductName: [cargo.ProductName],
             CargoDescription: [cargo.CargoDescription],
             PackageType: [cargo.PackageType || ''],
             PackageQty: [cargo.PackageQty || ''],
@@ -1077,10 +1077,10 @@ export class EnquiryEntryComponent implements OnInit {
 
       voiceData.routes.forEach((routeData: any, routeIndex: number) => {
         const routeFormGroup = this.fb.group({
-          POO: [routeData.POO, Validators.required],
+          POO: [routeData.POO, ],
           POL: [routeData.POL, Validators.required],
           POD: [routeData.POD, Validators.required],
-          FDC: [routeData.FDC, Validators.required],
+          FDC: [routeData.FDC, ],
           cargo: this.fb.array([])
         });
 
@@ -1091,7 +1091,7 @@ export class EnquiryEntryComponent implements OnInit {
           routeData.cargo.forEach((cargoData: any) => {
             const cargoForm = this.fb.group({
               CargoType: [cargoData.CargoType || 'General', Validators.required],
-              ProductName: [cargoData.ProductName, Validators.required],
+              ProductName: [cargoData.ProductName,],
               CargoDescription: [cargoData.CargoDescription],
               PackageType: [cargoData.PackageType],
               PackageQty: [cargoData.PackageQty],
