@@ -66,15 +66,14 @@
     </div>
     <!-- Reusable Table Component -->
     <app-reusable-table
+        #bookingTable
         [config]="tableConfig"
         [data]="allBookings"
         [loading]="tableLoading"
         [totalRecords]="totalLengthOfCollection"
         [paginationConfig]="paginationConfig"
-        [selectedRows]="selectedTableRows"
         (actionClick)="onTableActionClick($event)"
         (rowClick)="onTableRowClick($event)"
-        (rowSelect)="onTableRowSelect($event)"
         (sortChange)="onTableSortChange($event)"
         (filterChange)="onTableFilterChange($event)"
         (pageChange)="onPageChange($event)"
