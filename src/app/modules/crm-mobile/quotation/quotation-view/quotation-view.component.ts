@@ -60,6 +60,14 @@ export class QuotationViewComponent {
   userData : any
   currentCompany: any;
   currentBranch: any;
+   selectedTab= 'Pending Rate Request';
+   tabs = [
+    { name: 'Pending Rate Request', icon: 'fas fa-file-signature' },
+   { name: 'Quotation', icon: 'fas fa-layer-group' }
+  ];
+  selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
 
   constructor(private toastr: ToastrService,private excelReportService : ExcelExportService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService, private spinner: NgxSpinnerService) { }
 
