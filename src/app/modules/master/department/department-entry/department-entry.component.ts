@@ -372,32 +372,37 @@ export class DepartmentEntryComponent {
   }
 
  openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.DepartmentMasterSid) return;
-
-  this.masterService.getAuditLogs('DepartmentMaster', this.DepartmentMasterSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
-
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+   if (!this.DepartmentMasterSid) return;
+ 
+   this.masterService.getAuditLogsCompany('DepartmentMaster', this.DepartmentMasterSid.toString()).subscribe({
+     next: (logs: any[]) => {
+       const formatFields = (val: any) => {
+         if (!val) return [];
+         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+         if (Object.keys(obj).length === 0) return [];
+         return Object.entries(obj).map(
+           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+         );
+       };
+ 
+       // ✅ Filter out rows where both old & new values are empty (no change)
+       this.auditLogs = logs
+         .map(log => ({
+           ...log,
+           oldValDisplay: formatFields(log.oldVal),
+           newValDisplay: formatFields(log.newVal),
+         }))
+         .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+ 
+       this.auditLogModalRef = this.modalService.open(modal, {
+         centered: true,
+         scrollable: true,
+         windowClass: 'audit-log-modal'
+       });
+     },
+     error: err => console.error('Error fetching audit logs:', err)
+   });
+ }
 
 
 
