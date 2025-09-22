@@ -224,6 +224,10 @@ tab = [
   modalRef10: NgbModalRef;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
+  slicedSalesTeamList: any[] = [];
+  salesTeamPage = 1;
+  salesTeamPageSize = 10;
+  selectedCustomerBranch : any[] = [];
  
 
 
@@ -679,6 +683,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 		}
     this.getAllCountries();
     this.initForm();
+    this.loadAllSpfields();
     // this.getAllState();
     // this.loadCity();
     this.loadDepartments();
@@ -687,8 +692,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       if (this.CustomerMasterSid) {
         this.isEditMode = true;
         this.loadCustomerData(this.CustomerMasterSid);
+        this.loadCustomerSalesTeam();
         this.loadCustomerBranch();
-        this.loadCustomerSalesperson();
         this.loadMenus();
         this.loadCustomerMilestones();
       }
@@ -774,7 +779,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       CustomerType: [{}],
       Network:[''],
 
-      cusMilestone : this.fb.array([])
+      cusMilestone : this.fb.array([]),
+      cusSalesteam : this.fb.array([])
     });
     
     this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
@@ -1915,39 +1921,77 @@ getCityName(citySid: number): string {
     return null;
   }
 
-  initSalesPersonForm(){
-    this.salespersonForm = this.fb.group({
-      DepartmentMasterSid : [,[Validators.required]],
-      Salesman : [,[Validators.required]],
-      CSPerson : [null,[Validators.required]],
-      DocPerson : [null,[Validators.required]],
-      CustomerBranchSid : [,[Validators.required]],
-      spEffectiveFrom : [,[Validators.required]],
-      spstatus : ['Active']
-    })
+  get cusSalesteam():FormArray{
+    return this.customerForm.get('cusSalesteam') as FormArray;
   }
 
-  openSalespersonModal(content:TemplateRef<any>,data ?:any){
-    if (!this.isCustomerFormValid()) {
-      this.appSettingService.showWarning('Please fill in valid customer details first');
-      return;
-    }
-    this.initSalesPersonForm();
-    this.getAllSpCustomerBranch();
-    this.loadAllSpfields();
-    if(data){
-      this.isSalespersonEdit = true;
-      this.salesmanData = data;
-      this.salespersonForm.patchValue({
-        ...data,
-        spEffectiveFrom:new Date(data.EffectiveFrom),
-        spstatus : data.status === 'A' ? 'Active' : 'Suspended'
-      })
-      if(data.CustomerSalesSid){
-        this.CustomerSalesSid = data.CustomerSalesSid
+  loadCustomerSalesTeam() {
+    this.masterService.getCustomerSalesTeam(this.CustomerMasterSid).subscribe((resp: any) => {
+      if (resp.status) {
+        const salesTeamData = resp.data || [];
+        this.selectedCustomerBranch = salesTeamData.flatMap(st => st.branches || []);
+        console.log(this.selectedCustomerBranch);
+        this.cusSalesteam.clear();
+        salesTeamData.forEach(salesteam => {
+          this.cusSalesteam.push(this.createSalesTeamFormGroup(salesteam));
+        });
+        this.updateSalesTeamPagination();
+      } else {
+        this.appSettingService.showError('Error loading Customer Sales Team');
       }
+    });
+  }
+
+  onAddSalesTeam() {
+    this.cusSalesteam.push(this.createSalesTeamFormGroup());
+    this.updateSalesTeamPagination();
+  }
+
+  deleteSalesTeam(customerSalesSid: number, index: number) {
+    const actualIndex = this.getActualSalesTeamIndex(index);
+    if (customerSalesSid) {
+      this.masterService.deleteSalesteamById(customerSalesSid).subscribe((resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess('Sales Team Deleted Successfully.');
+          this.cusSalesteam.removeAt(actualIndex);
+          this.updateSalesTeamPagination();
+        } else {
+          this.appSettingService.showError(resp.message || 'Error deleting sales team.');
+        }
+      });
+    } else {
+      this.cusSalesteam.removeAt(actualIndex);
+      this.updateSalesTeamPagination();
+      this.appSettingService.showSuccess('Sales Team row removed.');
     }
-    this.modalRef10 = this.modalService.open(content,{size : 'lg',centered:true});
+  }
+
+  updateSalesTeamPagination() {
+    const startIndex = (this.salesTeamPage - 1) * this.salesTeamPageSize;
+    const endIndex = startIndex + this.salesTeamPageSize;
+    this.slicedSalesTeamList = this.cusSalesteam.controls.slice(startIndex, endIndex);
+  }
+
+  onSalesTeamPageChange(page: number) {
+    this.salesTeamPage = page;
+    this.updateSalesTeamPagination();
+  }
+
+  getActualSalesTeamIndex(pageIndex: number): number {
+    return (this.salesTeamPage - 1) * this.salesTeamPageSize + pageIndex;
+  }
+
+  createSalesTeamFormGroup(data?: any): FormGroup {
+    return this.fb.group({
+      CustomerSalesSid: [data?.CustomerSalesSid || null],
+      DepartmentMasterSid: [data?.DepartmentMasterSid || null],
+      Salesman: [data?.Salesman || null, [Validators.required]],
+      branches: [data?.branches?.map(b => b.customerBranchSid) || [], [Validators.required, Validators.minLength(1)]],
+      CSPerson: [data?.CSPerson || null],
+      DocPerson: [data?.DocPerson || null],
+      EffectiveFrom: [data ? new Date(data.EffectiveFrom) : new Date()],
+      status: [data ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active'],
+    });
   }
 
   getAllSpCustomerBranch(): void {
@@ -1974,85 +2018,65 @@ getCityName(citySid: number): string {
     })
   }
 
-  onSpSubmit(){
-    if(this.salespersonForm.invalid){
-      this.salespersonForm.markAllAsTouched();
-      this.salespersonForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all the required fields')
-      return;
-    }
-    let createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-    let updatedBy = this.appSettingService.userSettingSource.value['userEmail']
-    const formValue = this.salespersonForm.value;
+saveAllCustomerSalesTeam() {
+  if (this.cusSalesteam.invalid) {
+    this.appSettingService.showWarning('Please fill all required fields in the sales team section.');
+    this.cusSalesteam.markAllAsTouched();
+    return;
+  }
 
-    const payload = {
-      Salesman : formValue.Salesman,
-      DepartmentMasterSid : formValue.DepartmentMasterSid,
-      CustomerBranchSid : formValue.CustomerBranchSid,
-      DocPerson : formValue.DocPerson,
-      CSPerson : formValue.CSPerson,
-      EffectiveFrom : formValue.spEffectiveFrom,
-      status : formValue.spstatus === 'Active' ? 'A' : 'S',
-      ...(this.isSalespersonEdit ?{updatedBy : updatedBy} : {createdBy : createdBy} )
-    }
+  const currentUserEmail = this.userData?.userEmail;
+  const companyMasterSid = this.currentCompany?.CompanyMasterSid;
 
-    if (this.isSalespersonEdit && this.CustomerSalesSid) {
-      this.masterService
-        .updateSalesteamById(this.CustomerSalesSid, payload)
-        .subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess('Salesteam successfully updated');
-              this.salespersonForm.reset();
-              this.modalRef10.close();
-              this.loadCustomerSalesperson();
-            } else {
-              this.appSettingService.showError('Error Updating Salesteam');
-            }
-          },
-          (error) => {
-            console.error('Error Updating Salesteam:', error);
-          }
-        );
-    } else {
-      this.masterService.createNewSalesteam(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess("New Salesteam successfully created");
-            this.salespersonForm.reset();
-            this.modalRef10.close();
-            this.loadCustomerSalesperson();
-          } else {
-            this.appSettingService.showError('Error Creating Salesteam');
-          }
-        },
-        (error) => {
-          console.error('Error Creating Salesteam:', error);
-        }
+  const payload = this.cusSalesteam.value.map(salesteam => {
+    const branches = (salesteam.branches || []).map(branch => {
+      const branchSid = branch.customerBranchSid ?? branch;
+
+      const saleBranchFromResp = this.selectedCustomerBranch.find(
+        b => b.customerBranchSid === branchSid
       );
-    }
-  }
 
-  loadCustomerSalesperson(){
-    this.masterService.getAllSalespersonOfCustomer(this.CustomerMasterSid).subscribe(
-      (resp : any)=>{
-        if(resp.status){
-          this.salesTeamList = resp.data;
-        } else {
-          this.appSettingService.showError('Error loading Customer Salesman')
-        }
+      return {
+        id: saleBranchFromResp ? saleBranchFromResp.id : null,
+        customerBranchSid: branchSid
+      };
+    });
+
+    return {
+      CustomerSalesSid: salesteam.CustomerSalesSid,
+      CompanyMasterSid: companyMasterSid,
+      CustomerMasterSid: this.CustomerMasterSid,
+      DepartmentMasterSid : salesteam.DepartmentMasterSid,
+      Salesman: salesteam.Salesman,
+      CSPerson: salesteam.CSPerson,
+      DocPerson: salesteam.DocPerson,
+      EffectiveFrom: salesteam.EffectiveFrom,
+      status: salesteam.status === 'Active' ? 'A' : 'S',
+      createdBy: salesteam.CustomerSalesSid ? undefined : currentUserEmail,
+      updatedBy: salesteam.CustomerSalesSid ? currentUserEmail : undefined,
+      branches: branches
+    };
+  });
+
+  console.log('Payload to save:', payload);
+
+  this.masterService.saveCustomerSalesTeam(payload).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        this.appSettingService.showSuccess('Sales team saved successfully');
+        this.loadCustomerSalesTeam();
+      } else {
+        this.appSettingService.showError('Error saving sales team');
       }
-    )
-    this.masterService.getAllSalesperson().subscribe(
-      (resp : any)=>{
-        if(resp.status){
-          this.salesPersonList = resp.data;
-        } else { 
-          this.appSettingService.showError('Error loading All Salesperson')
-        }
-      }
-    )
-  }
+    },
+    (error) => {
+      console.error('Error saving sales team', error);
+      this.appSettingService.showError('An unexpected error occurred.');
+    }
+  );
+}
+
+
 
   findSalesmanName(id : number){
     if(!this.salesPersonList){
@@ -2070,7 +2094,7 @@ getCityName(citySid: number): string {
       (resp:any)=>{
         if(resp.status){
           this.appSettingService.showSuccess('Salesman Deleted Successfully')
-          this.loadCustomerSalesperson();
+          this.loadCustomerSalesTeam();
         } else {
           this.appSettingService.showError('Error Deleting Salesman');
         }

@@ -378,7 +378,7 @@ patchEnqPageValues(enqData: any) {
       PORSid: route?.PORSid || null,
       POLSid: route?.POLSid || null,
       PODSid: route?.PODSid || null,
-      FPODSid: route?.FDPSid || null, // Use FDPSid from the actual data
+      FPODSid: route?.FPODSid || null, // Use FDPSid from the actual data
       CarrierMasterSid: route?.CarrierMasterSid || null,
       CarrierName: route?.CarrierName || '',
       CargoType: route?.CargoType || 'General',

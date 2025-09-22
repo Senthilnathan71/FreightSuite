@@ -29,13 +29,13 @@
                                 <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                                     <div class="form-outline flex-grow-1 position-relative">
                                         <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterValue"  aria-label="Search input">
+                                            [(ngModel)]="filterEnqValue"  aria-label="Search input">
                                         <button 
                                             class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                             tabindex="0" aria-label="Clear search"
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                             onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
+                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterEnqValue()">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
@@ -78,19 +78,19 @@
                                 <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                                     <div class="form-outline flex-grow-1 position-relative">
                                         <input name="filterEnqValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterEnqValue"  aria-label="Search input">
+                                            [(ngModel)]="filterValue"  aria-label="Search input">
                                         <button 
                                             class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                             tabindex="0" aria-label="Clear search"
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                             onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterEnqValue()">
+                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
                                 <div class="mt-md-0 mt-1">
                                     <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchEnquiry()">
+                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchQuotation()">
                                         <i class="fas fa-search me-1"></i> Search
                                     </button>
                                 </div>
@@ -442,7 +442,7 @@
 <!-- MOBILE CODE -->
 <ng-template #rrmobileTemplate>
     <div class="mobile-view" *ngIf="totalLengthOfCollection1 > 0; else noDataTemplate">
-        <div class="card" *ngFor="let enq of enquiryItems">
+        <div class="card" *ngFor="let enq of slicedEnquiryItems">
             <div class="card-body mt-2">
                 <div class="d-flex flex-column gap-2 position-relative">
                     <div class="d-flex align-items-start fw-bold dofi-font-16 text-uppercase">
@@ -463,14 +463,14 @@
                         <i-feather class="feather-sm me-1" name="user"></i-feather>
                         <div class="ms-2">{{ enq.CustomerName }}</div>
                         <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="createQuotation(enq)" >
+                            <a class="text-info" (click)="navigateQuotation(enq)" >
                                 <i-feather name="eye" class="feather-sm"></i-feather>
                             </a>
                         </div>
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather class="feather-sm me-1" name="Department"></i-feather>
-                        <div class="ms-2">{{ enq.ShipmentType }}</div>
+                        <div class="ms-2">{{ enq.departmentName }}</div>
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather class="feather-sm me-1" name="Port"></i-feather>
@@ -518,7 +518,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let enq of filteredEnquiryItems">
+                                <tr *ngFor="let enq of slicedEnquiryItems">
                                     <td data-label="Action"  class="text-center"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <section class="action-items">
                                             <a class="mx-2 cursor-pointer" (click)="navigateQuotation(enq)">
@@ -538,7 +538,7 @@
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ enq.ShipmentType }}
+                                            {{ enq.departmentName }}
                                         </div>
                                     </td>
                                     <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -554,7 +554,7 @@
 
                                     <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{enq.EnquiryDate | formatDate}}
+                                            {{enq.EnquiryDate}}
                                         </div>
                                     </td>
 
