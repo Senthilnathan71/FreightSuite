@@ -170,7 +170,7 @@
 <!-- Update Meeting Modal -->
 <ng-template #modalContentAdd let-close="close">
     <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white">Edit Meeting</h5>
+        <h5 class="modal-title text-white">Update Meeting</h5>
         <a class="text-white ps-2" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
         </a>
@@ -422,7 +422,7 @@
           </button>
             <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
                 (click)="onUpdateMeeting()">
-                Edit
+                Update
             </button>
         </div>
     </form>

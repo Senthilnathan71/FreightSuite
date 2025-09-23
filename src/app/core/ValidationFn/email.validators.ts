@@ -1,3 +1,95 @@
+// import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+
+// export class EmailValidators {
+
+//   static singleEmail(): ValidatorFn {
+//     return (control: AbstractControl): ValidationErrors | null => {
+//       if (!control.value) return null;
+
+//       const email = control.value.trim();
+//       if (email.length === 0) return { required: true };
+
+//       // RFC 5322 compliant regex (official email standard)
+//       const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+//       // General Case
+//       // const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+
+//       return emailRegex.test(email)
+//         ? null
+//         : {
+//           invalidEmail: {
+//             message: 'Invalid email format',
+//             value: email,
+//             examples: 'Expected format: user@example.com'
+//           }
+//         };
+//     };
+//   }
+
+//   static multipleEmails(): ValidatorFn {
+//     return (control: AbstractControl): ValidationErrors | null => {
+//       if (!control.value) return null;
+
+//       const value = control.value.trim();
+
+//       // Check for trailing comma
+//       if (value.endsWith(',')) {
+//         return { trailingComma: { message: 'Remove trailing comma or add another email' } };
+//       }
+
+//       const emails = value.split(',')
+//         .map(email => email.trim())
+//         .filter(email => email.length > 0);
+
+//       if (emails.length === 0) return null;
+
+//       // Check for duplicates (case insensitive)
+//       const emailSet = new Set<string>();
+//       const duplicates = new Set<string>();
+
+//       emails.forEach(email => {
+//         const lowerEmail = email.toLowerCase();
+//         if (emailSet.has(lowerEmail)) {
+//           duplicates.add(email);
+//         }
+//         emailSet.add(lowerEmail);
+//       });
+
+//       if (duplicates.size > 0) {
+//         return {
+//           duplicateEmails: {
+//             message: 'Duplicate emails found',
+//             duplicates: Array.from(duplicates)
+//           }
+//         };
+//       }
+
+//       // RFC 5322 compliant regex
+//       // const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+//       // General Case
+//       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+//       const invalidEmails = emails.filter(email => !emailRegex.test(email));
+
+//       if (invalidEmails.length > 0) {
+//         return {
+//           invalidEmails: {
+//             message: 'One or more emails are invalid',
+//             invalidCount: invalidEmails.length,
+//             firstInvalid: invalidEmails[0],
+//             examples: 'Valid format: user@example.com'
+//           }
+//         };
+//       }
+
+//       return null;
+//     };
+//   }
+// }
+
+
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export class EmailValidators {
@@ -9,12 +101,17 @@ export class EmailValidators {
       const email = control.value.trim();
       if (email.length === 0) return { required: true };
 
+      // Allow NA variations without validation
+      const naVariations = ['NA', 'Na', 'nA', 'na'];
+      if (naVariations.includes(email)) {
+        return null;
+      }
+
       // RFC 5322 compliant regex (official email standard)
       const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
       // General Case
       // const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
 
       return emailRegex.test(email)
         ? null
@@ -22,7 +119,7 @@ export class EmailValidators {
           invalidEmail: {
             message: 'Invalid email format',
             value: email,
-            examples: 'Expected format: user@example.com'
+            examples: 'Expected format: user@example.com or NA'
           }
         };
     };
@@ -33,6 +130,12 @@ export class EmailValidators {
       if (!control.value) return null;
 
       const value = control.value.trim();
+
+      // Allow NA variations without any validation
+      const naVariations = ['NA', 'Na', 'nA', 'na'];
+      if (naVariations.includes(value)) {
+        return null;
+      }
 
       // Check for trailing comma
       if (value.endsWith(',')) {
@@ -67,11 +170,14 @@ export class EmailValidators {
       }
 
       // RFC 5322 compliant regex
-      // const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       // General Case
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      // const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-      const invalidEmails = emails.filter(email => !emailRegex.test(email));
+      // Filter out NA variations before validating emails
+      const emailsToValidate = emails.filter(email => !naVariations.includes(email));
+      
+      const invalidEmails = emailsToValidate.filter(email => !emailRegex.test(email));
 
       if (invalidEmails.length > 0) {
         return {
@@ -79,7 +185,7 @@ export class EmailValidators {
             message: 'One or more emails are invalid',
             invalidCount: invalidEmails.length,
             firstInvalid: invalidEmails[0],
-            examples: 'Valid format: user@example.com'
+            examples: 'Valid format: user@example.com or NA'
           }
         };
       }

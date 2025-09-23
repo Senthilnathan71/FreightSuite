@@ -94,6 +94,7 @@ export class TodoComponent implements OnInit {
           meetingDate: this.datePipe.transform(meeting.meetingDate, 'yyyy-MM-dd')
         }));
         this.pendingSchedule = resp['data'].toMeet;
+        console.log(resp['data'], this.pendingSchedule)
         this.todoInActive = resp['data'].inActive.map(meeting => ({
           ...meeting,
           createdOn: this.datePipe.transform(meeting.createdOn, 'yyyy-MM-dd')

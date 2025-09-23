@@ -21,7 +21,7 @@ export const CrmMobileRoutes: Routes = [
                 path: 'lead/list',
                 component: ViewComponent,
                 data: {
-                    title: 'Lead Generation',
+                    title: 'Lead',
                     backOption: [
                         { title: 'Back', url: '/crm' },
                     ],
@@ -36,7 +36,7 @@ export const CrmMobileRoutes: Routes = [
                 path: 'lead',
                 component: LeadComponent,
                 data: {
-                    title: 'Lead Generation',
+                    title: 'Lead',
                     backOption: [
                         { title: 'Back', url: '/crm/lead/list' },
                     ],
@@ -50,7 +50,7 @@ export const CrmMobileRoutes: Routes = [
                 path: 'lead/:id',
                 component: LeadComponent,
                 data: {
-                    title: 'Lead Generation',
+                    title: 'Lead',
                     backOption: [
                         { title: 'Back', url: '/crm/lead/list' },
                     ],
@@ -197,7 +197,7 @@ export const CrmMobileRoutes: Routes = [
                 path: "lead-schedule-pending",
                 component: PendingComponent,
                 data: {
-                    title: "Lead Schedule",
+                    title: "Opportunity",
                     backOption: [
                         { title: 'Back', url: '/crm' },
                     ],
@@ -211,7 +211,7 @@ export const CrmMobileRoutes: Routes = [
                 path: "lead-schedule-meeting/:PreCustomerMasterSid",
                 component: MeetingComponent,
                 data: {
-                    title: "Lead Schedule",
+                    title: "Opportunity",
                     backOption: [
                         { title: 'Back', url: '/crm/lead-schedule-pending' },
                     ],

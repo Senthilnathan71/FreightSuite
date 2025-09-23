@@ -9,8 +9,8 @@ export const iconsData: Record<string, { name: string; icon: string;size?: strin
     { name: "Calendar", icon: "fas fa-calendar-alt" },
     { name: "Meeting Update", icon: "fas fa-handshake" },
     { name: "Quotation", icon: "fas fa-file-invoice-dollar" },
-    { name: "Lead Generation", icon: "fas fa-bullseye" },
-    { name: "Lead Schedule", icon: "fas fa-calendar-check" },
+    { name: "Lead", icon: "fas fa-bullseye" },
+    { name: "Opportunity", icon: "fas fa-calendar-check" },
     { name: "To Do", icon: "fas fa-tasks" },
     { name: "Enquiry", icon: "fas fa-question-circle" }
   ],

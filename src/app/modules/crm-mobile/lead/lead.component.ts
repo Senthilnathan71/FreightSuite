@@ -39,7 +39,6 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
     OnlyTextDirective,
     TextWithNumbersDirective,
     OnlyTextDirective,
-    OnlyNumbersDirective,
     DatePipe
     // NgxIntlTelInputModule
   ],
@@ -146,21 +145,21 @@ auditLogs: any[] = []; // Stores audit logs
   // }
 
   // Initialize the Form
-  initForm() {
-    this.leadForm = this.fb.group({
-      preCustomerName : [,[Validators.required]],
-      leadReferredBy : [,[Validators.required]],
-      leadFrom : [],
-      preCustomerType : [],
-      preCustomerAddress1 : ['',[Validators.required]],
-      preCustomerAddress2 : [''],
-      POBOX : [''],
-      CountryMasterSid : [,[Validators.required]],
-      StateMasterSid : [,[Validators.required]],
-      CityMasterSid : [,[Validators.required]],
-      contactPerson : ['',[Validators.required]],
-      email : ['',[Validators.required,EmailValidators.multipleEmails(),Validators.maxLength(100)]],
-      phone : ['',[Validators.required]],
+    initForm() {
+      this.leadForm = this.fb.group({
+        preCustomerName : [,[Validators.required]],
+        leadReferredBy : [,[Validators.required]],
+        leadFrom : [],
+        preCustomerType : [],
+        preCustomerAddress1 : ['',[Validators.required]],
+        preCustomerAddress2 : [''],
+        POBOX : [''],
+        CountryMasterSid : [,[Validators.required]],
+        StateMasterSid : [,[Validators.required]],
+        CityMasterSid : [,[Validators.required]],
+        contactPerson : ['',[Validators.required]],
+        email : ['',[Validators.required,EmailValidators.multipleEmails(),Validators.maxLength(100)]],
+        phone : ['',[Validators.required]],
       PreferredContactMode : ['Email'],
       LanguagePreferrence : [''],
       ServiceOfInterest : [''],
@@ -170,6 +169,7 @@ auditLogs: any[] = []; // Stores audit logs
       CompanySize : [''],
       AnnualRevenue : [''],
       Notes : [''],
+      isQualify:[false],
       status : ['Active',[Validators.required]]
     });
     this.leadForm.get('email').valueChanges.subscribe(

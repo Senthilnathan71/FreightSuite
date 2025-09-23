@@ -20,19 +20,19 @@
         </ng-template>
     </li> -->
     <li [ngbNavItem]="1">
-        <button ngbNavLink class="mb-0 p-1">To Meet</button>
+        <button ngbNavLink class="mb-0 p-1">Scheduled</button>
         <ng-template ngbNavContent>
             <ng-container *ngTemplateOutlet="toMeet"></ng-container>
         </ng-template>
     </li>
     <li [ngbNavItem]="2">
-        <button ngbNavLink class="mb-0 p-1">Not Met</button>
+        <button ngbNavLink class="mb-0 p-1">Pending meetings</button>
         <ng-template ngbNavContent>
             <ng-container *ngTemplateOutlet="notMet"></ng-container>
         </ng-template>
     </li>
     <li [ngbNavItem]="3">
-        <button ngbNavLink class="mb-0 p-1">Never Met</button>
+        <button ngbNavLink class="mb-0 p-1">Not scheduled</button>
         <ng-template ngbNavContent>
             <ng-container *ngTemplateOutlet="neverMet"></ng-container>
         </ng-template>
@@ -76,7 +76,7 @@
             <!-- Loop for data -->
             <ul class="list-style-none feed-body m-0 pb-4">
                 <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of pendingSchedule">
-                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerMaster.preCustomerName }}</div>
+                    <div class="col text-capitalize text-truncate">{{ ps?.preCustomerName }}</div>
                     <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather> {{
                         ps.meetingDate | date: 'dd-MMM-yyyy' }}</div>
                 </li>

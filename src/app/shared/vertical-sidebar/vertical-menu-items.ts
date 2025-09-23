@@ -470,7 +470,7 @@ export const ROUTES: RouteInfo[] = [
       },
       {
         path: '/crm/lead-schedule-pending',
-        title: 'Lead Schedule Pending',
+        title: 'Opportunity',
         icon: 'mdi mdi-stackexchange',
         class: '',
         extralink: false,

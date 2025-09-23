@@ -130,6 +130,16 @@
 
             <div class="col-sm-12 col-md-3">
               <div class="mb-2">
+                <label class="control-label col-form-label">Meeting End Date <span>*</span></label>
+                <input type="datetime-local" formControlName="meetingEndDate" class="form-control" [min]="minDate" />
+                <small *ngIf="f['meetingEndDate'].touched && f['meetingEndDate'].invalid" class="text-danger">
+                  Meeting End date is required.
+                </small>
+              </div>
+            </div>
+
+            <div class="col-sm-12 col-md-3">
+              <div class="mb-2">
                 <label class="control-label col-form-label">Meeting Type <span>*</span></label>
                 <select formControlName="meetingType" class="form-select">
                   <option value="">Select</option>
@@ -161,10 +171,10 @@
 
             <div class="col-sm-12 col-md-4">
               <div class="mb-2">
-                <label class="control-label col-form-label">Customer Profile <span>*</span></label>
+                <label class="control-label col-form-label">Meeting Agenda <span>*</span></label>
                 <textarea type="text" formControlName="customerProfile" class="form-control"></textarea>
                 <small *ngIf="f['customerProfile'].touched && f['customerProfile'].invalid" class="text-danger">
-                  Customer profile is required.
+                  Meeting Agenda is required.
                 </small>
               </div>
             </div>
