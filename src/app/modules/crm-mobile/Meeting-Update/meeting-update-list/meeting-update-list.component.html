@@ -73,6 +73,10 @@
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather name="alert-circle" class="feather-sm"></i-feather>
+                        <div class="ms-2">{{ meeting.opportunityStage }}</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i-feather name="alert-circle" class="feather-sm"></i-feather>
                         <div class="ms-2">{{ meeting.status }}</div>
                     </div>
                 </div>
@@ -95,6 +99,7 @@
                                     <th class="bg-transparent text-light" scope="col">Customer Name</th>
                                     <th class="bg-transparent text-light" scope="col">Meeting Type</th>
                                     <th class="bg-transparent text-light" scope="col">Meeting Date</th>
+                                    <th class="bg-transparent text-light" scope="col">Lead Status</th>
                                     <th class="bg-transparent text-light" scope="col">Sales Person</th>
                                     <th class="bg-transparent text-light" scope="col">Meeting Status</th>
                                     
@@ -125,6 +130,13 @@
                                             {{ meeting.meetingDate | date:'medium' }}
                                         </div>
                                     </td>
+
+                                  <td data-label="opportunityStage" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            {{ (meeting.opportunityStage | titlecase) || 'N/A' }}
+                                        </div>
+                                    </td>
+
                                     <td data-label="leadAssignTo" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;"> 
                                         <div class="text-truncate">
                                             {{ getSalesmanById(meeting.leadAssignTo) || 'N/A' }}

@@ -129,6 +129,7 @@ export class MeetingUpdateListComponent implements OnInit {
               const salesPerson = this.salesPersons?.find(
                 (person: any) => person.UserMasterSid === meeting.leadAssignTo
               );
+              console.log(meeting,'meeting')
               return {
                 id: meeting.PreCustomerMeetingSid,
                 customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
@@ -140,6 +141,7 @@ export class MeetingUpdateListComponent implements OnInit {
                         meeting.meetingStatus === 'pending' ? 'In Progress' :
                         meeting.meetingStatus === 'on hold' ? 'On Hold' : 'N/A',
                 meetingStatus: meeting.meetingStatus,
+                opportunityStage: meeting.opportunityStage || 'N/A',
                 preCustomerMaster: meeting.preCustomerMaster,
                 userMaster: meeting.userMaster,
                 followUp: meeting.followUpDate || meeting.followUpNote,
@@ -149,10 +151,10 @@ export class MeetingUpdateListComponent implements OnInit {
                 createdBy : meeting.createdBy,
                 createdOn : meeting.createdOn,
                 updatedBy : meeting.updatedBy,
-                updatedOn : meeting.updatedOn
+                updatedOn : meeting.updatedOn,
               };
             });
-
+console.log(this.filteredMeetings[0]);
           this.filteredMeetings = [...this.meetings];
           this.totalLengthOfCollection = this.filteredMeetings.length;
           this.updatePaginatedData();
@@ -183,7 +185,8 @@ export class MeetingUpdateListComponent implements OnInit {
           meeting.meetingType?.toLowerCase().includes(searchQuery) ||
           meeting.salesPerson?.toLowerCase().includes(searchQuery) ||
           String(meeting.meetingDate).toLowerCase().includes(searchQuery) ||
-          meeting.status.toLowerCase().includes(searchQuery)
+          meeting.status.toLowerCase().includes(searchQuery) ||
+          meeting.opportunityStage.toLowerCase().includes(searchQuery) 
         );
       });
     }

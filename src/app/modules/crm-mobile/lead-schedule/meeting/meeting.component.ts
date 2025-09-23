@@ -77,7 +77,6 @@ export class MeetingComponent {
     this.meetingForm = this.fb.group({
       customerName: ['', Validators.required],
       meetingDate: ['', Validators.required],
-      meetingEndDate: ['', Validators.required],
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
       contactPerson: ['', Validators.required],

@@ -193,6 +193,7 @@ auditLogs: any[] = []; // Stores audit logs
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid
     const formData = this.leadForm.value;
+    console.log(formData)
     const payload = {
       ...formData,
       CompanySize : parseInt(formData.CompanySize),
@@ -201,6 +202,7 @@ auditLogs: any[] = []; // Stores audit logs
       status : formData.status.charAt(0),
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
+      isQualify:formData.isQualify
     }
 
     if(this.isEditMode){
