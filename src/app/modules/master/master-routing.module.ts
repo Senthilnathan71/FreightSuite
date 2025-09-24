@@ -49,7 +49,7 @@ import { BIclauseComponent } from './BIClause/biclause/biclause.component';
 import { ProductListComponent } from './product/product-list/product-list.component';
 import { ProductEntryComponent } from './product/product-entry/product-entry.component';
 import { DivisionComponent } from './division/division/division.component';
-import { SailingScheduleLsitComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
+
 import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedule-entry/sailing-schedule-entry.component';
 import { SectorComponent } from './sector/sector-list/sector-list.component';
 import { UserListComponent } from './user/user-list/user-list.component';
@@ -74,6 +74,7 @@ import { ContainerActivityListComponent } from './container-activity/container-a
 import { ContainerActivityEntryComponent } from './container-activity/container-activity-entry/container-activity-entry.component';
 import { ReportMasterEntryComponent } from './report-master/report-master-entry/report-master-entry.component';
 import { ReportMasterListComponent } from './report-master/report-master-list/report-master-list.component';
+import { SailingScheduleListComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -799,7 +800,7 @@ export const MasterRoutes: Routes = [
       },
       {
         path: 'sailing-schedule/list',
-        component: SailingScheduleLsitComponent,
+        component: SailingScheduleListComponent,
         data: {
           title: 'Sailing Schedule',
           urls: [

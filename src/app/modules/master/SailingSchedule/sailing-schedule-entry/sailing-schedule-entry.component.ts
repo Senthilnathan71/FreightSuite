@@ -1,4 +1,3 @@
-
 import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -23,6 +22,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -43,7 +43,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
         CustomDatePipe,
         DatePipe,
         RouterModule,
-        NgbDropdownModule
+        NgbDropdownModule,
+        SearchableDropdown
     ],
     templateUrl: './sailing-schedule-entry.component.html',
     styleUrl: './sailing-schedule-entry.component.scss',
@@ -54,65 +55,51 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 })
 export class SailingScheduleEntryComponent implements OnInit {
 
-    scheduleDetailList : any[];
-    slicedScheduleDetailList : any[];
+    // Header-only form and state
     scheduleForm !: FormGroup;
-    scheduleDetailForm !:FormGroup;
-    VoyageMasterHeaderSid : number;
-    VoyageMasterDetailSid : number;
-    isEditMode : boolean;
-    isModalEditMode : boolean;
-    vesselList : any[];
-    carrierList : any[];
-    portList : any[]=[];
-    filteredPOLList : any[];
-    filteredPODList : any[];
-    active = 1;
-    page=1;
-    pageSize = 5;
-    totalAmountOfCollections : number;
-    modalRef: NgbModalRef
+
+    VoyageMasterHeaderSid : number | null = null;
+    isEditMode = false;
+
+    vesselList : any[] = [];
+    carrierList : any[] = [];
+    portList : any[] = [];
+    filteredPOLList : any[] = [];
+    filteredPODList : any[] = [];
+
+    modalRef!: NgbModalRef;
     model: NgbDateStruct;
     today = this.calendar.getToday();
     todayDate = new Date(this.today.year, this.today.month-1, this.today.day);
+
     sailHeadData: any;
-    sailDetailData: any;
-    minETADate : any;
     permissions: string[] = [];
-  currentMenuPermissions: any = {};
-  userData:any;
-  etaEtdMustChange = false;
-  snoChanged = false;
-previousSnoEtd: Date | null = null;
-formErrors: any = {}; 
-originalSno: number | null = null;
-isSnoDuplicate: boolean = false;
+    currentMenuPermissions: any = {};
+    userData:any;
 
-  selectedTab = 'Details';
-  tab=[
-   { name: 'Details', icon: 'fas fa-info-circle' },
-  ]
- selectTab(tab: string) {
-    this.selectedTab = tab;
-  }
+    selectedTab = 'Details';
+    tab=[ { name: 'Details', icon: 'fas fa-info-circle' } ];
+    page=1;
+    pageSize = 5;
 
-    modeOfStatus = [
-        { id: "Active", name: "Active" },
-        { id: "Suspended", name: "Suspended" },
-    ]
+    TandCList: any;
+    auditLogs: any[] = [];
+    auditLogModalRef!: NgbModalRef;
+    currentCompany: any;
+    currentBranch: any;
+    currentMenuId: number;
+
+    // validation helpers
+    formErrors: any = {};
     modeOfVoyageType = [
         { id: "1", name: "Sea" },
         { id: "2", name: "Air" },
         { id: "3", name: "Road" }
     ]
-    currentMenuId: number;
-    TandCList: any;
-    
-auditLogs: any[] = []; // Stores audit logs
-  auditLogModalRef!: NgbModalRef;
-currentCompany: any;
-currentBranch: any
-
+    modeOfStatus = [
+        { id: "Active", name: "Active" },
+        { id: "Suspended", name: "Suspended" },
+    ]
 
 
     constructor(
@@ -128,161 +115,118 @@ currentBranch: any
     ){}
 
     ngOnInit(): void {
-        // this.appSettingService.getUser().subscribe(
-        //    user => {
-        //      if (user) {
-        //        this.userData = user;
-        //         this.checkPermissions();
-        //      }
-        //    }
-        //  )
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-      this.checkPermissions();
-		}
+        if(userProfile){
+            this.userData = userProfile;
+            this.checkPermissions();
+        }
+
         this.initScheduleForm();
         this.loadAllFields();
-        this.currentRoute.paramMap.subscribe(
-            (param)=>{
-                this.VoyageMasterHeaderSid = +param.get('id');
+
+        // Listen for VoyageType changes -> apply port filters
+        this.scheduleForm.get('VoyageType')?.valueChanges.subscribe((vt) => {
+            this.applyPortTypeFilter(vt);
+        });
+        this.scheduleForm.get('POLSid')?.valueChanges.subscribe((polSid) => {
+    this.applyPolPodExclusion();
+});
+
+this.scheduleForm.get('PODSid')?.valueChanges.subscribe((podSid) => {
+    this.applyPolPodExclusion();
+});
+
+        this.currentRoute.paramMap.subscribe((param)=>{
+            const idParam = param.get('id');
+            if (idParam) {
+                this.VoyageMasterHeaderSid = +idParam;
                 if(this.VoyageMasterHeaderSid){
                     this.isEditMode = true;
                     this.loadScheduleData();
                 }
             }
-        )
-//         this.scheduleDetailForm.get('Sno').valueChanges.subscribe((value: number) => {
-//     if (!value) {
-//         this.isSnoDuplicate = false;
-//         return;
-//     }
-
-//     const duplicate = this.scheduleDetailList.find(
-//         item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
-//     );
-
-//     if (duplicate) {
-//         this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
-//         this.isSnoDuplicate = true;
-//     } else {
-//         this.formErrors.sno = null;
-//         this.isSnoDuplicate = false;
-//     }
-// });
-
+        });
     }
+
     checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+        if (currentMenuId && userRole) {
+            this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+                next: (response) => {
+                    this.currentMenuPermissions = response.data.MenuPermissions || {};
+                    this.permissions = Object.keys(this.currentMenuPermissions)
+                      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+                }
+            });
+        }
     }
-  }
- 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+
+    hasPermission(permission: string): boolean {
+        return this.permissions.includes(permission);
+    }
 
     initScheduleForm(){
+        // Header-only fields (includes ports and key dates)
         this.scheduleForm = this.fb.group({
-            VesselMasterSid : [,[Validators.required]],
-            VoyageNo : ['',[Validators.required]],
-            RotationNumber : [''],
-            ShipIRN : [''],
-            CrewIRN : [''],
-            SCMETA : [null],
-            SCMETD : [null],
-            SCMTCargoDescription : [''],
-            Remarks : [''],
+            VesselMasterSid : [null,[Validators.required]],
+            VoyageNo : ['',[Validators.required, Validators.maxLength(10)]],
+            RotationNumber : ['',[Validators.maxLength(10)]],
+            ShipIRN : ['',[Validators.maxLength(10)]],
+            CrewIRN : ['',[Validators.maxLength(10)]],
+            SCMETA : [null,[Validators.required]],
+            SCMETD : [null,[Validators.required]],
+            SCMTCargoDescription : ['',[Validators.maxLength(200)]],
+            Remarks : ['',[Validators.maxLength(200)]],
             status : ['Active'],
             CoLoad : [false],
-            VoyageType : [null],
-            Carrier : [null]
-        })
-    }
+            VoyageType : [null,[Validators.required]],
+            Carrier : [null],
 
-    initScheduleDetailForm(){
-        this.scheduleDetailForm = this.fb.group({
-            Sno: [null, [Validators.required, Validators.pattern(/^[0-9]+$/)]],
-            POLSid : [,[Validators.required]],
-            // PODSid : [,[Validators.required]],
-            ETA : [,[Validators.required]],
-            ETD : [,[Validators.required]],
-            PortCutoff : [null],
-            TransitDays : [''],
-            RotationNo : [''],
-            RotationDate : [null],
-            IGMNo : [''],
-            IGMDate : [null],
-            EGMNo : [''],
-            EGMDate : [null],
-            detailstatus : ['Active']
-        })
-        this.scheduleDetailForm.get('TransitDays').disable()
-        // this.scheduleDetailForm.get('PODSid')?.valueChanges.subscribe(() => {
-        //     this.updatePOLList();
-        // });
+            // NEW header port/date fields (replaces detail table)
+            POLSid: [null, [Validators.required]],
+            PODSid: [null, [Validators.required]],
+            ETA: [null, [Validators.required]],
+            ETD: [null, [Validators.required]],
+            ATA: [null],
+            ATD: [null],
+            PortCutoff: [null],
+            TransitDays: [{ value: '', disabled: true }]
+        });
 
-        // this.scheduleDetailForm.get('POLSid')?.valueChanges.subscribe(() => {
-        //     this.updatePODList();
-        // });
-        this.scheduleDetailForm.get('Sno')?.valueChanges.subscribe((value: number) => {
-      if (!value) {
-        this.isSnoDuplicate = false;
-        this.snoChanged = false;
-        this.etaEtdMustChange = false;
-        return;
-      }
-
-      const duplicate = this.scheduleDetailList.find(
-        item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
-      );
-
-      if (duplicate) {
-        this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
-        this.isSnoDuplicate = true;
-        this.snoChanged = false;
-        this.etaEtdMustChange = false;
-      } else {
-        this.formErrors.sno = null;
-        this.isSnoDuplicate = false;
-
-        if (this.originalSno !== null && value !== this.originalSno) {
-          this.etaEtdMustChange = true;
-          this.snoChanged = true;
-          this.formErrors.etaEtd = 'Since SNO changed, please update ETA and ETD.';
-        } else {
-          this.etaEtdMustChange = false;
-          this.snoChanged = false;
-          this.formErrors.etaEtd = null;
-        }
-      }
-    });
-
-   
-        this.scheduleDetailForm.get('ETD').valueChanges.subscribe((value:Date)=>{
-            if(!value){
-                return;
-            }
-            const ETA : Date = this.scheduleDetailForm.get('ETA').value;
+        // auto-calc transit days when ETA/ETD change
+        this.scheduleForm.get('ETA')?.valueChanges.subscribe((value:Date) => {
+            if(!value) return;
+            const ETA : Date = this.scheduleForm.get('ETD').value;
             if(ETA){
                 const msPerDay = 1000 * 60 * 60 * 24;
-                const dayDifference = Math.trunc((value.getTime() - ETA.getTime())/msPerDay);
-                this.scheduleDetailForm.get('TransitDays').setValue(dayDifference);
+                const dayDifference = Math.trunc((new Date(value).getTime() - new Date(ETA).getTime())/msPerDay);
+                this.scheduleForm.get('TransitDays')?.setValue(isNaN(dayDifference) ? '' : dayDifference);
             }
-        })
+        });
+
+        // ensure ETA < ETD
+        this.scheduleForm.get('ETD')?.valueChanges.subscribe(() => {
+            const etd = this.scheduleForm.get('ETD')?.value;
+            const eta = this.scheduleForm.get('ETA')?.value;
+            if (etd && eta && new Date(etd) >= new Date(eta)) {
+                this.formErrors.etaEtd = 'ETD must be less than ETA.';
+            } else {
+                delete this.formErrors.etaEtd;
+            }
+        });
+
+        this.scheduleForm.get('ETD')?.valueChanges.subscribe(() => {
+            const etd = this.scheduleForm.get('ETD')?.value;
+            const eta = this.scheduleForm.get('ETA')?.value;
+            if (etd && eta && new Date(etd) >= new Date(eta)) {
+                this.formErrors.etaEtd = 'ETD must be less than ETA.';
+            } else {
+                delete this.formErrors.etaEtd;
+            }
+        });
     }
 
     loadAllFields(){
@@ -292,432 +236,307 @@ currentBranch: any
             carriers : this.masterService.getAllCarriers(CompanyMasterSid),
             ports : this.masterService.getAllPorts()
         }).subscribe(({vessels,carriers,ports})=>{
-            this.vesselList = vessels.data,
-            this.carrierList = carriers,
-            this.portList = ports.data,
-            this.filteredPOLList = ports.data,
-            this.filteredPODList = ports.data
-        })
+            this.vesselList = vessels.data || [];
+            this.carrierList = carriers || [];
+            this.portList = ports.data || [];
+            // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
+            const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+            this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
+            this.applyPolPodExclusion();
+        }, (err) => {
+            console.error('Error loading lookup fields', err);
+        });
+    }
+    applyPolPodExclusion() {
+    // Always use the base port list filtered by voyage type
+    const baseList = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.portList];
+    
+    const selectedPOL = this.scheduleForm.get('POLSid')?.value;
+    const selectedPOD = this.scheduleForm.get('PODSid')?.value;
+
+    // Filter POD list: exclude selected POL
+    this.filteredPODList = baseList.filter(p => p.PortMasterSid !== selectedPOL);
+    
+    // Filter POL list: exclude selected POD  
+    this.filteredPOLList = baseList.filter(p => p.PortMasterSid !== selectedPOD);
+
+    // Clear selections if they're no longer valid
+    if (selectedPOD && !this.filteredPODList.some(p => p.PortMasterSid === selectedPOD)) {
+        this.scheduleForm.get('PODSid')?.setValue(null);
+    }
+    if (selectedPOL && !this.filteredPOLList.some(p => p.PortMasterSid === selectedPOL)) {
+        this.scheduleForm.get('POLSid')?.setValue(null);
     }
 
-    loadScheduleData(){
-        this.masterService.getSailingScheduleById(this.VoyageMasterHeaderSid).subscribe(
-            (resp:any)=>{
-                if(resp.status){
-                    this.sailHeadData = resp.data;
-                    const scheduleData = resp.data;
-                    this.scheduleForm.patchValue({
-                        ...scheduleData,
-                        SCMETA: new Date(scheduleData.SCMETA),
-                        SCMETD: new Date(scheduleData.SCMETD),
-                        CoLoad : scheduleData.CoLoad === 'Y' ? true : false,
-                        status : scheduleData.status === 'A' ? 'Active' : 'Suspended'
-                    })
-                    this.loadScheduleDetails();
-                } else {
-                    this.appSettingService.showError('Error Loading Sailing Schedule');
-                }
-            },
-            (error)=>{
-                console.error('Error Loading Sailing Schedule',error);
+    this.cdr.markForCheck();
+}
+    /**
+     * Apply port filtering based on voyage type.
+     * - Accepts voyageType string: 'Sea'|'Air'|'Road' or null to reset to all ports.
+     * - Tries to detect port type via common keys: PortType, PortCategory, Type.
+     */
+    applyPortTypeFilter(voyageType: string | null | undefined, init = false) {
+        // If no ports loaded yet, keep empty arrays until loadAllFields sets them.
+        if (!this.portList || this.portList.length === 0) {
+            this.filteredPOLList = [];
+            this.filteredPODList = [];
+            return;
+        }
+
+        // When voyageType is falsy, restore full list
+        if (!voyageType) {
+            this.filteredPOLList = [...this.portList];
+            this.filteredPODList = [...this.portList];
+            // If init, do not clear existing selection
+            if (!init) {
+                this.clearPolPodIfNotInList();
             }
-        )
-    }
+            this.cdr.markForCheck();
+            return;
+        }
 
-    loadScheduleDetails(){
-        this.masterService.getVoyageDetailByHeader(this.VoyageMasterHeaderSid).subscribe(
-            (resp:any)=>{
-                if(resp.status){
-                     this.scheduleDetailList = resp.data.sort((a, b) => a.Sno - b.Sno);
-                    this.totalAmountOfCollections = this.scheduleDetailList.length;
-                    this.updatePaginationData();
-                }
+        // Normalize voyageType for comparisons
+        const vt = ('' + voyageType).toLowerCase();
+
+        // mapping function: check multiple possible port fields
+        const portMatchesVoyageType = (port: any) => {
+            if (!port) return false;
+            const vals = [
+                port.PortType,
+                port.PortCategory,
+                port.Type,
+                port.portType,
+                port.port_category,
+                port.port_class
+            ].filter(v => v !== undefined && v !== null).map(v => ('' + v).toLowerCase());
+
+            // direct match
+            if (vals.some(v => v === vt)) return true;
+
+            // some ports may have abbreviations or words: sea -> 'seaport', 'ocean', 'harbour'
+            if (vt === 'sea') {
+                return vals.some(v => v.includes('sea') || v.includes('port') || v.includes('ocean') || v.includes('harb'));
             }
-        )
-    }
-
-    deleteSailingScheduleDetail(VoyageMasterDetailSid){
-        const modalRef = this.dialog.open(DeleteWarningComponent);
-        modalRef.afterClosed().subscribe(
-            (res)=>{
-                if(res){
-                    this.masterService.deleteSailingScheduleDetailById(VoyageMasterDetailSid).subscribe(
-                        (resp:any)=>{
-                            if(resp.status){
-                                this.appSettingService.showSuccess('Sailing Schedule Details Successfully Deleted');
-                                this.loadScheduleDetails();
-                            } else {
-                                this.appSettingService.showError('Error Deleting Sailing Schedule Details');
-                            }
-                        },
-                        (error)=>{
-                            console.error('Error Deleting Sailing Schedule Details',error);
-                        }
-                    )
-                }
+            if (vt === 'air') {
+                return vals.some(v => v.includes('air') || v.includes('airport') || v.includes('aero'));
             }
-        )
+            if (vt === 'road') {
+                return vals.some(v => v.includes('road') || v.includes('inland') || v.includes('truck') || v.includes('rail'));
+            }
+
+            return false;
+        };
+
+        // Apply filter
+        this.filteredPOLList = this.portList.filter(p => portMatchesVoyageType(p));
+        this.filteredPODList = this.portList.filter(p => portMatchesVoyageType(p));
+
+        // If filter results are empty, fallback to full list (prevents blank selects)
+        if (this.filteredPOLList.length === 0) this.filteredPOLList = [...this.portList];
+        if (this.filteredPODList.length === 0) this.filteredPODList = [...this.portList];
+
+        // If currently selected POL/POD not in filtered list, clear them (unless during init)
+        if (!init) {
+            this.clearPolPodIfNotInList();
+        }
+        this.cdr.markForCheck();
     }
 
+    // Clear POL/POD if they do not exist in currently filtered lists
+    clearPolPodIfNotInList() {
+        const pol = this.scheduleForm.get('POLSid')?.value;
+        const pod = this.scheduleForm.get('PODSid')?.value;
+
+        const polExists = this.filteredPOLList.some(p => p.PortMasterSid === pol);
+        const podExists = this.filteredPODList.some(p => p.PortMasterSid === pod);
+
+        if (pol && !polExists) {
+            this.scheduleForm.get('POLSid')?.setValue(null);
+        }
+        if (pod && !podExists) {
+            this.scheduleForm.get('PODSid')?.setValue(null);
+        }
+    }
+
+    loadScheduleData() {
+    if (!this.VoyageMasterHeaderSid) return;
+    
+    this.masterService.getSailingScheduleById(this.VoyageMasterHeaderSid).subscribe(
+        (resp: any) => {
+            if (resp.status) {
+                this.sailHeadData = resp.data;
+                const scheduleData = resp.data;
+                 console.log('Loading schedule data:', scheduleData);
+                console.log('POLSid:', scheduleData.POLSid);
+                console.log('PODSid:', scheduleData.PODSid);
+                
+                // Patch the form first
+                this.scheduleForm.patchValue({
+                    ...scheduleData,
+                    SCMETA: scheduleData.SCMETA ? new Date(scheduleData.SCMETA) : null,
+                    SCMETD: scheduleData.SCMETD ? new Date(scheduleData.SCMETD) : null,
+                    CoLoad: scheduleData.CoLoad === 'Y',
+                    status: scheduleData.status === 'A' ? 'Active' : 'Suspended',
+                    POLSid: scheduleData.POLSid || '',
+                    PODSid: scheduleData.PODSid || '',
+                    ETA: scheduleData.ETA ? new Date(scheduleData.ETA) : null,
+                    ETD: scheduleData.ETD ? new Date(scheduleData.ETD) : null,
+                    ATA: scheduleData.ATA ? new Date(scheduleData.ATA) : null,
+                    ATD: scheduleData.ATD ? new Date(scheduleData.ATD) : null,
+                    PortCutoff: scheduleData.PortCutoff ? new Date(scheduleData.PortCutoff) : null,
+                    TransitDays: scheduleData.TransitDays ?? '',
+                    VoyageType: scheduleData.VoyageType ?? this.scheduleForm.get('VoyageType')?.value
+                });
+
+                // Use setTimeout to ensure the port lists are filtered AFTER the form is patched
+                setTimeout(() => {
+                    const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+                    this.applyPortTypeFilter(currentVoyageType, true);
+                    this.applyPolPodExclusion();
+                    
+                    // Force change detection
+                    this.cdr.detectChanges();
+                });
+                
+            } else {
+                this.appSettingService.showError('Error Loading Sailing Schedule');
+            }
+        },
+        (error) => {
+            console.error('Error Loading Sailing Schedule', error);
+        }
+    );
+}
+
+    // ------- Save / Update header only -------
     onSubmit(){
         this.formErrors = {};
+
         if(this.scheduleForm.invalid){
             this.scheduleForm.markAllAsTouched();
             this.scheduleForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
             return;
-        } 
+        }
+
+        // ETA/ETD validation
+        const etdVal = this.scheduleForm.get('ETD')?.value;
+        const etaVal = this.scheduleForm.get('ETA')?.value;
+        if (etdVal && etaVal && new Date(etdVal) >= new Date(etaVal)) {
+            this.appSettingService.showError('ETD must be less than ETA.');
+            return;
+        }
 
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-        const formValue = this.scheduleForm.value;
+        const formValue = this.scheduleForm.getRawValue();
 
-        if (this.etaEtdMustChange) {
-    if (!formValue.ETA || !formValue.ETD) {
-      this.appSettingService.showError(
-        'Please update ETA and ETD before saving.'
-      );
-      return;
-    }
-  }
-
-  // 🆕 Validate ETA > previous ETD and ETA < ETD
-  const eta = new Date(formValue.ETA);
-  const etd = new Date(formValue.ETD);
-
-  if (this.previousSnoEtd && eta <= this.previousSnoEtd) {
-    this.appSettingService.showError(
-      'ETA must be greater than the previous Sno ETD.'
-    );
-    return;
-  }
-
-  if (eta >= etd) {
-    this.appSettingService.showError('ETA must be less than ETD.');
-    return;
-  }
-
-        const payload = {
+        const payload: any = {
             ...formValue,
             VesselMasterSid : parseInt(formValue.VesselMasterSid),
-            SCMETA : formValue.SCMETA,
-            SCMETD : formValue.SCMETD,
-            Carrier : parseInt(formValue.Carrier),
+            Carrier : formValue.Carrier ? parseInt(formValue.Carrier) : null,
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
             status : formValue.status === 'Active' ? 'A' : 'S',
-            ...(this.isEditMode ? {updatedBy : updatedBy} :{createdBy : createdBy} )
-        }
-        console.log(payload);
-        if(this.isEditMode){
+            POLSid: formValue.POLSid ? parseInt(formValue.POLSid) : null,
+            PODSid: formValue.PODSid ? parseInt(formValue.PODSid) : null,
+            ETA: formValue.ETA,
+            ETD: formValue.ETD,
+            ATA: formValue.ATA,
+            ATD: formValue.ATD,
+            PortCutoff: formValue.PortCutoff,
+            TransitDays: formValue.TransitDays ? parseInt(formValue.TransitDays) : null,
+            ...(this.isEditMode ? { updatedBy } : { createdBy })
+        };
+
+        if(this.isEditMode && this.VoyageMasterHeaderSid){
             this.masterService.updateSailingScheduleById(this.VoyageMasterHeaderSid,payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
                         this.appSettingService.showSuccess('Sailing Schedule Updated Successfully');
-                        this.loadScheduleData()
+                        this.loadScheduleData();
                     } else {
-                        this.appSettingService.showError(resp.message);
+                        this.appSettingService.showError(resp.message || 'Error updating sailing schedule');
                     }
                 },
                 (error)=>{
                     console.error('Error Updating Sailing Schedule',error);
                 }
-            )
+            );
         } else {
             this.masterService.createNewSailingSchedule(payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
                         this.appSettingService.showSuccess('Sailing Schedule Created Successfully');
-                        const sailId = resp.data.VoyageMasterHeaderSid;
+                        const sailId = resp.data?.VoyageMasterHeaderSid;
                         if(sailId){
                             this.route.navigate(['master/sailing-schedule/entry',sailId]);
                         }
                     } else {
-                        this.appSettingService.showError(resp.message);
+                        this.appSettingService.showError(resp.message || 'Error creating sailing schedule');
                     }
                 },
                 (error)=>{
                     console.error('Error Creating Sailing Schedule',error);
                 }
-            )
+            );
         }
-        this.etaEtdMustChange = false;
-        this.sortScheduleDetails();
     }
-
-    openDetailEntryModal(content : TemplateRef<any>,data ?: any, uiSno?: number){
-        this.initScheduleDetailForm();
-        // this.loadAllDetailFields();
-        if(data){
-            this.sailDetailData = data;
-            this.isModalEditMode = true;
-            this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
-            this.originalSno = data.Sno;
-            this.scheduleDetailForm.patchValue({
-                Sno: uiSno ?? data.Sno,
-                POLSid: data.POLSid || '',
-                // PODSid: data.PODSid || '',
-                ETA: new Date(data.ETA) || '',
-                ETD: new Date(data.ETD) || '',
-                PortCutoff: new Date(data.PortCutoff) || '' ,
-                TransitDays: data.TransitDays || '',
-                RotationNo: data.RotationNo || '',
-                RotationDate: new Date(data.RotationDate) || '',
-                IGMNo: data.IGMNo || '' ,
-                IGMDate: new Date(data.IGMDate) || '',
-                EGMNo: data.EGMNo || '',
-                EGMDate: new Date(data.EGMDate) || '',
-                detailstatus: data.status === 'A' ? 'Active' : 'Suspended'
-            })
-            this.minETADate = null
-            this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
-            this.filterPortList(data.POLSid);
-        } else {
-            const validSnos = this.slicedScheduleDetailList.map((d, i) => i + 1);
-    const nextSno = validSnos.length > 0 ? Math.max(...validSnos) + 1 : 1;
-    this.scheduleDetailForm.patchValue({ Sno: nextSno });
-    this.originalSno = null;
-            this.calculateMinETA();
-            this.filterPortList();
-        }
-        this.modalRef = this.modalService.open(content, { size: 'lg',centered:true , backdrop : 'static' });
-    }
-
-    onModalSubmit() {
-    this.formErrors = {};
-
-    if (this.scheduleDetailForm.invalid) {
-        this.scheduleDetailForm.markAllAsTouched();
-        this.scheduleDetailForm.updateValueAndValidity();
-        this.appSettingService.showWarning('Please fill all the required fields');
-        return;
-    }
-
-    const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-    const formValue = this.scheduleDetailForm.getRawValue();
-    if (this.etaEtdMustChange) {
-      if (!formValue.ETA || !formValue.ETD) {
-        this.appSettingService.showError('Since SNO changed, please update ETA and ETD.');
-        return;
-      }
-      this.etaEtdMustChange = false;
-      this.formErrors.etaEtd = null;
-    }
-    const newSno = parseInt(formValue.Sno);
-
-    // --- DUPLICATE SNO VALIDATION ---
-    const duplicate = this.scheduleDetailList.find(
-        item => item.Sno === newSno && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
-    );
-    if (duplicate) {
-        this.formErrors.sno = `Duplicate SNO not allowed (SNO ${newSno} already exists)`;
-        return;
-    }
-
-    // --- ETA/ETD VALIDATION ---
-    const eta = new Date(formValue.ETA);
-    const etd = new Date(formValue.ETD);
-
-    const prev = this.scheduleDetailList.find(
-        r => r.Sno === newSno - 1 && r.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
-    );
-    const next = this.scheduleDetailList.find(
-        r => r.Sno === newSno + 1 && r.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
-    );
-
-    if (prev && eta <= new Date(prev.ETD)) {
-        this.formErrors.etaOrder = `ETA must be after ETD of Sno ${prev.Sno}`;
-        return;
-    }
-
-    if (next && etd >= new Date(next.ETA)) {
-        this.formErrors.etaOrder = `ETD must be before ETA of Sno ${next.Sno}`;
-        return;
-    }
-
-    if (eta >= etd) {
-        this.formErrors.etaOrder = 'ETA must be less than ETD.';
-        return;
-    }
-
-    // --- PREPARE PAYLOAD ---
-    const payload = {
-        Sno: newSno,
-        POLSid: parseInt(formValue.POLSid),
-        ETA: formValue.ETA,
-        ETD: formValue.ETD,
-        PortCutoff: formValue.PortCutoff,
-        TransitDays: parseInt(formValue.TransitDays),
-        RotationNo: formValue.RotationNo,
-        RotationDate: formValue.RotationDate,
-        IGMNo: formValue.IGMNo,
-        IGMDate: formValue.IGMDate,
-        EGMNo: formValue.EGMNo,
-        EGMDate: formValue.EGMDate,
-        status: formValue.detailstatus === 'Active' ? 'A' : 'S',
-        VoyageMasterHeaderSid: this.VoyageMasterHeaderSid,
-        ...(this.isModalEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
-    };
-
-    const request$ = this.isModalEditMode
-        ? this.masterService.updateSailingScheduleDetailById(this.VoyageMasterDetailSid, payload)
-        : this.masterService.createNewSailingScheduleDetail(payload);
-
-    request$.subscribe(
-        (resp: any) => {
-            if (resp.status) {
-                this.closeDetailForm();
-                this.appSettingService.showSuccess(
-                    this.isModalEditMode
-                        ? 'Sailing Schedule Detail Updated Successfully'
-                        : 'Sailing Schedule Detail Created Successfully'
-                );
-                this.loadScheduleDetails(); // reload to sync with backend
-            } else {
-                this.appSettingService.showError(resp.message || 'Error saving Sailing Schedule Detail');
-            }
-        },
-        (error) => {
-            console.error('Error in Sailing Schedule Detail API', error);
-        }
-    );
-
-    // Re-sort list locally
-    this.scheduleDetailList.sort((a, b) => a.Sno - b.Sno);
-    this.updatePaginationData();
-}
-
-
-
-
-    sortScheduleDetails() {
-    // Sort the schedule detail list after Sno change
-    if (this.scheduleDetailList && this.scheduleDetailList.length > 0) {
-        this.scheduleDetailList.sort((a, b) => a.Sno - b.Sno);
-        this.updatePaginationData();
-    }
-    this.cdr.detectChanges(); // Trigger change detection manually
-}
-
-trackBySno(index: number, item: any): any {
-    return item.Sno;  // Track by Sno to optimize rendering
-  }
-
-
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.VoyageMasterHeaderSid) return;
-
-  this.masterService.getAuditLogsSailingSchedule('VoyageMasterHeader', this.VoyageMasterHeaderSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
-
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
-
-
-    updatePaginationData(){
-        let start = (this.page - 1)*this.pageSize;
-        let end = start + this.pageSize;
-        this.slicedScheduleDetailList = this.scheduleDetailList.slice(start,end);
-    }
-
-    closeDetailForm(){
-        this.scheduleDetailForm.reset({
-            detailstatus : 'Active'
-        })
-        this.modalRef.close();
-        this.isModalEditMode = false;
-    }
-    
-    // resetForm(){
-    //     this.scheduleForm.reset({
-    //         status : 'Active'
-    //     })
-    // }
 
     resetForm() {
-  // If editing an existing sailing schedule, reload it (restore original state)
-  if (this.isEditMode && this.VoyageMasterHeaderSid) {
-    this.loadScheduleData();
-    this.loadScheduleDetails();
-    return;
-  }
+        if (this.isEditMode && this.VoyageMasterHeaderSid) {
+            this.loadScheduleData();
+            return;
+        }
 
-  // Create-mode: reset header form to sensible defaults
-  this.scheduleForm.reset({
-    VesselMasterSid: '',
-    VoyageNo: '',
-    RotationNumber: '',
-    ShipIRN: '',
-    CrewIRN: '',
-    SCMETA: null,
-    SCMETD: null,
-    SCMTCargoDescription: '',
-    Remarks: '',
-    status: 'Active',
-    CoLoad: false,
-    VoyageType: null,
-    Carrier: null
-  });
+        this.scheduleForm.reset({
+            VesselMasterSid: null,
+            VoyageNo: '',
+            RotationNumber: '',
+            ShipIRN: '',
+            CrewIRN: '',
+            SCMETA: null,
+            SCMETD: null,
+            SCMTCargoDescription: '',
+            Remarks: '',
+            status: 'Active',
+            CoLoad: false,
+            VoyageType: null,
+            Carrier: null,
+            POLSid: null,
+            PODSid: null,
+            ETA: null,
+            ETD: null,
+            ATA: null,
+            ATD: null,
+            PortCutoff: null,
+            TransitDays: ''
+        });
 
-  // Reset detail list and pagination
-  this.scheduleDetailList = [];
-  this.slicedScheduleDetailList = [];
-  this.totalAmountOfCollections = 0;
-  this.page = 1;
+        // restore full lists
+        this.filteredPOLList = [...this.portList];
+        this.filteredPODList = [...this.portList];
 
-  // Clear any validation states
-  this.scheduleForm.markAsUntouched();
-  this.scheduleForm.markAsPristine();
-  this.scheduleForm.updateValueAndValidity();
+        this.scheduleForm.markAsUntouched();
+        this.scheduleForm.markAsPristine();
+        this.scheduleForm.updateValueAndValidity();
 
-  // Reset additional component state
-  this.sailHeadData = null;
-  this.sailDetailData = null;
-  this.VoyageMasterHeaderSid = null;
-  this.VoyageMasterDetailSid = null;
-  this.isModalEditMode = false;
-  this.formErrors = {};
-  this.etaEtdMustChange = false;
-  this.snoChanged = false;
-  this.previousSnoEtd = null;
-  this.originalSno = null;
-  this.isSnoDuplicate = false;
-
-  // Reset min date to today for new entries
-  this.minETADate = this.toNgbDateStruct(this.todayDate);
-}
+        this.sailHeadData = null;
+        this.VoyageMasterHeaderSid = null;
+        this.formErrors = {};
+    }
 
     navigateBack() {
         history.back();
     }
 
     toNgbDateStruct(date: Date | null): NgbDateStruct | null {
-		if (!date) return null;
-		return {
-			year: date.getFullYear(),
-			month: date.getMonth() + 1,
-			day: date.getDate()
-		};
-	}
+        if (!date) return null;
+        return {
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+            day: date.getDate()
+        };
+    }
 
     showHeaderInfo() {
         if (!this.sailHeadData) return;
@@ -726,39 +545,31 @@ openAuditLogs(modal: TemplateRef<any>) {
         modalRef.componentInstance.idLabel = 'Sailing Schedule Header Id';
         modalRef.componentInstance.idValue = this.sailHeadData?.VoyageMasterHeaderSid;
     }
-    showDetailInfo() {
-        if (!this.sailDetailData) return;
-        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-        modalRef.componentInstance.item = this.sailDetailData;
-        modalRef.componentInstance.idLabel = 'Sailing Schedule Detail Id';
-        modalRef.componentInstance.idValue = this.sailDetailData?.VoyageMasterDetailSid;
-    }
 
     openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.VoyageMasterHeaderSid;
-
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+            (resp: any) => {
+                if (resp.status) {
+                    this.TandCList = resp.data;
+                    const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                        size: 'lg',
+                        backdrop: 'static',
+                        centered: true
+                    });
+                    modalRef.componentInstance.terms = this.TandCList;
+                    modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+                    modalRef.componentInstance.DocumentSid = this.VoyageMasterHeaderSid;
+                } else {
+                    this.appSettingService.showError('Error loading Terms and Conditions');
+                }
+            },
+            (error) => {
+                this.appSettingService.showError('Error loading Terms and Conditions', error);
+            }
+        );
+    }
 
     openEmail() {
         if (!this.sailHeadData) return;
@@ -769,64 +580,67 @@ openAuditLogs(modal: TemplateRef<any>) {
         });
     }
 
-      openAuthority() {
+    openAuthority() {
         const MenuMasterSid = localStorage.getItem('currentMenuId');
         if (!MenuMasterSid) return;
-       const modalRef = this.modalService.open(AuthorityLogComponent, { 
-        size: 'lg', 
-        centered: true, 
-        backdrop: 'static' 
-      });
+        const modalRef = this.modalService.open(AuthorityLogComponent, { 
+            size: 'lg', 
+            centered: true, 
+            backdrop: 'static' 
+        });
         modalRef.componentInstance.menuMasterSid = MenuMasterSid;
         modalRef.componentInstance.documentSid = this.VoyageMasterHeaderSid;
-      }
-    
+    }
+
     openEDoc() {
-      if (!this.sailHeadData) return;
-      const modalRef = this.modalService.open(EdocComponent, { 
-        size: 'lg', 
-        centered: true, 
-        backdrop: 'static' 
-      });
+        if (!this.sailHeadData) return;
+        const modalRef = this.modalService.open(EdocComponent, { 
+            size: 'lg', 
+            centered: true, 
+            backdrop: 'static' 
+        });
     }
 
-    toggleCoLoad(event){
+    toggleCoLoad(event:any){
         event.preventDefault();
-		const checkbox = event.target as HTMLInputElement;
-		checkbox.checked = !checkbox.checked;
-		this.scheduleForm.get('CoLoad')?.setValue(checkbox.checked);
-		this.scheduleForm.get('CoLoad')?.updateValueAndValidity();
+        const checkbox = event.target as HTMLInputElement;
+        checkbox.checked = !checkbox.checked;
+        this.scheduleForm.get('CoLoad')?.setValue(checkbox.checked);
+        this.scheduleForm.get('CoLoad')?.updateValueAndValidity();
     }
 
-    filterPortList(PortId ?: number){
-        if(this.scheduleDetailList.length === 0){
-			return;
-		}
-        let onlyPortId = this.scheduleDetailList.map(m => m.POLSid);
-        if(PortId){
-            onlyPortId = onlyPortId.filter(id => id !== PortId);
-        }
-        this.filteredPOLList = this.portList.filter( p => !onlyPortId.includes(p.PortMasterSid))
-    }
-
-    getFormattedPort(PortMasterSid) {
+    getFormattedPort(PortMasterSid:any) {
         if (!PortMasterSid || this.portList.length === 0) {
             return '';
         }
         const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
-        return `${port.PortName} (${port.PortCode})`
+        return port ? `${port.PortName} (${port.PortCode})` : '';
     }
 
-    calculateMinETA(){
-		if(this.scheduleDetailList.length === 0){
-			this.minETADate = this.toNgbDateStruct(this.todayDate);
-			return;
-		}
-		const onlyETDDates = this.scheduleDetailList.map( m => m.ETD);
-		onlyETDDates.sort((a,b)=>new Date(a).getTime() - new Date(b).getTime())
-		const maxETA = onlyETDDates[onlyETDDates.length-1];
-		this.minETADate = this.toNgbDateStruct(new Date(maxETA));
-	}
+    openAuditLogs(modal: TemplateRef<any>) {
+        if (!this.VoyageMasterHeaderSid) return;
 
+        this.masterService.getAuditLogsSailingSchedule('VoyageMasterHeader', this.VoyageMasterHeaderSid.toString()).subscribe({
+            next: (logs: any[]) => {
+                const formatFields = (val: any) => {
+                    if (!val) return ['NA'];
+                    const obj = typeof val === 'string' ? JSON.parse(val) : val;
+                    delete obj.updatedOn; // Remove updatedOn field
+                    if (Object.keys(obj).length === 0) return ['NA'];
+                    return Object.entries(obj).map(
+                      ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+                    );
+                };
+
+                this.auditLogs = logs.map(log => ({
+                    ...log,
+                    oldValDisplay: formatFields(log.oldVal),
+                    newValDisplay: formatFields(log.newVal)
+                }));
+
+                this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+            },
+            error: err => console.error('Error fetching audit logs:', err)
+        });
+    }
 }
-

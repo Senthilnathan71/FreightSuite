@@ -4,7 +4,7 @@ import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -62,6 +62,13 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 	],
 })
 export class TarrifEntryComponent implements OnInit {
+	selectedDepartment: any;
+selectedDepartmentType: string = '';
+selectedFCLLCL: string = '';
+filteredPorts: any[] = [];
+filteredPOL: any[] = [];
+filteredPOD: any[] = [];
+departments: any[] = [];
 
 	active = 1
 	modalRef: NgbModalRef;
@@ -138,6 +145,17 @@ auditLogs: any[] = []; // Stores audit logs
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 		this.initHeaderForm();
 		this.loadAllFields();
+	// 	this.tariffHeaderForm.get('DepartmentMasterSid')?.valueChanges
+    // .subscribe((deptSid) => {
+    //   console.log('[valueChanges] DepartmentMasterSid value:', deptSid);
+    //   const department = this.departmentList?.find(d => d.DepartmentMasterSid === Number(deptSid));
+    //   console.log('[valueChanges] resolved department from list:', department);
+    //   this.onDeptChange(department);
+    // });
+
+  // Log pol/pod changes (if you have these)
+  this.tariffHeaderForm.get('POLSid')?.valueChanges.subscribe(val => console.log('POLSid changed ->', val));
+  this.tariffHeaderForm.get('PODSid')?.valueChanges.subscribe(val => console.log('PODSid changed ->', val));
 		  this.tariffHeaderForm.statusChanges.subscribe(status => {
 				this.btnDisable = status !== 'VALID';
 			});
@@ -207,7 +225,7 @@ auditLogs: any[] = []; // Stores audit logs
 			AgentSid: [null],
 			IncoTerms: [null],
 			StuffingAt: [null],
-			EffectiveDate: ['',[Validators.required]],
+			// EffectiveDate: ['',[Validators.required]],
 			status: ['Active'],
 			Remarks: [''],
 		})
@@ -232,13 +250,51 @@ auditLogs: any[] = []; // Stores audit logs
 			detailBuyPerUnitPrice : ['',[Validators.required]],
 			detailMinSale : [''],
 			detailstatus : ['Active'],
-			detailRemarks : ['']
+			detailRemarks : [''],
+			chargeTaxMasters: this.fb.array([]),
+            chargeTds: this.fb.array([])
+
 		})
 		this.tariffDetailsForm.get('detailisSlabApplicable')?.valueChanges.subscribe(() => {
 			this.updateSlabValidators();
 		});
 		this.tariffDetailsForm.get('detailDescription')?.disable();
+		this.tariffDetailsForm.get('detailChargeCode')?.valueChanges.subscribe(chargeCode => {
+    if (chargeCode) {
+      this.onChargeCodeChange(chargeCode);
+    } else {
+      // If charge code is cleared, reset effective date
+      this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
+      this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    }
+  });
+
 	}
+get tariffDetails(): FormArray {
+  return this.tariffDetailsForm.get('tariffDetails') as FormArray;
+}
+createTariffDetailFormGroup(tariffData?: any): FormGroup {
+  return this.fb.group({
+    detailisSlabApplicable: [tariffData?.IsSlabApplicable === 'Y' ? true : false || false, [Validators.required]],
+    detailSlabFrom: [tariffData?.SlabFrom || '', this.slabConditionalValidator()],
+    detailSlabTo: [tariffData?.SlabTo || '', this.slabConditionalValidator()],
+    detailEffectiveDate: [tariffData?.EffectiveDate ? new Date(tariffData.EffectiveDate) : '', [Validators.required]],
+    detailExpiredOn: [tariffData?.ExpiredOn ? new Date(tariffData.ExpiredOn) : '', [Validators.required]],
+    detailChargeCode: [tariffData?.ChargeCode || '', [Validators.required]],
+    detailDescription: [tariffData?.Description || ''],
+    detailCargoType: [tariffData?.CargoType || '', [Validators.required]],
+    detailUOMSid: [tariffData?.UOMSid || '', [Validators.required]],
+    detailSaleCurrency: [tariffData?.SaleCurrency || '', Validators.required],
+    detailSalePerUnitPrice: [tariffData?.SalePerUnitPrice || '', [Validators.required]],
+    detailBuyCurrency: [tariffData?.BuyCurrency || '', [Validators.required]],
+    detailBuyPerUnitPrice: [tariffData?.BuyPerUnitPrice || '', [Validators.required]],
+    detailMinSale: [tariffData?.MinSale || ''],
+    detailstatus: [tariffData?.status ? (tariffData.status === 'A' ? 'Active' : 'Suspended') : 'Active'],
+    detailRemarks: [tariffData?.Remarks || ''],
+    TariffDetailSid: [tariffData?.TariffDetailSid || null]
+  });
+}
+
 
 	slabConditionalValidator(): ValidatorFn {
 		return (control: AbstractControl): { [key: string]: any } | null => {
@@ -307,7 +363,7 @@ auditLogs: any[] = []; // Stores audit logs
 			}
 		} else {
 			this.isModalEditMode = false;
-			this.calculateMinEffectiveFrom();
+			this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
 		}
 
 		this.modalRef = this.modalService.open(content, { size: 'lg',centered : true,backdrop : 'static' })
@@ -333,30 +389,44 @@ auditLogs: any[] = []; // Stores audit logs
 	}
 
 	loadAllFields() {
-		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-		forkJoin({
-			ports: this.masterServ.getAllPorts(),
-			agents: this.masterServ.getAllAgents(CompanyMasterSid),
-			carriers: this.masterServ.getAllCarriers(CompanyMasterSid),
-			departments: this.masterServ.getAllDepartments(CompanyMasterSid),
-			companies: this.masterServ.getAllCompanies(),
-			currencies : this.masterServ.getAllCurrencies(),
-			incos : this.masterServ.getAllInco(),
-			chargeTax : this.masterServ.getAllChargeTax(CompanyMasterSid)
-		}).subscribe(({ ports, agents , carriers, departments, companies,currencies,incos,chargeTax}) => {
-			this.portList = ports.data,
-			this.polList = ports.data,
-			this.podList = ports.data,
-			this.agentList = agents,
-			this.carrierList = carriers,
-			this.departmentList = departments,
-			this.companyList = companies,
-			this.currencyList = currencies,
-			this.incoList = incos
-			this.chargeTaxes = chargeTax.data
-			this.isDataLoading = false;
-		})
-	}
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  forkJoin({
+    ports: this.masterServ.getAllPorts(),
+    agents: this.masterServ.getAllAgents(CompanyMasterSid),
+    carriers: this.masterServ.getAllCarriers(CompanyMasterSid),
+    departments: this.masterServ.getAllDepartments(this.currentCompany?.CompanyMasterSid),
+    companies: this.masterServ.getAllCompanies(),
+    currencies: this.masterServ.getAllCurrencies(),
+    incos: this.masterServ.getAllInco(),
+    chargeTax: this.masterServ.getAllChargeTax(CompanyMasterSid)
+  }).subscribe(({ ports, agents, carriers, departments, companies, currencies, incos, chargeTax }) => {
+	this.departments = departments || [];
+    this.portList = (ports.data || []).map(p=>({
+		...p,
+		CountryName : p.countryMaster?.countryName
+	}))
+
+  // initialize filtered lists (these are the ones we will filter later)
+  this.filteredPorts = [...this.portList];
+  this.filteredPOL = [...this.filteredPorts];
+  this.filteredPOD = [...this.filteredPorts];
+
+  // make UI-bound lists use filtered arrays so UI reflects department filters
+  this.polList = [...this.filteredPOL];
+  this.podList = [...this.filteredPOD];
+    this.agentList = agents;
+    this.carrierList = carriers;
+    this.departmentList = departments;
+    this.companyList = companies;
+    this.currencyList = currencies;
+    this.incoList = incos;
+    this.chargeTaxes = chargeTax.data;
+    this.isDataLoading = false;
+	console.log('Departments loaded:', departments);
+    console.log('Initial polList length =', this.polList.length, 'podList length =', this.podList.length);
+  }, err => console.error('loadAllFields error', err));
+}
+  
 
 	
 openAuditLogs(modal: TemplateRef<any>) {
@@ -572,6 +642,82 @@ openAuditLogs(modal: TemplateRef<any>) {
 		)
 
 	}
+	onDeptChange(department: any): void {
+		console.log('onDeptChange called with:', department);
+  this.selectedDepartment = department;
+  if (!department) {
+    this.selectedDepartmentType = '';
+    this.selectedFCLLCL = 'LCL';
+    this.filteredPorts = [...(this.portList || [])];
+    this.filteredPOL = [...this.filteredPorts];
+    this.filteredPOD = [...this.filteredPorts];
+
+    // update UI lists
+    this.polList = [...this.filteredPOL];
+    this.podList = [...this.filteredPOD];
+
+    // clear selected values
+    this.tariffHeaderForm.get('POOSid')?.setValue(null);
+    this.tariffHeaderForm.get('POLSid')?.setValue(null);
+    this.tariffHeaderForm.get('PODSid')?.setValue(null);
+    this.tariffHeaderForm.get('FDCSid')?.setValue(null);
+    this.tariffHeaderForm.get('MovementType')?.setValue(null);
+    return;
+  }
+
+  this.selectedDepartmentType = (department.departmentType || '').toUpperCase();
+  this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
+    ? (department.FCLLCL?.toUpperCase() || 'LCL')
+    : 'AIR';
+
+  // Filter ports based on segment
+  console.log('onDepChange',this.selectedFCLLCL)
+  this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
+  this.filteredPOL = [...this.filteredPorts];
+  this.filteredPOD = [...this.filteredPorts];
+
+  // update UI-bound lists
+  this.polList = [...this.filteredPOL];
+  this.podList = [...this.filteredPOD];
+
+  // Set MovementType
+  if (this.selectedDepartmentType === 'SEA') {
+    this.tariffHeaderForm.get('MovementType')?.setValue('Sea');
+  } else if (this.selectedDepartmentType === 'AIR') {
+    this.tariffHeaderForm.get('MovementType')?.setValue('Air');
+  }
+}
+
+
+getFilteredPortsBySegment(segment: string): any[] {
+	console.log('getFilteredPortsBySegment',segment)
+  if (segment === 'AIR') {
+    return this.portList.filter(port => port.PortType === 'Air');
+  } else if (segment === 'FCL' || segment === 'LCL') {
+    return this.portList.filter(port => port.PortType === 'Sea');
+  }
+  return this.portList;
+}
+
+handlePOLChange(selectedPort: any): void {
+  if (!selectedPort) {
+    this.filteredPOD = [...this.filteredPorts];
+    return;
+  }
+  const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
+  this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
+  this.tariffHeaderForm.get('POLSid')?.setValue(selectedPortSid, { emitEvent: false });
+}
+
+handlePODChange(selectedPort: any): void {
+  if (!selectedPort) {
+    this.filteredPOL = [...this.filteredPorts];
+    return;
+  }
+  const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
+  this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
+  this.tariffHeaderForm.get('PODSid')?.setValue(selectedPortSid, { emitEvent: false });
+}
 
 	updatePaginationData() {
     let start = (this.page - 1) * this.pageSize;
@@ -584,6 +730,9 @@ openAuditLogs(modal: TemplateRef<any>) {
 	// }
 
 	resetForm() {
+		this.filteredPorts = [...this.portList];
+  this.filteredPOL = [...this.filteredPorts];
+  this.filteredPOD = [...this.filteredPorts];
   // If editing an existing tariff, reload it (restore original state)
   if (this.isEditMode && this.TariffHeaderSid) {
     this.loadTariff(this.TariffHeaderSid);
@@ -689,22 +838,25 @@ openAuditLogs(modal: TemplateRef<any>) {
 	}
 
 	filterPodList(port){
-		if(!port){
-			this.tariffHeaderForm.get('POLTerminal').setValue('')
-			return
-		}
-		this.tariffHeaderForm.get('POLTerminal').setValue(port.PortCode)
-		this.podList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
-	}
+  if(!port){
+    this.tariffHeaderForm.get('POLTerminal')?.setValue('');
+    this.podList = [...(this.filteredPorts || this.portList || [])];
+    return;
+  }
+  this.tariffHeaderForm.get('POLTerminal')?.setValue(port.PortCode);
+  this.podList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
+}
 
-	filterPolList(port){
-		if(!port){
-			this.tariffHeaderForm.get('PODTerminal').setValue('')
-			return
-		}
-		this.tariffHeaderForm.get('PODTerminal').setValue(port.PortCode)
-		this.polList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
-	}
+filterPolList(port){
+  if(!port){
+    this.tariffHeaderForm.get('PODTerminal')?.setValue('');
+    this.polList = [...(this.filteredPorts || this.portList || [])];
+    return;
+  }
+  this.tariffHeaderForm.get('PODTerminal')?.setValue(port.PortCode);
+  this.polList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
+}
+
 
 	showHeaderInfo() {
 		if (!this.tariffData) return;
@@ -777,31 +929,138 @@ openAuditLogs(modal: TemplateRef<any>) {
 		});
 	}
 
-	setChargeDetails(charge ?: Charge){
-		if(!charge || this.chargeTaxes.length === 0)
-		{
-			this.tariffDetailsForm.get('detailDescription').setValue('');
-			this.tariffDetailsForm.get('detailUOMSid')?.setValue(null)
-			return;
-		}
-		let ChargeMasterSid = charge?.ChargeMasterSid;
-		this.tariffDetailsForm.get('detailUOMSid')?.setValue(charge?.UOM)
-		const reqTaxes = this.chargeTaxes.filter(t => t.chargeTaxMasterSid === ChargeMasterSid);
-		if(reqTaxes.length > 0){
-			this.tariffDetailsForm.get('detailDescription').setValue(reqTaxes[0].description);
-		}
-	}
+	setChargeDetails(charge?: Charge) {
+  if (!charge || this.chargeTaxes.length === 0) {
+    this.tariffDetailsForm.get('detailDescription')?.setValue('');
+    this.tariffDetailsForm.get('detailUOMSid')?.setValue(null);
+    return;
+  }
+  
+  let ChargeMasterSid = charge?.ChargeMasterSid;
+  this.tariffDetailsForm.get('detailUOMSid')?.setValue(charge?.UOM);
+  
+  const reqTaxes = this.chargeTaxes.filter(t => t.chargeTaxMasterSid === ChargeMasterSid);
+  if (reqTaxes.length > 0) {
+    this.tariffDetailsForm.get('detailDescription')?.setValue(reqTaxes[0].description);
+  }
+  
+  // When charge details are set, also update the effective date based on charge code
+  if (charge?.chargeCode) {
+    this.setEffectiveDateBasedOnChargeCode(charge.chargeCode);
+  }
+}
+	setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
+  if (!chargeCode) {
+    // If no charge code selected, clear the effective date
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
+    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    return;
+  }
 
-	calculateMinEffectiveFrom(){
-		if(this.TariffDetailsList.length === 0){
-			this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
-			return;
-		}
-		const onlyExpiredData = this.TariffDetailsList.map( m => m.ExpiredOn);
-		onlyExpiredData.sort((a,b)=>new Date(a).getTime() - new Date(b).getTime())
-		const maxExpiredOn = onlyExpiredData[onlyExpiredData.length-1];
-		this.minEffectiveFrom = this.toNgbDateStruct(new Date(maxExpiredOn));
-	}
+  // Filter tariff details for the same charge code
+  const sameChargeDetails = this.TariffDetailsList.filter(
+    detail => detail.ChargeCode === chargeCode
+  );
 
+  if (sameChargeDetails.length === 0) {
+    // No previous details for this charge code, set to today
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(this.todayDate);
+    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    return;
+  }
+
+  // Find the maximum expired date for this charge code
+  const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
+  const maxExpiredDate = new Date(Math.max(...expiredDates.map(date => date.getTime())));
+  
+  // Set Effective From to the next day after max expired date
+  const nextDay = new Date(maxExpiredDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  
+  // Set the value in the form control
+  this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(nextDay);
+  this.minEffectiveFrom = this.toNgbDateStruct(nextDay);
+}
+
+// Update the charge code change handler
+onChargeCodeChange(chargeCode: string) {
+  this.setEffectiveDateBasedOnChargeCode(chargeCode);
+  
+  // Set charge description and other details
+  this.setChargeDetails(this.chargeList.find(charge => charge.chargeCode === chargeCode));
+}
+
+	calculateMinEffectiveFrom(chargeCode?: string) {
+  if (!chargeCode) {
+    // If no charge code selected, default to today
+    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    return;
+  }
+
+  // Filter tariff details for the same charge code
+  const sameChargeDetails = this.TariffDetailsList.filter(
+    detail => detail.ChargeCode === chargeCode
+  );
+
+  if (sameChargeDetails.length === 0) {
+    // No previous details for this charge code, default to today
+    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    return;
+  }
+
+  // Find the maximum expired date for this charge code
+  const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
+  const maxExpiredDate = new Date(Math.max(...expiredDates.map(date => date.getTime())));
+  
+  // Set minEffectiveFrom to the next day after max expired date
+  const nextDay = new Date(maxExpiredDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  
+  this.minEffectiveFrom = this.toNgbDateStruct(nextDay);
+}
+
+effectiveDateValidator(): ValidatorFn {
+  return (control: AbstractControl): { [key: string]: any } | null => {
+    if (!control.value) return null;
+
+    const chargeCode = control.parent?.get('detailChargeCode')?.value;
+    const effectiveDate = new Date(control.value);
+    
+    if (!chargeCode) return null;
+
+    // Filter previous details for the same charge code
+    const sameChargeDetails = this.TariffDetailsList.filter(
+      detail => detail.ChargeCode === chargeCode
+    );
+
+    if (sameChargeDetails.length === 0) {
+      // No previous details - must be today or future
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (effectiveDate < today) {
+        return { invalidEffectiveDate: 'Effective date cannot be in the past for new charge codes' };
+      }
+      return null;
+    }
+
+    // Find max expired date for this charge code
+    const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
+    const maxExpiredDate = new Date(Math.max(...expiredDates.map(date => date.getTime())));
+    const requiredEffectiveDate = new Date(maxExpiredDate);
+    requiredEffectiveDate.setDate(requiredEffectiveDate.getDate() + 1);
+    
+    // Check if the selected date is exactly the required date
+    if (effectiveDate.toDateString() !== requiredEffectiveDate.toDateString()) {
+      return { 
+        invalidEffectiveDate: `Effective date must be ${requiredEffectiveDate.toLocaleDateString()} for this charge code` 
+      };
+    }
+
+    return null;
+  };
+}
+
+	
 
 }

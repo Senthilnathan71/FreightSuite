@@ -1,378 +1,387 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
+
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { FormsModule } from '@angular/forms';
-import { CommonModule, DatePipe } from '@angular/common';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatDialog } from '@angular/material/dialog';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
-import { NgSelectModule } from '@ng-select/ng-select';
-import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
-import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
-import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
-import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+
+
 
 @Component({
-    selector: 'app-sailing-schedule-lsit',
-    standalone: true,
-    imports: [
-        FeatherModule,
-        RouterModule,
-        FormsModule,
-        CommonModule,
-        DatePipe,
-        NgbPaginationModule,
-        NgSelectModule,
-        CustomDatePipe,
-        ListpageComponent,
-        FavoriteStarComponent,
-        NgxSpinnerModule
-    ],
-    templateUrl: './sailing-schedule-lsit.component.html',
-    styleUrl: './sailing-schedule-lsit.component.scss'
+  selector: 'app-sailing-schedule-list',
+  standalone: true,
+  imports: [
+    FeatherModule,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    DatePipe,
+    NgbPaginationModule,
+    NgSelectModule,
+    CustomDatePipe,
+    FavoriteStarComponent,
+    NgxSpinnerModule,
+    ReusableTableComponent,
+
+  ],
+ templateUrl: './sailing-schedule-lsit.component.html', 
+ styleUrl: './sailing-schedule-lsit.component.scss'
 })
-export class SailingScheduleLsitComponent implements OnInit {
+export class SailingScheduleListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('scheduleTable') scheduleTable!: ReusableTableComponent;
 
-    searchType : string = 'VoyageNo';
-    sortColumn: string = 'VoyageNo'; 
-    sortDirection: string = 'asc';
-    portList : any[] = [];
-    filterValue :any;
-    searched : boolean;
-    scheduleList : any[];
-    slicedScheduleList : any[];
-    portOfLoading :"" ;
-    portOfDeparture :"";
-    userData : any;
-    permissions: string[] = [];
-    currentMenuPermissions: any = {};
+  // state
+  userData: any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  currentCompany: any;
+  currentBranch: any;
 
-    page = 1;
-    pageSize = 15;
-    totalAmountOfCollections : number;
-    isFavorite: boolean = false;
+  portList: any[] = [];
 
-    toggleFavorite() {
-        this.isFavorite = !this.isFavorite;
-    } 
-    // Company
-    currentCompany : any;
-    currentBranch : any;
-    constructor(
-        private router: Router,
-        private masterService:MasterService,
-        private appSettingService : AppSettingsService,
-        private dialog : MatDialog ,
-        private userService : authService,
-        private excelReportService : ExcelExportService,
-        private spinner: NgxSpinnerService   
-    ) { }
+  // table & paging
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VoyageMasterHeaderSid',
+    emptyMessage: 'No sailing schedules found',
+    dragAndDrop: false
+  };
+  tableLoading = false;
 
-    ngOnInit(): void {
-        this.loadAllPorts();
-        // this.appSettingService.getUser().subscribe(
-        //     user=>{
-        //         if(user){
-        //             this.userData = user;
-        //             this.checkPermissions();
-        //         }
-        //     }
-        // );
-        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-        const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+  protected config: ListComponentConfig = {
+    storageKey: 'sailing-schedule-list-state',
+    defaultPageSize: 15,
+    defaultSortColumn: 'VoyageNo',
+    defaultSortDirection: 'asc',
+    pageSizeOptions: [10, 15, 20, 50, 100],
+    maxPagesToShow: 3
+  };
+
+  // filter & local UI
+//   filterValue = '';
+  searchType = 'VoyageNo';
+  searched = false;
+
+  constructor(
+    private masterService: MasterService,
+    private router: Router,
+    private appSettingService: AppSettingsService,
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
+
+  override ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
-        this.loadVoyages();
     }
 
-    checkPermissions() {
+    this.initializeTableConfig();
+    this.loadAllPorts();
+
+    // initialize base list logic (reads saved paging/sort state and triggers first load)
+    super.ngOnInit();
+  }
+
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
+    const userRole = this.userData?.userRoleMaster?.[0]?.RoleMasterSid;
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response: any) => {
+          this.currentMenuPermissions = response.data?.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions).filter(
+            key => this.currentMenuPermissions[key] === 'isTrue'
+          );
+        },
+        error: err => {
+          console.error('Error getting menu permissions', err);
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
-    loadVoyages(): void {
-        this.spinner.show();
-        const params = {
-            search: this.filterValue?.trim() || '',
-            page: this.page,
-            pageSize: this.pageSize,
-        };
+    return this.permissions.includes(permission);
+  }
 
-        this.masterService.searchSailingSchedule(params).subscribe({
-            next: (response) => {
-                if(response.status) {
-                    this.scheduleList = response.data.items;
-                    this.totalAmountOfCollections = response.data.totalCount
-                    this.applySorting();
-                    this.searched = true;
-                }else {
-        this.appSettingService.showError(response.message);
+  // BaseListComponent abstract implementations
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchSailingSchedule(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue?.trim() || '',
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection,
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+
+    if (response?.status) {
+      this.allItems = (response.data.items || []).map((item: any) => ({
+        ...item,
+        POLPort: item.portMasterPOL?.PortCode || this.getFormattedPort(item.POLSid),
+        PODPort: item.portMasterPOD?.PortCode || this.getFormattedPort(item.PODSid),
+        vslvoy: `${item.vesselMaster?.VesselName || ''} / ${item.VoyageNo || ''}`,
+        status: item.status ==='A'? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting(); // local fallback sort if needed
+      this.searched = true;
+    } else {
+      this.appSettingService.showError(response?.message || 'Error searching sailing schedules.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching sailing schedules.');
+    console.error('Error searching sailing schedules', error);
+    super.handleSearchError(error);
+  }
+
+  // UI helpers
+  get allSchedules() { return this.allItems; } // alias used by template if needed
+
+  initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'vslvoy',
+        label: 'Vsl / Voy',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'POLPort',
+        label: 'POL',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'PODPort',
+        label: 'POD',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ETA',
+        label: 'ETA',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'date'
+      },
+      {
+        key: 'ETD',
+        label: 'ETD',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'date'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: false,
+        filterable: false,
+        visible: true,
+        dataType: 'string'
       }
-        this.spinner.hide();
-            },
-            error: (err) => {
-                console.error('Error fetching schedules:', err);
-                this.scheduleList = [];
-                this.totalAmountOfCollections = 0;
-            },
-        });
-    }
+    ];
 
-    onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
+    this.tableConfig.actions = [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Sailing Schedule',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Sailing Schedule',
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ];
   }
+
+  // Template action handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewSchedule(event.row);
+    } else if (event.action === 'delete') {
+      this.deleteSchedule(event.row.VoyageMasterHeaderSid);
+    }
+  }
+
+  onTableRowClick(row: any): void {
+    // optional row click handling
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'asc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // keep server-side search simple; could map column filters to API later
+    console.log('Table filters changed:', filters);
+  }
+
   
-  this.applySorting();
-}
+  override trackBy(index: number, item: any): number {
+        return item.VoyageMasterHeaderSid || index;
+    }
 
-applySorting() {
-    if (!Array.isArray(this.scheduleList)){
-        this.scheduleList = [];
-        return;
-    }
-  this.scheduleList.sort((a, b) => {
-    let valueA = this.getSortValue(a);
-    let valueB = this.getSortValue(b);
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-    
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
-
-getSortValue(item: any): any {
-  // Handle nested properties for sorting
-  switch (this.sortColumn) {
-    case 'Vsl/Voy':
-      return item.vesselMaster?.VesselName;
-    case 'POL':
-      return item.voyageMasterDetail?.[0]?.portMasterPOL?.PortCode;
-    case 'POD':
-      return item.voyageMasterDetail?.[0]?.portMasterPOD?.PortCode;
-    case 'ETA':
-      return item.voyageMasterDetail?.[0]?.ETA;
-    case 'ETD':
-      return item.voyageMasterDetail?.[0]?.ETD;
-    default:
-      return item[this.sortColumn];
+  viewSchedule(schedule: any): void {
+    this.router.navigate(['/master/sailing-schedule/entry', schedule.VoyageMasterHeaderSid]);
   }
-}
 
+  navigateToCreate() {
+    this.router.navigate(['/master/sailing-schedule/entry']);
+  }
 
-    search(){
-        const intFields = [
-            "VesselMasterSid",
-            "Carrier",
-        ];
-        const payload = {
-            searchType : this.searchType,
-            filterValue : intFields.includes(this.searchType) ? Number(this.filterValue) : this.filterValue
+  deleteSchedule(VoyageMasterHeaderSid: number) {
+    // ask reusable delete flow from masterService (we'll call API directly here)
+    const confirmed = confirm('Are you sure you want to delete this Sailing Schedule?');
+    if (!confirmed) return;
+
+    this.masterService.deleteSailingScheduleById(VoyageMasterHeaderSid).subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.appSettingService.showSuccess('Sailing Schedule Deleted Successfully');
+          this.search(); // reload
+        } else {
+          this.appSettingService.showError(resp?.message || 'Error Deleting Sailing Schedule');
         }
-
-        this.masterService.searchSailingSchedule(payload).subscribe(
-            (resp:any)=>{
-                if(resp.status){
-                    this.searched = true;
-                    this.scheduleList = resp.data;
-                    this.applySorting();
-                    this.totalAmountOfCollections = this.scheduleList.length;
-                    this.updatePaginationData();
-                }
-            }
-        )
-    }
-
-    onSpecialSearch(){
-
-        // When Both are unselected , we go for getAll
-        if (!this.portOfLoading && !this.portOfDeparture) {
-            const payload = { searchType: 'VoyageNo', filterValue: '' }
-            this.masterService.searchSailingSchedule(payload).subscribe(
-                (resp: any) => {
-                    if (resp.status) {
-                        this.searched = true;
-                        this.scheduleList = resp.data;
-                        this.applySorting();
-                        this.totalAmountOfCollections = this.scheduleList.length;
-                        this.updatePaginationData();
-                    }
-                }
-            )
-            return;
-        }
-
-        // Either one is selected
-
-        if(!this.portOfLoading && this.portOfDeparture || this.portOfLoading && !this.portOfDeparture){
-            this.appSettingService.showWarning('Select both Loading and Departure Port');
-            return;
-        }
-        const payload = {
-            POLSid : parseInt(this.portOfLoading),
-            PODSid : parseInt(this.portOfDeparture)
-        }
-        this.masterService.specialScheduleSearch(payload).subscribe(
-            (resp:any)=>{
-                if (resp.status) {
-                    this.searched = true;
-                    this.scheduleList = resp.data;
-                    this.totalAmountOfCollections = this.scheduleList.length;
-                    this.updatePaginationData();
-                }
-            }
-        )
-    }
-
-    updatePaginationData(){
-        let start = (this.page-1)*this.pageSize;
-        let end = start + this.pageSize;
-        this.loadVoyages();
-    }
-
-    nagivateTocreateSailingSchedule() {
-        this.router.navigate(['master/sailing-schedule/entry'])
-    }
-
-    deleteSchedule(VoyageMasterHeaderSid){
-        const modalRef = this.dialog.open(DeleteWarningComponent);
-        modalRef.afterClosed().subscribe(
-            (res)=>{
-                if(res){
-                    this.masterService.deleteSailingScheduleById(VoyageMasterHeaderSid).subscribe(
-                        (resp:any)=>{
-                            if(resp.status){
-                                this.appSettingService.showSuccess('Sailing Schedule Deleted Successfully');
-                            } else {
-                                this.appSettingService.showError('Error Deleting Sailing Schedule');
-                            }
-                        },
-                        (error)=>{
-                            console.error('Error Deleting Sailing Schedule',error);
-                        }
-                    )
-                }
-            }
-        )
-    }
-
-    loadAllPorts(){
-        this.masterService.getAllPorts().subscribe(
-            (resp:any)=>{
-                if(resp.status){
-                    this.portList = resp.data;
-                } else { 
-                    this.appSettingService.showError('Error Loading Ports')
-                }
-            },
-            (error)=>{
-                console.error('Error Loading Ports',error);
-            }
-        )
-    }
-
-   report(): void {
-    const formattedData = this.scheduleList.map(item => {
-        const firstDetail = item.voyageMasterDetail?.[0];
-        const lastDetail = item.voyageMasterDetail?.[item.voyageMasterDetail.length - 1];
-
-        return {
-            vessel: item.vesselMaster?.VesselName || '',
-            POL: firstDetail ? this.getFormattedPort(firstDetail.POLSid) : '',
-            POD: item.voyageMasterDetail.length < 2 ? '' : this.getFormattedPort(lastDetail?.POLSid),
-            ETA: firstDetail?.ETA || '',
-            ETD: lastDetail?.ETD || ''
-        };
+      },
+      error: (err) => {
+        console.error('Error Deleting Sailing Schedule', err);
+        this.appSettingService.showError('Error Deleting Sailing Schedule');
+      }
     });
+  }
 
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  // ports
+  loadAllPorts() {
+    this.masterService.getAllPorts().subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.portList = resp.data || [];
+        } else {
+          this.appSettingService.showError('Error Loading Ports');
+        }
+      },
+      error: (err) => {
+        console.error('Error Loading Ports', err);
+      }
+    });
+  }
+
+  getFormattedPort(PortMasterSid: number) {
+    if (!PortMasterSid || !this.portList?.length) return '';
+    const port = this.portList.find(p => p.PortMasterSid === PortMasterSid);
+    return port ? `${port.PortName} (${port.PortCode})` : '';
+  }
+
+  // report/export
+  report(): void {
+    const formattedData = (this.allSchedules || []).map((item: any) => ({
+      vessel: item.vesselMaster?.VesselName || '',
+      voyage: item.VoyageNo || '',
+      POL: item.POLPort || this.getFormattedPort(item.POLSid),
+      POD: item.PODPort || this.getFormattedPort(item.PODSid),
+      ETA: item.ETA || '',
+      ETD: item.ETD || ''
+    }));
+
     const companyName = this.currentCompany?.companyName ?? 'Company';
+    const visibleColumns = this.scheduleTable?.getVisibleColumns?.() ?? [
+      { key: 'vslvoy', label: 'Vsl/Voy' },
+      { key: 'POLPort', label: 'POL' },
+      { key: 'PODPort', label: 'POD' },
+      { key: 'ETA', label: 'ETA' },
+      { key: 'ETD', label: 'ETD' }
+    ];
+
+    const headers = visibleColumns.map((c: any) => ({ key: c.key, label: c.label }));
+
     this.excelReportService.exportAsExcel({
-        data: formattedData,
-        headers: [
-            { key: 'vessel', label: 'Vsl/Voy' },
-            { key: 'POL', label: 'POL' },
-            { key: 'POD', label: 'POD' },
-            { key: 'ETA', label: 'ETA' },
-            { key: 'ETD', label: 'ETD' },
-        ],
-        fileName: 'Sailing-Schedule-Report', 
-        title: companyName
+      data: formattedData,
+      headers,
+      fileName: 'Sailing-Schedule-Report',
+      title: companyName
     });
-}
+  }
 
+  // small helpers for template
+  searchSchedules() {
+    this.page=1;
+    this.search();
+  }
 
-    reset(){
-        this.searched = false;
-        this.scheduleList = [];
-        this.slicedScheduleList = [];
-        this.totalAmountOfCollections = 0;
-        this.filterValue = '';
-        this.searchType = 'VoyageNo';
-        this.portOfLoading = '';
-        this.portOfDeparture = '';
-        this.page = 1;
-        this.sortColumn = 'VoyageNo';
-        this.sortDirection = 'asc';
-        this.loadVoyages();
-    }
-
-    getFormattedPort(PortMasterSid) {
-        if (!PortMasterSid || this.portList.length === 0) {
-            return '';
-        }
-        const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
-        return `${port.PortName} (${port.PortCode})`
-    }
-
-    clearFilterValue() {
+  clearFilterValue() {
     this.filterValue = '';
   }
 
+  reset() {
+    this.searched = false;
+    this.filterValue = '';
+    this.searchType = 'VoyageNo';
+    this.page = 1;
+    this.pageSize = this.config.defaultPageSize;
+    this.sortColumn = this.config.defaultSortColumn;
+    this.sortDirection = this.config.defaultSortDirection;
+    this.search();
+  }
 }
