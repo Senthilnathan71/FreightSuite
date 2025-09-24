@@ -510,10 +510,10 @@
                                   <td class="bg-transparent text-light text-center  dofi-min-w-80" rowspan="2">
                                     <label class="form-label mb-0 pb-3">Qty <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center" colspan="4">
+                                  <td class="bg-transparent text-light text-center" colspan="5">
                                     <label class="form-label mb-0">Sell</label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center" colspan="3">
+                                  <td class="bg-transparent text-light text-center" colspan="4">
                                     <label class="form-label mb-0">Cost</label>
                                   </td>
                                   <td class="bg-transparent text-light text-center" rowspan="2"
@@ -534,6 +534,9 @@
                                   <td class="bg-transparent text-light text-center">
                                     <label class="form-label mb-0">Amount <span class="text-danger">*</span></label>
                                   </td>
+                                  <td class="bg-transparent text-light text-center">
+                                    <label class="form-label mb-0">Agent/Supplier <span class="text-danger">*</span></label>
+                                  </td>
                                   <td class="bg-transparent text-light text-center dofi-min-w-150">
                                     <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
                                   </td>
@@ -543,6 +546,9 @@
                                   <td class="bg-transparent text-light text-center">
                                     <label class="form-label mb-0">Per Unit
                                       <span class="text-danger">*</span></label>
+                                  </td>
+                                  <td class="bg-transparent text-light text-center">
+                                    <label class="form-label mb-0">Agent/Supplier <span class="text-danger">*</span></label>
                                   </td>
                                 </tr>
                               </thead>
@@ -585,9 +591,14 @@
                                   </td>
                                   <td>
                                     <input type="text" id="text-input" formControlName="Amount" placeholder=""
-                                      class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
-                                      [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
-
+                                    class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
+                                    [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                    
+                                  </td>
+                                  <td>
+                                    <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
+                                      bindValue="CustomerMasterSid" formControlName="CostAgentMasterSid" appendTo="body">
+                                    </ng-select>
                                   </td>
                                   <td>
                                     <ng-select [items]="unitMaster" formControlName="costUnit"
@@ -602,6 +613,11 @@
                                   <td>
                                     <input type="text" id="text-input" formControlName="costPerUnit" placeholder=""
                                       class="custom-input-field sm  text-end" [onlyNumbers]>
+                                  </td>
+                                  <td>
+                                    <ng-select [items]="vendorSupplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                      formControlName="CostAgentMasterSid" appendTo="body">
+                                    </ng-select>
                                   </td>
                                   <td *ngIf="quoteCharges(routeIndex).length > 1">
                                     <button class="btn btn-link text-danger"

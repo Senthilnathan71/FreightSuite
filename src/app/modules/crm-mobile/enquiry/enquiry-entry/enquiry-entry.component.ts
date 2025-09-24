@@ -32,7 +32,11 @@ import { catchError, forkJoin, of, tap } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import {
+  debounceTime,
+  distinctUntilChanged
+} from 'rxjs';
 
 @Component({
   selector: 'app-enquiry-entry',
@@ -48,7 +52,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     NgbNavModule,
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
@@ -91,6 +96,7 @@ export class EnquiryEntryComponent implements OnInit {
   currentMenuId: number;
   TandCList: any;
   productList: any[];
+  leadList : any[] = [];
   cusBranchList: any[] = [];
   weightUnitList: any[] = [];
   consigneeList: any[] = [];
@@ -113,6 +119,7 @@ export class EnquiryEntryComponent implements OnInit {
   minExpDate: any;
   permissions: any[] = [];
   currentMenuPermissions = {}
+
 
   modeOfEnquiry = [
     { id: 1, name: "Email" },
@@ -154,7 +161,14 @@ export class EnquiryEntryComponent implements OnInit {
     selectedTab = 'Enquiry';
  tabs = [
     { name: 'Enquiry', icon: 'fas fa-file-signature' },
+    { name: 'Route Details', icon: 'fas fa-file-signature' },
    { name: 'Other', icon: 'fas fa-layer-group' }
+  ];
+  
+  
+  freightTermsList: any[] = [
+    { FreightTermsSid: 'Prepaid', FreightTerms: 'Prepaid' },
+    { FreightTermsSid: 'Collect', FreightTerms: 'Collect' }
   ];
 
 
@@ -180,6 +194,7 @@ export class EnquiryEntryComponent implements OnInit {
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.initializeForm();
+    this.subscribeToLeadCustomerToggle(); 
     this.initOthersForm();
 
     this.userData = this.appSettingsService.getDecryptedUserProfile();
@@ -261,20 +276,27 @@ export class EnquiryEntryComponent implements OnInit {
 
   loadAllLookups() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const filterOption = { 
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid
+    }
     return forkJoin({
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
-      customers: this.leadService.getAllCustomers(CompanyMasterSid).pipe(catchError(() => of([]))),
+      customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
+      leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
       weightUnits: this.leadService.getAllWeightUnits().pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getAllPackageTypes(this.currentCompany?.CompanyMasterSid).pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
       products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
-    }).pipe(tap(({ departments, ports, customers, incos, weightUnits, packageTypes, containerTypes, products }) => {
+    }).pipe(tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products }) => {
       this.departments = departments;
       this.ports = ports;
       this.filteredPorts = [...this.ports];
       this.customers = customers;
+      this.leadList = leads.data;
       this.incoList = incos;
       this.weightUnitList = weightUnits;
       this.packageTypes = packageTypes;
@@ -286,7 +308,9 @@ export class EnquiryEntryComponent implements OnInit {
 
   initializeForm() {
     this.rateRequestForm = this.fb.group({
-      CustomerMasterSid: [null,Validators.required],
+      LeadOrCustomer : [true],
+      PreCustomerMasterSid : [null],
+      CustomerMasterSid: [null],
       customerName: ['', Validators.required],
       enquiryNo: [''],
       EnquiryDate: [''],
@@ -304,15 +328,59 @@ export class EnquiryEntryComponent implements OnInit {
       status: [''],
       AuthorizerRemarks: [''],
       authorizerStatus: ['Pending'],
-
+      FreightPPCC : ['Prepaid'],
       routes: this.fb.array([]),
     });
 
     this.addRoute();
-    this.routes.controls.forEach((route, index) => {
-      route.get('POD')?.valueChanges.subscribe(() => this.onRouteChange(index));
-      route.get('POL')?.valueChanges.subscribe(() => this.onRouteChange(index));
+  }
+
+  subscribeToLeadCustomerToggle() {
+    this.rateRequestForm.get('LeadOrCustomer')?.valueChanges.pipe(
+      distinctUntilChanged()
+    ).subscribe(isCustomer => {
+      this.toggleCustomerType(isCustomer);
     });
+  }
+
+  private subscribeToRouteChanges(routeGroup: FormGroup, index: number): void {
+    routeGroup.get('POL')?.valueChanges.pipe(
+      distinctUntilChanged()
+    ).subscribe(selectedPOL => {
+      this.updateFilteredPorts(index, selectedPOL, 'POL');
+    });
+
+    routeGroup.get('POD')?.valueChanges.pipe(
+      distinctUntilChanged()
+    ).subscribe(selectedPOD => {
+      this.updateFilteredPorts(index, selectedPOD, 'POD');
+    });
+  }
+
+  toggleCustomerType(isCustomer: boolean) {
+    this.rateRequestForm.patchValue({
+      PreCustomerMasterSid: null,
+      CustomerMasterSid: null,
+      customerName: '',
+      CustomerAddress: null,
+      CustomerBranchSid: null,
+      Email: null,
+    });
+    this.cusBranchList = []; 
+
+    const preCustomerControl = this.rateRequestForm.get('PreCustomerMasterSid');
+    const customerControl = this.rateRequestForm.get('CustomerMasterSid');
+
+    if (isCustomer) {
+      customerControl?.setValidators(Validators.required);
+      preCustomerControl?.clearValidators();
+    } else {
+      preCustomerControl?.setValidators(Validators.required);
+      customerControl?.clearValidators();
+    }
+
+    customerControl?.updateValueAndValidity();
+    preCustomerControl?.updateValueAndValidity();
   }
 
   initOthersForm() {
@@ -341,7 +409,6 @@ export class EnquiryEntryComponent implements OnInit {
     })
   }
 
-  // Getters for Form Arrays
   get routes(): FormArray {
     return this.rateRequestForm.get('routes') as FormArray;
   }
@@ -363,7 +430,11 @@ export class EnquiryEntryComponent implements OnInit {
     );
 
     this.routes.push(routeForm);
+    this.subscribeToRouteChanges(routeForm, this.routes.length - 1);
     this.addCargo(this.routes.length - 1);
+    const initialPorts = this.getFilteredPortsBySegment();
+    this.filteredPOLPorts[this.routes.length - 1] = initialPorts;
+    this.filteredPODPorts[this.routes.length - 1] = initialPorts;
   }
 
 
@@ -433,11 +504,14 @@ export class EnquiryEntryComponent implements OnInit {
       this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
     }
 
-    this.routes.controls.forEach((routeGroup: FormGroup) => {
-      ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
+    this.routes.controls.forEach((routeGroup: FormGroup, index) => {
+      ['POO', 'POL', 'POD', 'FDC'].forEach((field) => {
         routeGroup.get(field)?.setValue(null);
-      });
-
+      }
+      );
+      const initialPorts = this.getFilteredPortsBySegment();
+      this.filteredPOLPorts[index] = initialPorts;
+      this.filteredPODPorts[index] = initialPorts;
 
       const cargoArray = routeGroup.get('cargo') as FormArray;
       cargoArray.controls.forEach((cargoForm: FormGroup) => {
@@ -449,6 +523,7 @@ export class EnquiryEntryComponent implements OnInit {
       if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
       return port.PortType === 'Sea';
     });
+    
   }
 
 
@@ -530,25 +605,71 @@ export class EnquiryEntryComponent implements OnInit {
     cargoForm.updateValueAndValidity();
   }
 
+onSelectionChange(selectedItem: any) {
+  if (!selectedItem) {
+    this.rateRequestForm.patchValue({
+      customerName: '',
+      CustomerAddress: null,
+      CustomerBranchSid: null,
+      Email: null,
+    });
+    this.cusBranchList = [];
+    return;
+  }
+
+  const isCustomer = this.rateRequestForm.get('LeadOrCustomer')?.value;
+  console.log(selectedItem);
+  if (isCustomer) {
+    this.rateRequestForm.patchValue({
+      customerName: selectedItem.CustomerName,
+      CustomerAddress: selectedItem.Address, 
+      Email: selectedItem.Email,
+      CustomerBranchSid: selectedItem.CustomerBranchSid,
+    });
+    this.selectedCustomerName = selectedItem.CustomerName;
+    this.getCustomerBranches(selectedItem.CustomerMasterSid);
+  } else {
+    this.rateRequestForm.patchValue({
+      customerName: selectedItem.preCustomerName,
+      CustomerAddress: selectedItem.preCustomerAddress1,
+      Email: selectedItem.email,
+      CustomerBranchSid: null, 
+    });
+    this.selectedCustomerName = selectedItem.preCustomerName;
+    this.cusBranchList = []; 
+  }
+}
+
   onCustomerChange(event: any): void {
+    console.log("Event triggered");
     if (!event || event === null || event === undefined) {
       this.selectedCustomerName = '';
       this.cusBranchList = [];
       this.rateRequestForm.get('customerName').setValue('')
-      this.rateRequestForm.get('CustomerAddress').setValue(null);
+      this.rateRequestForm.get('CustomerAddress').setValue('');
       this.rateRequestForm.get('Email').setValue('');
       return;
     }
-    const selectedCustomerId = event.CustomerMasterSid;
     this.rateRequestForm.get('customerName').setValue('');
     this.rateRequestForm.get('CustomerAddress').setValue(null);
-    this.rateRequestForm.get('CustomerMasterSid')?.setValue(selectedCustomerId);
     this.rateRequestForm.get('Email').setValue('');
 
-    const selectedCustomer = event;
-    this.selectedCustomerName = selectedCustomer?.CustomerName;
-    this.rateRequestForm.get('customerName').setValue(this.selectedCustomerName)
-    this.getCustomerBranches(selectedCustomerId);
+    const isCustomer = Boolean(this.rateRequestForm.get('LeadOrCustomer')?.value);
+    console.log(isCustomer);
+    if (isCustomer) {
+      const selectedCustomer = event;
+      console.log(selectedCustomer)
+      this.selectedCustomerName = selectedCustomer?.CustomerName;
+      this.rateRequestForm.get('customerName').setValue(this.selectedCustomerName)
+      this.rateRequestForm.get('CustomerAddress').setValue(selectedCustomer?.Address);
+      this.rateRequestForm.get('Email').setValue(selectedCustomer?.Email);
+    } else {
+      const selectedLead = event;
+      this.selectedCustomerName = selectedLead?.preCustomerName;
+      this.rateRequestForm.get('customerName').setValue(this.selectedCustomerName)
+      this.rateRequestForm.get('CustomerAddress').setValue(selectedLead.preCustomerAddress1);
+      this.rateRequestForm.get('Email').setValue(selectedLead.email);
+    }
   }
 
   getCustomerBranches(CustomerMasterSid: number) {
@@ -565,14 +686,18 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
 
-  onCustomerAddressChange(event) {
-    if (event === null || event === undefined || !event) {
-      this.rateRequestForm.get('CustomerBranchSid').setValue(null);
-      this.rateRequestForm.get('Email').setValue('');
-      return;
+  onCustomerAddressChange(event: any) {
+    if (event) {
+      this.rateRequestForm.patchValue({
+        CustomerBranchSid: event.CustomerBranchSid,
+        Email: event.Email,
+      });
+    } else {
+      this.rateRequestForm.patchValue({
+        CustomerBranchSid: null,
+        Email: null,
+      });
     }
-    this.rateRequestForm.get('CustomerBranchSid').setValue(event.CustomerBranchSid);
-    this.rateRequestForm.get('Email').setValue(event.Email);
   }
 
 
@@ -720,6 +845,7 @@ export class EnquiryEntryComponent implements OnInit {
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
         ...this.rateRequestForm.value,
+        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'Y' : 'N',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
         enquiryOther: otherFormValue,
@@ -757,6 +883,7 @@ export class EnquiryEntryComponent implements OnInit {
       const createPayload = {
         ...this.rateRequestForm.value,
         enquiryOther: otherFormValue,
+        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'Y' : 'N',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
         createdBy: userEmail,
@@ -936,7 +1063,30 @@ export class EnquiryEntryComponent implements OnInit {
       this.router.navigate(['crm/quotation/entry']);
     }
 
+  updateFilteredPorts(index: number, selectedValue: any, type: 'POL' | 'POD'): void {
+    const routesArray = this.rateRequestForm.get('routes') as FormArray;
+    const currentRoute = routesArray.at(index);
 
+    const polValue = currentRoute.get('POL')?.value;
+    const podValue = currentRoute.get('POD')?.value;
+
+    const basePorts = this.getFilteredPortsBySegment();
+
+    if (type === 'POL') {
+      this.filteredPODPorts[index] = basePorts.filter(p => p.PortMasterSid !== selectedValue);
+    }
+
+    if (type === 'POD') {
+      this.filteredPOLPorts[index] = basePorts.filter(p => p.PortMasterSid !== selectedValue);
+    }
+
+    if (!polValue) {
+      this.filteredPODPorts[index] = basePorts;
+    }
+    if (!podValue) {
+      this.filteredPOLPorts[index] = basePorts;
+    }
+  }
 
   onRouteChange(routeIndex: number): void {
     const pod = this.routes.at(routeIndex).get('POD')?.value;

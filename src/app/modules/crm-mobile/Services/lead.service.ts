@@ -134,6 +134,25 @@ export class LeadService {
     )
   }
 
+  getAllCustomersWithBranch(CompanyMasterSid:number) {
+    return this.http.post('customer/with-branches',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        console.log(resp)
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getAllVendorSupplier(CompanyMasterSid:number) {
+    return this.http.post('customer/suppliers',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   getAllCarrier(CompanyMasterSid: number) {
     return this.http.post('ff-quotation/carrier',{CompanyMasterSid}).pipe(
       map((resp: any) => {
@@ -384,8 +403,8 @@ export class LeadService {
 
   // LEAD
   fetchAllLeads(payload:any) {
-    return this.http.post<{ data: any[] }>('lead',payload).pipe(
-      map((resp) => {
+    return this.http.post<{ data: any }>('lead',payload).pipe(
+      map((resp:any) => {
         let response = resp;
         return response;
       })

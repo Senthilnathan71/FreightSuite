@@ -70,18 +70,23 @@
             </div>
         </div>
 
-          <div class="content-workspace">
-            <div class="workspace-content" *ngIf="selectedTab === 'Enquiry'">
-                 <div class="content-layout">
-                     <ng-container *ngTemplateOutlet="basicDetailTemplate"></ng-container>
-                 </div>
+        <div class="content-workspace">
+            <div class="workspace-content" [hidden]="selectedTab !== 'Enquiry'">
+                <div class="content-layout">
+                    <ng-container *ngTemplateOutlet="basicDetailTemplate"></ng-container>
+                </div>
             </div>
-             <div class="workspace-content" *ngIf="selectedTab === 'Other'">
-                 <div class="content-layout">
+            <div class="workspace-content" [hidden]="selectedTab !== 'Route Details'">
+                <div class="content-layout">
+                    <ng-container *ngTemplateOutlet="routeDetailTemplate"></ng-container>
+                </div>
+            </div>
+            <div class="workspace-content" [hidden]="selectedTab !== 'Other'">
+                <div class="content-layout">
                     <ng-container *ngTemplateOutlet="additionalInfoTemplate"></ng-container>
-                 </div>
+                </div>
             </div>
-          </div>
+        </div>
         <!-- <div class="col-12 mb-2">
             <div class="tab-wrapper">
                 <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav">
@@ -140,88 +145,7 @@
             <div [ngbNavOutlet]="nav"></div>
         </div> -->
         <ng-template #basicDetailTemplate>
-            <div class="row">
-                @if(!isEditMode){
-                <div class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-
-                        <ng-select formControlName="CustomerMasterSid" (change)="onCustomerChange($event)"
-                            class="ng-select" placeholder="" [items]="customers" bindLabel="CustomerName"
-                            bindValue="CustomerMasterSid" container="body" appendTo="body">
-                        </ng-select>
-                        <label class="input-label">Customer <span class="text-danger">*</span></label>
-                        <div *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid"
-                            class="error-message">
-                            Required
-                        </div>
-                    </div>
-                </div>
-                }
-                @if(isEditMode){
-                <div class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" id="enquiryBy" class="form-control custom-input-field sm"
-                            formControlName="customerName" readonly>
-                        <label for="enquiryBy" class="input-label">Customer</label>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" id="enquiryNo" class="form-control custom-input-field sm"
-                            formControlName="enquiryNo" readonly>
-                        <label for="enquiryNo" class="input-label">Enquiry No</label>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select-date">
-
-                        <div class="input-group">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                #d10="ngbDatepicker" formControlName="EnquiryDate" readonly container="body"/>
-                            <div>
-                                <button class="btn btn-info bi bi-calendar3 text-white" type="button" appendTo="body" disabled>
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-
-                        </div>
-                        <label for="shipmentDateExpected" class="input-label">Enquiry Date
-                        </label>
-                    </div>
-                </div>
-                }
-                <div class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select-date">
-
-                        <div class="input-group">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                #d1="ngbDatepicker" (keydown.arrowDown)="d1.open()" (click)="d1.toggle()"
-                                formControlName="shipmentDate" [minDate]="minExpDate" readonly
-                                [footerTemplate]="footerTemplateShip" container="body"/>
-                            <div>
-                                <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-
-                        </div>
-                        <label for="shipmentDateExpected" class="input-label">Exp. Ship. Date <span
-                                class="text-danger">*</span>
-                        </label>
-                        <div *ngIf="f['shipmentDate'].touched && f['shipmentDate'].invalid" class="error-message pe-3 pb-2">
-                            Required
-                        </div>
-                    </div>
-                </div>
-                <ng-template #footerTemplateShip>
-                    <hr class="my-0" />
-                    <button class="btn btn-info btn-sm m-2 float-start"
-                        (click)="f['shipmentDate'].setValue(todayDate); d1.close()">
-                        Today
-                    </button>
-                    <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
-                        Close
-                    </button>
-                </ng-template>
+            <div class="row parent">
                 @if(isEditMode){
                 <div class="col-md-4">
                     <div class="custom-form-group">
@@ -249,6 +173,115 @@
                 </div>
                 }
 
+                @if(isEditMode){
+                <!-- <div class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="enquiryBy" class="form-control custom-input-field sm"
+                            formControlName="customerName" readonly>
+                        <label for="enquiryBy" class="input-label">Customer</label>
+                    </div>
+                </div> -->
+                <div class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="enquiryNo" class="form-control custom-input-field sm"
+                            formControlName="enquiryNo" readonly>
+                        <label for="enquiryNo" class="input-label">Enquiry No</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class=" custom-form-group custom-form-group-select-date">
+
+                        <div class="input-group">
+                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                #d10="ngbDatepicker" formControlName="EnquiryDate" readonly container="body" />
+                            <div>
+                                <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+
+                        </div>
+                        <label for="shipmentDateExpected" class="input-label">Enquiry Date
+                        </label>
+                    </div>
+                </div>
+                }
+
+                <aside class="col-md-4" *ngIf="!isEditMode">
+                    <div class="custom-form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
+                                formControlName="LeadOrCustomer">
+                            <label class="form-check-label" for="flexCheckChecked">
+                                Customer / Lead
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+                <aside class="col-md-4" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                        [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
+                        <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
+                            bindValue="CustomerMasterSid" formControlName="CustomerMasterSid" appendTo="body"
+                            (change)="onSelectionChange($event)">
+                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                <div>
+                                    <span class="d-block fw-bold">{{ item.CustomerName }}</span>
+                                    <span class="d-block fw-semibold">{{ item.BranchName }}</span>
+                                    <small class="d-block">{{ item.Address }}</small>
+                                </div>
+                            </ng-template>
+                        </ng-select>
+                        <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                                [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
+                                [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                (itemSelected)="onSelectionChange($event)">
+                            </dofi-searchable-dropdown> -->
+                        <label for="customerName" class="input-label">Customer <span
+                                class="text-danger">*</span></label>
+                        <small *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid"
+                            class="error-message">
+                            Required
+                        </small>
+                    </div>
+                </aside>
+                <aside class="col-md-4" *ngIf="!rateRequestForm.get('LeadOrCustomer')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                        [class.filled]="!!rateRequestForm.get('PreCustomerMasterSid')?.value">
+                        <ng-select class="ng-select" [items]="leadList" bindLabel="preCustomerName"
+                            bindValue="PreCustomerMasterSid" formControlName="PreCustomerMasterSid" appendTo="body"
+                            (change)="onSelectionChange($event)"></ng-select>
+                        <label for="customerName" class="input-label">Lead <span class="text-danger">*</span></label>
+                        <small
+                            *ngIf="rateRequestForm.get('PreCustomerMasterSid').touched && rateRequestForm.get('PreCustomerMasterSid').invalid"
+                            class="error-message">
+                            Required
+                        </small>
+                    </div>
+                </aside>
+
+
+
+                <!-- @if(!isEditMode){
+                <div class="col-md-4">
+                    <div class=" custom-form-group custom-form-group-select"
+                        [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
+
+                        <ng-select formControlName="CustomerMasterSid" (change)="onCustomerChange($event)"
+                            class="ng-select" placeholder="" [items]="customers" bindLabel="CustomerName"
+                            bindValue="CustomerMasterSid" container="body" appendTo="body">
+                        </ng-select>
+                        <label class="input-label">Customer <span class="text-danger">*</span></label>
+                        <div *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid"
+                            class="error-message">
+                            Required
+                        </div>
+                    </div>
+                </div>
+                } -->
+
+
+
+
                 <aside class="col-md-4">
                     <div class=" custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('CustomerAddress')?.value">
@@ -262,6 +295,7 @@
                         </div>
                     </div>
                 </aside>
+
                 <aside class="col-md-4">
                     <div class="custom-form-group">
                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -269,15 +303,58 @@
                         <label for="text-input" class="input-label">Email <span class="text-danger"></span></label>
                     </div>
                 </aside>
+                <div class="col-md-4">
+                    <div class=" custom-form-group custom-form-group-select-date">
+
+                        <div class="input-group">
+                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                #d1="ngbDatepicker" (keydown.arrowDown)="d1.open()" (click)="d1.toggle()"
+                                formControlName="shipmentDate" [minDate]="minExpDate" readonly
+                                [footerTemplate]="footerTemplateShip" container="body" />
+                            <div>
+                                <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+
+                        </div>
+                        <label for="shipmentDateExpected" class="input-label">Exp. Ship. Date <span
+                                class="text-danger">*</span>
+                        </label>
+                        <div *ngIf="f['shipmentDate'].touched && f['shipmentDate'].invalid"
+                            class="error-message pe-3 pb-2">
+                            Required
+                        </div>
+                    </div>
+                </div>
+                <ng-template #footerTemplateShip>
+                    <hr class="my-0" />
+                    <button class="btn btn-info btn-sm m-2 float-start"
+                        (click)="f['shipmentDate'].setValue(todayDate); d1.close()">
+                        Today
+                    </button>
+                    <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                        Close
+                    </button>
+                </ng-template>
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
                         <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
-                            bindValue="name" placeholder=""  appendTo="body">
+                            bindValue="name" placeholder="" appendTo="body">
                         </ng-select>
                         <label for="" class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
                 </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select"
+                        [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
+                        <ng-select formControlName="FreightPPCC" [items]="freightTermsList" bindLabel="FreightTerms"
+                            bindValue="FreightTerms" placeholder="" [appendTo]="'body'">
+                        </ng-select>
+                        <label for="freightTerms" class="input-label">Freight Terms</label>
+                    </div>
+                </aside>
+
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
@@ -421,7 +498,7 @@
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('FreightTerms')?.value">
                         <ng-select formControlName="FreightTerms" class="ng-select" placeholder="" appendTo="body">
-                            <ng-option *ngFor="let item of terms" [value]="item.name" >
+                            <ng-option *ngFor="let item of terms" [value]="item.name">
                                 {{ item.name }}
                             </ng-option>
                         </ng-select>
@@ -449,323 +526,326 @@
             </div>
         </ng-template>
         <!-- #endregion -->
-        <div class="col-12 my-2 d-flex align-items-center justify-content-end gap-2">
-            @if (isMobile) {
-            <!-- <button *ngIf="EnquiryHeaderSid" class="btn btn-outline-info btn-sm" (click)="showInfo()" type="button">
+        <ng-template #routeDetailTemplate>
+            <form [formGroup]="rateRequestForm">
+            <div class="col-12 my-2 d-flex align-items-center justify-content-end gap-2">
+                @if (isMobile) {
+                <!-- <button *ngIf="EnquiryHeaderSid" class="btn btn-outline-info btn-sm" (click)="showInfo()" type="button">
                     <i class="fas fs-6 fa-info-circle"></i> 
                     Details
                 </button> -->
-            <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"
-                [disabled]="!(selectedDepartment) || disableAddButtons">
-                <i class="fas fa-plus me-1"></i> New
-                Route</button>
-                 <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-            <button class="btn btn-info btn-sm"
-                (click)="navigateQuotation()" type="button"> <i class="fas fa-plus me-1"></i> Create
-                Quotation</button>
-            }
-            @if (!isMobile) {
-            <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
-                [disabled]="!(selectedDepartment) || disableAddButtons">
-                <i class="fas fa-plus me-1"></i>Add
-                Route</button>
-                 <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-            <button class="btn btn-info btn-sm"
-                (click)="navigateQuotation()" type="button"> <i class="fas fa-plus me-1"></i> Create
-                Quotation</button>
-            <!-- (click)="addNewRoute()" -->
-            }
-        </div>
+                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"
+                    [disabled]="!(selectedDepartment) || disableAddButtons">
+                    <i class="fas fa-plus me-1"></i> New
+                    Route</button>
+                <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
+                <button class="btn btn-info btn-sm" (click)="navigateQuotation()" type="button"> <i
+                        class="fas fa-plus me-1"></i> Create
+                    Quotation</button>
+                }
+                @if (!isMobile) {
+                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
+                    [disabled]="!(selectedDepartment) || disableAddButtons">
+                    <i class="fas fa-plus me-1"></i>Add
+                    Route</button>
+                <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
+                <button class="btn btn-info btn-sm" (click)="navigateQuotation()" type="button"> <i
+                        class="fas fa-plus me-1"></i> Create
+                    Quotation</button>
+                <!-- (click)="addNewRoute()" -->
+                }
+            </div>
 
-        <!-- #region Route Details -->
-        <div formArrayName="routes" *ngIf="selectedDepartment">
-            <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
-                <div class="card border border-info position-relative">
-                    <div class="card-header bg-info rounded-top-1 d-flex align-items-center">
-                        <h6 class="font-bold mb-0 text-light">Route Details</h6>
-                        @if(routes.controls.length > 1){
-                        <button class="btn btn-sm waves-effect waves-light text-light" (click)="removeRoute(routeIndex)"
-                            [disabled]="disableAddButtons">
-                            <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
-                        </button>
-                        }
+            <!-- #region Route Details -->
+            <div formArrayName="routes" *ngIf="selectedDepartment">
+                <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
+                    <div class="card border border-info position-relative">
+                        <div class="card-header bg-info rounded-top-1 d-flex align-items-center">
+                            <h6 class="font-bold mb-0 text-light">Route Details</h6>
+                            @if(routes.controls.length > 1){
+                            <button class="btn btn-sm waves-effect waves-light text-light"
+                                (click)="removeRoute(routeIndex)" [disabled]="disableAddButtons">
+                                <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
+                            </button>
+                            }
 
-                    </div>
-                    <div class="ribbon-e text-white">
-                        {{ selectedFCLLCL }}
-                    </div>
-
-                    <section class="card-body p-2 requestLooper">
-                        <div class="row mb-2">
-                            <div class="col-12 col-md-3">
-                                <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!routes.at(routeIndex).get('POO')?.value">
-
-                                    <ng-select formControlName="POO" class="ng-select" placeholder="" >
-                                        <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
-                                            {{item.PortName}} ({{ item.PortCode }})
-                                        </ng-option>
-                                    </ng-select>
-                                    <label class="input-label">POO</label>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-3">
-                                <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
-
-                                    <ng-select formControlName="POL" class="ng-select" placeholder="">
-                                        <ng-option *ngFor="let item of filteredPOLPorts[routeIndex]"
-                                            [value]="item.PortMasterSid">
-                                            {{ item.PortName }} ({{ item.PortCode }})
-                                        </ng-option>
-                                    </ng-select>
-                                    <label class="input-label">POL <span class="text-danger">*</span></label>
-                                    <div *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
-                                        class="error-message">
-                                        Required
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-3">
-                                <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
-
-                                    <ng-select formControlName="POD" class="ng-select" placeholder="">
-                                        <ng-option *ngFor="let item of filteredPODPorts[routeIndex]"
-                                            [value]="item.PortMasterSid">
-                                            {{ item.PortName }} ({{ item.PortCode }})
-                                        </ng-option>
-                                    </ng-select>
-
-                                    <label class="input-label">POD <span class="text-danger">*</span></label>
-                                    <div *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
-                                        class="error-message">
-                                        Required
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-3">
-                                <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
-                                    <ng-select formControlName="FDC" class="ng-select" placeholder="">
-                                        <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
-                                            {{item.PortName}} ({{ item.PortCode }})
-                                        </ng-option>
-                                    </ng-select>
-                                    <label class="input-label">FPOD</label>
-                                </div>
-                            </div>
+                        </div>
+                        <div class="ribbon-e text-white">
+                            {{ selectedFCLLCL }}
                         </div>
 
+                        <section class="card-body p-2 requestLooper">
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!routes.at(routeIndex).get('POO')?.value">
 
-                        <div class="row">
-                            <div class="col-12">
-                                @if(selectedFCLLCL ==='LCL'){
-                                <div formArrayName="cargo" class="table-responsive">
-                                    <div>
-                                        <table
-                                            class="table table-hover align-middle no-wrap table-bordered table-sm mb-1"
-                                            style="min-width: 1200px; width: 100%;">
-                                            <thead>
-                                                <tr class="bg-info  text-center">
-                                                    <td class="bg-transparent text-light" style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Cargo Type <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light" style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Cargo Description <span
-                                                                class="text-danger"></span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light  " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Product <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-
-
-                                                    <td class="bg-transparent text-light  " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Package Type <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Qty <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Weight Unit <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Gross Weight <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Net Weight <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light" style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Terms <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">CBM <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    @if( routeCargo(routeIndex).controls.length > 1){
-                                                    <td class="bg-transparent text-light " style="width: 200px;"
-                                                        [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Action</label>
-                                                    </td>
-                                                    }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
-                                                    [formGroupName]="cargoIndex">
-                                                    <td>
-                                                        <ng-select formControlName="CargoType" class="ng-select"
-                                                            appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
-                                                            <ng-option *ngFor="let item of cargoTypes"
-                                                                [value]="item.name">
-                                                                {{ item.name }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="CargoDescription"
-                                                            class="form-control w-100" appendTo="body">
-                                                    </td>
-                                                    <td>
-                                                        <ng-select name="product" formControlName="ProductName" id=""
-                                                            class="ng-select" placeholder="" appendTo="body"
-                                                            [class.filled]="!!routes.at(routeIndex).get('ProductName')?.value">
-                                                            <ng-option *ngFor="let product of productList"
-                                                                [value]="product.ProductName">{{product.ProductName}}</ng-option>
-                                                        </ng-select>
-                                                    </td>
-
-                                                    <td>
-                                                        <ng-select formControlName="PackageType" class="ng-select "
-                                                            appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
-                                                            <ng-option *ngFor="let item of packageTypes"
-                                                                [value]="item.PackageCode">
-                                                                {{ item.PackageName }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="PackageQty"
-                                                            class="form-control text-end w-100" [onlyNumbers]
-                                                            appendTo="body">
-                                                    </td>
-                                                    <td>
-                                                        <ng-select name="weightunit" formControlName="WeightUnitSid"
-                                                            class="ng-select " placeholder="" appendTo="body"
-                                                            [class.filled]="!!routes.at(routeIndex).get('WeightUnitSid')?.value">
-                                                            <ng-option *ngFor="let unit of weightUnitList"
-                                                                [value]="unit.UnitMasterSid">{{unit.unitCode}}</ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="GrossWeight"
-                                                            class="form-control text-end w-100" DecimalPrecision
-                                                            [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
-                                                            appendTo="body">
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="NetWeight"
-                                                            class="form-control text-end w-100" DecimalPrecision
-                                                            [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
-                                                            appendTo="body">
-                                                    </td>
-                                                    <td>
-                                                        <ng-select formControlName="ShipmentTerms" class="ng-select "
-                                                            placeholder="" appendTo="body"
-                                                            [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
-                                                            <ng-option *ngFor="let item of terms" [value]="item.name">
-                                                                {{ item.name }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="cbm"
-                                                            class="form-control text-end w-100" DecimalPrecision
-                                                            [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
-                                                            appendTo="body">
-                                                    </td>
-                                                    @if( routeCargo(routeIndex).controls.length > 1){
-                                                    <td data-label="Action" class="dofi-max-w-150">
-                                                        <section class="action-items">
-                                                            <button class="btn btn-sm btn-link text-danger mx-2"
-                                                                (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                [disabled]="disableAddButtons">
-                                                                <i-feather name="trash-2"
-                                                                    class="feather-sm"></i-feather>
-                                                            </button>
-                                                        </section>
-                                                    </td>
-                                                    }
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        <ng-select formControlName="POO" class="ng-select" placeholder="">
+                                            <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
+                                        <label class="input-label">POO</label>
                                     </div>
                                 </div>
-                                }
-                                <!-- #endregion -->
+                                <div class="col-12 col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
 
-                                <!-- #region FCL -->
-                                @if(selectedFCLLCL ==='FCL'){
-                                <div formArrayName="cargo" class="table-responsive" style="overflow-x: auto;">
-                                    <div>
-                                        <table
-                                            class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 ">
-                                            <thead>
-                                                <tr class="bg-info">
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Cargo Type <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Cargo Description <span
-                                                                class="text-danger"></span></label>
-                                                    </td>
+                                        <ng-select formControlName="POL" class="ng-select" placeholder="">
+                                            <ng-option *ngFor="let item of filteredPOLPorts[routeIndex]"
+                                                [value]="item.PortMasterSid">
+                                                {{ item.PortName }} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
+                                        <label class="input-label">POL <span class="text-danger">*</span></label>
+                                        <div *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
+                                            class="error-message">
+                                            Required
+                                        </div>
 
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Container Type <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td
-                                                        class="bg-transparent text-light text-center dofi-min-w-80 dofi-max-w-80">
-                                                        <label class="form-label mb-0">No. of Containers <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Product <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
 
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Package Type <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <!-- <td class="bg-transparent text-light text-center"
+                                        <ng-select formControlName="POD" class="ng-select" placeholder="">
+                                            <ng-option *ngFor="let item of filteredPODPorts[routeIndex]"
+                                                [value]="item.PortMasterSid">
+                                                {{ item.PortName }} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
+
+                                        <label class="input-label">POD <span class="text-danger">*</span></label>
+                                        <div *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
+                                            class="error-message">
+                                            Required
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
+                                        <ng-select formControlName="FDC" class="ng-select" placeholder="">
+                                            <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
+                                        <label class="input-label">FPOD</label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-12">
+                                    @if(selectedFCLLCL ==='LCL'){
+                                    <div formArrayName="cargo" class="table-responsive">
+                                        <div>
+                                            <table
+                                                class="table table-hover align-middle no-wrap table-bordered table-sm mb-1"
+                                                style="min-width: 1200px; width: 100%;">
+                                                <thead>
+                                                    <tr class="bg-info  text-center">
+                                                        <td class="bg-transparent text-light" style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cargo Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cargo Description
+                                                                <span class="text-danger"></span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light  " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Product <span
+                                                                    class="text-danger"></span></label>
+                                                        </td>
+
+
+                                                        <td class="bg-transparent text-light  " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Package Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Qty <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Weight Unit <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Gross Weight <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Net Weight <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Terms <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">CBM <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        @if( routeCargo(routeIndex).controls.length > 1){
+                                                        <td class="bg-transparent text-light " style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
+                                                        [formGroupName]="cargoIndex">
+                                                        <td>
+                                                            <ng-select formControlName="CargoType" class="ng-select"
+                                                                appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
+                                                                <ng-option *ngFor="let item of cargoTypes"
+                                                                    [value]="item.name">
+                                                                    {{ item.name }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="CargoDescription"
+                                                                class="form-control w-100" appendTo="body">
+                                                        </td>
+                                                        <td>
+                                                            <ng-select name="product" formControlName="ProductName"
+                                                                id="" class="ng-select" placeholder="" appendTo="body"
+                                                                [class.filled]="!!routes.at(routeIndex).get('ProductName')?.value">
+                                                                <ng-option *ngFor="let product of productList"
+                                                                    [value]="product.ProductName">{{product.ProductName}}</ng-option>
+                                                            </ng-select>
+                                                        </td>
+
+                                                        <td>
+                                                            <ng-select formControlName="PackageType" class="ng-select "
+                                                                appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
+                                                                <ng-option *ngFor="let item of packageTypes"
+                                                                    [value]="item.PackageCode">
+                                                                    {{ item.PackageName }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="PackageQty"
+                                                                class="form-control text-end w-100" [onlyNumbers]
+                                                                appendTo="body">
+                                                        </td>
+                                                        <td>
+                                                            <ng-select name="weightunit" formControlName="WeightUnitSid"
+                                                                class="ng-select " placeholder="" appendTo="body"
+                                                                [class.filled]="!!routes.at(routeIndex).get('WeightUnitSid')?.value">
+                                                                <ng-option *ngFor="let unit of weightUnitList"
+                                                                    [value]="unit.UnitMasterSid">{{unit.unitCode}}</ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="GrossWeight"
+                                                                class="form-control text-end w-100" DecimalPrecision
+                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                                                appendTo="body">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="NetWeight"
+                                                                class="form-control text-end w-100" DecimalPrecision
+                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                                                appendTo="body">
+                                                        </td>
+                                                        <td>
+                                                            <ng-select formControlName="ShipmentTerms"
+                                                                class="ng-select " placeholder="" appendTo="body"
+                                                                [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
+                                                                <ng-option *ngFor="let item of terms"
+                                                                    [value]="item.name">
+                                                                    {{ item.name }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="cbm"
+                                                                class="form-control text-end w-100" DecimalPrecision
+                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                                                appendTo="body">
+                                                        </td>
+                                                        @if( routeCargo(routeIndex).controls.length > 1){
+                                                        <td data-label="Action" class="dofi-max-w-150">
+                                                            <section class="action-items">
+                                                                <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                    (click)="deleteCargo(routeIndex ,cargoIndex)"
+                                                                    [disabled]="disableAddButtons">
+                                                                    <i-feather name="trash-2"
+                                                                        class="feather-sm"></i-feather>
+                                                                </button>
+                                                            </section>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    }
+                                    <!-- #endregion -->
+
+                                    <!-- #region FCL -->
+                                    @if(selectedFCLLCL ==='FCL'){
+                                    <div formArrayName="cargo" class="table-responsive" style="overflow-x: auto;">
+                                        <div>
+                                            <table
+                                                class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 ">
+                                                <thead>
+                                                    <tr class="bg-info">
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Cargo Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cargo Description
+                                                                <span class="text-danger"></span></label>
+                                                        </td>
+
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Container Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td
+                                                            class="bg-transparent text-light text-center dofi-min-w-80 dofi-max-w-80">
+                                                            <label class="form-label mb-0">No. of Containers <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Product <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Package Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <!-- <td class="bg-transparent text-light text-center"
                                                             [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                             <label for="" class="form-label mb-0">Weight Unit <span
                                                                     class="text-danger">*</span></label>
@@ -780,75 +860,75 @@
                                                             <label class="form-label mb-0">Net Weight <span
                                                                     class="text-danger">*</span></label>
                                                         </td> -->
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Terms <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    @if( routeCargo(routeIndex).controls.length > 1){
-                                                    <td class="bg-transparent text-light dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Action</label>
-                                                    </td>
-                                                    }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Terms <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        @if( routeCargo(routeIndex).controls.length > 1){
+                                                        <td class="bg-transparent text-light dofi-max-w-150"
+                                                            [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
 
-                                                <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
-                                                    [formGroupName]="cargoIndex">
-                                                    <td>
-                                                        <ng-select formControlName="CargoType" class="ng-select"
-                                                            appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
-                                                            <ng-option *ngFor="let item of cargoTypes"
-                                                                [value]="item.name">
-                                                                {{ item.name }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="CargoDescription"
-                                                            class="form-control" appendTo="body">
-                                                    </td>
+                                                    <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
+                                                        [formGroupName]="cargoIndex">
+                                                        <td>
+                                                            <ng-select formControlName="CargoType" class="ng-select"
+                                                                appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
+                                                                <ng-option *ngFor="let item of cargoTypes"
+                                                                    [value]="item.name">
+                                                                    {{ item.name }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="CargoDescription"
+                                                                class="form-control" appendTo="body">
+                                                        </td>
 
-                                                    <td>
-                                                        <ng-select formControlName="ContainerType" class="ng-select"
-                                                            appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.at(routeIndex).get('ContainerType')?.value">
-                                                            <ng-option *ngFor="let item of containerTypes"
-                                                                [value]="item.ContainerName">
-                                                                {{ item.ContainerName }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="Qty"
-                                                            class="form-control text-end" DecimalPrecision
-                                                            [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0"
-                                                            appendTo="body">
-                                                    </td>
-                                                    <td>
-                                                        <ng-select name="product" formControlName="ProductName" id=""
-                                                            class="ng-select" appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.get('ProductName')?.value">
-                                                            <ng-option *ngFor="let product of productList"
-                                                                [value]="product.ProductName">{{product.ProductName}}</ng-option>
-                                                        </ng-select>
-                                                    </td>
+                                                        <td>
+                                                            <ng-select formControlName="ContainerType" class="ng-select"
+                                                                appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.at(routeIndex).get('ContainerType')?.value">
+                                                                <ng-option *ngFor="let item of containerTypes"
+                                                                    [value]="item.ContainerName">
+                                                                    {{ item.ContainerName }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="Qty"
+                                                                class="form-control text-end" DecimalPrecision
+                                                                [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0"
+                                                                appendTo="body">
+                                                        </td>
+                                                        <td>
+                                                            <ng-select name="product" formControlName="ProductName"
+                                                                id="" class="ng-select" appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.get('ProductName')?.value">
+                                                                <ng-option *ngFor="let product of productList"
+                                                                    [value]="product.ProductName">{{product.ProductName}}</ng-option>
+                                                            </ng-select>
+                                                        </td>
 
-                                                    <td>
-                                                        <ng-select formControlName="PackageType" class="ng-select"
-                                                            appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
-                                                            <ng-option *ngFor="let item of packageTypes"
-                                                                [value]="item.PackageCode">
-                                                                {{ item.PackageName }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
+                                                        <td>
+                                                            <ng-select formControlName="PackageType" class="ng-select"
+                                                                appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
+                                                                <ng-option *ngFor="let item of packageTypes"
+                                                                    [value]="item.PackageCode">
+                                                                    {{ item.PackageName }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
 
-                                                    <!-- <td>
+                                                        <!-- <td>
                                                             <ng-select name="weightunit" formControlName="WeightUnitSid" class="ng-select" placeholder="Select Weight Unit" appendTo="body">
                                                                 <ng-option *ngFor="let unit of weightUnitList" [value]="unit.UnitMasterSid">{{unit.unitCode}}</ng-option>
                                                             </ng-select>
@@ -863,171 +943,172 @@
                                                                 class="form-control text-end" DecimalPrecision
                                                                 [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">
                                                         </td> -->
-                                                    <td>
-                                                        <ng-select formControlName="ShipmentTerms" class="ng-select"
-                                                            placeholder="" appendTo="body"
-                                                            [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
-                                                            <ng-option *ngFor="let item of terms" [value]="item.name">
-                                                                {{ item.name }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
+                                                        <td>
+                                                            <ng-select formControlName="ShipmentTerms" class="ng-select"
+                                                                placeholder="" appendTo="body"
+                                                                [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
+                                                                <ng-option *ngFor="let item of terms"
+                                                                    [value]="item.name">
+                                                                    {{ item.name }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
 
-                                                    @if( routeCargo(routeIndex).controls.length > 1){
-                                                    <td data-label="Action">
-                                                        <section class="action-items">
-                                                            <button class="btn btn-sm btn-link text-danger mx-2"
-                                                                (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                [disabled]="disableAddButtons">
-                                                                <i-feather name="trash-2"
-                                                                    class="feather-sm"></i-feather>
-                                                            </button>
-                                                        </section>
-                                                    </td>
-                                                    }
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                                        @if( routeCargo(routeIndex).controls.length > 1){
+                                                        <td data-label="Action">
+                                                            <section class="action-items">
+                                                                <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                    (click)="deleteCargo(routeIndex ,cargoIndex)"
+                                                                    [disabled]="disableAddButtons">
+                                                                    <i-feather name="trash-2"
+                                                                        class="feather-sm"></i-feather>
+                                                                </button>
+                                                            </section>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
+                                    }
+                                    <!-- #endregion -->
+
+                                    <!-- AIR -->
+                                    @if(selectedFCLLCL ==='AIR'){
+                                    <div formArrayName="cargo" class="table-responsive" style="overflow-x: auto;">
+                                        <div>
+                                            <table
+                                                class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 ">
+                                                <thead>
+                                                    <tr class="bg-info">
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Cargo Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cargo Description
+                                                                <span class="text-danger"></span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Product <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Chargable Weight <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Length <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Width<span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light text-center dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Height <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+
+                                                        @if( routeCargo(routeIndex).controls.length > 1){
+                                                        <td class="bg-transparent text-light dofi-max-w-200"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                    <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
+                                                        [formGroupName]="cargoIndex" placeholder="Select Cargo Type">
+                                                        <td>
+                                                            <ng-select formControlName="CargoType" class="ng-select"
+                                                                appendTo="body" placeholder=""
+                                                                [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
+                                                                <ng-option *ngFor="let item of cargoTypes"
+                                                                    [value]="item.name">
+                                                                    {{ item.name }}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="CargoDescription"
+                                                                class="form-control">
+                                                        </td>
+
+                                                        <td>
+                                                            <ng-select name="product" formControlName="ProductName"
+                                                                id="" class="ng-select" placeholder="" appendTo="body"
+                                                                [class.filled]="!!routes.at(routeIndex).get('ProductName')?.value">
+                                                                <ng-option *ngFor="let product of productList"
+                                                                    [value]="product.ProductName">{{product.ProductName}}</ng-option>
+                                                            </ng-select>
+                                                        </td>
+
+
+                                                        <td>
+                                                            <input type="text" formControlName="ChargeableWeight"
+                                                                class="form-control text-end" [onlyNumbers]>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="length"
+                                                                class="form-control text-end" [onlyNumbers]>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="width"
+                                                                class="form-control text-end" [onlyNumbers]>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="height"
+                                                                class="form-control text-end" [onlyNumbers]>
+                                                        </td>
+
+                                                        @if( routeCargo(routeIndex).controls.length > 1){
+                                                        <td data-label="Action">
+                                                            <section class="action-items">
+                                                                <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                    (click)="deleteCargo(routeIndex ,cargoIndex)"
+                                                                    [disabled]="disableAddButtons">
+                                                                    <i-feather name="trash-2"
+                                                                        class="feather-sm"></i-feather>
+                                                                </button>
+                                                            </section>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    }
                                 </div>
-                                }
-                                <!-- #endregion -->
+                                <!-- <div class="col-12">
+                                    @if (isMobile) {
+                                    <div class="row mt-2">
+                                        <div class="col-6 mb-2">
+                                            <button class="btn btn-outline-info btn-sm w-100" type="button"
+                                                (click)="addCargo(routeIndex)" [disabled]="disableAddButtons">
+                                                <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add Cargo
+                                            </button>
+                                        </div>
 
-                                <!-- AIR -->
-                                @if(selectedFCLLCL ==='AIR'){
-                                <div formArrayName="cargo" class="table-responsive" style="overflow-x: auto;">
-                                    <div>
-                                        <table
-                                            class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 ">
-                                            <thead>
-                                                <tr class="bg-info">
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Cargo Type <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Cargo Description <span
-                                                                class="text-danger"></span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Product <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Chargable Weight <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Length <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Width<span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Height <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-
-                                                    @if( routeCargo(routeIndex).controls.length > 1){
-                                                    <td class="bg-transparent text-light dofi-max-w-200"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Action</label>
-                                                    </td>
-                                                    }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-                                                <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
-                                                    [formGroupName]="cargoIndex" placeholder="Select Cargo Type">
-                                                    <td>
-                                                        <ng-select formControlName="CargoType" class="ng-select"
-                                                            appendTo="body" placeholder=""
-                                                            [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
-                                                            <ng-option *ngFor="let item of cargoTypes"
-                                                                [value]="item.name">
-                                                                {{ item.name }}
-                                                            </ng-option>
-                                                        </ng-select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="CargoDescription"
-                                                            class="form-control">
-                                                    </td>
-
-                                                    <td>
-                                                        <ng-select name="product" formControlName="ProductName" id=""
-                                                            class="ng-select" placeholder="" appendTo="body"
-                                                            [class.filled]="!!routes.at(routeIndex).get('ProductName')?.value">
-                                                            <ng-option *ngFor="let product of productList"
-                                                                [value]="product.ProductName">{{product.ProductName}}</ng-option>
-                                                        </ng-select>
-                                                    </td>
-
-
-                                                    <td>
-                                                        <input type="text" formControlName="ChargeableWeight"
-                                                            class="form-control text-end" [onlyNumbers]>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="length"
-                                                            class="form-control text-end" [onlyNumbers]>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="width"
-                                                            class="form-control text-end" [onlyNumbers]>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" formControlName="height"
-                                                            class="form-control text-end" [onlyNumbers]>
-                                                    </td>
-
-                                                    @if( routeCargo(routeIndex).controls.length > 1){
-                                                    <td data-label="Action">
-                                                        <section class="action-items">
-                                                            <button class="btn btn-sm btn-link text-danger mx-2"
-                                                                (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                [disabled]="disableAddButtons">
-                                                                <i-feather name="trash-2"
-                                                                    class="feather-sm"></i-feather>
-                                                            </button>
-                                                        </section>
-                                                    </td>
-                                                    }
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                }
-                            </div>
-                            <div class="col-12">
-                                @if (isMobile) {
-                                <div class="row mt-2">
-                                    <div class="col-6 mb-2">
-                                        <button class="btn btn-outline-info btn-sm w-100" type="button"
-                                            (click)="addCargo(routeIndex)" [disabled]="disableAddButtons">
-                                            <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add Cargo
-                                        </button>
-                                    </div>
-
-                                    <!-- <div class="col-6 text-center">
+                                        <div class="col-6 text-center">
                                             <button class="btn btn-info btn-sm w-100" (click)="addRoute()"
                                                 type="button"><i-feather class="feather-sm ms-2"
                                                     name="plus"></i-feather> New
                                                 Route</button>
-                                        </div> -->
-                                    <!-- <div class="col-6 text-center">
+                                        </div>
+                                        <div class="col-6 text-center">
                                             <button
                                                 class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width w-100"
                                                 (click)="goBack()">
@@ -1040,78 +1121,35 @@
                                                 (click)="resetForm()">
                                                 <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
                                             </button>
-                                        </div> -->
-                                </div>
-                                }
-                                @if (!isMobile) {
-                                <div class="d-flex align-items-center justify-content-start gap-2">
-                                    <button class="btn btn-outline-info btn-sm" type="button"
-                                        (click)="addCargo(routeIndex)" [disabled]="disableAddButtons">
-                                        <!-- (click)="addNewRow(routeIndex)" -->
-                                        <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add
-                                        Cargo</button>
-                                    <!-- <button class="btn btn-info btn-sm ms-auto" type="button"
+                                        </div>
+                                    </div>
+                                    }
+                                    @if (!isMobile) {
+                                    <div class="d-flex align-items-center justify-content-start gap-2">
+                                        <button class="btn btn-outline-info btn-sm" type="button"
+                                            (click)="addCargo(routeIndex)" [disabled]="disableAddButtons">
+                                            (click)="addNewRow(routeIndex)"
+                                            <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add
+                                            Cargo</button>
+                                        <button class="btn btn-info btn-sm ms-auto" type="button"
                                             (click)="addRoute()"><i-feather class="feather-sm ms-2"
-                                                name="plus"></i-feather> Add Route</button> -->
-                                    <!-- (click)="addNewRoute()" -->
+                                                name="plus"></i-feather> Add Route</button>
+                                        (click)="addNewRoute()"
 
-                                </div>
+                                    </div>
 
 
-                                }
+                                    }
 
+                                </div> -->
                             </div>
-                        </div>
-                        <!-- #endregion -->
-                    </section>
-                </div>
-            </div>
-        </div>
-        <!-- #endregion -->
-
-        <!-- #region Quote btn -->
-        <!-- @if(isEditMode && permissions.length > 0){
-        <div class="col-12 mt-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-
-                            @if(hasPermission('Edoc')) {
-                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
-                                (click)="openEDoc()">
-                                <i class="fas fa-file-alt me-1"></i> e-Doc
-                            </button>
-                            }
-                            @if(hasPermission('Terms and Condition')) {
-                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
-                                (click)="openTandC()">
-                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                            </button>
-                            }
-                            @if(hasPermission('Authority')) {
-                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
-                                (click)="openAuthority()">
-                                <i class="fas fa-shield-alt me-1"></i> Authorize
-                            </button>
-                            }
-
-                            @if(hasPermission('Email')) {
-                            <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"
-                                (click)="openEmail()">
-                                <i class="fas fa-envelope me-1"></i> Email
-                            </button>
-                            }
-
-                        </div>
+                        </section>
                     </div>
                 </div>
             </div>
-        </div>
-        } -->
-        <!-- #endregion -->
+            </form>
+        </ng-template>
     </form>
-    <!-- #endregion -->
 </div>
 
 <ng-template #auditLogModal let-modal>
