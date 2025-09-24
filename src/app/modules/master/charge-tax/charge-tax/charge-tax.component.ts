@@ -56,7 +56,7 @@ export class ChargeTaxComponent implements OnInit {
   chargeTaxList: any[] = [];
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
-  searchType = 'HSNCode';
+  searchType = 'description';
   filterValue = '';
   searchPerformed = false;
   page = 1;
@@ -70,7 +70,7 @@ export class ChargeTaxComponent implements OnInit {
   currentMenuId: number;
   TandCList: any[]=[];
   isFavorite: boolean = false;
-  sortColumn: string = 'HSNCode'; 
+  sortColumn: string = 'description'; 
   sortDirection: string = 'asc';
    permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -193,7 +193,7 @@ export class ChargeTaxComponent implements OnInit {
 
   initForm() {
     this.chargeTaxForm = this.fb.group({
-      HSNCode: ['', [Validators.required, Validators.maxLength(10)]],
+      // HSNCode: ['', [Validators.required, Validators.maxLength(10)]],
       description: ['', [Validators.required, Validators.maxLength(100)]],
       TaxGroup: ['', [Validators.required, Validators.maxLength(10)]],
       TaxRate: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -219,7 +219,7 @@ export class ChargeTaxComponent implements OnInit {
 
   // Create-mode: reset form to initial state with proper default values
   this.chargeTaxForm.reset({
-    HSNCode: null,
+    // HSNCode: null,
     description: null,
     TaxGroup: null,
     TaxRate: null,
@@ -253,7 +253,7 @@ export class ChargeTaxComponent implements OnInit {
         this.chargeTaxData = chargeTax;
         this.chargeTaxForm.get('status')?.enable();
         this.chargeTaxForm.patchValue({
-          HSNCode: chargeTax.HSNCode,
+          // HSNCode: chargeTax.HSNCode,
           description: chargeTax.description,
           TaxGroup: chargeTax.TaxGroup,
           TaxRate: chargeTax.TaxRate,
@@ -275,7 +275,7 @@ export class ChargeTaxComponent implements OnInit {
       (response: any) => {
         const data = response.data;
         this.chargeTaxForm.patchValue({
-          HSNCode: data.HSNCode,
+          // HSNCode: data.HSNCode,
           description: data.description,
           TaxGroup: data.TaxGroup,
           TaxRate: data.TaxRate,
@@ -336,7 +336,7 @@ export class ChargeTaxComponent implements OnInit {
 
   // Prepare the payload with both CreatedBy and UpdatedBy
   const payload: any = {
-    HSNCode: formValue.HSNCode,
+    // HSNCode: formValue.HSNCode,
     description: formValue.description,
     TaxGroup: formValue.TaxGroup,
     TaxRate: parseFloat(formValue.TaxRate),
@@ -456,8 +456,8 @@ onPageChange(newPage: number) {
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
     this.filterValue = '';
-    this.searchType = 'HSNCode';
-    this.sortColumn = 'HSNCode';
+    this.searchType = 'description';
+    this.sortColumn = 'description';
     this.sortDirection = 'asc';
     this.loadChargeTaxes();
   }
@@ -473,7 +473,7 @@ onPageChange(newPage: number) {
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [
-      { key: 'HSNCode', label: 'HSN Code' },
+      // { key: 'HSNCode', label: 'HSN Code' },
         { key: 'description', label: 'Description' },
         { key: 'TaxGroup', label: 'Tax Group' },
         { key: 'TaxRate', label: 'Tax Rate (%)' },

@@ -374,7 +374,7 @@ export class DepartmentEntryComponent {
  openAuditLogs(modal: TemplateRef<any>) {
    if (!this.DepartmentMasterSid) return;
  
-   this.masterService.getAuditLogsCompany('DepartmentMaster', this.DepartmentMasterSid.toString()).subscribe({
+   this.masterService.getAuditLogs('DepartmentMaster', this.DepartmentMasterSid.toString()).subscribe({
      next: (logs: any[]) => {
        const formatFields = (val: any) => {
          if (!val) return [];
