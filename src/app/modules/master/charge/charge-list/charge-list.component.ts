@@ -68,6 +68,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         label: 'Delete',
         action: 'delete',
         tooltip: 'Delete Charge',
+        class:"text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
     ],
@@ -269,8 +270,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        template: 'link',
-        width: '150px',
+        width:"140px",
         dataType: 'string'
       },
       {
@@ -345,30 +345,22 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   }
 
   // Report generation using visible columns
-  report(): void {
-  const formattedData = (this.allItems || []).map((item: any) => ({
-    ...item,
-    Status: item.Status === 'A' ? 'Active' : 'Suspended',
-   
-    UOM: this.getUomCode(item.UOM),
-    SAC: item.HSNSAC || '',
-    TDSset: item.TDSSet || ''
-  }));
- 
-  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-  const companyName = this.currentCompany?.companyName ?? 'Company';
-  this.excelReportService.exportAsExcel({
-    data: formattedData,
-    headers: [
-      { key: 'chargeCode', label: 'Charge Code' },
-      { key: 'chargeName', label: 'Charge Name' },
-      { key: 'UOM', label: 'UOM' },
-      { key: 'SAC', label: 'HSN/SAC' },
-      { key: 'TDSset', label: 'TDS Set' },
-      { key: 'Status', label: 'Status' }
-    ],
-    fileName: 'Charge-Report',
-    title: companyName
-  });
-}
+ report(): void {
+        const formattedData = this.allItems;
+        const companyName = this.currentCompany?.companyName ?? 'Company';
+
+        // Get visible columns in their current order from the table component
+        const visibleColumns = this.chargeTable.getVisibleColumns();
+        const dynamicHeaders = visibleColumns.map(column => ({
+            key: column.key,
+            label: column.label
+        }));
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: dynamicHeaders,
+            fileName: 'Charge-Report',
+            title: companyName
+        });
+    }
 }

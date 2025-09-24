@@ -1,29 +1,58 @@
-<div class="table-container bg-white rounded shadow-sm">
+<div class="table-container">
   <!-- Loading Indicator -->
-  <div *ngIf="loading" class="d-flex justify-content-center align-items-center p-4">
+  <!-- <div *ngIf="loading" class="d-flex justify-content-center align-items-center p-4">
     <div class="spinner-border text-info" role="status">
       <span class="visually-hidden">{{ getLoadingMessage() }}</span>
     </div>
     <span class="ms-2">{{ getLoadingMessage() }}</span>
-  </div>
+  </div> -->
 
   <!-- Table Controls -->
-  <div class="table-controls d-flex justify-content-between align-items-center p-3 border-bottom"
+  <div class="table-controls d-flex justify-content-end mb-1"
        *ngIf="!loading && (config.showColumnToggle || config.showFilters)">
 
-    <!-- Column Toggle Dropdown -->
+    
     <div class="custom-dropdown" *ngIf="config.showColumnToggle">
-      <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+       <button class="btn btn-icon dropdown-toggle"
+          type="button"
+          (click)="toggleColumnDropdown()"
+          [attr.aria-expanded]="showColumnToggle"
+          [class.expanded]="showColumnToggle">
+    <i class="fas fa-columns"></i>
+    <span class="btn-text">Columns</span>
+  </button>
+
+  <div class="custom-dropdown-menu"
+       [class.show]="showColumnToggle"
+       #columnToggleDropdown>
+    <h6 class="dropdown-header">Column Visibility</h6>
+    <div class="dropdown-item-text" *ngFor="let column of config.columns; trackBy: trackByColumn">
+      <div class="form-check">
+        <input class="form-check-input"
+               type="checkbox"
+               [id]="'col-toggle-' + column.key"
+               [checked]="columnVisibility[column.key]"
+               (change)="toggleColumnVisibility(column.key)">
+        <label class="form-check-label"
+               [for]="'col-toggle-' + column.key"
+               (click)="toggleColumnVisibility(column.key)">
+          {{ column.label }}
+        </label>
+      </div>
+    </div>
+  </div>
+      <!-- <button class="btn btn-icon dropdown-toggle"
               type="button"
               (click)="toggleColumnDropdown()"
-              [attr.aria-expanded]="showColumnToggle">
+              [attr.aria-expanded]="showColumnToggle"
+               [class.expanded]="showColumnToggle">
         <i class="fas fa-columns me-1"></i>
         Columns
       </button>
       <div class="custom-dropdown-menu"
            [class.show]="showColumnToggle"
            #columnToggleDropdown>
-        <h6 class="dropdown-header">Show/Hide Columns</h6>
+        <h6 class="dropdown-header">Column Visibility</h6>
         <div class="dropdown-item-text" *ngFor="let column of config.columns; trackBy: trackByColumn">
           <div class="form-check">
             <input class="form-check-input"
@@ -38,10 +67,10 @@
             </label>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
-    <!-- Filter Controls -->
+   
     <div class="filter-controls" *ngIf="config.showFilters && currentFilters.length > 0">
       <button class="btn btn-outline-danger btn-sm"
               (click)="clearAllFilters()"

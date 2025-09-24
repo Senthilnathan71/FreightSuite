@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormsModule, FormGroup, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -25,15 +25,20 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-zone',
   standalone: true,
   imports: [
-    CommonModule, 
-    FeatherModule, 
-    FormsModule, 
-    NgbPagination, 
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPagination,
     RouterModule,
     NgbModalModule,
     NgSelectModule,
@@ -45,12 +50,15 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReusableTableComponent
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
 })
-export class ZoneComponent {
+export class ZoneComponent extends BaseListComponent implements OnInit {
+  @ViewChild('zoneTable') zoneTable!: ReusableTableComponent;
+  @ViewChild('content') content : TemplateRef<any>
   zoneForm!: FormGroup;
   isEditMode: boolean = false;
   zones: Zone[] = [];
@@ -61,43 +69,48 @@ export class ZoneComponent {
   zoneList: any[] = [];
   statusList = ["Active", "Suspended"]
   modalRef!: NgbModalRef;
-  filterValue = '';
+  // filterValue = '';
   searched = false;
   searchResults: any[];
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
-  userData : any;
-  zoneData : any;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection = 0;
+  userData: any;
+  zoneData: any;
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
-  sortColumn: string = 'ZoneName'; 
-  sortDirection: string = 'asc'; 
+  // sortColumn: string = 'ZoneName';
+  // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
   // Company
-  currentCompany : any;
-  currentBranch : any;
+  currentCompany: any;
+  currentBranch: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   constructor(
-   private modalService: NgbModal,
-   private fb: FormBuilder,
-   private masterService: MasterService,
-   private route: ActivatedRoute,
-   private router: Router,
-   private appSettingService: AppSettingsService,
-   private dialog: MatDialog,
-   private userService : authService,
-   private excelReportService : ExcelExportService,
-   private spinner: NgxSpinnerService
-  ) {}
+    private modalService: NgbModal,
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private appSettingService: AppSettingsService,
+    private dialog: MatDialog,
+    private userService: authService,
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+
+
+  override ngOnInit(): void {
     // this.appSettingService.getUser().subscribe(user=>{
     //   if (user) {
     //     this.userData = user;
@@ -106,10 +119,10 @@ export class ZoneComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.loadZones();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -125,9 +138,217 @@ export class ZoneComponent {
     //     this.checkPermissions();
     //   }
     // });
+    // Initialize table configuration
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
+  }
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Zone',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class:"text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ZoneMasterSid',
+    emptyMessage: 'No Zone found',
+    dragAndDrop: true
+  };
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'zone-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'zoneNo',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allZone() { return this.allItems; }
+
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchZonelList(this.getSearchParams());
   }
 
-    checkPermissions() {
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+ protected processSearchResults(response: any): void {
+  this.tableLoading = false;
+  this.spinner.hide();
+
+  if (response.status) {
+    this.allItems = (response.data.items || []).map((item: any) => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.applySorting();
+  } else {
+    this.appSettingService.showError('Error searching bookings.');
+    this.allItems = [];
+    this.totalLengthOfCollection = 0;
+  }
+}
+
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching bookings.');
+    console.error('Error searching bookings', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchZone() {
+     this.page = 1;
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.BookingHeaderSid || index;
+  }
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+       {
+        key: 'ZoneName',
+        label: 'Zone Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ZoneCode',
+        label: 'Zone Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string'
+      },
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewZone(event.row);
+    } else if (event.action === 'delete') {
+      this.deleteChargeByRow(event.row);
+    }
+  }
+
+   viewZone(row: any) {
+    this.openEditModal(this.content,row.ZoneMasterSid)
+  }
+
+  deleteChargeByRow(row: any) {
+    this.deleteCharge(row.ZoneMasterSid);
+  }
+
+   deleteCharge(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.softDeleteZone(id).subscribe({
+          next: () => {
+            this.appSettingService.showSuccess("Deleted!");
+            this.searchZone();
+          },
+          error: (err) => {
+            this.appSettingService.showError("Error Deleting Charge");
+            console.error(err);
+          }
+        });
+      }
+    });
+  }
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allZone;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.zoneTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Zone-Report',
+      title: companyName
+    });
+  }
+
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId);
@@ -161,16 +382,16 @@ export class ZoneComponent {
 
     this.masterService.searchZonelList(params).subscribe({
       next: (response) => {
-        if(response.status) {
+        if (response.status) {
           this.zoneList = response.data.items;
           this.results = [...this.zoneList];
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
-        }else {
-        this.appSettingService.showError(response.message);
-      }
-       this.spinner.hide();
+        } else {
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching zones:', err);
@@ -198,7 +419,7 @@ export class ZoneComponent {
     this.zoneForm = this.fb.group({
       ZoneCode: ['', [Validators.required]],
       ZoneName: ['', [Validators.required]],
-      status: [{value: 'Active', disabled: false}, Validators.required],
+      status: [{ value: 'Active', disabled: false }, Validators.required],
     });
   }
 
@@ -211,41 +432,41 @@ export class ZoneComponent {
   // }
 
   resetForm(): void {
-  // If editing an existing zone, reload it (restore original state)
-  if (this.isEditMode && this.ZoneMasterSid) {
-    this.loadZoneData(this.ZoneMasterSid);
-    return;
+    // If editing an existing zone, reload it (restore original state)
+    if (this.isEditMode && this.ZoneMasterSid) {
+      this.loadZoneData(this.ZoneMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.zoneForm.reset({
+      ZoneCode: null,
+      ZoneName: null,
+      status: 'Active'
+    });
+
+    // Re-enable the status field if it was disabled
+    this.zoneForm.get('status')?.enable();
+
+    // Reset validation state
+    this.zoneForm.markAsUntouched();
+    this.zoneForm.markAsPristine();
+
+    // Clear any stored data
+    this.zoneData = null;
   }
-
-  // Create-mode: reset form to initial state with proper default values
-  this.zoneForm.reset({
-    ZoneCode: null,
-    ZoneName: null,
-    status: 'Active'
-  });
-
-  // Re-enable the status field if it was disabled
-  this.zoneForm.get('status')?.enable();
-  
-  // Reset validation state
-  this.zoneForm.markAsUntouched();
-  this.zoneForm.markAsPristine();
-  
-  // Clear any stored data
-  this.zoneData = null;
-}
 
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
-  
+
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.ZoneMasterSid = id;
     this.getZoneById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
+      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
     });
   }
 
@@ -261,7 +482,7 @@ export class ZoneComponent {
           ZoneCode: zone.ZoneCode,
           status: zone.status === 'A' ? 'Active' : 'Suspended'
         });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
       },
       error: (err) => {
         console.error('Error fetching', err);
@@ -327,7 +548,8 @@ export class ZoneComponent {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-               this.loadZones();
+              this.loadZones();
+              this.searchZone();
               this.router.navigate(['master/zone']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -346,7 +568,8 @@ export class ZoneComponent {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-               this.loadZones();
+              this.loadZones();
+              this.searchZone();
               this.router.navigate(['master/zone']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -383,45 +606,6 @@ export class ZoneComponent {
     );
   }
 
-  
-sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-}
-
-// Add this method to the class
-applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-  this.zoneList = [...this.results];
-}
-
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -446,36 +630,36 @@ applySorting() {
     });
   }
 
-  resetPage(): void {
-    this.filterValue = '';
-    this.page = 1;
-    this.zones = [] ;
-    this.zoneList = [];
-    this.totalLengthOfCollection = 0;
-    this.searched = false;
-    this.sortColumn = 'ZoneName'; 
-  this.sortDirection = 'asc';
-  this.loadZones();
-  }
+  // resetPage(): void {
+  //   this.filterValue = '';
+  //   this.page = 1;
+  //   this.zones = [];
+  //   this.zoneList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.searched = false;
+  //   this.sortColumn = 'ZoneName';
+  //   this.sortDirection = 'asc';
+  //   this.loadZones();
+  // }
 
-  report() {
-    const formattedData = this.zoneList.map(item => ({
-      ...item,
-      status : item.status === 'A' ? "Active" : "Suspended"
-    }));
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'ZoneName', label: 'Zone Name' },
-        { key: 'ZoneCode', label: 'Zone Code' },
-        { key: 'status', label: 'Status' }
-      ],
-      fileName: 'Zone-Report', 
-      title: companyName
-    });
-  }
+  // report() {
+  //   const formattedData = this.zoneList.map(item => ({
+  //     ...item,
+  //     status: item.status === 'A' ? "Active" : "Suspended"
+  //   }));
+
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'ZoneName', label: 'Zone Name' },
+  //       { key: 'ZoneCode', label: 'Zone Code' },
+  //       { key: 'status', label: 'Status' }
+  //     ],
+  //     fileName: 'Zone-Report',
+  //     title: companyName
+  //   });
+  // }
 
   showInfo() {
     if (!this.zoneData) return;
@@ -486,95 +670,95 @@ applySorting() {
   }
 
   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.ZoneMasterSid;
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.ZoneMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
 
   openEmail() {
-  if (!this.zoneData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.zoneData;
-  modalRef.componentInstance.idLabel = 'Zone Id';
-  modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
-}
+    if (!this.zoneData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.zoneData;
+    modalRef.componentInstance.idLabel = 'Zone Id';
+    modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
+  }
 
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.ZoneMasterSid;
   }
 
-openEDoc() {
-  if (!this.zoneData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.zoneData;
-  modalRef.componentInstance.idLabel = 'Zone Id';
-  modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
-}
-clearFilterValue(){
-      this.filterValue = '';
-    }
+  openEDoc() {
+    if (!this.zoneData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.zoneData;
+    modalRef.componentInstance.idLabel = 'Zone Id';
+    modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
+  }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  // }
 
-     openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.ZoneMasterSid) return;
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.ZoneMasterSid) return;
 
-  this.masterService.getAuditLogs('ZoneMaster', this.ZoneMasterSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
+    this.masterService.getAuditLogs('ZoneMaster', this.ZoneMasterSid.toString()).subscribe({
+      next: (logs: any[]) => {
+        const formatFields = (val: any) => {
+          if (!val) return ['NA'];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          delete obj.updatedOn; // Remove updatedOn field
+          // If no fields exist after deleting updatedOn
+          if (Object.keys(obj).length === 0) return ['NA'];
+          return Object.entries(obj).map(
+            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+          );
+        };
 
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
+        this.auditLogs = logs.map(log => ({
+          ...log,
+          oldValDisplay: formatFields(log.oldVal),
+          newValDisplay: formatFields(log.newVal)
+        }));
 
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 }
