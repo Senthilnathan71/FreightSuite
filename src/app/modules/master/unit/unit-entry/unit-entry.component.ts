@@ -155,11 +155,11 @@ export class UnitEntryComponent {
     this.unitForm = this.fb.group({
       unitName: ['', [Validators.required, Validators.maxLength(100)]],
       unitCode: ['', [Validators.required, Validators.maxLength(4)]],
-      jobType: ['FCL', [Validators.required]],
-      measurementType: ['Dimension', [Validators.required]],
-      containerType: [null, [Validators.required]],
+      jobType: [''],
+      measurementType: [''],
+      containerType: [''],
       status: ['A', [Validators.required]],
-      Remarks: ['', [Validators.required, Validators.maxLength(100)]]
+      Remarks: ['']
     });
   }
 

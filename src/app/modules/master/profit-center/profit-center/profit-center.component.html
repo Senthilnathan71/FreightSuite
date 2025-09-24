@@ -250,16 +250,7 @@
                             <div class="custom-form-group">
                                 <input type="textarea" id="text-input" class="custom-input-field sm"
                                     formControlName="Remarks" placeholder="">
-                                <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger"></span></label>
-                                               @if(profitCenterForm.get('Remarks')?.touched &&
-                                profitCenterForm.get('Remarks')?.invalid){
-                                <div class="error-message pb-2">
-                                    @if(profitCenterForm.get('Remarks')?.hasError('required')){
-                                    <span>Required</span>
-                                    } 
-                                </div>
-                                }
+                                <label for="text-input" class="input-label">Remarks </label>
                             </div>
                         </aside>
 
@@ -324,7 +315,7 @@
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit(); modal.close()"
                 [disabled]="btnDisable || profitCenterForm.invalid"
                 *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
-                {{ isEditMode ? 'Edit' : 'Save' }}
+                Save
             </button>
         </div>
     </ng-template>

@@ -140,14 +140,7 @@
       >
       
     </ng-select>
-    <label for="" class="input-label">Container Type <span class="text-danger">*</span></label>
-    @if(unitForm.get('containerType')?.touched && unitForm.get('containerType')?.invalid){
-    <div class="error-message">
-      @if(unitForm.get('containerType')?.hasError('required')){
-      <span>Required</span>
-      }
-    </div>
-    }
+    <label for="" class="input-label">Container Type </label>
   </div>
 </aside>
 
@@ -155,17 +148,7 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Remarks" [textWithNumbers]="100">
-                                    <label for="text-input" class="input-label">Remarks <span
-                                            class="text-danger">*</span></label>
-                                    @if(unitForm.get('Remarks')?.touched && unitForm.get('Remarks')?.invalid){
-                                    <div class="error-message">
-                                        @if(unitForm.get('Remarks')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(unitForm.get('Remarks')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
-                                    }
+                                    <label for="text-input" class="input-label">Remarks</label>
                                 </div>
                             </aside>
                                                         <aside class="col-md-6">
@@ -189,44 +172,23 @@
 </div>
 
                         <div class="col-12   border-bottom">
-                            <label class="form-check-label ms-2 my-1">Job Type <span
-                                    class="text-danger">*</span></label>
+                            <label class="form-check-label ms-2 my-1">Job Type</label>
                             <div class="col-md-12 d-flex flex-wrap gap-3 mb-3 align-items-center ms-4">
                                 <label *ngFor="let option of jobType">
                                     <input type="radio" [value]="option.id" formControlName="jobType" name="jobType" />
                                     {{ option.name }}
                                 </label>
-                                @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
-                                <div class="error-message">
-                                    @if(unitForm.get('jobType')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(unitForm.get('jobType')?.hasError('maxlength')){
-                                    <span>Max 10 Chars</span>
-                                    }
-                                </div>
-                                }
                             </div>
  
                         </div>
                         <div class="col-12 ">
-                            <label class="form-check-label ms-2 my-2">Measurement Type <span
-                                    class="text-danger">*</span></label>
+                            <label class="form-check-label ms-2 my-2">Measurement Type </label>
                             <div class="col-md-12 d-flex flex-wrap gap-3 ms-4">
                                 <label *ngFor="let option of measurementType">
                                     <input type="radio" [value]="option.id" formControlName="measurementType"
                                         name="measurementType" />
                                     {{ option.name }}
                                 </label>
-                                @if(unitForm.get('measurementType')?.touched &&
-                                unitForm.get('measurementType')?.invalid){
-                                <div class="error-message">
-                                    @if(unitForm.get('measurementType')?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
-                                    <span>Max 10 Chars</span>
-                                    }
-                                </div>
-                                }
                             </div>
  
                         </div>
