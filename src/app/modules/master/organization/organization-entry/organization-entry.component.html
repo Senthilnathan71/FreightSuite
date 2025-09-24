@@ -2004,100 +2004,136 @@
 </ng-template>
 
 <ng-template #salesmanList>
-    <div class="table-toolbar">
-        <div class="d-flex justify-content-end align-items-end">
-            <button type="button" class="table-action-btn primary" (click)="openSalespersonModal(salesmanEntry)">
-                <i class="fas fa-plus"></i> Add Salesman
-            </button>
+    <form [formGroup]="customerForm" class="compact-form">
+        <div class="table-toolbar">
+            <div class="d-flex justify-content-end align-items-end">
+                <button type="button" class="table-action-btn primary" (click)="onAddSalesTeam()">
+                    <i class="fas fa-plus"></i> Add Salesman
+                </button>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="table-action-btn primary" (click)="saveAllCustomerSalesTeam()">
+                    <i class="fas fa-save me-1"></i>
+                    Save
+                </button>
+            </div>
         </div>
-        <!-- <div class="ms-auto">
-            <button type="button" class="table-action-btn primary" (click)="saveAllCusMilestones()">
-                <i class="fas fa-save me-1"></i>
-                Save
-            </button>
-        </div> -->
-    </div>
-    <div class="card">
-        <div class="card-body">
-             <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Department</th>
-                        <th class="bg-transparent text-light" scope="col">Salesperson</th>
-                        <th class="bg-transparent text-light" scope="col">CS Person</th>
-                        <th class="bg-transparent text-light" scope="col"> Doc Person</th>
-                        <th class="bg-transparent text-light" scope="col"> Branch</th>
-                        <th class="bg-transparent text-light" scope="col">Effective From</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                                    <th class="bg-transparent text-light" scope="col">Department</th>
+                                    <th class="bg-transparent text-light" scope="col">Salesperson</th>
+                                    <th class="bg-transparent text-light" scope="col">CS Person</th>
+                                    <th class="bg-transparent text-light" scope="col"> Doc Person</th>
+                                    <th class="bg-transparent text-light" scope="col"> Branch</th>
+                                    <th class="bg-transparent text-light" scope="col">Effective From</th>
+                                    <th class="bg-transparent text-light" scope="col">Status</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of salesTeamList; track $index) {
-                    <tr>
+                                </tr>
+                            </thead>
+                            <tbody formArrayName="cusSalesteam">
+                                <tr *ngIf="slicedSalesTeamList.length === 0">
+                                    <td [attr.colspan]="7" class="text-center text-muted">No records found</td>
+                                </tr>
 
-                        <ng-template #descriptionTemplate>{{formatDepartment(item.DepartmentMasterSid)}}</ng-template>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <a class="text-info mx-2" class="link mx-2 ps-3"
-                                    (click)="openSalespersonModal(salesmanEntry, item)">
-                                    <i-feather class="feather-sm" name="eye"></i-feather>
-                                </a>
-                                <a class="text-danger mx-2 ps-3 border-start"
-                                    (click)="deleteSalesman(item.CustomerSalesSid)">
-                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="dofi-max-w-300 text-truncate" [ngbTooltip]=descriptionTemplate>
-                                {{formatDepartment(item.DepartmentMasterSid)}}
-                            </div>
-                            <!-- <div class="text-truncate">{{formatDepartment(item.DepartmentMasterSid)}}</div> -->
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{findSalesmanName(item.Salesman)}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.CSPerson || "N/A"}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.DocPerson || "N/A"}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{getCustomerBranchName(item.CustomerBranchSid) || 'N/A'}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
-                        </td>
-                        <td>
-                            @if(item.status === "A"){
-                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Active
-                            </div>
-                            } @else {
-                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                Suspended
-                            </div>
-                            }
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                                <tr *ngFor="let item of slicedSalesTeamList; let i = index"
+              [formGroupName]="getActualSalesTeamIndex(i)">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <a class="text-danger mx-2"
+                                                (click)="deleteSalesTeam(item.value.CustomerSalesSid, i)">
+                                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <multi-select [control]="item.get('DepartmentMasterSid')" [items]="spDepartmentList"
+                                                bindLabel="departmentName" bindValue="departmentName" placeholder="Select Department">
+                                            </multi-select>
+                                            @if(item.get('DepartmentMasterSid').touched &&
+                                            item.get('DepartmentMasterSid').invalid){
+                                            <div class="error-message">
+                                                @if(item.get('DepartmentMasterSid').hasError('required')){
+                                                <span>Required</span>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select [items]="salesPersonList" bindLabel="userName" appendTo="body" bindValue="UserMasterSid" appendTo="body"
+                                                formControlName="Salesman" placeholder="Select Salesperson"></ng-select>
+                                            <span *ngIf="item.get('Salesman').invalid && item.get('Salesman').touched" class="error-message">
+                                                Required
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select [items]="allCS" bindLabel="userName" bindValue="UserMasterSid" appendTo="body"  placeholder="Select CS Person"
+                                                formControlName="CSPerson">
+                                            </ng-select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!item.get('DocPerson')?.value">
+                                            <ng-select [items]="allDocs" bindLabel="userName" bindValue="UserMasterSid" placeholder="Select Doc Person" appendTo="body"
+                                                formControlName="DocPerson">
+                                            </ng-select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!item.get('branches')?.value">
+                                            <multi-select [control]="item.get('branches')" [items]="customerBranchData"
+                                                bindLabel="BranchName" bindValue="CustomerBranchSid" placeholder="Select Customer branch">
+                                            </multi-select>
+                                            @if(item.get('branches').touched &&
+                                            item.get('branches').invalid){
+                                            <div class="error-message">
+                                                @if(item.get('branches').hasError('required')){
+                                                <span>Required</span>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                        <!-- <ng-select class="ng-select" formControlName="CustomerBranchSid" [items]="customerBranchData"
+                            bindLabel=BranchName bindValue=CustomerBranchSid placeholder="Select Branch"></ng-select> -->
+                                    </td>
+                                    <td>
+                                        <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                            <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker"
+                                              (click)="d.toggle()" formControlName="EffectiveFrom" container="body" readonly />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if(item.value.CustomerSalesSid){
+                                        <ng-select formControlName="status" class="ng-select" appendTo="body">
+                                            <ng-option value="Active">Active</ng-option>
+                                            <ng-option value="Suspended">Suspended</ng-option>
+                                        </ng-select>
+                                        } @else {
+                                        <input type="text" name="status" class="form-control custom-input-field sm" value="Active" id="text-input" disabled>
+                                        }
+                                    </td>
+                                </tr>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-        </div>
-    </div>
-   
+    </form>
 </ng-template>
 
-<ng-template #salesmanEntry let-modal>
+<!-- <ng-template #salesmanEntry let-modal>
     <div class="modal-header p-2 bg-info text-white">
         <h4 class="modal-title">{{isSalespersonEdit ? 'Edit Salesman' : 'Salesman'}}</h4>
         @if(isSalespersonEdit && CustomerSalesSid){
@@ -2117,7 +2153,7 @@
                         <multi-select [control]="salespersonForm.get('DepartmentMasterSid')" [items]="spDepartmentList"
                             bindLabel="departmentName" bindValue="departmentName" placeholder="Select Department">
                         </multi-select>
-                        <!-- <ng-select 
+                        <ng-select 
                                     class="ng-select" 
                                     multiple=true 
                                     formControlName="DepartmentMasterSid"
@@ -2127,9 +2163,9 @@
                                     placeholder="Select Department"
                                     closeOnSelect = false
                                 >
-                                </ng-select> -->
-                        <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="City"> -->
+                                </ng-select>
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="City">
                         <label for="text-input" class="input-label">Department <span
                                 class="text-danger">*</span></label>
                         @if(salespersonForm.get('DepartmentMasterSid').touched &&
@@ -2146,8 +2182,8 @@
                     <div class="custom-form-group custom-form-group-select">
                         <ng-select class="ng-select" formControlName="Salesman" [items]="salesPersonList"
                             bindLabel=userName bindValue=UserMasterSid placeholder="Select Salesperson"></ng-select>
-                        <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchName"> -->
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchName">
                         <label for="text-input" class="input-label">Sales Person <span
                                 class="text-danger">*</span></label>
                         @if(salespersonForm.get('Salesman').touched && salespersonForm.get('Salesman').invalid){
@@ -2193,8 +2229,8 @@
                     <div class="custom-form-group custom-form-group-select">
                         <ng-select class="ng-select" formControlName="CustomerBranchSid" [items]="customerBranchData"
                             bindLabel=BranchName bindValue=CustomerBranchSid placeholder="Select Branch"></ng-select>
-                        <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode"> -->
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode">
                         <label for="text-input" class="input-label">Branch <span class="text-danger">*</span></label>
                         @if(salespersonForm.get('CustomerBranchSid').touched &&
                         salespersonForm.get('CustomerBranchSid').invalid){
@@ -2222,13 +2258,13 @@
                                 }
                             </div>
                             }
-                            <!-- @if(salespersonForm.get('spEffectiveFrom').touched && salespersonForm.get('spEffectiveFrom').invalid){
+                            @if(salespersonForm.get('spEffectiveFrom').touched && salespersonForm.get('spEffectiveFrom').invalid){
                                 <div class="error-message">
                                     @if(salespersonForm.get('spEffectiveFrom').hasError('required')){
                                     <span>Effective From is required</span>
                                     } 
                                 </div>
-                                } -->
+                                }
                         </div>
                         <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d.toggle()"
                             type="button">
@@ -2246,7 +2282,7 @@
                         Close
                     </button>
                 </ng-template>
-                <!-- <aside class="col-md-6">
+                <aside class="col-md-6">
                     <div class="custom-form-group">
                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                             formControlName="">
@@ -2259,7 +2295,7 @@
                             formControlName="">
                         <label for="text-input" class="input-label">DOC Person <span class="text-danger"></span></label>
                     </div>
-                </aside> -->
+                </aside>
                 <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
                         @if(isSalespersonEdit){
@@ -2273,14 +2309,14 @@
                         <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
                     </div>
                 </aside>
-                <!-- <aside class="col-md-6">
+                <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="spEffectiveFrom">
                                 <label for="text-input" class="input-label">Effective From <span
                                         class="text-danger">*</span></label>
                             </div>
-                        </aside> -->
+                        </aside>
             </div>
 
         </div>
@@ -2288,7 +2324,7 @@
     <div class="modal-footer">
         <button class="btn btn-sm btn-info" (click)="onSpSubmit()">{{ isSalespersonEdit ? 'Edit' : 'Submit' }}</button>
     </div>
-</ng-template>
+</ng-template> -->
 
 
 

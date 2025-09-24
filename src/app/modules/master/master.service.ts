@@ -2511,6 +2511,24 @@ getFieldConfiguration() {
     );
   }
 
+  getCustomerSalesTeam(CustomerMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`customer-salesteam/customer/${CustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  saveCustomerSalesTeam(payload: any) {
+    return this.http.post<{ data: any[] }>('customer-salesteam/save', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   searchSalesteam(payload: any) {
     return this.http.post<{ data: any[] }>('customer-salesteam/search-list', payload).pipe(
       map((resp) => {

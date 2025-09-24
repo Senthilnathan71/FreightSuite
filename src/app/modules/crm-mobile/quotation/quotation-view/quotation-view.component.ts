@@ -28,7 +28,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     NgxSpinnerModule
   ],
   templateUrl: './quotation-view.component.html',
-  styleUrl: './quotation-view.component.scss'
+  styleUrl: './quotation-view.component.scss',
+  providers : [CustomDatePipe]
 })
 export class QuotationViewComponent {
   isLoading = false;
@@ -64,6 +65,7 @@ export class QuotationViewComponent {
   filteredQuoteItems : any[]=[]
   departments : any[] = [];
   containerTypes : any[] = [];
+  slicedEnquiryItems : any[] = []
    selectedTab= 'Pending Rate Request';
    tabs = [
     { name: 'Pending Rate Request', icon: 'fas fa-file-signature' },
@@ -81,7 +83,9 @@ export class QuotationViewComponent {
     private route: Router, 
     private appService: AppService,
     private appSettingService : AppSettingsService, 
-    private spinner: NgxSpinnerService) { }
+    private spinner: NgxSpinnerService,
+    private datePipe : CustomDatePipe
+  ) { }
 
   ngOnInit(): void {
     const storedCompany = localStorage.getItem('selected-company');
@@ -198,21 +202,7 @@ export class QuotationViewComponent {
       }
     );
   }
-  searchEnquiry(): void {
-   const text = this.searchText.toLowerCase();
 
-    this.filteredEnquiryItems = this.enquiryItems.filter(enq =>
-      (enq.EnquiryNumber    ?? '').toLowerCase().includes(text) ||
-      (enq.CustomerName     ?? '').toLowerCase().includes(text) ||
-      (enq.ShipmentType     ?? '').toLowerCase().includes(text) ||
-      (enq.POLCode          ?? '').toLowerCase().includes(text) ||
-      (enq.PODCode          ?? '').toLowerCase().includes(text) ||
-      (enq.Date             ?? '').toString().toLowerCase().includes(text)
-    );
-
-    this.totalLengthOfCollection1 = this.filteredEnquiryItems.length;
-    this.page1 = 1; // reset to first page when searching
-  }
 
 
 
@@ -221,20 +211,53 @@ export class QuotationViewComponent {
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     this.leadService.getAllEnquiries(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
-        console.log(resp)
-        this.enquiryData = resp['data'];  // On success, store the leads data in the component
+        this.enquiryItems = resp['data'] || [];
+        this.enquiryData = (resp['data'] || []).map((enq)=>{
+          return {
+            EnquiryHeaderSid: enq.EnquiryHeaderSid,
+            EnquiryNumber: enq.EnquiryNumber,
+            CustomerName: enq.CustomerName,
+            departmentName : this.getDepartmentName(enq.DepartmentMasterSid),
+            POLCode: this.getFormattedPort(enq.enquiryRoute[0]?.POLSid),
+            PODCode: this.getFormattedPort(enq.enquiryRoute[0]?.PODSid),
+            EnquiryDate: this.datePipe.transform(enq.EnquiryDate),
+          }
+          
+        });
         this.filteredEnquiryItems = [...this.enquiryData]
-        // this.enquiryItems = [...this.enquiryData]
-        this.totalLengthOfCollection1 = this.enquiryData.length || 0;
-        this.updateEnquiryPaginatedData();  // Update paginated data
-        this.mapPortsToEnquiries();
+        this.totalLengthOfCollection1 = this.filteredEnquiryItems.length || 0;
+        this.updateEnquiryPaginatedData();
+        
 
       },
       (error) => {
-        this.errorMessage = error.message;  // On error, store the error message
-        console.error('Error loading enquiry:', error);  // Optionally log the error
+        this.errorMessage = error.message; 
+        console.error('Error loading enquiry:', error);  
       }
     );
+  }
+
+    searchEnquiry(): void {
+   const text = this.filterEnqValue.trim().toLowerCase() || '';
+      console.log(text);
+    this.filteredEnquiryItems = this.enquiryData.filter(enq =>
+      (enq.EnquiryNumber ?? '').toLowerCase().includes(text) ||
+      (enq.CustomerName ?? '').toLowerCase().includes(text) ||
+      (enq.departmentName ?? '').toLowerCase().includes(text) ||
+      (enq.POLCode ?? '').toLowerCase().includes(text) ||
+      (enq.PODCode ?? '').toLowerCase().includes(text) ||
+      (enq.EnquiryDate ?? '').toString().toLowerCase().includes(text)
+    );
+
+    this.totalLengthOfCollection1 = this.filteredEnquiryItems.length;
+    this.updateEnquiryPaginatedData();
+    this.page1 = 1;
+  }
+
+  getDepartmentName(DepartmentMasterSid: number): string | null {
+    if (!DepartmentMasterSid || this.departments.length === 0) return "";
+    const ourDepartment = this.departments.find(d => d.DepartmentMasterSid === DepartmentMasterSid);
+    return ourDepartment  ? ourDepartment.departmentName : "";
   }
 
   loadPorts(): void {
@@ -256,18 +279,6 @@ export class QuotationViewComponent {
 
 
 
-  mapPortsToEnquiries(): void {
-    if (!this.ports || !this.enquiryItems) return;
-
-    this.enquiryItems = this.enquiryItems.map((enq) => {
-      return {
-        ...enq,
-        POLCode: this.getPortCode(enq.enquiryRoute['0'].POLSid), // Get PortCode for POLSid
-        PODCode: this.getPortCode(enq.enquiryRoute['0'].PODSid), // Get PortCode for PODSid
-      };
-    });
-    console.log(this.enquiryItems, 'enquiryItems')
-  }
 
   getPortCode(portMasterSid: number): string | null {
     const port = this.ports.find((p) => p.PortMasterSid === portMasterSid);
@@ -278,8 +289,7 @@ export class QuotationViewComponent {
   updateEnquiryPaginatedData(): void {
     const startIndex = (this.page1 - 1) * this.pageSize1;
     const endIndex = startIndex + this.pageSize1;
-    this.enquiryItems = this.enquiryData.slice(startIndex, endIndex);
-    this.mapPortsToEnquiries()
+    this.slicedEnquiryItems = this.filteredEnquiryItems.slice(startIndex, endIndex);
   }
 
   updatePaginatedData(): void {
@@ -293,7 +303,9 @@ export class QuotationViewComponent {
 
    clearFilterEnqValue(){
     this.filterEnqValue = '';
-    this.searchEnquiry();
+    this.filteredEnquiryItems = [...this.enquiryData]
+    this.updateEnquiryPaginatedData();
+    this.totalLengthOfCollection1 = this.enquiryData.length;
   }
 
   createNew() {
@@ -304,47 +316,54 @@ export class QuotationViewComponent {
     this.route.navigate(['crm/quotation/entry', id])
   }
 
-  createQuotation(enq: any) {
-    console.log(enq);
+  // createQuotation(enq: any) {
+  //   console.log(enq);
 
-    const polList = enq.enquiryRoute.map(route => route.POLSid);
-    const podList = enq.enquiryRoute.map(route => route.PODSid);
+  //   const polList = enq.enquiryRoute.map(route => route.POLSid);
+  //   const podList = enq.enquiryRoute.map(route => route.PODSid);
 
-    // Extract cargo types from both root-level enquiryCargo and nested enquiryCargo inside enquiryRoute
-    let cargoTypeList: string[] = [];
+  //   // Extract cargo types from both root-level enquiryCargo and nested enquiryCargo inside enquiryRoute
+  //   let cargoTypeList: string[] = [];
 
-    // Extract from root-level enquiryCargo
-    if (Array.isArray(enq.enquiryCargo)) {
-      cargoTypeList.push(...enq.enquiryCargo.map(cargo => cargo.CargoType));
+  //   // Extract from root-level enquiryCargo
+  //   if (Array.isArray(enq.enquiryCargo)) {
+  //     cargoTypeList.push(...enq.enquiryCargo.map(cargo => cargo.CargoType));
+  //   }
+
+  //   // Extract from nested enquiryCargo inside enquiryRoute
+  //   enq.enquiryRoute.forEach(route => {
+  //     if (Array.isArray(route.enquiryCargo)) {
+  //       cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
+  //     }
+  //   });
+
+  //   // Remove duplicates (optional)
+  //   cargoTypeList = [...new Set(cargoTypeList)];
+  //   this.leadService.clearQuotationData();  // <-- Add this line to clear previous data
+
+  //   this.leadService.setQuotationData({
+  //     customerId: enq.CustomerMasterSid,
+  //     departmentId: enq.DepartmentMasterSid,
+  //     polList: polList,  // Sending as an array
+  //     podList: podList,  // Sending as an array
+  //     cargoTypeList: cargoTypeList,  // Merging from both possible sources
+  //     rateRequest: true,
+  //     active: 2
+  //   });
+
+  //   this.route.navigate(['crm/quotation/entry']);
+  // }
+
+  navigateQuotation(data: any) {
+    console.log(data);
+    const dataId = data.EnquiryHeaderSid;
+    if(!dataId){
+      return;
     }
-
-    // Extract from nested enquiryCargo inside enquiryRoute
-    enq.enquiryRoute.forEach(route => {
-      if (Array.isArray(route.enquiryCargo)) {
-        cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
-      }
-    });
-
-    // Remove duplicates (optional)
-    cargoTypeList = [...new Set(cargoTypeList)];
-    this.leadService.clearQuotationData();  // <-- Add this line to clear previous data
-
-    this.leadService.setQuotationData({
-      customerId: enq.CustomerMasterSid,
-      departmentId: enq.DepartmentMasterSid,
-      polList: polList,  // Sending as an array
-      podList: podList,  // Sending as an array
-      cargoTypeList: cargoTypeList,  // Merging from both possible sources
-      rateRequest: true,
-      active: 2
-    });
-
-    this.route.navigate(['crm/quotation/entry']);
-  }
-
-  navigateQuotation(response: any) {
-    const polList = response.enquiryRoute.map(route => route.POLSid);
-    const podList = response.enquiryRoute.map(route => route.PODSid);
+    const response = this.enquiryItems.find(item => item.EnquiryHeaderSid === dataId);
+    console.log(response)
+    const polList = (response.enquiryRoute || []).map(route => route.POLSid);
+    const podList = (response.enquiryRoute || []).map(route => route.PODSid);
 
     let cargoTypeList: string[] = [];
 
@@ -352,7 +371,7 @@ export class QuotationViewComponent {
       cargoTypeList.push(...response.enquiryCargo.map(cargo => cargo.CargoType));
     }
 
-    response.enquiryRoute.forEach(route => {
+    (response.enquiryRoute || []).forEach(route => {
       if (Array.isArray(route.enquiryCargo)) {
         cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
       }
@@ -366,8 +385,8 @@ export class QuotationViewComponent {
         selectedFCLLCL = dept?.departmentType?.toUpperCase();
       }
 
-      let routeDetails = response.enquiryRoute.flatMap(route => {
-        return route.enquiryCargo.map(cargo => {
+      let routeDetails = (response.enquiryRoute || []).flatMap(route => {
+        return (route.enquiryCargo || []).map(cargo => {
           const containerTypeId = this.containerTypes.find(
             con => con.ContainerName === cargo.ContainerType
           )?.ContainerTypeMasterSid || null;
@@ -412,7 +431,7 @@ export class QuotationViewComponent {
       return '';
     }
     const ourPort = this.ports.find(p=>p.PortMasterSid === PortMasterSid);
-    return `${ourPort.PortName} (${ourPort.PortCode})`
+    return ourPort ? ourPort.PortCode : '';
   }
 
   findUnitName(UnitMasterSid:number){
