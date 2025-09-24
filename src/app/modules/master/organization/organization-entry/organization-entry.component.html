@@ -1,7 +1,7 @@
 <div class="modern-booking-workspace ">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
                     <div class="brand-icon">
                         <i class="fas fa-briefcase"></i>
@@ -14,7 +14,7 @@
                     }
                 </div>
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div class="nav-pills-container">
+    <div class="nav-pills-container pt-1">
     <div class="nav-pills">
       <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
         (click)="selectTab(tab.name)">
@@ -72,7 +72,7 @@
   </div>
 
   <div class="content-workspace">
-    <div class="workspace-content" [hidden]="selectedTab !== 'Party'">
+    <div class="workspace-content1" [hidden]="selectedTab !== 'Party'">
         <ng-template *ngTemplateOutlet="partyEntry"></ng-template>
     </div>
     <div class="workspace-content" [hidden]="selectedTab !== 'Branch'">
@@ -215,9 +215,9 @@
         <div class="row compact-form">
             <div class="col-md-12 ">
                 <div class="card h-100 mb-0">
-                    <div class="card-body py-2 px-3">
+                    <div class="card-body">
 
-                        <div class="row  pb-2 rounded border ">
+                        <div class="row  ">
                             <!-- <div class="card-header-title d-flex align-items-center gap-2">
                                 <i class="fas fa-briefcase fs-4"></i>
                                 <h5 class="card-titlename mb-0">Organization Information</h5>
@@ -413,7 +413,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <label for="BranchType" class="form-check-label">Payment Type <span class="text-danger">*</span></label>
-                                    <div class="d-flex gap-3 mt-2">
+                                    <div class="d-flex gap-3">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentType"
                                                 value="Cash">
@@ -478,13 +478,13 @@
                                     <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                                 </div>
                             </aside>
-                            <div class="p-2 bg-info text-white d-flex align-items-center gap-2">
-                                <i class="fas fa-id-card fs-4"></i>
-                                <h5 class="card-titlename mb-0">KYC </h5>
+                            <div class="pe-3 d-flex align-items-center gap-2">
+                                <!-- <i class="fas fa-id-card fs-4"></i> -->
+                                <h5 class="card-titlename mb-0">KYC Section</h5>
                             </div>
 
-                            <aside class="col-md-4 d-flex align-items-center">
-                                <div class="form-check form-check-inline ">
+                            <aside class="col-md-4 d-flex align-items-center mt-md-2 mt-0">
+                                <div class="form-check form-check-inline p-0">
                                     <div class="form-check d-flex align-items-center">
                                         <input type="checkbox" formControlName="KYCSpecified" id="KYCSpecified"
                                             class="form-check-input sm">
@@ -516,8 +516,8 @@
                                 </div>
                             </aside>
 
-                            <aside class="col-md-4 d-flex align-items-center">
-                                <div class="form-check form-check-inline">
+                            <aside class="col-md-4 d-flex align-items-center mt-md-2 mt-0">
+                                <div class="form-check form-check-inline p-0">
                                     <div class="form-check d-flex align-items-center">
                                         <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
                                             class="form-check-input sm" />

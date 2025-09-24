@@ -1,5 +1,5 @@
 <div class="row compact-form">
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">Profitability Report</h4>
@@ -30,14 +30,15 @@
         </div>
     </div>
 
-    <div class="col-md-12">
+    <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row">
+                    <!-- [class.filled]="!!fromBookingForm.get('FPD')?.value" -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" >
                             <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" [multiple]="true"
-                                placeholder="Select Departments">
+                                placeholder="">
                             </ng-select>
                             <label for="" class="input-label">
                                 Dept <span class="text-danger"></span>
@@ -52,7 +53,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
@@ -65,7 +66,7 @@
                         </div>
                     </aside>
                      <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" />

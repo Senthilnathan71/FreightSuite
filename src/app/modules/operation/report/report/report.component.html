@@ -57,10 +57,10 @@
             <div class="card-body pb-0">
                 <div class="row">
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!BookingForm.get('Dept')?.value">
                             <multi-select [control]="BookingForm.get('Dept')" [items]="departmentList"
                                 bindLabel="departmentName" bindValue="DepartmentMasterSid"
-                                placeholder="Select Departments"></multi-select>
+                                placeholder=""></multi-select>
                             <label for="" class="input-label">
                                 Dept <span class="text-danger"></span>
                             </label>
@@ -76,7 +76,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!BookingForm.get('Branch')?.value">
                            <ng-select [items]="BranchList" bindLabel="branchName" bindValue="BranchMasterSid"
                                     formControlName="Branch">
                                 </ng-select>
@@ -93,7 +93,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d1="ngbDatepicker" formControlName="FromBookingDate" (click)="d1.toggle()" />
@@ -115,7 +115,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d2="ngbDatepicker" formControlName="ToBookingDate" (click)="d2.toggle()" />
@@ -137,7 +137,7 @@
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!BookingForm.get('SalesPerson')?.value">
                                 <ng-select [items]="SalesPersonList" bindLabel="userName" bindValue="UserMasterSid"
                                     formControlName="SalesPerson">
                                 </ng-select>
@@ -156,7 +156,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select"[class.filled]="!!BookingForm.get('POD')?.value">
                             <ng-select [items]="PODList" bindLabel="PortName" bindValue="PortMasterSid"
                                 formControlName="POD">
                             </ng-select>

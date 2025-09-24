@@ -16,6 +16,7 @@
     left: 0px;
     padding-left: 0;
     padding-right: 0;
+    color:#333;
   }
 
   .error-message {
@@ -81,7 +82,7 @@
   }
   .input-label {
     position: absolute;
-    left: -5px;  
+    left: -4px;  
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
@@ -113,5 +114,4 @@
   position: absolute;
   left: 3px;       
 }
-
 }

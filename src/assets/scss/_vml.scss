@@ -97,9 +97,7 @@
     z-index: 9999 !important;
 }
 
-
 // Nav Bar
-
 
 /* Compact Navigation Pills */
 .nav-pills-container {
@@ -161,7 +159,7 @@
 }
 
 .pill-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -198,7 +196,7 @@
 }
 
 .workspace-content {
-  padding: 12px;
+  padding: 4px 10px;
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;

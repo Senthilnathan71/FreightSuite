@@ -1,4 +1,4 @@
-<div class="modern-table-container">
+ <div class="modern-table-container">
     <div>
         <div class="table-toolbar">
             <div class="toolbar-left">
@@ -91,52 +91,52 @@
     <div class="modal-body">
         <div class="row compact-form" [formGroup]="connectionForm">
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('Mode')?.value">
                     <ng-select formControlName="Mode" [items]="typeofmodes" bindLabel="name" bindValue="name"
-                        placeholder="Select Mode" (change)="onModeChange($event)">
+                        placeholder="" (change)="onModeChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> Mode <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('POL')?.value">
                     <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortName"
-                        placeholder="Select POL" formControlName="POL" (change)="handlePOLChange($event)">
+                        placeholder="" formControlName="POL" (change)="handlePOLChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POL <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('POD')?.value">
                     <ng-select formControlName="POD" [items]="filteredPOD" bindLabel="PortName" bindValue="PortName"
-                        placeholder="Select POD" (change)="handlePODChange($event)">
+                        placeholder="" (change)="handlePODChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POD <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select"  [class.filled]="!!connectionForm.get('VesselName')?.value">
                     <ng-select [items]="filteredVesselList" bindLabel="VesselName" bindValue="VesselName" class="ng-select"
-                        formControlName="VesselName" placeholder="Select Vessel" (change)="onVesselChange($event)">
+                        formControlName="VesselName" placeholder="" (change)="onVesselChange($event)">
                     </ng-select>
                     <label for="text-input" class="input-label">Vsl <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('VoyageNo')?.value">
                     <ng-select [items]="voyageList" formControlName="VoyageNo" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                         placeholder="Select Voyage No" (change)="onVoyageChange($event)">
+                         placeholder="" (change)="onVoyageChange($event)">
                     </ng-select>
                     <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
                 </div>
             </aside>
             <div class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select-date">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
                             [minDate]="toNgbDateStruct(minStartDate)" formControlName="ETD" (click)="d2.toggle()"
                             (dateSelect)="c['ETD'].markAsTouched()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                         </button>
                     </div>
@@ -152,11 +152,11 @@
 
 
             <div class="col-md-4">
-                <div class=" custom-form-group custom-form-group-select">
+                <div class=" custom-form-group custom-form-group-select-date">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker" [minDate]="toNgbDateStruct(connectionForm.get('ETD')?.value)"
                             formControlName="ETA" (click)="d1.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETA <span class="text-danger"></span>
@@ -178,7 +178,7 @@
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('status')?.value">
                     @if(c['TransactionSid']?.value){
                     <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
                         <ng-option value="Active">Active</ng-option>

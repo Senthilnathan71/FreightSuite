@@ -78,15 +78,15 @@
         <form [formGroup]="milestoneForm">
             <div class="row compact-form">
                 <aside class="col-md-4">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('MilestoneMasterSid')?.value">
                         <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid" class="ng-select"
-                            formControlName="MilestoneMasterSid" placeholder="Select Milestone" (change)="onMilestoneChange($event)">
+                            formControlName="MilestoneMasterSid" placeholder="" (change)="onMilestoneChange($event)">
                         </ng-select>
                         <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
                     </div>
                 </aside>
                 <div class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select">
+                    <div class=" custom-form-group custom-form-group-select-date">
                         <div class="input-group">
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
                                 formControlName="MilestoneDate" (click)="d1.toggle()" />
@@ -113,7 +113,7 @@
                     </div>
                 </aside>
                 <aside class="col-md-4">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('Status')?.value">
                         <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="id" formControlName="Status"
                             id="status"></ng-select>
                         <label class="input-label">Status <span class="text-danger">*</span></label>

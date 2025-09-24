@@ -6,7 +6,7 @@
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col pb-1">
                 <div class="d-flex align-items-center gap-2">
-                    <h4 class="page-title mb-0">Booking</h4>
+                    <h5 class="page-title mb-0 text-info">Booking</h5>
                     <app-favorite-star screenName="Booking" class="mt-1 me-1"></app-favorite-star>
 
                 </div>
@@ -18,7 +18,7 @@
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5"
-                                placeholder="Search Booking No, POL, POD, Salesman..." aria-label="Search input"
+                                placeholder="Search" aria-label="Search input"
                                 [(ngModel)]="filterValue" (keyup.enter)="searchBookings()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
