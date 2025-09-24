@@ -1,184 +1,70 @@
-<!-- <div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div> -->
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
-
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Sailing Schedule</h4>
-            </div>
-
-            <div class="col-md pb-2">
-                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                    <div class="d-flex gap-2 col-12 col px-0 align-items-stretch align-items-md-center">
-                        <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
-                            <button *ngIf="filterValue"
-                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
-                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadVoyages()"
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-search me-1"></i> Search
-                            </button>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-
-            <div class="col-md-auto pb-2">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Sailing Schedule" class="mt-1 me-1"></app-favorite-star>
-                    @if(hasPermission('Add')) {
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="nagivateTocreateSailingSchedule()">
-                        <i class="fas fa-plus me-1"></i> Create
-                    </button>}
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                        [disabled]="!searched">
-                        <i class="fas fa-file-alt me-1"></i> Report
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()"
-                        [disabled]="!searched">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </button>
-                </form>
-            </div>
-
-
+  <div class="col-12">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+      <div class="col pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <h4 class="page-title mb-0">Sailing Schedule</h4>
+          <app-favorite-star screenName="Sailing Schedule" class="mt-1 me-1"></app-favorite-star>
         </div>
-    </div>
+      </div>
 
-   
-    <div class="row bg-white py-2 rounded-bottom shadow-sm mx-auto" *ngIf="totalAmountOfCollections > 0">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('Vsl/Voy')">
-                                Vsl/Voy
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Vsl/Voy', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Vsl/Voy'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('POL')">
-                                POL
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'POL', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'POL'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('POD')">
-                                POD
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'POD', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'POD'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('ETA')">
-                                ETA
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ETA', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ETA'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('ETD')">
-                                ETD
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ETD', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ETD'}"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" width="8%"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (schedule of scheduleList; track schedule) {
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center">
-                                    @if(hasPermission('View')) {
-                                    <a class="text-info mx-2 ps-3"
-                                        [routerLink]="['/master/sailing-schedule/entry/', schedule.VoyageMasterHeaderSid]"
-                                        title="Edit Sailing Schedule">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </a>
-                                }
-                                @if(hasPermission('Detele')) {
-                                    <a class="text-danger mx-2 ps-3 border-start"
-                                        (click)="deleteSchedule(schedule.VoyageMasterHeaderSid)"
-                                        title="Delete Sailing Schedule">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                }
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{schedule.vesselMaster?.VesselName}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    {{getFormattedPort(schedule.voyageMasterDetail[0]?.POLSid)}}
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    {{schedule.voyageMasterDetail.length < 2 ? '' :
-                                        getFormattedPort(schedule.voyageMasterDetail[schedule.voyageMasterDetail.length-1]?.POLSid)}}
-                                        </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    {{schedule.voyageMasterDetail[0]?.ETA | formatDate}}
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    {{schedule.voyageMasterDetail[schedule.voyageMasterDetail.length-1]?.ETD |
-                                    formatDate}}
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    <button type="button" class="btn btn-sm btn-info" style="padding: 3px;"
-                                        [routerLink]="['/crm/enquiry/list']">Get Rate</button>
-                                </div>
-                            </td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+      <div class="col-md pb-1">
+        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+          <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
+            <div class="form-outline flex-grow-1 position-relative">
+              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search Voyage No, POL, POD..."
+                     aria-label="Search input" [(ngModel)]="filterValue" (keyup.enter)="searchSchedules()">
+              <button *ngIf="filterValue"
+                      class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                      tabindex="0" aria-label="Clear search" (click)="clearFilterValue()">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
-        </div>
-        <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollections"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true"
-                [ellipses]="false" [maxSize]="5">
-            </ngb-pagination>
-        </div>
+            <div class="mt-md-0 mt-1">
+              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchSchedules()">
+                <i class="fas fa-search me-1"></i> Search
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-md-auto pb-1">
+        <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button *ngIf="hasPermission('Add')" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                  (click)="navigateToCreate()"><i class="fas fa-plus me-1"></i> Create</button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()" [disabled]="!searched">
+            <i class="fas fa-file-alt me-1"></i> Report
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()" [disabled]="!searched">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+        </form>
+      </div> 
     </div>
-    <div class="col-12" *ngIf="totalAmountOfCollections === 0">
-        <div>No records found</div>
-    </div>
+  </div>
+
+  <div class="col-12 px-0">
+    <app-reusable-table #scheduleTable
+                        [config]="tableConfig"
+                        [data]="allSchedules"
+                        [loading]="tableLoading"
+                        [totalRecords]="totalLengthOfCollection"
+                        [paginationConfig]="paginationConfig"
+                        (actionClick)="onTableActionClick($event)"
+                        (rowClick)="onTableRowClick($event)"
+                        (sortChange)="onTableSortChange($event)"
+                        (filterChange)="onTableFilterChange($event)"
+                        (pageChange)="onPageChange($event)"
+                        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+  </div>
+
+  <div class="col-12" *ngIf="!tableLoading && totalLengthOfCollection === 0 && searched">
+    <div class="card p-3">No records found</div>
+  </div>
 </div>
