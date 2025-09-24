@@ -160,12 +160,16 @@
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EnquiryNumber', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EnquiryNumber'}"></i></th>
                                     <th class="bg-transparent text-light" scope="col" (click)="sort('QuoteNo')">Quotation No <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'QuoteNo', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'QuoteNo'}"></i></th>
-                                    <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">Customer Name <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
                                     <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentType')">Department <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentType'}"></i></th>
-                                    <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentExpectedDate')">Expected Shipment Date <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentExpectedDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentExpectedDate'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">Customer Name <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">POL <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">POD <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
+                                    <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentExpectedDate')">Expected Shipment Date <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentExpectedDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentExpectedDate'}"></i></th> -->
                                     
                                     <!-- <th class="bg-transparent text-light" scope="col">Approval Status</th> -->
                                     <!-- <th class="bg-transparent text-light" scope="col">Create </th> -->
@@ -203,20 +207,31 @@
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
+                                            {{ enq.ShipmentType }}
+                                        </div>
+                                    </td>
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
                                             {{ enq.CustomerName }}
                                         </div>
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ enq.ShipmentType }}
+                                            {{ enq.POL?.PortCode }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            {{ enq.POD?.PortCode }}
+                                        </div>
+                                    </td>
+                                   
+                                    <!-- <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.ShipmentExpectedDate | formatDate 
                                             }}
                                         </div>
-                                    </td>
+                                    </td> -->
                                     <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         @if(enq.authorizerStatus === "Approved"){
                                         <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">

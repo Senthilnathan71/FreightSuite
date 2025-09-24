@@ -92,6 +92,8 @@ export class QuotationEntryComponent implements OnInit {
   TandCList: any[] = []
   tariffDetails : any[] = [];
   filteredUnits: any[][] = [];
+  costAgentList : any[] = [];
+  vendorSupplierList : any[] = [];
   quotationForm !: FormGroup;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
@@ -619,6 +621,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       costUnit: [data?.costUnit || null, Validators.required],
       costCurrency: [data?.costCurrency || null, Validators.required],
       costPerUnit: [data?.costPerUnit || '', Validators.required],
+      CostAgentMasterSid : [data?.CostAgentMasterSid || null],
+      RevenueCustomerMasterSid : [data?.RevenueCustomerMasterSid || null],
       ChargeDisplayName: [data?.ChargeDisplayName, [Validators.required]],
       TariffDetailSid : [data?.TariffDetailSid || null]  // For filtering purpose
     })
@@ -660,8 +664,9 @@ openAuditLogs(modal: TemplateRef<any>) {
       salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
       masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
       units : this.leadService.getAllUOMs().pipe(catchError(err => of([]))),
+      vendors: this.leadService.getAllVendorSupplier(CompanyMasterSid).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([])))
-    }).pipe(tap(({ cargoTypes, carriers, customers, departments, ports, incos, salesman, masters,units, containerTypes }) => {
+    }).pipe(tap(({ cargoTypes, carriers, customers, departments, vendors, ports, incos, salesman, masters,units, containerTypes }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
       this.customers = customers || [];
@@ -672,7 +677,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       this.unitMaster = units.data || [];
       this.incoList = incos || [];
       this.salesmanList = salesman || [];
-      this.containerTypeList = containerTypes || []
+      this.containerTypeList = containerTypes || [],
+      this.vendorSupplierList = vendors || [];
     })
     );
   }
