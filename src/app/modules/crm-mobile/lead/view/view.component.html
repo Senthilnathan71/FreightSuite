@@ -9,16 +9,75 @@
 
 <div class="row">
     <!-- #region Search Panel -->
-    <div class="col-12">
-        <div class="bg-white rounded-3 p-2  shadow mb-2" data-bs-theme="light">
+       <div class="col-12">
+        <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm justify-content-between">
+            <div class="col-md-4 pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="page-title mb-0">Lead</h4>
+                <app-favorite-star screenName="Zone" class="mt-1 me-1"></app-favorite-star>
+                </div>
+                
+            </div>
+
+            <div class="col-md pb-1 compact-form">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                    <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                [(ngModel)]="searchText" name="search" aria-label="Search input" (input)="searchLeads()">
+
+                            <button *ngIf="searchText"
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                               (input)="searchLeads()"  tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-md-0 mt-1">
+                            <button type="submit"  (click)="clearSearchText()"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-auto pb-1">
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                       (click)="createNew()">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
+                      <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            >
+                            <i class="fas fa-file-alt me-1"></i>
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            >
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                </form>
+            </div>
+
+
+        </div>
+    </div>
+    <div class="col-12 d-none">
+        <div class="bg-white rounded-3 p-2  shadow mb-2 " data-bs-theme="light">
             <form class="d-flex align-items-center gap-2">
                 <div class="form-outline col position-relative">
-                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                        (input)="searchLeads()" autocomplete="off" placeholder="Search">
+                    <input type="search" class="form-control ps-5" [(ngModel)]="filterValue" name="search"
+                        autocomplete="off" placeholder="Search" (keyup.enter)="searchlead()">
                     <i class="fas fa-search ms-3 position-absolute start-0 top-50 translate-middle-y"></i>
                     <!-- Clear button (X) when there's text -->
                     <button *ngIf="searchText" type="button" class="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2" 
-                            (click)="clearSearchText()" style="background: none; border: none;">
+                            (click)="searchlead()" style="background: none; border: none;">
                         <i class="fas fa-times text-muted"></i>
                     </button>
                 </div>
@@ -32,7 +91,7 @@
         </div>
     </div>
     <!-- #endregion -->
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div *ngIf="isMobile; else desktopTemplate">
             <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
         </div>
@@ -42,6 +101,7 @@
 
 <!-- MOBILE CODE -->
 <ng-template #mobileTemplate>
+     
     <div class="mobile-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="card" *ngFor="let lead of leads">
             <div class="card-body">
@@ -91,17 +151,29 @@
 
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
-    <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
+     <app-reusable-table
+        #leadTable
+        [config]="tableConfig"
+        [data]="allleads"
+        [loading]="tableLoading"
+        [totalRecords]="totalLengthOfCollection"
+        [paginationConfig]="paginationConfig"
+        (actionClick)="onTableActionClick($event)"
+        (rowClick)="onTableRowClick($event)"
+        (sortChange)="onTableSortChange($event)"
+        (filterChange)="onTableFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+    <!-- <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="row">
 
             <div class="col-12">
-                <!-- #region filter and add new -->
-
-                <!-- #endregion -->
+             
 
                 <div class="card">
                     <div class="card-body px-2 py-2">
-                          <!-- #region lead view -->
+                         
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
@@ -111,8 +183,7 @@
                                     <th class="bg-transparent text-light" scope="col">Phone</th>
                                     <th class="bg-transparent text-light" scope="col">Type</th>
                                     <th class="bg-transparent text-light" scope="col" width="15%">Schedule</th>
-                                    <!-- <th class="bg-transparent text-light" scope="col">Last Met</th>
-                                    <th class="bg-transparent text-light" scope="col">Last Booking</th> -->
+                                  
                                     <th class="bg-transparent text-light" scope="col" width="8%">Status</th>
                                     
                                 </tr>
@@ -123,7 +194,7 @@
                                         <section class="action-items">
                                             <div class="d-flex align-items-center justify-content-center">
                                             <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
-                                                <!-- <i-feather name="edit" class="feather-sm"></i-feather> -->
+                                              
                                                 <i-feather name="eye" class="feather-sm text-info cursor-pointer"></i-feather>
                                             </a>
                                             </div>
@@ -149,17 +220,10 @@
                                             <button class="btn btn-sm btn-light-success p-1" (click)="createMeeting(lead.PreCustomerMasterSid)">
                                                 <i-feather name="calendar" class="feather-sm"></i-feather> Schedule Meeting
                                             </button>
-                                            <!-- <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }} -->
+                                           
                                         </div>
                                     </td>
-                                    <!-- <td data-label="Type"> -- </td> -->
-                                    <!-- <td data-label="Schedule">
-                                        <span class="badge font-medium" [ngClass]="getScheduleClass(company.schedule)">{{
-                                            company.schedule }}</span>
-                                        <div class="">
-                                            <i-feather name="calendar" class="feather-sm"></i-feather> --
-                                        </div>
-                                    </td> -->
+                                 
                                     <td data-label="status" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                       <div class="text-truncate">
   <div
@@ -179,14 +243,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- #endregion -->
-
+                  
                     <div class="">
-                        <!-- #region Pagination -->
+                       
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
                         </ngb-pagination>
-                        <!-- #endregion -->
+                       
                     </div>
                     </div>
                   
@@ -194,7 +257,7 @@
 
             </div>
         </div>
-    </div>
+    </div> -->
 </ng-template>
 
 <!-- NO DATA TEMPLATE -->
@@ -203,4 +266,12 @@
         <p class="text-muted" *ngIf="searchPerformed">No leads found.</p>
        
     </div>
+</ng-template>
+
+<ng-template #scheduleTemplate let-lead>
+  <div class="text-truncate text-center">
+    <button class="btn btn-sm btn-light-success p-1" (click)="createMeeting(lead.PreCustomerMasterSid)">
+      <i-feather name="calendar" class="feather-sm"></i-feather> Schedule
+    </button>
+  </div>
 </ng-template>

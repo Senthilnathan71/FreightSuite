@@ -22,6 +22,7 @@ import { AuthorityEntryComponent } from '../../master/authority/authority-entry/
 import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
+import { AppService } from 'src/app/service/app.service';
 
 
 @Component({
@@ -68,7 +69,7 @@ export class LeadComponent implements OnInit {
   // SearchCountryField = SearchCountryField;
   // separateDialCode = true;
   // preferredCountries: CountryISO[] = [CountryISO.UnitedStates, CountryISO.UnitedKingdom, CountryISO.India, CountryISO.Canada, CountryISO.Malaysia, CountryISO.SriLanka, CountryISO.UnitedArabEmirates, CountryISO.Singapore, CountryISO.Qatar, CountryISO.Kuwait, CountryISO.Australia];
-
+  isMobile: boolean = false;
   // collapsed: any;
   items = [
     { collapsed: false },
@@ -100,6 +101,7 @@ auditLogs: any[] = []; // Stores audit logs
   constructor(
     private fb: FormBuilder,
     private leadService: LeadService,
+    private appService: AppService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -110,6 +112,7 @@ auditLogs: any[] = []; // Stores audit logs
 
     this.loadAllFields()
     this.initForm();
+    this.isMobile = this.appService.getDevice()
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if(userProfile){
       this.userData = userProfile;

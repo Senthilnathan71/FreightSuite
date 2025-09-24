@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { FeatherModule } from 'angular-feather';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LeadService } from '../../Services/lead.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-meeting',
@@ -13,7 +16,9 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FeatherModule
+    FeatherModule,
+    NgbDatepickerModule,
+    NgSelectModule
   ],
   templateUrl: './meeting.component.html',
   styleUrl: './meeting.component.scss'
@@ -28,10 +33,11 @@ export class MeetingComponent {
   salesPersons: any
   lead: any
   minDate: string = '';
-  currentCompany : any;
-  currentBranch : any;
-  userData : any;
-
+  currentCompany: any;
+  currentBranch: any;
+  userData: any;
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
 
   constructor(
     private fb: FormBuilder,
@@ -39,7 +45,9 @@ export class MeetingComponent {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private ngbModal: NgbModal,
+    private masterService: MasterService,
   ) { }
 
   ngOnInit(): void {
@@ -113,8 +121,8 @@ export class MeetingComponent {
       ...this.meetingForm.value,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      createdBy : this.userData?.userEmail,
-      LeadOrCustomer : 'L',
+      createdBy: this.userData?.userEmail,
+      LeadOrCustomer: 'L',
       PreCustomerMasterSid: this.PreCustomerMasterSid
     };
     this.btnDisable = true;
@@ -192,6 +200,35 @@ export class MeetingComponent {
 
   goBack() {
     history.back()
+  }
+
+
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.PreCustomerMasterSid) return;
+
+    this.masterService.getAuditLogsChargeGroups('ChargeGroup', this.PreCustomerMasterSid.toString()).subscribe({
+      next: (logs: any[]) => {
+        const formatFields = (val: any) => {
+          if (!val) return ['NA'];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          delete obj.updatedOn; // Remove updatedOn field
+          // If no fields exist after deleting updatedOn
+          if (Object.keys(obj).length === 0) return ['NA'];
+          return Object.entries(obj).map(
+            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+          );
+        };
+
+        this.auditLogs = logs.map(log => ({
+          ...log,
+          oldValDisplay: formatFields(log.oldVal),
+          newValDisplay: formatFields(log.newVal)
+        }));
+
+        this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
   }
 
 }

@@ -245,13 +245,13 @@
                             (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
                         </button>
-                        <button type="button" class="action-btn action-secondary" (click)="goBack()">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                             <i class="fas fa-chevron-left me-1"></i>Back
                         </button>
-                        <button type="button" class="action-btn action-secondary" (click)="reset()">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()">
                             <i class="fas fa-sync-alt me-1"></i>Reset
                         </button>
-                        <button type="button" class="action-btn action-success" (click)="onSubmit()"
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
                             [disabled]="leadForm.invalid">
                             <i class="fas fa-save me-1"></i>{{isEditMode ? 'Update' : 'Save'}}
                         </button>
@@ -262,7 +262,11 @@
     </div>
     <div class="col-md-12">
         <div class="card ">
-
+            <div class="col-12">
+                <div *ngIf="isMobile; else desktopTemplate">
+                    <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
+                </div>
+            </div>
 
             <!-- <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="true">
                 <div ngbAccordionItem id="first">
@@ -531,328 +535,333 @@
             </div> -->
 
 
-            <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="true" class="compact-form">
-                <div ngbAccordionItem id="first" class="accordion-item-enhanced">
-                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
-                        <button ngbAccordionButton class="accordion-button-enhanced">
-                            <div class="accordion-header-content">
-                                <div class="header-icon me-3">
-                                    <i class="fas fa-user-circle text-primary"></i>
-                                </div>
-                                <div class="header-text">
-                                    <h5 class="card-title mb-0">Basic Information</h5>
-                                </div>
+
+
+        </div>
+    </div>
+
+    <ng-template #desktopTemplate>
+        <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="false" class="compact-form">
+            <div ngbAccordionItem id="first" class="accordion-item-enhanced" [collapsed]="false">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-user-circle text-primary"></i>
                             </div>
-                        </button>
-                    </h2>
-                    <div ngbAccordionCollapse>
-                        <div ngbAccordionBody>
-                            <ng-template>
-
-                                <div class="row">
-                                    <aside class="col-md-3">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="company-name" placeholder=""
-                                                class="custom-input-field sm" formControlName="preCustomerName"
-                                                [onlyText]="100">
-                                            <label for="company-name" class="input-label">Customer Name <span
-                                                    class="text-danger">*</span></label>
-                                        </div>
-                                        @if(leadForm.get('preCustomerName')?.touched &&
-                                        leadForm.get('preCustomerName')?.invalid){
-                                        <div class="error-message">
-                                            @if(leadForm.get('preCustomerName')?.hasError('required')){
-                                            <span>Required</span>
-                                            } @else if(leadForm.get('preCustomerName')?.hasError('numberNotAllowed')){
-                                            <span>Only Alphabets are allowed</span>
-                                            } @else if(leadForm.get('preCustomerName')?.hasError('maxlength')){
-                                            <span>Max 100 Chars</span>
-                                            }
-                                        </div>
-                                        }
-                                    </aside>
-                                    <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('leadReferredBy')?.value">
-                                            <ng-select class="ng-select" formControlName="leadReferredBy"
-                                                [items]="leadSourceList" placeholder=""></ng-select>
-                                            <label for="lead-source" class="input-label">Lead From <span
-                                                    class="text-danger">*</span></label>
-                                        </div>
-                                        @if(leadForm.get('leadReferredBy')?.touched &&
-                                        leadForm.get('leadReferredBy')?.invalid){
-                                        <div class="error-message">
-                                            @if(leadForm.get('leadReferredBy')?.hasError('required')){
-                                            <span>Required</span>
-                                            }
-                                        </div>
-                                        }
-                                    </aside>
-
-                                   <aside class="col-md-3">
-  <div class="form-check">
-    <input
-      type="checkbox"
-      id="is-qualify"
-      class="form-check-input"
-      formControlName="isQualify"
-    />
-    <label for="is-qualify" class="form-check-label">Qualify Lead</label>
-  </div>
-</aside>
-
-
-                                    <aside class="col-md-3">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="customer-ref" placeholder=""
-                                                class="custom-input-field sm" formControlName="leadFrom"
-                                                [textWithNumbers]="20">
-                                            <label for="customer-ref" class="input-label">Lead By</label>
-                                        </div>
-                                        @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
-                                        <div class="error-message">
-                                            @if(leadForm.get('leadFrom')?.hasError('required')){
-                                            <span>Required</span>
-                                            } @else if(leadForm.get('leadFrom')?.hasError('maxlength')){
-                                            <span>Max 20 Chars</span>
-                                            }
-                                        </div>
-                                        }
-                                    </aside>
-                                    <aside class="col-md-3">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="customer-ref" placeholder=""
-                                                class="custom-input-field sm" formControlName="preCustomerType"
-                                                [textWithNumbers]="10">
-                                            <label for="customer-ref" class="input-label">Customer Type</label>
-                                        </div>
-                                        @if(leadForm.get('preCustomerType')?.touched &&
-                                        leadForm.get('preCustomerType')?.invalid){
-                                        <div class="error-message">
-                                            @if(leadForm.get('preCustomerType')?.hasError('required')){
-                                            <span>Required</span>
-                                            } @else if(leadForm.get('preCustomerType')?.hasError('maxlength')){
-                                            <span>Max 10 Chars</span>
-                                            }
-                                        </div>
-                                        }
-                                    </aside>
-                                    @if(isEditMode){
-                                    <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('status')?.value">
-                                            <ng-select class="ng-select" formControlName="status" [items]="statusList"
-                                                placeholder=""></ng-select>
-                                            <label for="lead-status" class="input-label">Status <span
-                                                    class="text-danger">*</span></label>
-                                        </div>
-                                        @if(leadForm.get('status')?.touched && leadForm.get('status')?.invalid){
-                                        <div class="error-message">
-                                            @if(leadForm.get('status')?.hasError('required')){
-                                            <span>Required</span>
-                                            }
-                                        </div>
-                                        }
-                                    </aside>
-                                    }
-                                </div>
-
-                            </ng-template>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Basic Information</h5>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-
-                <div ngbAccordionItem id="second" class="accordion-item-enhanced">
-                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
-                        <button ngbAccordionButton class="accordion-button-enhanced">
-                            <div class="accordion-header-content">
-                                <div class="header-icon me-3">
-                                    <i class="fas fa-address-book text-success"></i>
-                                </div>
-                                <div class="header-text">
-                                    <h5 class="card-title mb-0">Contact Information</h5>
-                                </div>
-                            </div>
-                        </button>
-                    </h2>
-                    <div ngbAccordionCollapse>
-                        <div ngbAccordionBody>
-
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+                        <ng-template>
 
                             <div class="row">
-                                <aside class="col-md-4">
+                                <aside class="col-md-3">
                                     <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="preCustomerAddress1" [textWithNumbers]="300">
-                                        <label for="text-input" class="input-label">Address1 <span
+                                        <input type="text" id="company-name" placeholder=""
+                                            class="custom-input-field sm" formControlName="preCustomerName"
+                                            [onlyText]="100">
+                                        <label for="company-name" class="input-label">Customer Name <span
                                                 class="text-danger">*</span></label>
-                                        <!-- <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
-                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Address 1 is required</span>
-                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('maxlength')">Max 300 Characters</span> 
-                                            </div> -->
                                     </div>
-                                </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="preCustomerAddress2" [textWithNumbers]="300">
-                                        <label for="text-input" class="input-label">Address2 <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('preCustomerAddress2')?.touched &&
-                                    leadForm.get('preCustomerAddress2')?.invalid){
+                                    @if(leadForm.get('preCustomerName')?.touched &&
+                                    leadForm.get('preCustomerName')?.invalid){
                                     <div class="error-message">
-                                        @if(leadForm.get('preCustomerAddress2')?.hasError('maxlength')){
-                                        <span>Max 300 Chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="POBOX" [onlyNumbers]="100">
-                                        <label for="text-input" class="input-label">P.O Box <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('POBOX')?.touched && leadForm.get('POBOX')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('POBOX')?.hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
-                                        }
-                                        @else if(leadForm.get('POBOX')?.hasError('maxlength')){
+                                        @if(leadForm.get('preCustomerName')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(leadForm.get('preCustomerName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        } @else if(leadForm.get('preCustomerName')?.hasError('maxlength')){
                                         <span>Max 100 Chars</span>
                                         }
                                     </div>
                                     }
                                 </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
-                                        <ng-select formControlName="CountryMasterSid" [items]="countryList"
-                                            bindLabel="countryName" bindValue="CountryMasterSid"
-                                            placeholder=""
-                                            (change)="filterStateByCountryId($event)"></ng-select>
-                                        <label for="text-input" class="input-label">Country <span
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!leadForm.get('leadReferredBy')?.value">
+                                        <ng-select class="ng-select" formControlName="leadReferredBy"
+                                            [items]="leadSourceList" placeholder=""></ng-select>
+                                        <label for="lead-source" class="input-label">Lead From <span
                                                 class="text-danger">*</span></label>
-
                                     </div>
-                                    @if(leadForm.get('CountryMasterSid')?.touched &&
-                                    leadForm.get('CountryMasterSid')?.invalid){
+                                    @if(leadForm.get('leadReferredBy')?.touched &&
+                                    leadForm.get('leadReferredBy')?.invalid){
                                     <div class="error-message">
-                                        @if(leadForm.get('CountryMasterSid')?.hasError('required')){
+                                        @if(leadForm.get('leadReferredBy')?.hasError('required')){
                                         <span>Required</span>
                                         }
                                     </div>
                                     }
                                 </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('StateMasterSid')?.value">
-                                        <ng-select class="ng-select" [items]="stateList" bindLabel="stateName"
-                                            bindValue="StateMasterSid" formControlName="StateMasterSid"
-                                            placeholder="" (change)="filterCityByStateId($event)">
 
-                                        </ng-select>
-                                        <label for="text-input" class="input-label">State <span
-                                                class="text-danger">*</span></label>
+                                <aside class="col-md-3 mt-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="is-qualify" class="form-check-input"
+                                            formControlName="isQualify" />
+                                        <label for="is-qualify" class="form-check-label">Qualify Lead</label>
                                     </div>
-                                    @if(leadForm.get('StateMasterSid')?.touched &&
-                                    leadForm.get('StateMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('StateMasterSid')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                    </div>
-                                    }
                                 </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('CityMasterSid')?.value">
-                                        <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid"
-                                            bindLabel="cityName" formControlName="CityMasterSid"
-                                            placeholder="">
 
-                                        </ng-select>
-                                        <label for="text-input" class="input-label">City <span
-                                                class="text-danger">*</span></label>
-                                    </div>
-                                    @if(leadForm.get('CityMasterSid')?.touched &&
-                                    leadForm.get('CityMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('CityMasterSid')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <aside class="col-md-4">
+
+                                <aside class="col-md-3">
                                     <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="contactPerson" [onlyText]="50">
-                                        <label for="text-input" class="input-label">Contact Person <span
-                                                class="text-danger">*</span></label>
+                                        <input type="text" id="customer-ref" placeholder=""
+                                            class="custom-input-field sm" formControlName="leadFrom"
+                                            [textWithNumbers]="20">
+                                        <label for="customer-ref" class="input-label">Lead By</label>
                                     </div>
-                                    @if(leadForm.get('contactPerson')?.touched &&
-                                    leadForm.get('contactPerson')?.invalid){
+                                    @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
                                     <div class="error-message">
-                                        @if(leadForm.get('contactPerson')?.hasError('required')){
+                                        @if(leadForm.get('leadFrom')?.hasError('required')){
                                         <span>Required</span>
-                                        } @else if(leadForm.get('contactPerson')?.hasError('numberNotAllowed')){
-                                        <span>Only Alphabets are allowed</span>
-                                        } @else if(leadForm.get('contactPerson')?.hasError('maxlength')){
-                                        <span>Max 50 Chars</span>
+                                        } @else if(leadForm.get('leadFrom')?.hasError('maxlength')){
+                                        <span>Max 20 Chars</span>
                                         }
                                     </div>
                                     }
                                 </aside>
-                                <aside class="col-md-4">
+                                <aside class="col-md-3">
                                     <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="email">
-                                        <label for="text-input" class="input-label">E-mail <span
+                                        <input type="text" id="customer-ref" placeholder=""
+                                            class="custom-input-field sm" formControlName="preCustomerType"
+                                            [textWithNumbers]="10">
+                                        <label for="customer-ref" class="input-label">Customer Type</label>
+                                    </div>
+                                    @if(leadForm.get('preCustomerType')?.touched &&
+                                    leadForm.get('preCustomerType')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('preCustomerType')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(leadForm.get('preCustomerType')?.hasError('maxlength')){
+                                        <span>Max 10 Chars</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+                                @if(isEditMode){
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!leadForm.get('status')?.value">
+                                        <ng-select class="ng-select" formControlName="status" [items]="statusList"
+                                            placeholder=""></ng-select>
+                                        <label for="lead-status" class="input-label">Status <span
                                                 class="text-danger">*</span></label>
+                                    </div>
+                                    @if(leadForm.get('status')?.touched && leadForm.get('status')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('status')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+                                }
+                            </div>
 
-                                    </div>
-                                    @if((leadForm.get('email')?.touched || leadForm.get('email')?.dirty) &&
-                                    leadForm.get('email')?.invalid) {
-                                    <div class="error-message">
-                                        @if(leadForm.get('email')?.hasError('required')) {
-                                        <span>Required</span>
-                                        }
-                                        @else if(leadForm.get('email')?.hasError('trailingComma')) {
-                                        <span>Please remove trailing comma or add another email</span>
-                                        }
-                                        @else if(leadForm.get('email')?.hasError('duplicateEmails')) {
-                                        <span>Duplicate emails found</span>
-                                        }
-                                        @else if(leadForm.get('email')?.hasError('invalidEmails')) {
-                                        <span>Invalid email format</span>
-                                        }
-                                        @else if(leadForm.get('email')?.hasError('maxlength')) {
-                                        <span>Maximum 100 chars allowed</span>
-                                        }
-                                    </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+
+
+            <div ngbAccordionItem id="second" class="accordion-item-enhanced" [collapsed]="false">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-address-book text-success"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Contact Information</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+
+
+                        <div class="row">
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="preCustomerAddress1" [textWithNumbers]="300">
+                                    <label for="text-input" class="input-label">Address1 <span
+                                            class="text-danger">*</span></label>
+                                    <!-- <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
+                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Address 1 is required</span>
+                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('maxlength')">Max 300 Characters</span> 
+                                            </div> -->
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="preCustomerAddress2" [textWithNumbers]="300">
+                                    <label for="text-input" class="input-label">Address2 <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('preCustomerAddress2')?.touched &&
+                                leadForm.get('preCustomerAddress2')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('preCustomerAddress2')?.hasError('maxlength')){
+                                    <span>Max 300 Chars</span>
                                     }
-                                </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="phone" [onlyNumbers]="50">
-                                        <label for="text-input" class="input-label">Phone <span
-                                                class="text-danger">*</span></label>
-                                    </div>
-                                    @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('phone')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                        @else if(leadForm.get('phone')?.hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
-                                        }
-                                        @else if(leadForm.get('phone')?.hasError('maxlength')){
-                                        <span>Max 50 Chars</span>
-                                        }
-                                    </div>
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="POBOX" [onlyNumbers]="100">
+                                    <label for="text-input" class="input-label">P.O Box <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('POBOX')?.touched && leadForm.get('POBOX')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('POBOX')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
                                     }
-                                </aside>
-                                <!-- <aside class="col-md-4">
+                                    @else if(leadForm.get('POBOX')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
+                                    <ng-select formControlName="CountryMasterSid" [items]="countryList"
+                                        bindLabel="countryName" bindValue="CountryMasterSid" placeholder=""
+                                        (change)="filterStateByCountryId($event)"></ng-select>
+                                    <label for="text-input" class="input-label">Country <span
+                                            class="text-danger">*</span></label>
+
+                                </div>
+                                @if(leadForm.get('CountryMasterSid')?.touched &&
+                                leadForm.get('CountryMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('CountryMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('StateMasterSid')?.value">
+                                    <ng-select class="ng-select" [items]="stateList" bindLabel="stateName"
+                                        bindValue="StateMasterSid" formControlName="StateMasterSid" placeholder=""
+                                        (change)="filterCityByStateId($event)">
+
+                                    </ng-select>
+                                    <label for="text-input" class="input-label">State <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('StateMasterSid')?.touched &&
+                                leadForm.get('StateMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('StateMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('CityMasterSid')?.value">
+                                    <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid"
+                                        bindLabel="cityName" formControlName="CityMasterSid" placeholder="">
+
+                                    </ng-select>
+                                    <label for="text-input" class="input-label">City <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('CityMasterSid')?.touched &&
+                                leadForm.get('CityMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('CityMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="contactPerson" [onlyText]="50">
+                                    <label for="text-input" class="input-label">Contact Person <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('contactPerson')?.touched &&
+                                leadForm.get('contactPerson')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('contactPerson')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(leadForm.get('contactPerson')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are allowed</span>
+                                    } @else if(leadForm.get('contactPerson')?.hasError('maxlength')){
+                                    <span>Max 50 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="email">
+                                    <label for="text-input" class="input-label">E-mail <span
+                                            class="text-danger">*</span></label>
+
+                                </div>
+                                @if((leadForm.get('email')?.touched || leadForm.get('email')?.dirty) &&
+                                leadForm.get('email')?.invalid) {
+                                <div class="error-message">
+                                    @if(leadForm.get('email')?.hasError('required')) {
+                                    <span>Required</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('trailingComma')) {
+                                    <span>Please remove trailing comma or add another email</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('duplicateEmails')) {
+                                    <span>Duplicate emails found</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('invalidEmails')) {
+                                    <span>Invalid email format</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('maxlength')) {
+                                    <span>Maximum 100 chars allowed</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="phone" [onlyNumbers]="50">
+                                    <label for="text-input" class="input-label">Phone <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('phone')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                    @else if(leadForm.get('phone')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                    @else if(leadForm.get('phone')?.hasError('maxlength')){
+                                    <span>Max 50 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <!-- <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
                                                 class="custom-input-field sm" formControlName="">
@@ -861,222 +870,767 @@
 
                                         </div>
                                     </aside> -->
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('PreferredContactMode')?.value">
-                                        <ng-select [items]="modeOfPreferredContactMode" bindLabel="name"
-                                            bindValue="name" formControlName="PreferredContactMode">
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('PreferredContactMode')?.value">
+                                    <ng-select [items]="modeOfPreferredContactMode" bindLabel="name" bindValue="name"
+                                        formControlName="PreferredContactMode">
 
-                                        </ng-select>
-                                        <label for="" class="input-label">Preferred Contact Mode <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="LanguagePreferrence" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Language Preference <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('LanguagePreferrence')?.touched &&
-                                    leadForm.get('LanguagePreferrence')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-
-                            </div>
-
-
-                        </div>
-                    </div>
-                </div>
-
-
-                <div ngbAccordionItem id="three" class="accordion-item-enhanced">
-                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
-                        <button ngbAccordionButton class="accordion-button-enhanced">
-                            <div class="accordion-header-content">
-                                <div class="header-icon me-3">
-                                    <i class="fas fa-bullseye text-warning"></i>
+                                    </ng-select>
+                                    <label for="" class="input-label">Preferred Contact Mode <span
+                                            class="text-danger"></span></label>
                                 </div>
-                                <div class="header-text">
-                                    <h5 class="card-title mb-0">Lead Details</h5>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="LanguagePreferrence" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Language Preference <span
+                                            class="text-danger"></span></label>
                                 </div>
-                            </div>
-                        </button>
-                    </h2>
-                    <div ngbAccordionCollapse>
-                        <div ngbAccordionBody>
-
-
-                            <div class="row">
-
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="ServiceOfInterest" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Service of Interest <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('ServiceOfInterest')?.touched &&
-                                    leadForm.get('ServiceOfInterest')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('ServiceOfInterest')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
+                                @if(leadForm.get('LanguagePreferrence')?.touched &&
+                                leadForm.get('LanguagePreferrence')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
                                     }
-                                </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="PurchaseTimeline" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Purchase Timeline <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('PurchaseTimeline')?.touched &&
-                                    leadForm.get('PurchaseTimeline')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('PurchaseTimeline')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="SpecificRequirements" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Specific Requirement <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('SpecificRequirements')?.touched &&
-                                    leadForm.get('SpecificRequirements')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('SpecificRequirements')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <!-- <aside class="col-md-4 mt-2">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                               
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>   -->
-                            </div>
-
-
-                        </div>
-                    </div>
-                </div>
-
-
-                <div ngbAccordionItem id="fourth" class="accordion-item-enhanced">
-                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
-                        <button ngbAccordionButton class="accordion-button-enhanced">
-                            <div class="accordion-header-content">
-                                <div class="header-icon me-3">
-                                    <i class="fas fa-plus-circle text-info"></i>
                                 </div>
-                                <div class="header-text">
-                                    <h5 class="card-title mb-0">Additional Information</h5>
-                                </div>
-                            </div>
-                        </button>
-                    </h2>
-                    <div ngbAccordionCollapse>
-                        <div ngbAccordionBody>
-
-
-                            <div class="row">
-
-                                <aside class="col-md-3">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="Industry" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Industry <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('Industry')?.touched && leadForm.get('Industry')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('Industry')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <aside class="col-md-3">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="CompanySize" [onlyNumbers]>
-                                        <label for="text-input" class="input-label">Company Size <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('CompanySize')?.touched && leadForm.get('CompanySize')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('CompanySize')?.hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <aside class="col-md-3">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="AnnualRevenue" [onlyNumbers]>
-                                        <label for="text-input" class="input-label">Annual Revenue <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('AnnualRevenue')?.touched &&
-                                    leadForm.get('AnnualRevenue')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('AnnualRevenue')?.hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <aside class="col-md-3">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="Notes" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Notes <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                    @if(leadForm.get('Notes')?.touched && leadForm.get('Notes')?.invalid){
-                                    <div class="error-message">
-                                        @if(leadForm.get('Notes')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </aside>
-                                <!-- <aside class="col-md-4 mt-2">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                               
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>   -->
-                            </div>
-
+                                }
+                            </aside>
 
                         </div>
+
+
                     </div>
                 </div>
             </div>
 
+
+            <div ngbAccordionItem id="three" class="accordion-item-enhanced" [collapsed]="false">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-bullseye text-warning"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Lead Details</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+
+
+                        <div class="row">
+
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="ServiceOfInterest" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Service of Interest <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('ServiceOfInterest')?.touched &&
+                                leadForm.get('ServiceOfInterest')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('ServiceOfInterest')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="PurchaseTimeline" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Purchase Timeline <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('PurchaseTimeline')?.touched &&
+                                leadForm.get('PurchaseTimeline')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('PurchaseTimeline')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="SpecificRequirements" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Specific Requirement <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('SpecificRequirements')?.touched &&
+                                leadForm.get('SpecificRequirements')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('SpecificRequirements')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <!-- <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>   -->
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div ngbAccordionItem id="fourth" class="accordion-item-enhanced" [collapsed]="false">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-plus-circle text-info"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Additional Information</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+
+
+                        <div class="row">
+
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Industry" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Industry <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('Industry')?.touched && leadForm.get('Industry')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('Industry')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="CompanySize" [onlyNumbers]>
+                                    <label for="text-input" class="input-label">Company Size <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('CompanySize')?.touched && leadForm.get('CompanySize')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('CompanySize')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="AnnualRevenue" [onlyNumbers]>
+                                    <label for="text-input" class="input-label">Annual Revenue <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('AnnualRevenue')?.touched &&
+                                leadForm.get('AnnualRevenue')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('AnnualRevenue')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Notes" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Notes <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('Notes')?.touched && leadForm.get('Notes')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('Notes')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <!-- <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>   -->
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </ng-template>
+
+    <ng-template #mobileTemplate>
+        <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="true" class="compact-form">
+            <div ngbAccordionItem id="first" class="accordion-item-enhanced">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-user-circle text-primary"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Basic Information</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+                        <ng-template>
+
+                            <div class="row">
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="company-name" placeholder=""
+                                            class="custom-input-field sm" formControlName="preCustomerName"
+                                            [onlyText]="100">
+                                        <label for="company-name" class="input-label">Customer Name <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                    @if(leadForm.get('preCustomerName')?.touched &&
+                                    leadForm.get('preCustomerName')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('preCustomerName')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(leadForm.get('preCustomerName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        } @else if(leadForm.get('preCustomerName')?.hasError('maxlength')){
+                                        <span>Max 100 Chars</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!leadForm.get('leadReferredBy')?.value">
+                                        <ng-select class="ng-select" formControlName="leadReferredBy"
+                                            [items]="leadSourceList" placeholder=""></ng-select>
+                                        <label for="lead-source" class="input-label">Lead From <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                    @if(leadForm.get('leadReferredBy')?.touched &&
+                                    leadForm.get('leadReferredBy')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('leadReferredBy')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+
+                                <aside class="col-md-3 mt-2">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="is-qualify" class="form-check-input"
+                                            formControlName="isQualify" />
+                                        <label for="is-qualify" class="form-check-label">Qualify Lead</label>
+                                    </div>
+                                </aside>
+
+
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="customer-ref" placeholder=""
+                                            class="custom-input-field sm" formControlName="leadFrom"
+                                            [textWithNumbers]="20">
+                                        <label for="customer-ref" class="input-label">Lead By</label>
+                                    </div>
+                                    @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('leadFrom')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(leadForm.get('leadFrom')?.hasError('maxlength')){
+                                        <span>Max 20 Chars</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="customer-ref" placeholder=""
+                                            class="custom-input-field sm" formControlName="preCustomerType"
+                                            [textWithNumbers]="10">
+                                        <label for="customer-ref" class="input-label">Customer Type</label>
+                                    </div>
+                                    @if(leadForm.get('preCustomerType')?.touched &&
+                                    leadForm.get('preCustomerType')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('preCustomerType')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(leadForm.get('preCustomerType')?.hasError('maxlength')){
+                                        <span>Max 10 Chars</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+                                @if(isEditMode){
+                                <aside class="col-md-3">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!leadForm.get('status')?.value">
+                                        <ng-select class="ng-select" formControlName="status" [items]="statusList"
+                                            placeholder=""></ng-select>
+                                        <label for="lead-status" class="input-label">Status <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                    @if(leadForm.get('status')?.touched && leadForm.get('status')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('status')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </aside>
+                                }
+                            </div>
+
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+
+
+            <div ngbAccordionItem id="second" class="accordion-item-enhanced">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-address-book text-success"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Contact Information</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+
+
+                        <div class="row">
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="preCustomerAddress1" [textWithNumbers]="300">
+                                    <label for="text-input" class="input-label">Address1 <span
+                                            class="text-danger">*</span></label>
+                                    <!-- <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
+                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Address 1 is required</span>
+                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('maxlength')">Max 300 Characters</span> 
+                                            </div> -->
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="preCustomerAddress2" [textWithNumbers]="300">
+                                    <label for="text-input" class="input-label">Address2 <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('preCustomerAddress2')?.touched &&
+                                leadForm.get('preCustomerAddress2')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('preCustomerAddress2')?.hasError('maxlength')){
+                                    <span>Max 300 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="POBOX" [onlyNumbers]="100">
+                                    <label for="text-input" class="input-label">P.O Box <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('POBOX')?.touched && leadForm.get('POBOX')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('POBOX')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                    @else if(leadForm.get('POBOX')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
+                                    <ng-select formControlName="CountryMasterSid" [items]="countryList"
+                                        bindLabel="countryName" bindValue="CountryMasterSid" placeholder=""
+                                        (change)="filterStateByCountryId($event)"></ng-select>
+                                    <label for="text-input" class="input-label">Country <span
+                                            class="text-danger">*</span></label>
+
+                                </div>
+                                @if(leadForm.get('CountryMasterSid')?.touched &&
+                                leadForm.get('CountryMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('CountryMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('StateMasterSid')?.value">
+                                    <ng-select class="ng-select" [items]="stateList" bindLabel="stateName"
+                                        bindValue="StateMasterSid" formControlName="StateMasterSid" placeholder=""
+                                        (change)="filterCityByStateId($event)">
+
+                                    </ng-select>
+                                    <label for="text-input" class="input-label">State <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('StateMasterSid')?.touched &&
+                                leadForm.get('StateMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('StateMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('CityMasterSid')?.value">
+                                    <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid"
+                                        bindLabel="cityName" formControlName="CityMasterSid" placeholder="">
+
+                                    </ng-select>
+                                    <label for="text-input" class="input-label">City <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('CityMasterSid')?.touched &&
+                                leadForm.get('CityMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('CityMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="contactPerson" [onlyText]="50">
+                                    <label for="text-input" class="input-label">Contact Person <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('contactPerson')?.touched &&
+                                leadForm.get('contactPerson')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('contactPerson')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(leadForm.get('contactPerson')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are allowed</span>
+                                    } @else if(leadForm.get('contactPerson')?.hasError('maxlength')){
+                                    <span>Max 50 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="email">
+                                    <label for="text-input" class="input-label">E-mail <span
+                                            class="text-danger">*</span></label>
+
+                                </div>
+                                @if((leadForm.get('email')?.touched || leadForm.get('email')?.dirty) &&
+                                leadForm.get('email')?.invalid) {
+                                <div class="error-message">
+                                    @if(leadForm.get('email')?.hasError('required')) {
+                                    <span>Required</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('trailingComma')) {
+                                    <span>Please remove trailing comma or add another email</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('duplicateEmails')) {
+                                    <span>Duplicate emails found</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('invalidEmails')) {
+                                    <span>Invalid email format</span>
+                                    }
+                                    @else if(leadForm.get('email')?.hasError('maxlength')) {
+                                    <span>Maximum 100 chars allowed</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="phone" [onlyNumbers]="50">
+                                    <label for="text-input" class="input-label">Phone <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                                @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('phone')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                    @else if(leadForm.get('phone')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                    @else if(leadForm.get('phone')?.hasError('maxlength')){
+                                    <span>Max 50 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <!-- <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Preferred Contact Mode <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside> -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!leadForm.get('PreferredContactMode')?.value">
+                                    <ng-select [items]="modeOfPreferredContactMode" bindLabel="name" bindValue="name"
+                                        formControlName="PreferredContactMode">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">Preferred Contact Mode <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="LanguagePreferrence" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Language Preference <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('LanguagePreferrence')?.touched &&
+                                leadForm.get('LanguagePreferrence')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div ngbAccordionItem id="three" class="accordion-item-enhanced">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-bullseye text-warning"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Lead Details</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+
+
+                        <div class="row">
+
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="ServiceOfInterest" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Service of Interest <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('ServiceOfInterest')?.touched &&
+                                leadForm.get('ServiceOfInterest')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('ServiceOfInterest')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="PurchaseTimeline" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Purchase Timeline <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('PurchaseTimeline')?.touched &&
+                                leadForm.get('PurchaseTimeline')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('PurchaseTimeline')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="SpecificRequirements" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Specific Requirement <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('SpecificRequirements')?.touched &&
+                                leadForm.get('SpecificRequirements')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('SpecificRequirements')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <!-- <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>   -->
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div ngbAccordionItem id="fourth" class="accordion-item-enhanced">
+                <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                    <button ngbAccordionButton class="accordion-button-enhanced">
+                        <div class="accordion-header-content">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-plus-circle text-info"></i>
+                            </div>
+                            <div class="header-text">
+                                <h5 class="card-title mb-0">Additional Information</h5>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="py-0 px-2">
+
+
+                        <div class="row">
+
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Industry" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Industry <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('Industry')?.touched && leadForm.get('Industry')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('Industry')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="CompanySize" [onlyNumbers]>
+                                    <label for="text-input" class="input-label">Company Size <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('CompanySize')?.touched && leadForm.get('CompanySize')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('CompanySize')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="AnnualRevenue" [onlyNumbers]>
+                                    <label for="text-input" class="input-label">Annual Revenue <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('AnnualRevenue')?.touched &&
+                                leadForm.get('AnnualRevenue')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('AnnualRevenue')?.hasError('onlyNumbers')){
+                                    <span>Only Digits are allowed</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Notes" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Notes <span
+                                            class="text-danger"></span></label>
+                                </div>
+                                @if(leadForm.get('Notes')?.touched && leadForm.get('Notes')?.invalid){
+                                <div class="error-message">
+                                    @if(leadForm.get('Notes')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
+                                }
+                            </aside>
+                            <!-- <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>   -->
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
 
     @if(isEditMode){
     <div class="col-12 mt-3">

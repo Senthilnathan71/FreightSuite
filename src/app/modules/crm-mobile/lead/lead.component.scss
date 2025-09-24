@@ -435,12 +435,13 @@
 @media (max-width: 768px) {
   .lead-header-card {
     .header-icon {
-      width: 35px;
-      height: 35px;
-
+      width: 25px;
+      height: 25px;
+      
       i {
         font-size: 16px;
       }
+      margin-bottom: 5px;
     }
 
     .page-title {

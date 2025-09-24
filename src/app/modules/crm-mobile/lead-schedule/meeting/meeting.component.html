@@ -80,122 +80,211 @@
 
 
 <div class="row">
-  <div class="col-12">
-    <div class="card">
-      <section class="card-body">
-        <form [formGroup]="meetingForm" (ngSubmit)="onSubmit()">
-          <div class="row">
-            <div class="col-sm-12 col-md-3">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Customer Name</label>
-                <input type="text" formControlName="customerName" class="form-control" />
-                <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="text-danger">
-                  Customer name is required.
-                </small>
-              </div>
-            </div>
-
-            <div class="col-sm-12 col-md-4">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Contact Person</label>
-                <input type="text" formControlName="contactPerson" class="form-control" />
-                <small *ngIf="f['contactPerson'].touched && f['contactPerson'].invalid" class="text-danger">
-                  Contact Person is required.
-                </small>
-              </div>
-            </div>
-
-            <div class="col-sm-12 col-md-4">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Phone</label>
-                <input type="text" formControlName="phone" class="form-control" />
-                <small *ngIf="f['phone'].touched && f['phone'].invalid" class="text-danger">
-                  Valid 10-digit phone number is required.
-                </small>
-              </div>
-            </div>
-
-
-            <div class="card-title">Schedule Meeting</div>
-
-            <div class="col-sm-12 col-md-3">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Meeting Date <span>*</span></label>
-                <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" />
-                <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="text-danger">
-                  Meeting date is required.
-                </small>
-              </div>
-            </div>
-
-            
-
-            <div class="col-sm-12 col-md-3">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Meeting Type <span>*</span></label>
-                <select formControlName="meetingType" class="form-select">
-                  <option value="">Select</option>
-                  <option value="Call">Call</option>
-                  <option value="Visit">Visit</option>
-                  <option value="Phone">Phone</option>
-                  <option value="eMeeting">eMeeting</option>
-                </select>
-                <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="text-danger">
-                  Meeting type is required.
-                </small>
-              </div>
-            </div>
-
-            <div class="col-sm-12 col-md-3">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Salesperson <span>*</span></label>
-                <select formControlName="leadAssignTo" class="form-select">
-                  <option value="">Select</option>
-                  <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
-                    {{ person.userName }}
-                  </option>
-                </select>
-                <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="text-danger">
-                  Salesperson is required.
-                </small>
-              </div>
-            </div>
-
-            <div class="col-sm-12 col-md-4">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Meeting Agenda <span>*</span></label>
-                <textarea type="text" formControlName="customerProfile" class="form-control"></textarea>
-                <small *ngIf="f['customerProfile'].touched && f['customerProfile'].invalid" class="text-danger">
-                  Meeting Agenda is required.
-                </small>
-              </div>
-            </div>
-            <div class="col-sm-12 col-md-4">
-              <div class="mb-2">
-                <label class="control-label col-form-label">Status</label>
-                <input type="text" formControlName="status" class="form-control" [disabled]="true" />
-                <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
-                  Status is required.
-                </small>
-              </div>
-            </div>
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-calendar-check"></i>
           </div>
+          <h5 class="page-title mb-0 text-info">Opportunity</h5>
 
-          <div class="d-flex align-items-center justify-content-start gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary waves-effect waves-light" (click)="goBack()">
-              <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
-            </button>
-            <button type="button" (click)="resetForm()"
-              class="btn btn-sm btn-outline-secondary waves-effect waves-light btn-min-width ms-auto">
-              <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
-            </button>
-            <button type="submit" class="btn btn-sm btn-info waves-effect waves-light btn-min-width"
-              [disabled]="meetingForm.invalid || btnDisable">
-              <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
-            </button>
+          <!-- <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a> -->
+
+        </div>
+      </div>
+      <div class="col-md-8 pb-1">
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="openAuditLogs(auditLogModal)">
+            <i class="fas fa-history me-1"></i>Logs
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" (click)="resetForm()"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+          <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            [disabled]="meetingForm.invalid || btnDisable">
+            <i class="fas fa-save me-1"></i> Save
+          </button>
+          <!-- <div ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        </div>
+                    </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 mt-1 px-0">
+    <div class="card border">
+      <section class="card-body py-2 px-2">
+        <form [formGroup]="meetingForm" (ngSubmit)="onSubmit()">
+          <div class="row compact-form">
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="customerName" formControlName="customerName" placeholder=""
+                  class="custom-input-field sm">
+                <label for="GroupName" class="input-label">Customer Name <span
+                    class="text-danger fw-bold">*</span></label>
+                <div *ngIf="f['customerName'].touched && f['customerName'].invalid" class="error-message">
+                  Required
+                </div>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="contactPerson" formControlName="contactPerson" placeholder=""
+                  class="custom-input-field sm">
+                <label for="contactPerson" class="input-label">Contact Person <span
+                    class="text-danger fw-bold">*</span></label>
+                <div *ngIf="f['contactPerson'].touched && f['contactPerson'].invalid" class="error-message">
+                  Required
+                </div>
+              </div>
+            </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="phone" formControlName="phone" placeholder="" class="custom-input-field sm"
+                  maxlength="10">
+                <label for="phone" class="input-label">Phone <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="f['phone'].touched && f['phone'].invalid" class="error-message">
+                  Required
+                </div>
+              </div>
+            </aside>
+
+
+
+            <h6 class="card-title text-info mb-0 my-1 text-center">Schedule Meeting</h6>
+
+            <div class="col-md-4">
+              <div class=" custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="meetingDate"
+                    ngbDatepicker #d2="ngbDatepicker" [min]="minDate" (keydown.arrowDown)="d2.open()"
+                    (click)="d2.toggle()" container="body" />
+                  <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                </div>
+                <label for="shipmentDateExpected" class="input-label">Meeting Date <span class="text-danger">*</span>
+                </label>
+                <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
+                  Required
+                </div>
+              </div>
+            </div>
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!meetingForm.get('meetingType')?.value">
+                <ng-select formControlName="meetingType">
+                  <ng-option value="">Select</ng-option>
+                  <ng-option value="Call">Call</ng-option>
+                  <ng-option value="Visit">Visit</ng-option>
+                  <ng-option value="Phone">Phone</ng-option>
+                  <ng-option value="eMeeting">eMeeting</ng-option>
+                </ng-select>
+                <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
+                <div *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="error-message">
+                  Required
+                </div>
+              </div>
+            </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
+                <ng-select [items]="salesPersons" bindLabel="userName" bindValue="UserMasterSid"
+                  formControlName="leadAssignTo">
+                </ng-select>
+                <label class="input-label">Salesperson <span class="text-danger">*</span></label>
+                <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
+                  Required.
+                </small>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <textarea id="text-input" class="custom-input-field sm" formControlName="customerProfile" rows="1"
+                  placeholder="">
+                 </textarea>
+                <label for="text-input" class="input-label">Meeting Agenda <span class="text-danger">*</span></label>
+                <div *ngIf="f['customerProfile'].touched && f['customerProfile'].invalid" class="error-message pb-1">
+                  Required
+                </div>
+              </div>
+
+            </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="phone" formControlName="status" placeholder="" class="custom-input-field sm"
+                  [disabled]="true">
+                <label for="phone" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="f['status'].touched && f['status'].invalid" class="error-message">
+                  Required
+                </div>
+              </div>
+            </aside>
           </div>
         </form>
       </section>
     </div>
   </div>
 </div>
+
+<ng-template #auditLogModal let-modal>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">Audit Logs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body p-3">
+    <div class="table-responsive">
+      <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Changed At</th>
+            <th>Changed By</th>
+            <th>Operation</th>
+            <th class="text-center">Old Value</th>
+            <th class="text-center">New Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.changedAt | date:'medium' }}</td>
+            <td>{{ log.changedBy || '-' }}</td>
+            <td>{{ log.operation }}</td>
+            <td class="bg-light-danger">
+              <ul>
+                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+            <td class="bg-light-success">
+              <ul>
+                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+          </tr>
+          <tr *ngIf="auditLogs.length === 0">
+            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>

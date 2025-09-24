@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { LeadService } from '../../Services/lead.service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -9,7 +9,13 @@ import { FormsModule } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-view',
   standalone: true,
@@ -18,53 +24,231 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FeatherModule,
     NgbPaginationModule,
     FormsModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    FavoriteStarComponent,
+    ReusableTableComponent
   ],
   templateUrl: './view.component.html',
   styleUrl: './view.component.scss'
 })
-export class ViewComponent implements OnInit {
-  leads: any[] = [];        
-  errorMessage: string = '';  
-  searchPerformed: boolean = false;
-  
+export class ViewComponent extends BaseListComponent implements OnInit {
+  @ViewChild('leadTable') bookingTable!: ReusableTableComponent;
+  leads: any[] = [];
+  errorMessage: string = '';
+  // searchPerformed: boolean = false;
+
   // pagination
-  page = 1;
-  pageSize = 5;
-  totalLengthOfCollection: number;
+  // page = 1;
+  // pageSize = 5;
+  // totalLengthOfCollection: number;
   searchText: string = '';
   isMobile: boolean = false;
   statusList = ["Active", "Suspended"];
 
   // Sorting
-  sortColumn = "preCustomerName";
-  sortDirection = "asc";
+  // sortColumn = "preCustomerName";
+  // sortDirection = "asc";
 
   // Company context
   currentCompany: any;
   currentBranch: any;
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Zone',
+        // condition: (row: any) => this.hasPermission('View')
+      },
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'PreCustomerMasterSid',
+    emptyMessage: 'No bookings found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'lead-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'LeadNo',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allleads() { return this.allItems; }
   constructor(
-    private leadService: LeadService, 
-    private route: Router, 
+    private leadService: LeadService,
+    private route: Router,
     private appService: AppService,
     private appSettingService: AppSettingsService,
-     private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.searchLeads();
     this.isMobile = this.appService.getDevice();
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
   }
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.leadService.searchLead(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+       this.allItems = (response.data.items || []).map((item: any) => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching bookings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching bookings.');
+    console.error('Error searching bookings', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchlead() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.PreCustomerMasterSid || index;
+  }
+
+
+  viewleads(lead : any): void {
+     this.route.navigate(['crm/lead', lead.PreCustomerMasterSid])
+  }
+
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'preCustomerName',
+        label: 'Lead Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'phone',
+        label: 'Phone',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'preCustomerType',
+        label: 'Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'POD',
+        label: 'Schedule',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string'
+      },
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewleads(event.row);
+    }
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
 
   // Server-side search implementation
   searchLeads(): void {
     this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    
+
     const params = {
       search: this.searchText.trim() || '',
       page: this.page,
@@ -88,7 +272,7 @@ export class ViewComponent implements OnInit {
           this.totalLengthOfCollection = 0;
         }
         this.spinner.hide();
-      }, 
+      },
       error: (error: any) => {
         console.error(error);
         this.appSettingService.showError('Error searching leads.');
@@ -102,15 +286,15 @@ export class ViewComponent implements OnInit {
     this.searchLeads();
   }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.searchLeads(); // Re-fetch with new sorting
-  }
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.searchLeads(); 
+  // }
 
   updatePaginatedData(): void {
     this.searchLeads();
