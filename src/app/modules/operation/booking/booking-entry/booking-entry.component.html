@@ -1,7 +1,7 @@
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
-<div class="modern-booking-workspace ">
+<div class="modern-booking-workspace px-0">
   <!-- Smart Header with Dynamic Actions -->
   <div class="smart-header">
     <div class="header-brand">
@@ -29,32 +29,33 @@
         </button>
       </div>
       <div class="action-group" *ngIf="!isEditMode">
-        <button class="action-btn action-secondary" (click)="openUploadModal()">
-          <i class="fas fa-upload fs-2"></i>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openUploadModal()">
+          <i class="fas fa-upload me-1"></i>
           <span>Upload</span>
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode">
-        <button class="action-btn action-secondary" (click)="openAuditLogs(auditLogModal)">
-          <i class="fas fa-history fs-2"></i>
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="openAuditLogs(auditLogModal)">
+          <i class="fas fa-history  me-1"></i>
           <span>Logs</span>
         </button>
       </div>
       <div class="action-group">
-        <button class="action-btn action-secondary" (click)="navigateBack()">
-          <i class="fas fa-chevron-left fs-2"></i>
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+          <i class="fas fa-chevron-left me-1"></i>
           <span>Back</span>
         </button>
       </div>
       <div class="action-group">
-        <button class="action-btn action-warning" (click)="resetForm()">
-          <i class="fas fa-sync-alt fs-2"></i>
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+          <i class="fas fa-sync-alt me-1"></i>
           <span>Reset</span>
         </button>
       </div>
       <div class="action-group primary">
-        <button class="action-btn action-success" (click)="onSubmit()">
-          <i class="fas fa-save fs-2"></i>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+          <i class="fas fa-save me-1"></i>
           <span>Save</span>
         </button>
       </div>
@@ -66,7 +67,7 @@
 
     <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
       <div class="smart-field-group">
-        <div class="custom-form-group" style="margin-top: 9px;">
+        <div class="custom-form-group" style="margin-top: 8px;">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
             formControlName="BookingNo">
           <label for="text-input" [ngClass]="{
@@ -76,7 +77,7 @@
         </div>
       </div>
       <div class="smart-field-group">
-        <div class=" custom-form-group custom-form-group-select">
+        <div class=" custom-form-group custom-form-group-select-date" [class.filled]="!!bookingForm.get('BookingDateTime')?.value">
           <div class="input-group ">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
               (click)="d1.toggle()" formControlName="BookingDateTime" [minDate]="minDate"
@@ -90,23 +91,23 @@
         </div>
       </div>
       <div class="smart-field-group">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
           <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-            class="ng-select" formControlName="DepartmentMasterSid" placeholder="Select Dept"
+            class="ng-select" formControlName="DepartmentMasterSid" placeholder=""
             (change)="onDeptChange($event)" appendTo="body">
           </ng-select>
           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
           @if(bookingForm.get('DepartmentMasterSid')?.touched && bookingForm.get('DepartmentMasterSid')?.invalid){
           <div class="error-message">
             @if(bookingForm.get('DepartmentMasterSid')?.hasError('required')){
-            <span>Department name is required</span>
+            <span>Required</span>
             }
           </div>
           }
         </div>
       </div>
       <div class="smart-field-group">
-        <div class="custom-form-group" style="margin-top: 9px;">
+        <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
             formControlName="HBLNo">
           <label for="text-input" [ngClass]="{
@@ -117,7 +118,7 @@
       </div>
       <div class="smart-field-group">
         <aside>
-          <div class="custom-form-group custom-form-group-select">
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('status')?.value">
             @if(isEditMode){
             <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body">
               <ng-option value="Active">Active</ng-option>
@@ -198,7 +199,7 @@
         <div class="two-column-layout">
 
           <!-- Party Information Card - Left Half -->
-          <div class="info-card">
+          <div class="info-card  border border-top-0">
             <div class="card-header">
               <div class="header-content">
                 <h4 class="card-title">
@@ -210,16 +211,16 @@
                 </button> -->
               </div>
             </div>
-            <div class="card-body">
+            <div class="card-body py-1">
               <div class="col-md-12">
 
 
                 <div class="row compact-form" [formGroup]="bookingForm">
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
                       <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                        class="ng-select" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                        class="ng-select" formControlName="CustomerMasterSid" placeholder=""
                         appendTo="body" (change)="onCustomerChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
@@ -227,16 +228,16 @@
                       bookingForm.get('CustomerMasterSid')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('CustomerMasterSid')?.hasError('required')){
-                        <span>Customer name is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerAddress')?.value">
                       <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
-                        formControlName="CustomerAddress" placeholder="Select Customer Address"
+                        formControlName="CustomerAddress" placeholder=""
                         (change)="onCustomerBranchChange($event)" appendTo="body">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer Address <span
@@ -244,16 +245,16 @@
                       @if(bookingForm.get('CustomerAddress')?.touched && bookingForm.get('CustomerAddress')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('CustomerAddress')?.hasError('required')){
-                        <span>Customer Address is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('ShipperName')?.value">
                       <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="ShipperName" placeholder="Select Shipper"
+                        class="ng-select" formControlName="ShipperName" placeholder=""
                         (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
                         (clear)="onShipperChange()" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
@@ -267,7 +268,7 @@
                       @if(bookingForm.get('ShipperName')?.touched && bookingForm.get('ShipperName')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('ShipperName')?.hasError('required')){
-                        <span>Shipper Name is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -277,7 +278,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" style="margin-top: 10px;">
+                    <div class="custom-form-group" >
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ShipperAddress">
                       <label for="text-input" class="input-label">Shipper Address <span
@@ -285,7 +286,7 @@
                       @if(bookingForm.get('ShipperAddress')?.touched && bookingForm.get('ShipperAddress')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('ShipperAddress')?.hasError('required')){
-                        <span>Shipper Address is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -293,9 +294,9 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
                       <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="ConsigneeName" placeholder="Select Consignee"
+                        class="ng-select" formControlName="ConsigneeName" placeholder=""
                         (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
                         (clear)="onShipperChange()" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
@@ -309,7 +310,7 @@
                       @if(bookingForm.get('ConsigneeName')?.touched && bookingForm.get('ConsigneeName')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('ConsigneeName')?.hasError('required')){
-                        <span>Consignee Name is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -318,7 +319,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" style="margin-top: 10px;">
+                    <div class="custom-form-group" >
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
@@ -326,7 +327,7 @@
                       @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('ConsigneeAddress')?.hasError('required')){
-                        <span>Consignee Address is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -334,9 +335,9 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('Notify')?.value">
                       <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="Notify" placeholder="Select Notify"
+                        class="ng-select" formControlName="Notify" placeholder=""
                         (change)="setAddress('NotifyAddress',$event)" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
@@ -350,7 +351,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" style="margin-top: 10px;">
+                    <div class="custom-form-group" >
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NotifyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
@@ -360,9 +361,9 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid" class="ng-select"
-                        formControlName="DestinationAgent" placeholder="Select Agent"
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DestinationAgent')?.value">
+                      <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                        class="ng-select" formControlName="DestinationAgent" placeholder=""
                         (change)="setAddress('AgentAddress',$event)" appendTo="body">
 
                         <ng-template ng-option-tmp let-item="item">
@@ -378,7 +379,7 @@
                       @if(bookingForm.get('AgentName')?.touched && bookingForm.get('AgentName')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('AgentName')?.hasError('required')){
-                        <span>Destination Agent is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -396,9 +397,9 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CarrierName')?.value">
                       <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="CarrierName" placeholder="Select Carrier" appendTo="body">
+                        class="ng-select" formControlName="CarrierName" placeholder="" appendTo="body">
                       </ng-select>
                       <label for="text-input" class="input-label">Carrier Name<span class="text-danger"></span></label>
                     </div>
@@ -406,9 +407,9 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('SalesmanSid')?.value">
                       <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
-                        formControlName="SalesmanSid" placeholder="Select Salesman" appendTo="body">
+                        formControlName="SalesmanSid" placeholder="" appendTo="body">
                       </ng-select>
                       <label for="text-input" class="input-label">Sales Person<span class="text-danger"></span></label>
                     </div>
@@ -438,11 +439,11 @@
                     </div>
                   </aside>
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select">
+                    <div class=" custom-form-group custom-form-group-select-date">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate"
                           ngbDatepicker #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()"
-                          (click)="d2.toggle()"container="body" />
+                          (click)="d2.toggle()" container="body" />
                         <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
@@ -453,9 +454,9 @@
                     </div>
                   </div>
                   <aside class="col-md-6" *ngIf="b['ShipmentType']?.value">
-                    <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select" appendTo="body"
-                        formControlName="NominatedBy" placeholder="Select NominatedBy">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('NominatedBy')?.value">
+                      <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select"
+                        appendTo="body" formControlName="NominatedBy" placeholder="">
                       </ng-select>
                       <label for="text-input" class="input-label">Nominated By <span class="text-danger"></span></label>
                     </div>
@@ -467,7 +468,7 @@
           </div>
 
           <!-- Vessel & Route Card - Right Half -->
-          <div class="info-card">
+          <div class="info-card border border-top-0">
             <div class="card-header">
               <div class="header-content">
                 <h4 class="card-title">
@@ -479,31 +480,31 @@
                 </div> -->
               </div>
             </div>
-            <div class="card-body">
+            <div class="card-body  py-1">
               <div class="col-md-12">
                 <div class="row compact-form" [formGroup]="bookingForm">
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POO')?.value">
                       <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
-                        formControlName="POO" appendTo="body" placeholder="Select POO">
+                        formControlName="POO" appendTo="body" placeholder="">
                       </ng-select>
                       <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
                     </div>
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POL')?.value">
                       <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
-                        formControlName="POL" appendTo="body" placeholder="Select POL"
+                        formControlName="POL" appendTo="body" placeholder=""
                         (change)="handlePOLChange($event) ; onVesselChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                       @if(bookingForm.get('POL')?.touched && bookingForm.get('POL')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('POL')?.hasError('required')){
-                        <span>POL is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -511,16 +512,16 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POD')?.value">
                       <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
-                        (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
+                        (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="">
                       </ng-select>
                       <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                       @if(bookingForm.get('POD')?.touched && bookingForm.get('POD')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('POD')?.hasError('required')){
-                        <span>POD is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -528,9 +529,9 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select"  [class.filled]="!!bookingForm.get('FPD')?.value">
                       <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
-                        formControlName="FPD" appendTo="body" placeholder="Select FPD"
+                        formControlName="FPD" appendTo="body" placeholder=""
                         (change)="handleFPODChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
@@ -554,18 +555,18 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('VesselName')?.value">
                       <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
-                        class="ng-select" formControlName="VesselName" placeholder="Select Vessel" appendTo="body"
+                        class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
                         (change)="onVesselChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('VoyageNo')?.value">
                       <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                        appendTo="body" formControlName="VoyageNo" placeholder="Select Voyage No"
+                        appendTo="body" formControlName="VoyageNo" placeholder=""
                         (change)="onVoyageChange($event)">
                         <ng-template ng-option-tmp let-item="item">
                           <!-- Voyage Number -->
@@ -612,11 +613,11 @@
                     </div>
                   </aside>
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select">
+                    <div class=" custom-form-group custom-form-group-select-date mb-0">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
                           container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
-                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()"/>
+                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" />
                         <button class="btn  bi bi-calendar3 " (click)="d5.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
@@ -626,7 +627,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select">
+                    <div class=" custom-form-group custom-form-group-select-date mb-0">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
                           container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
@@ -643,15 +644,15 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1" [class.filled]="!!bookingForm.get('IncoTerms')?.value">
                       <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
-                        appendTo="body" formControlName="IncoTerms" placeholder="Select IncoTerms">
+                        appendTo="body" formControlName="IncoTerms" placeholder="">
                       </ng-select>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
                       @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
                       <div class="error-message">
                         @if(bookingForm.get('IncoTerms')?.hasError('required')){
-                        <span>TOS is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -660,11 +661,11 @@
 
 
                   <aside class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select">
+                    <div class=" custom-form-group custom-form-group-select-date mb-0 mt-md-1">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
                           [minDate]="minDate" ngbDatepicker #d6="ngbDatepicker" (keydown.arrowDown)="d6.open()"
-                         container="body" (click)="d6.toggle()" />
+                          container="body" (click)="d6.toggle()" />
                         <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
@@ -674,10 +675,10 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select">
+                  <aside class="col-md-6"> 
+                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"  [class.filled]="!!bookingForm.get('FreightTerms')?.value">
                       <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
-                        appendTo="body" placeholder="Select Freight Terms" formControlName="FreightTerms">
+                        appendTo="body" placeholder="" formControlName="FreightTerms">
                       </ng-select>
                       <label for="text-input" class="input-label">Freight PP/CC<span class="text-danger"></span></label>
                     </div>
@@ -688,14 +689,15 @@
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Coload"
                           (keydown.enter)="toggleHeaderCheckboxes($event,'Coload')">
-                        <label for="" class="form-check-label sm">Co Load <span class="text-danger"></span></label>
+                        <label for="" class="form-check-label sm">CoLoad <span class="text-danger"></span></label>
                       </div>
                     </div>
                   </aside>
                   <aside class="col-md-3 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
-                        <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="ShipmentType"
+                        <input type="checkbox" id="" class="focus-ring form-check-input sm"
+                          formControlName="ShipmentType"
                           (keydown.enter)="toggleHeaderCheckboxes($event,'ShipmentType')">
                         <label for="" class="form-check-label sm">Nominated <span class="text-danger"></span></label>
                       </div>
@@ -729,7 +731,7 @@
         <div class="info-sidebar">
 
           <!-- Quick Stats -->
-          <div class="stats-widget">
+          <div class="stats-widget  border border-top-0">
             <div class="widget-header">
               <h5 class="widget-title">Booking Summary</h5>
             </div>
@@ -802,7 +804,7 @@
           </div>
 
           <!-- Recent Actions -->
-          <div class="activity-widget">
+          <div class="activity-widget  border border-top-0">
             <div class="widget-header">
               <h5 class="widget-title">Recent Activity</h5>
             </div>
@@ -853,20 +855,20 @@
       </div>
       <div class="col-md-12">
         <div class="row compact-form" [formGroup]="cargoForm">
-
+          
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('CargoType')?.value">
               <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
-                formControlName="CargoType" placeholder="Select Cargo Type" appendTo="body">
+                formControlName="CargoType" placeholder="" appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">Cargo Type<span class="text-danger"></span></label>
             </div>
           </aside>
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ContainerType')?.value">
               <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
-                class="ng-select" formControlName="ContainerType" placeholder="Select ContainerType" appendTo="body"
+                class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                 (change)="onContainerTypeChange($event)">
               </ng-select>
               <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
@@ -981,35 +983,35 @@
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
               <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
-                appendTo="body" placeholder="Select Shipment Terms" formControlName="ShipmentTerms">
+                appendTo="body" placeholder="" formControlName="ShipmentTerms">
               </ng-select>
               <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
             </div>
           </aside>
 
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('MovementType')?.value">
               <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="Select Movement Type" formControlName="MovementType" appendTo="body">
+                placeholder="" formControlName="MovementType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Movement Type <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
               <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name"
-                placeholder="Select Mode of Transport" formControlName="ModeOfTransport" appendTo="body">
+                placeholder="" formControlName="ModeOfTransport" appendTo="body">
 
               </ng-select>
               <label for="" class="input-label">Mode of Transport <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!cargoForm.get('StuffingAt')?.value">
               <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="Select StuffingAt" formControlName="StuffingAt" (change)="handleCFSOrYard()
+                placeholder="" formControlName="StuffingAt" (change)="handleCFSOrYard()
                 " appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">Stuffing at<span class="text-danger"></span></label>
@@ -1090,7 +1092,7 @@
         </div>
         }@else {
         <div class="col-12">
-          <div class="alert alert-info text-center">No Product added yet.</div>
+          <div class="my-2 text-center">No Product added yet.</div>
         </div>
         }
       </div>
@@ -1141,27 +1143,28 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('ReleaseType')?.value">
               <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="Select Release type" formControlName="ReleaseType" appendTo="body">
+                placeholder="" formControlName="ReleaseType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="HBLNo"
-                [textWithNumbers]="20">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="HBLNo" [textWithNumbers]="20">
               <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !o['HBLNo']?.getRawValue()
-                         }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
-              </div>
+                         }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span
+                  class="text-danger"></span></label>
+            </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Forwarder')?.value">
               <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                placeholder="Select Forwarder" (change)="setAddressOthers('ForwarderAddress',$event)"
+                placeholder="" (change)="setAddressOthers('ForwarderAddress',$event)"
                 formControlName="Forwarder" [textWithNumbers]="20" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -1181,9 +1184,9 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('NotifyParty')?.value">
               <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="NotifyParty" placeholder="Select Notify" appendTo="body"
+                formControlName="NotifyParty" placeholder="" appendTo="body"
                 (change)="setAddressOthers('NotifyPartyAddress',$event)">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -1203,9 +1206,9 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Notify2')?.value">
               <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="Notify2" placeholder="Select Notify" appendTo="body"
+                formControlName="Notify2" placeholder="" appendTo="body"
                 (change)="setAddressOthers('NotifyAddress2',$event)">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -1226,9 +1229,9 @@
           </aside>
           @if(b['Coload'].value){
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
               <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="Coloader" placeholder="Select Forwarder" appendTo="body">
+                formControlName="Coloader" placeholder="" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
                     <strong>{{ item.CustomerName }}</strong><br>
@@ -1258,13 +1261,13 @@
 
 
           <div class="col-md-3">
-            <div class=" custom-form-group custom-form-group-select">
+            <div class=" custom-form-group custom-form-group-select-date">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
                   (click)="d3.toggle()" container="body">
-                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather
-                    name="calendar" class="feather-sm"></i-feather></button>
+                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Delivery Date <span class="text-danger"></span>
               </label>
@@ -1296,9 +1299,9 @@
 
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('CargoCurrency')?.value">
               <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
-                placeholder="Select Cargo Currency" formControlName="CargoCurrency" appendTo="body">
+                placeholder="" formControlName="CargoCurrency" appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
@@ -1330,15 +1333,16 @@
 
 
           <div class="col-md-3">
-            <div class=" custom-form-group custom-form-group-select">
+            <div class=" custom-form-group custom-form-group-select-date">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="CarrierBookingDate" #d10="ngbDatepicker" (keydown.arrowDown)="d10.open()"
                   (click)="d10.toggle()" container="body">
-                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button"> <i-feather
+                <button class="btn bi bi-calendar3" (click)="d10.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
-              <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span class="text-danger"></span>
+              <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span
+                  class="text-danger"></span>
               </label>
 
             </div>
@@ -1369,13 +1373,13 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class=" custom-form-group custom-form-group-select">
+            <div class=" custom-form-group custom-form-group-select-date">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()"
-                  (click)="d7.toggle()" container="body"/>
-                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather
-                    name="calendar" class="feather-sm"></i-feather></button>
+                  (click)="d7.toggle()" container="body" />
+                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
               </label>
@@ -1385,9 +1389,9 @@
           }
           @if(otherForm.get('SwitchBL')?.value){
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLAgent')?.value">
               <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName"
-                placeholder="Select BL Agent" formControlName="SwitchBLAgent" appendTo="body"
+                placeholder="" formControlName="SwitchBLAgent" appendTo="body"
                 (change)="setAddressOthers('AgentAddress',$event)">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -1409,18 +1413,18 @@
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLShipper')?.value">
               <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
-                placeholder="Select BL Shipper" formControlName="SwitchBLShipper" appendTo="body">
+                placeholder="" formControlName="SwitchBLShipper" appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">BL Shipper<span class="text-danger"></span></label>
             </div>
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
               <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
-                formControlName="SwitchBLConsignee" placeholder="Select BL Consignee" appendTo="body">
+                formControlName="SwitchBLConsignee" placeholder="" appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">BL Consignee<span class="text-danger"></span></label>
             </div>
@@ -1556,9 +1560,9 @@
   <div class="modal-body">
     <div class="row compact-form" [formGroup]="productForm">
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ProductName')?.value">
           <ng-select [items]="productList" bindLabel="ProductName" bindValue="ProductName" formControlName="ProductName"
-            placeholder="Select Commodity" (change)="handleProductChange($event)">
+            placeholder="" (change)="handleProductChange($event)">
           </ng-select>
           <label for="" class="input-label">Commodity <span class="text-danger"></span></label>
         </div>
@@ -1572,19 +1576,19 @@
           @if(productForm.get('ShippingBillNo')?.touched && productForm.get('ShippingBillNo')?.invalid){
           <div class="error-message">
             @if(productForm.get('ShippingBillNo')?.hasError('required')){
-            <span>Shipping Bill No is required</span>
+            <span>Required</span>
             }
           </div>
           }
         </div>
       </aside>
       <div class="col-md-4">
-        <div class=" custom-form-group custom-form-group-select">
+        <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
               [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
               formControlName="ShippingBillDate" />
-            <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+            <button class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany ===
@@ -1594,22 +1598,22 @@
           @if(productForm.get('ShippingBillDate')?.touched && productForm.get('ShippingBillDate')?.invalid){
           <div class="error-message">
             @if(productForm.get('ShippingBillDate')?.hasError('required')){
-            <span>Shipping Bill Date is required</span>
+            <span>Required</span>
             }
           </div>
           }
         </div>
       </div>
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="UOMName"
-            bindValue="UOMName" formControlName="ExternaPkg">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ExternaPkg')?.value">
+          <ng-select [items]="packageTypeList" placeholder="" bindLabel="UOMName" bindValue="UOMName"
+            formControlName="ExternaPkg">
           </ng-select>
           <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
           @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
           <div class="error-message">
             @if(productForm.get('ExternaPkg')?.hasError('required')){
-            <span>External Pkg is required</span>
+            <span>Required</span>
             }
           </div>
           }
@@ -1622,7 +1626,7 @@
           @if(productForm.get('ExternlQty')?.touched && productForm.get('ExternlQty')?.invalid){
           <div class="error-message">
             @if(productForm.get('ExternlQty')?.hasError('required')){
-            <span>No. of Pkg is required</span>
+            <span>Required</span>
             }
           </div>
           }
@@ -1638,7 +1642,7 @@
           productForm.get('GrossWeight')?.invalid) {
           <div class="error-message">
             @if (productForm.get('GrossWeight')?.errors?.['required']) {
-            <span>Gross Weight is required</span>
+            <span>Required</span>
             } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
             <span>Gross Weight cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
@@ -1658,7 +1662,7 @@
           productForm.get('NetWeight')?.invalid) {
           <div class="error-message">
             @if (productForm.get('NetWeight')?.errors?.['required']) {
-            <span>Net Wt is required</span>
+            <span>Required</span>
             } @else if (productForm.get('NetWeight')?.errors?.['max']) {
             <span>Net Wt cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
@@ -1679,7 +1683,7 @@
           {
           <div class="error-message">
             @if (productForm.get('Volume')?.errors?.['required']) {
-            <span>CBM is required</span>
+            <span>Required</span>
             } @else if (productForm.get('Volume')?.errors?.['max']) {
             <span>CBM cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('Volume')?.errors?.['decimalPrecision']) {
@@ -1690,12 +1694,13 @@
         </div>
       </aside>
       <div class="col-md-4">
-        <div class=" custom-form-group custom-form-group-select">
+        <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
-              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" container="body"/>
-            <button class="btn bi bi-calendar3 " (click)="d8.toggle()" type="button"> <i-feather
-                name="calendar" class="feather-sm"></i-feather></button>
+              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()"
+              container="body" />
+            <button class="btn bi bi-calendar3 " (click)="d8.toggle()" type="button"> <i-feather name="calendar"
+                class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label">Cargo Received Date <span class="text-danger"></span>
           </label>
@@ -1712,9 +1717,9 @@
       </aside>
       @if(productForm.get('IsHaz')?.value){
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ImcoClass')?.value">
           <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
-            placeholder="Select IMCO">
+            placeholder="">
           </ng-select>
 
           <label for="text-input" class="input-label">Imco Class <span class="text-danger"></span></label>
@@ -1757,9 +1762,9 @@
         </div>
       </aside>
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('UomMasterSid')?.value">
           <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="UomMasterSid"
-            placeholder="Select UOM">
+            placeholder="">
           </ng-select>
           <label for="text-input" class="input-label">Uom <span class="text-danger"></span></label>
         </div>
@@ -1830,10 +1835,10 @@
         </div>
       </aside>
       <div class="col-md-4">
-        <div class=" custom-form-group custom-form-group-select">
+        <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d6="ngbDatepicker"
-              (click)="d6.toggle()" container="body"/>
+              (click)="d6.toggle()" container="body" />
             <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
           </div>
@@ -1931,188 +1936,190 @@
     </div>
   </div>
   <div class="modal-body position-relative" id="pdfContent">
-   <div style="margin: auto; border: 2px solid black;">
+    <div style="margin: auto; border: 2px solid black;">
 
-  <!-- Company Info -->
-  <div
-    class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
+      <!-- Company Info -->
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
 
-    <div class="d-flex align-items-center gap-4 mb-3 mb-md-0">
-     <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
-      <h4 class="mb-0 fw-bold d-none d-md-block">{{currentCompany.companyName}}</h4>
-    </div>
+        <div class="d-flex align-items-center gap-4 mb-3 mb-md-0">
+          <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+          <h4 class="mb-0 fw-bold d-none d-md-block">{{currentCompany.companyName}}</h4>
+        </div>
 
-    <div class="text-center text-md-end mb-2">
-      <h5 class="fw-bold mb-1">{{currentCompany.companyName}}</h5>
-      <div>{{currentCompany.addressLine1}}</div>
-    </div>
-  </div>
-
-  <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-
-  <h5 class="text-center fw-bold m-0">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
-
- <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-
-  <!-- Customer & Booking Info -->
-  <div class="row px-3">
-    <div class="col-12 col-lg-6">
-      <div class="mb-1">
-        <div class="fw-bold me-2">Customer :</div>
-        <div class="fs-6 text-break">{{bookingHeader?.CustomerName}}</div>
-        <div class="text-break">{{bookingHeader?.CustomerAddress}}</div>
+        <div class="text-center text-md-end mb-2">
+          <h5 class="fw-bold mb-1">{{currentCompany.companyName}}</h5>
+          <div>{{currentCompany.addressLine1}}</div>
+        </div>
       </div>
-    </div>
 
-    <div class="col-12 col-lg-6">
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking No</div>
-        <div class="text-break">: {{bookingHeader?.BookingNo}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Date</div>
-        <div class="text-break">: {{bookingHeader?.BookingDateTime | formatDate }}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
-        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
-        <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
-      </div>
-    </div>
-  </div>
+      <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
 
-  <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+      <h5 class="text-center fw-bold m-0">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
 
-  <!-- Booking Details -->
-  <div class="row px-3">
-    <p class="fw-bold">We are pleased to confirm your booking as below :</p>
+      <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
 
-    <div class="col-12 col-lg-6">
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Vessel/Voyage</div>
-        <div class="text-break">: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ? bookingHeader?.VesselName + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
+      <!-- Customer & Booking Info -->
+      <div class="row px-3">
+        <div class="col-12 col-lg-6">
+          <div class="mb-1">
+            <div class="fw-bold me-2">Customer :</div>
+            <div class="fs-6 text-break">{{bookingHeader?.CustomerName}}</div>
+            <div class="text-break">{{bookingHeader?.CustomerAddress}}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking No</div>
+            <div class="text-break">: {{bookingHeader?.BookingNo}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Date</div>
+            <div class="text-break">: {{bookingHeader?.BookingDateTime | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
+            <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
+            <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
+          </div>
+        </div>
       </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETA</div>
-        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
-        <div class="text-break">: {{bookingHeader?.voyageDetails?.PODETA | formatDate }}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
-        <div class="text-break">: {{bookingHeader?.FPD}}</div>
-      </div>
-      <!-- <div class="d-flex mb-1 flex-wrap">
+
+      <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+      <!-- Booking Details -->
+      <div class="row px-3">
+        <p class="fw-bold">We are pleased to confirm your booking as below :</p>
+
+        <div class="col-12 col-lg-6">
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Vessel/Voyage</div>
+            <div class="text-break">: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ? bookingHeader?.VesselName
+              + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETA</div>
+            <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
+            <div class="text-break">: {{bookingHeader?.voyageDetails?.PODETA | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
+            <div class="text-break">: {{bookingHeader?.FPD}}</div>
+          </div>
+          <!-- <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
         <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
       </div> -->
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
-        <div class="text-break">: {{bookingHeader?.CarrierName || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier Booking</div>
-        <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.CarrierBookingRef || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Inco Terms</div>
-        <div class="text-break">: {{bookingHeader?.IncoTerms || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Hand Over To</div>
-        <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.YardCFS  || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Remarks</div>
-        <div class="text-break">: {{bookingHeader?.InternalNote || 'N/A'}}</div>
-      </div>
-    </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
+            <div class="text-break">: {{bookingHeader?.CarrierName || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier Booking</div>
+            <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.CarrierBookingRef || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Inco Terms</div>
+            <div class="text-break">: {{bookingHeader?.IncoTerms || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Hand Over To</div>
+            <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.YardCFS || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Remarks</div>
+            <div class="text-break">: {{bookingHeader?.InternalNote || 'N/A'}}</div>
+          </div>
+        </div>
 
-    <div class="col-12 col-lg-6">
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
-        <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
-        <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
-        <div class="text-break">: {{getFPDETA() | formatDate}}</div>
-      </div>
-      @if(selectedFCLLCL === "LCL"){
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
-      </div>
-      } @else if(selectedFCLLCL === "FCL"){
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
-      </div>
-      } @else if(selectedFCLLCL === "AIR"){
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>
-      </div>
-      }
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Gross Weight</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.GrossWeight || 'N/A'}}</div>
-      </div>
-      
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Volume(CBM)</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.Volume || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Commodity</div>
-        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.CargoType || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Freight</div>
-        <div class="text-break">: {{ bookingHeader?.FreightTerms || 'N/A'}}</div>
-      </div>
-      <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Destination Agent</div>
-        <div class="text-break">: {{ bookingHeader?.AgentName || 'N/A'}}</div>
-      </div>
-    </div>
-  </div>
+        <div class="col-12 col-lg-6">
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' :
+              'HBL No'}}</div>
+            <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+            <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
+            <div class="text-break">: {{getFPDETA() | formatDate}}</div>
+          </div>
+          @if(selectedFCLLCL === "LCL"){
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
+          </div>
+          } @else if(selectedFCLLCL === "FCL"){
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
+          </div>
+          } @else if(selectedFCLLCL === "AIR"){
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>
+          </div>
+          }
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Gross Weight</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.GrossWeight || 'N/A'}}</div>
+          </div>
 
-  <!-- Footer -->
-  <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
-    <div>
-      <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
-    </div>
-    <div class="d-flex">
-      <div class="text-break">{{userData?.userName || 'N/A'}}</div>
-    </div>
-    <p class="mt-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
-      HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
-  </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Volume(CBM)</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.Volume || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Commodity</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.CargoType || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Freight</div>
+            <div class="text-break">: {{ bookingHeader?.FreightTerms || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Destination Agent</div>
+            <div class="text-break">: {{ bookingHeader?.AgentName || 'N/A'}}</div>
+          </div>
+        </div>
+      </div>
 
-  <div class="d-flex justify-content-between px-3 flex-wrap mb-1">
-    <div class="d-flex gap-2">
-      <div>Print On :</div>
-      <div>{{ currentDate | formatDate}}</div>
+      <!-- Footer -->
+      <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
+        <div>
+          <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
+        </div>
+        <div class="d-flex">
+          <div class="text-break">{{userData?.userName || 'N/A'}}</div>
+        </div>
+        <p class="mt-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
+          HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
+      </div>
+
+      <div class="d-flex justify-content-between px-3 flex-wrap mb-1">
+        <div class="d-flex gap-2">
+          <div>Print On :</div>
+          <div>{{ currentDate | formatDate}}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <div>Printed By :</div>
+          <div>{{userData?.userName || 'N/A'}}</div>
+        </div>
+      </div>
     </div>
-    <div class="d-flex gap-2">
-      <div>Printed By :</div>
-      <div>{{userData?.userName || 'N/A'}}</div>
-    </div>
-  </div>
-</div>
   </div>
 </ng-template>
 
@@ -2225,7 +2232,8 @@
 
         <div class="col-12 col-lg-6">
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' :
+              'HBL No'}}</div>
             <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
           </div>
           <div class="d-flex mb-1 flex-wrap">

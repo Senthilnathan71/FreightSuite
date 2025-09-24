@@ -1,7 +1,7 @@
 /* Compact Modern Freight Booking - Screen Optimized */
 
 .modern-booking-workspace {
-  min-height: 100vh;
+  min-height: 90vh;
   // font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   position: relative;
   // font-size: 12px;
@@ -12,7 +12,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 4px 12px;
   margin-bottom: 6px;
   display: flex;
   justify-content: space-between;
@@ -64,7 +64,7 @@
 
 .action-group {
   display: flex;
-  gap: 5px;
+  gap: 8px;
 }
 
 .action-btn {
@@ -181,7 +181,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
-  padding: 12px;
+  padding: 0px 12px;
   transition: all 0.3s ease;
 }
 
@@ -272,44 +272,44 @@
   }
 }
 
-.smart-select {
-  .ng-select.ng-select-single .ng-select-container {
-    height: 28px;
-    min-height: 28px;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    background: #ffffff;
-    font-size: 11px;
+// .smart-select {
+//   .ng-select.ng-select-single .ng-select-container {
+//     height: 28px;
+//     min-height: 28px;
+//     border: 1px solid #e5e7eb;
+//     border-radius: 6px;
+//     background: #ffffff;
+//     font-size: 11px;
 
-    .ng-value-container {
-      padding-left: 8px;
-      padding-right: 8px;
+//     .ng-value-container {
+//       padding-left: 8px;
+//       padding-right: 8px;
 
-      .ng-placeholder {
-        color: #9ca3af;
-        font-size: 11px;
-      }
+//       .ng-placeholder {
+//         color: #9ca3af;
+//         font-size: 11px;
+//       }
 
-      .ng-value {
-        font-size: 11px;
-      }
-    }
+//       .ng-value {
+//         font-size: 11px;
+//       }
+//     }
 
-    .ng-arrow-wrapper {
-      width: 16px;
+//     .ng-arrow-wrapper {
+//       width: 16px;
 
-      .ng-arrow {
-        border-color: #999 transparent transparent;
-        border-width: 3px 3px 0;
-      }
-    }
-  }
+//       .ng-arrow {
+//         border-color: #999 transparent transparent;
+//         border-width: 3px 3px 0;
+//       }
+//     }
+//   }
 
-  &.ng-select-focused .ng-select-container {
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.1);
-  }
-}
+//   &.ng-select-focused .ng-select-container {
+//     border-color: #17a2b8;
+//     box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.1);
+//   }
+// }
 
 .select-icon {
   position: absolute;
@@ -400,7 +400,7 @@
 }
 
 .pill-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -437,7 +437,7 @@
 }
 
 .workspace-content {
-  padding: 12px;
+ 
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;
@@ -472,7 +472,6 @@
 .info-card {
   background: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   border: 1px solid #f1f5f9;
   transition: all 0.3s ease;
@@ -690,7 +689,7 @@
 }
 
 .widget-header {
-  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  background: linear-gradient(135deg, #b2ebf2 0%, #80deea 100%);
   padding: 8px 12px;
   border-bottom: 1px solid rgba(23, 162, 184, 0.1);
 }
@@ -698,7 +697,7 @@
 .widget-title {
   font-size: 11px;
   font-weight: 600;
-  color: #1a202c;
+  color: #333;
   margin: 0;
 }
 
@@ -950,17 +949,10 @@
 }
 
 .table-toolbar {
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.05) 0%,
-    rgba(118, 75, 162, 0.05) 100%
-  );
   padding: 6px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f1f5f9;
- 
 }
 
 .table-action-btn {
@@ -1367,7 +1359,7 @@
 }
 
 .form-check {
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .form-check1 {

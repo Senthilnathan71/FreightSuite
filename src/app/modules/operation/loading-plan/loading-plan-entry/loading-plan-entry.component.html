@@ -1,6 +1,6 @@
 <div class="row compact-form">
     @if(screenName === 'Loading Plan'){
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">Loading Plan</h4>
@@ -42,16 +42,16 @@
     }
 
 
-    <div class="col-md-12" [ngClass]="{'modal-body': screenName !== 'Loading Plan'}">
+    <div class="col-md-12 px-0" [ngClass]="{'modal-body': screenName !== 'Loading Plan'}">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row" [formGroup]="loadingPlanForm">
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('dept')?.value">
                             <ng-select [items]="filteredDepartments" bindLabel="departmentName"
                                 bindValue="DepartmentMasterSid" formControlName="dept" (change)="onDeptChange($event)"
-                                [appendTo]="'body'" placeholder="Select Dept">
+                                [appendTo]="'body'" placeholder="">
 
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
@@ -62,9 +62,9 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('pol')?.value">
                             <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode"
-                                formControlName="pol" (change)="handlePOLChange($event)" placeholder="Select POL"
+                                formControlName="pol" (change)="handlePOLChange($event)" placeholder=""
                                 [appendTo]="'body'"></ng-select>
                             <label class="input-label">POL <span class="text-danger">*</span></label>
                             <div class="error-message"
@@ -74,9 +74,9 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!loadingPlanForm.get('pod')?.value">
                             <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode"
-                                formControlName="pod" placeholder="Select POD" (change)="handlePODChange($event)"
+                                formControlName="pod" placeholder="" (change)="handlePODChange($event)"
                                 [appendTo]="'body'"></ng-select>
                             <label class="input-label">POD <span class="text-danger">*</span></label>
                             <div class="error-message"
@@ -87,7 +87,7 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('vesselVoyage')?.value">
                             <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
                                 bindValue="VoyageNo" (change)="onVesselVoyageChange($event)"
                                 formControlName="vesselVoyage" placeholder="Select Vessel" [appendTo]="'body'">
@@ -124,9 +124,9 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('carrier')?.value">
                             <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
-                                formControlName="carrier" placeholder="Select Carrier" [appendTo]="'body'">
+                                formControlName="carrier" placeholder="" [appendTo]="'body'">
 
                             </ng-select>
                             <label for="" class="input-label">Carrier <span class="text-danger"></span></label>
@@ -256,7 +256,7 @@
     </div> -->
 
 
-    <div class="content-layout">
+    <div class="content-layout px-0">
 
         <div class="col-12 p-2 bg-white py-2 rounded shadow-sm mt-2">
             @if(availableBookings.length > 0){
@@ -426,7 +426,7 @@
     
 
 
-    <div class="mx-0">
+    <div class="px-0">
         
 
         @if(screenName === 'Loading Plan'){

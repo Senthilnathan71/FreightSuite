@@ -1,5 +1,5 @@
 <div class="row compact-form">
-  <div class="col-12">
+  <div class="col-12 px-0">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
         <div class="d-flex align-items-center gap-2">
@@ -39,7 +39,7 @@
   </div>
 
 
-  <div class="col-md-12 mt-2">
+  <div class="col-md-12 mt-1 px-0">
     <div class="row">
       <!-- From Booking -->
       <div class="col-md-6">
@@ -50,18 +50,18 @@
               <div class="row">
                 <!-- Department -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('DepartmentMasterSid')?.value">
                     <ng-select class="ng-select" [items]="departments" bindLabel="departmentName"
-                      bindValue="DepartmentMasterSid" placeholder="Select Dept" formControlName="DepartmentMasterSid"
+                      bindValue="DepartmentMasterSid" placeholder="" formControlName="DepartmentMasterSid"
                       (change)="onDeptChange($event)">
                     </ng-select>
                     <label class="input-label">Department<span class="text-danger"></span></label>
                   </div>
                 </aside>
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('BookingHeaderSid')?.value">
                     <ng-select class="ng-select" [items]="bookings" bindLabel="BookingNo" bindValue="BookingHeaderSid"
-                      placeholder="Select Booking" formControlName="BookingHeaderSid"
+                      placeholder="" formControlName="BookingHeaderSid"
                       (change)="onFromBookingChange($event)">
                     </ng-select>
                     <label class="input-label">Booking No <span class="text-danger"></span></label>
@@ -69,9 +69,9 @@
                 </aside>
                 <!-- Customer -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('CustomerMasterSid')?.value">
                     <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
-                      bindValue="CustomerMasterSid" placeholder="Select Customer" formControlName="CustomerMasterSid"
+                      bindValue="CustomerMasterSid" placeholder="" formControlName="CustomerMasterSid"
                       [disabled]="true">
                     </ng-select>
                     <label class="input-label">Customer <span class="text-danger"></span></label>
@@ -100,27 +100,27 @@
                 </aside>
                 <!-- POL -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select"  [class.filled]="!!fromBookingForm.get('POL')?.value">
                     <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
-                      placeholder="Select POL" formControlName="POL" [disabled]="true">
+                      placeholder="" formControlName="POL" [disabled]="true">
                     </ng-select>
                     <label class="input-label">POL <span class="text-danger"></span></label>
                   </div>
                 </aside>
                 <!-- POD -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('POD')?.value">
                     <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
-                      placeholder="Select POD" formControlName="POD" [disabled]="true">
+                      placeholder="" formControlName="POD" [disabled]="true">
                     </ng-select>
                     <label class="input-label">POD <span class="text-danger"></span></label>
                   </div>
                 </aside>
                 <!-- FPD -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('FPD')?.value">
                     <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
-                      placeholder="Select FPD" formControlName="FPD" [disabled]="true">
+                      placeholder="" formControlName="FPD" [disabled]="true">
                     </ng-select>
                     <label class="input-label">FPD <span class="text-danger">*</span></label>
                   </div>
@@ -188,18 +188,18 @@
               <div class="row">
                 <!-- Department -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('DepartmentMasterSid')?.value">
                     <ng-select class="ng-select" [items]="departments" bindLabel="departmentName"
-                      bindValue="DepartmentMasterSid" placeholder="Select Dept" formControlName="DepartmentMasterSid"
+                      bindValue="DepartmentMasterSid" placeholder="" formControlName="DepartmentMasterSid"
                       (change)="onDeptChange($event)">
                     </ng-select>
                     <label class="input-label">Department <span class="text-danger"></span></label>
                   </div>
                 </aside>
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('BookingHeaderSid')?.value">
                     <ng-select class="ng-select" [items]="toBookingOptions" bindLabel="BookingNo"
-                      bindValue="BookingHeaderSid" placeholder="Select Booking" formControlName="BookingHeaderSid"
+                      bindValue="BookingHeaderSid" placeholder="" formControlName="BookingHeaderSid"
                       (change)="patchToBookingDetails($event)">
                     </ng-select>
                     <label class="input-label">Booking No <span class="text-danger"></span></label>
@@ -207,9 +207,9 @@
                 </aside>
                 <!-- Customer -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('CustomerMasterSid')?.value">
                     <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
-                      bindValue="CustomerMasterSid" placeholder="Select Customer" formControlName="CustomerMasterSid"
+                      bindValue="CustomerMasterSid" placeholder="" formControlName="CustomerMasterSid"
                       [disabled]="true">
                     </ng-select>
                     <label class="input-label">Customer <span class="text-danger"></span></label>
@@ -238,27 +238,27 @@
                 </aside>
                 <!-- POL -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select"  [class.filled]="!!fromBookingForm.get('POL')?.value">
                     <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
-                      placeholder="Select POL" formControlName="POL" [disabled]="true">
+                      placeholder="" formControlName="POL" [disabled]="true">
                     </ng-select>
                     <label class="input-label">POL <span class="text-danger"></span></label>
                   </div>
                 </aside>
                 <!-- POD -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('POD')?.value">
                     <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
-                      placeholder="Select POD" formControlName="POD" [disabled]="true">
+                      placeholder="" formControlName="POD" [disabled]="true">
                     </ng-select>
                     <label class="input-label">POD <span class="text-danger"></span></label>
                   </div>
                 </aside>
                 <!-- FPD -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!fromBookingForm.get('FPD')?.value">
                     <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
-                      placeholder="Select FPD" formControlName="FPD" [disabled]="true">
+                      placeholder="" formControlName="FPD" [disabled]="true">
                     </ng-select>
                     <label class="input-label">FPD <span class="text-danger">*</span></label>
                   </div>

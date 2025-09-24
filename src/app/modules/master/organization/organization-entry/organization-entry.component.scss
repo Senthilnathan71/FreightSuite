@@ -36,9 +36,9 @@
   font-weight: 500;
   font-size: 1.2rem !important;
 
-   &:hover {
+  &:hover {
     background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
-    color: #05608d; 
+    color: #05608d;
   }
 
   &.active {
@@ -72,7 +72,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #f1f5f9;
- 
+
 }
 
 .table-action-btn {
@@ -84,7 +84,7 @@
   border-radius: 4px;
   background: white;
   color: #6b7280;
- font-size: 0.7rem;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -119,8 +119,8 @@
   gap: 5px;
 }
 
-.workspace-content {
-  padding: 12px;
+.workspace-content1 {
+  padding: 2px 10px;
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;
@@ -131,7 +131,7 @@
   backdrop-filter: blur(20px);
   border-radius: 8px;
 
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+ box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   overflow: hidden;
 }

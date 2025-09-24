@@ -12,7 +12,7 @@
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col pb-1">
                 <div class="d-flex align-items-center gap-2">
-                    <h4 class="page-title mb-0">Container Activity</h4>
+                    <h5 class="page-title mb-0 text-info">Container Activity</h5>
                      <app-favorite-star screenName="container-activity" class="mt-1 me-1"></app-favorite-star>
                 </div>
             </div>
@@ -21,7 +21,7 @@
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="ActivityCode,ActivityName "
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search "
                                 [(ngModel)]="filterValue" aria-label="Search input">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
@@ -83,7 +83,7 @@
         (pageSizeChange)="onPageSizeChange($event)">
     </app-reusable-table>
 </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0 && !loading">
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0 && !loading">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -176,7 +176,7 @@
         </app-common-pagination>
             </div>
         </div>
-    </div>
+    </div> -->
 
    
 

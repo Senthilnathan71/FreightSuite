@@ -1,11 +1,12 @@
 <div class="row compact-form">
-  <div class="col-12">
+  <div class="col-12 px-0">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
         <h4 class="page-title mb-0">Invoice</h4>
       </div>
       <div class="col-md-8 pb-2">
-        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+        <div
+          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
@@ -22,7 +23,7 @@
     </div>
   </div>
 
-  <div class="col-md-12">
+  <div class="col-md-12 px-0">
     <div class="card h-100 mb-0">
       <div class="card-body pb-0">
         <form [formGroup]="invoiceForm" novalidate>
@@ -30,15 +31,17 @@
             <!-- 1. Invoice No (VoucherNumber) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="form-control custom-input-field sm" formControlName="VoucherNumber" readonly>
-                <label class="input-label">Invoice No</label>
-                
+                <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
+                  formControlName="VoucherNumber" readonly style="cursor: not-allowed;">
+                <label for="text-input" class="input-label">Invoice No</label>
+
               </div>
             </aside>
 
             <!-- 2. Invoice Date (VoucherDate) -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select-date"
+                [class.filled]="!!invoiceForm.get('VoucherDate')?.value">
                 <div class="input-group">
                   <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
                     formControlName="VoucherDate" (click)="d1.toggle()" />
@@ -52,15 +55,10 @@
 
             <!-- 3. Customer Name (Customer selection) -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select
-                  [items]="customerList"
-                  bindLabel="CustomerName"
-                  bindValue="CustomerMasterSid"
-                  placeholder="Select customer"
-                  formControlName="CustomerMasterSid"
-                  (change)="onCustomerMasterChange($event)"
-                  appendTo="body">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!invoiceForm.get('CustomerMasterSid')?.value">
+                <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid" placeholder=""
+                  formControlName="CustomerMasterSid" (change)="onCustomerMasterChange($event)" appendTo="body">
                   <ng-template ng-option-tmp let-item="item">
                     <div>
                       <small>{{ item.CustomerName }}</small>
@@ -73,15 +71,11 @@
 
             <!-- 4. Customer Address (branch select) -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select
-                  [items]="customerBranchList.length ? customerBranchList : []"
-                  bindLabel="Address"
-                  bindValue="CustomerBranchSid"
-                  placeholder="Select branch"
-                  formControlName="PartyName"
-                  (change)="onBranchChange($event)"
-                  appendTo="body">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!invoiceForm.get('PartyName')?.value">
+                <ng-select [items]="customerBranchList.length ? customerBranchList : []" bindLabel="Address"
+                  bindValue="CustomerBranchSid" placeholder="" formControlName="PartyName"
+                  (change)="onBranchChange($event)" appendTo="body">
                   <ng-template ng-option-tmp let-item="item">
                     <div>
                       <strong>{{ item.CustomerName }}</strong><br>
@@ -96,24 +90,18 @@
             <!-- 5. Ref No (DocumentNumber) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="DocumentNumber">
+                <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="">
                 <label class="input-label">Ref No</label>
               </div>
             </aside>
 
             <!-- 7. Job No (MasterJobSid) - ng-select showing MasterJobNumber and MBLNo -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select
-                  [items]="masterJobList"
-                  bindLabel="displayLabel"
-                  bindValue="MasterJobSid"
-                  placeholder="Select master job"
-                  formControlName="MasterJobSid"
-                  (change)="onMasterJobSelected($event)"
-                  [clearable]="true"
-                  [searchable]="true"
-                  appendTo="body">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!invoiceForm.get('MasterJobSid')?.value">
+                <ng-select [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid" placeholder=""
+                  formControlName="MasterJobSid" (change)="onMasterJobSelected($event)" [clearable]="true"
+                  [searchable]="true" appendTo="body">
                   <ng-template ng-option-tmp let-item="item">
                     <div class="d-flex flex-column">
                       <strong>{{ item.MasterJobNumber }}</strong>
@@ -134,7 +122,8 @@
             <!-- 15. MBL No -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="form-control custom-input-field sm" formControlName="MBLNo">
+                <input type="text" class="form-control custom-input-field sm" formControlName="MBLNo" placeholder=""
+                  style="background-color: white; cursor: not-allowed;">
                 <label class="input-label">MBL No</label>
               </div>
             </aside>
@@ -142,20 +131,17 @@
             <!-- 8. HBL No (HouseJob) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="HBLNo">
+                <input type="text" class="custom-input-field sm" formControlName="HBLNo" placeholder="">
                 <label class="input-label">HBL No</label>
               </div>
             </aside>
 
             <!-- 9. Currency (CurrencyCode) -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select [items]="currencyList"
-                           bindLabel="currencyCode"
-                           bindValue="currencyCode"
-                           placeholder="Select currency"
-                           formControlName="CurrencyCode"
-                           (change)="recalculateAllRows()">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!invoiceForm.get('CurrencyCode')?.value">
+                <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" placeholder=""
+                  formControlName="CurrencyCode" (change)="recalculateAllRows()">
                 </ng-select>
                 <label class="input-label">Currency</label>
               </div>
@@ -164,7 +150,8 @@
             <!-- 10. Ex Rate (ExchangeRate) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate" (input)="recalculateAllRows()">
+                <input type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate"
+                  (input)="recalculateAllRows()" placeholder="">
                 <label class="input-label">Ex Rate</label>
               </div>
             </aside>
@@ -172,16 +159,16 @@
             <!-- 11. GST No (GSTNo) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="GSTNo">
+                <input type="text" class="custom-input-field sm" formControlName="GSTNo" placeholder="">
                 <label class="input-label">GST No / VAT</label>
               </div>
             </aside>
 
             <!-- 12. Invoice Type -->
-            <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id"
-                  placeholder="Select invoice type" formControlName="InvoiceType">
+            <aside class="col-md-3"> 
+              <div class="custom-form-group custom-form-group-select"  [class.filled]="!!invoiceForm.get('InvoiceType')?.value">
+                <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" placeholder=""
+                  formControlName="InvoiceType">
                 </ng-select>
                 <label class="input-label">Invoice Type</label>
               </div>
@@ -190,7 +177,7 @@
             <!-- 13. Remarks -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="Remarks">
+                <input type="text" class="custom-input-field sm" formControlName="Remarks" placeholder="">
                 <label class="input-label">Remarks</label>
               </div>
             </aside>
@@ -198,7 +185,7 @@
             <!-- 6. IRN No -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="IRNNumber">
+                <input type="text" class="custom-input-field sm" formControlName="IRNNumber" placeholder="">
                 <label class="input-label">IRN No</label>
               </div>
             </aside>
@@ -206,14 +193,14 @@
             <!-- 14. IRN Status -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="IRNStatus">
+                <input type="text" class="custom-input-field sm" formControlName="IRNStatus" placeholder="">
                 <label class="input-label">IRN Status</label>
               </div>
             </aside>
 
             <!-- Status -->
             <aside class="col-md-3">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('status')?.value">
                 <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="id" formControlName="status"></ng-select>
                 <label class="input-label">Status</label>
               </div>
@@ -221,177 +208,167 @@
           </div>
 
           <!-- Voucher Details Table -->
-          <div class="mx-0 mt-3">
-            <div class="col-12 p-2 bg-white py-2 rounded shadow-sm">
-                <div class="d-flex justify-content-end mt-2 mb-2">
-                  <button class="btn btn-secondary btn-sm me-2" (click)="addDetailRow()" type="button">Add Charge</button>
-                </div>
-              <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
-                  <thead>
-                    <tr class="bg-info text-light align-middle">
-                      <th rowspan="2" class="bg-transparent text-light text-center">Sno</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Charge </th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Charge Description</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">HSN/SAC</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center" >Unit</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">No of Unit</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center w-60">Dr/Cr</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Curr</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Rate</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Ex Rate</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Amount</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Taxable Amt</th>
-                      <th colspan="2" class="bg-transparent text-light text-center">CGST</th>
-                      <th colspan="2" class="bg-transparent text-light text-center">SGST</th>
-                      <th colspan="2" class="bg-transparent text-light text-center">IGST</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Local Amount</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Job No.</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">House No.</th>
-                      <th rowspan="2" class="bg-transparent text-light text-center">Action</th>
+
+          <div class="col-12 p-2 bg-white py-2 rounded shadow-sm">
+            <div class="d-flex justify-content-end  mb-1">
+              <button class="btn btn-secondary btn-sm me-2" (click)="addDetailRow()" type="button">Add Charge</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
+                <thead>
+                  <tr class="bg-info text-light align-middle">
+                    <th rowspan="2" class="bg-transparent text-light text-center">Sno</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Charge </th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Charge Description</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">HSN/SAC</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Unit</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">No of Unit</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center w-60">Dr/Cr</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Curr</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Rate</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Ex Rate</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Amount</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Taxable Amt</th>
+                    <th colspan="2" class="bg-transparent text-light text-center">CGST</th>
+                    <th colspan="2" class="bg-transparent text-light text-center">SGST</th>
+                    <th colspan="2" class="bg-transparent text-light text-center">IGST</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Local Amount</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Job No.</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">House No.</th>
+                    <th rowspan="2" class="bg-transparent text-light text-center">Action</th>
+                  </tr>
+                  <tr class="bg-info text-light align-middle">
+                    <th class="bg-transparent text-light text-center">Rate</th>
+                    <th class="bg-transparent text-light text-center">Amount</th>
+                    <th class="bg-transparent text-light text-center">Rate</th>
+                    <th class="bg-transparent text-light text-center">Amount</th>
+                    <th class="bg-transparent text-light text-center">Rate</th>
+                    <th class="bg-transparent text-light text-center">Amount</th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="voucherDetails">
+                  <ng-container *ngFor="let row of details.controls; let i = index">
+                    <tr [formGroupName]="i">
+                      <td>{{ i + 1 }}</td>
+
+                      <td>
+                        <ng-select [items]="chargeList" bindLabel="chargeCode" bindValue="ChargeMasterSid"
+                          formControlName="ChargeMasterSid" (change)="onDetailChange(i, 'ChargeMasterSid')"
+                          placeholder="Select charge" appendTo="body">
+                        </ng-select>
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="ChargeDescription" readonly>
+                      </td>
+
+                      <td>
+                        <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
+                          formControlName="HSSACMasterSid" placeholder="HSN/SAC" appendTo="body">
+                        </ng-select>
+                      </td>
+
+                      <td>
+                        <ng-select [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid" placeholder="Unit"
+                          formControlName="ChargeUOMSid" appendTo="body">
+                        </ng-select>
+                      </td>
+
+                      <td>
+                        <input type="number" min="0" class="form-control form-control-sm" formControlName="NumberOfUnit"
+                          (input)="onDetailChange(i, 'NumberOfUnit')">
+                      </td>
+
+                      <td>
+                        <ng-select [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]" bindLabel="name" bindValue="id"
+                          formControlName="DrCr" appendTo="body"></ng-select>
+                      </td>
+
+                      <td>
+                        <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
+                          formControlName="CurrencyCode" (change)="onDetailChange(i,'CurrencyCode')"
+                          appendTo="body"></ng-select>
+                      </td>
+
+                      <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm" formControlName="Rate"
+                          (input)="onDetailChange(i, 'Rate')">
+                      </td>
+
+                      <td>
+                        <input type="number" step="0.0001" class="form-control form-control-sm"
+                          formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="Amount" readonly>
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxableAmount" readonly>
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxPercentage1"
+                          (input)="onDetailChange(i, 'TaxPercentage1')">
+                      </td>
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxAmount1" readonly>
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxPercentage2"
+                          (input)="onDetailChange(i, 'TaxPercentage2')">
+                      </td>
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxAmount2" readonly>
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxPercentageIGST"
+                          (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                      </td>
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="TaxAmountIGST">
+                      </td>
+
+                      <td>
+                        <input class="form-control form-control-sm" formControlName="LocalAmount" readonly>
+                      </td>
+
+                      <!-- MasterJobSid column replaced with ng-select -->
+                      <td style="min-width:200px;">
+                        <ng-select [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid"
+                          formControlName="MasterJobSid" placeholder="Select Job" [clearable]="true" [searchable]="true"
+                          appendTo="body">
+                          <ng-template ng-option-tmp let-item="item">
+                            <div>
+                              <strong>{{ item.MasterJobNumber }}</strong><br>
+                              <!-- <small>MBL: {{ item.MBLNo || '-' }} &nbsp; HBL: {{ item.HBLNo || '-' }}</small> -->
+                            </div>
+                          </ng-template>
+                        </ng-select>
+                      </td>
+
+                      <td><input class="form-control form-control-sm" formControlName="HouseJobSid"></td>
+
+                      <td>
+                        <button class="btn btn-danger btn-sm" (click)="removeDetailRow(i)" type="button">Remove</button>
+                      </td>
                     </tr>
-                    <tr class="bg-info text-light align-middle">
-                      <th class="bg-transparent text-light text-center">Rate</th>
-                      <th class="bg-transparent text-light text-center">Amount</th>
-                      <th class="bg-transparent text-light text-center">Rate</th>
-                      <th class="bg-transparent text-light text-center">Amount</th>
-                      <th class="bg-transparent text-light text-center">Rate</th>
-                      <th class="bg-transparent text-light text-center">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody formArrayName="voucherDetails">
-                    <ng-container *ngFor="let row of details.controls; let i = index">
-                      <tr [formGroupName]="i">
-                        <td>{{ i + 1 }}</td>
+                  </ng-container>
+                </tbody>
+              </table>
 
-                        <td>
-                          <ng-select [items]="chargeList"
-                                     bindLabel="chargeCode"
-                                     bindValue="ChargeMasterSid"
-                                     formControlName="ChargeMasterSid"
-                                     (change)="onDetailChange(i, 'ChargeMasterSid')"
-                                     placeholder="Select charge" appendTo="body">
-                          </ng-select>
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="ChargeDescription" readonly>
-                        </td>
-
-                        <td>
-                          <ng-select
-                            [items]="hssacList"
-                            bindLabel="HSSACCode"
-                            bindValue="HSSACMasterSid"
-                            formControlName="HSSACMasterSid"
-                            placeholder="HSN/SAC"
-                            appendTo="body">
-                          </ng-select>
-                        </td>
-
-                        <td>
-                          <ng-select
-                            [items]="uomList"
-                            bindLabel="UOMCode"
-                            bindValue="UOMMasterSid"
-                            placeholder="Unit"
-                            formControlName="ChargeUOMSid"
-                            appendTo="body">
-                          </ng-select>
-                        </td>
-
-                        <td>
-                          <input type="number" min="0" class="form-control form-control-sm" formControlName="NumberOfUnit"
-                                 (input)="onDetailChange(i, 'NumberOfUnit')">
-                        </td>
-
-                        <td>
-                          <ng-select [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]" bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
-                        </td>
-
-                        <td>
-                          <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" formControlName="CurrencyCode" (change)="onDetailChange(i,'CurrencyCode')" appendTo="body"></ng-select>
-                        </td>
-
-                        <td >
-                          <input type="number" step="0.01" class="form-control form-control-sm" formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
-                        </td>
-
-                        <td>
-                          <input type="number" step="0.0001" class="form-control form-control-sm" formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="Amount" readonly>
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxableAmount" readonly>
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')">
-                        </td>
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxAmount1" readonly>
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxPercentage2" (input)="onDetailChange(i, 'TaxPercentage2')">
-                        </td>
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxAmount2" readonly>
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxPercentageIGST" (input)="onDetailChange(i, 'TaxPercentageIGST')">
-                        </td>
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="TaxAmountIGST" >
-                        </td>
-
-                        <td>
-                          <input class="form-control form-control-sm" formControlName="LocalAmount" readonly>
-                        </td>
-
-                        <!-- MasterJobSid column replaced with ng-select -->
-                        <td style="min-width:200px;">
-                          <ng-select
-                            [items]="masterJobList"
-                            bindLabel="displayLabel"
-                            bindValue="MasterJobSid"
-                            formControlName="MasterJobSid"
-                            placeholder="Select Job"
-                            [clearable]="true"
-                            [searchable]="true"
-                            appendTo="body">
-                            <ng-template ng-option-tmp let-item="item">
-                              <div>
-                                <strong>{{ item.MasterJobNumber }}</strong><br>
-                                <!-- <small>MBL: {{ item.MBLNo || '-' }} &nbsp; HBL: {{ item.HBLNo || '-' }}</small> -->
-                              </div>
-                            </ng-template>
-                          </ng-select>
-                        </td>
-
-                        <td><input class="form-control form-control-sm" formControlName="HouseJobSid"></td>
-
-                        <td>
-                          <button class="btn btn-danger btn-sm" (click)="removeDetailRow(i)" type="button">Remove</button>
-                        </td>
-                      </tr>
-                    </ng-container>
-                  </tbody>
-                </table>
-
-              </div>
             </div>
           </div>
+
 
           <!-- Tabs area -->
           <div class="nav-pills-container mt-2">
             <div class="nav-pills">
-              <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name" (click)="selectedTab = tab.name">
+              <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                (click)="selectedTab = tab.name">
                 <div class="pill-icon"><i [class]="tab.icon"></i></div>
                 <span class="pill-label">{{ tab.name }}</span>
                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
@@ -405,37 +382,37 @@
               <div class="row" formGroupName="voucherOthers">
                 <aside class="col-md-3">
                   <div class="custom-form-group">
-                    <input type="text" class="custom-input-field sm" formControlName="Footer">
+                    <input type="text" class="custom-input-field sm" formControlName="Footer" placeholder="">
                     <label class="input-label">Invoice Footer</label>
                   </div>
                 </aside>
 
                 <aside class="col-md-3">
                   <div class="custom-form-group">
-                    <input type="text" class="custom-input-field sm" formControlName="VoucherNote">
+                    <input type="text" class="custom-input-field sm" formControlName="VoucherNote" placeholder="">
                     <label class="input-label">Invoice Note</label>
                   </div>
                 </aside>
 
                 <aside class="col-md-3">
                   <div class="custom-form-group">
-                    <input type="text" class="custom-input-field sm" formControlName="ReverseCreditNote">
+                    <input type="text" class="custom-input-field sm" formControlName="ReverseCreditNote" placeholder="">
                     <label class="input-label">Reverse Credit Note</label>
                   </div>
                 </aside>
 
                 <aside class="col-md-3">
                   <div class="custom-form-group">
-                    <input type="text" class="custom-input-field sm" formControlName="ContainerNumber">
+                    <input type="text" class="custom-input-field sm" formControlName="ContainerNumber" placeholder="">
                     <label class="input-label">Container No</label>
                   </div>
                 </aside>
 
                 <aside class="col-md-3">
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select-date">
                     <div class="input-group">
                       <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                             formControlName="DueDate" (click)="d2.toggle()" container="body" />
+                        formControlName="DueDate" (click)="d2.toggle()" container="body" />
                       <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
                         <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>

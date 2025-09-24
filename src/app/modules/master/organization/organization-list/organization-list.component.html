@@ -1,54 +1,23 @@
-<!-- <div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div> -->
-
-
-<!-- <app-listpage
-  [title]="'Organization'"
-  [searchOptions]="[
-    { value: 'CustomerName', label: 'Customer Name' },
-    { value: 'CustomerShortCode', label: 'Customer Code' },
-    { value: 'CustomerAliasName', label: 'Customer Full Name' },
-    { value: 'Website', label: 'Website' },
-    { value: 'LocalLanguage', label: 'Language' },
-    { value: 'status', label: 'Status' }
-  ]"
-  [searchPerformed]="searchPerformed"
-  [defaultSearchType]="'CustomerName'"
-  (onCreateClick)="navigateToCreateOrganization()"
-  (onReportClick)="report()"
-  (onResetClick)="reset()"
-  (onSearchClick)="onSearch($event)">
-    </app-listpage> -->
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Organization</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="page-title mb-0 text-info">Organization</h5>
+                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+                </div>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
+                                [(ngModel)]="filterValue" aria-label="Search input" (keyup.enter)="searchOrganization()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
@@ -59,7 +28,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadOrganizations    ()"
+                            <button type="submit" (click)="searchOrganization()"
                                 class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
@@ -69,16 +38,16 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+
                     @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToCreateOrganization()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
-                }
+                    }
 
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
                         [disabled]="!searchPerformed">
@@ -96,8 +65,16 @@
         </div>
     </div>
 
+    <div class="col-12 px-0">
+        <app-reusable-table #organizationTable [config]="tableConfig" [data]="allOrganization" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -141,13 +118,13 @@
                                         [routerLink]="['/master/organization/entry/', item.CustomerMasterSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
-                                }
-                                @if(hasPermission('Delete')) {
+                                    }
+                                    @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
                                         (click)="deleteOrganization(item.CustomerMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
-                                }
+                                    }
                                 </div>
                             </td>
 
@@ -164,7 +141,7 @@
                                 <div class="text-truncate">{{item.PanType}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                               <div class="text-truncate">{{ getCountryName(item.CountryMasterSid) }}</div>
+                                <div class="text-truncate">{{ getCountryName(item.CountryMasterSid) }}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){
@@ -186,15 +163,16 @@
             </div>
             <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10"
+                    [rotate]="true" [ellipses]="false">
                 </ngb-pagination>
             </div>
         </div>
-    </div>
+    </div> -->
 
 
     <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <!-- <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div>No records found</div>
-    </div>
+    </div> -->
 </div>
