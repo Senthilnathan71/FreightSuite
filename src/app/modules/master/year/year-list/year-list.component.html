@@ -20,17 +20,20 @@
 <div class="row compact-form">
 
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Year</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col-md pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="page-title mb-0">Year</h4>
+                     <app-favorite-star screenName="Year" class="mt-1 me-1"></app-favorite-star>
+                </div>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
+                                [(ngModel)]="filterValue" aria-label="Search input" (keyup.enter)="searchYears()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
@@ -41,7 +44,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadYears()"
+                            <button type="submit" (click)="searchYears()"
                                 class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
@@ -51,10 +54,10 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Year" class="mt-1 me-1"></app-favorite-star>
+                   
                     @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="nagivateTocreateYear()">
@@ -76,9 +79,25 @@
 
         </div>
     </div>
+    <div class="col-12 px-0">
+          <app-reusable-table
+        #yearTable
+        [config]="tableConfig"
+        [data]="allYear"
+        [loading]="tableLoading"
+        [totalRecords]="totalLengthOfCollection"
+        [paginationConfig]="paginationConfig"
+        (actionClick)="onTableActionClick($event)"
+        (rowClick)="onTableRowClick($event)"
+        (sortChange)="onTableSortChange($event)"
+        (filterChange)="onTableFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+    </div>
 
 
-<div  class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+<!-- <div  class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
      <div class="col-12 p-0" >
         <div class="card">
             <div class="card-body p-2">
@@ -123,7 +142,7 @@
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Remarks', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Remarks'}"></i>
                                 </th>
-                                <!-- <th class="bg-transparent text-light" scope="col">Company</th> -->
+                              
                                 <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                             </tr>
                         </thead>
@@ -165,9 +184,7 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.Remarks}}</div>
                                 </td>
-                                <!-- <td>
-                                    <div class="text-truncate">{{ companyMap[item.CompanyMasterSid] || item.CompanyMasterSid}}</div>
-                                </td> -->
+                          
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     @if(item.status === "A"){
                                     <div
@@ -196,7 +213,7 @@
         </div>
         
     </div>
-</div>
+</div> -->
    
     <!-- No records found -->
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">

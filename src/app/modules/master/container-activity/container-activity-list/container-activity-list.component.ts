@@ -1,6 +1,6 @@
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -19,6 +19,8 @@ import { CommonPaginationComponent } from 'src/app/shared/components/pagination/
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 
 @Component({
   selector: 'app-container-activity-list',
@@ -34,12 +36,13 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
     MatDialogModule,
     NgxSpinnerModule,
     CommonPaginationComponent,
-    
+    ReusableTableComponent
   ],
   templateUrl: './container-activity-list.component.html',
   styleUrl: './container-activity-list.component.scss'
 })
 export class ContainerActivityListComponent extends BaseListComponent implements OnInit {
+   @ViewChild('containerActivtityTable') containerActivtityTable!: ReusableTableComponent;
   searchType = 'ActivityName';
   
   results: any[] = [];
@@ -49,7 +52,35 @@ export class ContainerActivityListComponent extends BaseListComponent implements
   userData: any;
   
   loading = false;
-
+    tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Zone',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class:"text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ContainerActivityMasterSid',
+    emptyMessage: 'No Container Activity found',
+    dragAndDrop: true
+  };
+  tableLoading = false;
   // Pagination 
   get containerActivityLists() { return this.allItems; }
 
@@ -97,7 +128,7 @@ export class ContainerActivityListComponent extends BaseListComponent implements
       this.userData = userProfile;
       this.checkPermissions();
     }
-    
+    this.initializeTableConfig();
     super.ngOnInit();
   }
 
@@ -143,7 +174,7 @@ export class ContainerActivityListComponent extends BaseListComponent implements
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
-        status: item.status === 'A' ? 'Active' : 'Suspended',
+        Status: item.Status === 'A' ? 'Active' : 'Suspended',
         ContainerMoveStatus: item.ContainerMoveStatus || 'N/A',
         MoveType: item.MoveType || 'N/A',
         IsDamageMove: item.IsDamageMove === 'Y' ? 'Yes' : 'No'
@@ -175,6 +206,124 @@ export class ContainerActivityListComponent extends BaseListComponent implements
     this.clearFilter();
   }
 
+   // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+       {
+        key: 'ActivityCode',
+        label: 'Activty Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ActivityName',
+        label: 'Actvity Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ContainerMoveStatus',
+        label: 'Container Move Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+       {
+        key: 'MoveType',
+        label: 'Move Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+       {
+        key: 'IsDamageMove',
+        label: 'Damage Move ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string'
+      },
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewZone(event.row);
+    } else if (event.action === 'delete') {
+      this.deleteChargeByRow(event.row);
+    }
+  }
+
+   viewZone(row: any) : void{
+   this.router.navigate(['/master/container-activity/entry/', row.ContainerActivityMasterSid]);
+  }
+
+  deleteChargeByRow(row: any) {
+    this.deleteContainerActivity(row.ContainerActivityMasterSid);
+  }
+
+   deleteContainerActivity(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.deleteContainerActivityById(id).subscribe((resp: any) => {
+          this.appSettingService.showSuccess("Deleted!");
+          this.loadContainerActivities();
+        });
+      }
+    });
+  }
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allItems;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.containerActivtityTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Container-Activity-Report',
+      title: companyName
+    });
+  }
 
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
@@ -191,46 +340,10 @@ export class ContainerActivityListComponent extends BaseListComponent implements
     return index;
   }
 
-  deleteContainerActivity(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.masterService.deleteContainerActivityById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.loadContainerActivities();
-        });
-      }
-    });
-  }
+ 
 
   navigateToAddNewContainerActivity() {
     this.router.navigate(['master/container-activity/entry']);
   }
 
- 
-
-  report(): void {
-    const formattedData = this.containerActivityList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      ContainerMoveStatus: item.ContainerMoveStatus || 'N/A',
-      MoveType: item.MoveType || 'N/A'
-    }));
-
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'ActivityCode', label: 'Activity Code' },
-        { key: 'ActivityName', label: 'Activity Name' },
-        { key: 'ContainerMoveStatus', label: 'Container Move Status' },
-        { key: 'MoveType', label: 'Move Type' },
-        { key: 'IsDamageMove', label: 'Damage Move' },
-        { key: 'Remarks', label: 'Remarks' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'Container-Activity-Report',
-      title: companyName
-    });
-  }
 }

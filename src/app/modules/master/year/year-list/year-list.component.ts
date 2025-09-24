@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -13,76 +13,136 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-year-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FeatherModule, 
-    FormsModule, 
-    NgbPaginationModule, 
-    RouterModule, 
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPaginationModule,
+    RouterModule,
     ListpageComponent,
     CustomDatePipe,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ReusableTableComponent
   ],
+  providers: [CustomDatePipe],
   templateUrl: './year-list.component.html',
   styleUrl: './year-list.component.scss'
 })
-export class YearListComponent {
- isFavorite: boolean = false;
+export class YearListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('yearTable') yearTable!: ReusableTableComponent;
+  isFavorite: boolean = false;
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
 
-  filterValue = '';
+  // filterValue = '';
   yearList: any[] = [];
   searched = false;
   loading: boolean = false;
-  userData: any; 
-  companyMap: { [id: number]: string} = {};
+  userData: any;
+  companyMap: { [id: number]: string } = {};
   permissions: string[] = [];
   currentMenuPermissions: any = {};
 
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection: number = 0;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection: number = 0;
 
-  sortColumn: string = 'YearName';
-  sortDirection: string = 'asc';
+  // sortColumn: string = 'YearName';
+  // sortDirection: string = 'asc';
 
   // Company
-  currentCompany : any;
-  currentBranch : any;
-  constructor( 
-    private masterService: MasterService, 
+  currentCompany: any;
+  currentBranch: any;
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Booking',
+        condition: (row: any) => this.hasPermission('View')
+      },
+       {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class:"text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'BookingHeaderSid',
+    emptyMessage: 'No Year found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'year-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'YearName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allYear() { return this.allItems; }
+  constructor(
+    private masterService: MasterService,
     private router: Router,
-    private appSettingService: AppSettingsService, 
+    private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) {}
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService,
+     private datePipe: CustomDatePipe,
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(){
+  override ngOnInit() {
     this.getAllCompanies();
-  //  this.appSettingService.getUser().subscribe(user => {
-  //     if (user) {
-  //       this.userData = user;
-  //       this.checkPermissions()
-  //     }
-  //   });
-  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-  const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    //  this.appSettingService.getUser().subscribe(user => {
+    //     if (user) {
+    //       this.userData = user;
+    //       this.checkPermissions()
+    //     }
+    //   });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.loadYears();
+    // Initialize table configuration
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
   }
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -90,20 +150,207 @@ export class YearListComponent {
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
+
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchYearList(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended',
+        StartDate: item.StartDate ? this.datePipe.transform(item.StartDate) : '',
+      EndDate: item.EndDate ? this.datePipe.transform(item.EndDate) : '',
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching bookings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching bookings.');
+    console.error('Error searching bookings', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchYears() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.YearMasterSid || index;
+  }
+
+
+  viewYear(YearMasterSid: any): void {
+    this.router.navigate(['/master/year/entry/', YearMasterSid]);
+  }
+
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'YearName',
+        label: 'Year Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'YearCode',
+        label: 'Year Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'StartDate',
+        label: 'Start Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'EndDate',
+        label: 'End Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'CurrentYear',
+        label: 'Current Year',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'YearEndCompleted',
+        label: 'Year End Completed',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewYear(event.row);
+    } else if (event.action === 'delete') {
+      this.deleteYearByRow(event.row);
+    }
+  }
+
+  deleteYearByRow(row: any) {
+    this.deleteYearById(row.YearMasterSid);
+  }
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allYear;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.yearTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Year-Report',
+      title: companyName
+    });
+  }
   loadYears(): void {
     this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -111,21 +358,21 @@ export class YearListComponent {
       search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
-      activeCompanyId : CompanyMasterSid,
+      activeCompanyId: CompanyMasterSid,
     };
 
     this.masterService.searchYearList(params).subscribe({
       next: (response) => {
-        if(response.status){
+        if (response.status) {
           this.yearList = response.data.items;
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
         }
         else {
-        this.appSettingService.showError(response.message);
-      }
-      this.spinner.hide();
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching years:', err);
@@ -144,42 +391,7 @@ export class YearListComponent {
     });
   }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
 
-    this.applySorting();
-  }
-
-  applySorting() {
-    if (!Array.isArray(this.yearList)) {
-    this.yearList = [];
-    return;
-  }
-
-    this.yearList.sort((a,b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
-
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -199,7 +411,8 @@ export class YearListComponent {
         this.masterService.deleteYearById(YearMasterSid).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
-             this.loadYears();
+            this.loadYears();
+            this.searchYears();
           },
           error: (err) => {
             console.error('Delete error:', err);
@@ -210,16 +423,16 @@ export class YearListComponent {
     });
   }
 
-  resetPage() {
-    this.searched = false;
-    this.yearList = [];
-    this.totalLengthOfCollection = 0;
-    this.filterValue = '';
-    this.page = 1;
-    this.sortColumn = 'YearName';
-    this.sortDirection = 'asc';
-    this.loadYears();
-  }
+  // resetPage() {
+  //   this.searched = false;
+  //   this.yearList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.filterValue = '';
+  //   this.page = 1;
+  //   this.sortColumn = 'YearName';
+  //   this.sortDirection = 'asc';
+  //   this.loadYears();
+  // }
 
   getStatusClass(status: string): string {
     return status === 'A' ? 'badge bg-success' : 'badge bg-danger';
@@ -228,44 +441,44 @@ export class YearListComponent {
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';
   }
-  report(): void {
-    if (!this.yearList || this.yearList.length === 0) {
-      this.appSettingService.showWarning("No data available to generate report");
-      return;
-    }
+  // report(): void {
+  //   if (!this.yearList || this.yearList.length === 0) {
+  //     this.appSettingService.showWarning("No data available to generate report");
+  //     return;
+  //   }
 
-    const formattedData = this.yearList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Inactive',
-      StartDate: new CustomDatePipe().transform(item.StartDate),
-      EndDate: new CustomDatePipe().transform(item.EndDate)// Format date
-    }));
+  //   const formattedData = this.yearList.map(item => ({
+  //     ...item,
+  //     status: item.status === 'A' ? 'Active' : 'Inactive',
+  //     StartDate: new CustomDatePipe().transform(item.StartDate),
+  //     EndDate: new CustomDatePipe().transform(item.EndDate)
+  //   }));
 
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'YearName', label: ' Year Name' },
-        { key: 'YearCode', label: ' Year Code' },
-        { key: 'StartDate', label: 'StartDate' },
-        { key: 'EndDate', label: 'End Date' },
-        { key: 'CurrentYear', label: ' Current Year' },
-        { key: 'YearEndCompleted', label: 'Year-End Completed' },
-        { key: 'EndDate', label: 'End Date' },
-        { key: 'status', label: 'Status' }
-      ],
-      fileName: 'Year-Report',
-      title: companyName,
-      sheetName: 'Year'
-    });
+
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'YearName', label: ' Year Name' },
+  //       { key: 'YearCode', label: ' Year Code' },
+  //       { key: 'StartDate', label: 'StartDate' },
+  //       { key: 'EndDate', label: 'End Date' },
+  //       { key: 'CurrentYear', label: ' Current Year' },
+  //       { key: 'YearEndCompleted', label: 'Year-End Completed' },
+  //       { key: 'EndDate', label: 'End Date' },
+  //       { key: 'status', label: 'Status' }
+  //     ],
+  //     fileName: 'Year-Report',
+  //     title: companyName,
+  //     sheetName: 'Year'
+  //   });
+  // }
+
+  nagivateTocreateYear() {
+    this.router.navigate(['master/year/entry'])
   }
 
-  nagivateTocreateYear(){
-     this.router.navigate(['master/year/entry'])
-  }
-
-  clearFilterValue() {
-    this.filterValue = '';
-  }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  // }
 }

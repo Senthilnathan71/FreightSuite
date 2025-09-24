@@ -5,8 +5,8 @@
   position: relative;
 
   .table-controls {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    // background-color: #f8f9fa;
+    // border-bottom: 1px solid #dee2e6;
 
     .custom-dropdown {
       position: relative;
@@ -14,7 +14,7 @@
       .custom-dropdown-menu {
         position: absolute;
         top: 100%;
-        left: 0;
+        right: 0;
         z-index: 1050;
         display: none;
         min-width: 280px;
@@ -23,11 +23,11 @@
         overflow-y: auto;
         overflow-x: visible;
         background-color: #fff;
-        border: 1px solid #dee2e6;
+        // border: 1px solid #dee2e6;
         border-radius: 0.375rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         margin-top: 0.125rem;
-        padding: 0.25rem 0;
+        // padding: 0.25rem 0;
 
         &.show {
           display: block;
@@ -38,19 +38,19 @@
           margin-bottom: 0;
           font-size: 0.875rem;
           font-weight: 600;
-          color: #495057;
-          background-color: #f8f9fa;
-          border-bottom: 1px solid #dee2e6;
+          color: #333333;
+          background-color: #ffffff;
+          // border-bottom: 1px solid #dee2e6;
           border-top-left-radius: calc(0.375rem - 1px);
           border-top-right-radius: calc(0.375rem - 1px);
         }
 
         .dropdown-item-text {
-          padding: 0.75rem 1rem;
+          padding: 2px 1rem;
 
           .form-check {
             margin: 0;
-            padding: 0.5rem 0;
+            padding: 0.2rem 0;
             display: flex;
             align-items: flex-start;
             min-height: 2rem;
@@ -113,6 +113,47 @@
         font-size: 0.875rem;
       }
     }
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 30px;                // initial circle
+  height: 30px;
+  border-radius: 50%;
+  background-color: #05608d;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  padding: 0 8px;             // small padding
+  transition: width 0.4s ease, border-radius 0.4s ease;
+
+  i {
+    flex-shrink: 0;
+    font-size: 1rem;
+    margin: 0;
+    transition: margin 0.4s ease;
+  }
+
+  .btn-text {
+    opacity: 0;
+    white-space: nowrap;
+    margin-left: 8px;
+    overflow: hidden;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover,
+  &.expanded {
+    width: 100px;               // expand width
+    border-radius: 20px;
+
+    .btn-text {
+      opacity: 1;
+    }
+  }
+}
+
   }
 
   .table-responsive {
@@ -123,18 +164,18 @@
   // Enterprise Table Styling
   .enterprise-table {
     border: none;
-    background: white;
+    // background: white;
     margin: 0;
 
     // Override Bootstrap default styles
     thead th {
-      background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+      background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
       color: white !important;
       border: none !important;
     }
 
     .enterprise-header {
-      background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+    background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
       border-bottom: none;
 
       tr:first-child {
@@ -365,7 +406,7 @@
 
       td {
         border: none;
-        padding: 8px 8px;
+        padding: 3px 8px !important;
         vertical-align: middle;
         font-size: 13px;
         color: #333;
@@ -533,57 +574,39 @@
 }
 
 // Responsive Design
+/* Put this at the end of your stylesheet (after the rules that set overflow: hidden) */
 @media (max-width: 768px) {
   .table-container {
-    .table-controls {
-      flex-direction: column;
-      gap: 0.5rem;
-      align-items: stretch;
+    /* allow horizontal scroll on small screens */
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
 
-      .dropdown, .filter-controls {
-        width: 100%;
-      }
-    }
+  /* override the inner .table-responsive that was hiding overflow */
+  .table-container .table-responsive {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    display: block; /* ensures container will show scrollbar */
+    width: 100%;
+  }
 
-    .enterprise-table {
-      .enterprise-header th {
-        padding: 0.5rem 0.25rem;
-        font-size: 11px;
+  /* make the table wider than the viewport so scrolling is required
+     adjust min-width to match your columns, try 700-1000px depending on number of cols */
+  .table-container .enterprise-table {
+    min-width: 720px;
+    width: auto;
+  }
 
-        .header-content {
-          flex-direction: column;
-          gap: 2px;
-
-          .sort-icon {
-            font-size: 8px;
-          }
-        }
-
-        .filter-input-container .form-control {
-          font-size: 10px;
-          padding: 0.125rem 0.25rem;
-        }
-      }
-
-      tbody td {
-        padding: 0.5rem 0.25rem;
-        font-size: 12px;
-      }
-
-      .action-column {
-        .action-icon {
-          width: 22px;
-          height: 22px;
-
-          i, i-feather {
-            width: 12px;
-            height: 12px;
-          }
-        }
-      }
-    }
+  /* prevent cells from wrapping so horizontal scroll looks correct */
+  .table-container .enterprise-table thead th,
+  .table-container .enterprise-table tbody td {
+    white-space: nowrap;
   }
 }
+
 
 // Print Styles
 @media print {
@@ -604,3 +627,5 @@
     }
   }
 }
+
+

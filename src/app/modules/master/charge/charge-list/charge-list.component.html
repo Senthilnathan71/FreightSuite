@@ -9,16 +9,19 @@
 
 <div class="row compact-form">
   <div class="col-12">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-      <div class="col pb-2">
-        <h4 class="page-title mb-0">Charge</h4>
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+      <div class="col-md pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <h4 class="page-title mb-0">Charge</h4>
+          <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+        </div>
       </div>
 
-      <div class="col-md pb-2">
+      <div class="col-md pb-1">
         <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0" (submit)="$event.preventDefault()">
           <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
             <div class="form-outline flex-grow-1 position-relative">
-              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search chargeCode, chargeName, UOM"
+              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
                      aria-label="Search input" [(ngModel)]="filterValue">
               <button *ngIf="filterValue"
                       class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
@@ -39,9 +42,9 @@
         </form>
       </div>
 
-      <div class="col-md-auto pb-2">
+      <div class="col-md-auto pb-1">
         <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+          
 
           <button *ngIf="hasPermission('Add')" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                   (click)="navigateToCreateCharge()">
@@ -61,7 +64,7 @@
   </div>
 
   <!-- Reusable Table -->
-  <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+  <div class="col-12 px-0" *ngIf="totalLengthOfCollection > 0">
     <app-reusable-table
       #chargeTable
       [config]="tableConfig"

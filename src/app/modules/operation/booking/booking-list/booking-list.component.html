@@ -1,24 +1,25 @@
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Booking</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="page-title mb-0">Booking</h4>
+                    <app-favorite-star screenName="Booking" class="mt-1 me-1"></app-favorite-star>
+
+                </div>
+
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search Booking No, POL, POD, Salesman..."
-                                aria-label="Search input" [(ngModel)]="filterValue" (keyup.enter)="searchBookings()">
+                            <input name="filterValue" type="text" class="form-control pe-5"
+                                placeholder="Search Booking No, POL, POD, Salesman..." aria-label="Search input"
+                                [(ngModel)]="filterValue" (keyup.enter)="searchBookings()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -39,11 +40,10 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <div class="" data-bs-theme="light">
                     <form
                         class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <app-favorite-star screenName="Booking" class="mt-1 me-1"></app-favorite-star>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="navigateToCreate()">
                             <i class="fas fa-plus me-1"></i> Create
@@ -65,18 +65,13 @@
         </div>
     </div>
     <!-- Reusable Table Component -->
-    <app-reusable-table
-        #bookingTable
-        [config]="tableConfig"
-        [data]="allBookings"
-        [loading]="tableLoading"
-        [totalRecords]="totalLengthOfCollection"
-        [paginationConfig]="paginationConfig"
-        (actionClick)="onTableActionClick($event)"
-        (rowClick)="onTableRowClick($event)"
-        (sortChange)="onTableSortChange($event)"
-        (filterChange)="onTableFilterChange($event)"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)">
-    </app-reusable-table>
+    <div class="col-12 px-0">
+        <app-reusable-table #bookingTable [config]="tableConfig" [data]="allBookings" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+
 </div>
