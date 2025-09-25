@@ -56,9 +56,9 @@
                         <h5 class="card-titlename mb-0">Authorization Information</h5>
                     </div>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('MenuMaster')?.value">
                             <ng-select class="ng-select" [items]="menuResults" bindLabel="MenuName"
-                                bindValue="MenuMasterSid" placeholder="Select Menu" formControlName="MenuMaster">
+                                bindValue="MenuMasterSid"  formControlName="MenuMaster">
 
                                 <ng-option value="">Select Menu</ng-option>
                             </ng-select>
@@ -74,9 +74,9 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('BranchMasterSid')?.value">
                             <ng-select formControlName="BranchMasterSid" [items]="branchList" bindLabel="branchName"
-                                bindValue="BranchMasterSid" placeholder="Select Location">
+                                bindValue="BranchMasterSid">
                             </ng-select>
                             <label class="input-label">Location <span class="text-danger">*</span></label>
                             @if(authorityForm.get('BranchMasterSid')?.touched &&
@@ -111,9 +111,8 @@
 
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <multi-select [control]="authorityForm.get('DepartmentMaster')" [items]="departmentResults" bindLabel="departmentName" bindValue="departmentName"
-                                placeholder="Select Departments">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('DepartmentMaster')?.value">
+                            <multi-select [control]="authorityForm.get('DepartmentMaster')" [items]="departmentResults" bindLabel="departmentName" bindValue="departmentName">
                             </multi-select>
                             <label class="input-label">Departments <span class="text-danger">*</span></label>
                             @if(authorityForm.get('DepartmentMaster')?.touched &&
