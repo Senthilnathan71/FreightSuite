@@ -70,7 +70,14 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   ) {
     super(paginationService);
   }
-
+  selectedTab = 'Opportunity';
+  selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
+  tabs = [
+    { name: 'Opportunity', icon: 'fas fa-calendar-check' },
+    { name: 'Existing Meeting', icon: 'fas fa-boxes' },
+  ];
   pendingSchedule: any[] = []
 
   override ngOnInit() {

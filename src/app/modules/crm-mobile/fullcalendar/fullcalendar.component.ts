@@ -2,7 +2,7 @@ import { AppSettingsService } from './../../../core/services/app-settings.servic
 import { Component, ChangeDetectionStrategy, ViewChild, TemplateRef, OnInit } from '@angular/core';
 import { startOfDay, subDays, addDays, endOfMonth, isSameDay, isSameMonth, addHours, } from 'date-fns';
 import { Subject } from 'rxjs';
-import { NgbActiveModal, NgbModal, NgbModalRef, } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDatepickerModule, NgbModal, NgbModalRef, } from '@ng-bootstrap/ng-bootstrap';
 import { CalendarEvent, CalendarEventAction, CalendarEventTimesChangedEvent, CalendarView, } from 'angular-calendar';
 import { CalendarModule } from 'angular-calendar';
 
@@ -20,6 +20,8 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 
 
 const colors: any = {
@@ -40,7 +42,7 @@ const colors: any = {
 @Component({
   selector: 'app-fullcalendar',
   standalone: true,
-  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective],
+  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective,NgSelectModule,NgbDatepickerModule,DateTimePickerComponent],
 
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './fullcalendar.component.html',

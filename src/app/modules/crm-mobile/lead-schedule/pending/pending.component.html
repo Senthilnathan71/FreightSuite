@@ -1,16 +1,42 @@
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
-<div class="row">
-    <div class="col-12">
-        <div *ngIf="isMobile; else desktopTemplate">
-            <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
-        </div>
-        <!-- #region pending -->
 
-        <!-- #endregion -->
+<div class="nav-pills-container">
+    <div class="nav-pills">
+        <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+            (click)="selectTab(tab.name)">
+            <div class="pill-icon">
+                <i [class]="tab.icon"></i>
+            </div>
+            <span class="pill-label">{{ tab.name }}</span>
+            <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+        </div>
     </div>
 </div>
+
+<div class="content-workspace">
+    <div class="workspace-content" *ngIf="selectedTab === 'Opportunity'">
+        <div class="row">
+            <div class="col-12">
+                <div *ngIf="isMobile; else desktopTemplate">
+                    <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
+                </div>
+                <!-- #region pending -->
+
+                <!-- #endregion -->
+            </div>
+        </div>
+    </div>
+     <div class="workspace-content" *ngIf="selectedTab === 'Existing Meeting'">
+        <div class="row">
+            <div class="col-12">
+              
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 

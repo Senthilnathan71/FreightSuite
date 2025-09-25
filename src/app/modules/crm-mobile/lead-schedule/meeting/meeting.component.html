@@ -109,7 +109,7 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
           <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            [disabled]="meetingForm.invalid || btnDisable">
+            [disabled]="meetingForm.invalid || btnDisable" (click)="onSubmit()">
             <i class="fas fa-save me-1"></i> Save
           </button>
           <!-- <div ngbDropdown class="d-inline-block">
@@ -130,7 +130,7 @@
   <div class="col-12 mt-1 px-0">
     <div class="card border">
       <section class="card-body py-2 px-2">
-        <form [formGroup]="meetingForm" (ngSubmit)="onSubmit()">
+        <form [formGroup]="meetingForm" >
           <div class="row compact-form">
             <aside class="col-md-4">
               <div class="custom-form-group">
@@ -168,24 +168,43 @@
 
 
 
-            <h6 class="card-title text-info mb-0 my-1 text-center">Schedule Meeting</h6>
+            <!-- <h6 class="card-title text-info mb-0 my-1">Schedule Meeting</h6> -->
 
             <div class="col-md-4">
-              <div class=" custom-form-group custom-form-group-select-date">
-                <div class="input-group">
-                  <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="meetingDate"
-                    ngbDatepicker #d2="ngbDatepicker" [min]="minDate" (keydown.arrowDown)="d2.open()"
-                    (click)="d2.toggle()" container="body" />
-                  <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
-                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class=" custom-form-group custom-form-group-select-date w-100">
+                  <div class="input-group w-100">
+                    <app-date-time-picker  placeholder="dd-mm-yyyy" name="dp" class="w-100" formControlName="meetingDate"></app-date-time-picker>
+                    <!-- <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="meetingDate"
+                      ngbDatepicker #d2="ngbDatepicker" [min]="minDate" (keydown.arrowDown)="d2.open()"
+                      (click)="d2.toggle()" container="body" />
+                    <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                      <i-feather name="calendar" class="feather-sm"></i-feather></button> -->
+                  </div>
+                  <label for="shipmentDateExpected" class="input-label">Meeting Date <span class="text-danger">*</span>
+                  </label>
+                  <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
+                    Required
+                  </div>
                 </div>
-                <label for="shipmentDateExpected" class="input-label">Meeting Date <span class="text-danger">*</span>
-                </label>
-                <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
-                  Required
+                <div>
+                  <div ngbDropdown class="d-inline-block">
+                    <button type="button" class="btn btn-sm btn-info" id="dropdownBasic1" formControlName="meetingDuration" ngbDropdownToggle>
+                      {{ selectedTime }}
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                      <button ngbDropdownItem (click)="changeTime('10 min')">10 min</button>
+                      <button ngbDropdownItem (click)="changeTime('20 min')">20 min</button>
+                      <button ngbDropdownItem (click)="changeTime('30 min')">30 min</button>
+                      <button ngbDropdownItem (click)="changeTime('40 min')">40 min</button>
+                      <button ngbDropdownItem (click)="changeTime('50 min')">50 min</button>
+                      <button ngbDropdownItem (click)="changeTime('1 hr')">1 hr</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!meetingForm.get('meetingType')?.value">

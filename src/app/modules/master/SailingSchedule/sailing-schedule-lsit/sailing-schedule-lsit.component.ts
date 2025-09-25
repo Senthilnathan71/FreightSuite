@@ -38,8 +38,8 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
     ReusableTableComponent,
 
   ],
- templateUrl: './sailing-schedule-lsit.component.html', 
- styleUrl: './sailing-schedule-lsit.component.scss'
+  templateUrl: './sailing-schedule-lsit.component.html',
+  styleUrl: './sailing-schedule-lsit.component.scss'
 })
 export class SailingScheduleListComponent extends BaseListComponent implements OnInit {
   @ViewChild('scheduleTable') scheduleTable!: ReusableTableComponent;
@@ -78,7 +78,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
   };
 
   // filter & local UI
-//   filterValue = '';
+  //   filterValue = '';
   searchType = 'VoyageNo';
   searched = false;
 
@@ -161,7 +161,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
         POLPort: item.portMasterPOL?.PortCode || this.getFormattedPort(item.POLSid),
         PODPort: item.portMasterPOD?.PortCode || this.getFormattedPort(item.PODSid),
         vslvoy: `${item.vesselMaster?.VesselName || ''} / ${item.VoyageNo || ''}`,
-        status: item.status ==='A'? 'Active' : 'Suspended'
+        status: item.status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting(); // local fallback sort if needed
@@ -232,7 +232,10 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
         sortable: false,
         filterable: false,
         visible: true,
-        dataType: 'string'
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
       }
     ];
 
@@ -278,10 +281,10 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
     console.log('Table filters changed:', filters);
   }
 
-  
+
   override trackBy(index: number, item: any): number {
-        return item.VoyageMasterHeaderSid || index;
-    }
+    return item.VoyageMasterHeaderSid || index;
+  }
 
   viewSchedule(schedule: any): void {
     this.router.navigate(['/master/sailing-schedule/entry', schedule.VoyageMasterHeaderSid]);
@@ -366,7 +369,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
 
   // small helpers for template
   searchSchedules() {
-    this.page=1;
+    this.page = 1;
     this.search();
   }
 

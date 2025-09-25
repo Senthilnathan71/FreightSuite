@@ -6,9 +6,11 @@ import { FeatherModule } from 'angular-feather';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LeadService } from '../../Services/lead.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
-import { NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { DateTimeModel } from 'src/app/component/datetimepicker/datetime.model';
+import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 
 @Component({
   selector: 'app-meeting',
@@ -18,7 +20,9 @@ import { MasterService } from 'src/app/modules/master/master.service';
     ReactiveFormsModule,
     FeatherModule,
     NgbDatepickerModule,
-    NgSelectModule
+    NgSelectModule,
+    NgbDropdownModule,
+    DateTimePickerComponent
   ],
   templateUrl: './meeting.component.html',
   styleUrl: './meeting.component.scss'
@@ -38,6 +42,9 @@ export class MeetingComponent {
   userData: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  selectedTime = '10 min';
+
+ 
 
   constructor(
     private fb: FormBuilder,
@@ -90,12 +97,19 @@ export class MeetingComponent {
       contactPerson: ['', Validators.required],
       phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       status: ['A', Validators.required],
-      customerProfile: ['', Validators.required]
+      customerProfile: ['', Validators.required],
+      meetingDuration: ['', Validators.required],
     });
 
     this.meetingForm.get('customerName')?.disable();
     this.meetingForm.get('contactPerson')?.disable();
     this.meetingForm.get('phone')?.disable();
+    this.meetingForm.get('meetingDuration').valueChanges.subscribe((value) => {
+      console.log(value,"DropDown Time");
+    })
+    this.meetingForm.get('meetingDate').valueChanges.subscribe((value) => {
+      console.log(value);
+    })
   }
 
   get f(): { [key: string]: AbstractControl<any, any> } {
@@ -103,6 +117,10 @@ export class MeetingComponent {
     return this.meetingForm.controls;
   }
 
+changeTime(time: string) {
+  this.meetingForm.get('meetingDuration')?.setValue(time);
+  this.selectedTime = time; // update button display
+}
 
 
   // Handle Form Submission
@@ -117,15 +135,26 @@ export class MeetingComponent {
     this.meetingForm.get('contactPerson')?.enable();
     this.meetingForm.get('phone')?.enable();
     this.meetingForm.get('status')?.enable();
+   
+    const meetingDateStr = this.meetingForm.value.meetingDate;
+    const meetingDate = new Date(meetingDateStr);
+    const timeDropdown = this.meetingForm.value.meetingDuration;    
+    if (isNaN(meetingDate.getTime())) {
+      this.appSettingService.showError("Invalid meeting date");
+      return;
+    }
     const payload = {
       ...this.meetingForm.value,
+      meetingDuration:timeDropdown,
+      meetingDate: meetingDate,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       createdBy: this.userData?.userEmail,
       LeadOrCustomer: 'L',
-      PreCustomerMasterSid: this.PreCustomerMasterSid
+      PreCustomerMasterSid: this.PreCustomerMasterSid,
     };
     this.btnDisable = true;
+    console.log(payload, "PAYLOAD")
     this.leadService.createPreCustomerMeeting(payload).subscribe(
       resp => {
         if (resp.data && resp.status) {
@@ -159,7 +188,7 @@ export class MeetingComponent {
             customerName: this.lead.preCustomerName || '',
             contactPerson: this.lead.contactPerson || '',
             phone: this.lead.phone || '',
-            status: this.lead.status || ''
+            status: this.lead.status || '',
           });
         }
         // this.meetingForm.patchValue(leadData);

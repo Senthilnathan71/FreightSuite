@@ -62,7 +62,7 @@
 // New Ui changes Card hearder Part
 .card-header-title {
   background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
-  padding: 8px 12px;
+  padding: 6px 12px;
   color: white;
   border-radius: 5px 5px 0px 0px;
 }
@@ -223,4 +223,10 @@
   justify-content: end;
   margin-bottom: 6px;
   gap: 5px;
+}
+
+
+.form-control:disabled{
+  background-color: white;
+  cursor: not-allowed;
 }
