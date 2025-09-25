@@ -50,6 +50,7 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
 
   datetime: DateTimeModel = new DateTimeModel();
   private firstTimeAssign = true;
+  minDate: NgbDateStruct;   // <---- add this line
 
   @ViewChild(NgbDatepicker)
   private dp: NgbDatepicker;
@@ -70,6 +71,12 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
 
   ngOnInit(): void {
     this.ngControl = this.inj.get(NgControl);
+    const now = new Date();
+  this.minDate = {
+    year:  now.getFullYear(),
+    month: now.getMonth() + 1,
+    day:   now.getDate()
+  };
   }
 
   ngAfterViewInit(): void {

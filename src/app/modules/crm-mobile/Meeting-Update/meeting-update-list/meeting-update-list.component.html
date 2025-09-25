@@ -73,7 +73,7 @@
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather name="alert-circle" class="feather-sm"></i-feather>
-                        <div class="ms-2">{{ meeting.opportunityStage }}</div>
+                        <div class="ms-2">{{ meeting.preCustomerMaster.leadStatus }}</div>
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather name="alert-circle" class="feather-sm"></i-feather>
@@ -131,9 +131,9 @@
                                         </div>
                                     </td>
 
-                                  <td data-label="opportunityStage" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                  <td data-label="leadStatus" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ (meeting.opportunityStage | titlecase) || 'N/A' }}
+                                            {{ (meeting.preCustomerMaster.leadStatus | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
 

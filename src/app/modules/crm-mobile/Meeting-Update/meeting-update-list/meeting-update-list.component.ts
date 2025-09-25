@@ -141,7 +141,7 @@ export class MeetingUpdateListComponent implements OnInit {
                         meeting.meetingStatus === 'pending' ? 'In Progress' :
                         meeting.meetingStatus === 'on hold' ? 'On Hold' : 'N/A',
                 meetingStatus: meeting.meetingStatus,
-                opportunityStage: meeting.opportunityStage || 'N/A',
+                leadStatus: meeting?.preCustomerMaster?.leadStatus || 'N/A',
                 preCustomerMaster: meeting.preCustomerMaster,
                 userMaster: meeting.userMaster,
                 followUp: meeting.followUpDate || meeting.followUpNote,
@@ -154,7 +154,6 @@ export class MeetingUpdateListComponent implements OnInit {
                 updatedOn : meeting.updatedOn,
               };
             });
-console.log(this.filteredMeetings[0]);
           this.filteredMeetings = [...this.meetings];
           this.totalLengthOfCollection = this.filteredMeetings.length;
           this.updatePaginatedData();
@@ -186,7 +185,7 @@ console.log(this.filteredMeetings[0]);
           meeting.salesPerson?.toLowerCase().includes(searchQuery) ||
           String(meeting.meetingDate).toLowerCase().includes(searchQuery) ||
           meeting.status.toLowerCase().includes(searchQuery) ||
-          meeting.opportunityStage.toLowerCase().includes(searchQuery) 
+          meeting.preCustomerMaster.leadStatus.toLowerCase().includes(searchQuery) 
         );
       });
     }

@@ -36,7 +36,7 @@ export class MeetingComponent {
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
   salesPersons: any
   lead: any
-  minDate: string = '';
+  minDate!: any;
   currentCompany: any;
   currentBranch: any;
   userData: any;
@@ -74,9 +74,11 @@ export class MeetingComponent {
   }
 
   getCurrentDateTime(): string {
-    const now = new Date();
-    return now.toISOString().slice(0, 16); // Format as 'YYYY-MM-DDTHH:mm'
-  }
+  const now = new Date();
+  // Pad month, day, hours, minutes for proper 2-digit format
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
 
   // Method to load the city data
   loadSalesPerson(): void {

@@ -11,7 +11,7 @@
 <ng-template #calendarContent>
     <div>
         <div *ngIf="!showTimePickerToggle">
-            <ngb-datepicker #dp name="datepicker" [ngModel]="datetime"
+            <ngb-datepicker #dp name="datepicker" [ngModel]="datetime" [minDate]="minDate"
                 (ngModelChange)="onDateChange($event)"></ngb-datepicker>
             <button class="btn btn-block btn-outline-secondary" [disabled]="!datetime?.day" type="button"
                 (click)="toggleDateTimeState($event)">
