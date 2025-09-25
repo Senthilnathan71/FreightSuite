@@ -187,32 +187,26 @@ auditLogs: any[] = []; // Stores audit logs
     );
   }
 
- onSubmit(): void {
+onSubmit(): void {
   if (this.chartForm.invalid) {
     this.chartForm.markAllAsTouched();
     this.appSettingService.showWarning('Please fill out all required fields correctly.');
     return;
   }
 
-
   const formValue = this.chartForm.value;
-
+  const mappedStatus = formValue.Status === 'Active' ? 'A' : 'S';
+  const currentuseremail = this.appSettingService.userSettingSource.value['userEmail'];
   
- const mappedStatus = formValue.Status === 'Active' ? 'A' : 'S';
-
-  const currentuseremail=this.appSettingService.userSettingSource.value['userEmail']
-  const payload = this.isEditMode?{
+  const payload = this.isEditMode ? {
     ...this.chartForm.value,
-      Status: mappedStatus,
-      UpdatedBy:currentuseremail,
-  
-  //   CreatedBy: this.appSettingService.userSettingSource.value['userEmail'],
-  //  UpdatedBy: this.isEditMode ? this.appSettingService.userSettingSource.value['userEmail']
-  }:{
-     ...this.chartForm.value,
-      Status: mappedStatus,
-      CreatedBy:currentuseremail,
-      CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
+    Status: mappedStatus,
+    UpdatedBy: currentuseremail,
+  } : {
+    ...this.chartForm.value,
+    Status: mappedStatus,
+    CreatedBy: currentuseremail,
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
   };
 
   if (this.isEditMode) {
@@ -220,9 +214,12 @@ auditLogs: any[] = []; // Stores audit logs
       (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess("Chart Account Updated Successfully");
-          this.route.navigate(['accounts/chart-accounts/entry',resp.data.chartMasterSid]);
+          // Navigate to create new entry after successful update
+          this.route.navigate(['/accounts/chart-accounts/entry']);
+          this.resetFormForNewEntry();
         } else {
           this.appSettingService.showError(resp.message);
+          console.error(resp.message);
         }
       },
       (error) => {
@@ -233,12 +230,14 @@ auditLogs: any[] = []; // Stores audit logs
     this.masterServ.createNewCoa(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.loadChartAccount[(resp.data.chartMasterSid)];
           this.appSettingService.showSuccess(resp.message);
-          
-          this.route.navigate(['accounts/chart-accounts/entry',resp.data.chartMasterSid]);
+          // For new entries, stay on the same page but reset form for next entry
+          this.resetFormForNewEntry();
+          // Optionally navigate to the new entry if you want to show the created record
+          // this.route.navigate(['/accounts/chart-accounts/entry', resp.data.chartMasterSid]);
         } else {
           this.appSettingService.showError(resp.message);
+          console.error(resp.message);
         }
       },
       (error) => {
@@ -246,6 +245,43 @@ auditLogs: any[] = []; // Stores audit logs
       }
     );
   }
+}
+
+// Add this method to reset form for new entry after update
+resetFormForNewEntry() {
+  this.isEditMode = false;
+  this.chartMasterSid = null;
+  this.chartData = null;
+  
+  // Reset the form
+  this.chartForm.reset({
+    LedgerName: '',
+    LedgerCode: '',
+    SubGroupName: '',
+    LedgerCurrency: '',
+    GroupName: '',
+    Category: '',
+    LedgerType: '',
+    Remarks: '',
+    Status: 'Active',
+    SubledgerName: ''
+  });
+  
+  // Reset additional state
+  this.isSubledgerRequired = false;
+  
+  // Reset validation for LedgerName
+  const ledgerControl = this.chartForm.get('LedgerName');
+  ledgerControl?.clearValidators();
+  ledgerControl?.setValidators([Validators.required, Validators.maxLength(100)]);
+  ledgerControl?.updateValueAndValidity();
+  
+  // Reset date restrictions
+  this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+  
+  // Reset form state
+  this.chartForm.markAsUntouched();
+  this.chartForm.updateValueAndValidity();
 }
 
 openAuditLogs(modal: TemplateRef<any>) {
