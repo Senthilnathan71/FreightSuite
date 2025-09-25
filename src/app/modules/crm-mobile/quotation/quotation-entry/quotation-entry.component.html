@@ -99,22 +99,63 @@
               <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !enquiryNumber
-                              }">  {{ dataFromEnqPage?.rateRequest ? 'Enquiry No' : 'Quotation No' }}
+                              }">  Enquiry No
 <span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-4">
+          <aside class="col-md-4" *ngIf="!isEditMode">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="CustomerRef">
-              <label for="text-input" class="input-label">Customer Ref<span class="text-danger"></span></label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer" formControlName="LeadOrCustomer">
+                <label class="form-check-label" for="flexCheckChecked">
+                  Customer / Lead
+                </label>
+              </div>
             </div>
           </aside>
-          <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
+          <aside class="col-md-4" *ngIf="quotationForm.get('LeadOrCustomer')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
+              <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                formControlName="CustomerMasterSid" appendTo="body" (change)="onSelectionChange($event)">
+                <ng-template ng-option-tmp let-item="item" let-index="index">
+                  <div>
+                    <span class="d-block fw-bold">{{ item.CustomerName }}</span>
+                    <span class="d-block fw-semibold">{{ item.BranchName }}</span>
+                    <small class="d-block">{{ item.Address }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                                          [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
+                                          [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                          (itemSelected)="onSelectionChange($event)">
+                                      </dofi-searchable-dropdown> -->
+              <label for="customerName" class="input-label">Customer <span class="text-danger">*</span></label>
+              <small *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid" class="error-message">
+                Required
+              </small>
+            </div>
+          </aside>
+          <aside class="col-md-4" *ngIf="!quotationForm.get('LeadOrCustomer')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!quotationForm.get('PreCustomerMasterSid')?.value">
+              <ng-select class="ng-select" [items]="leadList" bindLabel="preCustomerName" bindValue="PreCustomerMasterSid"
+                formControlName="PreCustomerMasterSid" appendTo="body" (change)="onSelectionChange($event)"></ng-select>
+              <label for="customerName" class="input-label">Lead <span class="text-danger">*</span></label>
+              <small
+                *ngIf="quotationForm.get('PreCustomerMasterSid').touched && quotationForm.get('PreCustomerMasterSid').invalid"
+                class="error-message">
+                Required
+              </small>
+            </div>
+          </aside>
+          <!-- <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
               <ng-select formControlName="CustomerMasterSid" [items]="customers" bindLabel="CustomerName"
                 bindValue="CustomerMasterSid" (change)="onCustomerChange($event)">
-
+          
               </ng-select>
               <label for="" class="input-label">Customer <span class="text-danger">*</span></label>
               @if(f['CustomerMasterSid']?.invalid && f['CustomerMasterSid']?.touched){
@@ -125,7 +166,8 @@
               </div>
               }
             </div>
-          </aside>
+          </aside> -->
+           
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -146,6 +188,13 @@
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="Email">
               <label for="text-input" class="input-label">Email <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="CustomerRef">
+              <label for="text-input" class="input-label">Customer Ref<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
@@ -545,10 +594,10 @@
                                   </td>
                                   <td class="bg-transparent text-light text-center">
                                     <label class="form-label mb-0">Per Unit
-                                      <span class="text-danger">*</span></label>
+                                      <span class="text-danger"></span></label>
                                   </td>
                                   <td class="bg-transparent text-light text-center">
-                                    <label class="form-label mb-0">Agent/Supplier <span class="text-danger">*</span></label>
+                                    <label class="form-label mb-0">Agent/Supplier <span class="text-danger"></span></label>
                                   </td>
                                 </tr>
                               </thead>
@@ -584,10 +633,17 @@
                                     </ng-select>
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="perUnit" placeholder=""
-                                      class="custom-input-field sm text-end"
-                                      (input)="calculateTotalAmount(routeIndex,chargeIndex)" [onlyNumbers]>
-
+                                    <div class="custom-form-group">
+                                      <input type="text" id="text-input" formControlName="perUnit" placeholder="" class="custom-input-field sm text-end"
+                                        (input)="calculateTotalAmount(routeIndex,chargeIndex)" [onlyNumbers]>
+                                        @if(charge.get("perUnit")?.touched && charge.get("perUnit")?.invalid){
+                                          <div class="error-message">
+                                            @if(charge.get("perUnit")?.hasError('required')){
+                                            <span>required</span>
+                                            }
+                                          </div>
+                                        }
+                                      </div>
                                   </td>
                                   <td>
                                     <input type="text" id="text-input" formControlName="Amount" placeholder=""
@@ -596,9 +652,18 @@
                                     
                                   </td>
                                   <td>
-                                    <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
-                                      bindValue="CustomerMasterSid" formControlName="CostAgentMasterSid" appendTo="body">
-                                    </ng-select>
+                                    <div class="custom-form-group custom-form-group-select">
+                                      <ng-select [items]="vendorSupplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                        formControlName="RevenueCustomerMasterSid" appendTo="body">
+                                      </ng-select>
+                                      @if(charge.get("RevenueCustomerMasterSid")?.touched && charge.get("RevenueCustomerMasterSid")?.invalid){
+                                        <div class="error-message">
+                                          @if(charge.get("RevenueCustomerMasterSid")?.hasError('required')){
+                                          <span>required</span>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
                                   </td>
                                   <td>
                                     <ng-select [items]="unitMaster" formControlName="costUnit"
@@ -611,8 +676,17 @@
                                     </ng-select>
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="costPerUnit" placeholder=""
-                                      class="custom-input-field sm  text-end" [onlyNumbers]>
+                                    <div class="custom-form-group">
+                                      <input type="text" id="text-input" formControlName="costPerUnit" placeholder=""
+                                        class="custom-input-field sm  text-end" [onlyNumbers]>
+                                        @if(charge.get("costPerUnit")?.touched && charge.get("costPerUnit")?.invalid){
+                                          <div class="error-message">
+                                            @if(charge.get("costPerUnit")?.hasError('required')){
+                                            <span>required</span>
+                                            }
+                                          </div>
+                                        }
+                                    </div>
                                   </td>
                                   <td>
                                     <ng-select [items]="vendorSupplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"

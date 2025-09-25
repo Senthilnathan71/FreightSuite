@@ -18,7 +18,7 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, forkJoin, of, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, forkJoin, of, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
@@ -102,7 +102,8 @@ export class QuotationEntryComponent implements OnInit {
   authStateCache : string = "Pending";
   disableAllModification : boolean;
   
-auditLogs: any[] = []; // Stores audit logs
+  auditLogs: any[] = []; // Stores audit logs
+  leadList : any[] = [];
   auditLogModalRef!: NgbModalRef;
 
 
@@ -489,7 +490,9 @@ private extractCargoData(enquiryCargo: any[]): any {
   initQuotationForm() {
     this.quotationForm = this.fb.group({
       // Fields mentioned in Web Design Draft
-      CustomerMasterSid: [null, [Validators.required]],
+      LeadOrCustomer : [true],
+      PreCustomerMasterSid : [null],
+      CustomerMasterSid: [null],
       CustomerRef: [''],
       Email: [''],
       status: ['Active'],
@@ -497,6 +500,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       quoteRoutes: this.fb.array([]),
       CustomerName: [''],
       CustomerAddress: ['', [Validators.required]],
+      CustomerBranchSid : [null],
       QuoteNumber: [''],
       QuoteDate: [null],
       EnquirySid: [''],
@@ -507,6 +511,74 @@ private extractCargoData(enquiryCargo: any[]): any {
       route.get('PODSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
       route.get('POLSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
     });
+    this.subscribeToLeadCustomerToggle(); 
+  }
+
+  subscribeToLeadCustomerToggle() {
+    this.quotationForm.get('LeadOrCustomer')?.valueChanges.pipe(
+      distinctUntilChanged()
+    ).subscribe(isCustomer => {
+      this.toggleCustomerType(isCustomer);
+    });
+  }
+
+  toggleCustomerType(isCustomer: boolean) {
+    this.quotationForm.patchValue({
+      PreCustomerMasterSid: null,
+      CustomerMasterSid: null,
+      customerName: '',
+      CustomerAddress: null,
+      CustomerBranchSid: null,
+      Email: null,
+    });
+    this.cusBranchList = [];
+
+    const preCustomerControl = this.quotationForm.get('PreCustomerMasterSid');
+    const customerControl = this.quotationForm.get('CustomerMasterSid');
+
+    if (isCustomer) {
+      customerControl?.setValidators(Validators.required);
+      preCustomerControl?.clearValidators();
+    } else {
+      preCustomerControl?.setValidators(Validators.required);
+      customerControl?.clearValidators();
+    }
+
+    customerControl?.updateValueAndValidity();
+    preCustomerControl?.updateValueAndValidity();
+  }
+
+
+
+  onSelectionChange(selectedItem: any) {
+    if (!selectedItem) {
+      this.quotationForm.patchValue({
+        CustomerName: '',
+        CustomerAddress: null,
+        CustomerBranchSid: null,
+        Email: null,
+      });
+      this.cusBranchList = [];
+      return;
+    }
+
+    const isCustomer = this.quotationForm.get('LeadOrCustomer')?.value;
+    console.log(selectedItem);
+    if (isCustomer) {
+      this.quotationForm.patchValue({
+        CustomerName: selectedItem.CustomerName,
+        CustomerAddress: selectedItem.Address,
+        Email: selectedItem.Email,
+        CustomerBranchSid: selectedItem.CustomerBranchSid,
+      });
+    } else {
+      this.quotationForm.patchValue({
+        customerName: selectedItem.preCustomerName,
+        CustomerAddress: selectedItem.preCustomerAddress1,
+        Email: selectedItem.email,
+        CustomerBranchSid: null,
+      });
+    }
   }
 
   get f(): { [key: string]: AbstractControl<any, any> } {
@@ -519,28 +591,37 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   addQuoteRoute(data?: any) {
     const routeForm = this.fb.group({
+
+      // Route Related Controls
       QuoteRouteSid: [data?.QuoteRouteSid || null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null, [Validators.required]],
+      CargoType: [data?.CargoType || null, [Validators.required]],
+      POLFreeDays: [data?.POLFreeDays || ''],
+      PODFreeDays: [data?.PODFreeDays || ''],
       PORSid: [data?.PORSid ?? null],
       POLSid: [data?.POLSid ?? null, [Validators.required]],
       PODSid: [data?.PODSid ?? null, [Validators.required]],
       FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null, Validators.required],
+      TransitDays: [data?.TransitDays || ''],
+
+      // Carrier Related Controls
+      CarrierName: [data?.CarrierName || ''],
       CarrierMasterSid: [data?.CarrierMasterSid || null],
-      CargoType: [data?.CargoType || null, [Validators.required]],
+
+      // Cargo Related Controls
       ContainerType: [data?.ContainerType || null],
       ContainerQty: [data?.ContainerQty || 1],
       effDate: [new Date(data?.effDate) || null, [Validators.required]],
       expDate: [new Date(data?.expdate) || '', [Validators.required]],
-      TransitDays: [data?.TransitDays || ''],
       ServiceLevel: [data?.ServiceLevel || null],
-      POLFreeDays: [data?.POLFreeDays || ''],
-      PODFreeDays: [data?.PODFreeDays || ''],
       CBM: [data?.CBM || 1],
       ChargeableWeight: [data?.ChargeableWeight || 0],
-      quoteCharges: this.fb.array([]),
       authorizerStatus: [data?.authorizerStatus || 'Pending'],
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
-      CarrierName: [data?.CarrierName || ''],
+
+      // FormArrays
+      quoteCharges: this.fb.array([]),
+      quoteProducts : this.fb.array([]),
     })
     const routeIndex = this.quoteRoutes.length;
     this.quoteRoutes.push(routeForm);
@@ -620,7 +701,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       Amount: [data?.Amount || '', [Validators.required]],
       costUnit: [data?.costUnit || null, Validators.required],
       costCurrency: [data?.costCurrency || null, Validators.required],
-      costPerUnit: [data?.costPerUnit || '', Validators.required],
+      costPerUnit: [data?.costPerUnit || ''],
       CostAgentMasterSid : [data?.CostAgentMasterSid || null],
       RevenueCustomerMasterSid : [data?.RevenueCustomerMasterSid || null],
       ChargeDisplayName: [data?.ChargeDisplayName, [Validators.required]],
@@ -628,7 +709,33 @@ openAuditLogs(modal: TemplateRef<any>) {
     })
     chargeForm.get('ChargeDisplayName')?.disable();
     chargeForm.get('Amount')?.disable();
+    const costPerUnitCtrl = chargeForm.get('costPerUnit');
+    const costAgentMasterSidCtrl = chargeForm.get('CostAgentMasterSid');
+    costAgentMasterSidCtrl?.valueChanges.subscribe(value => {
+      if (value) {
+        costPerUnitCtrl?.setValidators([Validators.required]);
+        costPerUnitCtrl?.markAsTouched();
+      } else {
+        costPerUnitCtrl?.clearValidators();
+      }
+      costPerUnitCtrl?.updateValueAndValidity();
+    });
+    if (costAgentMasterSidCtrl.value) {
+      costPerUnitCtrl.setValidators([Validators.required]);
+      costPerUnitCtrl.markAsTouched();
+      costPerUnitCtrl.updateValueAndValidity();
+    }
     this.quoteCharges(routeIndex).push(chargeForm)
+  }
+
+  isCostPerUnitRequired(routeIndex: number): boolean {
+    const chargesArray = this.quoteCharges(routeIndex);
+    if (!chargesArray) {
+      return false;
+    }
+    return chargesArray.controls.some(
+      chargeCtrl => !!chargeCtrl.get('CostAgentMasterSid')?.value
+    );
   }
 
 
@@ -654,10 +761,15 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   loadAllLookUps() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const filterOption = { 
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid
+    }
     return forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
       carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
-      customers: this.leadService.getAllCustomers(CompanyMasterSid).pipe(catchError(err => of([]))),
+      leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
+      customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
@@ -666,9 +778,10 @@ openAuditLogs(modal: TemplateRef<any>) {
       units : this.leadService.getAllUOMs().pipe(catchError(err => of([]))),
       vendors: this.leadService.getAllVendorSupplier(CompanyMasterSid).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([])))
-    }).pipe(tap(({ cargoTypes, carriers, customers, departments, vendors, ports, incos, salesman, masters,units, containerTypes }) => {
+    }).pipe(tap(({ cargoTypes, carriers, leads, customers, departments, vendors, ports, incos, salesman, masters,units, containerTypes }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
+      this.leadList = leads.data;
       this.customers = customers || [];
       this.departments = departments || [];
       this.ports = ports || [];
@@ -713,6 +826,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.getEnquiryName(response.EnquirySid);
     this.quotationForm.patchValue({
       ...response,
+      LeadOrCustomer : response.LeadOrCustomer === "C",
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
     })
@@ -763,6 +877,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       BranchMasterSid: currentBranchMasterSid,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
       UserMasterSid: this.userData?.UserMasterSid,
+      LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
+      PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerRef: formValue.CustomerRef,
       CustomerAddress: formValue.CustomerAddress,
