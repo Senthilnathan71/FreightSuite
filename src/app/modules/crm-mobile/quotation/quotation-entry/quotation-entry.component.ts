@@ -31,6 +31,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -47,6 +48,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     OnlyTextDirective,
     TextWithNumbersDirective,
     DecimalPrecisionDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './quotation-entry.component.html',
   styleUrl: './quotation-entry.component.scss',
