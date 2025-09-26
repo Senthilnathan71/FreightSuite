@@ -130,13 +130,13 @@ export class SailingScheduleEntryComponent implements OnInit {
         this.scheduleForm.get('VoyageType')?.valueChanges.subscribe((vt) => {
             this.applyPortTypeFilter(vt);
         });
-        this.scheduleForm.get('POLSid')?.valueChanges.subscribe((polSid) => {
-    this.applyPolPodExclusion();
-});
+        this.scheduleForm.get('POLSid')?.valueChanges.subscribe(() => {
+            this.applyPolPodExclusion();
+        });
 
-this.scheduleForm.get('PODSid')?.valueChanges.subscribe((podSid) => {
-    this.applyPolPodExclusion();
-});
+        this.scheduleForm.get('PODSid')?.valueChanges.subscribe(() => {
+            this.applyPolPodExclusion();
+        });
 
         this.currentRoute.paramMap.subscribe((param)=>{
             const idParam = param.get('id');
@@ -197,27 +197,17 @@ this.scheduleForm.get('PODSid')?.valueChanges.subscribe((podSid) => {
         });
 
         // auto-calc transit days when ETA/ETD change
-        this.scheduleForm.get('ETA')?.valueChanges.subscribe((value:Date) => {
-            if(!value) return;
-            const ETA : Date = this.scheduleForm.get('ETD').value;
-            if(ETA){
+        this.scheduleForm.get('ETA')?.valueChanges.subscribe((etaValue:Date) => {
+            if(!etaValue) return;
+            const etdVal : Date = this.scheduleForm.get('ETD')?.value;
+            if(etdVal){
                 const msPerDay = 1000 * 60 * 60 * 24;
-                const dayDifference = Math.trunc((new Date(value).getTime() - new Date(ETA).getTime())/msPerDay);
+                const dayDifference = Math.trunc((new Date(etaValue).getTime() - new Date(etdVal).getTime())/msPerDay);
                 this.scheduleForm.get('TransitDays')?.setValue(isNaN(dayDifference) ? '' : dayDifference);
             }
         });
 
-        // ensure ETA < ETD
-        this.scheduleForm.get('ETD')?.valueChanges.subscribe(() => {
-            const etd = this.scheduleForm.get('ETD')?.value;
-            const eta = this.scheduleForm.get('ETA')?.value;
-            if (etd && eta && new Date(etd) >= new Date(eta)) {
-                this.formErrors.etaEtd = 'ETD must be less than ETA.';
-            } else {
-                delete this.formErrors.etaEtd;
-            }
-        });
-
+        // ensure ETD < ETA
         this.scheduleForm.get('ETD')?.valueChanges.subscribe(() => {
             const etd = this.scheduleForm.get('ETD')?.value;
             const eta = this.scheduleForm.get('ETA')?.value;
@@ -230,46 +220,63 @@ this.scheduleForm.get('PODSid')?.valueChanges.subscribe((podSid) => {
     }
 
     loadAllFields(){
-        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-        forkJoin({
-            vessels : this.masterService.getAllVessels(),
-            carriers : this.masterService.getAllCarriers(CompanyMasterSid),
-            ports : this.masterService.getAllPorts()
-        }).subscribe(({vessels,carriers,ports})=>{
-            this.vesselList = vessels.data || [];
-            this.carrierList = carriers || [];
-            this.portList = ports.data || [];
-            // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
-            const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
-            this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    forkJoin({
+        vessels : this.masterService.getAllVessels(),
+        carriers : this.masterService.getAllCarriers(CompanyMasterSid),
+        ports : this.masterService.getAllPorts()
+    }).subscribe(({vessels,carriers,ports})=>{
+        this.vesselList = vessels.data || [];
+        this.carrierList = carriers || [];
+        this.portList = ports.data || [];
+
+        // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
+        const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+        this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
+        this.applyPolPodExclusion();
+
+        // <<< NEW: if schedule data already loaded (edit mode), re-patch POL/POD so dropdowns can match items
+        if (this.sailHeadData) {
+            // Ensure numeric types (match PortMasterSid type)
+            const pol = this.sailHeadData.POLSid ? Number(this.sailHeadData.POLSid) : null;
+            const pod = this.sailHeadData.PODSid ? Number(this.sailHeadData.PODSid) : null;
+            // Patch only POLSid and PODSid (avoid overwriting other fields)
+            this.scheduleForm.patchValue({ POLSid: pol, PODSid: pod });
+            // Re-run exclusion to ensure lists are consistent
             this.applyPolPodExclusion();
-        }, (err) => {
-            console.error('Error loading lookup fields', err);
-        });
-    }
-    applyPolPodExclusion() {
-    // Always use the base port list filtered by voyage type
-    const baseList = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.portList];
-    
-    const selectedPOL = this.scheduleForm.get('POLSid')?.value;
-    const selectedPOD = this.scheduleForm.get('PODSid')?.value;
-
-    // Filter POD list: exclude selected POL
-    this.filteredPODList = baseList.filter(p => p.PortMasterSid !== selectedPOL);
-    
-    // Filter POL list: exclude selected POD  
-    this.filteredPOLList = baseList.filter(p => p.PortMasterSid !== selectedPOD);
-
-    // Clear selections if they're no longer valid
-    if (selectedPOD && !this.filteredPODList.some(p => p.PortMasterSid === selectedPOD)) {
-        this.scheduleForm.get('PODSid')?.setValue(null);
-    }
-    if (selectedPOL && !this.filteredPOLList.some(p => p.PortMasterSid === selectedPOL)) {
-        this.scheduleForm.get('POLSid')?.setValue(null);
-    }
-
-    this.cdr.markForCheck();
+            // Force change detection so dropdown visual updates
+            this.cdr.detectChanges();
+        }
+    }, (err) => {
+        console.error('Error loading lookup fields', err);
+    });
 }
+
+    applyPolPodExclusion() {
+        // Always start from the base filtered lists (which may be full lists or already voyage-filtered lists)
+        const basePOL = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.portList];
+        const basePOD = this.filteredPODList.length ? [...this.filteredPODList] : [...this.portList];
+
+        const selectedPOL = this.scheduleForm.get('POLSid')?.value;
+        const selectedPOD = this.scheduleForm.get('PODSid')?.value;
+
+        // Filter POD list: exclude selected POL
+        this.filteredPODList = basePOD.filter(p => p.PortMasterSid !== selectedPOL);
+
+        // Filter POL list: exclude selected POD  
+        this.filteredPOLList = basePOL.filter(p => p.PortMasterSid !== selectedPOD);
+
+        // Clear selections if they're no longer valid
+        if (selectedPOD && !this.filteredPODList.some(p => p.PortMasterSid === selectedPOD)) {
+            this.scheduleForm.get('PODSid')?.setValue(null);
+        }
+        if (selectedPOL && !this.filteredPOLList.some(p => p.PortMasterSid === selectedPOL)) {
+            this.scheduleForm.get('POLSid')?.setValue(null);
+        }
+
+        this.cdr.markForCheck();
+    }
+
     /**
      * Apply port filtering based on voyage type.
      * - Accepts voyageType string: 'Sea'|'Air'|'Road' or null to reset to all ports.
@@ -328,12 +335,12 @@ this.scheduleForm.get('PODSid')?.valueChanges.subscribe((podSid) => {
         };
 
         // Apply filter
-        this.filteredPOLList = this.portList.filter(p => portMatchesVoyageType(p));
-        this.filteredPODList = this.portList.filter(p => portMatchesVoyageType(p));
+        const polFiltered = this.portList.filter(p => portMatchesVoyageType(p));
+        const podFiltered = this.portList.filter(p => portMatchesVoyageType(p));
 
         // If filter results are empty, fallback to full list (prevents blank selects)
-        if (this.filteredPOLList.length === 0) this.filteredPOLList = [...this.portList];
-        if (this.filteredPODList.length === 0) this.filteredPODList = [...this.portList];
+        this.filteredPOLList = polFiltered.length ? polFiltered : [...this.portList];
+        this.filteredPODList = podFiltered.length ? podFiltered : [...this.portList];
 
         // If currently selected POL/POD not in filtered list, clear them (unless during init)
         if (!init) {
@@ -359,54 +366,51 @@ this.scheduleForm.get('PODSid')?.valueChanges.subscribe((podSid) => {
     }
 
     loadScheduleData() {
-    if (!this.VoyageMasterHeaderSid) return;
-    
-    this.masterService.getSailingScheduleById(this.VoyageMasterHeaderSid).subscribe(
-        (resp: any) => {
-            if (resp.status) {
-                this.sailHeadData = resp.data;
-                const scheduleData = resp.data;
-                 console.log('Loading schedule data:', scheduleData);
-                console.log('POLSid:', scheduleData.POLSid);
-                console.log('PODSid:', scheduleData.PODSid);
-                
-                // Patch the form first
-                this.scheduleForm.patchValue({
-                    ...scheduleData,
-                    SCMETA: scheduleData.SCMETA ? new Date(scheduleData.SCMETA) : null,
-                    SCMETD: scheduleData.SCMETD ? new Date(scheduleData.SCMETD) : null,
-                    CoLoad: scheduleData.CoLoad === 'Y',
-                    status: scheduleData.status === 'A' ? 'Active' : 'Suspended',
-                    POLSid: scheduleData.POLSid || '',
-                    PODSid: scheduleData.PODSid || '',
-                    ETA: scheduleData.ETA ? new Date(scheduleData.ETA) : null,
-                    ETD: scheduleData.ETD ? new Date(scheduleData.ETD) : null,
-                    ATA: scheduleData.ATA ? new Date(scheduleData.ATA) : null,
-                    ATD: scheduleData.ATD ? new Date(scheduleData.ATD) : null,
-                    PortCutoff: scheduleData.PortCutoff ? new Date(scheduleData.PortCutoff) : null,
-                    TransitDays: scheduleData.TransitDays ?? '',
-                    VoyageType: scheduleData.VoyageType ?? this.scheduleForm.get('VoyageType')?.value
-                });
+        if (!this.VoyageMasterHeaderSid) return;
 
-                // Use setTimeout to ensure the port lists are filtered AFTER the form is patched
-                setTimeout(() => {
-                    const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
-                    this.applyPortTypeFilter(currentVoyageType, true);
-                    this.applyPolPodExclusion();
-                    
-                    // Force change detection
-                    this.cdr.detectChanges();
-                });
-                
-            } else {
-                this.appSettingService.showError('Error Loading Sailing Schedule');
+        this.masterService.getSailingScheduleById(this.VoyageMasterHeaderSid).subscribe(
+            (resp: any) => {
+                if (resp.status) {
+                    this.sailHeadData = resp.data;
+                    const scheduleData = resp.data;
+                    console.log('Loading schedule data:', scheduleData);
+
+                    // Patch the form first
+                    this.scheduleForm.patchValue({
+                        ...scheduleData,
+                        SCMETA: scheduleData.SCMETA ? new Date(scheduleData.SCMETA) : null,
+                        SCMETD: scheduleData.SCMETD ? new Date(scheduleData.SCMETD) : null,
+                        CoLoad: scheduleData.CoLoad === 'Y',
+                        status: scheduleData.status === 'A' ? 'Active' : 'Suspended',
+                        POLSid: scheduleData.POLSid ?? null,
+                        PODSid: scheduleData.PODSid ?? null,
+                        ETA: scheduleData.ETA ? new Date(scheduleData.ETA) : null,
+                        ETD: scheduleData.ETD ? new Date(scheduleData.ETD) : null,
+                        ATA: scheduleData.ATA ? new Date(scheduleData.ATA) : null,
+                        ATD: scheduleData.ATD ? new Date(scheduleData.ATD) : null,
+                        PortCutoff: scheduleData.PortCutoff ? new Date(scheduleData.PortCutoff) : null,
+                        TransitDays: scheduleData.TransitDays ?? '',
+                        VoyageType: scheduleData.VoyageType ?? this.scheduleForm.get('VoyageType')?.value
+                    });
+
+                    // Ensure port lists are filtered after form patch
+                    setTimeout(() => {
+                        const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+                        this.applyPortTypeFilter(currentVoyageType, true);
+                        this.applyPolPodExclusion();
+
+                        // Force change detection
+                        this.cdr.detectChanges();
+                    });
+                } else {
+                    this.appSettingService.showError('Error Loading Sailing Schedule');
+                }
+            },
+            (error) => {
+                console.error('Error Loading Sailing Schedule', error);
             }
-        },
-        (error) => {
-            console.error('Error Loading Sailing Schedule', error);
-        }
-    );
-}
+        );
+    }
 
     // ------- Save / Update header only -------
     onSubmit(){
