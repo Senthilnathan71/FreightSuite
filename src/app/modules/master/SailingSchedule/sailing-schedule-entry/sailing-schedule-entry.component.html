@@ -109,8 +109,6 @@
                         </div>
                     </aside>
 
-
-
                     <!-- Ship IRN -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -193,8 +191,6 @@
                         </div>
                     </aside>
 
-
-
                     <!-- CoLoad -->
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check">
@@ -229,28 +225,23 @@
 
                     <!-- --------- NEW: Ports & key dates inline in header ---------- -->
                     <aside class="col-md-3">
-                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0"[class.filled]="!!scheduleForm.get('PODSid')?.value">
-
-                            <!-- <ng-select formControlName="POLSid" [items]="filteredPOLList" bindLabel="PortName" bindValue="PortMasterSid" placeholder="">
-                                <ng-template ng-option-tmp let-item="item">{{ item.PortName | uppercase }} - {{ item.PortCode }}</ng-template>
-                            </ng-select> -->
-                             <dofi-searchable-dropdown 
-  [items]="filteredPODList" 
-  formControlName="PODSid"
+                        <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('POLSid')?.value">
+                            <dofi-searchable-dropdown 
+  [items]="filteredPOLList" 
+  formControlName="POLSid"
   [placeholder]="''"
   [displayFields]="['PortCode', 'PortName','CountryName']" 
   [displayLabels]="['Code', 'Name','Country']" 
   [labelFields]="['PortCode','PortName','CountryName']"
   [bindValue]="'PortMasterSid'">
 </dofi-searchable-dropdown>
-
-                            <label class="input-label">POL <span class="text-danger">*</span></label>
+<label class="input-label">POL <span class="text-danger">*</span></label>
                         </div>
                     </aside>
+
                     <aside class="col-md-3 mb-1">
                        <div class="d-flex mb-2 my-lg-0">
-    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"[class.filled]="!!scheduleForm.get('ETD')?.value">
-                        
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ETD')?.value">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #etdPicker="ngbDatepicker" [footerTemplate]="footerTemplateETD" (click)="etdPicker.toggle()" formControlName="ETD" readonly/>
                                 <label class="input-label">ETD <span class="text-danger">*</span></label>
                             </div>
@@ -264,25 +255,23 @@
                             }
                         </div>
                     </aside>
+
                     <aside class="col-md-3 mb-1">
                         <div class="d-flex mb-2 my-lg-0">
-    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"[class.filled]="!!scheduleForm.get('PortCutoff')?.value">
-                            <div class="input-group">
-                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #pcPicker="ngbDatepicker" (click)="pcPicker.toggle()" formControlName="PortCutoff" [maxDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly />
-                                <button class="btn bi bi-calendar3" (click)="pcPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('PortCutoff')?.value">
+                                <div class="input-group">
+                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #pcPicker="ngbDatepicker" (click)="pcPicker.toggle()" formControlName="PortCutoff" [maxDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly />
+                                    <button class="btn bi bi-calendar3" (click)="pcPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
+                                </div>
+                                <label class="input-label">Port Cutoff</label>
                             </div>
-                            <label class="input-label">Port Cutoff</label>
-                        </div>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('PODSid')?.value">
-                            <!-- <ng-select formControlName="PODSid" [items]="filteredPODList" bindLabel="PortName" bindValue="PortMasterSid" placeholder="">
-                                <ng-template ng-option-tmp let-item="item">{{ item.PortName | uppercase }} - {{ item.PortCode }}</ng-template>
-                            </ng-select> -->
                             <dofi-searchable-dropdown 
-  [items]="filteredPOLList" 
+  [items]="filteredPODList" 
   formControlName="PODSid"
   [placeholder]="''"
   [displayFields]="['PortCode', 'PortName','CountryName']" 
@@ -290,27 +279,22 @@
   [labelFields]="['PortCode','PortName','CountryName']"
   [bindValue]="'PortMasterSid'">
 </dofi-searchable-dropdown>
-                            <label class="input-label">POD <span class="text-danger">*</span></label>
+<label class="input-label">POD <span class="text-danger">*</span></label>
                         </div>
                     </aside>
 
                     <aside class="col-md-3 mb-1">
                          <div class="d-flex mb-2 my-lg-0">
-    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"[class.filled]="!!scheduleForm.get('ETA')?.value">
-                        
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ETA')?.value">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #etaPicker="ngbDatepicker" [footerTemplate]="footerTemplateETA" (click)="etaPicker.toggle()" formControlName="ETA" [minDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly/>
                                 <label class="input-label">ETA <span class="text-danger">*</span></label>
                             </div>
                             <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="etaPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
                             @if(scheduleForm.get('ETA')?.touched && scheduleForm.get('ETA')?.errors){
                             <div class="error-message">
-                                @if(scheduleForm.get('ETA')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                
+                                @if(scheduleForm.get('ETA')?.hasError('required')){ <span>Required</span> }
                             </div>
                             }
-                            
                         </div>
                     </aside>
 
@@ -320,36 +304,32 @@
                         <button class="btn btn-secondary btn-sm m-2 float-end" (click)="etaPicker.close()">Close</button>
                     </ng-template>
 
-                    
-
                     <ng-template #footerTemplateETD>
                         <hr class="my-0" />
                         <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('ETD').setValue(todayDate); etdPicker.close()">Today</button>
                         <button class="btn btn-secondary btn-sm m-2 float-end" (click)="etdPicker.close()">Close</button>
                     </ng-template>
+
                     <aside class="col-md-3 mb-1">
                         <div class="d-flex mb-2 my-lg-0">
-                        <div class="custom-form-group custom-form-group-select-date w-100 mb-0"[class.filled]="!!scheduleForm.get('ATD')?.value">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #atdPicker="ngbDatepicker" (click)="atdPicker.toggle()" formControlName="ATD" readonly/>
-                            <label class="input-label">ATD</label>
-                        </div>
-                        <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="atdPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ATD')?.value">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #atdPicker="ngbDatepicker" (click)="atdPicker.toggle()" formControlName="ATD" readonly/>
+                                <label class="input-label">ATD</label>
+                            </div>
+                            <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="atdPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
                         </div>
                     </aside>
 
                     <aside class="col-md-3 mb-1">
                         <div class="d-flex mb-2 my-lg-0">
-    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"[class.filled]="!!scheduleForm.get('ATA')?.value">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" formControlName="ATA" readonly/>
-                            <label class="input-label">ATA</label>
-                        </div>
-                        <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="ataPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
-                     </div>
+                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ATA')?.value">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" formControlName="ATA" readonly/>
+                                <label class="input-label">ATA</label>
+                            </div>
+                            <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="ataPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
+                         </div>
                     </aside>
 
-                    
-
-                    
                      <!-- Remarks -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">

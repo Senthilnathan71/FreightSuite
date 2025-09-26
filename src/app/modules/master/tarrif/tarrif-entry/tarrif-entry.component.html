@@ -1,29 +1,27 @@
+
 <div class="row compact-form">
     <div class="col-12 px-0">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                 <div class="d-flex align-items-center gap-2">
-                     <div class="brand-icon">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
                         <i class="fas fa-balance-scale"></i>
                     </div>
-                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : ' Add'}} Tariff</h5>
-                @if(isEditMode){ 
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
-                }
+                    <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : ' Add'}} Tariff</h5>
+                    @if(isEditMode){ 
+                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
+                            <i class="fas fs-6 fa-info-circle"></i>
+                        </a>
+                    }
                 </div>
             </div>
             <div class="col-md-8 pb-2">
-                <div
-                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     
- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
-
-
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateBack()">
@@ -35,11 +33,28 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSave()" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                     [disabled]=" btnDisable">
-                        <i class="fas fa-save me-1"></i>
-                        {{isEditMode ? 'Edit' : 'Save'}}
-                    </button>
+
+                    <!-- ✅ Updated Save/Edit logic -->
+                    <button *ngIf="!isEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onSave()" [disabled]="btnDisable">
+      <i class="fas fa-save me-1"></i> Save
+    </button>
+
+                    <div *ngIf="isEditMode && hasPermission('Edit')" class="d-inline-block">
+                        <!-- Edit enables only status -->
+                        <button *ngIf="!isStatusEditable" type="button" class="btn btn-outline-info btn-sm dofi-min-w-80"
+                                (click)="onEditStatusClick()">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </button>
+
+                        <!-- Save when status editable -->
+                        <button *ngIf="isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
+                                (click)="onSave()" [disabled]="btnDisable">
+                            <i class="fas fa-save me-1"></i> Save
+                        </button>
+                    </div>
+                    <!-- ✅ End update -->
+
                     <div ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
@@ -56,9 +71,10 @@
         </div>
     </div>
 
+    
 
     <div class="mx-0 px-0">
-         <div class="card mb-1">
+         <div class="card h-auto mb-1">
         <div class="card-body">
             <div class="row">
                      <div class="col-md-6" [formGroup]="tariffHeaderForm">
@@ -81,7 +97,7 @@
   formControlName="DepartmentMasterSid"
   [placeholder]="''"
   [displayFields]="[ 'departmentCode','departmentName','departmentType']" 
-  [displayLabels]="[ 'DepartmentCode','Department Name', 'DepartmentType']"
+  [displayLabels]="[ 'Code','Name', 'Type']"
   [labelFields]="['departmentCode','departmentName','departmentType']"
   [bindValue]="'DepartmentMasterSid'"
   [isLoading]="isDataLoading">
@@ -104,7 +120,7 @@
   formControlName="POOSid"
   [placeholder]="''"
   [displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['PortCode', 'PortName','CountryName']" 
+  [displayLabels]="['Code', 'Name','Name']" 
   [labelFields]="['PortCode','PortName','CountryName']"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading">
@@ -127,7 +143,7 @@
   formControlName="POLSid"
   [placeholder]="''"
   [displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['PortCode', 'PortName','CountryName']" 
+  [displayLabels]="['Code', 'Name','Name']" 
   [labelFields]="['PortCode','PortName','CountryName']"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading" 
@@ -159,7 +175,7 @@
   formControlName="PODSid"
   [placeholder]="''"
   [displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['PortCode', 'PortName','CountryName']" 
+  [displayLabels]="['Code', 'Name','Name']" 
   [labelFields]="['PortCode','PortName','CountryName']"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading" 
@@ -186,23 +202,23 @@
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('FDCSid')?.value">
-                            <dofi-searchable-dropdown 
+                            <!-- <dofi-searchable-dropdown 
   [items]="filteredPorts" 
   formControlName="FDCSid"
-  [placeholder]="''"
+  
 [displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['PortCode', 'PortName','CountryName']" 
+  [displayLabels]="['Code', 'Name','Name']" 
   [labelFields]="['PortCode','PortName','CountryName']"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading">
-</dofi-searchable-dropdown>
-                            <!-- <ng-select class="ng-select" formControlName="FDCSid">
+</dofi-searchable-dropdown> -->
+                            <ng-select class="ng-select" formControlName="FDCSid">
                                 <ng-option value="">Select FDC</ng-option>
                                 @for (port of portList; track port) {
-                                <ng-option [value]="port.PortMasterSid">{{ port.PortName }} -
-                                    {{port.PortCode}}</ng-option>
+                                <ng-option [value]="port.PortMasterSid"> {{port.PortCode}}-{{ port.PortName }} 
+                                   </ng-option>
                                 }
-                            </ng-select> -->
+                            </ng-select>
                             <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('FDCSid')?.touched && tariffHeaderForm.get('FDCSid')?.errors){
                             <div class="error-message">
@@ -249,7 +265,7 @@
                             <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !tariffHeaderForm.get('POLTerminal')?.value
-                              }">POL Terminal</label>
+                              }">POL Terminal <span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('POLTerminal')?.touched &&
                             tariffHeaderForm.get('POLTerminal')?.errors){
                             <div class="error-message">
@@ -270,7 +286,7 @@
                             <label for="text-input"  [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !tariffHeaderForm.get('PODTerminal')?.value
-                              }">POD Terminal</label>
+                              }">POD Terminal<span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('PODTerminal')?.touched &&
                             tariffHeaderForm.get('PODTerminal')?.errors){
                             <div class="error-message">
@@ -290,16 +306,16 @@
         </div>
     </div>
     <div class="col-12 col-md-6 mt-md-0" [formGroup]="tariffHeaderForm">
-        <div class="card mb-0">
-              <div class="card-body  pb-0">
-                        <div class="row compact-form  rounded border border-top-0">
+        <div class="card" >
+              <div class="card-body  pb-0 " >
+                        <div class="row compact-form  rounded border border-top-0" style="height:200px">
                            <div class="card-header-title d-flex align-items-center gap-2 ">
     <i class="fas fa-dollar-sign fs-4"></i>
     <h5 class="card-titlename mb-0">Freight Ledger</h5>
 </div>
 
                     
-                    <aside class="col-md-6">
+                    <!-- <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('MovementType')?.value">
                             <ng-select class="ng-select" formControlName="MovementType" placeholder="">
                                 <ng-option value="Sea">Sea</ng-option>
@@ -320,7 +336,7 @@
                             </div>
                             }
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('Carrier')?.value">
                             <ng-select class="ng-select" formControlName="Carrier" placeholder="">
@@ -342,6 +358,8 @@
                             }
                         </div>
                     </aside>
+                    
+                    
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('AgentSid')?.value">
                             <ng-select class="ng-select" formControlName="AgentSid" placeholder="">
@@ -383,14 +401,14 @@
                         </div>
                     </aside>
                    
-                    <aside class="col-md-6">
+                    <!-- <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('StuffingAt')?.value">
                             <ng-select class="ng-select" formControlName="StuffingAt" placeholder="">
                                 <ng-option value="Dock">Dock</ng-option>
                                 <ng-option value="Factory">Factory</ng-option>
                                 <ng-option value="Both">Both</ng-option>
                             </ng-select>
-                            <label for="text-input" class="input-label">Stuffing At <span class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Stuffing At <span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('StuffingAt')?.touched && tariffHeaderForm.get('StuffingAt')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('StuffingAt')?.hasError('required')){
@@ -399,7 +417,7 @@
                             </div>
                             }
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" formControlName="Remarks" id="text-input" placeholder=""
@@ -755,7 +773,7 @@
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailDescription"
-                                        placeholder="" class="form-control custom-input-field sm"  [textWithNumbers]="100" readonly style="background-color:white;cursor:not-allowed">
+                                        placeholder="" class="form-control custom-input-field sm"  [textWithNumbers]="100"  style="background-color:white;cursor:not-allowed">
                                     <label for="text-input" [ngClass]="{
                                         'input-label': true,
                                         'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value
@@ -918,7 +936,7 @@
 
                                     @if(isModalEditMode){
                                     <ng-select name="status" class="ng-select" formControlName="detailstatus" id="text-input">
-                                        <ng-option value="Active">Active</ng-option>
+                                        <ng-option value="Active" [disabled]="tariffDetailData?.status === 'S'">Active</ng-option>
                                         <ng-option value="Suspended">Suspended</ng-option>
                                     </ng-select>
                                     } @else {
@@ -1011,11 +1029,26 @@
             </div>
 
             <div class="modal-footer p-2">
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSave()">
-                    <i class="fas fa-save me-1"></i>
-                    {{isModalEditMode ? 'Edit' : 'Save'}}
-                </button>
-            </div>
+  <!-- Creation mode: Save (existing behaviour) -->
+  <button *ngIf="!isModalEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="onModalSave()">
+    <i class="fas fa-save me-1"></i> Save
+  </button>
+
+  <!-- Edit-mode: show Edit (to enable only detailstatus) and Save when status-editing -->
+  <div *ngIf="isModalEditMode" class="d-inline-block">
+    <button *ngIf="!isModalStatusEditable" type="button" class="btn btn-outline-info btn-sm dofi-min-w-80"
+            (click)="onEditDetailStatusClick()">
+      <i class="fas fa-edit me-1"></i> Edit
+    </button>
+
+    <button *ngIf="isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
+            (click)="onModalSave()">
+      <i class="fas fa-save me-1"></i> Save
+    </button>
+  </div>
+</div>
+
         </div>
     </div>
 </ng-template>

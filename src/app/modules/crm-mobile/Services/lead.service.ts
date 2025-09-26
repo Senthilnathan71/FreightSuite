@@ -20,7 +20,7 @@ export class LeadService {
 
 
   getAllLeads(CompanyMasterSid:number,BranchMasterSid:number) {
-    return this.http.post<Lead>('precustomer',{CompanyMasterSid,BranchMasterSid}).pipe(
+    return this.http.post<Lead>('ff-precustomer',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -29,7 +29,7 @@ export class LeadService {
   }
 
   getAllPendingMeetings(CompanyMasterSid:number,BranchMasterSid:number) {
-    return this.http.post('precustomer-meeting/pendingMeetings',{CompanyMasterSid,BranchMasterSid}).pipe(
+    return this.http.post('ff-precustomer-meeting/pendingMeetings',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -38,7 +38,7 @@ export class LeadService {
   }
 
   getAuditLogsPreCustomerMeeting(tableName: string, recordId?: string) {
-    let url = `precustomer-meeting/fetch/audit-logs?tableName=${tableName}`;
+    let url = `ff-precustomer-meeting/fetch/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
 
     return this.http.get<{ data: any }>(url).pipe(
@@ -65,7 +65,7 @@ export class LeadService {
   }
 
   createPreCustomer(payLoad: any) {
-    return this.http.put("precustomer", payLoad).pipe(
+    return this.http.put("ff-precustomer", payLoad).pipe(
       map((res: any) => {
         return res;
       })
@@ -73,7 +73,7 @@ export class LeadService {
   }
 
   getPrecustomerById(id: number) {
-    return this.http.get<{ data: PreCustomer }>(`precustomer/${id}`).pipe(
+    return this.http.get<{ data: PreCustomer }>(`ff-precustomer/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -82,7 +82,7 @@ export class LeadService {
   }
 
   getPreCustomerMeeting(id: number) {
-    return this.http.get(`precustomer-meeting/${id}`).pipe(
+    return this.http.get(`ff-precustomer-meeting/${id}`).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -103,7 +103,7 @@ export class LeadService {
 
 
   createPreCustomerMeeting(payLoad: any) {
-    return this.http.put("precustomer-meeting", payLoad).pipe(
+    return this.http.put("ff-precustomer-meeting", payLoad).pipe(
       map((res: any) => {
         return res;
       })
@@ -120,7 +120,7 @@ export class LeadService {
   }
 
   getMeetings() {
-    return this.http.get('precustomer-meeting/meetingDate').pipe(
+    return this.http.get('ff-precustomer-meeting/meetingDate').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -137,7 +137,7 @@ export class LeadService {
     )
   }
   getAllCustomers(CompanyMasterSid:number) {
-    return this.http.post('precustomer/customer',{CompanyMasterSid}).pipe(
+    return this.http.post('ff-precustomer/customer',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         console.log(resp)
         let response = resp.data;
@@ -405,7 +405,7 @@ export class LeadService {
   }
 
   getAllTodo(CompanyMasterSid:number,BranchMasterSid:number) {
-    return this.http.post('precustomer-meeting/lead/todo',{CompanyMasterSid,BranchMasterSid}).pipe(
+    return this.http.post('ff-precustomer-meeting/lead/todo',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -415,7 +415,7 @@ export class LeadService {
 
   // LEAD
   fetchAllLeads(payload:any) {
-    return this.http.post<{ data: any }>('lead',payload).pipe(
+    return this.http.post<{ data: any }>('ff-lead',payload).pipe(
       map((resp:any) => {
         let response = resp;
         return response;
@@ -424,7 +424,7 @@ export class LeadService {
   }
 
   getLeadById(PreCustomerMasterSid) {
-    return this.http.get<{ data: any }>(`lead/fetch/${PreCustomerMasterSid}`).pipe(
+    return this.http.get<{ data: any }>(`ff-lead/fetch/${PreCustomerMasterSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -433,7 +433,7 @@ export class LeadService {
   }
 
   createNewLead(payload) {
-    return this.http.post<{ data: any }>('lead/create', payload).pipe(
+    return this.http.post<{ data: any }>('ff-lead/create', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -442,7 +442,7 @@ export class LeadService {
   }
 
   updateLeadById(PreCustomerMasterSid: number, payload) {
-    return this.http.patch<{ data: any }>(`lead/update/${PreCustomerMasterSid}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`ff-lead/update/${PreCustomerMasterSid}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -451,7 +451,7 @@ export class LeadService {
   }
 
   deleteLeadById(PreCustomerMasterSid: number) {
-    return this.http.delete<{ data: any }>(`lead/delete/${PreCustomerMasterSid}`).pipe(
+    return this.http.delete<{ data: any }>(`ff-lead/delete/${PreCustomerMasterSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -460,7 +460,7 @@ export class LeadService {
   }
 
   searchLead(payload) {
-    return this.http.post<{ data: any[] }>('lead/search-list', payload).pipe(
+    return this.http.post<{ data: any[] }>('ff-lead/search-list', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -469,7 +469,7 @@ export class LeadService {
   }
 
   getAuditLogsLead(tableName: string, recordId?: string) {
-    let url = `lead/audit-logs?tableName=${tableName}`;
+    let url = `ff-lead/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
 
     return this.http.get<{ data: any }>(url).pipe(
@@ -515,7 +515,7 @@ export class LeadService {
   }
   // Get all pre-customer meetings
   getAllPreCustomerMeetings(CompanyMasterSid:number, BranchMasterSid:number) {
-    return this.http.post<{ data: any[] }>('pre-customer-meeting',{CompanyMasterSid,BranchMasterSid}).pipe(
+    return this.http.post<{ data: any[] }>('ff-pre-customer-meeting',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -525,7 +525,7 @@ export class LeadService {
 
   // Get pre-customer meeting by ID
   getPreCustomerMeetingById(PreCustomerMeetingSid: number) {
-    return this.http.get<{ data: any }>(`pre-customer-meeting/fetch/${PreCustomerMeetingSid}`).pipe(
+    return this.http.get<{ data: any }>(`ff-pre-customer-meeting/fetch/${PreCustomerMeetingSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -535,7 +535,7 @@ export class LeadService {
 
   // Create new pre-customer meeting
   createNewPreCustomerMeeting(payload: any) {
-    return this.http.post<{ data: any }>('pre-customer-meeting/create', payload).pipe(
+    return this.http.post<{ data: any }>('ff-pre-customer-meeting/create', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -545,7 +545,7 @@ export class LeadService {
 
   // Update pre-customer meeting by ID
   updatePreCustomerMeetingById(PreCustomerMeetingSid: number, payload: any) {
-    return this.http.patch<{ data: any }>(`pre-customer-meeting/update/${PreCustomerMeetingSid}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`ff-pre-customer-meeting/update/${PreCustomerMeetingSid}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -555,7 +555,7 @@ export class LeadService {
 
   // Delete pre-customer meeting by ID
   deletePreCustomerMeetingById(PreCustomerMeetingSid: number) {
-    return this.http.delete<{ data: any }>(`pre-customer-meeting/delete/${PreCustomerMeetingSid}`).pipe(
+    return this.http.delete<{ data: any }>(`ff-pre-customer-meeting/delete/${PreCustomerMeetingSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -565,7 +565,7 @@ export class LeadService {
 
   // Search pre-customer meetings
   searchPreCustomerMeeting(payload: any) {
-    return this.http.post<{ data: any[] }>('pre-customer-meeting/search-list', payload).pipe(
+    return this.http.post<{ data: any[] }>('ff-pre-customer-meeting/search-list', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
