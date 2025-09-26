@@ -10,9 +10,70 @@
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
-<div class="row">
+<div class="row compact-form">
+    <div class="col-12 ">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm  justify-content-between">
+            <div class="col pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="page-title mb-0 text-info">Meeting Update</h4>
+                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+                </div>
+
+            </div>
+
+            <div class="col-md pb-1">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                [(ngModel)]="searchText" aria-label="Search input" (keyup.enter)="searchMeetings()">
+                            <button 
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-md-0 mt-1">
+                            <button type="submit" (click)="searchMeetings()"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-auto pb-1">
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+
+
+                    <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
+                        <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i>
+                        @if (!isMobile) {
+                        Create 
+                        }
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
+            </div>
+
+
+        </div>
+    </div>
     <!-- Search Panel -->
-    <div class="col-12">
+    <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-white shadow mb-2" data-bs-theme="light">
             <form class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
@@ -28,9 +89,9 @@
                 </button>
             </form>
         </div>
-    </div>
+    </div> -->
     <!-- End Search Panel -->
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div *ngIf="isMobile; else desktopTemplate">
             <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
         </div>
@@ -69,7 +130,7 @@
                     <div class="d-flex align-items-center">
                         <i-feather name="type" class="feather-sm"></i-feather>
                         <div class="ms-2">{{ meeting.meetingType }}</div>
-                        
+
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather name="alert-circle" class="feather-sm"></i-feather>
@@ -87,7 +148,8 @@
 
 <!-- DESKTOP TEMPLATE -->
 <ng-template #desktopTemplate>
-    <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
+    
+         <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="row bg-white py-2 rounded shadow-sm mx-auto">
             <div class="col-12">
                 <div class="card mb-0">
@@ -102,58 +164,66 @@
                                     <th class="bg-transparent text-light" scope="col">Lead Status</th>
                                     <th class="bg-transparent text-light" scope="col">Sales Person</th>
                                     <th class="bg-transparent text-light" scope="col">Meeting Status</th>
-                                    
+
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let meeting of filteredMeetings">
-                                     <td data-label="Action" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                    <td data-label="Action"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <section class="action-items text-center">
-                                            <a class="text-info mx-2" (click)="openModal(modalContentAdd, meeting)" style="cursor: pointer;">
+                                            <a class="text-info mx-2" (click)="openModal(modalContentAdd, meeting)"
+                                                style="cursor: pointer;">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
                                     </td>
-                                    <td data-label="Customer Name" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                    <td data-label="Customer Name"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ meeting.preCustomerMaster?.preCustomerName || 'N/A' }}
                                         </div>
                                     </td>
-                                    <td data-label="meetingType" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                    <td data-label="meetingType"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ (meeting.meetingType | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
-                                    <td data-label="Meeting Date" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                    <td data-label="Meeting Date"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
                                             {{ meeting.meetingDate | date:'medium' }}
                                         </div>
                                     </td>
 
-                                  <td data-label="leadStatus" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                    <td data-label="leadStatus"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ (meeting.preCustomerMaster.leadStatus | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
 
-                                    <td data-label="leadAssignTo" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;"> 
+                                    <td data-label="leadAssignTo"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ getSalesmanById(meeting.leadAssignTo) || 'N/A' }}
                                         </div>
                                     </td>
-                                    <td data-label="Status" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
+                                    <td data-label="Status"
+                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <span class="badge" [ngClass]="{
                                                 'bg-success': meeting.meetingStatus === 'scheduled',
                                                 'bg-warning': meeting.meetingStatus === 'pending',
                                                 'bg-danger': meeting.meetingStatus === 'on hold'
                                               }">
-                                              {{ meeting.status }}
+                                                {{ meeting.status }}
                                             </span>
                                         </div>
                                     </td>
-                                   
+
                                 </tr>
                             </tbody>
                         </table>
@@ -167,6 +237,7 @@
             </div>
         </div>
     </div>
+
 </ng-template>
 
 <!-- NO DATA TEMPLATE -->
@@ -187,23 +258,23 @@
             <i class="fas fs-6 fa-info-circle"></i>
         </a>
         <div class="ms-auto d-flex align-items-center">
-                <div ngbDropdown class="d-inline-block me-2">
-                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-                        ngbDropdownToggle>
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
-                                class="fas fa-file-alt me-1"></i> Edoc</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                                class="fas fa-shield-alt me-1"></i> Authorize</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                                class="fas fa-envelope me-1"></i> Email</button>
-                    </div>
+            <div ngbDropdown class="d-inline-block me-2">
+                <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                    ngbDropdownToggle>
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                            class="fas fa-file-alt me-1"></i> Edoc</button>
+                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                            class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                            class="fas fa-shield-alt me-1"></i> Authorize</button>
+                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                            class="fas fa-envelope me-1"></i> Email</button>
                 </div>
-        <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
+            </div>
+            <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
         </div>
     </div>
 
@@ -212,82 +283,84 @@
             <section class="">
 
                 <div class="row compact-form">
-  <!-- Customer Name -->
-  <aside class="col-md-12">
-    <div class="custom-form-group">
-      <input type="text" class="custom-input-field sm" formControlName="customerName" readonly />
-      <label class="input-label">Customer Name</label>
-    </div>
-  </aside>
+                    <!-- Customer Name -->
+                    <aside class="col-md-12">
+                        <div class="custom-form-group">
+                            <input type="text" class="custom-input-field sm" formControlName="customerName" readonly />
+                            <label class="input-label">Customer Name</label>
+                        </div>
+                    </aside>
 
-  <!-- Meeting Type -->
-  <aside class="col-md-4">
-    <div class="custom-form-group">
-      <select class="custom-input-field sm" formControlName="meetingType">
-        <option value="">Select</option>
-        <option value="Call">Call</option>
-        <option value="Visit">Visit</option>
-        <option value="Phone">Phone</option>
-        <option value="eMeeting">eMeeting</option>
-      </select>
-      <label class="input-label">Meeting Type</label>
-    </div>
-  </aside>
+                    <!-- Meeting Type -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <select class="custom-input-field sm" formControlName="meetingType">
+                                <option value="">Select</option>
+                                <option value="Call">Call</option>
+                                <option value="Visit">Visit</option>
+                                <option value="Phone">Phone</option>
+                                <option value="eMeeting">eMeeting</option>
+                            </select>
+                            <label class="input-label">Meeting Type</label>
+                        </div>
+                    </aside>
 
-  <!-- Meeting Date -->
-  <aside class="col-md-4">
-    <div class="custom-form-group">
-      <input type="datetime-local" class="custom-input-field sm" formControlName="meetingDate" readonly />
-      <label class="input-label">Meeting Date</label>
-    </div>
-  </aside>
+                    <!-- Meeting Date -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="datetime-local" class="custom-input-field sm" formControlName="meetingDate"
+                                readonly />
+                            <label class="input-label">Meeting Date</label>
+                        </div>
+                    </aside>
 
-  <!-- Salesperson -->
-  <aside class="col-md-4">
-    <div class="custom-form-group">
-      <select class="custom-input-field sm" formControlName="leadAssignTo">
-        <option value="">Select</option>
-        <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
-          {{ person.userName }}
-        </option>
-      </select>
-      <label class="input-label">Salesperson</label>
-    </div>
-  </aside>
+                    <!-- Salesperson -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <select class="custom-input-field sm" formControlName="leadAssignTo">
+                                <option value="">Select</option>
+                                <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
+                                    {{ person.userName }}
+                                </option>
+                            </select>
+                            <label class="input-label">Salesperson</label>
+                        </div>
+                    </aside>
 
-  <!-- Meeting Note -->
-  <aside class="col-md-12">
-    <div class="custom-form-group">
-      <textarea class="custom-input-field sm" formControlName="meetingNote" rows="1"></textarea>
-      <label class="input-label">
-        Meeting Note
-        <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'" class="text-danger">*</span>
-      </label>
-      <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
-        <span *ngIf="f['meetingNote'].errors?.['required']">
-          Meeting Note is required when status is "On Hold"
-        </span>
-      </small>
-    </div>
-  </aside>
+                    <!-- Meeting Note -->
+                    <aside class="col-md-12">
+                        <div class="custom-form-group">
+                            <textarea class="custom-input-field sm" formControlName="meetingNote" rows="1"></textarea>
+                            <label class="input-label">
+                                Meeting Note
+                                <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'"
+                                    class="text-danger">*</span>
+                            </label>
+                            <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
+                                <span *ngIf="f['meetingNote'].errors?.['required']">
+                                    Meeting Note is required when status is "On Hold"
+                                </span>
+                            </small>
+                        </div>
+                    </aside>
 
-  <!-- Meeting Status -->
-  <aside class="col-md-6">
-    <div class="custom-form-group">
-      <select class="custom-input-field sm" formControlName="meetingStatus">
-        <option value="">Select</option>
-        <option value="scheduled">Scheduled</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="pending">In Progress</option>
-        <option value="on hold">On Hold</option>
-        <option value="completed">Completed</option>
-      </select>
-      <label class="input-label">Meeting Status</label>
-    </div>
-  </aside>
+                    <!-- Meeting Status -->
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <select class="custom-input-field sm" formControlName="meetingStatus">
+                                <option value="">Select</option>
+                                <option value="scheduled">Scheduled</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="pending">In Progress</option>
+                                <option value="on hold">On Hold</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <label class="input-label">Meeting Status</label>
+                        </div>
+                    </aside>
 
-  <!-- Follow Up Toggle -->
- <div class="col-12 col-md-6">
+                    <!-- Follow Up Toggle -->
+                    <div class="col-12 col-md-6">
                         <div class="">
                             <!-- <label class="control-label col-form-label">&nbsp;</label> -->
                             <div class="form-check form-switch dofi-mt-6">
@@ -297,27 +370,29 @@
                             </div>
                         </div>
                     </div>
-                   
 
-  <!-- Conditionally Show Follow Up Fields -->
-  <ng-container *ngIf="meetingForm.get('followUp')?.value">
-    <!-- Follow Up Date -->
-    <aside class="col-md-6">
-      <div class="custom-form-group">
-        <input type="datetime-local" class="custom-input-field sm" formControlName="followUpDate" />
-        <label class="input-label">Follow Up Date</label>
-      </div>
-    </aside>
 
-    <!-- Follow Up Note -->
-    <aside class="col-md-6">
-      <div class="custom-form-group">
-        <textarea class="custom-input-field sm" formControlName="followUpNote" rows="1"></textarea>
-        <label class="input-label">Follow Up Note</label>
-      </div>
-    </aside>
-  </ng-container>
-</div>
+                    <!-- Conditionally Show Follow Up Fields -->
+                    <ng-container *ngIf="meetingForm.get('followUp')?.value">
+                        <!-- Follow Up Date -->
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="datetime-local" class="custom-input-field sm"
+                                    formControlName="followUpDate" />
+                                <label class="input-label">Follow Up Date</label>
+                            </div>
+                        </aside>
+
+                        <!-- Follow Up Note -->
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea class="custom-input-field sm" formControlName="followUpNote"
+                                    rows="1"></textarea>
+                                <label class="input-label">Follow Up Note</label>
+                            </div>
+                        </aside>
+                    </ng-container>
+                </div>
 
                 <!-- <div class="row">
                     <div class="col-12 col-md-12">
@@ -426,12 +501,12 @@
       <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
         <i class="fas fa-envelope me-1"></i> Email
       </button> -->
-      <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="resetForm()">
+                <i class="fas fa-sync-alt me-1"></i>
+                Reset
+            </button>
             <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
                 (click)="onUpdateMeeting()">
                 Update

@@ -1,106 +1,25 @@
-<!-- <div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div> -->
-
-<!-- #region Search Panel -->
-<!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                        (input)="searchCountry()" autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
-        </div>
-    </div> -->
-<!-- <app-listpage
-    [title]="'Country'"
-    [searchOptions]="[
-    { value: 'countryName', label: 'Country Name'},
-    { value: 'countryCode', label: 'Country Code'},
-    { value: 'UNM49Code', label: 'Zone'},
-    { value: 'AWBCurrencyName', label: 'Currency Name'},
-    { value: 'status', label: 'Status'}
-    ]"
-    [searchPerformed]="searchPerformed"
-    [defaultSearchType]="'countryName'"
-    (onCreateClick)="createNew()"
-    (onReportClick)="report()"
-    (onResetClick)="reset()"
-    (onSearchClick)="onSearch($event)"
-    ></app-listpage> -->
-<!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                                (input)="searchCountry()" autocomplete="off" placeholder="Search">
-                            <i class="fas fa-search ms-3"></i>
-                        </div>
-                        <div class="form-outline col">
-                            <input  name="filterValue" type="text" class="form-control"
-                                placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                        </div>
-
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
-                            <i class="fas fa-search"></i>
-                            Search
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                           (click)="createNew()">
-                            <i class="mdi mdi-plus"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                            
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
-                          
-                            Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div> -->
-    <ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
-<!-- #endregion -->
+
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm  justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">Country</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm  justify-content-between">
+            <div class="col pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="page-title mb-0 text-info">Country</h4>
+                   <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+                </div>  
+                
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
+                                [(ngModel)]="filterValue" aria-label="Search input" (keyup.enter)="searchCountry()">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
@@ -111,7 +30,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadCountries()"
+                            <button type="submit" (click)="searchCountry()"
                                 class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
@@ -121,15 +40,15 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+                 
                     @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="createNew()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
-                }
+                    }
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
                         [disabled]="!searchPerformed">
                         <i class="fas fa-file-alt me-1"></i> Report
@@ -145,10 +64,10 @@
 
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection >0">
+     <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection >0">
         <div class="col-12 p-0">
             <div class="card mb-0">
-                <!-- #region lead view -->
+                
                 <div class="table-responsive">
                     <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
 
@@ -163,17 +82,20 @@
            'fa-sort-down': sortColumn === 'countryName' && sortDirection === 'desc'
          }"></i>
                                 </th>
-                                <th class="bg-transparent text-light" scope="col" (click)="sort('countryCode')" width="10%">
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('countryCode')"
+                                    width="10%">
                                     Country Code
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryCode'}"></i>
                                 </th>
-                                <th class="bg-transparent text-light" scope="col" (click)="sort('zoneName')" width="10%">
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('zoneName')"
+                                    width="10%">
                                     Zone
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'zoneName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'zoneName'}"></i>
                                 </th>
-                                <th class="bg-transparent text-light" scope="col" (click)="sort('currencyName')" width="10%">
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('currencyName')"
+                                    width="10%">
                                     Currency
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'currencyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'currencyName'}"></i>
@@ -186,25 +108,29 @@
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="d-flex align-items-center justify-content-center">
                                         @if(hasPermission('View')) {
- 
+
                                         <a class="text-info mx-2 ps-3"
                                             [routerLink]="['/master/country/entry/', country.CountryMasterSid]">
                                             <i-feather class="feather-sm" name="eye"></i-feather>
                                         </a>
-                                    }
-                                    @if(hasPermission('Delete')) {
- 
+                                        }
+                                        @if(hasPermission('Delete')) {
+
                                         <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
                                             (click)="deleteCountry(country.CountryMasterSid)">
                                             <i-feather name="trash-2" class="feather-sm"></i-feather>
                                         </a>
-                                    }
+                                        }
                                     </div>
                                 </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ country.countryName }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ country.countryCode }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ country.zoneName }}</td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ country.currencyName }}</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{
+                                    country.countryName }}</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{
+                                    country.countryCode }}</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ country.zoneName
+                                    }}</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{
+                                    country.currencyName }}</td>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     @if(country.status === "A"){
                                     <div
@@ -224,9 +150,6 @@
                         </tbody>
                     </table>
                 </div>
-
-
-                <!-- #endregion -->
             </div>
             <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
@@ -238,6 +161,15 @@
         <div class="col-12" *ngIf="totalLengthOfCollection === 0">
             <div>No records found</div>
         </div>
+    </div> -->
+    <div class="px-0">
+         <app-reusable-table #countryTable [config]="tableConfig" [data]="allCountry" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
     </div>
+   
 
 </div>

@@ -4,11 +4,15 @@ import { map } from 'rxjs';
 import { Lead } from '../Interfaces/lead.interface';
 import { City } from '../Interfaces/city.interface';
 import { PreCustomer } from '../Interfaces/preCustomer.interface';
+import { CalendarEvent } from 'angular-calendar';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeadService {
+  saveCombinedEvents(events: CalendarEvent<any>[]) {
+    throw new Error('Method not implemented.');
+  }
 
   constructor(private http: HttpClient) { }
   private quotationData: any = {};
@@ -124,6 +128,14 @@ export class LeadService {
     )
   }
 
+  getFollowUp(CompanyMasterSid:number,BranchMasterSid:number) {
+    return this.http.get(`precustomer-meeting/followup/meetingDate/${CompanyMasterSid}/${BranchMasterSid}`).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
   getAllCustomers(CompanyMasterSid:number) {
     return this.http.post('precustomer/customer',{CompanyMasterSid}).pipe(
       map((resp: any) => {

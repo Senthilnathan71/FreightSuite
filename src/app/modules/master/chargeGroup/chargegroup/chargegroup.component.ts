@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -24,7 +24,12 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-chargegroup',
   standalone: true,
@@ -43,13 +48,16 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    ReusableTableComponent
   ],
   templateUrl: './chargegroup.component.html',
   styleUrl: './chargegroup.component.scss',
   providers: [DatePipe]
 })
-export class ChargegroupComponent implements OnInit {
+export class ChargegroupComponent extends BaseListComponent implements OnInit {
+   @ViewChild('chargeGroupTable') chargeGroupTable!: ReusableTableComponent;
+    @ViewChild('content') content: TemplateRef<any>;
   chargeGroupForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -60,11 +68,11 @@ export class ChargegroupComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
   searchType = 'GroupName';
-  filterValue = '';
-  searchPerformed = false;
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+  // filterValue = '';
+  // searchPerformed = false;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection = 0;
   isLoading = false;
   companyOptions: any[] = [];
   userData: any;
@@ -72,8 +80,8 @@ export class ChargegroupComponent implements OnInit {
   currentMenuId: number;
   TandCList: any[] = [];
   isFavorite: boolean = false;
-  sortColumn: string = 'GroupName';
-  sortDirection: string = 'asc';
+  // sortColumn: string = 'GroupName';
+  // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
 
@@ -98,10 +106,13 @@ export class ChargegroupComponent implements OnInit {
     private datePipe: DatePipe,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // this.appSettingService.getUser().subscribe(
     //   user => {
     //     if (user) {
@@ -128,9 +139,215 @@ export class ChargegroupComponent implements OnInit {
     });
     this.loadCompanies();
     this.loadChargeGroups();
+    this.initializeTableConfig();
+    super.ngOnInit();
+  }
+
+    tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Zone',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class:"text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ZoneMasterSid',
+    emptyMessage: 'No Zone found',
+    dragAndDrop: true
+  };
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'zone-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'zoneNo',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allChargeGroup() { return this.allItems; }
+
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchChargeGroups(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+ protected processSearchResults(response: any): void {
+  this.tableLoading = false;
+  this.spinner.hide();
+
+  if (response.status) {
+    this.allItems = (response.data.items || []).map((item: any) => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.applySorting();
+  } else {
+    this.appSettingService.showError('Error searching bookings.');
+    this.allItems = [];
+    this.totalLengthOfCollection = 0;
+  }
+}
+
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching bookings.');
+    console.error('Error searching bookings', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchChargeGroup() {
+     this.page = 1;
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.BookingHeaderSid || index;
+  }
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+       {
+        key: 'GroupName',
+        label: 'Group Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width:"150px"
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string'
+      },
+    ];
+  }
+
+  // Table event handlers
+ onTableActionClick(event: TableEventData): void {
+  if (event.action === 'view') {
+    this.viewZone(event.row.ChargeGroupSid,this.content);
+  } else if (event.action === 'delete') {
+    this.deleteChargeGroupById(event.row.ChargeGroupSid); 
+  }
+}
+
+deleteChargeByRow(row: any) {
+  this.deleteChargeGroupById(row.ChargeGroupSid); 
+}
+
+deleteChargeGroupById(id: number) {
+  const dialogRef = this.dialog.open(DeleteWarningComponent);
+  dialogRef.afterClosed().subscribe(result => {
+    if (result === true) {
+      this.masterService.deleteChargeGroupById(id).subscribe({
+        next: () => {
+          this.appSettingService.showSuccess('Deleted successfully!');
+          this.loadChargeGroups(); 
+          this.searchChargeGroup();
+        },
+        error: () => {
+          this.appSettingService.showError('Failed to delete');
+        }
+      });
+    }
+  });
+}
+
+  viewZone(row: any, content?: TemplateRef<any>) {
+    this.editChargeGroup(row,content)
+  }
+
+  onTableRowClick(row: any): void {
     
   }
 
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allChargeGroup;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.chargeGroupTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'ChargeGroup-Report',
+      title: companyName
+    });
+  }
    checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
@@ -272,29 +489,38 @@ export class ChargegroupComponent implements OnInit {
     });
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
+openAuditLogs(modal: TemplateRef<any>) {
   if (!this.ChargeGroupSid) return;
-
-  this.masterService.getAuditLogsChargeGroups('ChargeGroup', this.ChargeGroupSid.toString()).subscribe({
+ 
+  this.masterService.getAuditLogsChargeGroups(
+    'ChargeGroup',
+    this.ChargeGroupSid.toString()
+  ).subscribe({
     next: (logs: any[]) => {
+      const ignoredFields = ['updatedOn','updatedBy'];
+ 
       const formatFields = (val: any) => {
-        if (!val) return ['NA'];
+        if (!val) return [];
         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
+        if (Object.keys(obj).length === 0) return [];
+        return Object.entries(obj)
+          .filter(([key]) => !ignoredFields.includes(key)) 
+          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
       };
-
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+ 
+      this.auditLogs = logs
+        .map(log => ({
+          ...log,
+          oldValDisplay: formatFields(log.oldVal),
+          newValDisplay: formatFields(log.newVal),
+        }))
+        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+ 
+      this.auditLogModalRef = this.modalService.open(modal, {
+        centered: true,
+        scrollable: true,
+        windowClass: 'audit-log-modal'
+      });
     },
     error: err => console.error('Error fetching audit logs:', err)
   });
@@ -323,10 +549,10 @@ export class ChargegroupComponent implements OnInit {
     );
   }
 
-  clearFilterValue() {
-    this.filterValue = '';
-    this.loadChargeGroups();
-  }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  //   this.loadChargeGroups();
+  // }
 
   onSubmit() {
     if (this.chargeGroupForm.get('status')?.disabled) {
@@ -361,6 +587,7 @@ export class ChargegroupComponent implements OnInit {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
           this.loadChargeGroups();
+          this.searchChargeGroup();
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -374,42 +601,7 @@ export class ChargegroupComponent implements OnInit {
     });
   }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.applySorting();
-    this.updatePaginationData();
-  }
-
-  applySorting() {
-    this.results.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-
-      if (this.sortColumn === 'company') {
-        valueA = a.companyMaster?.companyName;
-        valueB = b.companyMaster?.companyName;
-      }
-
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
-
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
+ 
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -417,63 +609,48 @@ export class ChargegroupComponent implements OnInit {
     this.chargeGroupList = this.results.slice(startIndex, endIndex);
   }
 
-  onPageChange(page: number) {
-    this.page = page;
-    this.updatePaginationData();
-  }
+  // onPageChange(page: number) {
+  //   this.page = page;
+  //   this.updatePaginationData();
+  // }
 
-  deleteChargeGroupById(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        this.masterService.deleteChargeGroupById(id).subscribe({
-          next: (resp: any) => {
-            this.appSettingService.showSuccess('Deleted successfully!');
-            this.loadChargeGroups();
-          },
-          error: (err) => {
-            this.appSettingService.showError('Failed to delete');
-          }
-        });
-      }
-    });
-  }
-
-  resetPage(): void {
-    this.filterValue = '';
-    this.searchType = 'GroupName';
-    this.page = 1;
-    this.searchPerformed = false;
-    this.results = [];
-    this.chargeGroupList = [];
-    this.totalLengthOfCollection = 0;
-    this.sortColumn = 'GroupName';
-    this.sortDirection = 'asc';
-    this.loadChargeGroups();
-  }
-
-  report(): void {
-    const formattedData = this.chargeGroupList.map(item => ({
-      ...item,
-      company: item.companyMaster?.companyName,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
-
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-      const companyName = this.currentCompany?.companyName ?? 'Company';
  
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'company', label: 'Company' },
-        { key: 'GroupName', label: 'Group Name' },
-        { key: 'Remarks', label: 'Remarks' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'Charge-Group-Report',
-      title: companyName
-    });
-  }
+
+  // resetPage(): void {
+  //   this.filterValue = '';
+  //   this.searchType = 'GroupName';
+  //   this.page = 1;
+  //   this.searchPerformed = false;
+  //   this.results = [];
+  //   this.chargeGroupList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.sortColumn = 'GroupName';
+  //   this.sortDirection = 'asc';
+  //   this.loadChargeGroups();
+  // }
+
+  // report(): void {
+  //   const formattedData = this.chargeGroupList.map(item => ({
+  //     ...item,
+  //     company: item.companyMaster?.companyName,
+  //     status: item.status === 'A' ? 'Active' : 'Suspended'
+  //   }));
+
+   
+  //     const companyName = this.currentCompany?.companyName ?? 'Company';
+ 
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'company', label: 'Company' },
+  //       { key: 'GroupName', label: 'Group Name' },
+  //       { key: 'Remarks', label: 'Remarks' },
+  //       { key: 'status', label: 'Status' },
+  //     ],
+  //     fileName: 'Charge-Group-Report',
+  //     title: companyName
+  //   });
+  // }
 
   showInfo() {
     if (!this.chargeGroupData) return;

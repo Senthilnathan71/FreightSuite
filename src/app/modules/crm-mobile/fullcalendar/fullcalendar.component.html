@@ -198,8 +198,8 @@
                 <div class=" custom-form-group custom-form-group-select-date w-100">
                   <div class="input-group w-100">
                     <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                      formControlName="meetingDate"></app-date-time-picker>
-                    <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" />
+                      formControlName=""></app-date-time-picker>
+                    <!-- <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" /> -->
                   </div>
                   <label class="input-label me-2">Meeting Date <span class="text-danger">*</span>
                   </label>
@@ -326,7 +326,7 @@
                   <div class="input-group w-100">
                     <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
                       formControlName="followUpDate"></app-date-time-picker>
-                    <input type="datetime-local" formControlName="followUpDate" class="form-control" [min]="minDate" />
+                    <!-- <input type="datetime-local" formControlName="followUpDate" class="form-control" [min]="minDate" /> -->
                   </div>
                   <label class="input-label me-2">Follow Up Date <span class="text-danger">*</span>
                   </label>
@@ -556,7 +556,7 @@
                   <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
                     formControlName="meetingDate"></app-date-time-picker>
                 </div>
-                <label for="shipmentDateExpected" class="input-label">Meeting Date <span class="text-danger">*</span>
+                <label for="" class="input-label">Meeting Date <span class="text-danger">*</span>
                 </label>
                 <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
                   Required
@@ -583,7 +583,7 @@
                       {{ person.userName }}
                     </ng-option>
                   </ng-select>
-                  <div *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="text-danger">
+                  <div *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
                     Required
                   </div>
                 </div>
@@ -701,7 +701,7 @@
                   </div>
                 </div>
               </aside>
-             <aside class="col-md-4" *ngIf="meetingForm.get('followUp')?.value">
+             <!-- <aside class="col-md-4" *ngIf="meetingForm.get('followUp')?.value">
                 <div class="custom-form-group">
                   <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="followUpNote"
                     rows="1"></textarea>
@@ -709,7 +709,7 @@
                     <span *ngIf="meetingForm.get('followUpNote')?.value === 'on hold'" class="text-danger">*</span>
                   </label>
                 </div>
-              </aside>
+              </aside> -->
               <!-- <div class="row" *ngIf="meetingForm.get('followUp')?.value">
                 <aside class="col-12 col-md-6">
                   <div class="custom-form-group">

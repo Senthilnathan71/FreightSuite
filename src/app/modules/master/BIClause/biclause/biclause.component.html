@@ -1,39 +1,3 @@
-<!-- <div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div> -->
-
-<!-- <app-listpage
-  [title]="'BL Clause'"
-  [searchOptions]="[
-    { value: 'ClauseDescription', label: ' Clause Description' },
-    { value: 'Keyword', label: 'Keyword' },
-    { value: 'Sortorder', label: 'Sort Order' },
-    { value: 'status', label: 'Status' }
-  ]"
-  [searchPerformed]="searchPerformed"
-  [defaultSearchType]="'ClauseDescription'"
-  (onCreateClick)="openModal(content)"
-  (onReportClick)="report()"
-  (onResetClick)="resetPage()"
-  (onSearchClick)="onSearch($event)">
-    </app-listpage> -->
-
-<!-- <ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
-</ngx-spinner> -->
-
 
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
     <p style="color: white;" class="m-0">Loading...</p>
@@ -43,16 +7,19 @@
 <div class="row compact-form">
     <div class="col-12">
 
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">BL Clause</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col-md pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="page-title mb-0">BL Clause</h4>
+                     <app-favorite-star screenName="BL Clause" class="mt-1 me-1"></app-favorite-star>
+                </div>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Clause Description,Keyword"
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
                                 [(ngModel)]="filterValue" aria-label="Search input">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
@@ -74,10 +41,10 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Commodity" class="mt-1 me-1"></app-favorite-star>
+                   
                     @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="openModal(content)">
@@ -106,8 +73,24 @@
             </div> -->
         </div>
     </div>
+    <div class="col-12 px-0">
+        <app-reusable-table
+        #biclauseTable
+        [config]="tableConfig"
+        [data]="allClause"
+        [loading]="tableLoading"
+        [totalRecords]="totalLengthOfCollection"
+        [paginationConfig]="paginationConfig"
+        (actionClick)="onTableActionClick($event)"
+        (rowClick)="onTableRowClick($event)"
+        (sortChange)="onTableSortChange($event)"
+        (filterChange)="onTableFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+    </div>
     <!-- Table only shown after search -->
-    <div class="row bg-white rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <!-- <div class="row bg-white rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 py-2 px-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -166,15 +149,11 @@
                
             </div>
              
-                   <app-common-pagination
-            [config]="paginationConfig"
-            (pageChange)="onPageChange($event)"
-            (pageSizeChange)="onPageSizeChange($event)">
-        </app-common-pagination>
+
                 
 
         </div>
-    </div>
+    </div> -->
 
     <!-- No records message -->
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
@@ -185,7 +164,7 @@
     <!-- Modal for Create/Edit -->
     <ng-template #content let-modal>
         <div class="modal-header p-2 bg-info text-white">
-            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} BL Clause</h4>
+            <h5 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} BL Clause</h5>
             <!-- @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
@@ -194,7 +173,7 @@
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div> -->
-         <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+         <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()">
                 <i class="fas fa-info-circle fs-6"></i>
             </a>
 

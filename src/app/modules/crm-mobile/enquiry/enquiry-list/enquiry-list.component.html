@@ -1,18 +1,14 @@
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
     <!-- #region Search Panel -->
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between  mx-1"data-bs-theme="light">
-             <div class="col pb-2">
-                <h4 class="page-title mb-0">Enquiry</h4>
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between  mx-1"
+            data-bs-theme="light">
+            <div class="col pb-1">
+                <h4 class="page-title mb-0 text-info">Enquiry</h4>
             </div>
             <!-- <form class="col-md-8">
                 <div class="form-outline col">
@@ -21,7 +17,7 @@
                     <i class="fas fa-search ms-3"></i>
                 </div>               
             </form> -->
-             <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -46,35 +42,36 @@
                     </div>
                 </form>
             </div>
-            <div class="col-md-auto pb-2">
-                  <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0" >
+            <div class="col-md-auto pb-1">
+                <form
+                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="Rate Request" class="mt-1 me-1"></app-favorite-star>
-                 <button type="button" class="btn btn-success btn-sm me-1" (click)="openVoiceEnquiry()" title="Create Enquiry by Voice">
-                    <i class="fas fa-microphone me-1" [class.me-1]="!isMobile"></i>
-                    @if (!isMobile) {
-                    Voice
-                    }
-                </button>
-                 <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                    <!-- <i class="mdi mdi-plus" ></i> -->
-                    <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i>
-                    @if (!isMobile) {
-                    Create
-                    }
-                </button>
-                  <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                          [disabled]="!searchPerformed" (click)="report()">
+                    <button type="button" class="btn btn-success btn-sm me-1" (click)="openVoiceEnquiry()"
+                        title="Create Enquiry by Voice">
+                        <i class="fas fa-microphone me-1" [class.me-1]="!isMobile"></i>
+                        @if (!isMobile) {
+                        Voice
+                        }
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
+                        <!-- <i class="mdi mdi-plus" ></i> -->
+                        <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i>
+                        @if (!isMobile) {
+                        Create
+                        }
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        [disabled]="!searchPerformed" (click)="report()">
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        [disabled]="!searchPerformed"
-                       (click)="resetFilters()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        [disabled]="!searchPerformed" (click)="resetFilters()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
-            </form>
+                </form>
             </div>
-          
+
         </div>
     </div>
     <!-- #endregion -->
@@ -130,9 +127,9 @@
         </div>
         <div class="card-body">
             <!-- #region Pagination -->
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize"
-                [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
+                [ellipses]="false" [maxSize]="10">
             </ngb-pagination>
             <!-- #endregion -->
         </div>
@@ -141,16 +138,22 @@
 
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
-    <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
+    <div class="px-0">
+        <app-reusable-table #enquiryTable [config]="tableConfig" [data]="allEnquirys" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-1">
 
             <div class="col-12">
-                <!-- #region filter and add new -->
-
-                <!-- #endregion -->
+              
 
                 <div class="card">
-                    <!-- #region lead view -->
+                  
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
@@ -168,11 +171,7 @@
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
                                     <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">POD <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
-                                    <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentExpectedDate')">Expected Shipment Date <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentExpectedDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentExpectedDate'}"></i></th> -->
-                                    
-                                    <!-- <th class="bg-transparent text-light" scope="col">Approval Status</th> -->
-                                    <!-- <th class="bg-transparent text-light" scope="col">Create </th> -->
+                                 
                                     <th class="bg-transparent text-light" scope="col">Status</th>
                                     
                                 </tr>
@@ -184,15 +183,13 @@
                                             <a class="text-info mx-2" (click)="editEnquiry(enq.EnquiryHeaderSid)">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
-                                            <!-- @if(enq.authorizerStatus === 'Approved'){
-                                            @if(!enq.quoteNo){ -->
+                                           
                                             <button class="mx-2 btn btn-sm text-info btn-link border-start ps-3 " style="cursor: pointer;" (click)="goForQuotationCreation(enq.EnquiryHeaderSid)" appPreventMultiClick [isLoading]="loadingEnquiry"
                                             title="Create Quotation"
                                             >
                                                 <i-feather name="file-plus" class="feather-sm"></i-feather>
                                             </button>
-                                            <!-- }
-                                            } -->
+                                           
                                         </section>
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -226,41 +223,7 @@
                                         </div>
                                     </td>
                                    
-                                    <!-- <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.ShipmentExpectedDate | formatDate 
-                                            }}
-                                        </div>
-                                    </td> -->
-                                    <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        @if(enq.authorizerStatus === "Approved"){
-                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                            Approved
-                                        </div>
-                                        }@else if(enq.authorizerStatus === "Rejected"){
-                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                            Rejected
-                                        </div>
-                                        }@else if(enq.authorizerStatus === "Pending"){
-                                        <div class="bg-light-info px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                            <span class="dofi-w-4 dofi-h-4 bg-info d-inline-block rounded"></span>
-                                            Waiting for approval
-                                        </div>
-                                        }
-                                    </td> -->
-                                    <!-- <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            @if(enq.authorizerStatus === 'Approved'){
-                                                @if(!enq.quoteNo){
-                                                <button class="btn btn-sm btn-info" (click)="goForQuotationCreation(enq.EnquiryHeaderSid)" appPreventMultiClick [isLoading]="loadingEnquiry">Create Quotation</button>
-                                                } @else {
-                                                    <span>Quotation Created</span>
-                                                }
-                                            } 
-                                        </div>
-                                    </td> -->
+                                 
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         @if(enq.status === "A"){
                                         <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
@@ -279,22 +242,21 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- #endregion -->
-
+              
                     <div class="card-body">
-                        <!-- #region Pagination -->
+                      
 
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
                     [ellipses]="false" [maxSize]="10">
                         </ngb-pagination>
-                        <!-- #endregion -->
+                       
                     </div>
                 </div>
 
             </div>
         </div>
-    </div>
+    </div> -->
 </ng-template>
 
 

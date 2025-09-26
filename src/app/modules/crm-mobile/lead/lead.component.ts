@@ -131,6 +131,13 @@ auditLogs: any[] = []; // Stores audit logs
         this.loadLeadData(this.PreCustomerMasterSid);
       }
     });
+     this.leadForm.get('isQualify')?.valueChanges.subscribe((checked: boolean) => {
+    if (checked) {
+      this.leadForm.get('leadStatus')?.setValue('Qualify');
+    } else {
+      this.leadForm.get('leadStatus')?.setValue('Discovery');
+    }
+  });
   }
 
   // // Method to load the city data
@@ -163,6 +170,7 @@ auditLogs: any[] = []; // Stores audit logs
         contactPerson : ['',[Validators.required]],
         email : ['',[Validators.required,EmailValidators.multipleEmails(),Validators.maxLength(100)]],
         phone : ['',[Validators.required]],
+        leadStatus:['Discovery'],
       PreferredContactMode : ['Email'],
       LanguagePreferrence : [''],
       ServiceOfInterest : [''],
@@ -205,9 +213,10 @@ auditLogs: any[] = []; // Stores audit logs
       status : formData.status.charAt(0),
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
-      isQualify:formData.isQualify
+      isQualify:formData.isQualify,
+      leadStatus:formData.leadStatus,
     }
-
+    console.log(payload,"PAYLOAD")
     if(this.isEditMode){
       this.leadService.updateLeadById(this.PreCustomerMasterSid,payload).subscribe(
         (resp:any)=>{
@@ -284,10 +293,13 @@ openAuditLogs(modal: TemplateRef<any>) {
             this.leadData = response;
             this.filterStateByCountryId(response);
             this.filterCityByStateId(response);
+            
             let formattedStatus = this.findStatus(response.status);
+          
             this.leadForm.patchValue({
                ...response,
-               status : formattedStatus
+               status : formattedStatus,
+              
              })
           } else { 
             this.appSettingService.showError('Error Loading Lead Data')

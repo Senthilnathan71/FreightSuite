@@ -1,4 +1,4 @@
-<div class="charges-workspace">
+<div class="charges-workspace" [formGroup]="rateForm">
 
   <!-- Charges Header -->
   <div class="charges-control-panel d-none">
@@ -97,17 +97,17 @@
         <table>
           <thead>
             <tr>
-              <th class="bg-info text-white">Actions</th>
+              <th class="bg-info text-white "></th>
               <th class="table-header1">Charge <span class="text-danger">*</span></th>
               <th class="table-header1">ChargeDesc</th>
               <th class="table-header1">PP/CC</th>
-              <th class="table-header1">Unit</th>
+              <th class="table-header1 ">Unit</th>
               <th class="table-header1">No of Unit <span class="text-danger">*</span></th>
             </tr>
           </thead>
           <tbody #leftTableBody>
-            <tr *ngFor="let row of revenueRows;let i = index">
-              <td class="actions-cell" style="width: 10px;">
+           <tr *ngFor="let row of revenueRows; let i = index" >
+              <td class="actions-cell" style="width: 5px;">
                 <div class="action-buttons">
                   <!-- <button class="action-icon edit">
                     <i class="fas fa-edit"></i>
@@ -121,39 +121,39 @@
                 </div>
               </td>
               <td>
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                   <ng-select class="ng-select " [items]="chargeList" formControlName="ChargeMasterSid"
-                    bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
+                    bindValue="ChargeMasterSid" bindLabel="chargeName"
                     (change)="onChargeChange($event)" appendTo="body">
                   </ng-select>
                 </div>
               </td>
               <td>
-                <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                <div class="custom-form-group dofi-min-w-100">
+                  <input type="text" id="text-input"  class="custom-input-field sm"
                     formControlName="ChargeDescription" [textWithNumbers]="100">
                   <label for=" text-input" class="input-label"> <span class="text-danger"></span></label>
                 </div>
               </td>
               <td>
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                   <ng-select formControlName="PrepaidCollect" [items]="ppcc" bindLabel="name" bindValue="name"
-                    placeholder="Select PP/CC" appendTo="body">
+                     appendTo="body">
                   </ng-select>
 
                 </div>
               </td>
               <td>
-                <div class="custom-form-group custom-form-group-select">
-                  <ng-select formControlName="" [items]="uomList" bindLabel="UOMName" bindValue="ChargeUomSid"
-                    placeholder="Select Unit" appendTo="body">
+                <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                  <ng-select [items]="uomList" bindLabel="UOMName" bindValue="ChargeUomSid"
+                     appendTo="body">
                   </ng-select>
 
                 </div>
               </td>
               <td>
-                <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" formControlName="NumberOfUnit">
+                <div class="custom-form-group dofi-min-w-100">
+                  <input type="text" id="text-input"  class="custom-input-field sm text-end" formControlName="NumberOfUnit">
                   <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                 </div>
               </td>
@@ -206,66 +206,66 @@
               </tr>
             </thead>
             <tbody #rightTableBody>
-              <tr *ngFor="let row of revenueRows">
+              <tr *ngFor="let row of revenueRows ; let i = index">
                 <td>
-                   <div class="custom-form-group custom-form-group-select">
+                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CostCurrencyMasterSid"
-            formControlName="CostCurrencyMasterSid" placeholder="Select Curr" (change)="onCurrencyChange($event)" appendTo="body">
+                      formControlName="CostCurrencyMasterSid" (change)="onCurrencyChange($event)" appendTo="body">
                     </ng-select>
 
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" formControlName="CostExchangeRate" placeholder="" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" formControlName="CostExchangeRate"  class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" formControlName="CostNumberOfUnit" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input"  class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" formControlName="CostAmount" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" formControlName="CostAmount" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="drcr" formControlName="CostDrCr" bindLabel="name" bindValue="value" formControlName="DrCr" class="ng-select"
-            placeholder="Select Dr/Cr"
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                    <ng-select [items]="drcr" formControlName="CostDrCr" bindLabel="name" bindValue="value" class="ng-select"
+           
                       container="body" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" formControlName="CostLocalAmount" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" formControlName="CostLocalAmount" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
 
                 <td>
-                  <div class="custom-form-group custom-form-group-select">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-            formControlName="CustomerMasterSid" placeholder="Select Billing Party" appendTo="body">
+            formControlName="CustomerMasterSid"  appendTo="body">
                     </ng-select>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="Status" [items]="" bindLabel="name" bindValue="id" placeholder=""
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                    <ng-select formControlName="Status" [items]="" bindLabel="name" bindValue="id"
                       container="body" appendTo="body">
                     </ng-select>
 
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" formControlName="Remarks" id="text-input" placeholder="" class="custom-input-field sm">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" formControlName="Remarks" id="text-input"  class="custom-input-field sm">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
@@ -276,55 +276,55 @@
                   </div>
                 </td> -->
                 <td>
-                   <div class="custom-form-group custom-form-group-select">
+                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="RevenueCurrencyMasterSid"
-            formControlName="RevenueCurrencyMasterSid" placeholder="Select Currency" (change)="onCurrencyChange($event)" appendTo="body">
+            formControlName="RevenueCurrencyMasterSid"  (change)="onCurrencyChange($event)" appendTo="body">
                     </ng-select>
 
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" formControlName="RevenueExchangeRate" placeholder="" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" formControlName="RevenueExchangeRate"  class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" formControlName="RevenueNumberOfUnit" placeholder="" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input"   class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" formControlName="RevenueAmount" placeholder="" class="custom-input-field sm text-end">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" formControlName="RevenueDrCr" [items]="drcr" bindLabel="name" bindValue="name" formControlName="DrCr" class="ng-select"
-            placeholder="Select Dr/Cr"
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                    <ng-select  [items]="drcr" bindLabel="name" bindValue="name"  class="ng-select"
+          
                       container="body" appendTo="body">
                     </ng-select>
 
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" class="custom-input-field sm">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="text" id="text-input" class="custom-input-field sm">
                     <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
                   </div>
                 </td>
                 <!-- <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" placeholder=""
+                    <ng-select [items]="" bindLabel="name" bindValue="id" placeholder=""
                       container="body" appendTo="body">
                     </ng-select>
 
@@ -344,7 +344,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="ModeofStatus" bindLabel="name" bindValue="id" placeholder=""
+                    <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="id" placeholder=""
                       container="body" appendTo="body">
                     </ng-select>
 
@@ -358,7 +358,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="ModeofShowType" bindLabel="name" bindValue="id"
+                    <ng-select [items]="ModeofShowType" bindLabel="name" bindValue="id"
                       placeholder="" container="body" appendTo="body">
                     </ng-select>
 
@@ -378,7 +378,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="ModeofProfitShare" bindLabel="name" bindValue="id"
+                    <ng-select [items]="ModeofProfitShare" bindLabel="name" bindValue="id"
                       placeholder="" container="body" appendTo="body">
                     </ng-select>
 
@@ -386,7 +386,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="ModeofNeutral" bindLabel="name" bindValue="id" placeholder=""
+                    <ng-select [items]="ModeofNeutral" bindLabel="name" bindValue="id" placeholder=""
                       container="body" appendTo="body">
                     </ng-select>
 
@@ -509,7 +509,7 @@
       (click)="modal.dismiss('Cross click')"></button>
   </div>
 
-  <div class="modal-body" [formGroup]="rateForm">
+  <div class="modal-body" >
     <div class="row compact-form">
       <aside class="col-md-4">
         <div class="custom-form-group">

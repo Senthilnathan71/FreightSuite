@@ -14,6 +14,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -26,7 +27,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     ReactiveFormsModule,
     PreventMultiClickDirective,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    FavoriteStarComponent
   ],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']

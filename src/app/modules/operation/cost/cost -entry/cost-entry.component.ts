@@ -208,6 +208,7 @@ syncScroll(event: Event) {
   }
 
 
+
   revenueRows = [
     {
       charge: '',

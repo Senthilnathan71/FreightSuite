@@ -16,6 +16,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-country-entry',
@@ -27,7 +28,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     NgSelectModule,
     DatePipe,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './country-entry.component.html',
   styleUrls: ['./country-entry.component.scss']
@@ -38,7 +40,7 @@ export class CountryEntryComponent implements OnInit {
   btnDisable = false;
   countryId: number;
   countryData: any;
-  userData:any;
+  userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   zones: Zone[] = [];
@@ -64,7 +66,7 @@ export class CountryEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private modalService : NgbModal
+    private modalService: NgbModal
   ) {
     this.initForm();
   }
@@ -89,32 +91,32 @@ export class CountryEntryComponent implements OnInit {
     //   }
     // )
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
   }
 
-   checkPermissions() {
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
 
   initForm() {
     this.countryForm = this.fb.group({
@@ -122,7 +124,7 @@ export class CountryEntryComponent implements OnInit {
       countryCode: ['', [Validators.required, Validators.maxLength(2)]],
       ZoneMasterSid: ['', Validators.required],
       CurrencyMasterSid: ['', Validators.required],
-      status: [{value: 'A', disabled: true}, Validators.required]
+      status: [{ value: 'A', disabled: true }, Validators.required]
     });
 
     this.countryForm.get('countryCode')?.valueChanges.subscribe(val => {
@@ -145,17 +147,17 @@ export class CountryEntryComponent implements OnInit {
   }
 
   loadCurrencies() {
-  this.masterService.getAllCurrencies().subscribe({
-    next: (resp: any) => {
-      console.log('Currencies loaded:', resp); // Add this line
-      this.currencies = resp.data || resp;
-    },
-    error: (err) => {
-      console.error('Error loading currencies:', err);
-      this.appSettingService.showError('Failed to load currencies');
-    }
-  });
-}
+    this.masterService.getAllCurrencies().subscribe({
+      next: (resp: any) => {
+        console.log('Currencies loaded:', resp); // Add this line
+        this.currencies = resp.data || resp;
+      },
+      error: (err) => {
+        console.error('Error loading currencies:', err);
+        this.appSettingService.showError('Failed to load currencies');
+      }
+    });
+  }
 
   loadCountry(id: number) {
     this.countryForm.reset();
@@ -184,13 +186,13 @@ export class CountryEntryComponent implements OnInit {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     }
-  
+
     this.btnDisable = true;
-    
+
     const formValue = this.countryForm.value;
     const createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
     const updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-    
+
     const payload = {
       ...formValue,
       ZoneMasterSid: Number(formValue.ZoneMasterSid),
@@ -198,93 +200,93 @@ export class CountryEntryComponent implements OnInit {
       status: this.isEditMode ? formValue.status : 'A',
       ...(this.isEditMode ? updatedBy : createdBy)
     };
-  
-    const operation = this.isEditMode 
+
+    const operation = this.isEditMode
       ? this.masterService.updateCountryById(this.countryId, payload)
       : this.masterService.createCountry(payload);
-  
+
     operation.subscribe({
-    next: (resp: any) => {
-      this.btnDisable = false;
-      if (resp.status) {
-        this.appSettingService.showSuccess(resp.message);
-      } else {
-        this.appSettingService.showError(resp.message);
-      }
-    },
+      next: (resp: any) => {
+        this.btnDisable = false;
+        if (resp.status) {
+          this.appSettingService.showSuccess(resp.message);
+        } else {
+          this.appSettingService.showError(resp.message);
+        }
+      },
       error: (err) => {
         this.btnDisable = false;
-        const errorMessage = err.error?.message || 
+        const errorMessage = err.error?.message ||
           `Error ${this.isEditMode ? 'updating' : 'creating'} country`;
         this.appSettingService.showError(errorMessage);
       }
     });
   }
 
-  
-// openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.countryData?.CountryMasterSid) return;
 
-//   this.masterService.getAuditLogsCountry('CountryMaster', this.countryData?.CountryMasterSid.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
+  // openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.countryData?.CountryMasterSid) return;
 
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
+  //   this.masterService.getAuditLogsCountry('CountryMaster', this.countryData?.CountryMasterSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
 
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.countryData?.CountryMasterSid) return;
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
 
-  this.masterService.getAuditLogsCountry(
-    'CountryMaster',
-    this.countryData?.CountryMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.countryData?.CountryMasterSid) return;
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+    this.masterService.getAuditLogsCountry(
+      'CountryMaster',
+      this.countryData?.CountryMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
   resetForm() {
     if (this.isEditMode) {
@@ -314,7 +316,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     });
   }
   showInfo() {
-    if(!this.countryData) return;
+    if (!this.countryData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.countryData;
     modalRef.componentInstance.idLabel = 'Country Id';
@@ -358,25 +360,25 @@ openAuditLogs(modal: TemplateRef<any>) {
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.countryId;
   }
 
-openEDoc() {
-  if (!this.countryData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.countryData;
-  modalRef.componentInstance.idLabel = 'Country Id';
-  modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
-}
+  openEDoc() {
+    if (!this.countryData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.countryData;
+    modalRef.componentInstance.idLabel = 'Country Id';
+    modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
+  }
 
 }

@@ -53,7 +53,9 @@ export class UOMViewComponent {
 
   modeofUOMtype=[
     {id:1,name:"P"},
-    {id:2,name:"C"}
+    {id:2,name:"C"},
+    {id:3,name:"M"},
+    {id:4,name:"W"}
   ]
   errorMessage: any;
   idParam: number;

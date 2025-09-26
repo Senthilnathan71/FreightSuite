@@ -156,9 +156,9 @@ export class FullcalendarComponent implements OnInit {
 
   ngOnInit(): void {
    const storedCompany = localStorage.getItem('selected-company');
-this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
-const storedBranch = localStorage.getItem('selected-branch');
-this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.isMobile = this.appService.getDevice()
     this.loadCustomers()
     this.loadLeads();
@@ -370,32 +370,73 @@ private meetingNoteValidator(control: AbstractControl) {
     this.modal.dismissAll();
   }
 
-  getMeetingDates() {
-    this.leadService.getMeetings().subscribe((response: any) => {
-      if (response.status && response.data.length) {
-        this.events = response.data
-          .filter((meeting) => meeting.meetingStatus !== "confirmed") //excluded the confirmed meeting record
-          .map((meeting: any) => {
-            const hasFollowUp = !!meeting.followUpDate; // Ensure followUpDate is checked for each meeting
-            const isLead = meeting.LeadOrCustomer === "L";
-            const name = isLead ? meeting?.preCustomerMaster?.preCustomerName : meeting?.customerMaster?.CustomerName || 'Unknown';
-            return {
-              // start: startOfDay(new Date(meeting.meetingDate)), // Ensure correct format
-              start: this.convertUTCToLocal(meeting.meetingDate),
-              title: !hasFollowUp ?
-                `Meeting with - ${name}` : `Follow up meeting with - ${name}`,
-              id: meeting.PreCustomerMeetingSid,
-              color: hasFollowUp
-                ? { primary: '#ff5733', secondary: '#ffcccb' } // Red for no follow-up (lighter red background)
-                : { primary: '#33cc33', secondary: '#ccffcc' } // Green for follow-up (lighter green background)
-            };
-          });
-      }
+ getMeetingDates() {
+  // first clear events
+  this.events = [];
 
-      this.refresh.next(); // Force refresh to apply changes
-      console.log(this.events);
-    });
-  }
+  this.leadService.getMeetings().subscribe((meetingRes: any) => {
+    let meetingEvents: any[] = [];
+
+    if (meetingRes.status && meetingRes.data.length) {
+      meetingEvents = meetingRes.data
+        .filter((meeting) => meeting.meetingStatus !== "confirmed")
+        .map((meeting: any) => {
+          const hasFollowUp = !!meeting.followUpDate;
+          const isLead = meeting.LeadOrCustomer === "L";
+          const name = isLead
+            ? meeting?.preCustomerMaster?.preCustomerName
+            : meeting?.customerMaster?.CustomerName || "Unknown";
+
+          return {
+            start: this.convertUTCToLocal(meeting.meetingDate),
+            title:`Meeting with - ${name}`,
+            id: meeting.PreCustomerMeetingSid,
+            color:  { primary: "#33cc33", secondary: "#ccffcc" }
+          };
+        });
+    }
+
+    this.leadService
+      .getFollowUp(
+        this.currentCompany?.CompanyMasterSid,
+        this.currentBranch?.BranchMasterSid
+      )
+      .subscribe((followRes: any) => {
+        let followUpEvents: any[] = [];
+
+        if (followRes.status && followRes.data.length) {
+          followUpEvents = followRes.data
+            .filter((meeting) => meeting.meetingStatus !== "confirmed")
+            .map((meeting: any) => {
+              const meetingData = meeting.preCustomerMeeting;
+              const isCustomer = meetingData.LeadOrCustomer === "C";
+
+              const person = isCustomer
+                ? meetingData.customerMaster?.CustomerName
+                : meetingData.preCustomerMaster?.preCustomerName;
+
+              return {
+                start: this.convertUTCToLocal(meeting.FollowupDate),
+                title: `Follow up meeting with - ${person}`,
+                id: meeting.PreCustomerMeetingSid,
+                color: { primary: "#ff5733", secondary: "#ffcccb" }
+              };
+            });
+        }
+
+        // ✅ Merge both meetings + followups
+        this.events = [...meetingEvents, ...followUpEvents];
+
+        this.refresh.next(); // refresh UI
+        console.log("Combined Events:", this.events);
+
+        // 👉 if you need to send to backend
+   
+
+      });
+  });
+}
+
 
   selectedCustomerName: any;
 
@@ -436,9 +477,13 @@ private meetingNoteValidator(control: AbstractControl) {
   console.log('Current Company:', this.currentCompany);
   console.log('Current Branch:', this.currentBranch);
   console.log('Form Values:', this.meetingForm.value);
+    const meetingDateStr = this.meetingForm.value.meetingDate;
+    const meetingDate = new Date(meetingDateStr);
+    const timeDropdown = this.meetingForm.value.meetingDuration;
   
   const payload = {
     ...this.meetingForm.value,
+    meetingDate : meetingDate,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     userEmail: userEmail

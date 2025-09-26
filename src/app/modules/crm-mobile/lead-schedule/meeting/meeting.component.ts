@@ -139,7 +139,8 @@ changeTime(time: string) {
     this.meetingForm.get('status')?.enable();
    
     const meetingDateStr = this.meetingForm.value.meetingDate;
-    const meetingDate = new Date(meetingDateStr);
+    // const meetingDate = new Date(meetingDateStr);
+    const meetingDate = meetingDateStr;
     const timeDropdown = this.meetingForm.value.meetingDuration;    
     if (isNaN(meetingDate.getTime())) {
       this.appSettingService.showError("Invalid meeting date");
