@@ -1262,6 +1262,14 @@ saveCompanyConfig(companyId: number, configData: any) {
   );
 }
 
+getCompanyConfig(companyId: number) {
+  return this.http.get<{ data: any }>(`company/${companyId}/config`).pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
+
 getFieldConfiguration() {
   return this.http.get<{ data: any }>('company/field-configuration').pipe(
     map((resp) => {
