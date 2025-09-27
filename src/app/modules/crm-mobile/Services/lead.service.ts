@@ -284,6 +284,59 @@ export class LeadService {
       })
     )
   }
+
+  deleteProduct(id: number) {
+    return this.http.delete(`ff-quotation/product/${id}`).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  getAllPackageTypeUOM(){
+    return this.http.get<{ data: any }>(`uom/package-type-uom`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllImco(){
+    return this.http.get<{ data: any }>(`imco`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllMeasurementUnit(){
+    return this.http.get<{ data: any }>(`uom/measurement-uom`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllWeightUnit(){
+    return this.http.get<{ data: any }>(`uom/weight-uom`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getExchangeRate(payload) {
+    return this.http.post<{ data: any }>('currency-exchange/exchange-rate', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    )
+  }
+
   updateQuoteById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`ff-quotation/header/${id}`, payload).pipe(
       map((resp) => {

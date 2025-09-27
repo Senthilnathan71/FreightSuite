@@ -1,14 +1,18 @@
 <div class="col-12">
-  <div class="row  bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-    <div class="col-md-4 d-flex pb-2">
-      <h4 class="page-title mb-0">{{ isEditMode ? 'Update' : 'Add' }} Quotation</h4>
+  <div class="row  bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+    <div class="col-md-4  pb-1">
+       <div class="d-flex align-items-center gap-2">
+          <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Update' : 'Add' }} Quotation</h5>
+      <app-favorite-star screenName="Quotation" class="mt-1 me-1"></app-favorite-star>
       @if(isEditMode){
-      <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+      <a class="text-info d-flex align-items-center w-2 h-2" (click)="showInfo()">
         <i class="fas fs-6 fa-info-circle"></i>
       </a>
       }
+       </div>
+    
     </div>
-    <div class="col-md-8 pb-2">
+    <div class="col-md-8 pb-1">
       <div
         class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
         
@@ -99,22 +103,63 @@
               <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !enquiryNumber
-                              }">  {{ dataFromEnqPage?.rateRequest ? 'Enquiry No' : 'Quotation No' }}
+                              }">  Enquiry No
 <span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-4">
+          <aside class="col-md-4" *ngIf="!isEditMode">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="CustomerRef">
-              <label for="text-input" class="input-label">Customer Ref<span class="text-danger"></span></label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer" formControlName="LeadOrCustomer">
+                <label class="form-check-label" for="flexCheckChecked">
+                  Customer / Lead
+                </label>
+              </div>
             </div>
           </aside>
-          <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
+          <aside class="col-md-4" *ngIf="quotationForm.get('LeadOrCustomer')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
+              <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                formControlName="CustomerMasterSid" appendTo="body" (change)="onSelectionChange($event)">
+                <ng-template ng-option-tmp let-item="item" let-index="index">
+                  <div>
+                    <span class="d-block fw-bold">{{ item.CustomerName }}</span>
+                    <span class="d-block fw-semibold">{{ item.BranchName }}</span>
+                    <small class="d-block">{{ item.Address }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                                          [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
+                                          [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                          (itemSelected)="onSelectionChange($event)">
+                                      </dofi-searchable-dropdown> -->
+              <label for="customerName" class="input-label">Customer <span class="text-danger">*</span></label>
+              <small *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid" class="error-message">
+                Required
+              </small>
+            </div>
+          </aside>
+          <aside class="col-md-4" *ngIf="!quotationForm.get('LeadOrCustomer')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!quotationForm.get('PreCustomerMasterSid')?.value">
+              <ng-select class="ng-select" [items]="leadList" bindLabel="preCustomerName" bindValue="PreCustomerMasterSid"
+                formControlName="PreCustomerMasterSid" appendTo="body" (change)="onSelectionChange($event)"></ng-select>
+              <label for="customerName" class="input-label">Lead <span class="text-danger">*</span></label>
+              <small
+                *ngIf="quotationForm.get('PreCustomerMasterSid').touched && quotationForm.get('PreCustomerMasterSid').invalid"
+                class="error-message">
+                Required
+              </small>
+            </div>
+          </aside>
+          <!-- <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
               <ng-select formControlName="CustomerMasterSid" [items]="customers" bindLabel="CustomerName"
                 bindValue="CustomerMasterSid" (change)="onCustomerChange($event)">
-
+          
               </ng-select>
               <label for="" class="input-label">Customer <span class="text-danger">*</span></label>
               @if(f['CustomerMasterSid']?.invalid && f['CustomerMasterSid']?.touched){
@@ -125,7 +170,8 @@
               </div>
               }
             </div>
-          </aside>
+          </aside> -->
+           
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -149,12 +195,28 @@
             </div>
           </aside>
           <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="CustomerRef">
+              <label for="text-input" class="input-label">Customer Ref<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select"  [class.filled]="!!quotationForm.get('SalesmanSid')?.value">
               <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
                 bindValue="CustomerSalesSid">
 
               </ng-select>
               <label for="" class="input-label">Salesman <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!quotationForm.get('FreightPPCC')?.value">
+              <ng-select formControlName="FreightPPCC">
+                <ng-option value="Prepaid">Prepaid</ng-option>
+                <ng-option value="Collect">Collect</ng-option>
+              </ng-select>
+              <label for="" class="input-label">FreightPPCC <span class="text-danger"></span></label>
             </div>
           </aside>
 
@@ -173,7 +235,7 @@
   </div>
   <div [hidden]="selectedTab !== 'Route Details'" [formGroup]="quotationForm">
     <div class="row">
-      <div class="col-12 mb-2">
+      <div class="col-12 mb-1">
 
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
@@ -201,7 +263,7 @@
               <h2 ngbAccordionHeader>
                 <button ngbAccordionButton
                   class="d-flex justify-content-between align-items-center w-100 position-relative">
-                  <h6 class="font-bold my-1 text-light">Route Details</h6>
+                  <h5 class="font-bold my-1 text-light">Route Details</h5>
                   @if(quoteRoutes.length > 1){
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)" [disabled]="f['EnquirySid'].value || disableAllModification">
@@ -219,7 +281,7 @@
 
               <div ngbAccordionCollapse [id]="'route-' + routeIndex">
                 <div class="card">
-                  <div class="card-body p-2">
+                  <div class="card-body py-0 px-1">
                     <div class="col-12">
 
                       <div class="row compact-form">
@@ -308,22 +370,6 @@
 
                         </div>
                       </aside>
-                      <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">
-                          <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
-                            bindValue="name" placeholder="">
-
-                          </ng-select>
-                          <label for="" class="input-label">Cargo Type <span class="text-danger">*</span></label>
-                          @if(route.get('CargoType')?.invalid && route.get('CargoType')?.touched){
-                          <div class="error-message">
-                            @if(route.get('CargoType')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
 
                       <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
@@ -347,6 +393,7 @@
                           }
                         </div>
                       </div>
+
                       <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
 
@@ -370,66 +417,6 @@
                           }
                         </div>
                       </div>
-                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
-                        <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                            formControlName="CBM" [onlyNumbers]>
-                          <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
-                          @if(route.get('CBM')?.invalid && route.get('CBM')?.touched){
-                          <div class="error-message">
-                            @if(route.get('cbm')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
-                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'AIR'">
-                        <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                            formControlName="ChargeableWeight"  [onlyNumbers]>
-                          <label for="text-input" class="input-label">Chargeable Weight <span
-                              class="text-danger">*</span></label>
-                          @if(route.get('ChargeableWeight')?.invalid && route.get('ChargeableWeight')?.touched){
-                          <div class="error-message">
-                            @if(route.get('ChargeableWeight')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
-                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('ContainerType')?.value">
-                          <ng-select [items]="containerTypeList" bindLabel="ContainerName"
-                            bindValue="ContainerTypeMasterSid" formControlName="ContainerType"
-                            placeholder="">
-                          </ng-select>
-                          <label class="input-label">Container Type <span class="text-danger">*</span></label>
-                          @if(route.get('ContainerType')?.invalid && route.get('ContainerType')?.touched){
-                          <div class="error-message">
-                            @if(route.get('ContainerType')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
-                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
-                        <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                            formControlName="ContainerQty" [onlyNumbers]>
-                          <label for="text-input" class="input-label">No of Container <span
-                              class="text-danger">*</span></label>
-                          @if(route.get('ContainerQty')?.invalid && route.get('ContainerQty')?.touched){
-                          <div class="error-message">
-                            @if(route.get('ContainerQty')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
                       <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
                         <div class="custom-form-group">
                           <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -466,6 +453,107 @@
                               class="text-danger"></span></label>
                         </div>
                       </aside>
+                
+
+                    <div class="row">
+                       <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">
+                          <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
+                            bindValue="name" placeholder="">
+
+                          </ng-select>
+                          <label for="" class="input-label">Cargo Type <span class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'CargoType') ? '*' : '' }}</span></label>
+                          @if(route.get('CargoType')?.invalid && route.get('CargoType')?.touched){
+                          <div class="error-message">
+                            @if(route.get('CargoType')?.hasError('required')){
+                            <span>Required</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
+                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL' || route.value.segmentType === 'AIR'">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            formControlName="GrossWeight">
+                          <label for="text-input" class="input-label">Gross Weight <span class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
+                        </div>
+                      </aside>
+                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            formControlName="NetWeight">
+                          <label for="text-input" class="input-label">Net Weight <span class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'NetWeight') ? '*' : '' }}</span></label>
+                        </div>
+                      </aside>
+
+                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            formControlName="Volume" [onlyNumbers]>
+                          <label for="text-input" class="input-label">CBM <span class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
+                          @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
+                          <div class="error-message">
+                            @if(route.get('Volume')?.hasError('required')){
+                            <span>Required</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
+
+                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'AIR'">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            formControlName="ChargeableWeight"  [onlyNumbers]>
+                          <label for="text-input" class="input-label">Chargeable Weight <span
+                              class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'ChargeableWeight') ? '*' : '' }}</span></label>
+                          @if(route.get('ChargeableWeight')?.invalid && route.get('ChargeableWeight')?.touched){
+                          <div class="error-message">
+                            @if(route.get('ChargeableWeight')?.hasError('required')){
+                            <span>Required</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
+                       
+                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('ContainerType')?.value">
+                          <ng-select [items]="containerTypeList" bindLabel="ContainerName"
+                            bindValue="ContainerTypeMasterSid" formControlName="ContainerType"
+                            placeholder="">
+                          </ng-select>
+                          <label class="input-label">Container Type <span class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'ContainerType') ? '*' : '' }}</span></label>
+                          @if(route.get('ContainerType')?.invalid && route.get('ContainerType')?.touched){
+                          <div class="error-message">
+                            @if(route.get('ContainerType')?.hasError('required')){
+                            <span>Required</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
+
+                      <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            formControlName="Qty" [onlyNumbers]>
+                          <label for="text-input" class="input-label">No of Container <span
+                              class="text-danger">{{ isRequiredInQuoteRoute(routeIndex,'Qty') ? '*' : '' }}</span></label>
+                          @if(route.get('ContainerQty')?.invalid && route.get('ContainerQty')?.touched){
+                          <div class="error-message">
+                            @if(route.get('ContainerQty')?.hasError('required')){
+                            <span>Required</span>
+                            }
+                          </div>
+                          }
+                        </div>
+                      </aside>
+                      
+                  
+                    </div>
+                     
                       @if(isEditMode && isAuthorizedUser){
                       <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!quoteRoutes.at(routeIndex).get('authorizerStatus')?.value">
@@ -479,11 +567,118 @@
                       </aside>
                       }
 
+                      
+                      <div class="col-12 px-2">
+                        <div class="d-flex justify-content-end">
+                          <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="addQuoteProduct(routeIndex)">
+                              <i class="fas fa-plus me-1"></i> Add
+                          </button>
+                        </div>
+                          <div class="table-responsive" formArrayName="quoteProducts">
+                              <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1" >
+                                  <thead>
+                                      <tr class="bg-info text-center">
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
+                                          @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg <span class="text-danger">*</span></th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg <span class="text-danger">*</span></th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Weight <span class="text-danger">*</span></th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Weight <span class="text-danger">*</span></th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM <span class="text-danger">*</span></th>
+                                          }
+                                          <th class="bg-transparent text-light" scope="col">Is Haz</th>
+                                          
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Pkg Group</th>
+                                          
+                                          @if(route.value.segmentType === 'AIR'){
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Length</th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Width</th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">Height</th>
+                                          <th class="bg-transparent text-light dofi-min-w-150" scope="col">UOM</th>
+                                          }
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <tr *ngIf="quoteProducts(routeIndex).controls.length === 0">
+                                          <td colspan="14" class="ps-3">No products added.</td>
+                                      </tr>
+                                      @if(quoteProducts(routeIndex).controls.length > 0){
+                                      <tr *ngFor="let product of quoteProducts(routeIndex).controls; let productIndex = index" [formGroupName]="productIndex">
+                                        <td>
+                                          <dofi-searchable-dropdown [items]="productList" formControlName="ProductSid" [placeholder]="''"
+                                            [displayFields]="[ 'ProductCode','ProductName']" [displayLabels]="[ 'Code','Name']"
+                                            [labelFields]="['ProductName']" [bindValue]="'ProductMasterSId'" (itemSelected)="onProductChange($event,routeIndex,productIndex)">
+                                          </dofi-searchable-dropdown>
+                                        </td>
+                                        @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
+                                        <td>
+                                            <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg" [placeholder]="''"
+                                              [displayFields]="[ 'UOMCode','UOMName']" [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMName']"
+                                              [bindValue]="'UOMCode'">
+                                            </dofi-searchable-dropdown>
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="ExternalQty" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="GrossWeight" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="NetWeight" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="Volume" placeholder="" class="custom-input-field sm" (input)="logProduct(routeIndex,productIndex)">
+                                        </td>
+                                        }
 
+                                        <!-- Haz Part  -->
+                                        <td>
+                                          <div class="form-check ms-2">
+                                            <input class="form-check-input" type="checkbox" id="leadOrCustomer" formControlName="IsHaz" (change)="toggleHazProduct(routeIndex,productIndex)">
+                                          </div>
+                                        </td>
+                                        
+                                        <td>
+                                          <ng-select class="ng-select" [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoMasterSid" appendTo="body" formControlName="ImcoClass"></ng-select>
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="PkgGroup" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        
+
+                                        
+                                        <!-- AIR Part -->
+                                         @if(route.value.segmentType === 'AIR'){
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="Length" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="Width" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <input type="text" id="text-input" formControlName="Height" placeholder="" class="custom-input-field sm">
+                                        </td>
+                                        <td>
+                                          <ng-select class="ng-select" formControlName="ProductUnit" [items]="measurementUnitList" bindLabel="UOMName" bindValue="UOMMasterSid"
+                                          appendTo="body" ></ng-select>
+                                        </td>
+                                        }
+                                      </tr>
+                                      }
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                       
 
                       <div class="col-12">
                         <div class="card-header bg-white d-flex align-items-center px-0 py-1">
-                          <h5 class="card-title text-info ms-1">Charge Details</h5>
+                          <h6 class="card-title text-info ms-1">Charge Details</h6>
                           <div class="ms-auto">
                             <button class="btn btn-light-secondary btn-sm me-1" type="button"
                               (click)="getTariffDetails(routeIndex,tariffDetailsModal)" [disabled]="disableAllModification">
@@ -496,7 +691,7 @@
                         </div>
                         <div class="table-responsive" formArrayName="quoteCharges">
                           <div>
-                            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <table class="table table-hover align-middle no-wrap table-bordered table-sm">
                               <thead>
                                 <tr class="bg-info">
                                   <td class="bg-transparent text-light text-center dofi-min-w-150" rowspan="2">
@@ -510,10 +705,10 @@
                                   <td class="bg-transparent text-light text-center  dofi-min-w-80" rowspan="2">
                                     <label class="form-label mb-0 pb-3">Qty <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center" colspan="5">
-                                    <label class="form-label mb-0">Sell</label>
+                                  <td class="bg-transparent text-light text-center" colspan="7">
+                                    <label class="form-label mb-0">Sale</label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center" colspan="4">
+                                  <td class="bg-transparent text-light text-center" colspan="7">
                                     <label class="form-label mb-0">Cost</label>
                                   </td>
                                   <td class="bg-transparent text-light text-center" rowspan="2"
@@ -528,14 +723,20 @@
                                   <td class="bg-transparent text-light text-center dofi-min-w-150">
                                     <label class="form-label mb-0">Currency <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center">
+                                  <td class="bg-transparent text-light text-center dofi-min-w-150">
                                     <label class="form-label mb-0">Per Unit <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center">
+                                  <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Exchange Rate <span class="text-danger">*</span></label>
+                                  </td>
+                                  <td class="bg-transparent text-light text-center dofi-min-w-150">
                                     <label class="form-label mb-0">Amount <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center">
-                                    <label class="form-label mb-0">Agent/Supplier <span class="text-danger">*</span></label>
+                                   <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Local Amt <span class="text-danger">*</span></label>
+                                  </td>
+                                  <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Party <span class="text-danger">*</span></label>
                                   </td>
                                   <td class="bg-transparent text-light text-center dofi-min-w-150">
                                     <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
@@ -543,83 +744,152 @@
                                   <td class="bg-transparent text-light text-center dofi-min-w-150">
                                     <label class="form-label mb-0">Currency <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center">
-                                    <label class="form-label mb-0">Per Unit
-                                      <span class="text-danger">*</span></label>
+                                    <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Per Unit <span class="text-danger">*</span></label>
                                   </td>
-                                  <td class="bg-transparent text-light text-center">
-                                    <label class="form-label mb-0">Agent/Supplier <span class="text-danger">*</span></label>
+                                     <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Exchange Amt
+                                      <span class="text-danger"></span></label>
+                                  </td>
+                                   <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0"> Amt
+                                      <span class="text-danger"></span></label>
+                                  </td>
+                                    <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Local Amt <span class="text-danger">*</span></label>
+                                  </td>   
+                                  <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                    <label class="form-label mb-0">Vendor <span class="text-danger"></span></label>
                                   </td>
                                 </tr>
                               </thead>
                               <tbody>
                                 <tr *ngFor="let charge of quoteCharges(routeIndex).controls; let chargeIndex = index"
                                   [formGroupName]="chargeIndex">
-                                  <td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <ng-select [items]="chargeMaster" bindLabel="chargeCode" bindValue="ChargeMasterSid"
                                       appendTo="body" formControlName="ChargeUomSid" class="ng-select"
                                       (change)="onChargeChange($event,routeIndex,chargeIndex)" [class.filled]="!!quoteRoutes.at(routeIndex).get('ChargeUomSid')?.value">
                                     </ng-select>
                                   </td>
-                                  <td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <input type="text" id="text-input" placeholder=""
                                       class="form-control custom-input-field sm overflow-auto"
                                       formControlName="ChargeDisplayName" readonly>
 
                                   </td>
-                                  <td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <input type="text" id="text-input" formControlName="Qty" placeholder=""
-                                      class="custom-input-field sm"
-                                      (input)="calculateTotalAmount(routeIndex,chargeIndex)">
-
-                                  </td>
-                                  <td>
-                                    <ng-select [items]="unitMaster" formControlName="UOMMasterSid"
-                                      bindLabel="UOMName" bindValue="UOMMasterSid" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('UOMMasterSid')?.value">
-                                    </ng-select>
-                                  </td>
-                                  <td>
-                                    <ng-select [items]="currencyMaster" bindLabel="currencyName"
-                                      bindValue="CurrencyMasterSid" formControlName="CurrencyMasterSid" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('CurrencyMasterSid')?.value">
-                                    </ng-select>
-                                  </td>
-                                  <td>
-                                    <input type="text" id="text-input" formControlName="perUnit" placeholder=""
                                       class="custom-input-field sm text-end"
-                                      (input)="calculateTotalAmount(routeIndex,chargeIndex)" [onlyNumbers]>
+                                      (input)="calculateRevenueTotalAmount(routeIndex,chargeIndex) ; calculateCostTotalAmount(routeIndex,chargeIndex)">
 
                                   </td>
-                                  <td>
-                                    <input type="text" id="text-input" formControlName="Amount" placeholder=""
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <ng-select [items]="unitMaster" formControlName="RevenueChargeUomSid"
+                                      bindLabel="UOMName" bindValue="UOMMasterSid" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('RevenueChargeUomSid')?.value">
+                                    </ng-select>
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <ng-select [items]="currencyMaster" bindLabel="currencyName"
+                                      bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid" appendTo="body" (change)="patchRevenueExchangeRate(routeIndex,chargeIndex)" [class.filled]="!!quoteRoutes.at(routeIndex).get('RevenueCurrencyMasterSid')?.value">
+                                    </ng-select>
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="custom-form-group">
+                                      <input type="text" id="text-input" formControlName="RevenueRate" placeholder="" class="custom-input-field sm text-end"
+                                        (input)="calculateRevenueTotalAmount(routeIndex,chargeIndex)" [onlyNumbers]>
+                                        @if(charge.get("RevenueRate")?.touched && charge.get("RevenueRate")?.invalid){
+                                          <div class="error-message">
+                                            @if(charge.get("RevenueRate")?.hasError('required')){
+                                            <span>required</span>
+                                            }
+                                          </div>
+                                        }
+                                      </div>
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <input type="text" id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                     class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
                                     [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
                                     
                                   </td>
-                                  <td>
-                                    <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
-                                      bindValue="CustomerMasterSid" formControlName="CostAgentMasterSid" appendTo="body">
-                                    </ng-select>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <input type="text" id="text-input" formControlName="RevenueAmount" placeholder=""
+                                    class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
+                                    [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                    
                                   </td>
-                                  <td>
-                                    <ng-select [items]="unitMaster" formControlName="costUnit"
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <input type="text" id="text-input" formControlName="RevenueLocalAmount" placeholder=""
+                                    class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
+                                    [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                    
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="custom-form-group custom-form-group-select">
+                                      <ng-select [items]="vendorSupplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                        formControlName="RevenueCustomerMasterSid" appendTo="body">
+                                      </ng-select>
+                                      @if(charge.get("RevenueCustomerMasterSid")?.touched && charge.get("RevenueCustomerMasterSid")?.invalid){
+                                        <div class="error-message">
+                                          @if(charge.get("RevenueCustomerMasterSid")?.hasError('required')){
+                                          <span>required</span>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <ng-select [items]="unitMaster" formControlName="CostChargeUomSid"
                                       bindLabel="UOMName" bindValue="UOMCode" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('costUnit')?.value">
                                     </ng-select>
                                   </td>
-                                  <td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <ng-select [items]="currencyMaster" bindLabel="currencyName"
-                                      bindValue="currencyCode" formControlName="costCurrency" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('costCurrency')?.value">
+                                      bindValue="CurrencyMasterSid" formControlName="CostCurrencyMasterSid" 
+                                      (change)="patchCostExchangeRate(routeIndex,chargeIndex)" appendTo="body" [class.filled]="!!quoteRoutes.at(routeIndex).get('CostCurrencyMasterSid')?.value">
                                     </ng-select>
                                   </td>
-                                  <td>
-                                    <input type="text" id="text-input" formControlName="costPerUnit" placeholder=""
-                                      class="custom-input-field sm  text-end" [onlyNumbers]>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="custom-form-group">
+                                      <input type="text" id="text-input" formControlName="CostRate" placeholder="" (input)="calculateCostTotalAmount(routeIndex,chargeIndex)"
+                                        class="custom-input-field sm  text-end" [onlyNumbers]>
+                                        @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
+                                          <div class="error-message">
+                                            @if(charge.get("CostRate")?.hasError('required')){
+                                            <span>required</span>
+                                            }
+                                          </div>
+                                        }
+                                    </div>
                                   </td>
-                                  <td>
+
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <input type="text" id="text-input" formControlName="CostExchangeRate" placeholder=""
+                                    class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
+                                    [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                    
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <input type="text" id="text-input" formControlName="CostAmount" placeholder=""
+                                    class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
+                                    [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                    
+                                  </td>
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <input type="text" id="text-input" formControlName="CostLocalAmount" placeholder=""
+                                    class="form-control custom-input-field sm  text-end" readonly DecimalPrecision
+                                    [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                    
+                                  </td>
+
+                                  <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <ng-select [items]="vendorSupplierList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                       formControlName="CostAgentMasterSid" appendTo="body">
                                     </ng-select>
-                                  </td>
-                                  <td *ngIf="quoteCharges(routeIndex).length > 1">
+                                 
+                                    
+                                  <td *ngIf="quoteCharges(routeIndex).length > 1" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <button class="btn btn-link text-danger"
                                       (click)="removeCharge(routeIndex,chargeIndex,charge.value.QuoteChargeSid)"  [disabled]="disableAllModification">
                                       <i class="fas fa-trash text-center"></i>

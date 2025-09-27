@@ -14,11 +14,11 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgbAccordionDirective } from '@ng-bootstrap/ng-bootstrap';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, forkJoin, of, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, forkJoin, from, of, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
@@ -31,6 +31,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -47,6 +49,8 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     OnlyTextDirective,
     TextWithNumbersDirective,
     DecimalPrecisionDirective,
+    FavoriteStarComponent,
+    SearchableDropdown
   ],
   templateUrl: './quotation-entry.component.html',
   styleUrl: './quotation-entry.component.scss',
@@ -94,6 +98,11 @@ export class QuotationEntryComponent implements OnInit {
   filteredUnits: any[][] = [];
   costAgentList : any[] = [];
   vendorSupplierList : any[] = [];
+  productList : any[] =[];
+  productLookupConfig = ['ProductCode','ProductName'];
+  measurementUnitList : any[] = [];
+  weightUnitList : any[] = [];
+  
   quotationForm !: FormGroup;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
@@ -102,7 +111,8 @@ export class QuotationEntryComponent implements OnInit {
   authStateCache : string = "Pending";
   disableAllModification : boolean;
   
-auditLogs: any[] = []; // Stores audit logs
+  auditLogs: any[] = []; // Stores audit logs
+  leadList : any[] = [];
   auditLogModalRef!: NgbModalRef;
 
 
@@ -136,6 +146,7 @@ auditLogs: any[] = []; // Stores audit logs
   tabs: string[] = ['Quotation', 'Route Details'];
   selectedTab = 'Quotation';
 dataFromEnqPage:any;
+  imcoList: any[] = [];
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
@@ -189,146 +200,6 @@ dataFromEnqPage:any;
     })
   }
 
-//   patchEnqPageValues(enqData: any) {
-//     debugger
-//     this.enquiryNumber = enqData?.EnquiryNumber;
-//     this.quoteRoutes.clear();
-
-//     const headerFields = ['EnquirySid', 'CustomerMasterSid', 'CustomerName', 'CustomerAddress', 'Email'];
-//     this.quotationForm.patchValue(
-//       headerFields.reduce((obj, field) => ({ ...obj, [field]: enqData?.[field] }), {})
-//     );
-//     headerFields.forEach(field => this.quotationForm.get(field)?.disable());
-
-// const routes = Array.isArray(enqData.quoteRoutes) ? enqData.quoteRoutes : [];
-//   // Example of deriving a segment value if that's your business rule
-// const segment =
-//   enqData.ShipmentType === 'Air Console' ? 'Air' :
-//   enqData.ShipmentType === 'Sea Console' ? 'Sea' :
-//   'Unknown';
-
-//     // Process routes
-//     const processedRoutes = routes.map(route => ({
-//   ...route,
-//   DepartmentMasterSid: enqData.DepartmentMasterSid,
-//   PORSid:  route?.PORSid  ?? null,
-//   POLSid:  route?.POLSid  ?? null,
-//   PODSid:  route?.PODSid  ?? null,
-//   FPODSid: route?.FPODSid ?? null   // double-check the property name
-// }));
-
-//       this.addQuoteRoute({
-//         ...routeData,
-//         segmentType: segment
-//       });
-
-//       this.addQuoteCharge(routeIndex);
-//       this.handleValidationOnDept(routeIndex, segment);
-//       this.onRouteChange(routeIndex);
-
-//       // Disable only the fields we actually patched for this route
-//       const routeGroup = this.quoteRoutes.at(routeIndex);
-//       Object.keys(routeData).forEach(field => {
-//         if (routeGroup.get(field)) {
-//           routeGroup.get(field)?.disable();
-//         }
-//       });
-//     });
-//   }
-
-
-// patchEnqPageValues(enqData: any) {
-//   // --- Header form setup ---------------------------------
-//   this.enquiryNumber = enqData?.EnquiryNumber;
-//   this.quoteRoutes.clear();
-
-//   const headerFields = [
-//     'EnquirySid',
-//     'CustomerMasterSid',
-//     'CustomerName',
-//     'CustomerAddress',
-//     'Email'
-//   ];
-
-//   this.quotationForm.patchValue(
-//     headerFields.reduce(
-//       (obj, field) => ({ ...obj, [field]: enqData?.[field] }),
-//       {}
-//     )
-//   );
-
-//   headerFields.forEach(field => this.quotationForm.get(field)?.disable());
-
-//   // --- Routes array check ---------------------------------
-//   const routes = Array.isArray(enqData?.quoteRoutes)
-//     ? enqData.quoteRoutes
-//     : [];
-
-//   console.log('quoteRoutes value:', enqData?.quoteRoutes);
-//   console.log('routes length:', routes.length);
-
-//   if (!routes.length) {
-//     console.warn('No routes to process');
-//     return; // nothing more to do
-//   }
-
-//   // --- Determine segment type -----------------------------
-//   const segment =
-//   enqData.ShipmentType.includes('Air') ? 'AIR' :
-//   enqData.ShipmentType.includes('Sea') ? 'LCL' : 'Unknown';
-
-
-//   // --- Process each route ---------------------------------
-//   for (const [routeIndex, route] of routes.entries()) {
-//   const cargo = enqData.enquiryCargo?.find(
-//     (c: any) => c.EnquiryRouteSid === route.EnquiryRouteSid
-//   );
-
-//   const routeData = {
-//     QuoteRouteSid: route.QuoteRouteSid ?? null,
-//     DepartmentMasterSid: enqData.DepartmentMasterSid,
-//     PORSid: route.PORSid ?? null,
-//     POLSid: route.POLSid ?? null,
-//     PODSid: route.PODSid ?? null,
-//     FPODSid: route.FPODSid ?? route.FDPSid ?? null,
-
-//     // ✅ Mapped fields
-//     CargoType: cargo?.CargoType ?? route.CargoType ?? null,
-//     ContainerType: cargo?.PackageType ?? null,
-//     ContainerQty: cargo?.PackageQty ?? 1,
-//     CBM: cargo?.Volume ?? 1,
-//     ChargeableWeight: cargo?.ChargeableWeight ?? 0,
-
-//     // ✅ Dates fallback
-//     effDate: route.effDate ? new Date(route.effDate) : this.todayDate,
-//     expDate: route.expDate ? new Date(route.expDate) : null,
-
-//     CarrierMasterSid: route.CarrierMasterSid ?? null,
-//     TransitDays: route.TransitDays ?? '',
-//     ServiceLevel: route.ServiceLevel ?? null,
-//     POLFreeDays: route.POLFreeDays ?? '',
-//     PODFreeDays: route.PODFreeDays ?? '',
-//     CarrierName: route.CarrierName ?? '',
-//     authorizerStatus: route.authorizerStatus ?? 'Pending',
-//     segmentType: segment
-//   };
-
-//   console.log('✅ Final routeData:', routeData);
-
-//   this.addQuoteRoute(routeData);
-//   this.addQuoteCharge(routeIndex);
-//   this.handleValidationOnDept(routeIndex, segment);
-//   this.onRouteChange(routeIndex);
-
-//   const routeGroup = this.quoteRoutes.at(routeIndex);
-//   Object.keys(routeData).forEach(field => {
-//     routeGroup.get(field)?.disable();
-//   });
-// }
-
-// }
-
-
 patchEnqPageValues(enqData: any) { 
   // --- Header form setup ---------------------------------
   this.enquiryNumber = enqData?.EnquiryNumber;
@@ -339,7 +210,8 @@ patchEnqPageValues(enqData: any) {
     'CustomerMasterSid',
     'CustomerName',
     'CustomerAddress',
-    'Email'
+    'Email',
+    'FreightPPCC'
   ];
 
   this.quotationForm.patchValue(
@@ -489,7 +361,10 @@ private extractCargoData(enquiryCargo: any[]): any {
   initQuotationForm() {
     this.quotationForm = this.fb.group({
       // Fields mentioned in Web Design Draft
-      CustomerMasterSid: [null, [Validators.required]],
+      LeadOrCustomer : [true],
+      PreCustomerMasterSid : [null],
+      CustomerMasterSid: [null],
+      FreightPPCC : ["Prepaid"],
       CustomerRef: [''],
       Email: [''],
       status: ['Active'],
@@ -497,6 +372,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       quoteRoutes: this.fb.array([]),
       CustomerName: [''],
       CustomerAddress: ['', [Validators.required]],
+      CustomerBranchSid : [null],
       QuoteNumber: [''],
       QuoteDate: [null],
       EnquirySid: [''],
@@ -507,6 +383,74 @@ private extractCargoData(enquiryCargo: any[]): any {
       route.get('PODSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
       route.get('POLSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
     });
+    this.subscribeToLeadCustomerToggle(); 
+  }
+
+  subscribeToLeadCustomerToggle() {
+    this.quotationForm.get('LeadOrCustomer')?.valueChanges.pipe(
+      distinctUntilChanged()
+    ).subscribe(isCustomer => {
+      this.toggleCustomerType(isCustomer);
+    });
+  }
+
+  toggleCustomerType(isCustomer: boolean) {
+    this.quotationForm.patchValue({
+      PreCustomerMasterSid: null,
+      CustomerMasterSid: null,
+      customerName: '',
+      CustomerAddress: null,
+      CustomerBranchSid: null,
+      Email: null,
+    });
+    this.cusBranchList = [];
+
+    const preCustomerControl = this.quotationForm.get('PreCustomerMasterSid');
+    const customerControl = this.quotationForm.get('CustomerMasterSid');
+
+    if (isCustomer) {
+      customerControl?.setValidators(Validators.required);
+      preCustomerControl?.clearValidators();
+    } else {
+      preCustomerControl?.setValidators(Validators.required);
+      customerControl?.clearValidators();
+    }
+
+    customerControl?.updateValueAndValidity();
+    preCustomerControl?.updateValueAndValidity();
+  }
+
+
+
+  onSelectionChange(selectedItem: any) {
+    if (!selectedItem) {
+      this.quotationForm.patchValue({
+        CustomerName: '',
+        CustomerAddress: null,
+        CustomerBranchSid: null,
+        Email: null,
+      });
+      this.cusBranchList = [];
+      return;
+    }
+
+    const isCustomer = this.quotationForm.get('LeadOrCustomer')?.value;
+    console.log(selectedItem);
+    if (isCustomer) {
+      this.quotationForm.patchValue({
+        CustomerName: selectedItem.CustomerName,
+        CustomerAddress: selectedItem.Address,
+        Email: selectedItem.Email,
+        CustomerBranchSid: selectedItem.CustomerBranchSid,
+      });
+    } else {
+      this.quotationForm.patchValue({
+        customerName: selectedItem.preCustomerName,
+        CustomerAddress: selectedItem.preCustomerAddress1,
+        Email: selectedItem.email,
+        CustomerBranchSid: null,
+      });
+    }
   }
 
   get f(): { [key: string]: AbstractControl<any, any> } {
@@ -519,28 +463,43 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   addQuoteRoute(data?: any) {
     const routeForm = this.fb.group({
+
+      // Route Related Controls
       QuoteRouteSid: [data?.QuoteRouteSid || null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null, [Validators.required]],
+      POLFreeDays: [data?.POLFreeDays || ''],
+      PODFreeDays: [data?.PODFreeDays || ''],
       PORSid: [data?.PORSid ?? null],
       POLSid: [data?.POLSid ?? null, [Validators.required]],
       PODSid: [data?.PODSid ?? null, [Validators.required]],
       FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null, Validators.required],
-      CarrierMasterSid: [data?.CarrierMasterSid || null],
-      CargoType: [data?.CargoType || null, [Validators.required]],
-      ContainerType: [data?.ContainerType || null],
-      ContainerQty: [data?.ContainerQty || 1],
       effDate: [new Date(data?.effDate) || null, [Validators.required]],
       expDate: [new Date(data?.expdate) || '', [Validators.required]],
       TransitDays: [data?.TransitDays || ''],
-      ServiceLevel: [data?.ServiceLevel || null],
-      POLFreeDays: [data?.POLFreeDays || ''],
-      PODFreeDays: [data?.PODFreeDays || ''],
-      CBM: [data?.CBM || 1],
-      ChargeableWeight: [data?.ChargeableWeight || 0],
-      quoteCharges: this.fb.array([]),
-      authorizerStatus: [data?.authorizerStatus || 'Pending'],
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
+      ServiceLevel: [data?.ServiceLevel || null],
+      
+      // Carrier Related Controls (Route wise single)
+      QuoteCarrierSid: [data?.CarrierMasterSid || null],
       CarrierName: [data?.CarrierName || ''],
+      CarrierMasterSid: [data?.CarrierMasterSid || null],
+      authorizerStatus: [data?.authorizerStatus || 'Pending'],
+      
+      // Cargo Related Controls (Route wise single)
+      QuoteCargoSid : [data?.QuoteCargoSid || null],
+      CargoType: [data?.CargoType || null, [Validators.required]],
+      WeightUnitSid: [data?.WeightUnitSid || null],
+      GrossWeight: [data?.GrossWeight || 0],
+      NetWeight: [data?.NetWeight || 0],
+      Volume: [data?.Volume || 0],
+      ChargeableWeight: [data?.ChargeableWeight || 0],
+      ContainerType: [data?.ContainerType || null],
+      Qty: [data?.Qty || 1],
+      ShipmentTerms: [data?.ShipmentTerms || null],
+
+      // FormArrays (Route wise multiple)
+      quoteCharges: this.fb.array([]),
+      quoteProducts : this.fb.array([]),
     })
     const routeIndex = this.quoteRoutes.length;
     this.quoteRoutes.push(routeForm);
@@ -548,39 +507,16 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.filteredPOLPorts[routeIndex] = [];
     this.filteredPODPorts[routeIndex] = [];
     this.onRouteChange(routeIndex);
+    this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
       this.addQuoteCharge(this.quoteRoutes.length - 1);
     }
   }
 
+
+
   
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.QuoteHeaderSid) return;
 
-  this.leadService.getAuditLogsQuotation('QuoteHeader', this.QuoteHeaderSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
-
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
 
   removeQuoteRoute(routeIndex: number) {
     this.quoteRoutes.removeAt(routeIndex);
@@ -611,24 +547,80 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   addQuoteCharge(routeIndex: number, data?: any) {
     const chargeForm = this.fb.group({
-      QuoteChargeSid: [data?.QuoteChargeSid || null],
-      ChargeUomSid: [data?.ChargeUomSid || null, [Validators.required]],
-      Qty : [data?.Qty || 1 ,[Validators.required]],
-      UOMMasterSid: [data?.UOMMasterSid || null, [Validators.required]],
-      CurrencyMasterSid: [data?.CurrencyMasterSid || null, [Validators.required]],
-      perUnit: [data?.perUnit || '', [Validators.required]],
-      Amount: [data?.Amount || '', [Validators.required]],
-      costUnit: [data?.costUnit || null, Validators.required],
-      costCurrency: [data?.costCurrency || null, Validators.required],
-      costPerUnit: [data?.costPerUnit || '', Validators.required],
-      CostAgentMasterSid : [data?.CostAgentMasterSid || null],
-      RevenueCustomerMasterSid : [data?.RevenueCustomerMasterSid || null],
-      ChargeDisplayName: [data?.ChargeDisplayName, [Validators.required]],
+      QuoteChargeSid : [data?.QuoteChargeSid || null],
+      QuoteRouteSid : [data?.QuoteRouteSid || null],
+      QuoteHeaderSid : [data?.QuoteHeaderSid || null],
+      QuoteCarrierSid : [data?.QuoteCarrierSid || null],
+
+      ChargeUomSid : [data?.ChargeUomSid || null, [Validators.required]],
+      ChargeDisplayName : [data?.ChargeDisplayName, [Validators.required]],
+      Qty : [data?.Qty || 1],
+
+      RevenueChargeUomSid: [data?.RevenueChargeUomSid || null, [Validators.required]],
+      RevenuePrepaidCollect: [data?.RevenuePrepaidCollect || "Prepaid"],
+      RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid || null, [Validators.required]],
+      RevenueExchangeRate: [data?.RevenueExchangeRate || 0],
+      RevenueRate: [data?.RevenueRate || 0],
+      RevenueNumberOfUnit: [data?.RevenueNumberOfUnit || 0],
+      RevenueDrCr: [data?.RevenueDrCr || "C"],
+      RevenueAmount: [data?.RevenueAmount || 0],
+      RevenueLocalAmount: [data?.RevenueLocalAmount || 0],
+      RevenueCustomerMasterSid: [data?.RevenueCustomerMasterSid || null], // Revenue Vendor
+      RevenueCustomerBranchSid: [data?.RevenueCustomerBranchSid || null],
+
+      CostChargeUomSid : [data?.CostChargeUomSid || null, [Validators.required]],  // Cost Unit
+      CostPrepaidCollect : [data?.CostPrepaidCollect || "Prepaid"],
+      CostCurrencyMasterSid : [data?.CostCurrencyMasterSid || null, [Validators.required]], // Cost Currency
+      CostExchangeRate : [data?.CostExchangeRate || 0], // Cost Exchange
+      CostRate : [data?.CostRate || 0],    // Cost Per Unit Rate
+      CostNumberOfUnit : [data?.CostNumberOfUnit || 0],  // Count
+      CostDrCr : [data?.CostDrCr || "D"],
+      CostAmount : [data?.CostAmount || 0],   // Cost Amount
+      CostLocalAmount : [data?.CostLocalAmount || 0], // Cost Local Amount
+      CostAgentMasterSid : [data?.CostAgentMasterSid || null],  // Cost Party
+      CostAgentBranchSid : [data?.CostAgentBranchSid || null],
+
+
+
       TariffDetailSid : [data?.TariffDetailSid || null]  // For filtering purpose
     })
     chargeForm.get('ChargeDisplayName')?.disable();
-    chargeForm.get('Amount')?.disable();
+    chargeForm.get('CostAmount')?.disable();
+    const costPerUnitCtrl = chargeForm.get('CostRate');
+    const costAgentMasterSidCtrl = chargeForm.get('CostAgentMasterSid');
+
+    costAgentMasterSidCtrl?.valueChanges.subscribe(value => {
+      if (value) {
+        costPerUnitCtrl?.setValidators([Validators.required]);
+        costPerUnitCtrl?.markAsTouched();
+      } else {
+        costPerUnitCtrl?.clearValidators();
+      }
+      costPerUnitCtrl?.updateValueAndValidity();
+    });
+
+    if (costAgentMasterSidCtrl.value) {
+      costPerUnitCtrl.setValidators([Validators.required]);
+      costPerUnitCtrl.markAsTouched();
+      costPerUnitCtrl.updateValueAndValidity();
+    }
     this.quoteCharges(routeIndex).push(chargeForm)
+
+  }
+
+  isRequiredInQuoteRoute(routeIndex:number ,ctrl : string) : boolean {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    return routeForm.get(ctrl)?.hasValidator(Validators.required);
+  }
+
+  isCostPerUnitRequired(routeIndex: number): boolean {
+    const chargesArray = this.quoteCharges(routeIndex);
+    if (!chargesArray) {
+      return false;
+    }
+    return chargesArray.controls.some(
+      chargeCtrl => !!chargeCtrl.get('CostAgentMasterSid')?.value
+    );
   }
 
 
@@ -649,15 +641,185 @@ openAuditLogs(modal: TemplateRef<any>) {
     }
   }
 
+  quoteProducts(routeIndex: number): FormArray {
+    return this.quoteRoutes.at(routeIndex).get('quoteProducts') as FormArray;
+  }
+
+  addQuoteProduct(routeIndex: number, data?: any) {
+    const productForm = this.fb.group({
+      QuoteProductSid : [data?.QuoteProductSid || null],
+      Sno : [data?.Sno || null],
+      ProductSid : [data?.ProductSid || null , [Validators.required]],
+      ProductName : [data?.ProductName || '' , [Validators.required]],
+      PackageType : [data?.PackageType || null ],
+      CargoDescription : [data?.CargoDescription || ''],
+      ExternalPkg : [data?.ExternalPkg || null ],
+      ExternalQty : [data?.ExternalQty || '' ],
+      GrossWeight : [data?.GrossWeight || '' ],
+      NetWeight : [data?.NetWeight || '' ],
+      Volume : [data?.Volume || ''],
+      Length : [data?.Length || ''],
+      Width : [data?.Width || ''],
+      Height : [data?.Height || ''],
+      ProductUnit : [data?.ProductUnit || null],
+      ChargeableWeight : [data?.ChargeableWeight || ''],
+      IsHaz : [data?.IsHaz === "Y" || false],
+      ImcoClass : [{ value : data?.ImcoClass || null, disabled : data?.IsHaz !=="Y" || true }],
+      PkgGroup : [{ value : data?.PkgGroup || null, disabled : data?.IsHaz !=="Y" || true }],
+      Remarks : [data?.Remarks || ''],
+    });
+
+
+    this.quoteProducts(routeIndex).push(productForm);
+    const productLength = this.quoteProducts(routeIndex).length;
+    this.handleSegmentChangeOnProduct(routeIndex, productLength - 1);
+    productForm.updateValueAndValidity();
+  }
+
+  handleSegmentChangeOnAllProducts(routeIndex: number) {
+    this.quoteProducts(routeIndex).controls.forEach((product, index) => {
+      this.handleSegmentChangeOnProduct(routeIndex, index);
+    });
+  }
+
+  logProduct(routeIndex:number,productIndex:number){
+    const product = this.quoteProducts(routeIndex).at(productIndex) as FormGroup;
+    console.log(product.controls);
+  }
+
+  handleSegmentChangeOnProduct(routeIndex: number,productIndex:number) {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    if (!routeForm) return;
+
+    const segmentType = routeForm.get('segmentType')?.value;
+    console.log(segmentType);
+    if(!segmentType) return;
+    const isLCL = segmentType === 'LCL';
+    const isFCL = segmentType === "FCL";
+    const isAir = segmentType === 'AIR';
+
+    const routeControlsToValidate = {
+        ContainerType: isFCL,
+        Qty: isFCL,
+    };
+
+    for (const [key, isRequired] of Object.entries(routeControlsToValidate)) {
+      const control = routeForm.get(key);
+      if (control) {
+        this.setOrClearRequired(control, isRequired);
+      }
+    }
+
+    const productControlsToValidate = {
+        GrossWeight: isLCL || isFCL,
+        NetWeight: isLCL || isFCL,
+        Volume: isLCL || isFCL,
+        ExternalQty: isLCL || isFCL,
+        ExternalPkg: isLCL || isFCL,
+        Length: isAir,
+        Width: isAir,
+        Height: isAir,
+        ProductUnit: isAir,
+    };
+
+    this.quoteProducts(routeIndex).controls.forEach(productControl => {
+        for (const [key, isRequired] of Object.entries(productControlsToValidate)) {
+            const control = (productControl as FormGroup).get(key);
+            if (control) {
+                this.setOrClearRequired(control, isRequired);
+                console.log(control.hasValidator(Validators.required));
+            }
+        }
+    });
+    this.quoteProducts(routeIndex).updateValueAndValidity();
+  }
+  private setOrClearRequired(control: AbstractControl, isRequired: boolean) {
+    const validators = control.validator ? [control.validator] : [];
+    const hasRequired = validators.includes(Validators.required);
+
+    if (isRequired && !hasRequired) {
+      control.addValidators(Validators.required);
+    } else if (!isRequired && hasRequired) {
+      control.removeValidators(Validators.required);
+    }
+
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  isProductRequired(routeIndex: number, productIndex: number, ctrl: string) {
+    const productForm = this.quoteProducts(routeIndex)?.at(productIndex);
+    const control = productForm?.get(ctrl);
+    return control ? control.hasValidator(Validators.required) : false;
+  }
+
+  toggleHazProduct(routeIndex:number,productIndex:number){
+    const isHaz = this.quoteProducts(routeIndex).at(productIndex).get('IsHaz')?.value;
+    console.log(isHaz);
+    if(isHaz){
+      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.enable();
+      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.enable();
+      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.setValidators(Validators.required);
+      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.setValidators(Validators.required);
+    } else {
+      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.setValue(null);
+      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.setValue('');
+      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.clearValidators();
+      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.disable();
+      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.clearValidators();
+      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.disable();
+    }
+  }
+
+  deleteQuoteProduct(routeIndex:number, productIndex:number,QuoteProductSid:number){
+    const ctrl = this.quoteProducts(routeIndex) as FormArray;
+    if(QuoteProductSid){
+      this.leadService.deleteProduct(QuoteProductSid).subscribe((resp:any) => {
+        if(resp.status){
+          ctrl.removeAt(productIndex);
+          this.quoteProducts(routeIndex).updateValueAndValidity();
+          this.appSettingService.showSuccess("Product Deleted Successfully");
+        } else {
+          this.appSettingService.showError("Error Deleting Product");
+        }
+      });
+    } else {
+      ctrl.removeAt(productIndex);
+      this.quoteProducts(routeIndex).updateValueAndValidity();
+      this.appSettingService.showSuccess("Product Deleted Successfully");
+    }
+  }
+
+  onProductChange(product:any,routeIndex:number,productIndex:number){
+    const productForm = this.quoteProducts(routeIndex)?.at(productIndex) as FormGroup;
+    console.log(product,'productForm')
+    productForm.get('ProductName')?.setValue("");
+    productForm.get('IsHaz')?.setValue(false);
+    productForm.get('ImcoClass')?.setValue('');
+    productForm.get('PkgGroup')?.setValue('');
+    if(!product){
+      return;
+    } else {
+      productForm.get('ProductName')?.setValue(product.ProductName);
+      productForm.get('IsHaz')?.setValue(product.ProductType === "2");
+      productForm.get('ImcoClass')?.setValue(product.IMOClass);
+      productForm.get('PkgGroup')?.setValue(product.PackingGroup);
+    }
+  }
+
 
   // SECTION5 - MAIN FUNCTIONS
 
   loadAllLookUps() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const filterOption = { 
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid
+    }
     return forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
       carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
-      customers: this.leadService.getAllCustomers(CompanyMasterSid).pipe(catchError(err => of([]))),
+      leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
+      customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
@@ -665,10 +827,16 @@ openAuditLogs(modal: TemplateRef<any>) {
       masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
       units : this.leadService.getAllUOMs().pipe(catchError(err => of([]))),
       vendors: this.leadService.getAllVendorSupplier(CompanyMasterSid).pipe(catchError(err => of([]))),
-      containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([])))
-    }).pipe(tap(({ cargoTypes, carriers, customers, departments, vendors, ports, incos, salesman, masters,units, containerTypes }) => {
+      containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
+      packageTypes : this.leadService.getAllPackageTypeUOM().pipe(catchError(err => of([]))),
+      products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
+      imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
+      measurementUnits : this.leadService.getAllMeasurementUnit().pipe(catchError(err => of([]))),
+      weightUnits : this.leadService.getAllWeightUnit().pipe(catchError(err => of([]))),
+    }).pipe(tap(({ cargoTypes, carriers, leads, customers, departments, vendors, ports, incos, salesman, masters,units, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
+      this.leadList = leads.data;
       this.customers = customers || [];
       this.departments = departments || [];
       this.ports = ports || [];
@@ -679,6 +847,11 @@ openAuditLogs(modal: TemplateRef<any>) {
       this.salesmanList = salesman || [];
       this.containerTypeList = containerTypes || [],
       this.vendorSupplierList = vendors || [];
+      this.packageTypes = packageTypes.data || [];
+      this.productList = products || [];
+      this.imcoList = imcos.data || [];
+      this.measurementUnitList = measurementUnits.data || [];
+      this.weightUnitList = weightUnits.data || [];
     })
     );
   }
@@ -713,20 +886,46 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.getEnquiryName(response.EnquirySid);
     this.quotationForm.patchValue({
       ...response,
+      LeadOrCustomer : response.LeadOrCustomer === "C",
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
     })
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
-    response.quoteRoute.forEach((route, routeIndex) => {
+    (response.quoteRoute || []).forEach((route, routeIndex) => {
+      const carrier = route.quoteCarrier[0];
+      const cargo = route.quoteCargo[0];
+      const fullRouteData = {
+        ...route,
+        QuoteCarrierSid : carrier.QuoteCarrierSid,
+        CarrierName : carrier.CarrierName,
+        CarrierMasterSid : carrier.CarrierMasterSid,
+        authorizerStatus : carrier.authorizerStatus || 'Pending',
 
-      this.addQuoteRoute(route)
+        QuoteCargoSid : cargo?.QuoteCargoSid || null,
+        CargoType : cargo?.CargoType,
+        WeightUnitSid : cargo?.WeightUnitSid,
+        GrossWeight : cargo?.GrossWeight,
+        NetWeight : cargo?.NetWeight,
+        Volume : cargo?.Volume,
+        ChargeableWeight : cargo?.ChargeableWeight,
+        ContainerType : cargo?.ContainerType,
+        Qty : cargo?.Qty,
+        ShipmentTerms : cargo?.ShipmentTerms
+      }
+      this.addQuoteRoute(fullRouteData)
       this.handleValidationOnDept(routeIndex, route.segmentType)
       this.onRouteChange(routeIndex);
 
-      route.quoteCharge.forEach(charge => {
+      if (cargo) {
+        (cargo.quoteProducts || []).forEach(product => {
+          this.addQuoteProduct(routeIndex, product);
+        })
+      }
+
+      (route?.quoteCharge || []).forEach(charge => {
         this.addQuoteCharge(routeIndex, charge);
-      })
+      }) 
     })
     this.disableNonEditFields();
     if(this.authStateCache !== 'Pending'){
@@ -763,6 +962,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       BranchMasterSid: currentBranchMasterSid,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
       UserMasterSid: this.userData?.UserMasterSid,
+      LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
+      PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerRef: formValue.CustomerRef,
       CustomerAddress: formValue.CustomerAddress,
@@ -775,30 +976,47 @@ openAuditLogs(modal: TemplateRef<any>) {
       status: formValue.status === "Active" ? 'A' : 'S',
 
       routes: formValue.quoteRoutes.map((route, routeIndex) => ({
+
         QuoteRouteSid: route.QuoteRouteSid,
         DepartmentMasterSid: route.DepartmentMasterSid,
+        POLFreeDays: route.POLFreeDays,
+        PODFreeDays: route.PODFreeDays,
         PORSid: route.PORSid,
         POLSid: route.POLSid,
         PODSid: route.PODSid,
         FPODSid: route.FPODSid,
-        CarrierMasterSid: route.CarrierMasterSid,
-        CargoType: route.CargoType,
-        ContainerType: route.ContainerType,
-        ContainerQty: route.ContainerQty,
         effDate: route.effDate,
         expDate: route.expDate,
         TransitDays: route.TransitDays,
+        segmentType: route.segmentType || 'LCL',
         ServiceLevel: route.ServiceLevel,
-        POLFreeDays: route.POLFreeDays,
-        PODFreeDays: route.PODFreeDays,
-        CBM: route.CBM,
+
+        CarrierMasterSid: route.CarrierMasterSid,
+        CarrierName : route.CarrierName || "",
+
+        CargoType: route.CargoType,
+        WeightUnitSid : route.WeightUnitSid,
+        GrossWeight : route.GrossWeight,
+        NetWeight : route.NetWeight,
+        Volume : route.Volume,
         ChargeableWeight : route.ChargeableWeight,
-        segmentType: route.segmentType,
-        CarrierName: route.CarrierName,
+        ContainerType: route.ContainerType,
+        Qty: route.Qty,
+        ShipmentTerms : route.ShipmentTerms,
+        PackageType : route.PackageType,
+        PackageQty : route.PackageQty,
+        CargoDescription : route.CargoDescription,
+
         cargo: route.quoteCharges.map(cargo => ({
           ...cargo,
+        })),
+        products : route.quoteProducts.map(product => ({
+          ...product,
+        })),
+        charges: route.quoteCharges.map(charge => ({
+          ...charge,
         }))
-      }))
+      })),
     };
 
     if (this.isEditMode) {
@@ -868,9 +1086,9 @@ openAuditLogs(modal: TemplateRef<any>) {
         }
       });
     };
-    const FCLRequiredFields = ['ContainerType', 'ContainerQty']
-    const LCLRequiredFields = ['CBM']
-    const AIRRequiredFields = ['ChargeableWeight']
+    const FCLRequiredFields = ['ContainerType','Qty']
+    const LCLRequiredFields = ['GrossWeight','NetWeight','Volume']
+    const AIRRequiredFields = ['GrossWeight' , 'ChargeableWeight']
 
     // resetFields(allFields);
     if (type === "FCL") {
@@ -895,9 +1113,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     routeForm.get('POLSid')?.reset();
     routeForm.get('PODSid')?.reset();
     routeForm.get('FPODSid')?.reset();
-    this.quoteCharges(routeIndex).controls.forEach((group: FormGroup, index) => {
-      group.get('UOMMasterSid').setValue(null);
-    })
+    
     if (!dept || dept === undefined) {
       routeForm.get('segmentType').setValue('LCL');
       this.handleValidationOnDept(routeIndex, 'LCL');
@@ -910,6 +1126,9 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.handleValidationOnDept(routeIndex, selectedFCLLCL);
     console.log(selectedFCLLCL);
     this.onRouteChange(routeIndex);
+    this.quoteRoutes.controls.forEach((route:FormGroup)=>{
+      this.handleSegmentChangeOnAllProducts(routeIndex);
+    })
   }
 
   onCustomerChange(event: any): void {
@@ -1054,26 +1273,58 @@ openAuditLogs(modal: TemplateRef<any>) {
     } else if(segment === "AIR"){
       chargeCtrl.get('Qty')?.setValue(routeCtrl.get('ChargeableWeight')?.getRawValue());
     }
-    this.calculateTotalAmount(routeIndex,chargeIndex);
+    this.calculateRevenueTotalAmount(routeIndex,chargeIndex);
+    this.calculateCostTotalAmount(routeIndex,chargeIndex);
   }
 
   calculateTotalAmountForRoute(routeIndex: number) {
     const chargeArr = this.quoteCharges(routeIndex);
     chargeArr.controls.forEach((_, chargeIndex) => {
-      this.calculateTotalAmount(routeIndex, chargeIndex);
+      this.calculateRevenueTotalAmount(routeIndex, chargeIndex);
+      this.calculateCostTotalAmount(routeIndex, chargeIndex);
     });
   }
 
-  calculateTotalAmount(routeIndex: number, chargeIndex: number) {
+
+
+  calculateRevenueTotalAmount(routeIndex: number, chargeIndex: number) {
     const chargeCtrl = this.quoteCharges(routeIndex).at(chargeIndex);
     const qty = chargeCtrl.get('Qty')?.value;
-    const perUnit = chargeCtrl.get('perUnit')?.value;
-    if (qty && perUnit) {
-      chargeCtrl.get('Amount')?.setValue(qty * perUnit);
+    const revenueRate = chargeCtrl.get('RevenueRate')?.value;
+    const revExRate = chargeCtrl.get('RevenueExchangeRate')?.value;
+
+    if (qty && revenueRate) {
+      chargeCtrl.get('RevenueAmount')?.setValue(qty * revenueRate);
     } else {
-      chargeCtrl.get('Amount')?.setValue('0');
+      chargeCtrl.get('RevenueAmount')?.setValue('0');
+    }
+
+    if (qty && revenueRate && revExRate) {
+      chargeCtrl.get('RevenueLocalAmount')?.setValue(qty * revenueRate * revExRate);
+    } else {
+      chargeCtrl.get('RevenueLocalAmount')?.setValue('0');
     }
   }
+
+  calculateCostTotalAmount(routeIndex: number, chargeIndex: number) {
+    const chargeCtrl = this.quoteCharges(routeIndex).at(chargeIndex);
+    const qty = chargeCtrl.get('Qty')?.value;
+    const costRate = chargeCtrl.get('CostRate')?.value;
+    const costExRate = chargeCtrl.get('CostExchangeRate')?.value;
+    if(qty && costRate){
+      chargeCtrl.get('CostAmount')?.setValue(qty * costRate);
+    } else {
+      chargeCtrl.get('CostAmount')?.setValue('0');
+    }
+
+    if (qty && costRate && costExRate) {
+      chargeCtrl.get('CostLocalAmount')?.setValue(qty * costRate * costExRate);
+    } else {
+      chargeCtrl.get('CostLocalAmount')?.setValue('0');
+    }
+  }
+
+
 
   getTariffDetails(routeIndex:number,template:TemplateRef<any>){
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
@@ -1198,7 +1449,8 @@ openAuditLogs(modal: TemplateRef<any>) {
     }
     
     this.handleQty(this.currentRouteIndex,chargeIndex);
-    this.calculateTotalAmount(this.currentRouteIndex,chargeIndex);
+    this.calculateRevenueTotalAmount(this.currentRouteIndex,chargeIndex);
+    this.calculateCostTotalAmount(this.currentRouteIndex,chargeIndex);
 
     const chargeForm = this.quoteCharges(this.currentRouteIndex).at(chargeIndex) as FormGroup;
     Object.keys(data).forEach(field => {
@@ -1376,5 +1628,95 @@ openAuditLogs(modal: TemplateRef<any>) {
   // run change detection if needed (optional)
   try { (this as any).cdRef?.detectChanges(); } catch (e) { /* ignore if cdRef not available */ }
 }
+
+  openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.QuoteHeaderSid) return;
+
+  this.leadService.getAuditLogsQuotation('QuoteHeader', this.QuoteHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
+
+  patchRevenueExchangeRate(routeIndex, chargeIndex) {
+    const chargeForm = this.quoteCharges(routeIndex).at(chargeIndex) as FormGroup;
+    const revCurrencyMasterSid = chargeForm.get('RevenueCurrencyMasterSid');
+    const revenueExchangeRate = chargeForm.get('RevenueExchangeRate');
+    const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
+    const fromCurrency = revCurrencyMasterSid.value;
+    const toCurrency = userCompany.companyMaster.CurrencyMasterSid;
+    const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
+    const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+    const payload = {
+      fromCurrencyCode: fromCurrencyCode,
+      toCurrencyCode: toCurrencyCode
+    }
+    if (fromCurrencyCode && toCurrencyCode) {
+      this.leadService.getExchangeRate(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            const exchangeRate = resp.data;
+            revenueExchangeRate.setValue(exchangeRate);
+          } else {
+            revenueExchangeRate?.setValue('');
+          }
+        }
+      )
+    } else {
+      revenueExchangeRate?.setValue('');
+    }
+    revenueExchangeRate?.updateValueAndValidity();
+  }
+
+  patchCostExchangeRate(routeIndex, chargeIndex) {
+    const chargeForm = this.quoteCharges(routeIndex).at(chargeIndex) as FormGroup;
+    const costCurrencyMasterSid = chargeForm.get('CostCurrencyMasterSid');
+    const costExchangeRate = chargeForm.get('CostExchangeRate');
+    const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
+    const fromCurrency = costCurrencyMasterSid.value;
+    const toCurrency = userCompany.companyMaster.CurrencyMasterSid;
+    console.log(fromCurrency, toCurrency);
+    const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
+    const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+    const payload = {
+      fromCurrencyCode: fromCurrencyCode,
+      toCurrencyCode: toCurrencyCode
+    }
+    console.log(payload);
+    if (fromCurrencyCode && toCurrencyCode) {
+      this.leadService.getExchangeRate(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            const exchangeRate = resp.data;
+            costExchangeRate.setValue(exchangeRate);
+          } else {
+            costExchangeRate?.setValue('');
+          }
+        }
+      )
+    } else {
+      costExchangeRate?.setValue('');
+    }
+    costExchangeRate?.updateValueAndValidity();
+  }
 
 }
