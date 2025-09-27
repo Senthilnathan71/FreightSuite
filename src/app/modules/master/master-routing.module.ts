@@ -75,6 +75,8 @@ import { ContainerActivityEntryComponent } from './container-activity/container-
 import { ReportMasterEntryComponent } from './report-master/report-master-entry/report-master-entry.component';
 import { ReportMasterListComponent } from './report-master/report-master-list/report-master-list.component';
 import { SailingScheduleListComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
+import { MawbStockListComponent } from './Mawb-stock/mawb-stock-list/mawb-stock-list.component';
+import { MawbStockComponent } from './Mawb-stock/mawb-stock/mawb-stock.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1154,6 +1156,28 @@ export const MasterRoutes: Routes = [
       urls: [
         { title: 'Master', url: '/master' },
         { title: 'Report Master' },
+      ]
+    }
+  },
+   {
+    path: 'mawb-stock/list',
+    component: MawbStockListComponent,
+    data: {
+      title: 'Mawb-Stock',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Mawb-Stock' },
+      ]
+    }
+  },
+  {
+    path: 'mawb-stock/entry',
+    component: MawbStockComponent,
+    data: {
+      title: 'Mawb-Stock',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Mawb-Stock' },
       ]
     }
   },
