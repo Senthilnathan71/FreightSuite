@@ -449,7 +449,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  // Set, Get, Clear the data fro Quotation and Booking
+  // Set, Get, Clear the data fro Quotation
 
   clearQuotationData() {
     this.quotationData = {};
@@ -462,21 +462,6 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   getQuotationData() {
     return this.quotationData || {};
   }
-
-
-  //  clearBookingData() {
-  //   this.bookingData = {};
-  // }
-
-  // setBookingData(data: any) {
-  //   this.bookingData = data;
-  // }
-
-
-  // getBookingData() {
-  //   return this.bookingData || {};
-  // }
-
 
 
 
