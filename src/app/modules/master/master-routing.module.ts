@@ -65,7 +65,6 @@ import { CostCenterComponent } from './cost-center/cost-center/cost-center.compo
 import { ProfitCenterComponent } from './profit-center/profit-center/profit-center.component';
 import { HawbStockListComponent } from './Hawb-Stock/hawb-stock-list/hawb-stock-list.component';
 import { HawbStockEntryComponent } from './Hawb-Stock/hawb-stock-entry/hawb-stock-entry.component';
-import { AuthorizationListComponent } from './authorization/authorization-list/authorization-list.component';
 import { ConfigComponent } from './company/config/config.component';
 import { DocumentAuthorizationComponent } from './document-authorization/document-authorization.component';
 import { DocumnetGenerationListComponent } from './document-number-generation/documnet-generation-list/documnet-generation-list.component';
@@ -1053,17 +1052,8 @@ export const MasterRoutes: Routes = [
       ],
     },
   },
-  {
-    path: 'authority/list',
-    component: AuthorizationListComponent,
-    data: {
-      title: 'Authorization',
-      urls: [
-        { title: 'Master', url: '/master' },
-        { title: 'authorization' },
-      ]
-    }
-  }, {
+  
+   {
     path: 'document-authorization',
     component: DocumentAuthorizationComponent,
     data: {

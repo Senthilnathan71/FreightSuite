@@ -32,7 +32,7 @@ import { Observable } from 'rxjs';
     CommonPaginationComponent
   ],
   templateUrl: './authority-list.component.html',
-  styleUrl: './authority-list.component.scss'
+ styleUrls: ['./authority-list.component.scss']
 })
 export class AuthorityListComponent extends BaseListComponent implements OnInit {
   // Variable Declaring Section

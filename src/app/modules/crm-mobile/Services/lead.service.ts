@@ -16,6 +16,8 @@ export class LeadService {
 
   constructor(private http: HttpClient) { }
   private quotationData: any = {};
+  private bookingData: any = {};
+
   private voiceEnquiryData: any = {};
 
 
@@ -445,9 +447,11 @@ export class LeadService {
     )
   }
 
+  // Set, Get, Clear the data fro Quotation and Booking
+
   clearQuotationData() {
     this.quotationData = {};
-  }
+}
 
   setQuotationData(data: any) {
     this.quotationData = data;
@@ -456,6 +460,20 @@ export class LeadService {
   getQuotationData() {
     return this.quotationData || {};
   }
+
+
+   clearBookingData() {
+    this.bookingData = {};
+  }
+
+  setBookingData(data: any) {
+    this.bookingData = data;
+  }
+
+  getBookingData() {
+    return this.bookingData || {};
+  }
+
 
   getAllTodo(CompanyMasterSid:number,BranchMasterSid:number) {
     return this.http.post('ff-precustomer-meeting/lead/todo',{CompanyMasterSid,BranchMasterSid}).pipe(

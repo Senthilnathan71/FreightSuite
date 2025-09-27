@@ -27,7 +27,7 @@ export const OperationRoutes: Routes = [
         component: BookingListComponent,
         data: {
           title: 'Booking',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Booking' }],
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Booking' }],
         },
       },
       {
@@ -35,7 +35,7 @@ export const OperationRoutes: Routes = [
         component: BookingEntryComponent,
         data: {
           title: 'Booking',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Booking' }],
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Booking' }],
         },
       },
       {
@@ -43,7 +43,7 @@ export const OperationRoutes: Routes = [
         component: BookingEntryComponent,
         data: {
           title: 'Booking',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Booking' }],
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Booking' }],
         },
       },
        {
