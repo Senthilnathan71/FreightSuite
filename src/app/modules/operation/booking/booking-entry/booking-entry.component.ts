@@ -1292,20 +1292,12 @@ auditLogs: any[] = []; // Stores audit logs
     const POL = this.b['POL'].value;
     const POD = this.b['POD'].value;
     this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    const details = voyage.Ports || [];
+    const polETD = voyage.ETD || null;
+    const podETA = voyage?.ETA || null;
 
-    const polDetail = details.find(d => d.POLSid === POLSid);
-    const polETA = polDetail?.ETD || null;
-
-
-    const podDetail = details.find(d => d.POLSid === PODSid);
-    const podETD = podDetail?.ETA || null;
-
-    this.b['ETD'].setValue(new Date(polETA));
-    this.b['ETA'].setValue(new Date(podETD));
-    this.minStartDate = new Date(podETD);
+    this.b['ETD'].setValue(new Date(polETD));
+    this.b['ETA'].setValue(new Date(podETA));
+    this.minStartDate = new Date(podETA);
   }
 
   getVesselBasedOnPorts() {
@@ -1339,10 +1331,8 @@ auditLogs: any[] = []; // Stores audit logs
     const POD = this.b['POD']?.value;
     const FPOD = this.b['FPD']?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    // const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    // const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
     const vessel = this.b['VesselName']?.value;
     const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
     if (!POL || !POD || !vesselId) {
@@ -1353,15 +1343,20 @@ auditLogs: any[] = []; // Stores audit logs
       (resp: any) => {
         if (resp.status) {
           this.voyageList = resp.data.map(voyage => {
-            const pol = voyage.Ports.find(p => p.POLSid === payload.POL);
-            const pod = voyage.Ports.find(p => p.POLSid === payload.POD || p.PODSid === payload.POD);
-            const polName = this.portList.find(p => p.PortMasterSid === payload.POL)?.PortName;
-            const podName = this.portList.find(p => p.PortMasterSid === payload.POD)?.PortName;
+            const pol = this.portList.find(p => p.PortMasterSid === voyage.POL);
+            const pod = this.portList.find(p => p.PortMasterSid === voyage.POD);
+            const polName = pol?.PortName;
+            const podName = pod?.PortName;
             const polWithName = pol ? { ...pol, PortName: polName } : null;
             const podWithName = pod ? { ...pod, PortName: podName } : null;
+            
+
 
             return {
-              ...voyage,
+              VoyageNo : voyage.VoyageNo,
+              ETD : voyage.ETD,
+              ETA : voyage.ETA,
+              VoyageMasterHeaderSid : voyage.VoyageMasterHeaderSid,
               POL: polWithName,
               POD: podWithName
             };

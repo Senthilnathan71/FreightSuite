@@ -844,35 +844,32 @@ syncScroll(event: Event) {
   }
 
   applyTariff(detail){
-    const costFormValue = {
+    console.log(detail);
+    
+    const rateFormValue ={
       ChargeMasterSid: detail.ChargeMasterSid,
       ChargeDescription: detail.ChargeDescription,
-      PrepaidCollect: "Collect",
-      ChargeUomSid: detail.ChargeUomSid,
-      NumberOfUnit: detail.NumberOfUnit,
-      CostRevenue : "Cost",
-      ...detail.Cost
+      PrepaidCollect : detail.PrepaidCollect,
+      ChargeUomSid : detail.ChargeUomSid,
+      NumberOfUnit : detail.NumberOfUnit,
+
+      RevenueCurrencyMasterSid : detail.Revenue.CurrencyMasterSid,
+      RevenueDrCr : detail.Revenue.DrCr,
+      RevenueExchangeRate : detail.Revenue.ExchangeRate,
+      RevenueRate : detail.Revenue.Rate,
+      RevenueAmount : detail.Revenue.Amount,
+      RevenueLocalAmount : detail.Revenue.LocalAmount,
+
+      CostCurrencyMasterSid : detail.Cost.CurrencyMasterSid,
+      CostDrCr : detail.Cost.DrCr,
+      CostExchangeRate : detail.Cost.ExchangeRate,
+      CostRate : detail.Cost.Rate,
+      CostAmount : detail.Cost.Amount,
+      CostLocalAmount : detail.Cost.LocalAmount,
     }
-    console.log(costFormValue);
-    const costFormGroup = this.createRateFormGroup(costFormValue); 
-    this.costFormArray.push(costFormGroup);
-    const revenueFormValue = {
-      ChargeMasterSid: detail.ChargeMasterSid,
-      ChargeDescription: detail.ChargeDescription,
-      PrepaidCollect: "Collect",
-      ChargeUomSid: detail.ChargeUomSid,
-      NumberOfUnit: detail.NumberOfUnit,
-      CostRevenue : "Revenue",
-      ...detail.Revenue
-    }
-    const revenueFormGroup = this.createRateFormGroup(revenueFormValue);
-    this.revenueFormArray.push(revenueFormGroup)
-    this.costDataLength = this.costFormArray.length;
-    this.revenueDataLength = this.revenueFormArray.length;
-    this.costFormArray.updateValueAndValidity();
-    this.revenueFormArray.updateValueAndValidity();
-    this.updateCostPagination();
-    this.updateRevenuePagination();
+
+    // const revenueFormGroup = this.createRateFormGroup(rateFormValue);
+    // this.revenueRows.push(rateFormValue)
     this.calculateProfit();
     this.syncDataWithParentComponent();
     this.modalService.dismissAll();
