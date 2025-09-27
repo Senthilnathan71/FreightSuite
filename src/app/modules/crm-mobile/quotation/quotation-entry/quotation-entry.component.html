@@ -56,7 +56,8 @@
        (click)="selectTab(tab)">
     {{ tab }}
   </div>
-  <div class="ms-auto" *ngIf="authStateCache !== 'Pending'">
+  <!-- TODO - Need to add Authorization Status based control -->
+  <div class="ms-auto" *ngIf="isEditMode">
     <button class="btn btn-info btn-sm dofi-min-w-140 dofi-max-w-140" (click)="navigateToBooking()">
         <i class="fas fa-plus me-1"></i> Create Booking
       </button>
