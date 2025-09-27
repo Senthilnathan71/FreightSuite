@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { Lead } from '../Interfaces/lead.interface';
 import { City } from '../Interfaces/city.interface';
 import { PreCustomer } from '../Interfaces/preCustomer.interface';
@@ -13,10 +13,12 @@ export class LeadService {
   saveCombinedEvents(events: CalendarEvent<any>[]) {
     throw new Error('Method not implemented.');
   }
-
+private bookingDataSubject = new BehaviorSubject<any>({});
+  public bookingData$: Observable<any> = this.bookingDataSubject.asObservable();
+  
   constructor(private http: HttpClient) { }
-  private quotationData: any = {};
-  private bookingData: any = {};
+  public quotationData: any = {};
+  public bookingData: any = {};
 
   private voiceEnquiryData: any = {};
 
@@ -462,17 +464,20 @@ export class LeadService {
   }
 
 
-   clearBookingData() {
-    this.bookingData = {};
-  }
+  //  clearBookingData() {
+  //   this.bookingData = {};
+  // }
 
-  setBookingData(data: any) {
-    this.bookingData = data;
-  }
+  // setBookingData(data: any) {
+  //   this.bookingData = data;
+  // }
 
-  getBookingData() {
-    return this.bookingData || {};
-  }
+
+  // getBookingData() {
+  //   return this.bookingData || {};
+  // }
+
+
 
 
   getAllTodo(CompanyMasterSid:number,BranchMasterSid:number) {

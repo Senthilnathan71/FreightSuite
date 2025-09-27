@@ -1492,10 +1492,6 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   navigateToBooking(){
-    console.log('quotationToBooking')
-    this.leadService.clearBookingData()
-    const data ={}
-    this.leadService.setBookingData(data)
     this.router.navigate(['operation/booking/entry'])
   }
 

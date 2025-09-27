@@ -33,6 +33,7 @@ import { HttpInterceptorService } from './core/http.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { DATE_FORMAT_INITIALIZER } from './core/initializers/date-format.initializer';
+import { LeadService } from './modules/crm-mobile/Services/lead.service';
 
 
 export function HttpLoaderFactory(http: HttpClient) {

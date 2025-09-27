@@ -1,11 +1,11 @@
-import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, firstValueFrom, forkJoin, of, tap } from 'rxjs';
+import { catchError, delay, firstValueFrom, forkJoin, of, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -35,6 +35,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import * as html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 
 @Component({
   selector: 'app-booking-entry',
@@ -69,7 +70,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     CustomDatePipe
   ],
 })
-export class BookingEntryComponent implements OnInit {
+export class BookingEntryComponent implements OnInit,OnDestroy {
 
 
   /**
@@ -265,7 +266,7 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
-
+dataFromQuotation:any
   // Mail content
 
 
@@ -285,9 +286,13 @@ auditLogs: any[] = []; // Stores audit logs
     private calendar : NgbCalendar,
     private exportExcelService: ExcelExportService,
     private datePipe : CustomDatePipe,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private leadService: LeadService
   ) {
     this.today = this.calendar.getToday();
+    // const nav = this.router.getCurrentNavigation();
+    // console.log(nav)
+    // this.dataFromQuotation = nav?.extras?.state?.['dataFromQuotation'] ?? {};
    }
 
   /**
@@ -308,18 +313,37 @@ auditLogs: any[] = []; // Stores audit logs
     this.initCargoForm();
     this.initOtherForm();
     this.initDetailsForm();
-    this.loadHeaderLookups().subscribe(() => {
-      this.currentRoute.paramMap.subscribe((param) => {
-        this.BookingHeaderSid = +param.get('id');
-        if (this.BookingHeaderSid) {
-          this.isEditMode = true;
-          this.loadBookingById(this.BookingHeaderSid);
-        } else {
-          this.minDate = this.today;
-        }
-        this.loadCargoLookups();
-        this.loadOtherLookups();
-      })
+
+    const historyState = history?.state;
+    const quotationData = historyState?.dataFromQuotation;
+
+    if (quotationData && quotationData.quotation) {
+      this.dataFromQuotation = quotationData;
+      history.replaceState({}, '', location.pathname);
+    } else {
+      this.dataFromQuotation = {};
+    }
+    console.log(this.dataFromQuotation,'dataFromQuotation')
+    this.loadHeaderLookups().pipe(
+      delay(100) // Delay for 100ms
+    ).subscribe(() => {
+      if(this.dataFromQuotation){
+        this.patchBookingFromQuotation(this.dataFromQuotation)
+        this.minDate = this.today;
+      }else{
+      // this.leadService.clearBookingData()
+        this.currentRoute.paramMap.subscribe((param) => {
+          this.BookingHeaderSid = +param.get('id');
+          if (this.BookingHeaderSid) {
+            this.isEditMode = true;
+            this.loadBookingById(this.BookingHeaderSid);
+          } else {
+            this.minDate = this.today;
+          }
+          this.loadCargoLookups();
+          this.loadOtherLookups();
+        })
+      }
     });
 
 
@@ -746,6 +770,23 @@ auditLogs: any[] = []; // Stores audit logs
     this.bookingRateArr = response.bookingRates || [];
     this.rateResult = [...this.bookingRateArr];
 
+  }
+
+  patchBookingFromQuotation(data:any){
+    console.log(data);
+    const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
+    const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === data.CustomerMasterSid);
+    this.onDeptChange(selectedDepartment);
+    this.onCustomerChange(selectedCustomer);
+    this.bookingForm.patchValue({
+      BookingDateTime:null,
+      DepartmentMasterSid: data.DepartmentMasterSid,
+      CustomerMasterSid: data.CustomerMasterSid,
+      CustomerName: data.CustomerName,
+      CustomerAddress: data.CustomerAddress,
+      SalesmanSid: data.SalesmanSid,
+      FreightTerms : data.FreightTerms,
+    })
   }
 
   onContainerTypeChange(containerType : any){
@@ -2070,6 +2111,10 @@ openAuditLogs(modal: TemplateRef<any>) {
       console.error('PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF.');
     }
+  }
+
+  ngOnDestroy(){
+  this.dataFromQuotation = null;
   }
 
 }

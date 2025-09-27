@@ -82,7 +82,15 @@ export const Approutes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(Approutes, { preloadingStrategy: PreloadAllModules }) // Enabling PreloadAllModules
+    RouterModule.forRoot(Approutes, { 
+      preloadingStrategy: PreloadAllModules,
+      enableTracing: false, // Set to true for debugging
+      onSameUrlNavigation: 'reload',
+      // Add these options to help with navigation state
+      urlUpdateStrategy: 'eager',
+      canceledNavigationResolution: 'replace'
+    })
+    // RouterModule.forRoot(Approutes, { preloadingStrategy: PreloadAllModules }) // Enabling PreloadAllModules
   ],
   exports: [RouterModule]
 })

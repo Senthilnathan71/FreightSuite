@@ -589,8 +589,24 @@ export class QuotationViewComponent {
     });
   }
 
-  goForBookingCreation(QuoteHeaderSid){
-    this.route.navigate(['crm/booking/entry'])
+  goForBookingCreation(QuoteData) {
+    console.log(QuoteData, 'QuoteData')
+    const data = {
+      quotation: true,
+      DepartmentMasterSid: QuoteData.DepartmentMasterSid,
+      CustomerMasterSid: QuoteData.CustomerMasterSid,
+      CustomerName: QuoteData.CustomerName,
+      CustomerAddress: QuoteData.CustomerAddress,
+      SalesmanSid: QuoteData.SalesmanSid,
+      FreightTerms: QuoteData.FreightPPCC,
+      QuotationNumber: QuoteData.QuoteNumber,
+    }
+
+    this.route.navigate(['operation/booking/entry'], {
+      state: {
+        dataFromQuotation: data
+      }
+    });
   }
 
 resetFilters(): void {
