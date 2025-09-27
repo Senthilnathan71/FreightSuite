@@ -1492,7 +1492,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   navigateToBooking(){
-    this.router.navigate(['crm/booking/entry'])
+    this.router.navigate(['operation/booking/entry'])
   }
 
   showInfo() {
