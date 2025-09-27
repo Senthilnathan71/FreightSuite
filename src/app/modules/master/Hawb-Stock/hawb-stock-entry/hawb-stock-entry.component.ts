@@ -215,7 +215,12 @@ generateAWB(): void {
       });
 
       // Ensure branches are loaded first, then patch BranchMasterSid
-      
+      try {
+        this.generatedAWBList = hawbData.AWBList ? JSON.parse(hawbData.AWBList) : [];
+      } catch (e) {
+        console.warn("Invalid AWBList JSON:", hawbData.AWBList);
+        this.generatedAWBList = [];
+      }
 
       this.hawstockData = hawbData;
     },
@@ -233,6 +238,7 @@ generateAWB(): void {
       status: formValue.status === "Active" ? "A" : "S",
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
+      AWBList: this.generatedAWBList.length > 0 ? JSON.stringify(this.generatedAWBList) : null,
       createdBy: this.isEditMode ? undefined : this.userData?.userEmail,
       updatedBy: this.isEditMode ? this.userData?.userEmail : undefined
     };
