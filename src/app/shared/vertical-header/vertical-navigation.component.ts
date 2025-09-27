@@ -10,6 +10,7 @@ import { VerticalNavService } from './vertical-navigation.service';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { FormsModule } from '@angular/forms';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 declare var $: any;
 
@@ -66,10 +67,16 @@ branchList: any[] = [];
 
   docSearchResults: any[] = [];
 
-  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService, private modalService: NgbModal, private cdr: ChangeDetectorRef) {
-
+  constructor(
+    private router: Router,
+    private appSettingsService: AppSettingsService,
+    private translate: TranslateService,
+    private verticalNavService: VerticalNavService,
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef,
+    private companySettingsManager: CompanySettingsManagerService
+  ) {
     // translate.setDefaultLang('en');
-
   }
 ngOnInit(): void {
   this.userData = this.appSettingsService.getDecryptedUserProfile();
@@ -575,6 +582,9 @@ ngOnInit(): void {
   }
 
   logout() {
+    // Clear company settings to prevent API loops during logout
+    this.companySettingsManager.clearCompanySettings();
+
     this.appSettingsService.sessionExpire().then(() => {
       location.href = location.protocol + '//' + location.host + '/auth'
     })

@@ -1,4 +1,5 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { GlobalDateFormatService } from '../services/global-date-format.service';
 
 @Pipe({
     name: 'formatDate',
@@ -6,26 +7,13 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class CustomDatePipe implements PipeTransform {
 
-    // Pipe to achieve this date format  : '09-JUN-2025'
-    transform(value: Date | string | null): string {
-        if(!value) return '';
+    private globalDateService = inject(GlobalDateFormatService);
 
-        // Check if it is valid
-        let date = new Date(value);
-        if(isNaN(date.getTime())) return '';
+    transform(value: Date | string | null, customFormat?: string): string {
+        if (!value) return '';
 
-        const monthInStr = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-
-        const day = this.padZero(date.getDate());
-        const month = monthInStr[date.getMonth()]; //Get its respective string
-        const year = date.getFullYear();
-
-        return `${day}-${month}-${year}`;
-
-    }
-
-    private padZero(value: number): string {
-        return value < 10 ? `0${value}` : `${value}`;
+        // Use global date format service for formatting
+        return this.globalDateService.formatDate(value, customFormat);
     }
 
 }
