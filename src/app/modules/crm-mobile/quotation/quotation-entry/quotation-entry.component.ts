@@ -67,6 +67,7 @@ export class QuotationEntryComponent implements OnInit {
   QuoteHeaderSid: number;
   currentMenuId: number;
   currentRouteIndex : number;
+  currentCarrierIndex : number;
   isEditMode: boolean;
   isAuthorizedUser: boolean;
   isAlreadyApproved: boolean;
@@ -276,7 +277,7 @@ patchEnqPageValues(enqData: any) {
     this.addQuoteRoute(routeData);
 
     // Handle additional logic
-    this.addQuoteCharge(routeIndex);
+    // this.addQuoteCharge(routeIndex);
     // this.handleValidationOnDept(routeIndex,segment);
     this.onRouteChange(routeIndex);
 
@@ -360,7 +361,6 @@ private extractCargoData(enquiryCargo: any[]): any {
   // SECTION4 - FORM AND FORM ARRAY RELATION
   initQuotationForm() {
     this.quotationForm = this.fb.group({
-      // Fields mentioned in Web Design Draft
       LeadOrCustomer : [true],
       PreCustomerMasterSid : [null],
       CustomerMasterSid: [null],
@@ -420,8 +420,6 @@ private extractCargoData(enquiryCargo: any[]): any {
     preCustomerControl?.updateValueAndValidity();
   }
 
-
-
   onSelectionChange(selectedItem: any) {
     if (!selectedItem) {
       this.quotationForm.patchValue({
@@ -457,6 +455,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     return this.quotationForm.controls;
   }
 
+  // Quote Route
   get quoteRoutes(): FormArray {
     return this.quotationForm.get('quoteRoutes') as FormArray;
   }
@@ -479,12 +478,6 @@ private extractCargoData(enquiryCargo: any[]): any {
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
       ServiceLevel: [data?.ServiceLevel || null],
       
-      // Carrier Related Controls (Route wise single)
-      QuoteCarrierSid: [data?.CarrierMasterSid || null],
-      CarrierName: [data?.CarrierName || ''],
-      CarrierMasterSid: [data?.CarrierMasterSid || null],
-      authorizerStatus: [data?.authorizerStatus || 'Pending'],
-      
       // Cargo Related Controls (Route wise single)
       QuoteCargoSid : [data?.QuoteCargoSid || null],
       CargoType: [data?.CargoType || null, [Validators.required]],
@@ -498,7 +491,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ShipmentTerms: [data?.ShipmentTerms || null],
 
       // FormArrays (Route wise multiple)
-      quoteCharges: this.fb.array([]),
+      quoteCarriers : this.fb.array([]),
       quoteProducts : this.fb.array([]),
     })
     const routeIndex = this.quoteRoutes.length;
@@ -509,20 +502,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.onRouteChange(routeIndex);
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
-      this.addQuoteCharge(this.quoteRoutes.length - 1);
+      this.addQuoteCarrier(this.quoteRoutes.length - 1);
     }
-  }
-
-
-
-  
-
-
-  removeQuoteRoute(routeIndex: number) {
-    this.quoteRoutes.removeAt(routeIndex);
-    this.filteredUnits.splice(routeIndex, 1);
-    this.filteredPOLPorts.splice(routeIndex, 1);
-    this.filteredPODPorts.splice(routeIndex, 1);
   }
 
   removeRoute(routeIndex: number, QuoteRouteSid: number) {
@@ -540,12 +521,83 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.quoteRoutes.removeAt(routeIndex);
     }
   }
-
-  quoteCharges(routeIndex: number): FormArray {
-    return this.quoteRoutes.at(routeIndex).get('quoteCharges') as FormArray;
+  // helper
+  removeQuoteRoute(routeIndex: number) {
+    this.quoteRoutes.removeAt(routeIndex);
+    this.filteredUnits.splice(routeIndex, 1);
+    this.filteredPOLPorts.splice(routeIndex, 1);
+    this.filteredPODPorts.splice(routeIndex, 1);
   }
 
-  addQuoteCharge(routeIndex: number, data?: any) {
+
+  // Quote Carrier
+  quoteCarriers(routeIndex: number): FormArray {
+    return this.quoteRoutes.at(routeIndex).get('quoteCarriers') as FormArray;
+  }
+
+  createQuoteCarrier(data?: any) {
+    return this.fb.group({
+      QuoteCarrierSid : [data?.QuoteCarrierSid || null],
+      CarrierMasterSid : [data?.CarrierMasterSid || null],
+      CarrierName : [data?.CarrierName || ''],
+      TransitTime : [data?.TransitTime || null],
+      authorizerStatus : [data?.authorizerStatus || 'Pending'],
+
+      quoteCharges : this.fb.array([])
+    })
+  }
+
+  addQuoteCarrier(routeIndex: number, data?: any) {
+    const carrierForm = this.fb.group({
+      QuoteCarrierSid : [data?.QuoteCarrierSid || null],
+      CarrierMasterSid : [data?.CarrierMasterSid || null],
+      CarrierName : [data?.CarrierName || ''],
+      TransitTime : [data?.TransitTime || null],
+      authorizerStatus : [data?.authorizerStatus || 'Pending'],
+
+      quoteCharges : this.fb.array([])
+    })
+    this.quoteCarriers(routeIndex).push(carrierForm);
+
+    if(!data || data === undefined){
+      this.addQuoteCharge(routeIndex,this.quoteCarriers(routeIndex).length - 1);
+    }
+  }
+
+  handleCarrierChange(carrier: any, routeIndex: number, carrierIndex: number) {
+    const routeForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    if (!carrier || carrier === undefined) {
+      routeForm.get('CarrierName').setValue('');
+      return;
+    }
+    routeForm.get('CarrierName').setValue(carrier.CustomerName);
+  }
+
+  deleteCarrier(routeIndex: number, carrierIndex: number, QuoteCarrierSid: number) {
+    const carrierArr = this.quoteCarriers(routeIndex);
+    if (QuoteCarrierSid) {
+      this.leadService.deleteCarrier(QuoteCarrierSid).subscribe((resp: any) => {
+        if (resp.status) {
+          carrierArr.removeAt(carrierIndex);
+          this.appSettingService.showSuccess("Carrier Deleted Successfully");
+          this.quotationForm.updateValueAndValidity();
+        } else {
+          this.appSettingService.showError("Error deleting carrier");
+        }
+      })
+    } else {
+      carrierArr.removeAt(carrierIndex);
+      this.appSettingService.showSuccess("Carrier Deleted Successfully");
+      this.quotationForm.updateValueAndValidity();
+    }
+  }
+
+  // Quote Charge
+  quoteCharges(routeIndex: number,carrierIndex:number): FormArray {
+    return this.quoteCarriers(routeIndex).at(carrierIndex).get('quoteCharges') as FormArray;
+  }
+
+  addQuoteCharge(routeIndex: number,carrierIndex:number, data?: any) {
     const chargeForm = this.fb.group({
       QuoteChargeSid : [data?.QuoteChargeSid || null],
       QuoteRouteSid : [data?.QuoteRouteSid || null],
@@ -582,10 +634,9 @@ private extractCargoData(enquiryCargo: any[]): any {
 
 
 
-      TariffDetailSid : [data?.TariffDetailSid || null]  // For filtering purpose
+      TariffDetailSid : [data?.TariffDetailSid || null] 
     })
     chargeForm.get('ChargeDisplayName')?.disable();
-    chargeForm.get('CostAmount')?.disable();
     const costPerUnitCtrl = chargeForm.get('CostRate');
     const costAgentMasterSidCtrl = chargeForm.get('CostAgentMasterSid');
 
@@ -604,8 +655,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       costPerUnitCtrl.markAsTouched();
       costPerUnitCtrl.updateValueAndValidity();
     }
-    this.quoteCharges(routeIndex).push(chargeForm)
-
+    this.quoteCharges(routeIndex,carrierIndex).push(chargeForm)
   }
 
   isRequiredInQuoteRoute(routeIndex:number ,ctrl : string) : boolean {
@@ -613,8 +663,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     return routeForm.get(ctrl)?.hasValidator(Validators.required);
   }
 
-  isCostPerUnitRequired(routeIndex: number): boolean {
-    const chargesArray = this.quoteCharges(routeIndex);
+  isCostPerUnitRequired(routeIndex: number,carrierIndex:number): boolean {
+    const chargesArray = this.quoteCharges(routeIndex,carrierIndex);
     if (!chargesArray) {
       return false;
     }
@@ -624,8 +674,8 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
 
-  removeCharge(routeIndex: number, chargeIndex: number, QuoteChargeSid: number) {
-    const chargeArr = this.quoteCharges(routeIndex);
+  removeCharge(routeIndex: number, carrierIndex: number,chargeIndex: number, QuoteChargeSid: number) {
+    const chargeArr = this.quoteCharges(routeIndex,carrierIndex);
     if (QuoteChargeSid) {
       this.leadService.deleteCharge(QuoteChargeSid).subscribe((resp: any) => {
         if (resp.status) {
@@ -640,6 +690,11 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.quotationForm.updateValueAndValidity();
     }
   }
+
+
+
+
+  // Quote Product
 
   quoteProducts(routeIndex: number): FormArray {
     return this.quoteRoutes.at(routeIndex).get('quoteProducts') as FormArray;
@@ -893,15 +948,9 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
     (response.quoteRoute || []).forEach((route, routeIndex) => {
-      const carrier = route.quoteCarrier[0];
       const cargo = route.quoteCargo[0];
       const fullRouteData = {
         ...route,
-        QuoteCarrierSid : carrier.QuoteCarrierSid,
-        CarrierName : carrier.CarrierName,
-        CarrierMasterSid : carrier.CarrierMasterSid,
-        authorizerStatus : carrier.authorizerStatus || 'Pending',
-
         QuoteCargoSid : cargo?.QuoteCargoSid || null,
         CargoType : cargo?.CargoType,
         WeightUnitSid : cargo?.WeightUnitSid,
@@ -923,9 +972,12 @@ private extractCargoData(enquiryCargo: any[]): any {
         })
       }
 
-      (route?.quoteCharge || []).forEach(charge => {
-        this.addQuoteCharge(routeIndex, charge);
-      }) 
+      (route?.quoteCarrier || []).forEach((carrier,carrierIndex) => {
+        this.addQuoteCarrier(routeIndex,carrier);
+        (carrier?.quoteCharge || []).forEach(charge => {
+          this.addQuoteCharge(routeIndex,carrierIndex, charge);
+        }) 
+      })
     })
     this.disableNonEditFields();
     if(this.authStateCache !== 'Pending'){
@@ -976,7 +1028,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       status: formValue.status === "Active" ? 'A' : 'S',
 
       routes: formValue.quoteRoutes.map((route, routeIndex) => ({
-
+        // Route Part
         QuoteRouteSid: route.QuoteRouteSid,
         DepartmentMasterSid: route.DepartmentMasterSid,
         POLFreeDays: route.POLFreeDays,
@@ -991,9 +1043,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         segmentType: route.segmentType || 'LCL',
         ServiceLevel: route.ServiceLevel,
 
-        CarrierMasterSid: route.CarrierMasterSid,
-        CarrierName : route.CarrierName || "",
-
+        // Route - Cargo
+        QuoteCargoSid : route.QuoteCargoSid,
         CargoType: route.CargoType,
         WeightUnitSid : route.WeightUnitSid,
         GrossWeight : route.GrossWeight,
@@ -1007,12 +1058,17 @@ private extractCargoData(enquiryCargo: any[]): any {
         PackageQty : route.PackageQty,
         CargoDescription : route.CargoDescription,
 
-        cargo: route.quoteCharges.map(cargo => ({
-          ...cargo,
-        })),
+        // Route - Cargo - Product
         products : route.quoteProducts.map(product => ({
           ...product,
         })),
+
+        // Route - Carrier
+        carriers : route.quoteCarrier.map(carrier => ({
+          ...carrier,
+        })),
+
+        // Route - Carrier - Charge
         charges: route.quoteCharges.map(charge => ({
           ...charge,
         }))
@@ -1153,24 +1209,31 @@ private extractCargoData(enquiryCargo: any[]): any {
     routeForm.get('FPODSid')?.setValue(event.PortMasterSid);
   }
 
-  onChargeChange(charge: any, routeIndex: number, chargeIndex: number) {
+  onChargeChange(charge: any, routeIndex: number, carrierIndex:number, chargeIndex: number) {
     if (!charge || charge === undefined) {
-      this.quoteCharges(routeIndex).at(chargeIndex).get('ChargeDisplayName')?.setValue('');
-      this.quoteCharges(routeIndex).at(chargeIndex).get('UOMMasterSid')?.setValue('');
-      this.quoteCharges(routeIndex).at(chargeIndex).get('costUnit')?.setValue('');
-      this.quoteCharges(routeIndex).at(chargeIndex).get('CurrencyMasterSid')?.setValue('');
-      this.quoteCharges(routeIndex).at(chargeIndex).get('Qty')?.setValue('');
-      this.quoteCharges(routeIndex).at(chargeIndex).get('costCurrency')?.setValue('');
+      const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
+      const clearFields = ['ChargeDisplayName', 'ChargeUomSid', 'RevenueCurrencyMasterSid', 'RevenueExchangeRate', 'RevenueAmount', 'RevenueLocalAmount'];
+      const clearControls = (allCtrl:string[]) => {
+        allCtrl.forEach(ctrl => {
+          if (chargeForm.get(ctrl)) {
+            chargeForm.get(ctrl)?.setValue('');
+          }
+        })
+      }
+      clearControls(clearFields);
       return;
     }
-    this.quoteCharges(routeIndex).at(chargeIndex).get('ChargeDisplayName')?.setValue(charge.chargeName);
-    this.quoteCharges(routeIndex).at(chargeIndex).get('UOMMasterSid')?.setValue(charge.UOM);
+    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     const uomCode = (this.unitMaster.find(uom => uom.UOMMasterSid === charge.UOM))?.UOMCode;
-    this.quoteCharges(routeIndex).at(chargeIndex).get('costUnit')?.setValue(uomCode);
-    this.quoteCharges(routeIndex).at(chargeIndex).get('CurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
     const currCode = (this.currencyMaster.find(curr => curr.CurrencyMasterSid === charge.CurrencyMasterSid))?.currencyCode;
-    this.quoteCharges(routeIndex).at(chargeIndex).get('costCurrency')?.setValue(currCode);
-    this.handleQty(routeIndex,chargeIndex);
+
+    chargeForm.get('ChargeDisplayName')?.setValue(charge.chargeName);
+
+    chargeForm.get('RevenueChargeUomSid')?.setValue(charge.UOM);
+    chargeForm.get('RevenueCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
+    chargeForm.get('CostChargeUomSid')?.setValue(charge.UOM);
+    chargeForm.get('CostCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
+    this.handleQty(routeIndex,carrierIndex,chargeIndex);
   }
 
   onCarrierChange(carrier: any, routeIndex: number) {
@@ -1254,16 +1317,16 @@ private extractCargoData(enquiryCargo: any[]): any {
     )
   }
 
-  handleQtyForRoutes(routeIndex:number){
-    const chargeArr = this.quoteCharges(routeIndex);
+  handleQtyForRoutes(routeIndex:number,carrierIndex:number){
+    const chargeArr = this.quoteCharges(routeIndex,carrierIndex);
     chargeArr.controls.forEach((_, chargeIndex) => {
-      this.handleQty(routeIndex, chargeIndex);
+      this.handleQty(routeIndex,carrierIndex, chargeIndex);
     });
   }
 
-  handleQty(routeIndex:number,chargeIndex:number){
+  handleQty(routeIndex:number,carrierIndex:number,chargeIndex:number){
     const routeCtrl = this.quoteRoutes.at(routeIndex) as FormGroup;
-    const chargeCtrl = this.quoteCharges(routeIndex).at(chargeIndex)
+    const chargeCtrl = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     const segment = routeCtrl?.get('segmentType').getRawValue();
     if(segment === "FCL"){
       let value = routeCtrl.get('ContainerQty')?.getRawValue()
@@ -1273,22 +1336,22 @@ private extractCargoData(enquiryCargo: any[]): any {
     } else if(segment === "AIR"){
       chargeCtrl.get('Qty')?.setValue(routeCtrl.get('ChargeableWeight')?.getRawValue());
     }
-    this.calculateRevenueTotalAmount(routeIndex,chargeIndex);
-    this.calculateCostTotalAmount(routeIndex,chargeIndex);
+    this.calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex);
+    this.calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex);
   }
 
-  calculateTotalAmountForRoute(routeIndex: number) {
-    const chargeArr = this.quoteCharges(routeIndex);
+  calculateTotalAmountForRoute(routeIndex: number,carrierIndex:number) {
+    const chargeArr = this.quoteCharges(routeIndex,carrierIndex);
     chargeArr.controls.forEach((_, chargeIndex) => {
-      this.calculateRevenueTotalAmount(routeIndex, chargeIndex);
-      this.calculateCostTotalAmount(routeIndex, chargeIndex);
+      this.calculateRevenueTotalAmount(routeIndex, carrierIndex , chargeIndex);
+      this.calculateCostTotalAmount(routeIndex , carrierIndex, chargeIndex);
     });
   }
 
 
 
-  calculateRevenueTotalAmount(routeIndex: number, chargeIndex: number) {
-    const chargeCtrl = this.quoteCharges(routeIndex).at(chargeIndex);
+  calculateRevenueTotalAmount(routeIndex: number,carrierIndex:number, chargeIndex: number) {
+    const chargeCtrl = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     const qty = chargeCtrl.get('Qty')?.value;
     const revenueRate = chargeCtrl.get('RevenueRate')?.value;
     const revExRate = chargeCtrl.get('RevenueExchangeRate')?.value;
@@ -1306,8 +1369,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
   }
 
-  calculateCostTotalAmount(routeIndex: number, chargeIndex: number) {
-    const chargeCtrl = this.quoteCharges(routeIndex).at(chargeIndex);
+  calculateCostTotalAmount(routeIndex: number,carrierIndex:number, chargeIndex: number) {
+    const chargeCtrl = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     const qty = chargeCtrl.get('Qty')?.value;
     const costRate = chargeCtrl.get('CostRate')?.value;
     const costExRate = chargeCtrl.get('CostExchangeRate')?.value;
@@ -1324,11 +1387,14 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
   }
 
+  hasEveryRequiredFieldsFilled(){
+    const data = this.quotationForm.getRawValue();
+    return (data.DepartmentMasterSid || data.PORSid || data.POLSid || data.PODSid || data.EffectiveDate || data.ExpiredDate)
+  }
 
-
-  getTariffDetails(routeIndex:number,template:TemplateRef<any>){
+  getTariffDetails(routeIndex:number,carrierIndex:number,template:TemplateRef<any>){
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    if(!this.isFormValidExcept(routeForm,'quoteCharges')){
+    if(this.hasEveryRequiredFieldsFilled()){
       this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
 
       const compulsoryFields = ['DepartmentMasterSid','PORSid','POLSid','PODSid','FPODSid','CargoType','effDate','expDate']
@@ -1341,6 +1407,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
     this.tariffLoading = true;
     this.currentRouteIndex = routeIndex;
+    this.currentCarrierIndex = carrierIndex;
     const routeCtrl = this.quoteRoutes.at(this.currentRouteIndex) as FormGroup;
     const segment = routeCtrl?.get('segmentType').getRawValue();
     console.log(segment);
@@ -1434,25 +1501,25 @@ private extractCargoData(enquiryCargo: any[]): any {
       costUnit : this.getUOMCode(tariffData?.UOMSid),
       Qty : tariffData?.Qty
     }
-    const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex);
+    const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex,this.currentCarrierIndex);
     let chargeIndex;
     if(isEmpty){
-      chargeIndex = this.quoteCharges(this.currentRouteIndex).length - 1;
-      const chargeForm = this.quoteCharges(this.currentRouteIndex).at(chargeIndex) as FormGroup;
+      chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
+      const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
       chargeForm.patchValue({
         ...data
       })
       chargeForm.updateValueAndValidity();
     } else {
-      this.addQuoteCharge(this.currentRouteIndex,data);
-      chargeIndex = this.quoteCharges(this.currentRouteIndex).length - 1;
+      this.addQuoteCharge(this.currentRouteIndex,this.currentCarrierIndex,data);
+      chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
     }
     
-    this.handleQty(this.currentRouteIndex,chargeIndex);
-    this.calculateRevenueTotalAmount(this.currentRouteIndex,chargeIndex);
-    this.calculateCostTotalAmount(this.currentRouteIndex,chargeIndex);
+    this.handleQty(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
+    this.calculateRevenueTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
+    this.calculateCostTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
 
-    const chargeForm = this.quoteCharges(this.currentRouteIndex).at(chargeIndex) as FormGroup;
+    const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
     Object.keys(data).forEach(field => {
       if(chargeForm.get(field) && field !== "Qty"){
         chargeForm.get(field)?.disable();
@@ -1468,9 +1535,9 @@ private extractCargoData(enquiryCargo: any[]): any {
     return (this.unitMaster.find(uom => uom.UOMMasterSid === UOMMasterSid))?.UOMCode;
   }
 
-  checkIfLastChargeEmpty(routeIndex) {
-    const chargeLen = this.quoteCharges(routeIndex).length - 1;
-    const chargeForm = this.quoteCharges(routeIndex).at(chargeLen) as FormGroup;
+  checkIfLastChargeEmpty(routeIndex,carrierIndex) {
+    const chargeLen = this.quoteCharges(routeIndex,carrierIndex).length - 1;
+    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeLen) as FormGroup;
     const rawValue = chargeForm.getRawValue();
 
     return Object.entries(rawValue).every(([key, value]) => {
@@ -1657,8 +1724,8 @@ private extractCargoData(enquiryCargo: any[]): any {
   });
 }
 
-  patchRevenueExchangeRate(routeIndex, chargeIndex) {
-    const chargeForm = this.quoteCharges(routeIndex).at(chargeIndex) as FormGroup;
+  patchRevenueExchangeRate(routeIndex,carrierIndex, chargeIndex) {
+    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     const revCurrencyMasterSid = chargeForm.get('RevenueCurrencyMasterSid');
     const revenueExchangeRate = chargeForm.get('RevenueExchangeRate');
     const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
@@ -1687,8 +1754,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     revenueExchangeRate?.updateValueAndValidity();
   }
 
-  patchCostExchangeRate(routeIndex, chargeIndex) {
-    const chargeForm = this.quoteCharges(routeIndex).at(chargeIndex) as FormGroup;
+  patchCostExchangeRate(routeIndex,carrierIndex, chargeIndex) {
+    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     const costCurrencyMasterSid = chargeForm.get('CostCurrencyMasterSid');
     const costExchangeRate = chargeForm.get('CostExchangeRate');
     const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);

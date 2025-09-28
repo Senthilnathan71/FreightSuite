@@ -272,6 +272,13 @@ export class LeadService {
       })
     )
   }
+  deleteCarrier(id: number) {
+    return this.http.delete(`ff-quotation/carrier/${id}`).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
 
   deleteProduct(id: number) {
     return this.http.delete(`ff-quotation/product/${id}`).pipe(
