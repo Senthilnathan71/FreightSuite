@@ -252,7 +252,8 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
         label: 'Delete',
         action: 'delete',
         tooltip: 'Delete Sailing Schedule',
-        condition: (row: any) => this.hasPermission('Delete')
+        condition: (row: any) => this.hasPermission('Delete'),
+        class:"text-danger"
       }
     ];
   }

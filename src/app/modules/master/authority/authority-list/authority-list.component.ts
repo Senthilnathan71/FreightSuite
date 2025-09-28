@@ -1,5 +1,5 @@
 // authority-list.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -17,6 +17,8 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { Observable } from 'rxjs';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 
 @Component({
   selector: 'app-authority-list',
@@ -29,12 +31,14 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    CommonPaginationComponent
+    CommonPaginationComponent,
+    ReusableTableComponent
   ],
   templateUrl: './authority-list.component.html',
- styleUrls: ['./authority-list.component.scss']
+  styleUrls: ['./authority-list.component.scss']
 })
 export class AuthorityListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('authorityTable') authorityTable!: ReusableTableComponent;
   // Variable Declaring Section
   userData: any;
 
@@ -44,19 +48,49 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   // Company
-  currentCompany : any;
-  currentBranch : any;
-      protected config: ListComponentConfig = {
-        storageKey: 'authority-list-state',
-        defaultPageSize: 10,
-        defaultSortColumn: 'DepartmentMaster',
-        defaultSortDirection: 'desc',
-        pageSizeOptions: [10, 20, 50, 100, 500],
-        maxPagesToShow: 3
-    };
+  currentCompany: any;
+  currentBranch: any;
+  protected config: ListComponentConfig = {
+    storageKey: 'authority-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'DepartmentMaster',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Booking',
+        condition: (row: any) => this.hasPermission('View')
+      },
+        {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class:"text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'AuthorityMasterSid',
+    emptyMessage: 'No Authorization found',
+    dragAndDrop: true
+  };
 
-    // Alias for compatibility with existing template
-    get authorityList() { return this.allItems; }
+  tableLoading = false;
+  // Alias for compatibility with existing template
+  get authorityList() { return this.allItems; }
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -64,10 +98,10 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-        paginationService: PaginationService
-    ) {
-        super(paginationService);
-    }
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
   override ngOnInit() {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -77,6 +111,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
       this.userData = userInfo;
       this.checkPermissions();
     }
+    this.initializeTableConfig();
     super.ngOnInit();
   }
 
@@ -146,7 +181,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
     this.appSettingService.showError('Error searching authority.');
-    console.error('Error searching authority',error);
+    console.error('Error searching authority', error);
     super.handleSearchError(error);
   }
 
@@ -162,9 +197,62 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
   clearFilterValue() {
     this.clearFilter();
   }
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
 
+      {
+        key: 'DepartmentMaster',
+        label: 'Department',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'menuName',
+        label: 'Screen ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'branchName',
+        label: 'Branch',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
 
-  softDelete(id: number) {
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewBooking(event.row);
+    }else if(event.action === 'delete'){
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(id){
+    this.softDelete(id.AuthorityMasterSid)
+  }
+
+    softDelete(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
@@ -180,6 +268,46 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
       }
     });
   }
+  viewBooking(item: any): void {
+    this.router.navigate(['/master/authorization/entry', item.AuthorityMasterSid]);
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allItems;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.authorityTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Authorization-Report',
+      title: companyName
+    });
+  }
+
+
 
   navigateToCreateAuthority() {
     this.router.navigate(['master/authorization/entry']);
@@ -191,23 +319,5 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
 
   override trackBy(index: number, item: any) {
     return item.AuthorityMasterSid || index;
-  }
-
-  report(): void {
-    const formattedData = this.authorityList;
-
-    // const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'DepartmentMaster', label: 'Department' },
-        { key: 'menuName', label: 'Screen/Menu Name' },
-        { key: 'branchName', label: 'Branch' },
-        { key: 'status', label: 'Status' }
-      ],
-      fileName: 'Authorization-Report',
-      title: companyName
-    });
   }
 } 
