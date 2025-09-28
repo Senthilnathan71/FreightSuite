@@ -1182,4 +1182,16 @@ export const MasterRoutes: Routes = [
     }
   },
 
+  {
+    path: 'mawb-stock/entry/:id',
+    component: MawbStockComponent,
+    data: {
+      title: 'Mawb stock',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Mawb stock ' },
+      ]
+    }
+  },
+
 ];

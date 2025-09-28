@@ -33,6 +33,7 @@ export const iconsData: Record<string, { name: string; icon: string;size?: strin
  { name: "Department", icon: "fas fa-network-wired" },
   { name: "Division", icon: "fas fa-sitemap" },
   { name: "HAWB Stock", icon: "fas fa-box-open" },
+  { name: "MAWB Stock", icon: "fas fa-chart-line" },
   { name: "HS SAC", icon: "fas fa-barcode" },
   { name: "Milestone", icon: "fas fa-flag-checkered" },
   { name: "Organization", icon: "fas fa-users" },
