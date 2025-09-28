@@ -115,6 +115,7 @@ export class LoginComponent implements OnInit {
 
       if (!resp.status) {
         this.errorMessage = resp.message || "Login failed";
+        this.appSettingService.showError(this.errorMessage)
         return;
       }
 
