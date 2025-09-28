@@ -79,39 +79,39 @@
       <div class="table-toolbar">
         <div class="d-flex gap-2">
           <div class="mode-selector">
-           
+
             <div class="d-flex align-items-center gap-1">
               <div class="circle-option revenue"></div>
               <p class="mb-0 fw-bold">Revenue</p>
             </div>
-             <div class="d-flex align-items-center gap-1">
+            <div class="d-flex align-items-center gap-1">
               <div class="circle-option cost"></div>
               <p class="mb-0 fw-bold ">Cost</p>
             </div>
           </div>
 
-           <div class="buttons">
-        <button class="table-action-btn primary" (click)="addRateRow()">
-          <i class="fas fa-plus"></i> Add Row
-        </button>
-        <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
-          <i class="fas fa-plus"></i> Get Tariff
-        </button>
+          <div class="buttons">
+            <button class="table-action-btn primary" (click)="addRateRow()">
+              <i class="fas fa-plus"></i> Add Row
+            </button>
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
+              <i class="fas fa-plus"></i> Get Tariff
+            </button>
 
-        <button class="table-action-btn export">
-          <i class="fas fa-download"></i> Export
-        </button>
-        <button class="table-action-btn print">
-          <i class="fas fa-print"></i> Save
-        </button>
-        <!-- <button class="table-action-btn print">
+            <button class="table-action-btn export">
+              <i class="fas fa-download"></i> Export
+            </button>
+            <button class="table-action-btn print">
+              <i class="fas fa-print"></i> Save
+            </button>
+            <!-- <button class="table-action-btn print">
           <i class="fas fa-print"></i> Print
         </button> -->
-      </div>
+          </div>
         </div>
 
       </div>
-     
+
 
     </div>
   </div>
@@ -125,7 +125,7 @@
           <thead>
             <tr>
               <th class="bg-info text-white"></th>
-               <th class="bg-info text-white">SNo</th>
+              <th class="bg-info text-white">SNo</th>
               <th class="table-header1">Charge <span class="text-danger"></span></th>
               <th class="table-header1">ChargeDesc</th>
               <th class="table-header1 ">Unit</th>
@@ -147,10 +147,9 @@
                   </button>
                 </div>
               </td>
-               <td>
+              <td>
                 <div class="custom-form-group dofi-min-w-30 dofi-min-w-30">
-                  <input type="number" formControlName="SerialNumber" id="text-input" class="custom-input-field sm" 
-                 >
+                  <input type="number" formControlName="SerialNumber" id="text-input" class="custom-input-field sm">
                 </div>
               </td>
               <td>
@@ -176,10 +175,9 @@
 
                 </div>
               </td>
-               <td>
-               <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
-                  <input type="number" formControlName="NoOfUnit" id="text-input" class="custom-input-field sm"
-                   >
+              <td>
+                <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
+                  <input type="number" formControlName="NoOfUnit" id="text-input" class="custom-input-field sm">
                 </div>
               </td>
             </tr>
@@ -194,7 +192,7 @@
           <table>
             <thead>
               <tr>
-                  <!-- Revenue -->
+                <!-- Revenue -->
                 <th style="background-color: #6e91d3;" class="table-header currHeader">Curr</th>
                 <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span>
                 </th>
@@ -202,34 +200,35 @@
                 <th style="background-color: #6e91d3;" class="table-header"> Amt</th>
                 <th style="background-color: #6e91d3;" class="table-header">Local Amt</th>
                 <!-- <th style="background-color: #6e91d3;" class="table-header">Revenue Rate</th> -->
-                <th style="background-color: #6e91d3;" class="table-header">PP/CC</th>
-                 <th style="background-color: #6e91d3;" class="table-header">Billing Party</th>
-                  <th style="background-color: #6e91d3;" class="table-header">Type</th>
-                   <th style="background-color: #6e91d3;" class="table-header">Voucher No</th>
+                <th style="background-color: #6e91d3;" class="text-white">PP/CC</th>
+                <th style="background-color: #6e91d3;" class="table-header">Billing Party</th>
+                <th style="background-color: #6e91d3;" class="table-header">Type</th>
+                <th style="background-color: #6e91d3;" class="table-header">Voucher No</th>
                 <!-- <th style="background-color: #6e91d3;" class="table-header">DR/CR<span class="text-danger"></span></th> -->
                 <!-- Cost -->
                 <!-- <th style="background-color: #6e91d3;" class="table-header">Curr</th> -->
                 <!-- <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span> -->
                 <th style="background-color: #9dd376;" class="table-header">Curr</th>
-                  <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
+                <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
                 <th style="background-color: #9dd376;" class="table-header">Per Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Amt</th>
                 <th style="background-color: #9dd376;" class="table-header">Local Amt</th>
                 <!-- <th style="background-color: #9dd376;" class="table-header">Cost Rate</th> -->
-                <th style="background-color: #9dd376;" class="table-header">PP/CC</th>
+                <th style="background-color: #9dd376;" class="text-white">PP/CC</th>
+                <th style="background-color: #9dd376;" class="table-header">Party</th>
                 <!-- <th style="background-color: #9dd376;" class="table-header">DR/CR<span class="text-danger"></span></th> -->
-                   <th style="background-color: #9dd376;" class="table-header">Type</th>
+                <th style="background-color: #9dd376;" class="table-header">Type</th>
                 <th style="background-color: #9dd376;" class="table-header">Voucher No</th>
-              
+
                 <!-- common -->
-               
+
                 <!-- <th  class="table-header">Party<span class="text-danger"></span></th> -->
 
               </tr>
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
-              
+
 
                 <!-- Revenue -->
                 <td>
@@ -272,9 +271,9 @@
                       class="custom-input-field sm text-end">
                   </div>
                 </td> -->
-              
+
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-40">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
                       appendTo="body" formControlName="RevenuePrepaidCollect">
                     </ng-select>
@@ -317,7 +316,7 @@
                 <!-- cost -->
 
 
-                  <td>
+                <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
                       formControlName="CostCurrencyMasterSid" (change)="onCurrencyChange($event)" appendTo="body">
@@ -351,24 +350,31 @@
                       class="custom-input-field sm text-end">
                   </div>
                 </td>
-                
+
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-60">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-50">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
                       appendTo="body" formControlName="CostPrepaidCollect">
                     </ng-select>
                   </div>
                 </td>
+                  <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      formControlName="CustomerMasterSid" appendTo="body">
+                    </ng-select>
+                  </div>
+                </td>
+
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" 
-                      class="custom-input-field sm text-end">
+                    <input type="text" id="text-input" class="custom-input-field sm text-end">
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select  formControlName="" bindLabel="name" bindValue="name"
-                      class="ng-select" container="body" appendTo="body">
+                    <ng-select formControlName="" bindLabel="name" bindValue="name" class="ng-select" container="body"
+                      appendTo="body">
                     </ng-select>
 
                   </div>

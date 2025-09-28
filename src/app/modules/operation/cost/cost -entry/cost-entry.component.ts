@@ -59,8 +59,8 @@ export class CostEntryComponent implements OnInit {
 
 
   ppcc = [
-    { id: 1, name: 'Prepaid' },
-    { id: 2, name: 'Collect' }
+    { id: 1, name: 'P' },
+    { id: 2, name: 'C' }
   ]
   drcr = [
     { id: 1, name: 'Dr', value: 'D' },
