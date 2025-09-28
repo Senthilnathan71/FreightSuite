@@ -212,6 +212,7 @@ export class CostEntryComponent implements OnInit {
       ChargeMasterSid: [null],
       ChargeDescription: [''],
       ChargeUomSid: [null],
+      NoOfUnit:[null],
       // Cost 
       CostCurrencyMasterSid: [null],
       CostPrepaidCollect: [''],
@@ -274,6 +275,7 @@ createRateFormGroup(data?: any): FormGroup {
     SerialNumber: [data?.SerialNumber ?? ''],
     ChargeMasterSid: [data?.ChargeMasterSid ?? null],
     ChargeDescription: [data?.ChargeDescription ?? ''],
+    NoOfUnit: [data?.ChargeDescription ?? ''],
     CostPrepaidCollect: [data?.CostPrepaidCollect ?? null],
     RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
     ChargeUomSid: [data?.ChargeUomSid ?? null],
