@@ -152,6 +152,14 @@ dataFromEnqPage:any;
     this.selectedTab = tab;
   }
 
+   selectedTab1= 'Quotation';
+   tabs1 = [
+    { name:'Quotation', icon: 'fas fa-file-signature' },
+   { name: 'Route Details', icon: 'fas fa-layer-group' }
+  ];
+  selectTab1(tab: string) {
+    this.selectedTab1 = tab;
+  }
   // SECTION2 - CONSTRUCTOR
   constructor(
     private fb: FormBuilder,
@@ -992,14 +1000,14 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
-      this.selectedTab = 'Route Details';
+      this.selectedTab1 = 'Route Details';
       return;
     }
     if (this.quotationForm.invalid) {
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.quotationForm.markAllAsTouched();
       this.quotationForm.updateValueAndValidity();
-      this.selectedTab = 'Quotation';
+      this.selectedTab1 = 'Quotation';
       return;
     }
 
