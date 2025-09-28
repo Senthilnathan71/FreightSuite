@@ -35,6 +35,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import * as html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { TaxCalculationService, BookingRateDetails } from '../../services/tax-calculation.service';
 
 @Component({
   selector: 'app-booking-entry',
@@ -80,9 +81,20 @@ export class BookingEntryComponent implements OnInit {
 
 
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
+  @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
+  @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
+
   parsedBookings: BookingData[] = [];
   showParsedData = false;
   uploadResult: any = null;
+
+  // Voucher generation properties
+  selectedVoucherType: 'Invoice' | 'Vendor-Invoice' | null = null;
+  availableBillingParties: any[] = [];
+  selectedBillingPartyIndex: number = -1;
+  pendingBookingRates: BookingRateDetails[] = [];
+  voucherTypeModalRef?: NgbModalRef;
+  billingPartyModalRef?: NgbModalRef;
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -285,7 +297,8 @@ auditLogs: any[] = []; // Stores audit logs
     private calendar : NgbCalendar,
     private exportExcelService: ExcelExportService,
     private datePipe : CustomDatePipe,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private taxCalculationService: TaxCalculationService
   ) {
     this.today = this.calendar.getToday();
    }
@@ -2070,6 +2083,154 @@ openAuditLogs(modal: TemplateRef<any>) {
       console.error('PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF.');
     }
+  }
+
+  /**
+   |--------------------------------------------------
+   |   Section-8: Voucher Generation Methods
+   |--------------------------------------------------
+   */
+
+  openVoucherTypeModal() {
+    if (!this.isEditMode || !this.rateResult?.length) {
+      this.appSettingService.showWarning('No rates available for voucher generation');
+      return;
+    }
+
+    // Open voucher type selection modal
+    this.voucherTypeModalRef = this.modalService.open(this.voucherTypeModal, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+  }
+
+  selectVoucherType(voucherType: 'Invoice' | 'Vendor-Invoice') {
+    this.selectedVoucherType = voucherType;
+    this.voucherTypeModalRef?.close();
+
+    // Based on voucher type, determine charges to include
+    if (voucherType === 'Invoice') {
+      this.processPendingCharges('revenue');
+    } else {
+      this.processPendingCharges('cost');
+    }
+  }
+
+  private async processPendingCharges(type: 'revenue' | 'cost') {
+    try {
+      this.spinner.show();
+
+      // Get booking rates with full details including customer information
+      const bookingRatesResp = await firstValueFrom(this.operationService.getBookingRatesWithDetails(this.BookingHeaderSid));
+
+      if (!bookingRatesResp?.data?.length) {
+        this.appSettingService.showWarning('No booking rates found');
+        this.spinner.hide();
+        return;
+      }
+
+      // Filter based on type and pending status
+      const allRates = bookingRatesResp.data;
+      const filteredRates = allRates.filter((rate: any) => {
+        const isCorrectType = type === 'revenue' ? rate.RevenueAmount > 0 : rate.CostAmount > 0;
+        const isPending = !rate.VoucherHeaderSid; // No voucher created yet
+        return isCorrectType && isPending;
+      });
+
+      if (!filteredRates.length) {
+        this.appSettingService.showWarning(`No pending ${type} charges found for voucher generation`);
+        this.spinner.hide();
+        return;
+      }
+
+      // Get unique billing parties
+      const uniqueBillingParties = this.taxCalculationService.getUniqueBillingParties(filteredRates);
+
+      if (uniqueBillingParties.length === 0) {
+        this.appSettingService.showWarning('No billing parties found');
+        this.spinner.hide();
+        return;
+      } else if (uniqueBillingParties.length === 1) {
+        // Single billing party - proceed directly
+        const billingPartySid = uniqueBillingParties[0];
+        const pendingCharges = this.taxCalculationService.filterPendingCharges(filteredRates, billingPartySid);
+        this.proceedToInvoiceGeneration(billingPartySid, pendingCharges);
+      } else {
+        // Multiple billing parties - show selection modal
+        this.showBillingPartySelection(filteredRates, uniqueBillingParties);
+      }
+
+      this.spinner.hide();
+    } catch (error) {
+      this.spinner.hide();
+      console.error('Error processing pending charges:', error);
+      this.appSettingService.showError('Error processing charges for voucher generation');
+    }
+  }
+
+  private showBillingPartySelection(allRates: any[], uniqueBillingParties: number[]) {
+    // Prepare billing party data for display
+    this.availableBillingParties = uniqueBillingParties.map(partySid => {
+      const pendingCharges = this.taxCalculationService.filterPendingCharges(allRates, partySid);
+      const firstCharge = pendingCharges[0];
+      const customerInfo = firstCharge?.customerMaster;
+
+      return {
+        billingPartySid: partySid,
+        customerName: customerInfo?.CustomerName || 'Unknown Customer',
+        customerAddress: customerInfo?.CustomerAddress1 || 'No Address',
+        pendingChargesCount: pendingCharges.length,
+        totalAmount: pendingCharges.reduce((sum, charge) => sum + (charge.RevenueLocalAmount || charge.CostLocalAmount || 0), 0),
+        pendingCharges: pendingCharges
+      };
+    });
+
+    this.selectedBillingPartyIndex = -1;
+
+    // Open billing party selection modal
+    this.billingPartyModalRef = this.modalService.open(this.billingPartyModal, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+  }
+
+  selectBillingParty(index: number) {
+    this.selectedBillingPartyIndex = index;
+  }
+
+  proceedWithBillingParty() {
+    if (this.selectedBillingPartyIndex === -1) {
+      this.appSettingService.showWarning('Please select a billing party');
+      return;
+    }
+
+    const selectedParty = this.availableBillingParties[this.selectedBillingPartyIndex];
+    this.billingPartyModalRef?.close();
+
+    this.proceedToInvoiceGeneration(selectedParty.billingPartySid, selectedParty.pendingCharges);
+  }
+
+  private proceedToInvoiceGeneration(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
+    // Navigate to invoice-new component with pre-populated data
+    const routeData = {
+      bookingHeaderSid: this.BookingHeaderSid,
+      billingPartySid: billingPartySid,
+      pendingCharges: pendingCharges
+    };
+
+    // Store data in session storage for the new component to pick up
+    sessionStorage.setItem('invoiceGenerationData', JSON.stringify(routeData));
+
+    // Navigate to invoice-new route
+    this.router.navigate(['/operation/invoice/new'], {
+      queryParams: {
+        from: 'booking',
+        bookingId: this.BookingHeaderSid,
+        billingParty: billingPartySid
+      }
+    });
   }
 
 }

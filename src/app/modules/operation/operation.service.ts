@@ -234,6 +234,15 @@ getShipmentMilestones(payload: any) {
     );
   }
 
+  // Get booking rates with detailed customer information for invoice generation
+  getBookingRatesWithDetails(bookingHeaderSid: number) {
+    return this.http.get<{ data: any[] }>(`ff-booking/rates-with-details/${bookingHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   getExchangeRate(payload){
     return this.http.post<{data:any}>('currency-exchange/exchange-rate',payload).pipe(
       map((resp)=>{
