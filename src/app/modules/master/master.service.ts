@@ -3764,6 +3764,70 @@ createReportMaster(payload: any) {
       })
     )
   }
+
+  //Mawb
+  getAllMawbStocks(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<{ data: any[] }>('mawb-stock',{CompanyMasterSid ,BranchMasterSid }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewMawbStock(payload) {
+    return this.http.post<{ data: any }>('mawb-stock/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  fetchMawbStockById(MawbStockSid) {
+    return this.http.get<{ data: any }>(`mawb-stock/fetch/${MawbStockSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateMawbStockById(MawbStockSid, payload) {
+    return this.http.patch<{ data: any }>(`mawb-stock/update/${MawbStockSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteMawbStock(MawbStockSid) {
+    return this.http.delete<{ data: any }>(`mawb-stock/delete/${MawbStockSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchMawbStock(payload) {
+    return this.http.post<{ data: any[] }>('mawb-stock/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+    getAuditLogsMawbStock(tableName: string, recordId?: string) {
+    let url = `mawb-stock//audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
 }
 
 
