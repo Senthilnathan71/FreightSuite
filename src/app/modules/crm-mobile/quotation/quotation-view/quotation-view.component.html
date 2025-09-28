@@ -63,7 +63,7 @@
                              <div class="col-12">
                                     <div class="row   align-items-center pt-2  justify-content-between mx-1" data-bs-theme="light">
                                         <div class="col pb-2">
-                                <h4 class="page-title mb-0">Quotation</h4>
+                                <h5 class="page-title mb-0 text-info">Quotation</h5>
                             </div>
 
                         
@@ -292,16 +292,22 @@
 
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
-    <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
+      <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #quotationTable [config]="tableConfig" [data]="allQuotation" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="">
 
             <div class="col-12 p-0">
-                <!-- #region filter and add new -->
-
-                <!-- #endregion -->
-
+           
                 <div class="">
-                    <!-- #region lead view -->
+           
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
@@ -313,7 +319,7 @@
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
-                                    <!-- <th class="bg-transparent text-light" scope="col">Quote Status</th> -->
+                                  
                                     <th class="bg-transparent text-light" scope="col">Booking No.</th>
                                     <th class="bg-transparent text-light" scope="col" >Status</th>
 
@@ -348,9 +354,7 @@
                                             {{ enq.QuoteDate | formatDate }}
                                         </div>
                                     </td>
-                                    <!-- <td>
-                                        {{findEnquiryName(enq.EnquirySid)}}
-                                    </td> -->
+                              
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.CustomerName }}
@@ -371,25 +375,13 @@
                                             {{ enq.quoteRoute[0]?.PortPOD?.PortName }}
                                         </div>
                                     </td>
-                                    
-                                     
-                                    <!-- <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            NA
-                                        </div>
-                                    </td> -->
+                     
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             NA
                                         </div>
                                     </td>
-                                    <!--<td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            @if(enq.authorizerStatus === 'Approved'){
-                                                <button class="btn btn-sm btn-info" (click)="goForBookingCreation(enq.QuoteHeaderSid)">Create Booking</button>
-                                            }
-                                        </div>
-                                    </td> -->
+                            
                                     <td >
                                         @if(enq.authorizerStatus === "Approved"){
                                         <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1" >
@@ -413,21 +405,21 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- #endregion -->
+
 
                     <div class="">
-                        <!-- #region Pagination -->
+                     
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
                     [ellipses]="false" [maxSize]="10">
                         </ngb-pagination>
-                        <!-- #endregion -->
+                       
                     </div>
                 </div>
 
             </div>
         </div>
-    </div>
+    </div> -->
 </ng-template>
 
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { NgbModal, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { LeadService } from '../../Services/lead.service';
 import { Router } from '@angular/router';
@@ -14,7 +14,12 @@ import { ToastrService } from 'ngx-toastr';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { firstValueFrom } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-quotation-view',
   standalone: true,
@@ -25,69 +30,114 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FormsModule,
     NgbNavModule,
     CustomDatePipe,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ReusableTableComponent
   ],
   templateUrl: './quotation-view.component.html',
   styleUrl: './quotation-view.component.scss',
-  providers : [CustomDatePipe]
+  providers: [CustomDatePipe]
 })
-export class QuotationViewComponent {
+export class QuotationViewComponent extends BaseListComponent implements OnInit {
+  @ViewChild('quotationTable') quotationTable!: ReusableTableComponent;
+  @ViewChild('reportModel') content: TemplateRef<any>
   isLoading = false;
-
   active = 1;
   @ViewChild('nav', { static: true }) nav!: NgbNavModule;
   errorMessage: string = '';  // To store any error messages
   // pagination
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection: number;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection: number;
   page1 = 1;
   pageSize1 = 15;
   totalLengthOfCollection1: number;
   searchText: string = '';
   quoteItems: any[] = [];
-  filteredEnquiryItems:any[]=[]
+  filteredEnquiryItems: any[] = []
   isMobile: boolean = false;
   quoteData: any
   enquiryItems: any[] = [];
-  unitList : any[] = [];
+  unitList: any[] = [];
   enquiryData: any
   ports: any[] = []
   selectedItem: any;
   currentDate = new Date().toLocaleDateString(); // or any formatted string
-  filterValue : any = ''
-  filterEnqValue : any = ''
-
-  userData : any
+  // filterValue : any = ''
+  filterEnqValue: any = ''
+  userData: any
   currentCompany: any;
   currentBranch: any;
-  selectedFCLLCL : string = "LCL"
-  filteredQuoteItems : any[]=[]
-  departments : any[] = [];
-  containerTypes : any[] = [];
-  slicedEnquiryItems : any[] = []
-   selectedTab= 'Pending Rate Request';
-   tabs = [
+  selectedFCLLCL: string = "LCL"
+  filteredQuoteItems: any[] = []
+  departments: any[] = [];
+  containerTypes: any[] = [];
+  slicedEnquiryItems: any[] = []
+  selectedTab = 'Pending Rate Request';
+  tabs = [
     { name: 'Pending Rate Request', icon: 'fas fa-file-signature' },
-   { name: 'Quotation', icon: 'fas fa-layer-group' }
+    { name: 'Quotation', icon: 'fas fa-layer-group' }
   ];
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Quotation',
+        // condition: (row: any) => this.hasPermission('View')
+      },
+       {
+        icon: 'fas fa-file',
+        label: 'File',
+        action: 'File',
+        tooltip: 'File Quotation',
+        // condition: (row: any) => this.hasPermission('View')
+      },
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'QuotationHeaderSid',
+    emptyMessage: 'No quotation found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'quotation-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'BookingNo',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allQuotation() { return this.allItems; }
   constructor(
     private toastr: ToastrService,
-    private excelReportService : ExcelExportService, 
-    private modalService: NgbModal, 
-    private leadService: LeadService, 
-    private route: Router, 
+    private excelReportService: ExcelExportService,
+    private modalService: NgbModal,
+    private leadService: LeadService,
+    private route: Router,
     private appService: AppService,
-    private appSettingService : AppSettingsService, 
+    private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private datePipe : CustomDatePipe
-  ) { }
+    private datePipe: CustomDatePipe,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
@@ -101,14 +151,209 @@ export class QuotationViewComponent {
     // this.loadQuotes();
     this.searchQuotation();
     this.appSettingService.getUser().subscribe(
-      (res)=>{
+      (res) => {
         this.userData = res;
       }
     )
+    // Initialize table configuration
+    this.initializeTableConfig();
 
+    // Initialize base component
+    super.ngOnInit();
   }
 
-  loadDepartments(){
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.leadService.searchQuotation(this.getSearchParams());
+  }
+  
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        departmentName: item.quoteRoute?.[0]?.departmentMaster?.departmentName ?? '',
+        PODName: item.quoteRoute?.[0]?.PortPOD?.PortCode ?? '',
+        POLName: item.quoteRoute?.[0]?.PortPOL?.PortCode ?? '',
+        QuoteDate : this.datePipe.transform(item?.QuoteDate),
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching bookings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching quotation.');
+    console.error('Error searching quotation', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchBookings() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.QuotationHeaderSid || index;
+  }
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'QuoteNumber',
+        label: 'Quote No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'link',
+        width: '140px',
+        dataType: 'string'
+      },
+      {
+        key: 'QuoteDate',
+        label: 'Quote Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width:"120px"
+      },
+      {
+        key: 'CustomerName',
+        label: 'Customer Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'departmentName',
+        label: 'Department',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'POLName',
+        label: 'POL',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'PODName',
+        label: 'POD',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        cellClass: 'vessel-column'
+      },
+      {
+        key: '',
+        label: 'Booking No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: "140px"
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewQuotation(event.row);
+    } else if (event.action === "File") {
+      this.fileBy(event.row,this.content)
+    }
+  }
+ 
+fileBy(row: any, content: TemplateRef<any>) {
+  this.reportAndEmailModel(row, content);
+}
+  viewQuotation(row: any): void {
+    this.route.navigate(['crm/quotation/entry', row.QuoteHeaderSid]);
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allQuotation;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.quotationTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Quotation-Report',
+      title: companyName
+    });
+  }
+  loadDepartments() {
     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     this.leadService.getAllDepartments(companyMastersID).subscribe(
       (resp: any) => {
@@ -122,7 +367,7 @@ export class QuotationViewComponent {
     )
   }
 
-  loadContainerTypes(){
+  loadContainerTypes() {
     this.leadService.getAllContainerTypes().subscribe(
       (resp: any) => {
         if (resp) {
@@ -135,19 +380,19 @@ export class QuotationViewComponent {
     )
   }
 
-  filterEnquiry(){
-      const filterValue = this.filterValue.trim() || '';
-      if(!filterValue){
-        this.filteredQuoteItems = [...this.quoteItems];
-      } else {
-        this.filteredQuoteItems = this.quoteItems.filter(enq =>
-          (enq.EnquiryNumber    ?? '').toLowerCase().includes(filterValue) ||
-          (enq.CustomerName     ?? '').toLowerCase().includes(filterValue) ||
-          (enq.POLCode          ?? '').toLowerCase().includes(filterValue) ||
-          (enq.PODCode          ?? '').toLowerCase().includes(filterValue) ||
-          (enq.EnquiryDate      ?? '').toString().toLowerCase().includes(filterValue)
-        );
-      }
+  filterEnquiry() {
+    const filterValue = this.filterValue.trim() || '';
+    if (!filterValue) {
+      this.filteredQuoteItems = [...this.quoteItems];
+    } else {
+      this.filteredQuoteItems = this.quoteItems.filter(enq =>
+        (enq.EnquiryNumber ?? '').toLowerCase().includes(filterValue) ||
+        (enq.CustomerName ?? '').toLowerCase().includes(filterValue) ||
+        (enq.POLCode ?? '').toLowerCase().includes(filterValue) ||
+        (enq.PODCode ?? '').toLowerCase().includes(filterValue) ||
+        (enq.EnquiryDate ?? '').toString().toLowerCase().includes(filterValue)
+      );
+    }
   }
 
   searchQuotation() {
@@ -158,8 +403,8 @@ export class QuotationViewComponent {
       search: this.filterValue.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
-      activeCompanyId : CompanyMasterSid,
-      activeBranchId : BranchMasterSid,
+      activeCompanyId: CompanyMasterSid,
+      activeBranchId: BranchMasterSid,
     }
     this.leadService.searchQuotation(params).subscribe({
       next: (resp: any) => {
@@ -186,7 +431,7 @@ export class QuotationViewComponent {
   loadQuotes(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    this.leadService.getAllQuotes(CompanyMasterSid,BranchMasterSid).subscribe(
+    this.leadService.getAllQuotes(CompanyMasterSid, BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
         this.quoteData = resp['data'];  // On success, store the leads data in the component
@@ -209,37 +454,37 @@ export class QuotationViewComponent {
   loadEnquiries(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    this.leadService.getAllEnquiries(CompanyMasterSid,BranchMasterSid).subscribe(
+    this.leadService.getAllEnquiries(CompanyMasterSid, BranchMasterSid).subscribe(
       (resp: any[]) => {
         this.enquiryItems = resp['data'] || [];
-        this.enquiryData = (resp['data'] || []).map((enq)=>{
+        this.enquiryData = (resp['data'] || []).map((enq) => {
           return {
             EnquiryHeaderSid: enq.EnquiryHeaderSid,
             EnquiryNumber: enq.EnquiryNumber,
             CustomerName: enq.CustomerName,
-            departmentName : this.getDepartmentName(enq.DepartmentMasterSid),
+            departmentName: this.getDepartmentName(enq.DepartmentMasterSid),
             POLCode: this.getFormattedPort(enq.enquiryRoute[0]?.POLSid),
             PODCode: this.getFormattedPort(enq.enquiryRoute[0]?.PODSid),
             EnquiryDate: this.datePipe.transform(enq.EnquiryDate),
           }
-          
+
         });
         this.filteredEnquiryItems = [...this.enquiryData]
         this.totalLengthOfCollection1 = this.filteredEnquiryItems.length || 0;
         this.updateEnquiryPaginatedData();
-        
+
 
       },
       (error) => {
-        this.errorMessage = error.message; 
-        console.error('Error loading enquiry:', error);  
+        this.errorMessage = error.message;
+        console.error('Error loading enquiry:', error);
       }
     );
   }
 
-    searchEnquiry(): void {
-   const text = this.filterEnqValue.trim().toLowerCase() || '';
-      console.log(text);
+  searchEnquiry(): void {
+    const text = this.filterEnqValue.trim().toLowerCase() || '';
+    console.log(text);
     this.filteredEnquiryItems = this.enquiryData.filter(enq =>
       (enq.EnquiryNumber ?? '').toLowerCase().includes(text) ||
       (enq.CustomerName ?? '').toLowerCase().includes(text) ||
@@ -257,7 +502,7 @@ export class QuotationViewComponent {
   getDepartmentName(DepartmentMasterSid: number): string | null {
     if (!DepartmentMasterSid || this.departments.length === 0) return "";
     const ourDepartment = this.departments.find(d => d.DepartmentMasterSid === DepartmentMasterSid);
-    return ourDepartment  ? ourDepartment.departmentName : "";
+    return ourDepartment ? ourDepartment.departmentName : "";
   }
 
   loadPorts(): void {
@@ -267,18 +512,15 @@ export class QuotationViewComponent {
       });
   }
 
-  loadUnits(){
+  loadUnits() {
     this.leadService.getAllUnits().subscribe(
-      (resp:any) => {
-        if(resp.status){
+      (resp: any) => {
+        if (resp.status) {
           this.unitList = resp.data;
         }
       }
     )
   }
-
-
-
 
   getPortCode(portMasterSid: number): string | null {
     const port = this.ports.find((p) => p.PortMasterSid === portMasterSid);
@@ -296,12 +538,12 @@ export class QuotationViewComponent {
     this.searchQuotation();
   }
 
-  clearFilterValue(){
-    this.filterValue = '';
-    this.searchQuotation();
-  }
+  // clearFilterValue(){
+  //   this.filterValue = '';
+  //   this.searchQuotation();
+  // }
 
-   clearFilterEnqValue(){
+  clearFilterEnqValue() {
     this.filterEnqValue = '';
     this.filteredEnquiryItems = [...this.enquiryData]
     this.updateEnquiryPaginatedData();
@@ -357,7 +599,7 @@ export class QuotationViewComponent {
   navigateQuotation(data: any) {
     console.log(data);
     const dataId = data.EnquiryHeaderSid;
-    if(!dataId){
+    if (!dataId) {
       return;
     }
     const response = this.enquiryItems.find(item => item.EnquiryHeaderSid === dataId);
@@ -376,33 +618,33 @@ export class QuotationViewComponent {
         cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
       }
     });
-      console.log(response);
-      const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
-      let selectedFCLLCL;
-      if (dept?.departmentType === "Sea") {
-        selectedFCLLCL = dept?.FCLLCL;
-      } else {
-        selectedFCLLCL = dept?.departmentType?.toUpperCase();
-      }
+    console.log(response);
+    const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    let selectedFCLLCL;
+    if (dept?.departmentType === "Sea") {
+      selectedFCLLCL = dept?.FCLLCL;
+    } else {
+      selectedFCLLCL = dept?.departmentType?.toUpperCase();
+    }
 
-      let routeDetails = (response.enquiryRoute || []).flatMap(route => {
-        return (route.enquiryCargo || []).map(cargo => {
-          const containerTypeId = this.containerTypes.find(
-            con => con.ContainerName === cargo.ContainerType
-          )?.ContainerTypeMasterSid || null;
-          return {
-            PORSid: route.PORSid,
-            POLSid: route.POLSid,
-            PODSid: route.PODSid,
-            FPODSid: route.FDPSid,
-            CargoType: cargo.CargoType,
-            CBM: cargo.Volume,
-            ContainerType: containerTypeId,
-            ChargeableWeight : cargo.ChargeableWeight,
-            ContainerQty: cargo.Qty
-          };
-        });
+    let routeDetails = (response.enquiryRoute || []).flatMap(route => {
+      return (route.enquiryCargo || []).map(cargo => {
+        const containerTypeId = this.containerTypes.find(
+          con => con.ContainerName === cargo.ContainerType
+        )?.ContainerTypeMasterSid || null;
+        return {
+          PORSid: route.PORSid,
+          POLSid: route.POLSid,
+          PODSid: route.PODSid,
+          FPODSid: route.FDPSid,
+          CargoType: cargo.CargoType,
+          CBM: cargo.Volume,
+          ContainerType: containerTypeId,
+          ChargeableWeight: cargo.ChargeableWeight,
+          ContainerQty: cargo.Qty
+        };
       });
+    });
 
     const enqData = {
 
@@ -413,29 +655,29 @@ export class QuotationViewComponent {
       Email: response.Email,
       CustomerMasterSid: response.CustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
-      polList: polList, 
-      podList: podList, 
+      polList: polList,
+      podList: podList,
       status: response.status,
-      cargoTypeList: cargoTypeList, 
+      cargoTypeList: cargoTypeList,
       ShipmentType: selectedFCLLCL,
       rateRequest: true,
       quoteRoutes: routeDetails,
     };
-      this.leadService.clearQuotationData();
-      this.leadService.setQuotationData(enqData);
-      this.route.navigate(['crm/quotation/entry']);
-    }
+    this.leadService.clearQuotationData();
+    this.leadService.setQuotationData(enqData);
+    this.route.navigate(['crm/quotation/entry']);
+  }
 
-  getFormattedPort(PortMasterSid){
-    if(!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0 ){
+  getFormattedPort(PortMasterSid) {
+    if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
       return '';
     }
-    const ourPort = this.ports.find(p=>p.PortMasterSid === PortMasterSid);
+    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
     return ourPort ? ourPort.PortCode : '';
   }
 
-  findUnitName(UnitMasterSid:number){
-    if(!UnitMasterSid || this.unitList.length === 0){
+  findUnitName(UnitMasterSid: number) {
+    if (!UnitMasterSid || this.unitList.length === 0) {
       return;
     }
     return (this.unitList.find(u => u.UnitMasterSid === UnitMasterSid)).unitName;
@@ -466,15 +708,15 @@ export class QuotationViewComponent {
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
-      
+
       if (!element) return reject('No element found');
-      
+
       html2pdf().from(element).set(opt).outputPdf('blob')
-      .then((blob: Blob) => resolve(blob))
-      .catch((err: any) => reject(err));
+        .then((blob: Blob) => resolve(blob))
+        .catch((err: any) => reject(err));
     });
   }
-  
+
 
   orgEmail: any
   quotationEmail: any
@@ -482,12 +724,12 @@ export class QuotationViewComponent {
   async sendEmail() {
     try {
       this.isLoading = true;
-      
+
       const pdfBlob = await this.downloadPDF();
-      
+
       const formData = new FormData();
       const toEmailSet = new Set<string>();
-      
+
       if (this.selectedItem?.Email) {
         toEmailSet.add(this.selectedItem.Email);
       }
@@ -502,7 +744,7 @@ export class QuotationViewComponent {
         }
       }
 
-      if(toEmailSet.size === 0){
+      if (toEmailSet.size === 0) {
         this.appSettingService.showError('To Email is missing.')
         this.isLoading = false;
         return;
@@ -558,36 +800,36 @@ export class QuotationViewComponent {
     }
   }
 
-   report(): void {
-    const formattedData = this.quoteItems.map(item => ({
-      ...item,
-      department: item.quoteRoute[0]?.departmentMaster?.departmentName,
-      pol: item.quoteRoute[0]?.PortPOL?.PortName,
-      pod: item.quoteRoute[0]?.PortPOD?.PortName,
-      status: item.authorizerStatus === "Approved" 
-           ? "Approved" 
-           : item.authorizerStatus === "Rejected" 
-             ? "Rejected" 
-             : "Pending",
-    }));
+  //  report(): void {
+  //   const formattedData = this.quoteItems.map(item => ({
+  //     ...item,
+  //     department: item.quoteRoute[0]?.departmentMaster?.departmentName,
+  //     pol: item.quoteRoute[0]?.PortPOL?.PortName,
+  //     pod: item.quoteRoute[0]?.PortPOD?.PortName,
+  //     status: item.authorizerStatus === "Approved" 
+  //          ? "Approved" 
+  //          : item.authorizerStatus === "Rejected" 
+  //            ? "Rejected" 
+  //            : "Pending",
+  //   }));
 
-    // const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'QuoteNumber', label: 'Quote Number' },
-        { key: 'QuoteDate', label: 'Quote Date' },
-        { key: 'CustomerName', label: 'Customer Name' },
-        { key: 'department', label: 'Department' },
-        { key: 'pol', label: 'POL' },
-        { key: 'pod', label: 'POD' },
-        { key: 'status', label: 'Status' }
-      ],
-      fileName: 'Quotation-Report',
-      title: companyName
-    });
-  }
+
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'QuoteNumber', label: 'Quote Number' },
+  //       { key: 'QuoteDate', label: 'Quote Date' },
+  //       { key: 'CustomerName', label: 'Customer Name' },
+  //       { key: 'department', label: 'Department' },
+  //       { key: 'pol', label: 'POL' },
+  //       { key: 'pod', label: 'POD' },
+  //       { key: 'status', label: 'Status' }
+  //     ],
+  //     fileName: 'Quotation-Report',
+  //     title: companyName
+  //   });
+  // }
 
   goForBookingCreation(QuoteData) {
     console.log(QuoteData, 'QuoteData')
@@ -609,14 +851,14 @@ export class QuotationViewComponent {
     });
   }
 
-resetFilters(): void {
-  this.filterValue = '';
-  this.page = 1;
-  this.pageSize = 15;
-  this.quoteItems = [];
-  this.totalLengthOfCollection = 0;
-  this.searchQuotation();
-}
+  resetFilters(): void {
+    this.filterValue = '';
+    this.page = 1;
+    this.pageSize = 15;
+    this.quoteItems = [];
+    this.totalLengthOfCollection = 0;
+    this.searchQuotation();
+  }
 
 
 }
