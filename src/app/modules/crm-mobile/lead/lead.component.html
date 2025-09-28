@@ -583,7 +583,7 @@
                             [class.filled]="!!leadForm.get('leadReferredBy')?.value">
                             <ng-select class="ng-select" formControlName="leadReferredBy" [items]="leadSourceList"
                                 placeholder=""></ng-select>
-                            <label for="lead-source" class="input-label">Lead From <span
+                            <label for="lead-source" class="input-label">Lead Source <span
                                     class="text-danger">*</span></label>
                         </div>
                         @if(leadForm.get('leadReferredBy')?.touched &&
@@ -1631,7 +1631,7 @@
                                         [class.filled]="!!leadForm.get('leadReferredBy')?.value">
                                         <ng-select class="ng-select" formControlName="leadReferredBy"
                                             [items]="leadSourceList" placeholder=""></ng-select>
-                                        <label for="lead-source" class="input-label">Lead From <span
+                                        <label for="lead-source" class="input-label">Lead Source <span
                                                 class="text-danger">*</span></label>
                                     </div>
                                     @if(leadForm.get('leadReferredBy')?.touched &&

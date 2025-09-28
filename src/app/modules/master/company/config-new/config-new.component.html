@@ -1,0 +1,604 @@
+<!-- Header Bar -->
+<nav class="navbar navbar-light bg-light border-bottom px-2">
+  <div class="container-fluid d-flex justify-content-between">
+    <div class="d-flex align-items-center flex-wrap gap-5">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-icon">
+          <i class="fas fa-cogs"></i>
+        </div>
+        <h5 class="mb-0 pe-5 border-end text-info">Company Configuration</h5>
+      </div>
+      <div class="pe-5 d-flex gap-2">
+        <strong>Company:</strong>
+        <span class="badge text-bg-secondary">{{ companyName || 'N/A' }}</span>
+      </div>
+    </div>
+    <button type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="goBackToCompany()">
+      <i class="fas fa-chevron-left me-1"></i>
+      Back
+    </button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-info" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading configuration...</p>
+      </div>
+
+      <!-- Configuration Content -->
+      <div *ngIf="!isLoading">
+
+        <!-- Main Configuration Card -->
+        <div class="card">
+          <div class="card-header">
+            <!-- Tab Navigation -->
+            <nav>
+              <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs card-header-tabs">
+                <li [ngbNavItem]="'system-settings'">
+                  <button ngbNavLink>
+                    <i class="fas fa-cog me-2"></i>
+                    System Settings
+                  </button>
+                  <ng-template ngbNavContent>
+                  <!-- System Settings Tab Content -->
+                  <div class="row">
+                    <div class="col-lg-8">
+                      <form [formGroup]="systemSettingsForm">
+
+                        <!-- Date & Time Settings -->
+                        <div class="card mb-4">
+                          <div class="card-header">
+                            <h6 class="card-title mb-0">
+                              <i class="fas fa-calendar-alt me-2"></i>
+                              Date & Time Settings
+                            </h6>
+                          </div>
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-md-6 mb-3">
+                                <label for="dateFormat" class="form-label">Date Format</label>
+                                <select class="form-select"
+                                        id="dateFormat"
+                                        formControlName="dateFormat"
+                                        [class.is-invalid]="isFieldInvalid('dateFormat')">
+                                  <option *ngFor="let option of dateFormatOptions" [value]="option.value">
+                                    {{ option.label }}
+                                  </option>
+                                </select>
+                                <div *ngIf="isFieldInvalid('dateFormat')" class="invalid-feedback">
+                                  {{ getFieldError('dateFormat') }}
+                                </div>
+                                <div class="form-text">Choose your preferred date display format</div>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <label for="timeFormat" class="form-label">Time Format</label>
+                                <select class="form-select"
+                                        id="timeFormat"
+                                        formControlName="timeFormat"
+                                        [class.is-invalid]="isFieldInvalid('timeFormat')">
+                                  <option *ngFor="let option of timeFormatOptions" [value]="option.value">
+                                    {{ option.label }}
+                                  </option>
+                                </select>
+                                <div *ngIf="isFieldInvalid('timeFormat')" class="invalid-feedback">
+                                  {{ getFieldError('timeFormat') }}
+                                </div>
+                              </div>
+
+                              <div class="col-md-12 mb-3">
+                                <label for="timezone" class="form-label">Timezone</label>
+                                <ng-select [items]="timezoneOptions"
+                                          bindLabel="label"
+                                          bindValue="value"
+                                          formControlName="timezone"
+                                          placeholder="Select timezone"
+                                          [clearable]="false"
+                                          [searchable]="true"
+                                          [class.is-invalid]="isFieldInvalid('timezone')">
+                                </ng-select>
+                                <div *ngIf="isFieldInvalid('timezone')" class="invalid-feedback">
+                                  {{ getFieldError('timezone') }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Currency Settings -->
+                        <div class="card mb-4">
+                          <div class="card-header">
+                            <h6 class="card-title mb-0">
+                              <i class="fas fa-dollar-sign me-2"></i>
+                              Currency Settings
+                            </h6>
+                          </div>
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-md-4 mb-3">
+                                <label for="currencyCode" class="form-label">Currency</label>
+                                <ng-select [items]="currencyOptions"
+                                          bindLabel="name"
+                                          bindValue="code"
+                                          formControlName="currencyCode"
+                                          placeholder="Select currency"
+                                          [clearable]="false"
+                                          [searchable]="true"
+                                          (change)="onCurrencyChange($event)"
+                                          [class.is-invalid]="isFieldInvalid('currencyCode')">
+                                  <ng-option *ngFor="let currency of currencyOptions" [value]="currency.code">
+                                    {{ currency.symbol }} - {{ currency.name }} ({{ currency.code }})
+                                  </ng-option>
+                                </ng-select>
+                                <div *ngIf="isFieldInvalid('currencyCode')" class="invalid-feedback">
+                                  {{ getFieldError('currencyCode') }}
+                                </div>
+                              </div>
+
+                              <div class="col-md-4 mb-3">
+                                <label for="currencySymbol" class="form-label">Currency Symbol</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="currencySymbol"
+                                       formControlName="currencySymbol"
+                                       [class.is-invalid]="isFieldInvalid('currencySymbol')"
+                                       placeholder="$">
+                                <div *ngIf="isFieldInvalid('currencySymbol')" class="invalid-feedback">
+                                  {{ getFieldError('currencySymbol') }}
+                                </div>
+                              </div>
+
+                              <div class="col-md-4 mb-3">
+                                <label for="currencyPosition" class="form-label">Symbol Position</label>
+                                <select class="form-select"
+                                        id="currencyPosition"
+                                        formControlName="currencyPosition"
+                                        [class.is-invalid]="isFieldInvalid('currencyPosition')">
+                                  <option *ngFor="let option of currencyPositionOptions" [value]="option.value">
+                                    {{ option.label }}
+                                  </option>
+                                </select>
+                                <div *ngIf="isFieldInvalid('currencyPosition')" class="invalid-feedback">
+                                  {{ getFieldError('currencyPosition') }}
+                                </div>
+                              </div>
+
+                              <div class="col-md-4 mb-3">
+                                <label for="currencyDecimalPlaces" class="form-label">Decimal Places</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="currencyDecimalPlaces"
+                                       formControlName="currencyDecimalPlaces"
+                                       [class.is-invalid]="isFieldInvalid('currencyDecimalPlaces')"
+                                       min="0" max="4">
+                                <div *ngIf="isFieldInvalid('currencyDecimalPlaces')" class="invalid-feedback">
+                                  {{ getFieldError('currencyDecimalPlaces') }}
+                                </div>
+                              </div>
+
+                              <div class="col-md-4 mb-3">
+                                <label for="decimalSeparator" class="form-label">Decimal Separator</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="decimalSeparator"
+                                       formControlName="decimalSeparator"
+                                       [class.is-invalid]="isFieldInvalid('decimalSeparator')"
+                                       placeholder="."
+                                       maxlength="1">
+                                <div *ngIf="isFieldInvalid('decimalSeparator')" class="invalid-feedback">
+                                  {{ getFieldError('decimalSeparator') }}
+                                </div>
+                              </div>
+
+                              <div class="col-md-4 mb-3">
+                                <label for="thousandSeparator" class="form-label">Thousand Separator</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="thousandSeparator"
+                                       formControlName="thousandSeparator"
+                                       [class.is-invalid]="isFieldInvalid('thousandSeparator')"
+                                       placeholder=","
+                                       maxlength="1">
+                                <div *ngIf="isFieldInvalid('thousandSeparator')" class="invalid-feedback">
+                                  {{ getFieldError('thousandSeparator') }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- System Preferences -->
+                        <div class="card mb-4">
+                          <div class="card-header">
+                            <h6 class="card-title mb-0">
+                              <i class="fas fa-sliders-h me-2"></i>
+                              System Preferences
+                            </h6>
+                          </div>
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                  <input class="form-check-input"
+                                         type="checkbox"
+                                         id="enableNotifications"
+                                         formControlName="enableNotifications">
+                                  <label class="form-check-label" for="enableNotifications">
+                                    <strong>Enable Notifications</strong>
+                                  </label>
+                                </div>
+                                <small class="form-text text-muted">Receive system notifications and alerts</small>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                  <input class="form-check-input"
+                                         type="checkbox"
+                                         id="autoSave"
+                                         formControlName="autoSave">
+                                  <label class="form-check-label" for="autoSave">
+                                    <strong>Auto Save</strong>
+                                  </label>
+                                </div>
+                                <small class="form-text text-muted">Automatically save changes</small>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="sessionTimeout"
+                                       formControlName="sessionTimeout"
+                                       [class.is-invalid]="isFieldInvalid('sessionTimeout')"
+                                       min="5" max="120">
+                                <div *ngIf="isFieldInvalid('sessionTimeout')" class="invalid-feedback">
+                                  {{ getFieldError('sessionTimeout') }}
+                                </div>
+                                <small class="form-text text-muted">Automatic logout after inactivity</small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </form>
+                    </div>
+
+                    <!-- Preview Panel -->
+                    <div class="col-lg-4">
+                      <div class="card bg-light">
+                        <div class="card-header">
+                          <h6 class="card-title mb-0">
+                            <i class="fas fa-eye me-2"></i>
+                            Preview
+                          </h6>
+                        </div>
+                        <div class="card-body">
+                          <div class="mb-3">
+                            <strong>Date Format:</strong><br>
+                            <span class="text-muted">{{ systemSettingsForm.get('dateFormat')?.value || 'DD/MM/YYYY' }}</span>
+                          </div>
+                          <div class="mb-3">
+                            <strong>Time Format:</strong><br>
+                            <span class="text-muted">{{ systemSettingsForm.get('timeFormat')?.value === '12' ? '12 Hour (AM/PM)' : '24 Hour' }}</span>
+                          </div>
+                          <div class="mb-3">
+                            <strong>Currency:</strong><br>
+                            <span class="text-muted">
+                              {{ systemSettingsForm.get('currencySymbol')?.value || '$' }}{{ systemSettingsForm.get('currencyPosition')?.value === 'before' ? '' : ' ' }}100{{ systemSettingsForm.get('decimalSeparator')?.value || '.' }}00{{ systemSettingsForm.get('currencyPosition')?.value === 'after' ? ' ' + (systemSettingsForm.get('currencySymbol')?.value || '$') : '' }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </li>
+
+              <li [ngbNavItem]="'module-features'">
+                <button ngbNavLink>
+                  <i class="fas fa-puzzle-piece me-2"></i>
+                  Module Features
+                </button>
+                <ng-template ngbNavContent>
+                  <!-- Module Features Tab Content -->
+                  <div ngbAccordion [closeOthers]="true">
+
+                    <!-- CRM Module -->
+                    <div ngbAccordionItem id="crm-features">
+                      <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                          <i class="fas fa-users me-2"></i>
+                          <strong>CRM Module</strong>
+                          <span class="badge bg-info ms-2">
+                            {{ getEnabledFeaturesCount('crm') }} / {{ getTotalFeaturesCount('crm') }} enabled
+                          </span>
+                        </button>
+                      </h2>
+                      <div ngbAccordionCollapse>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-md-6 mb-3" *ngFor="let feature of moduleFeatures.crm">
+                              <div class="card h-100">
+                                <div class="card-body">
+                                  <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ feature.name }}</h6>
+                                    <div class="form-check form-switch">
+                                      <input class="form-check-input"
+                                             type="checkbox"
+                                             [id]="'crm-' + feature.key"
+                                             [checked]="isModuleFeatureEnabled('crm', feature.key)"
+                                             (change)="toggleModuleFeature('crm', feature.key)">
+                                      <label class="form-check-label" [for]="'crm-' + feature.key"></label>
+                                    </div>
+                                  </div>
+                                  <p class="card-text text-muted small">{{ feature.description }}</p>
+                                  <span class="badge"
+                                        [class]="isModuleFeatureEnabled('crm', feature.key) ? 'bg-success' : 'bg-secondary'">
+                                    {{ isModuleFeatureEnabled('crm', feature.key) ? 'Enabled' : 'Disabled' }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Operations Module -->
+                    <div ngbAccordionItem id="operations-features">
+                      <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                          <i class="fas fa-ship me-2"></i>
+                          <strong>Operations Module</strong>
+                          <span class="badge bg-info ms-2">
+                            {{ getEnabledFeaturesCount('operations') }} / {{ getTotalFeaturesCount('operations') }} enabled
+                          </span>
+                        </button>
+                      </h2>
+                      <div ngbAccordionCollapse>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-md-6 mb-3" *ngFor="let feature of moduleFeatures.operations">
+                              <div class="card h-100">
+                                <div class="card-body">
+                                  <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ feature.name }}</h6>
+                                    <div class="form-check form-switch">
+                                      <input class="form-check-input"
+                                             type="checkbox"
+                                             [id]="'operations-' + feature.key"
+                                             [checked]="isModuleFeatureEnabled('operations', feature.key)"
+                                             (change)="toggleModuleFeature('operations', feature.key)">
+                                      <label class="form-check-label" [for]="'operations-' + feature.key"></label>
+                                    </div>
+                                  </div>
+                                  <p class="card-text text-muted small">{{ feature.description }}</p>
+                                  <span class="badge"
+                                        [class]="isModuleFeatureEnabled('operations', feature.key) ? 'bg-success' : 'bg-secondary'">
+                                    {{ isModuleFeatureEnabled('operations', feature.key) ? 'Enabled' : 'Disabled' }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Accounts Module -->
+                    <div ngbAccordionItem id="accounts-features">
+                      <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                          <i class="fas fa-calculator me-2"></i>
+                          <strong>Accounts Module</strong>
+                          <span class="badge bg-info ms-2">
+                            {{ getEnabledFeaturesCount('accounts') }} / {{ getTotalFeaturesCount('accounts') }} enabled
+                          </span>
+                        </button>
+                      </h2>
+                      <div ngbAccordionCollapse>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-md-6 mb-3" *ngFor="let feature of moduleFeatures.accounts">
+                              <div class="card h-100">
+                                <div class="card-body">
+                                  <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ feature.name }}</h6>
+                                    <div class="form-check form-switch">
+                                      <input class="form-check-input"
+                                             type="checkbox"
+                                             [id]="'accounts-' + feature.key"
+                                             [checked]="isModuleFeatureEnabled('accounts', feature.key)"
+                                             (change)="toggleModuleFeature('accounts', feature.key)">
+                                      <label class="form-check-label" [for]="'accounts-' + feature.key"></label>
+                                    </div>
+                                  </div>
+                                  <p class="card-text text-muted small">{{ feature.description }}</p>
+                                  <span class="badge"
+                                        [class]="isModuleFeatureEnabled('accounts', feature.key) ? 'bg-success' : 'bg-secondary'">
+                                    {{ isModuleFeatureEnabled('accounts', feature.key) ? 'Enabled' : 'Disabled' }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Masters Module -->
+                    <div ngbAccordionItem id="masters-features">
+                      <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                          <i class="fas fa-database me-2"></i>
+                          <strong>Masters Module</strong>
+                          <span class="badge bg-info ms-2">
+                            {{ getEnabledFeaturesCount('masters') }} / {{ getTotalFeaturesCount('masters') }} enabled
+                          </span>
+                        </button>
+                      </h2>
+                      <div ngbAccordionCollapse>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-md-6 mb-3" *ngFor="let feature of moduleFeatures.masters">
+                              <div class="card h-100">
+                                <div class="card-body">
+                                  <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ feature.name }}</h6>
+                                    <div class="form-check form-switch">
+                                      <input class="form-check-input"
+                                             type="checkbox"
+                                             [id]="'masters-' + feature.key"
+                                             [checked]="isModuleFeatureEnabled('masters', feature.key)"
+                                             (change)="toggleModuleFeature('masters', feature.key)">
+                                      <label class="form-check-label" [for]="'masters-' + feature.key"></label>
+                                    </div>
+                                  </div>
+                                  <p class="card-text text-muted small">{{ feature.description }}</p>
+                                  <span class="badge"
+                                        [class]="isModuleFeatureEnabled('masters', feature.key) ? 'bg-success' : 'bg-secondary'">
+                                    {{ isModuleFeatureEnabled('masters', feature.key) ? 'Enabled' : 'Disabled' }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </ng-template>
+              </li>
+
+              <li [ngbNavItem]="'field-customization'">
+                <button ngbNavLink>
+                  <i class="fas fa-edit me-2"></i>
+                  Field Customization
+                </button>
+                <ng-template ngbNavContent>
+                  <!-- Field Customization Tab Content -->
+                  <div ngbAccordion [closeOthers]="true">
+
+                    <div ngbAccordionItem *ngFor="let section of getValidSections()" [id]="section + '-fields'">
+                      <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                          <i class="fas"
+                             [class.fa-database]="section === 'masters'"
+                             [class.fa-users]="section === 'crm'"
+                             [class.fa-calculator]="section === 'accounts'"></i>
+                          <strong class="ms-2">{{ section | titlecase }} Fields</strong>
+                        </button>
+                      </h2>
+                      <div ngbAccordionCollapse>
+                        <div class="card-body">
+
+                          <div *ngIf="getSubsections(section).length === 0" class="text-center py-4 text-muted">
+                            <i class="fas fa-info-circle fa-2x mb-2"></i>
+                            <p>No field configuration available for {{ section | titlecase }} module</p>
+                          </div>
+
+                          <div *ngFor="let subsection of getSubsections(section)" class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                              <i class="fas fa-folder me-2"></i>
+                              {{ subsection | titlecase }}
+                            </h6>
+
+                            <div class="row">
+                              <div class="col-lg-6 mb-3" *ngFor="let fieldKey of getFieldKeys(section, subsection)">
+                                <div class="card">
+                                  <div class="card-body py-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                      <div class="flex-grow-1">
+                                        <div class="form-check">
+                                          <input class="form-check-input"
+                                                 type="checkbox"
+                                                 [id]="section + '-' + subsection + '-' + fieldKey"
+                                                 [checked]="getFieldVisibility(section, subsection, fieldKey)"
+                                                 (change)="toggleFieldVisibility(section, subsection, fieldKey)">
+                                          <label class="form-check-label fw-bold"
+                                                 [for]="section + '-' + subsection + '-' + fieldKey">
+                                            {{ getFieldLabel(section, subsection, fieldKey) }}
+                                          </label>
+                                        </div>
+                                        <small class="text-muted">Field Key: {{ fieldKey }}</small>
+                                      </div>
+                                      <span class="badge ms-2"
+                                            [class]="getFieldVisibility(section, subsection, fieldKey) ? 'bg-success' : 'bg-secondary'">
+                                        {{ getFieldVisibility(section, subsection, fieldKey) ? 'Visible' : 'Hidden' }}
+                                      </span>
+                                    </div>
+
+                                    <!-- Custom Label Input -->
+                                    <div *ngIf="getFieldVisibility(section, subsection, fieldKey)" class="mt-2">
+                                      <input type="text"
+                                             class="form-control form-control-sm"
+                                             [(ngModel)]="config.fieldCustomization[section][subsection].fields[fieldKey].label"
+                                             [placeholder]="'Custom label for ' + fieldKey"
+                                             [attr.aria-label]="'Custom label for ' + fieldKey">
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </ng-template>
+              </li>
+              </ul>
+            </nav>
+          </div>
+
+          <div class="card-body p-0">
+            <div [ngbNavOutlet]="nav" class="p-4"></div>
+          </div>
+
+          <!-- Card Footer with Action Buttons -->
+          <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <button type="button"
+                        class="btn btn-light-secondary btn-sm dofi-min-w-100 dofi-max-w-100 me-2"
+                        (click)="resetConfiguration()">
+                  <i class="fas fa-sync-alt me-1"></i>
+                  Reset to Defaults
+                </button>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button"
+                        class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBackToCompany()">
+                  <i class="fas fa-times me-1"></i>
+                  Cancel
+                </button>
+                <button type="button"
+                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="saveConfiguration()"
+                        [disabled]="isSaving || systemSettingsForm.invalid">
+                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                  <i *ngIf="!isSaving" class="fas fa-save me-1"></i>
+                  {{ isSaving ? 'Saving...' : 'Save Configuration' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

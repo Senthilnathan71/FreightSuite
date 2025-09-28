@@ -1,11 +1,11 @@
-import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, firstValueFrom, forkJoin, of, tap } from 'rxjs';
+import { catchError, delay, firstValueFrom, forkJoin, of, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -36,6 +36,7 @@ import * as html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { TaxCalculationService, BookingRateDetails } from '../../services/tax-calculation.service';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 
 @Component({
   selector: 'app-booking-entry',
@@ -70,7 +71,7 @@ import { TaxCalculationService, BookingRateDetails } from '../../services/tax-ca
     CustomDatePipe
   ],
 })
-export class BookingEntryComponent implements OnInit {
+export class BookingEntryComponent implements OnInit,OnDestroy {
 
 
   /**
@@ -277,7 +278,7 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
-
+dataFromQuotation:any
   // Mail content
 
 
@@ -298,9 +299,13 @@ auditLogs: any[] = []; // Stores audit logs
     private exportExcelService: ExcelExportService,
     private datePipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
-    private taxCalculationService: TaxCalculationService
+    private taxCalculationService: TaxCalculationService,
+    private leadService: LeadService
   ) {
     this.today = this.calendar.getToday();
+    // const nav = this.router.getCurrentNavigation();
+    // console.log(nav)
+    // this.dataFromQuotation = nav?.extras?.state?.['dataFromQuotation'] ?? {};
    }
 
   /**
@@ -308,20 +313,90 @@ auditLogs: any[] = []; // Stores audit logs
     |   Section-3 : NgOnInit Part
     |--------------------------------------------------
     */
-  ngOnInit(): void {
-    this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.filterOption = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentCompany?.BranchMasterSid,
-    }
+  // ngOnInit(): void {
+  //   this.userData = this.appSettingService.getDecryptedUserProfile();
+  //   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  //   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  //   this.filterOption = {
+  //     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+  //     BranchMasterSid: this.currentCompany?.BranchMasterSid,
+  //   }
 
-    this.initBookingForm();
-    this.initCargoForm();
-    this.initOtherForm();
-    this.initDetailsForm();
-    this.loadHeaderLookups().subscribe(() => {
+  //   this.initBookingForm();
+  //   this.initCargoForm();
+  //   this.initOtherForm();
+  //   this.initDetailsForm();
+
+  //   const historyState = history?.state;
+  //   const quotationData = historyState?.dataFromQuotation;
+
+  //   if (quotationData && quotationData.quotation) {
+  //     this.dataFromQuotation = quotationData;
+  //     history.replaceState({}, '', location.pathname);
+  //   } else {
+  //     this.dataFromQuotation = {};
+  //   }
+  //   console.log(this.dataFromQuotation,'dataFromQuotation')
+  //   this.loadHeaderLookups().pipe(
+  //   ).subscribe(() => {
+  //     setTimeout(()=>{
+  //       this.loadCargoLookups();
+  //     this.loadOtherLookups();
+  //     if(this.dataFromQuotation?.quotation){
+  //       this.patchBookingFromQuotation(this.dataFromQuotation)
+  //       this.minDate = this.today;
+  //     }else{
+  //     // this.leadService.clearBookingData()
+  //       this.currentRoute.paramMap.subscribe((param) => {
+  //         this.BookingHeaderSid = +param.get('id');
+  //         if (this.BookingHeaderSid) {
+  //           this.isEditMode = true;
+  //           this.loadBookingById(this.BookingHeaderSid);
+  //         } else {
+  //           this.minDate = this.today;
+  //         }
+  //       })
+  //     }
+  //     },1000)
+  //   });
+
+
+  // }
+
+  ngOnInit(): void {
+  this.userData = this.appSettingService.getDecryptedUserProfile();
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+
+  this.filterOption = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid, // fixed: was currentCompany?.BranchMasterSid
+  };
+
+  this.initBookingForm();
+  this.initCargoForm();
+  this.initOtherForm();
+  this.initDetailsForm();
+
+  const historyState = history?.state;
+  const quotationData = historyState?.dataFromQuotation;
+
+  this.dataFromQuotation = quotationData?.quotation ? quotationData : {};
+
+  // Clear browser state
+  if (quotationData?.quotation) history.replaceState({}, '', location.pathname);
+
+  console.log(this.dataFromQuotation, 'dataFromQuotation');
+
+  // Load lookups first
+  this.loadHeaderLookups().subscribe(() => {
+    this.loadCargoLookups();
+    this.loadOtherLookups();
+
+    if (this.dataFromQuotation?.quotation) {
+      this.patchBookingFromQuotation(this.dataFromQuotation);
+      this.minDate = this.today;
+    } else {
       this.currentRoute.paramMap.subscribe((param) => {
         this.BookingHeaderSid = +param.get('id');
         if (this.BookingHeaderSid) {
@@ -330,13 +405,10 @@ auditLogs: any[] = []; // Stores audit logs
         } else {
           this.minDate = this.today;
         }
-        this.loadCargoLookups();
-        this.loadOtherLookups();
-      })
-    });
-
-
-  }
+      });
+    }
+  });
+}
 
   /**
   |--------------------------------------------------
@@ -760,6 +832,44 @@ auditLogs: any[] = []; // Stores audit logs
     this.rateResult = [...this.bookingRateArr];
 
   }
+
+  // patchBookingFromQuotation(data:any){
+  //   console.log(data);
+  //   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
+  //   const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === data.CustomerMasterSid);
+  //   this.onDeptChange(selectedDepartment);
+  //   this.onCustomerChange(selectedCustomer);
+  //   this.bookingForm.patchValue({
+  //     CustomerMasterSid: data.CustomerMasterSid,
+  //     CustomerName: data.CustomerName,
+  //     CustomerAddress: data.CustomerAddress,
+  //     SalesmanSid: data.SalesmanSid,
+  //     FreightTerms : data.FreightTerms,
+  //     QuotationHeaderSid: data.QuotationHeaderSid
+  //   })
+  // }
+
+  // Patch booking from quotation
+patchBookingFromQuotation(data: any) {
+  // Find customer from loaded customer list
+  const customer = this.customerList.find(c => c.CustomerMasterSid === data.CustomerMasterSid);
+  if (customer) {
+    this.onCustomerChange(customer); // sets CustomerName and CustomerAddress properly
+  } else {
+    // fallback if customer not found
+    this.b['CustomerName']?.setValue(data.CustomerName || '');
+    this.b['CustomerAddress']?.setValue(data.CustomerAddress || '');
+  }
+
+  // Patch remaining form fields
+  this.bookingForm.patchValue({
+    QuotationHeaderSid: data.QuotationHeaderSid,
+    DepartmentMasterSid: data.DepartmentMasterSid,
+    CustomerMasterSid: data.CustomerMasterSid,
+    SalesmanSid: data.SalesmanSid,
+    FreightTerms: data.FreightTerms,
+  });
+}
 
   onContainerTypeChange(containerType : any){
     if(!containerType){
@@ -1305,20 +1415,12 @@ auditLogs: any[] = []; // Stores audit logs
     const POL = this.b['POL'].value;
     const POD = this.b['POD'].value;
     this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
-    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    const details = voyage.Ports || [];
+    const polETD = voyage.ETD || null;
+    const podETA = voyage?.ETA || null;
 
-    const polDetail = details.find(d => d.POLSid === POLSid);
-    const polETA = polDetail?.ETD || null;
-
-
-    const podDetail = details.find(d => d.POLSid === PODSid);
-    const podETD = podDetail?.ETA || null;
-
-    this.b['ETD'].setValue(new Date(polETA));
-    this.b['ETA'].setValue(new Date(podETD));
-    this.minStartDate = new Date(podETD);
+    this.b['ETD'].setValue(new Date(polETD));
+    this.b['ETA'].setValue(new Date(podETA));
+    this.minStartDate = new Date(podETA);
   }
 
   getVesselBasedOnPorts() {
@@ -1352,10 +1454,8 @@ auditLogs: any[] = []; // Stores audit logs
     const POD = this.b['POD']?.value;
     const FPOD = this.b['FPD']?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    // const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    // const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
     const vessel = this.b['VesselName']?.value;
     const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
     if (!POL || !POD || !vesselId) {
@@ -1366,15 +1466,20 @@ auditLogs: any[] = []; // Stores audit logs
       (resp: any) => {
         if (resp.status) {
           this.voyageList = resp.data.map(voyage => {
-            const pol = voyage.Ports.find(p => p.POLSid === payload.POL);
-            const pod = voyage.Ports.find(p => p.POLSid === payload.POD || p.PODSid === payload.POD);
-            const polName = this.portList.find(p => p.PortMasterSid === payload.POL)?.PortName;
-            const podName = this.portList.find(p => p.PortMasterSid === payload.POD)?.PortName;
+            const pol = this.portList.find(p => p.PortMasterSid === voyage.POL);
+            const pod = this.portList.find(p => p.PortMasterSid === voyage.POD);
+            const polName = pol?.PortName;
+            const podName = pod?.PortName;
             const polWithName = pol ? { ...pol, PortName: polName } : null;
             const podWithName = pod ? { ...pod, PortName: podName } : null;
+            
+
 
             return {
-              ...voyage,
+              VoyageNo : voyage.VoyageNo,
+              ETD : voyage.ETD,
+              ETA : voyage.ETA,
+              VoyageMasterHeaderSid : voyage.VoyageMasterHeaderSid,
               POL: polWithName,
               POD: podWithName
             };
@@ -2231,6 +2336,9 @@ openAuditLogs(modal: TemplateRef<any>) {
         billingParty: billingPartySid
       }
     });
+  }
+  ngOnDestroy(){
+  this.dataFromQuotation = null;
   }
 
 }

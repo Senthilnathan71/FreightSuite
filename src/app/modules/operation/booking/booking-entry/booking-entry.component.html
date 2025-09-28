@@ -417,8 +417,8 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        [value]="quotationNumber" disabled>
+                      <input type="text" id="text-input" class="form-control custom-input-field sm"
+                        formControlName="QuotationHeaderSid" [disabled]="true" />
                       <label for="text-input" [ngClass]="{
                         'input-label': true,
                          'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
@@ -580,7 +580,7 @@
                             <!-- POL Section -->
                             <div style="flex: 1; text-align: left;">
                               <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
-                              <div>ETA: {{ item.POL?.ETD | formatDate }}</div>
+                              <div>ETD: {{ item.ETD | formatDate }}</div>
                               <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
                             </div>
 
@@ -588,7 +588,7 @@
                             <div style="flex: 1; text-align: right;">
                               <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
                               <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
-                              <div>ETD: {{ item.POD?.ETA | formatDate }}</div>
+                              <div>ETA: {{ item.ETA | formatDate }}</div>
                             </div>
 
                           </div>

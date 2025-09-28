@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { Lead } from '../Interfaces/lead.interface';
 import { City } from '../Interfaces/city.interface';
 import { PreCustomer } from '../Interfaces/preCustomer.interface';
@@ -13,9 +13,13 @@ export class LeadService {
   saveCombinedEvents(events: CalendarEvent<any>[]) {
     throw new Error('Method not implemented.');
   }
-
+private bookingDataSubject = new BehaviorSubject<any>({});
+  public bookingData$: Observable<any> = this.bookingDataSubject.asObservable();
+  
   constructor(private http: HttpClient) { }
-  private quotationData: any = {};
+  public quotationData: any = {};
+  public bookingData: any = {};
+
   private voiceEnquiryData: any = {};
 
 
@@ -284,6 +288,66 @@ export class LeadService {
       })
     )
   }
+  deleteCarrier(id: number) {
+    return this.http.delete(`ff-quotation/carrier/${id}`).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  deleteProduct(id: number) {
+    return this.http.delete(`ff-quotation/product/${id}`).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  getAllPackageTypeUOM(){
+    return this.http.get<{ data: any }>(`uom/package-type-uom`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllImco(){
+    return this.http.get<{ data: any }>(`imco`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllMeasurementUnit(){
+    return this.http.get<{ data: any }>(`uom/measurement-uom`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllWeightUnit(){
+    return this.http.get<{ data: any }>(`uom/weight-uom`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getExchangeRate(payload) {
+    return this.http.post<{ data: any }>('currency-exchange/exchange-rate', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    )
+  }
+
   updateQuoteById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`ff-quotation/header/${id}`, payload).pipe(
       map((resp) => {
@@ -392,9 +456,11 @@ export class LeadService {
     )
   }
 
+  // Set, Get, Clear the data fro Quotation
+
   clearQuotationData() {
     this.quotationData = {};
-  }
+}
 
   setQuotationData(data: any) {
     this.quotationData = data;
@@ -403,6 +469,8 @@ export class LeadService {
   getQuotationData() {
     return this.quotationData || {};
   }
+
+
 
   getAllTodo(CompanyMasterSid:number,BranchMasterSid:number) {
     return this.http.post('ff-precustomer-meeting/lead/todo',{CompanyMasterSid,BranchMasterSid}).pipe(

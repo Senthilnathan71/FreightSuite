@@ -1,45 +1,53 @@
 <div class="row compact-form">
-    <div class="col-12 px-0" >
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
-                      <div class="brand-icon">
-                         <i class="fas fa-compass"></i>
-                      </div>
-                      <h5 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit':'Add'}} Sailing Schedule</h5>
-                      <a *ngIf="isEditMode" class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
-                      </a>
+                    <div class="brand-icon">
+                        <i class="fas fa-compass"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit':'Add'}} Sailing Schedule</h5>
+                    <a *ngIf="isEditMode" class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer"
+                        (click)="showHeaderInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
                 </div>
             </div>
-            <div class="col-md-8 pb-2">
-                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+            <div class="col-md-8 pb-1">
+                <div
+                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                      (click)="openAuditLogs(auditLogModal)"><i class="fas fa-history me-1"></i>Logs</button>
+                        (click)="openAuditLogs(auditLogModal)"><i class="fas fa-history me-1"></i>Logs</button>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="scheduleForm.invalid"
-                    *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        [disabled]="scheduleForm.invalid" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Edit' : 'Save' }}
                     </button>
                     <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                            ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                    class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                    class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                    class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                    class="fas fa-envelope me-1"></i> Email</button>
                         </div>
                     </div>
                 </div>
@@ -49,355 +57,467 @@
 
     <!-- Header Form -->
     <div class="col-md-12 px-0" [formGroup]="scheduleForm">
-        <div class="card mb-2">
-            <div class="card-body px-3 py-3">
-                <div class="row pb-2 rounded border border-top-0">
-                    <div class="card-header-title d-flex align-items-center gap-2  mb-1">
+        <div class="row">
+            <div class="col-md-6 pe-md-1">
+                <div class="card mb-1">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- <div class="card-header-title d-flex align-items-center gap-2  mb-1">
                      <i class="fas fa-compass fs-4"></i>
                         <h5 class="card-titlename mb-0">Sailing Schedule Information</h5>
-                    </div>
+                    </div> -->
 
-                    <!-- Vessel -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('VesselMasterSid')?.value">
-                            <ng-select class="ng-select" formControlName="VesselMasterSid" [items]="vesselList" bindValue="VesselMasterSid" bindLabel="VesselName" placeholder="">
-                            </ng-select>
-                            <label class="input-label">Vessel <span class="text-danger">*</span></label>
-                            @if(scheduleForm.get('VesselMasterSid')?.touched && scheduleForm.get('VesselMasterSid')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('VesselMasterSid')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <!-- Voyage No -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="VoyageNo" [textWithNumbers]="10" style="text-transform: uppercase;">
-                            <label class="input-label">Voy No <span class="text-danger">*</span></label>
-                             @if(scheduleForm.get('VoyageNo')?.touched && scheduleForm.get('VoyageNo')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('VoyageNo')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                 @else if(scheduleForm.get('VoyageNo')?.hasError('textWithNumbers')){
-                                <span>Max 10</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <!-- Rotation No -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="RotationNumber" [textWithNumbers]="10" style="text-transform: uppercase;">
-                            <label class="input-label">Rotation No <span class="text-danger">*</span></label>
-                             @if(scheduleForm.get('RotationNumber')?.touched && scheduleForm.get('RotationNumber')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('RotationNumber')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                 @else if(scheduleForm.get('RotationNumber')?.hasError('textWithNumbers')){
-                                <span>Max 10</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <!-- Ship IRN -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="ShipIRN" [textWithNumbers]="10">
-                            <label class="input-label">Shipr IRN</label>
-                        </div>
-                    </aside>
-
-                    <!-- Crew IRN -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="CrewIRN" [textWithNumbers]="10">
-                            <label class="input-label">Crew IRN</label>
-                        </div>
-                    </aside>
-
-                    <!-- SCM ETA -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker" [footerTemplate]="footerTemplateSCMETA" (click)="d.toggle()" formControlName="SCMETA" [maxDate]="toNgbDateStruct(scheduleForm.get('SCMETD').value)" readonly />
-                                <button class="btn bi bi-calendar3" (click)="d.toggle()" type="button"><i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">SCM ETA<span class="text-danger">*</span></label>
-                            @if(scheduleForm.get('SCMETA')?.touched && scheduleForm.get('SCMETA')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('SCMETA')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <ng-template #footerTemplateSCMETA>
-                        <hr class="my-0" />
-                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETA').setValue(todayDate); d.close()">Today</button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">Close</button>
-                    </ng-template>
-
-                    <!-- SCM ETD -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker" [footerTemplate]="footerTemplateSCMETD" (click)="d1.toggle()" formControlName="SCMETD" [minDate]="toNgbDateStruct(scheduleForm.get('SCMETA').value)" readonly />
-                                <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button"><i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">SCM ETD<span class="text-danger">*</span></label>
-                            @if(scheduleForm.get('SCMETD')?.touched && scheduleForm.get('SCMETD')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('SCMETD')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <ng-template #footerTemplateSCMETD>
-                        <hr class="my-0" />
-                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETD').setValue(todayDate); d1.close()">Today</button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">Close</button>
-                    </ng-template>
-
-                    <!-- SCM Cargo Description -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="SCMTCargoDescription" [textWithNumbers]="200">
-                            <label class="input-label">SCM Cargo Description<span class="text-danger">*</span></label>
-                            @if(scheduleForm.get('SCMTCargoDescription')?.touched && scheduleForm.get('SCMTCargoDescription')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('SCMTCargoDescription')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <!-- CoLoad -->
-                    <aside class="col-md-3 d-flex align-items-center">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" formControlName="CoLoad" (keydown.enter)="toggleCoLoad($event)">
-                            <label class="form-check-label">Co load</label>
-                        </div>
-                    </aside>
-
-                   <!-- Voyage Type -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('VoyageType')?.value">
-                            <ng-select formControlName="VoyageType" [items]="modeOfVoyageType" bindLabel="name" bindValue="name" placeholder=""></ng-select>
-                            <label class="input-label">Voyage Type<span class="text-danger">*</span></label>
-                            @if(scheduleForm.get('VoyageType')?.touched && scheduleForm.get('VoyageType')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('VoyageType')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                                
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <!-- Carrier -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('Carrier')?.value">
-                            <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid" bindLabel="CustomerName" formControlName="Carrier" placeholder=""></ng-select>
-                            <label class="input-label">Carrier</label>
-                        </div>
-                    </aside>
-
-                    <!-- --------- NEW: Ports & key dates inline in header ---------- -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('POLSid')?.value">
-                            <dofi-searchable-dropdown 
-  [items]="filteredPOLList" 
-  formControlName="POLSid"
-  [placeholder]="''"
-  [displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['Code', 'Name','Country']" 
-  [labelFields]="['PortCode','PortName','CountryName']"
-  [bindValue]="'PortMasterSid'">
-</dofi-searchable-dropdown>
-<label class="input-label">POL <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3 mb-1">
-                       <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ETD')?.value">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #etdPicker="ngbDatepicker" [footerTemplate]="footerTemplateETD" (click)="etdPicker.toggle()" formControlName="ETD" readonly/>
-                                <label class="input-label">ETD <span class="text-danger">*</span></label>
-                            </div>
-                            <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="etdPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
-                            @if(scheduleForm.get('ETD')?.touched && scheduleForm.get('ETD')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('ETD')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3 mb-1">
-                        <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('PortCutoff')?.value">
-                                <div class="input-group">
-                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #pcPicker="ngbDatepicker" (click)="pcPicker.toggle()" formControlName="PortCutoff" [maxDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly />
-                                    <button class="btn bi bi-calendar3" (click)="pcPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
+                            <!-- Vessel -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!scheduleForm.get('VesselMasterSid')?.value">
+                                    <ng-select class="ng-select" formControlName="VesselMasterSid" [items]="vesselList"
+                                        bindValue="VesselMasterSid" bindLabel="VesselName" placeholder="">
+                                    </ng-select>
+                                    <label class="input-label">Vessel <span class="text-danger">*</span></label>
+                                    @if(scheduleForm.get('VesselMasterSid')?.touched &&
+                                    scheduleForm.get('VesselMasterSid')?.errors){
+                                    <div class="error-message">
+                                        @if(scheduleForm.get('VesselMasterSid')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                    </div>
+                                    }
                                 </div>
-                                <label class="input-label">Port Cutoff</label>
-                            </div>
+                            </aside>
+
+                            <!-- Voyage No -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" placeholder="" class="custom-input-field sm"
+                                        formControlName="VoyageNo" [textWithNumbers]="10"
+                                        style="text-transform: uppercase;">
+                                    <label class="input-label">Voy No <span class="text-danger">*</span></label>
+                                    @if(scheduleForm.get('VoyageNo')?.touched && scheduleForm.get('VoyageNo')?.errors){
+                                    <div class="error-message">
+                                        @if(scheduleForm.get('VoyageNo')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                        @else if(scheduleForm.get('VoyageNo')?.hasError('textWithNumbers')){
+                                        <span>Max 10</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+                            <!-- Rotation No -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" placeholder="" class="custom-input-field sm"
+                                        formControlName="RotationNumber" [textWithNumbers]="10"
+                                        style="text-transform: uppercase;">
+                                    <label class="input-label">Rotation No <span class="text-danger"></span></label>
+                                    @if(scheduleForm.get('RotationNumber')?.touched &&
+                                    scheduleForm.get('RotationNumber')?.errors){
+                                    <div class="error-message">
+                                        @if(scheduleForm.get('RotationNumber')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                        @else if(scheduleForm.get('RotationNumber')?.hasError('textWithNumbers')){
+                                        <span>Max 10</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+
+
+
+
+
+                            <!-- CoLoad -->
+                            <aside class="col-md-4 d-flex align-items-center mt-md-2">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" formControlName="CoLoad"
+                                        (keydown.enter)="toggleCoLoad($event)">
+                                    <label class="form-check-label">Co load</label>
+                                </div>
+                            </aside>
+
+                            <!-- Voyage Type -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!scheduleForm.get('VoyageType')?.value">
+                                    <ng-select formControlName="VoyageType" [items]="modeOfVoyageType" bindLabel="name"
+                                        bindValue="name" placeholder=""></ng-select>
+                                    <label class="input-label">Voyage Type<span class="text-danger"></span></label>
+                                    @if(scheduleForm.get('VoyageType')?.touched &&
+                                    scheduleForm.get('VoyageType')?.errors){
+                                    <div class="error-message">
+                                        @if(scheduleForm.get('VoyageType')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+                            <!-- Carrier -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!scheduleForm.get('Carrier')?.value">
+                                    <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid"
+                                        bindLabel="CustomerName" formControlName="Carrier" placeholder=""></ng-select>
+                                    <label class="input-label">Carrier</label>
+                                </div>
+                            </aside>
+                            <!-- Remarks -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" placeholder="" class="custom-input-field sm"
+                                        formControlName="Remarks" [textWithNumbers]="200">
+                                    <label class="input-label">Remarks</label>
+                                </div>
+                            </aside>
+                            <!-- Status -->
+                            <aside class="col-md-4 mb-1">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!scheduleForm.get('status')?.value">
+                                    <ng-select *ngIf="isEditMode" formControlName="status" [items]="modeOfStatus"
+                                        bindLabel="name" bindValue="name" placeholder="" class="ng-select"></ng-select>
+                                    <input *ngIf="!isEditMode" type="text" name="status" class="custom-input-field sm"
+                                        formControlName="status" readonly>
+                                    <label class="input-label">Status</label>
+                                </div>
+                            </aside>
+
+
                         </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('PODSid')?.value">
-                            <dofi-searchable-dropdown 
-  [items]="filteredPODList" 
-  formControlName="PODSid"
-  [placeholder]="''"
-  [displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['Code', 'Name','Country']" 
-  [labelFields]="['PortCode','PortName','CountryName']"
-  [bindValue]="'PortMasterSid'">
-</dofi-searchable-dropdown>
-<label class="input-label">POD <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3 mb-1">
-                         <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ETA')?.value">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #etaPicker="ngbDatepicker" [footerTemplate]="footerTemplateETA" (click)="etaPicker.toggle()" formControlName="ETA" [minDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly/>
-                                <label class="input-label">ETA <span class="text-danger">*</span></label>
-                            </div>
-                            <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="etaPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
-                            @if(scheduleForm.get('ETA')?.touched && scheduleForm.get('ETA')?.errors){
-                            <div class="error-message">
-                                @if(scheduleForm.get('ETA')?.hasError('required')){ <span>Required</span> }
-                            </div>
-                            }
-                        </div>
-                    </aside>
-
-                    <ng-template #footerTemplateETA>
-                        <hr class="my-0" />
-                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('ETA')?.setValue(todayDate); etaPicker.close()">Today</button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="etaPicker.close()">Close</button>
-                    </ng-template>
-
-                    <ng-template #footerTemplateETD>
-                        <hr class="my-0" />
-                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('ETD').setValue(todayDate); etdPicker.close()">Today</button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="etdPicker.close()">Close</button>
-                    </ng-template>
-
-                    <aside class="col-md-3 mb-1">
-                        <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ATD')?.value">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #atdPicker="ngbDatepicker" (click)="atdPicker.toggle()" formControlName="ATD" readonly/>
-                                <label class="input-label">ATD</label>
-                            </div>
-                            <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="atdPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3 mb-1">
-                        <div class="d-flex mb-2 my-lg-0">
-                            <div class="custom-form-group custom-form-group-select-date w-100 mb-0" [class.filled]="!!scheduleForm.get('ATA')?.value">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" formControlName="ATA" readonly/>
-                                <label class="input-label">ATA</label>
-                            </div>
-                            <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="ataPicker.toggle()" type="button"><i-feather class="feather-sm" name="calendar"></i-feather></button>
-                         </div>
-                    </aside>
-
-                     <!-- Remarks -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="Remarks" [textWithNumbers]="200">
-                            <label class="input-label">Remarks</label>
-                        </div>
-                    </aside>
-                      <!-- Status -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!scheduleForm.get('status')?.value">
-                            <ng-select *ngIf="isEditMode" formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name" placeholder="" class="ng-select"></ng-select>
-                            <input *ngIf="!isEditMode" type="text" name="status" class="custom-input-field sm" formControlName="status" readonly>
-                            <label class="input-label">Status</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" class="form-control custom-input-field sm" formControlName="TransitDays" readonly>
-                            <label class="input-label">Transit Days</label>
-                        </div>
-                    </aside>
-
+                    </div>
                 </div>
             </div>
+            <div class="col-md-6 ps-md-1">
+                <div class="card mb-1">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <!-- Ship IRN -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" placeholder="" class="custom-input-field sm"
+                                        formControlName="ShipIRN" [textWithNumbers]="10">
+                                    <label class="input-label">Shipr IRN</label>
+                                </div>
+                            </aside>
+
+                            <!-- Crew IRN -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" placeholder="" class="custom-input-field sm"
+                                        formControlName="CrewIRN" [textWithNumbers]="10">
+                                    <label class="input-label">Crew IRN</label>
+                                </div>
+                            </aside>
+                            <!-- SCM ETA -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select-date">
+                                    <div class="input-group">
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                            ngbDatepicker #d="ngbDatepicker" [footerTemplate]="footerTemplateSCMETA"
+                                            (click)="d.toggle()" formControlName="SCMETA"
+                                            [maxDate]="toNgbDateStruct(scheduleForm.get('SCMETD').value)" readonly />
+                                        <button class="btn bi bi-calendar3" (click)="d.toggle()"
+                                            type="button"><i-feather name="calendar"
+                                                class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label class="input-label">SCM ETA<span class="text-danger"></span></label>
+                                    @if(scheduleForm.get('SCMETA')?.touched && scheduleForm.get('SCMETA')?.errors){
+                                    <div class="error-message pb-2 pe-3">
+                                        @if(scheduleForm.get('SCMETA')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+                            <ng-template #footerTemplateSCMETA>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="scheduleForm.get('SCMETA').setValue(todayDate); d.close()">Today</button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end"
+                                    (click)="d.close()">Close</button>
+                            </ng-template>
+
+                            <!-- SCM ETD -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select-date">
+                                    <div class="input-group">
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                            ngbDatepicker #d1="ngbDatepicker" [footerTemplate]="footerTemplateSCMETD"
+                                            (click)="d1.toggle()" formControlName="SCMETD"
+                                            [minDate]="toNgbDateStruct(scheduleForm.get('SCMETA').value)" readonly />
+                                        <button class="btn bi bi-calendar3" (click)="d1.toggle()"
+                                            type="button"><i-feather name="calendar"
+                                                class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label class="input-label">SCM ETD<span class="text-danger"></span></label>
+                                    @if(scheduleForm.get('SCMETD')?.touched && scheduleForm.get('SCMETD')?.errors){
+                                    <div class="error-message  pb-2 pe-3">
+                                        @if(scheduleForm.get('SCMETD')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+                            <ng-template #footerTemplateSCMETD>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="scheduleForm.get('SCMETD').setValue(todayDate); d1.close()">Today</button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end"
+                                    (click)="d1.close()">Close</button>
+                            </ng-template>
+
+                            <!-- SCM Cargo Description -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" placeholder="" class="custom-input-field sm"
+                                        formControlName="SCMTCargoDescription" [textWithNumbers]="200">
+                                    <label class="input-label">SCM Cargo Description<span
+                                            class="text-danger"></span></label>
+                                    @if(scheduleForm.get('SCMTCargoDescription')?.touched &&
+                                    scheduleForm.get('SCMTCargoDescription')?.errors){
+                                    <div class="error-message">
+                                        @if(scheduleForm.get('SCMTCargoDescription')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- --------- NEW: Ports & key dates inline in header ---------- -->
+                            <aside class="col-md-3">
+                                <div class="custom-form-group custom-form-group-select w-100 mb-0"
+                                    [class.filled]="!!scheduleForm.get('POLSid')?.value">
+                                    <dofi-searchable-dropdown [items]="filteredPOLList" formControlName="POLSid"
+                                        [placeholder]="''" [displayFields]="['PortCode', 'PortName','CountryName']"
+                                        [displayLabels]="['Code', 'Name','Country']"
+                                        [labelFields]="['PortCode','PortName','CountryName']"
+                                        [bindValue]="'PortMasterSid'">
+                                    </dofi-searchable-dropdown>
+                                    <label class="input-label">POL <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-3">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"
+                                        [class.filled]="!!scheduleForm.get('ETD')?.value">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #etdPicker="ngbDatepicker" [footerTemplate]="footerTemplateETD"
+                                            (click)="etdPicker.toggle()" formControlName="ETD" readonly />
+                                        <label class="input-label">ETD <span class="text-danger">*</span></label>
+                                    </div>
+                                    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="etdPicker.toggle()"
+                                        type="button"><i-feather class="feather-sm"
+                                            name="calendar"></i-feather></button>
+                                    <!-- @if(scheduleForm.get('ETD')?.touched && scheduleForm.get('ETD')?.errors){
+                                    <div class="error-message">
+                                        @if(scheduleForm.get('ETD')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                    </div>
+                                    } -->
+                                </div>
+                            </aside>
+                             <ng-template #footerTemplateETD>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="scheduleForm.get('ETD').setValue(todayDate); etdPicker.close()">Today</button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end"
+                                    (click)="etdPicker.close()">Close</button>
+                            </ng-template>
+
+                            <aside class="col-md-3">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"
+                                        [class.filled]="!!scheduleForm.get('PortCutoff')?.value">
+                                        <div class="input-group">
+                                            <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                                ngbDatepicker #pcPicker="ngbDatepicker" (click)="pcPicker.toggle()"
+                                                formControlName="PortCutoff"
+                                                [maxDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly />
+                                            <button class="btn bi bi-calendar3" (click)="pcPicker.toggle()"
+                                                type="button"><i-feather class="feather-sm"
+                                                    name="calendar"></i-feather></button>
+                                        </div>
+                                        <label class="input-label">Port Cutoff</label>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-3">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!scheduleForm.get('PODSid')?.value">
+                                    <dofi-searchable-dropdown [items]="filteredPODList" formControlName="PODSid"
+                                        [placeholder]="''" [displayFields]="['PortCode', 'PortName','CountryName']"
+                                        [displayLabels]="['Code', 'Name','Country']"
+                                        [labelFields]="['PortCode','PortName','CountryName']"
+                                        [bindValue]="'PortMasterSid'">
+                                    </dofi-searchable-dropdown>
+                                    <label class="input-label">POD <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-3">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"
+                                        [class.filled]="!!scheduleForm.get('ETA')?.value">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #etaPicker="ngbDatepicker" [footerTemplate]="footerTemplateETA"
+                                            (click)="etaPicker.toggle()" formControlName="ETA"
+                                            [minDate]="toNgbDateStruct(scheduleForm.get('ETD')?.value)" readonly />
+                                        <label class="input-label">ETA <span class="text-danger">*</span></label>
+                                    </div>
+                                    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="etaPicker.toggle()"
+                                        type="button"><i-feather class="feather-sm"
+                                            name="calendar"></i-feather></button>
+                                    <!-- @if(scheduleForm.get('ETA')?.touched && scheduleForm.get('ETA')?.errors){
+                                       @if(scheduleForm.get('ETA')?.hasError('required')){   
+                                    <div class="error-message">
+                                       <span>Required</span> 
+                                    </div>
+                                    }
+                                } -->
+                                </div>
+                            </aside>
+
+                            <ng-template #footerTemplateETA>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="scheduleForm.get('ETA')?.setValue(todayDate); etaPicker.close()">Today</button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end"
+                                    (click)="etaPicker.close()">Close</button>
+                            </ng-template>
+
+                           
+                            <aside class="col-md-3">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"
+                                        [class.filled]="!!scheduleForm.get('ATD')?.value">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #atdPicker="ngbDatepicker" (click)="atdPicker.toggle()"
+                                            formControlName="ATD"  [footerTemplate]="footerTemplateATA"/>
+                                        <label class="input-label">ATD</label>
+                                    </div>
+                                    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="atdPicker.toggle()"
+                                        type="button"><i-feather class="feather-sm"
+                                            name="calendar"></i-feather></button>
+                                </div>
+                            </aside>
+                              <ng-template #footerTemplateATD>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="scheduleForm.get('ATD').setValue(todayDate); d.close()">Today</button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end"
+                                    (click)="d.close()">Close</button>
+                            </ng-template>
+                            <aside class="col-md-3">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0"
+                                        [class.filled]="!!scheduleForm.get('ATA')?.value" >
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()"
+                                            formControlName="ATA" [footerTemplate]="footerTemplateATA"  />
+                                        <label class="input-label">ATA</label>
+                                    </div>
+                                    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="ataPicker.toggle()"
+                                        type="button"><i-feather class="feather-sm"
+                                            name="calendar"></i-feather></button>
+                                </div>
+                            </aside>
+                             <ng-template #footerTemplateATA>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="scheduleForm.get('ATA').setValue(todayDate); d.close()">Today</button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end"
+                                    (click)="d.close()">Close</button>
+                            </ng-template>
+
+
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" class="form-control custom-input-field sm"
+                                        formControlName="TransitDays" placeholder="" readonly>
+                                    <label class="input-label">Transit Days</label>
+                                </div>
+                            </aside>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+
     </div>
 
 </div>
 
 <!-- Audit Log Modal -->
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-            <ul><li *ngFor="let field of log.oldValDisplay">{{ field }}</li></ul>
-          </td>
-          <td class="bg-light-success">
-            <ul><li *ngFor="let field of log.newValDisplay">{{ field }}</li></ul>
-          </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
 </ng-template>

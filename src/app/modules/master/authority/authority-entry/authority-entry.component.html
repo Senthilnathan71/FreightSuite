@@ -1,6 +1,6 @@
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
                        <div class="brand-icon">
@@ -46,15 +46,15 @@
         </div>
     </div>
 
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body py-2 px-3" [formGroup]="authorityForm">
-                <div class="row pb-2 rounded border border-top-0">
-                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+    <div class="col-12 px-0">
+        <div class="card mb-1">
+            <div class="card-body" [formGroup]="authorityForm">
+                <div class="row">
+                      <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                         <i class="fas fa-lock fs-4"></i>
 
                         <h5 class="card-titlename mb-0">Authorization Information</h5>
-                    </div>
+                    </div> -->
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('MenuMaster')?.value">
                             <ng-select class="ng-select" [items]="menuResults" bindLabel="MenuName"
@@ -174,10 +174,10 @@
         </div>
     </div>
 
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="card">
-            <div class="card-header bg-white d-flex">
-                <h5 class="card-title text-info mt-1">Authorization Details</h5>
+            <div class="px-2 d-flex align-items-center py-1">
+                <h5 class="text-info mb-0">Authorization Details</h5>
                 <div class="ms-auto">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="addAuthDetail()">
@@ -189,11 +189,11 @@
             <div class="card-body pt-0" *ngIf="authDetails.length > 0">
                 <div class="row" [formGroup]="authorityForm">
                     <div class="table-responsive" style="max-height: 35vh;">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                        <table class="tableS">
                             <thead>
                                 <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col"
-                                        width="5%">Action
+                                        width="3%">Action
                                     </th>
                                     <th class="bg-transparent text-light" scope="col" width="10%">Approval Level</th>
                                     <th class="bg-transparent text-light" scope="col" width="30%">Authorizer</th>

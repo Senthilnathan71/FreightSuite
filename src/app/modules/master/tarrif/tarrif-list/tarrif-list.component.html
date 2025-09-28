@@ -8,13 +8,8 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
@@ -59,7 +54,7 @@
                         (click)="navigateToCreateTariff()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
-                }
+                    }
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
                         [disabled]="!searched">
                         <i class="fas fa-file-alt me-1"></i> Report
@@ -76,9 +71,20 @@
         </div>
     </div>
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalNumberOfCollection > 0">
+    
+    <div class="col-12 px-0">
+        <app-reusable-table #tarrifTable [config]="tableConfig" [data]="allTarrif" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+
+
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto">
         <div class="col-12 p-0">
-            <!-- #region lead view -->
+        
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
@@ -127,21 +133,27 @@
                                         [routerLink]="['/master/tarrif/entry/',tariff.TariffHeaderSid]">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
                                     </a>
-                                }
-                                @if(hasPermission('Delete')) {
+                                    }
+                                    @if(hasPermission('Delete')) {
                                     <a class="link mx-2 ps-3 border-start text-danger cursor-pointer"
                                         (click)="deleteTariff(tariff.TariffHeaderSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
-                                }
+                                    }
                                 </div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.departmentMaster.departmentName}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.POLTerminal}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.PODTerminal}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.customerCarrier.CustomerName}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.customerAgent.CustomerName}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.EffectiveDate | formatDate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{tariff.departmentMaster.departmentName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.POLTerminal}}
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.PODTerminal}}
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{tariff.customerCarrier.CustomerName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{tariff.customerAgent.CustomerName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.EffectiveDate
+                                | formatDate}}</td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(tariff.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
@@ -169,10 +181,10 @@
                 </ngb-pagination>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- #endregion -->
-    `<div class="col-12" *ngIf="totalNumberOfCollection === 0 && searched">
+    <!-- `<div class="col-12">
         <div>No records found</div>
-    </div>
+    </div> -->
 </div>

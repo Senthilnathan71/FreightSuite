@@ -1,80 +1,48 @@
-/* Ensure ng-select container matches input width */
-:host .ng-select {
-  width: 100%;
-  font-size: 14px;
+/* Scrollable wrapper for horizontal scroll */
+:host ::ng-deep .table-wrapper {
+  display: block;                  /* Required for overflow-x to work */
+  max-width: 400px;                /* Fixed width or max-width for scroll */
+  overflow-x: auto !important;     /* Horizontal scroll */
+  overflow-y: hidden;              /* No vertical scroll here */
 }
 
-/* ng-dropdown-panel must match input width but allow internal scrolling */
+/* Dropdown panel vertical scroll */
 :host ::ng-deep .ng-dropdown-panel {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  max-height: 300px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 0;
-}
-
-/* Make child wider than panel to allow scroll */
-:host ::ng-deep .ng-dropdown-panel-items-wrapper {
-  min-width: 800px; /* Increased to ensure enough space for all columns */
+  max-height: 300px;               /* Vertical scroll height */
+  overflow-y: auto;                /* Vertical scroll */
+  width: auto !important;
   display: block;
 }
 
-/* Header and each row */
-:host ::ng-deep .dropdown-header,
-:host ::ng-deep .dropdown-row {
-  display: flex;
-  width: max-content;
-  min-width: 100%;
-  box-sizing: border-box;
-  align-items: center;
-  padding: 8px 0;
+/* Table styling */
+:host ::ng-deep .dropdown-table {
+  width: max-content;              /* Table grows according to columns */
+  border-collapse: collapse;
 }
 
-/* Style columns */
-:host ::ng-deep .dropdown-header > div,
-:host ::ng-deep .dropdown-row > div {
-  padding: 0 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 0 0 auto;
-  border-right: 1px solid #ccc;
-  min-width: fit-content; /* Ensure the column doesn't shrink below its content */
-}
-
-/* Remove border from last column */
-:host ::ng-deep .dropdown-header > div:last-child,
-:host ::ng-deep .dropdown-row > div:last-child {
-  border-right: none;
-}
-
-/* Sticky header */
-:host ::ng-deep .dropdown-header {
-  font-weight: bold;
+/* Header cells */
+:host ::ng-deep .dropdown-table th {
+  padding: 8px;
   background-color: #f8f9fa;
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  white-space: nowrap;             /* Prevent line breaks */
+}
+
+/* Row cells */
+:host ::ng-deep .dropdown-table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  white-space: nowrap;
 }
 
 /* Selected row */
-:host ::ng-deep .ng-option-selected .dropdown-row {
+:host ::ng-deep .ng-option-selected table tr {
   background-color: #05608D !important;
-  color : white
+  color: white;
 }
 
-/* Option container fix */
-:host ::ng-deep .ng-option {
-  padding: 0 !important;
-  display: block;
-}
-
-/* Ensure scrollable content respects the width */
-:host ::ng-deep .ng-dropdown-panel .scroll-host {
-  padding-left: 5px;
-  min-width: max-content !important;
-  overflow-x: auto !important;
+/* Hover effect */
+:host ::ng-deep .dropdown-table tr:hover {
+  background-color: #f1f1f1;
 }
