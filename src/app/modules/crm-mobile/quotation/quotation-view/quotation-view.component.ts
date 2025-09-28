@@ -599,7 +599,7 @@ export class QuotationViewComponent {
       CustomerAddress: QuoteData.CustomerAddress,
       SalesmanSid: QuoteData.SalesmanSid,
       FreightTerms: QuoteData.FreightPPCC,
-      QuotationNumber: QuoteData.QuoteNumber,
+      QuotationHeaderSid: QuoteData.QuoteNumber,
     }
 
     this.route.navigate(['operation/booking/entry'], {

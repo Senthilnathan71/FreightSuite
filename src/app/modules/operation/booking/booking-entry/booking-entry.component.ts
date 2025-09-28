@@ -300,54 +300,102 @@ dataFromQuotation:any
     |   Section-3 : NgOnInit Part
     |--------------------------------------------------
     */
+  // ngOnInit(): void {
+  //   this.userData = this.appSettingService.getDecryptedUserProfile();
+  //   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  //   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  //   this.filterOption = {
+  //     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+  //     BranchMasterSid: this.currentCompany?.BranchMasterSid,
+  //   }
+
+  //   this.initBookingForm();
+  //   this.initCargoForm();
+  //   this.initOtherForm();
+  //   this.initDetailsForm();
+
+  //   const historyState = history?.state;
+  //   const quotationData = historyState?.dataFromQuotation;
+
+  //   if (quotationData && quotationData.quotation) {
+  //     this.dataFromQuotation = quotationData;
+  //     history.replaceState({}, '', location.pathname);
+  //   } else {
+  //     this.dataFromQuotation = {};
+  //   }
+  //   console.log(this.dataFromQuotation,'dataFromQuotation')
+  //   this.loadHeaderLookups().pipe(
+  //   ).subscribe(() => {
+  //     setTimeout(()=>{
+  //       this.loadCargoLookups();
+  //     this.loadOtherLookups();
+  //     if(this.dataFromQuotation?.quotation){
+  //       this.patchBookingFromQuotation(this.dataFromQuotation)
+  //       this.minDate = this.today;
+  //     }else{
+  //     // this.leadService.clearBookingData()
+  //       this.currentRoute.paramMap.subscribe((param) => {
+  //         this.BookingHeaderSid = +param.get('id');
+  //         if (this.BookingHeaderSid) {
+  //           this.isEditMode = true;
+  //           this.loadBookingById(this.BookingHeaderSid);
+  //         } else {
+  //           this.minDate = this.today;
+  //         }
+  //       })
+  //     }
+  //     },1000)
+  //   });
+
+
+  // }
+
   ngOnInit(): void {
-    this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.filterOption = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentCompany?.BranchMasterSid,
-    }
+  this.userData = this.appSettingService.getDecryptedUserProfile();
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
-    this.initBookingForm();
-    this.initCargoForm();
-    this.initOtherForm();
-    this.initDetailsForm();
+  this.filterOption = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid, // fixed: was currentCompany?.BranchMasterSid
+  };
 
-    const historyState = history?.state;
-    const quotationData = historyState?.dataFromQuotation;
+  this.initBookingForm();
+  this.initCargoForm();
+  this.initOtherForm();
+  this.initDetailsForm();
 
-    if (quotationData && quotationData.quotation) {
-      this.dataFromQuotation = quotationData;
-      history.replaceState({}, '', location.pathname);
+  const historyState = history?.state;
+  const quotationData = historyState?.dataFromQuotation;
+
+  this.dataFromQuotation = quotationData?.quotation ? quotationData : {};
+
+  // Clear browser state
+  if (quotationData?.quotation) history.replaceState({}, '', location.pathname);
+
+  console.log(this.dataFromQuotation, 'dataFromQuotation');
+
+  // Load lookups first
+  this.loadHeaderLookups().subscribe(() => {
+    this.loadCargoLookups();
+    this.loadOtherLookups();
+
+    if (this.dataFromQuotation?.quotation) {
+      this.patchBookingFromQuotation(this.dataFromQuotation);
+      this.minDate = this.today;
     } else {
-      this.dataFromQuotation = {};
+      this.currentRoute.paramMap.subscribe((param) => {
+        this.BookingHeaderSid = +param.get('id');
+        if (this.BookingHeaderSid) {
+          this.isEditMode = true;
+          this.loadBookingById(this.BookingHeaderSid);
+        } else {
+          this.minDate = this.today;
+        }
+      });
     }
-    console.log(this.dataFromQuotation,'dataFromQuotation')
-    this.loadHeaderLookups().pipe(
-      delay(100) // Delay for 100ms
-    ).subscribe(() => {
-      if(this.dataFromQuotation){
-        this.patchBookingFromQuotation(this.dataFromQuotation)
-        this.minDate = this.today;
-      }else{
-      // this.leadService.clearBookingData()
-        this.currentRoute.paramMap.subscribe((param) => {
-          this.BookingHeaderSid = +param.get('id');
-          if (this.BookingHeaderSid) {
-            this.isEditMode = true;
-            this.loadBookingById(this.BookingHeaderSid);
-          } else {
-            this.minDate = this.today;
-          }
-          this.loadCargoLookups();
-          this.loadOtherLookups();
-        })
-      }
-    });
-
-
-  }
+  });
+}
 
   /**
   |--------------------------------------------------
@@ -772,22 +820,43 @@ dataFromQuotation:any
 
   }
 
-  patchBookingFromQuotation(data:any){
-    console.log(data);
-    const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
-    const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === data.CustomerMasterSid);
-    this.onDeptChange(selectedDepartment);
-    this.onCustomerChange(selectedCustomer);
-    this.bookingForm.patchValue({
-      BookingDateTime:null,
-      DepartmentMasterSid: data.DepartmentMasterSid,
-      CustomerMasterSid: data.CustomerMasterSid,
-      CustomerName: data.CustomerName,
-      CustomerAddress: data.CustomerAddress,
-      SalesmanSid: data.SalesmanSid,
-      FreightTerms : data.FreightTerms,
-    })
+  // patchBookingFromQuotation(data:any){
+  //   console.log(data);
+  //   const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
+  //   const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === data.CustomerMasterSid);
+  //   this.onDeptChange(selectedDepartment);
+  //   this.onCustomerChange(selectedCustomer);
+  //   this.bookingForm.patchValue({
+  //     CustomerMasterSid: data.CustomerMasterSid,
+  //     CustomerName: data.CustomerName,
+  //     CustomerAddress: data.CustomerAddress,
+  //     SalesmanSid: data.SalesmanSid,
+  //     FreightTerms : data.FreightTerms,
+  //     QuotationHeaderSid: data.QuotationHeaderSid
+  //   })
+  // }
+
+  // Patch booking from quotation
+patchBookingFromQuotation(data: any) {
+  // Find customer from loaded customer list
+  const customer = this.customerList.find(c => c.CustomerMasterSid === data.CustomerMasterSid);
+  if (customer) {
+    this.onCustomerChange(customer); // sets CustomerName and CustomerAddress properly
+  } else {
+    // fallback if customer not found
+    this.b['CustomerName']?.setValue(data.CustomerName || '');
+    this.b['CustomerAddress']?.setValue(data.CustomerAddress || '');
   }
+
+  // Patch remaining form fields
+  this.bookingForm.patchValue({
+    QuotationHeaderSid: data.QuotationHeaderSid,
+    DepartmentMasterSid: data.DepartmentMasterSid,
+    CustomerMasterSid: data.CustomerMasterSid,
+    SalesmanSid: data.SalesmanSid,
+    FreightTerms: data.FreightTerms,
+  });
+}
 
   onContainerTypeChange(containerType : any){
     if(!containerType){

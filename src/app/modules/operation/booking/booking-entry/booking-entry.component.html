@@ -417,8 +417,8 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        [value]="quotationNumber" disabled>
+                      <input type="text" id="text-input" class="form-control custom-input-field sm"
+                        formControlName="QuotationHeaderSid" [disabled]="true" />
                       <label for="text-input" [ngClass]="{
                         'input-label': true,
                          'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
