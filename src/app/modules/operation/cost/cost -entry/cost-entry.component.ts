@@ -38,10 +38,10 @@ export class CostEntryComponent implements OnInit {
   selectedTab = 'Sales and cost';
   // costFormArray: FormArray;
   // revenueFormArray: FormArray;
-  rateFormArray : FormArray;
   chargeList: any[] = [];
   uomList: any[] = [];
   docTypeList: any[] = [];
+  vouchers:any[]=[]
   slicedCostFormArray: any[] = [];
   slicedRevenueFormArray: any[] = [];
   tariffLoading: boolean;
@@ -138,8 +138,6 @@ export class CostEntryComponent implements OnInit {
       this.patchValues(this._dataItems);
     } else {
       this._dataItems = [];
-      // this.costFormArray?.clear();
-      // this.revenueFormArray?.clear();
       this.costDataLength = 0;
       this.revenueDataLength = 0;
       this.profitSummary = [];
@@ -180,9 +178,7 @@ export class CostEntryComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private excelExportService: ExcelExportService,
     private datePipe: CustomDatePipe
-  ) {
-    this.rateFormArray = this.fb.array([]);
-  }
+  ) {}
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -202,6 +198,7 @@ export class CostEntryComponent implements OnInit {
       this.chargeList = allMasters.charges;
       this.uomList = allMasters.uoms;
       this.docTypeList = allMasters.docTypes;
+      this.vouchers= allMasters.Vouchers
     })
   }
 
@@ -215,25 +212,22 @@ export class CostEntryComponent implements OnInit {
       ChargeMasterSid: [null],
       ChargeDescription: [''],
       ChargeUomSid: [null],
-      NumberOfUnit: [''],
       // Cost 
       CostCurrencyMasterSid: [null],
       CostPrepaidCollect: [''],
       CostExchangeRate: [''],
       CostRate: [''],
-      CostNumberOfUnit:[''],
       CostDrCr: [''],
       CostAmount: [''],
       CostLocalAmount: [''],
-      PerUnit:[''],
-      // Revenue
-      // Status: [''],
-      // Remarks: [''],
+      CostChargeUomSid:[''],
+      PerUnitRevenue:[''],
+
       RevenuePrepaidCollect:[''],
       RevenueCurrencyMasterSid: [null],
       RevenueExchangeRate: [''],
       RevenueRate: [''],
-      RevenueNumberOfUnit:[''],
+      RevenueChargeUomSid:[''],
       RevenueDrCr: [''],
       RevenueAmount: [''],
       RevenueLocalAmount: [''],
@@ -242,64 +236,71 @@ export class CostEntryComponent implements OnInit {
       CustomerBranchSid: [null],
       VoucherHeaderSid: [null],
       VoucherTypeSid: [null],
+      rateFormArray: this.fb.array([])  // <-- Must include this
     });
-
-    if(this.rateFormArray.length === 0){
-      this.addRateRow();
-    }
   }
 
-  get r(): { [key: string]: any } {
-    return this.rateForm.controls;
-  }
+  // Getter
+get rateFormArray(): FormArray {
+  return this.rateForm.get('rateFormArray') as FormArray;
+}
+
+// This allows you to access controls easily in the template
+get r() {
+  return this.rateForm.controls;
+}
 
 
   patchValues(items: any[]) {
-    // this.costFormArray.clear();
-    // this.revenueFormArray.clear();
+
+     if (items && items.length > 0) {
     for (const item of items) {
-      this.addRateRow(item)
+      this.addRateRow(item);
     }
+  }
     this.updateCostPagination();
     this.updateRevenuePagination();
     this.calculateProfit();
   }
+createRateFormGroup(data?: any): FormGroup {
+  console.log(data,'createRateFormGroup')
+  return this.fb.group({
+    BookingRatesSid: [data?.BookingRatesSid ?? null],
+    BookingHeaderSid: [data?.BookingHeaderSid ?? null],
+    CompanyMasterSid: [data?.CompanyMasterSid ?? null],
+    BranchMasterSid: [data?.BranchMasterSid ?? null],
+    CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
+    TransactionSid: [data?.TransactionSid ?? null],
+    SerialNumber: [data?.SerialNumber ?? ''],
+    ChargeMasterSid: [data?.ChargeMasterSid ?? null],
+    ChargeDescription: [data?.ChargeDescription ?? ''],
+    CostPrepaidCollect: [data?.CostPrepaidCollect ?? null],
+    RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
+    ChargeUomSid: [data?.ChargeUomSid ?? null],
+    NumberOfUnit: [data?.NumberOfUnit ?? ''],
+    CostChargeUomSid:[data?.CostChargeUomSid ?? ''],
+    RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
+    CostDrCr: [data?.CostDrCr ?? null],
+    RevenueDrCr: [data?.RevenueDrCr ?? null],
+    CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
+    RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid ?? null],
+    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate).toFixed(2) : ''],
+    RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(2) : ''],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
+    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
+    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(2) : ''],
+    RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
+    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(2) : ''],
+    RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(2) : ''],
+    CustomerMasterSid: [data?.CustomerMasterSid ?? null],
+    CustomerBranchSid: [data?.CustomerBranchSid ?? null],
+    VoucherHeaderSid: [data?.VoucherHeaderSid ?? null],
+    VoucherTypeSid: [data?.VoucherTypeMasterSid ?? null],
+    Status: [data?.Status ?? ''],
+    Remarks: [data?.Remarks ?? '']
+  });
+}
 
-  createRateFormGroup(data?: any): FormGroup {
-    return this.fb.group({
-      BookingRatesSid: [data?.BookingRatesSid || null],
-      BookingHeaderSid: [data?.BookingHeaderSid || null],
-      CompanyMasterSid: [data?.CompanyMasterSid || null],
-      BranchMasterSid: [data?.BranchMasterSid || null],
-      CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
-      TransactionSid: [data?.TransactionSid || null],
-      SerialNumber: [data?.SerialNumber || ''],
-      ChargeMasterSid: [data?.ChargeMasterSid || null],
-      ChargeDescription: [data?.ChargeDescription || ''],
-      PrepaidCollect: [data?.PrepaidCollect || null],
-      ChargeUomSid: [data?.ChargeUomSid || null],
-      NumberOfUnit: [data?.NumberOfUnit || ''],
-      CostDrCr: [data?.CostDrCr || null],
-      RevenueDrCr: [data?.RevenueDrCr || null],
-      CostCurrencyMasterSid: [data?.CostCurrencyMasterSid || null],
-      RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid || null],
-      CostExchangeRate: [Number(data?.CostExchangeRate).toFixed(2) || ''],
-      RevenueExchangeRate: [Number(data?.RevenueExchangeRate).toFixed(2) || ''],
-      CostRate: [Number(data?.CostRate).toFixed(2) || ''],
-      RevenueRate: [Number(data?.RevenueRate).toFixed(2) || ''],
-      CostAmount: [Number(data?.CostAmount).toFixed(2) || ''],
-      RevenueAmount: [Number(data?.RevenueAmount).toFixed(2) || ''],
-      // CostRevenue: [data?.CostRevenue || ''],
-      CostLocalAmount: [Number(data?.CostLocalAmount).toFixed(2) || ''],
-      RevenueLocalAmount: [Number(data?.RevenueLocalAmount).toFixed(2) || ''],
-      CustomerMasterSid: [data?.CustomerMasterSid || null],
-      CustomerBranchSid: [data?.CustomerBranchSid || null],
-      VoucherHeaderSid: [data?.VoucherHeaderSid || null],
-      VoucherTypeSid: [data?.VoucherTypeSid || null],
-      Status: [data?.Status],
-      Remarks: [data?.Remarks]
-    });
-  }
 
   addRateRow(data?:any){
     const formGroup = this.createRateFormGroup(data);
@@ -339,7 +340,6 @@ export class CostEntryComponent implements OnInit {
     this.updateCostPagination();
     this.updateRevenuePagination();
     this.calculateProfit();
-    this.syncDataWithParentComponent();
     this.modalService.dismissAll();
   }
 
@@ -355,22 +355,19 @@ export class CostEntryComponent implements OnInit {
     this.getExchangeRate();
   }
 
-  // copyRate(content: TemplateRef<any>, data?: any) {
-  //   this.openModalBasedOnTab(content);
-  //   const selectedTabLen = this.selectedTab === 'Cost' ? this.costFormArray.length : this.revenueFormArray.length;
-  //   this.rateForm.patchValue({
-  //     ...data,
-  //     SerialNumber: selectedTabLen + 1,
-  //   });
-  // }
 
-  syncDataWithParentComponent() {
-    // const costFormValue: any[] = this.costFormArray.getRawValue() || [];
-    // const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];
-    // const combined = [...costFormValue, ...revenueFormValue];
-    // this.dataEmitter.emit(combined);
+  onChangeUOM(uom: any) {
+    if (!uom) {
+      this.rateForm.get('ChargeUomSid')?.setValue('');
+      return;
+    }
+    this.rateForm.get('ChargeUomSid')?.setValue(uom.UOMName);
+    this.rateForm.get('CostChargeUomSid')?.setValue(uom.UOMName);
+    this.rateForm.get('RevenueChargeUomSid')?.setValue(uom.UOMName);
   }
 
+
+  
   updateCostPagination() {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
@@ -380,85 +377,28 @@ export class CostEntryComponent implements OnInit {
   updateRevenuePagination() {
     const start = (this.page1 - 1) * this.pageSize1;
     const end = start + this.pageSize1;
-    // this.slicedRevenueFormArray = this.revenueFormArray.getRawValue().slice(start, end);
   }
 
   deleteRate(index: number,BookingRatesSid?: number) {
     let realIndex;
-    // if (segment === "Cost") {
-    //   realIndex = ((this.page - 1) * this.pageSize) + index;
-    // } else {
-    //   realIndex = ((this.page1 - 1) * this.pageSize1) + index;
-    // }
     if (BookingRatesSid) {
       this.operationService.deleteBookingRate(BookingRatesSid).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.rateFormArray.removeAt(index);
             this.appSettingService.showSuccess("Rate Deleted Successfully");
-            // if (segment === "Cost") {
-            //   // this.costFormArray.removeAt(realIndex);
-            //   // this.costDataLength = this.costFormArray.length;
-            //   this.appSettingService.showSuccess('Cost deleted successfully.');
-            //   this.adjustCostPageAfterDelete();
-            //   this.updateCostPagination();
-            //   this.calculateProfit();
-            //   this.syncDataWithParentComponent();
-            // } else {
-            //   // this.revenueFormArray.removeAt(realIndex);
-            //   // this.revenueDataLength = this.revenueFormArray.length;
-            //   this.appSettingService.showSuccess('Revenue deleted successfully.');
-            //   this.adjustRevenuePageAfterDelete();
-            //   this.updateRevenuePagination();
-            //   this.calculateProfit();
-            //   this.syncDataWithParentComponent();
-            // }
           } else {
             this.appSettingService.showError('Error deleting rate');
           }
         }
       );
     } else {
-
-      // if (segment === "Cost") {
-      //   // this.costFormArray.removeAt(realIndex);
-      //   // this.costDataLength = this.costFormArray.length;
-      //   this.appSettingService.showSuccess('Cost deleted successfully.');
-      //   this.adjustCostPageAfterDelete();
-      //   this.updateCostPagination();
-      //   this.calculateProfit();
-      //   this.syncDataWithParentComponent();
-      // } else {
-      //   // this.revenueFormArray.removeAt(realIndex);
-      //   // this.revenueDataLength = this.revenueFormArray.length;
-      //   this.appSettingService.showSuccess('Revenue deleted successfully.');
-      //   this.adjustRevenuePageAfterDelete();
-      //   this.updateRevenuePagination();
-      //   this.calculateProfit();
-      //   this.syncDataWithParentComponent();
-      // }
       this.rateFormArray.removeAt(index);
       this.appSettingService.showSuccess("Rate Deleted Successfully");
     }
   }
 
-  adjustCostPageAfterDelete() {
-    const totalPages = Math.ceil(this.costDataLength / this.pageSize);
-    if (this.page > totalPages && totalPages > 0) {
-      this.page = totalPages;
-    } else if (this.costDataLength === 0) {
-      this.page = 1;
-    }
-  }
 
-  adjustRevenuePageAfterDelete() {
-    const totalPages = Math.ceil(this.revenueDataLength / this.pageSize1);
-    if (this.page1 > totalPages && totalPages > 0) {
-      this.page1 = totalPages;
-    } else if (this.revenueDataLength === 0) {
-      this.page1 = 1;
-    }
-  }
 
   onCurrencyChange(currency) {
     if (!currency) {
@@ -466,7 +406,6 @@ export class CostEntryComponent implements OnInit {
       this.rateForm.get('CostLocalAmount')?.setValue('');
       this.rateForm.get('RevenueLocalAmount')?.setValue('');
       this.rateForm.get('RevenueLocalAmount')?.setValue('');
-
       return;
     }
     this.getExchangeRate();
@@ -781,11 +720,7 @@ export class CostEntryComponent implements OnInit {
       CostAmount: detail.Cost.Amount,
       CostLocalAmount: detail.Cost.LocalAmount,
     }
-
-    // const revenueFormGroup = this.createRateFormGroup(rateFormValue);
-    // this.revenueRows.push(rateFormValue)
     this.calculateProfit();
-    this.syncDataWithParentComponent();
     this.modalService.dismissAll();
   }
 
@@ -793,100 +728,7 @@ export class CostEntryComponent implements OnInit {
     this.tariffDetails = [];
     this.modalService.dismissAll();
   }
-  // setTab(tab1: string) {
-  // reportCostRates(): void {
-  //   const allCostRates = this.slicedCostFormArray;
 
-  //   const formattedData = allCostRates.map(rate => ({
-  //     ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
-  //     ChargeName: this.getChargeName(rate.ChargeMasterSid),
-  //     ChargeDescription: rate.ChargeDescription || '',
-  //     PrepaidCollect: rate.PrepaidCollect || '',
-  //     UnitCode: this.getUnitCode(rate.ChargeUomSid),
-  //     NumberOfUnit: rate.NumberOfUnit || 0,
-  //     DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
-  //     Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
-  //     ExchangeRate: rate.ExchangeRate || 0,
-  //     Rate: rate.Rate || 0,
-  //     Amount: rate.Amount || 0,
-  //     LocalAmount: rate.LocalAmount || 0,
-  //     Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
-  //     VoucherHeaderSid: rate.VoucherHeaderSid || '',
-  //     DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
-  //   }));
-
-  //   const companyName = this.currentCompany?.companyName ?? 'Company';
-
-  //   this.excelExportService.exportAsExcel({
-  //     data: formattedData,
-  //     headers: [
-  //       { key: 'ChargeCode', label: 'Charge Code' },
-  //       { key: 'ChargeName', label: 'Charge Name' },
-  //       { key: 'ChargeDescription', label: 'Charge Description' },
-  //       { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
-  //       { key: 'UnitCode', label: 'Unit Code' },
-  //       { key: 'NumberOfUnit', label: 'Number Of Unit' },
-  //       { key: 'DebitCredit', label: 'Debit/Credit' },
-  //       { key: 'Currency', label: 'Currency' },
-  //       { key: 'ExchangeRate', label: 'Exchange Rate' },
-  //       { key: 'Rate', label: 'Rate' },
-  //       { key: 'Amount', label: 'Amount' },
-  //       { key: 'LocalAmount', label: 'Local Amount' },
-  //       { key: 'Customer', label: 'Customer' },
-  //       { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
-  //       { key: 'DocumentType', label: 'Document Type' }
-  //     ],
-  //     fileName: 'Cost-Rates-Report',
-  //     title: companyName
-  //   });
-  // }
-
-  // reportRevenueRates(): void {
-  //   const allCostRates = this.slicedRevenueFormArray;
-
-  //   const formattedData = allCostRates.map(rate => ({
-  //     ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
-  //     ChargeName: this.getChargeName(rate.ChargeMasterSid),
-  //     ChargeDescription: rate.ChargeDescription || '',
-  //     PrepaidCollect: rate.PrepaidCollect || '',
-  //     UnitCode: this.getUnitCode(rate.ChargeUomSid),
-  //     NumberOfUnit: rate.NumberOfUnit || 0,
-  //     DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
-  //     Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
-  //     ExchangeRate: rate.ExchangeRate || 0,
-  //     Rate: rate.Rate || 0,
-  //     Amount: rate.Amount || 0,
-  //     LocalAmount: rate.LocalAmount || 0,
-  //     Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
-  //     VoucherHeaderSid: rate.VoucherHeaderSid || '',
-  //     DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
-  //   }));
-
-  //   const companyName = this.currentCompany?.companyName ?? 'Company';
-
-  //   this.excelExportService.exportAsExcel({
-  //     data: formattedData,
-  //     headers: [
-  //       { key: 'ChargeCode', label: 'Charge Code' },
-  //       { key: 'ChargeName', label: 'Charge Name' },
-  //       { key: 'ChargeDescription', label: 'Charge Description' },
-  //       { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
-  //       { key: 'UnitCode', label: 'Unit Code' },
-  //       { key: 'NumberOfUnit', label: 'Number Of Unit' },
-  //       { key: 'DebitCredit', label: 'Debit/Credit' },
-  //       { key: 'Currency', label: 'Currency' },
-  //       { key: 'ExchangeRate', label: 'Exchange Rate' },
-  //       { key: 'Rate', label: 'Rate' },
-  //       { key: 'Amount', label: 'Amount' },
-  //       { key: 'LocalAmount', label: 'Local Amount' },
-  //       { key: 'Customer', label: 'Customer' },
-  //       { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
-  //       { key: 'DocumentType', label: 'Document Type' }
-  //     ],
-  //     fileName: 'Revenue-Rates-Report',
-  //     title: companyName
-  //   });
-  // }
 
   reportProfitSummary(): void {
     const formattedData = this.profitSummary.map(row => ({
