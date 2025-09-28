@@ -63,8 +63,8 @@ export class CostEntryComponent implements OnInit {
     { id: 2, name: 'Collect' }
   ]
   drcr = [
-    { id: 1, name: 'Debit', value: 'D' },
-    { id: 2, name: 'Credit', value: 'C' }
+    { id: 1, name: 'Dr', value: 'D' },
+    { id: 2, name: 'Cr', value: 'C' }
   ]
   // tabs = [
   //   { name: 'Cost', icon: 'fas fa-rupee-sign' },
@@ -134,6 +134,7 @@ export class CostEntryComponent implements OnInit {
   set dataItems(value: any[]) {
     if (value && value.length > 0) {
       this._dataItems = value;
+      console.log(value);
       this.patchValues(this._dataItems);
     } else {
       this._dataItems = [];
@@ -215,31 +216,37 @@ export class CostEntryComponent implements OnInit {
       ChargeDescription: [''],
       ChargeUomSid: [null],
       NumberOfUnit: [''],
-      PrepaidCollect: [''],
-      Status: [''],
-      Remarks: [''],
-      CostDrCr: [''],
-      RevenueDrCr: [''],
-
-      RevenueCurrencyMasterSid: [null],
+      // Cost 
       CostCurrencyMasterSid: [null],
-
-      RevenueExchangeRate: [''],
+      CostPrepaidCollect: [''],
       CostExchangeRate: [''],
-
-      RevenueRate: [''],
       CostRate: [''],
-
-      RevenueAmount: [''],
+      CostNumberOfUnit:[''],
+      CostDrCr: [''],
       CostAmount: [''],
-
-      RevenueLocalAmount: [''],
       CostLocalAmount: [''],
+      PerUnit:[''],
+      // Revenue
+      // Status: [''],
+      // Remarks: [''],
+      RevenuePrepaidCollect:[''],
+      RevenueCurrencyMasterSid: [null],
+      RevenueExchangeRate: [''],
+      RevenueRate: [''],
+      RevenueNumberOfUnit:[''],
+      RevenueDrCr: [''],
+      RevenueAmount: [''],
+      RevenueLocalAmount: [''],
+      // 
       CustomerMasterSid: [null],
       CustomerBranchSid: [null],
       VoucherHeaderSid: [null],
       VoucherTypeSid: [null],
     });
+
+    if(this.rateFormArray.length === 0){
+      this.addRateRow();
+    }
   }
 
   get r(): { [key: string]: any } {
@@ -251,12 +258,7 @@ export class CostEntryComponent implements OnInit {
     // this.costFormArray.clear();
     // this.revenueFormArray.clear();
     for (const item of items) {
-      const formGroup = this.createRateFormGroup(item);
-      if (item.CostRevenue === "Cost") {
-        // this.costFormArray.push(formGroup);
-      } else {
-        // this.revenueFormArray.push(formGroup);
-      }
+      this.addRateRow(item)
     }
     this.updateCostPagination();
     this.updateRevenuePagination();
@@ -381,34 +383,36 @@ export class CostEntryComponent implements OnInit {
     // this.slicedRevenueFormArray = this.revenueFormArray.getRawValue().slice(start, end);
   }
 
-  deleteRate(index: number, segment: string, BookingRatesSid?: number) {
+  deleteRate(index: number,BookingRatesSid?: number) {
     let realIndex;
-    if (segment === "Cost") {
-      realIndex = ((this.page - 1) * this.pageSize) + index;
-    } else {
-      realIndex = ((this.page1 - 1) * this.pageSize1) + index;
-    }
+    // if (segment === "Cost") {
+    //   realIndex = ((this.page - 1) * this.pageSize) + index;
+    // } else {
+    //   realIndex = ((this.page1 - 1) * this.pageSize1) + index;
+    // }
     if (BookingRatesSid) {
       this.operationService.deleteBookingRate(BookingRatesSid).subscribe(
         (resp: any) => {
           if (resp.status) {
-            if (segment === "Cost") {
-              // this.costFormArray.removeAt(realIndex);
-              // this.costDataLength = this.costFormArray.length;
-              this.appSettingService.showSuccess('Cost deleted successfully.');
-              this.adjustCostPageAfterDelete();
-              this.updateCostPagination();
-              this.calculateProfit();
-              this.syncDataWithParentComponent();
-            } else {
-              // this.revenueFormArray.removeAt(realIndex);
-              // this.revenueDataLength = this.revenueFormArray.length;
-              this.appSettingService.showSuccess('Revenue deleted successfully.');
-              this.adjustRevenuePageAfterDelete();
-              this.updateRevenuePagination();
-              this.calculateProfit();
-              this.syncDataWithParentComponent();
-            }
+            this.rateFormArray.removeAt(index);
+            this.appSettingService.showSuccess("Rate Deleted Successfully");
+            // if (segment === "Cost") {
+            //   // this.costFormArray.removeAt(realIndex);
+            //   // this.costDataLength = this.costFormArray.length;
+            //   this.appSettingService.showSuccess('Cost deleted successfully.');
+            //   this.adjustCostPageAfterDelete();
+            //   this.updateCostPagination();
+            //   this.calculateProfit();
+            //   this.syncDataWithParentComponent();
+            // } else {
+            //   // this.revenueFormArray.removeAt(realIndex);
+            //   // this.revenueDataLength = this.revenueFormArray.length;
+            //   this.appSettingService.showSuccess('Revenue deleted successfully.');
+            //   this.adjustRevenuePageAfterDelete();
+            //   this.updateRevenuePagination();
+            //   this.calculateProfit();
+            //   this.syncDataWithParentComponent();
+            // }
           } else {
             this.appSettingService.showError('Error deleting rate');
           }
@@ -416,23 +420,25 @@ export class CostEntryComponent implements OnInit {
       );
     } else {
 
-      if (segment === "Cost") {
-        // this.costFormArray.removeAt(realIndex);
-        // this.costDataLength = this.costFormArray.length;
-        this.appSettingService.showSuccess('Cost deleted successfully.');
-        this.adjustCostPageAfterDelete();
-        this.updateCostPagination();
-        this.calculateProfit();
-        this.syncDataWithParentComponent();
-      } else {
-        // this.revenueFormArray.removeAt(realIndex);
-        // this.revenueDataLength = this.revenueFormArray.length;
-        this.appSettingService.showSuccess('Revenue deleted successfully.');
-        this.adjustRevenuePageAfterDelete();
-        this.updateRevenuePagination();
-        this.calculateProfit();
-        this.syncDataWithParentComponent();
-      }
+      // if (segment === "Cost") {
+      //   // this.costFormArray.removeAt(realIndex);
+      //   // this.costDataLength = this.costFormArray.length;
+      //   this.appSettingService.showSuccess('Cost deleted successfully.');
+      //   this.adjustCostPageAfterDelete();
+      //   this.updateCostPagination();
+      //   this.calculateProfit();
+      //   this.syncDataWithParentComponent();
+      // } else {
+      //   // this.revenueFormArray.removeAt(realIndex);
+      //   // this.revenueDataLength = this.revenueFormArray.length;
+      //   this.appSettingService.showSuccess('Revenue deleted successfully.');
+      //   this.adjustRevenuePageAfterDelete();
+      //   this.updateRevenuePagination();
+      //   this.calculateProfit();
+      //   this.syncDataWithParentComponent();
+      // }
+      this.rateFormArray.removeAt(index);
+      this.appSettingService.showSuccess("Rate Deleted Successfully");
     }
   }
 
