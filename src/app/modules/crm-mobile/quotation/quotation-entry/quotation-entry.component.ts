@@ -384,6 +384,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteNumber: [''],
       QuoteDate: [null],
       EnquirySid: [''],
+      AgreedRate : [false],
     })
     this.addQuoteRoute();
     this.quotationForm.get('EnquirySid')?.disable();
@@ -512,6 +513,33 @@ private extractCargoData(enquiryCargo: any[]): any {
     if (data === null || data === undefined || !data) {
       this.addQuoteCarrier(this.quoteRoutes.length - 1);
     }
+
+    routeForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(routeForm);
+    });
+    routeForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(routeForm);
+    });
+
+
+  }
+
+  setOrResetWeightError(formGroup: FormGroup) {
+    const grossCtrl = formGroup.get('GrossWeight');
+    const grossValue = formGroup.get('GrossWeight')?.value;
+    const netValue = formGroup.get('NetWeight')?.value;
+
+    if (!grossValue || !netValue) {
+      grossCtrl.setErrors(null);
+      return;
+    }
+    if(grossCtrl) {
+      if(Number(grossValue) <= Number(netValue)) {
+        grossCtrl.setErrors({ grossNotGreater: true });
+      } else {
+        grossCtrl.setErrors(null);
+      }
+    } 
   }
 
   removeRoute(routeIndex: number, QuoteRouteSid: number) {
@@ -728,6 +756,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ChargeableWeight : [data?.ChargeableWeight || ''],
       IsHaz : [data?.IsHaz === "Y" || false],
       ImcoClass : [{ value : data?.ImcoClass || null, disabled : data?.IsHaz !=="Y" || true }],
+      UnNo : [data?.UnNo || ''],
       PkgGroup : [{ value : data?.PkgGroup || null, disabled : data?.IsHaz !=="Y" || true }],
       Remarks : [data?.Remarks || ''],
     });
@@ -737,6 +766,13 @@ private extractCargoData(enquiryCargo: any[]): any {
     const productLength = this.quoteProducts(routeIndex).length;
     this.handleSegmentChangeOnProduct(routeIndex, productLength - 1);
     productForm.updateValueAndValidity();
+    this.handleCalculation(routeIndex);
+    productForm.get("GrossWeight").valueChanges.subscribe(() => {
+      this.setOrResetWeightError(productForm);
+    });
+    productForm.get("NetWeight").valueChanges.subscribe(() => {
+      this.setOrResetWeightError(productForm);
+    });
   }
 
   handleSegmentChangeOnAllProducts(routeIndex: number) {
@@ -755,7 +791,6 @@ private extractCargoData(enquiryCargo: any[]): any {
     if (!routeForm) return;
 
     const segmentType = routeForm.get('segmentType')?.value;
-    console.log(segmentType);
     if(!segmentType) return;
     const isLCL = segmentType === 'LCL';
     const isFCL = segmentType === "FCL";
@@ -790,7 +825,6 @@ private extractCargoData(enquiryCargo: any[]): any {
             const control = (productControl as FormGroup).get(key);
             if (control) {
                 this.setOrClearRequired(control, isRequired);
-                console.log(control.hasValidator(Validators.required));
             }
         }
     });
@@ -840,6 +874,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         if(resp.status){
           ctrl.removeAt(productIndex);
           this.quoteProducts(routeIndex).updateValueAndValidity();
+          this.handleCalculation(routeIndex);
           this.appSettingService.showSuccess("Product Deleted Successfully");
         } else {
           this.appSettingService.showError("Error Deleting Product");
@@ -848,6 +883,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     } else {
       ctrl.removeAt(productIndex);
       this.quoteProducts(routeIndex).updateValueAndValidity();
+      this.handleCalculation(routeIndex);
       this.appSettingService.showSuccess("Product Deleted Successfully");
     }
   }
@@ -863,9 +899,26 @@ private extractCargoData(enquiryCargo: any[]): any {
       return;
     } else {
       productForm.get('ProductName')?.setValue(product.ProductName);
-      productForm.get('IsHaz')?.setValue(product.ProductType === "2");
-      productForm.get('ImcoClass')?.setValue(product.IMOClass);
-      productForm.get('PkgGroup')?.setValue(product.PackingGroup);
+      const isHaz = product.ProductType === "2";
+      productForm.get('IsHaz')?.setValue(isHaz);
+      if(isHaz){
+        productForm.get('ImcoClass')?.enable();
+        productForm.get('UnNo')?.enable();
+        productForm.get('PkgGroup')?.enable();
+        console.log(product.UNNo);
+        productForm.patchValue({
+          ImcoClass : product.IMOClass,
+          UnNo : product.UNNo,
+          PkgGroup : product.PackingGroup
+        })
+      } else {
+        productForm.get('ImcoClass')?.setValue(null);
+        productForm.get('UnNo')?.setValue('');
+        productForm.get('PkgGroup')?.setValue('');
+        productForm.get('ImcoClass')?.disable();
+        productForm.get('UnNo')?.disable();
+        productForm.get('PkgGroup')?.disable();
+      }
     }
   }
 
@@ -950,6 +1003,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.quotationForm.patchValue({
       ...response,
       LeadOrCustomer : response.LeadOrCustomer === "C",
+      AgreedRate : response.AgreedRate === "Y",
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
     })
@@ -975,8 +1029,10 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.onRouteChange(routeIndex);
 
       if (cargo) {
-        (cargo.quoteProducts || []).forEach(product => {
-          this.addQuoteProduct(routeIndex, product);
+        (cargo.quoteProduct || []).forEach(product => {
+          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
+
+          this.addQuoteProduct(routeIndex, { ...product, UnNo: productUnNo });
         })
       }
 
@@ -1023,6 +1079,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
       UserMasterSid: this.userData?.UserMasterSid,
       LeadOrCustomer : formValue.LeadOrCustomer ? "C" : "L",
+      AgreedRate : formValue.AgreedRate ? "Y" : "N",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerRef: formValue.CustomerRef,
@@ -1035,7 +1092,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       EnquirySid: formValue.EnquirySid,
       status: formValue.status === "Active" ? 'A' : 'S',
 
-      routes: formValue.quoteRoutes.map((route, routeIndex) => ({
+      quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => ({
         // Route Part
         QuoteRouteSid: route.QuoteRouteSid,
         DepartmentMasterSid: route.DepartmentMasterSid,
@@ -1067,19 +1124,20 @@ private extractCargoData(enquiryCargo: any[]): any {
         CargoDescription : route.CargoDescription,
 
         // Route - Cargo - Product
-        products : route.quoteProducts.map(product => ({
+        quoteProducts : (route.quoteProducts || []).map(product => ({
           ...product,
         })),
 
         // Route - Carrier
-        carriers : route.quoteCarrier.map(carrier => ({
-          ...carrier,
-        })),
-
-        // Route - Carrier - Charge
-        charges: route.quoteCharges.map(charge => ({
-          ...charge,
-        }))
+        quoteCarriers : (route.quoteCarriers || []).map((carrier) => {
+          const allCharges = (carrier.quoteCharges || []).map(charge => ({
+            ...charge,
+          }))
+          return {
+            ...carrier,
+            quoteCharges : allCharges
+          }
+        })
       })),
     };
 
@@ -1120,54 +1178,62 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.f[field]?.disable();
     });
     this.quoteRoutes.controls.forEach((group:FormGroup)=>{
+      
       group.get('DepartmentMasterSid')?.disable();
     })
   }
 
-  handleValidationOnDept(index, type) {
+  handleValidationOnDept(index: number, type: 'FCL' | 'LCL' | 'AIR' | null) {
     const routeForm = this.quoteRoutes.at(index) as FormGroup;
 
-    const resetFields = (fields: string[]) => {
-      fields.forEach(f => {
-        const ctrl = routeForm.get(f);
-        if (ctrl) {
-          ctrl.reset();
-          ctrl.clearValidators();
-          ctrl.updateValueAndValidity();
-        }
-      });
+    const validationConfig = {
+      FCL: ['ContainerType', 'Qty'],
+      LCL: ['GrossWeight', 'NetWeight', 'Volume'],
+      AIR: ['GrossWeight', 'ChargeableWeight'],
     };
 
-    const setRequired = (fields: string[]) => {
-      fields.forEach(f => {
-        const ctrl = routeForm.get(f);
-        if (ctrl) {
-          ctrl.setValidators([Validators.required]);
-          if (f !== 'ContainerType') {
-            ctrl.setValidators([Validators.required, Validators.min(1)]);
-          }
-          ctrl.updateValueAndValidity();
-        }
-      });
-    };
-    const FCLRequiredFields = ['ContainerType','Qty']
-    const LCLRequiredFields = ['GrossWeight','NetWeight','Volume']
-    const AIRRequiredFields = ['GrossWeight' , 'ChargeableWeight']
-
-    // resetFields(allFields);
-    if (type === "FCL") {
-      const allFields = [...LCLRequiredFields, ...AIRRequiredFields];
-      resetFields(allFields)
-      setRequired(FCLRequiredFields);
-    } else if (type === "LCL") {
-      const allFields = [...FCLRequiredFields, ...AIRRequiredFields];
-      resetFields(allFields)
-      setRequired(LCLRequiredFields);
-    } else if (type === "AIR") {
-      const allFields = [...FCLRequiredFields, ...LCLRequiredFields];
-      resetFields(allFields)
-      setRequired(AIRRequiredFields);
+    let allDynamicFields;
+    switch (type) {
+      case 'FCL':
+        allDynamicFields = ['GrossWeight', 'NetWeight', 'Volume','ChargeableWeight'];
+        break;
+      case 'LCL':
+        allDynamicFields = ['ContainerType', 'Qty','ChargeableWeight'];
+        break;
+      case 'AIR':
+        allDynamicFields = ['ContainerType', 'Qty','NetWeight', 'Volume'];
+        break;
+      default:
+        allDynamicFields = [];
     }
+
+    allDynamicFields.forEach(fieldName => {
+      const control = routeForm.get(fieldName);
+      if (control) {
+        control.setValue(null, { emitEvent: false });
+        control.clearValidators();
+        control.updateValueAndValidity({ emitEvent: false });
+      }
+    });
+
+    if (type && validationConfig[type]) {
+      const requiredFields = validationConfig[type];
+
+      requiredFields.forEach(fieldName => {
+        const control = routeForm.get(fieldName);
+        if (control) {
+          const newValidators = [Validators.required];
+
+          if (fieldName !== 'ContainerType') {
+            newValidators.push(Validators.min(1));
+          }
+
+          control.setValidators(newValidators);
+          control.updateValueAndValidity({ emitEvent: false });
+        }
+      });
+    }
+
     routeForm.updateValueAndValidity();
   }
 
@@ -1792,6 +1858,64 @@ private extractCargoData(enquiryCargo: any[]): any {
       costExchangeRate?.setValue('');
     }
     costExchangeRate?.updateValueAndValidity();
+  }
+
+  handleCalculation(routeIndex:number){
+    const routeCtrl = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const productFormArr = this.quoteProducts(routeIndex);
+    let totalGrossWeight = 0;
+    let totalNetWeight = 0;
+    let totalVolume = 0;
+    let totalChargeableWeight = 0;
+    if (productFormArr.length === 0) {
+      routeCtrl.get('GrossWeight')?.enable();
+      routeCtrl.get('NetWeight')?.enable()
+      routeCtrl.get('Volume')?.enable();
+      routeCtrl.get('ChargeableWeight')?.enable();
+      return;
+    }
+    productFormArr.controls.forEach((productForm:FormGroup)=>{
+      totalGrossWeight += Number(productForm.get('GrossWeight')?.value) || 0;
+      totalNetWeight += Number(productForm.get('NetWeight')?.value) || 0;
+      totalVolume += Number(productForm.get('Volume')?.value) || 0;
+      totalChargeableWeight += ((Number(productForm.get('Length')?.value) || 0 ) * (Number(productForm.get('Width')?.value) || 0) * (Number(productForm.get('Height')?.value) || 0)/6000) * Number(productForm.get('ExternalQty')?.value) || 0;
+    });
+    routeCtrl.get('GrossWeight')?.setValue(totalGrossWeight);
+    routeCtrl.get('NetWeight')?.setValue(totalNetWeight);
+    routeCtrl.get('Volume')?.setValue(totalVolume);
+    routeCtrl.get('ChargeableWeight')?.setValue(totalChargeableWeight);
+    routeCtrl.get('GrossWeight')?.disable();
+    routeCtrl.get('NetWeight')?.disable()
+    routeCtrl.get('Volume')?.disable();
+    routeCtrl.get('ChargeableWeight')?.disable();
+    
+  }
+
+  getRouteInfo(routeIndex : number){
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const POL = routeForm.get('POLSid')?.value;
+    const POD = routeForm.get('PODSid')?.value;
+    const FPOD = routeForm.get('FPODSid')?.value;
+    const portArray : String[] = [];
+    const POLName = this.ports.find(p => p.PortMasterSid === POL)?.PortCode;
+    const PODName = this.ports.find(p => p.PortMasterSid === POD)?.PortCode;
+    const FPODName = this.ports.find(p => p.PortMasterSid === FPOD)?.PortCode;
+    if(POLName && PODName){
+      portArray.push(POLName);
+      portArray.push(PODName);
+      const isEqual = PODName === FPODName;
+      if(!isEqual && FPODName){
+        portArray.push(FPODName);
+      }
+      return portArray.join(' - ');
+    } else {
+      return 'Route Details'
+    }
+  }
+
+  geteCarrierInfo(routeIndex:number,chargeIndex:number){
+    const routeForm = this.quoteCarriers(routeIndex).at(chargeIndex) as FormGroup;
+    
   }
 
 }
