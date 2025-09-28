@@ -15,11 +15,15 @@
   align-items: center;
 }
 
+.buttons{
+  display: flex;
+  gap:5px;
+}
 .table-action-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 6px;
+  padding: 6px 6px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: white;
@@ -386,6 +390,7 @@
 .split-table-container {
   display: flex;
   max-height: 300px;
+  font-size: 14px;
 }
 
 .table-fixed {
@@ -412,6 +417,18 @@
   padding: 4px;
   min-width: 90px;
   width: 100%;
+}
+
+.table-header2 {
+  background-color: #005a9e;
+  color: white;
+  padding: 4px;
+  max-width: 90px;
+  width: 100%;
+}
+
+.currHeader{
+  
 }
 
 table tbody td {
