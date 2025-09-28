@@ -29,22 +29,23 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
   ],
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],
-  providers : [
+  providers: [
     CustomDatePipe
   ]
 })
 export class CostEntryComponent implements OnInit {
 
   selectedTab = 'Sales and cost';
-  costFormArray: FormArray;
-  revenueFormArray: FormArray;
+  // costFormArray: FormArray;
+  // revenueFormArray: FormArray;
+  rateFormArray : FormArray;
   chargeList: any[] = [];
   uomList: any[] = [];
   docTypeList: any[] = [];
   slicedCostFormArray: any[] = [];
   slicedRevenueFormArray: any[] = [];
-  tariffLoading : boolean;
-  tariffDetails : any[] = [];
+  tariffLoading: boolean;
+  tariffDetails: any[] = [];
   profitSummary: any[] = [];
   costDataLength: number = 0;
   page = 1;
@@ -62,37 +63,36 @@ export class CostEntryComponent implements OnInit {
     { id: 2, name: 'Collect' }
   ]
   drcr = [
-    { id: 1, name: 'Debit', value: 'D' },
-    { id: 2, name: 'Credit', value: 'C' }
+    { id: 1, name: 'Dr', value: 'D' },
+    { id: 2, name: 'Cr', value: 'C' }
   ]
-  tabs = [
-    { name: 'Cost', icon: 'fas fa-rupee-sign' },
-    { name: 'Revenue', icon: 'fas fa-chart-line' },
-    { name: 'Profit', icon: 'fas fa-dollar-sign' },
-  ];
-  ModeofStatus=[
-    {id:'A',name:"Active"},
-    {id:'S',name:"Suspended"}
+  // tabs = [
+  //   { name: 'Cost', icon: 'fas fa-rupee-sign' },
+  //   { name: 'Revenue', icon: 'fas fa-chart-line' },
+  //   { name: 'Profit', icon: 'fas fa-dollar-sign' },
+  // ];
+  ModeofStatus = [
+    { id: 'A', name: "Active" },
+    { id: 'S', name: "Suspended" }
   ]
-  ModeofShowType=[
-    {id:1,name:"All"},
-    {id:2,name:"Accounting"},
-    {id:3,name:"Non-Accounting"},
-    {id:4,name:"Manifest"},
-    {id:5,name:"Non-Manifest"}
+  ModeofShowType = [
+    { id: 1, name: "All" },
+    { id: 2, name: "Accounting" },
+    { id: 3, name: "Non-Accounting" },
+    { id: 4, name: "Manifest" },
+    { id: 5, name: "Non-Manifest" }
   ]
-  ModeofProfitShare=[
-    {id:1,name:"Yes"},
-    {id:2,name:"No"}
+  ModeofProfitShare = [
+    { id: 1, name: "Yes" },
+    { id: 2, name: "No" }
   ]
-  ModeofNeutral=[
-     {id:1,name:"Yes"},
-    {id:2,name:"No"}
+  ModeofNeutral = [
+    { id: 1, name: "Yes" },
+    { id: 2, name: "No" }
   ]
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
-
 
   @Input() screenName: string;
   private _currencyList: any[] = [];
@@ -118,10 +118,10 @@ export class CostEntryComponent implements OnInit {
   private prevValue;
   @Input()
   set resetTrigger(value: boolean) {
-    if(value !== this.prevValue){
+    if (value !== this.prevValue) {
       this.prevValue = value;
-      this.costFormArray?.clear();
-      this.revenueFormArray?.clear();
+      // this.costFormArray?.clear();
+      // this.revenueFormArray?.clear();
       this.costDataLength = 0;
       this.revenueDataLength = 0;
       this.profitSummary = [];
@@ -130,17 +130,16 @@ export class CostEntryComponent implements OnInit {
     }
   }
 
-  
-
   @Input()
   set dataItems(value: any[]) {
     if (value && value.length > 0) {
       this._dataItems = value;
+      console.log(value);
       this.patchValues(this._dataItems);
     } else {
       this._dataItems = [];
-      this.costFormArray?.clear();
-      this.revenueFormArray?.clear();
+      // this.costFormArray?.clear();
+      // this.revenueFormArray?.clear();
       this.costDataLength = 0;
       this.revenueDataLength = 0;
       this.profitSummary = [];
@@ -152,10 +151,10 @@ export class CostEntryComponent implements OnInit {
     return this._dataItems;
   }
 
-  parentFormValue : any = {};
-  @Input() 
-  set formData(value:any){
-    if(value){
+  parentFormValue: any = {};
+  @Input()
+  set formData(value: any) {
+    if (value) {
       this.parentFormValue = value;
     } else {
       this.parentFormValue = {};
@@ -165,12 +164,12 @@ export class CostEntryComponent implements OnInit {
   @Output() dataEmitter = new EventEmitter<any[]>();
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
-@ViewChild('leftTableBody') leftBody!: ElementRef;
-@ViewChild('rightTableBody') rightBody!: ElementRef;
-syncScroll(event: Event) {
-  const scrollTop = (event.target as HTMLElement).scrollTop;
-  this.leftBody.nativeElement.scrollTop = scrollTop;
-}
+  @ViewChild('leftTableBody') leftBody!: ElementRef;
+  @ViewChild('rightTableBody') rightBody!: ElementRef;
+  syncScroll(event: Event) {
+    const scrollTop = (event.target as HTMLElement).scrollTop;
+    this.leftBody.nativeElement.scrollTop = scrollTop;
+  }
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
 
@@ -179,11 +178,10 @@ syncScroll(event: Event) {
     private fb: FormBuilder,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
-    private excelExportService : ExcelExportService,
-    private datePipe : CustomDatePipe
+    private excelExportService: ExcelExportService,
+    private datePipe: CustomDatePipe
   ) {
-    this.costFormArray = this.fb.array([]);
-    this.revenueFormArray = this.fb.array([]);
+    this.rateFormArray = this.fb.array([]);
   }
 
   ngOnInit(): void {
@@ -208,86 +206,47 @@ syncScroll(event: Event) {
   }
 
 
-
-  revenueRows = [
-    {
-      charge: '',
-      chargeDesc: '',
-      ppcc: '',
-      unit: '',
-      noOfUnit: '',
-      drCr: '',
-      curr: '',
-      exRate: '',
-      rate: '',
-      amount: '',
-      localAmount: '',
-      billingParty: '',
-      voucherNo: '',
-      type: ''
-    }
-  ];
-
-  addRow() {
-    this.revenueRows.push({
-      charge: '',
-      chargeDesc: '',
-      ppcc: '',
-      unit: '',
-      noOfUnit: '',
-      drCr: '',
-      curr: '',
-      exRate: '',
-      rate: '',
-      amount: '',
-      localAmount: '',
-      billingParty: '',
-      voucherNo: '',
-      type: ''
-    });
-  }
-
- deleteRow(index: number): void {
-  this.revenueRows.splice(index, 1);
-}
-
-
-
   initRateForm() {
     this.rateForm = this.fb.group({
       BookingRatesSid: [null],
       CostRevenueChargesSid: [null],
-      TransactionSid : [null],
+      TransactionSid: [null],
       SerialNumber: [{ value: '', disabled: true }],
       ChargeMasterSid: [null],
       ChargeDescription: [''],
       ChargeUomSid: [null],
       NumberOfUnit: [''],
-      PrepaidCollect: [''],
-      Status:[''],
-      Remarks:[''],
-      CostDrCr: [''],
-      RevenueDrCr: [''],
-
-      RevenueCurrencyMasterSid: [null], 
+      // Cost 
       CostCurrencyMasterSid: [null],
-
-      RevenueExchangeRate:[''],
+      CostPrepaidCollect: [''],
       CostExchangeRate: [''],
-
-      RevenueRate:[''],
       CostRate: [''],
-
-      RevenueAmount:[''],
-      CostAmount:[''],
-
-      RevenueLocalAmount: [''],
+      CostNumberOfUnit:[''],
+      CostDrCr: [''],
+      CostAmount: [''],
       CostLocalAmount: [''],
+      PerUnit:[''],
+      // Revenue
+      // Status: [''],
+      // Remarks: [''],
+      RevenuePrepaidCollect:[''],
+      RevenueCurrencyMasterSid: [null],
+      RevenueExchangeRate: [''],
+      RevenueRate: [''],
+      RevenueNumberOfUnit:[''],
+      RevenueDrCr: [''],
+      RevenueAmount: [''],
+      RevenueLocalAmount: [''],
+      // 
       CustomerMasterSid: [null],
       CustomerBranchSid: [null],
       VoucherHeaderSid: [null],
       VoucherTypeSid: [null],
     });
+
+    if(this.rateFormArray.length === 0){
+      this.addRateRow();
+    }
   }
 
   get r(): { [key: string]: any } {
@@ -296,22 +255,11 @@ syncScroll(event: Event) {
 
 
   patchValues(items: any[]) {
-    this.costFormArray.clear();
-    this.revenueFormArray.clear();
+    // this.costFormArray.clear();
+    // this.revenueFormArray.clear();
     for (const item of items) {
-      const formGroup = this.createRateFormGroup(item);
-      if (item.CostRevenue === "Cost") {
-        this.costFormArray.push(formGroup);
-      } else {
-        this.revenueFormArray.push(formGroup);
-      }
+      this.addRateRow(item)
     }
-    console.log(this.costFormArray.value);
-    console.log(this.revenueFormArray.value);
-    this.costDataLength = this.costFormArray.length;
-    this.revenueDataLength = this.revenueFormArray.length;
-    this.costFormArray.updateValueAndValidity();
-    this.revenueFormArray.updateValueAndValidity();
     this.updateCostPagination();
     this.updateRevenuePagination();
     this.calculateProfit();
@@ -324,7 +272,7 @@ syncScroll(event: Event) {
       CompanyMasterSid: [data?.CompanyMasterSid || null],
       BranchMasterSid: [data?.BranchMasterSid || null],
       CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
-      TransactionSid : [data?.TransactionSid || null],
+      TransactionSid: [data?.TransactionSid || null],
       SerialNumber: [data?.SerialNumber || ''],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
       ChargeDescription: [data?.ChargeDescription || ''],
@@ -348,51 +296,16 @@ syncScroll(event: Event) {
       CustomerBranchSid: [data?.CustomerBranchSid || null],
       VoucherHeaderSid: [data?.VoucherHeaderSid || null],
       VoucherTypeSid: [data?.VoucherTypeSid || null],
-      Status:[data?.Status],
-      Remarks:[data?.Remarks]
+      Status: [data?.Status],
+      Remarks: [data?.Remarks]
     });
   }
 
-  openModalBasedOnTab(content: TemplateRef<any>, data?: any, index?: number) {
-    this.initRateForm();
-    this.currentRateIndex = index ?? -1;
-    let originalIndex;
-    if (this.selectedTab === "Cost") {
-      originalIndex = ((this.page - 1) * this.pageSize) + index;
-    } else {
-      originalIndex = ((this.page1 - 1) * this.pageSize1) + index;
-    }
-    if (data) {
-      this.rateForm.patchValue({
-        CostRevenueChargesSid: data?.CostRevenueChargesSid,
-        TransactionSid : data?.TransactionSid,
-        SerialNumber: originalIndex + 1,
-        ChargeMasterSid: data.ChargeMasterSid,
-        ChargeDescription: data.ChargeDescription,
-        PrepaidCollect: data.PrepaidCollect,
-        ChargeUomSid: data.ChargeUomSid,
-        NumberOfUnit: data.NumberOfUnit,
-        DrCr: data.DrCr,
-        CurrencyMasterSid: data.CurrencyMasterSid,
-        ExchangeRate: data.ExchangeRate,
-        Rate: data.Rate,
-        Amount: data.Amount,
-        CostRevenue: this.selectedTab,
-        LocalAmount: data.LocalAmount,
-        CustomerMasterSid: data.CustomerMasterSid,
-        CustomerBranchSid: data.CustomerBranchSid,
-        VoucherHeaderSid: data.VoucherHeaderSid,
-        VoucherTypeSid: data.VoucherTypeSid,
-      });
-    } else {
-      this.rateForm.patchValue({
-        CostRevenue: this.selectedTab,
-        DrCr : this.selectedTab === "Cost" ? "D" : "C",
-        SerialNumber: this.selectedTab === "Cost" ? this.costFormArray.length + 1 : this.revenueFormArray.length + 1
-      })
-    }
-    this.modalService.open(content, { size: 'lg', backdrop: 'static', centered: true });
+  addRateRow(data?:any){
+    const formGroup = this.createRateFormGroup(data);
+    this.rateFormArray.push(formGroup);
   }
+
 
   onRateSubmit() {
     if (this.rateForm.invalid) {
@@ -405,24 +318,24 @@ syncScroll(event: Event) {
     const formValue = this.rateForm.getRawValue();
     if (this.currentRateIndex !== -1) {
       if (this.selectedTab === "Cost") {
-        const existingForm = this.costFormArray.at(this.currentRateIndex) as FormGroup;
-        existingForm.patchValue(formValue);
+        // const existingForm = this.costFormArray.at(this.currentRateIndex) as FormGroup;
+        // existingForm.patchValue(formValue);
       } else {
-        const existingForm = this.revenueFormArray.at(this.currentRateIndex) as FormGroup;
-        existingForm.patchValue(formValue);
+        // const existingForm = this.revenueFormArray.at(this.currentRateIndex) as FormGroup;
+        // existingForm.patchValue(formValue);
       }
     } else {
       if (this.selectedTab === "Cost") {
-        this.costFormArray.push(this.rateForm);
+        // this.costFormArray.push(this.rateForm);
       } else {
-        this.revenueFormArray.push(this.rateForm);
+        // this.revenueFormArray.push(this.rateForm);
       }
     }
 
-    this.costDataLength = this.costFormArray.length;
-    this.revenueDataLength = this.revenueFormArray.length;
-    this.costFormArray.updateValueAndValidity();
-    this.revenueFormArray.updateValueAndValidity();
+    // this.costDataLength = this.costFormArray.length;
+    // this.revenueDataLength = this.revenueFormArray.length;
+    // this.costFormArray.updateValueAndValidity();
+    // this.revenueFormArray.updateValueAndValidity();
     this.updateCostPagination();
     this.updateRevenuePagination();
     this.calculateProfit();
@@ -442,62 +355,64 @@ syncScroll(event: Event) {
     this.getExchangeRate();
   }
 
-  copyRate(content: TemplateRef<any>,data ?:any) {
-    this.openModalBasedOnTab(content);
-    const selectedTabLen = this.selectedTab === 'Cost' ? this.costFormArray.length : this.revenueFormArray.length;
-    this.rateForm.patchValue({
-      ...data,
-      SerialNumber: selectedTabLen + 1,
-    });
-  }
+  // copyRate(content: TemplateRef<any>, data?: any) {
+  //   this.openModalBasedOnTab(content);
+  //   const selectedTabLen = this.selectedTab === 'Cost' ? this.costFormArray.length : this.revenueFormArray.length;
+  //   this.rateForm.patchValue({
+  //     ...data,
+  //     SerialNumber: selectedTabLen + 1,
+  //   });
+  // }
 
   syncDataWithParentComponent() {
-    const costFormValue: any[] = this.costFormArray.getRawValue() || [];
-    const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];
-    const combined = [...costFormValue, ...revenueFormValue];
-    this.dataEmitter.emit(combined);
+    // const costFormValue: any[] = this.costFormArray.getRawValue() || [];
+    // const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];
+    // const combined = [...costFormValue, ...revenueFormValue];
+    // this.dataEmitter.emit(combined);
   }
 
   updateCostPagination() {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
-    this.slicedCostFormArray = this.costFormArray.getRawValue().slice(start, end);
+    // this.slicedCostFormArray = this.costFormArray.getRawValue().slice(start, end);
   }
 
   updateRevenuePagination() {
     const start = (this.page1 - 1) * this.pageSize1;
     const end = start + this.pageSize1;
-    this.slicedRevenueFormArray = this.revenueFormArray.getRawValue().slice(start, end);
+    // this.slicedRevenueFormArray = this.revenueFormArray.getRawValue().slice(start, end);
   }
 
-  deleteRate(index: number, segment: string, BookingRatesSid?: number) {
+  deleteRate(index: number,BookingRatesSid?: number) {
     let realIndex;
-    if (segment === "Cost") {
-      realIndex = ((this.page - 1) * this.pageSize) + index;
-    } else {
-      realIndex = ((this.page1 - 1) * this.pageSize1) + index;
-    }
+    // if (segment === "Cost") {
+    //   realIndex = ((this.page - 1) * this.pageSize) + index;
+    // } else {
+    //   realIndex = ((this.page1 - 1) * this.pageSize1) + index;
+    // }
     if (BookingRatesSid) {
       this.operationService.deleteBookingRate(BookingRatesSid).subscribe(
         (resp: any) => {
           if (resp.status) {
-            if (segment === "Cost") {
-              this.costFormArray.removeAt(realIndex);
-              this.costDataLength = this.costFormArray.length;
-              this.appSettingService.showSuccess('Cost deleted successfully.');
-              this.adjustCostPageAfterDelete();
-              this.updateCostPagination();
-              this.calculateProfit();
-              this.syncDataWithParentComponent();
-            } else {
-              this.revenueFormArray.removeAt(realIndex);
-              this.revenueDataLength = this.revenueFormArray.length;
-              this.appSettingService.showSuccess('Revenue deleted successfully.');
-              this.adjustRevenuePageAfterDelete();
-              this.updateRevenuePagination();
-              this.calculateProfit();
-              this.syncDataWithParentComponent();
-            }
+            this.rateFormArray.removeAt(index);
+            this.appSettingService.showSuccess("Rate Deleted Successfully");
+            // if (segment === "Cost") {
+            //   // this.costFormArray.removeAt(realIndex);
+            //   // this.costDataLength = this.costFormArray.length;
+            //   this.appSettingService.showSuccess('Cost deleted successfully.');
+            //   this.adjustCostPageAfterDelete();
+            //   this.updateCostPagination();
+            //   this.calculateProfit();
+            //   this.syncDataWithParentComponent();
+            // } else {
+            //   // this.revenueFormArray.removeAt(realIndex);
+            //   // this.revenueDataLength = this.revenueFormArray.length;
+            //   this.appSettingService.showSuccess('Revenue deleted successfully.');
+            //   this.adjustRevenuePageAfterDelete();
+            //   this.updateRevenuePagination();
+            //   this.calculateProfit();
+            //   this.syncDataWithParentComponent();
+            // }
           } else {
             this.appSettingService.showError('Error deleting rate');
           }
@@ -505,23 +420,25 @@ syncScroll(event: Event) {
       );
     } else {
 
-      if (segment === "Cost") {
-        this.costFormArray.removeAt(realIndex);
-        this.costDataLength = this.costFormArray.length;
-        this.appSettingService.showSuccess('Cost deleted successfully.');
-        this.adjustCostPageAfterDelete();
-        this.updateCostPagination();
-        this.calculateProfit();
-        this.syncDataWithParentComponent();
-      } else {
-        this.revenueFormArray.removeAt(realIndex);
-        this.revenueDataLength = this.revenueFormArray.length;
-        this.appSettingService.showSuccess('Revenue deleted successfully.');
-        this.adjustRevenuePageAfterDelete();
-        this.updateRevenuePagination();
-        this.calculateProfit();
-        this.syncDataWithParentComponent();
-      }
+      // if (segment === "Cost") {
+      //   // this.costFormArray.removeAt(realIndex);
+      //   // this.costDataLength = this.costFormArray.length;
+      //   this.appSettingService.showSuccess('Cost deleted successfully.');
+      //   this.adjustCostPageAfterDelete();
+      //   this.updateCostPagination();
+      //   this.calculateProfit();
+      //   this.syncDataWithParentComponent();
+      // } else {
+      //   // this.revenueFormArray.removeAt(realIndex);
+      //   // this.revenueDataLength = this.revenueFormArray.length;
+      //   this.appSettingService.showSuccess('Revenue deleted successfully.');
+      //   this.adjustRevenuePageAfterDelete();
+      //   this.updateRevenuePagination();
+      //   this.calculateProfit();
+      //   this.syncDataWithParentComponent();
+      // }
+      this.rateFormArray.removeAt(index);
+      this.appSettingService.showSuccess("Rate Deleted Successfully");
     }
   }
 
@@ -555,7 +472,7 @@ syncScroll(event: Event) {
     this.getExchangeRate();
   }
 
-  
+
 
   getExchangeRate() {
     const fromCurrency = Number(this.rateForm.get('CurrencyMasterSid')?.value);
@@ -593,7 +510,7 @@ syncScroll(event: Event) {
     const CostnoOfUnit = this.rateForm.get('CostNumberOfUnit')?.value;
     const RevenuenoOfUnit = this.rateForm.get('RevenueNumberOfUnit')?.value;
 
-    
+
     const Costrate = this.rateForm.get('CostRate')?.value;
     const Revenuerate = this.rateForm.get('RevenueRate')?.value;
 
@@ -641,55 +558,51 @@ syncScroll(event: Event) {
       Revenuectrl.setValue('');
       return;
     }
-    
+
     const Costamount = (Number(CostnoOfUnit) * Number(Revenuerate)).toFixed(3);
     const Revenueamount = (Number(RevenuenoOfUnit) * Number(Revenuerate)).toFixed(3);
     Costctrl.setValue(Costamount);
     Revenuectrl.setValue(Revenueamount);
-    
+
     Costctrl.updateValueAndValidity();
     Revenuectrl.updateValueAndValidity();
 
   }
 
-  save(){
-    console.log(this.rateForm.getRawValue())
-  }
-
 
   calculateProfit() {
     this.profitSummary = [];
-    const costFormValue: any[] = this.costFormArray.getRawValue() || [];
-    const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];
-    const data = [...costFormValue, ...revenueFormValue];
+    // const costFormValue: any[] = this.costFormArray.getRawValue() || [];
+    // const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];
+    // const data = [...costFormValue, ...revenueFormValue];
 
-    data.forEach(item => {
-      console.log(item);
-      const amt = parseFloat(item.LocalAmount);
-      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
-      const chargeName = charge ? charge.chargeName : "Unknown";
+    // data.forEach(item => {
+    //   console.log(item);
+    //   const amt = parseFloat(item.LocalAmount);
+    //   const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+    //   const chargeName = charge ? charge.chargeName : "Unknown";
 
-      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+    //   let existing = this.profitSummary.find(p => p.chargeName === chargeName);
 
-      if (!existing) {
-        existing = {
-          chargeName,
-          totalSales: 0,
-          totalCost: 0,
-          profit: 0,
-          profitPercent: "0%"
-        };
-        this.profitSummary.push(existing);
-      }
+    //   if (!existing) {
+    //     existing = {
+    //       chargeName,
+    //       totalSales: 0,
+    //       totalCost: 0,
+    //       profit: 0,
+    //       profitPercent: "0%"
+    //     };
+    //     this.profitSummary.push(existing);
+    //   }
 
-      if (item.CostRevenue === "Cost") {
-        existing.totalCost += item.DrCr === "D" ? amt : -amt;
-      }
+    //   if (item.CostRevenue === "Cost") {
+    //     existing.totalCost += item.DrCr === "D" ? amt : -amt;
+    //   }
 
-      if (item.CostRevenue === "Revenue") {
-        existing.totalSales += item.DrCr === "C" ? amt : -amt;
-      }
-    });
+    //   if (item.CostRevenue === "Revenue") {
+    //     existing.totalSales += item.DrCr === "C" ? amt : -amt;
+    //   }
+    // });
 
     this.profitSummary.forEach(p => {
       let profit: number;
@@ -720,7 +633,7 @@ syncScroll(event: Event) {
     const totalSales = this.calculateTotal('totalSales');
     const totalCost = this.calculateTotal('totalCost');
     const totalProfit = this.calculateTotal('profit');
-    if(totalSales !== 0 && totalSales > totalCost){
+    if (totalSales !== 0 && totalSales > totalCost) {
       return totalProfit / totalSales * 100;
     }
     return totalSales !== 0 ? (totalProfit / totalCost) * 100 : 0;
@@ -773,8 +686,8 @@ syncScroll(event: Event) {
     return (this.docTypeList.find(docType => docType.DocumentTypeMasterSid === VoucherTypeSid)?.DocumentTypeName);
   }
 
-  getTariffDetails(content:TemplateRef<any>){
-    if(!this.hasRequiredFieldsFilled()){
+  getTariffDetails(content: TemplateRef<any>) {
+    if (!this.hasRequiredFieldsFilled()) {
       this.appSettingService.showWarning("Please fill all the required fields correctly to get Tariff.");
       return;
     }
@@ -788,38 +701,38 @@ syncScroll(event: Event) {
     } else if (segment === "AIR") {
       value = this.parentFormValue.ChargeableWeight
     }
-    this.modalService.open(content,{size : 'lg',centered : true , backdrop:'static'});
+    this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
     this.operationService.getTariffDetails(this.parentFormValue).subscribe(
-      (resp:any)=>{
-        if(resp.status){
-          const response : any[] = resp.data || [];
+      (resp: any) => {
+        if (resp.status) {
+          const response: any[] = resp.data || [];
           this.tariffDetails = response
-            .map((td:any)=>{
-            const charge = this.getCharge(td.ChargeCode);
-            return {
-              ChargeMasterSid : charge.ChargeMasterSid,
-              ChargeDescription : td.Description,
-              PrepaidCollect : "Collect",
-              ChargeUomSid : td.UOMSid,
-              NumberOfUnit : value,
-              Cost : {
-                DrCr : 'D',
-                CurrencyMasterSid : td.BuyCurrency,
-                Rate : Number(td.BuyPerUnitPrice).toFixed(2),
-                Amount : (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
-                LocalAmount : (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
-                ExchangeRate : Number(td.costExchangeRate).toFixed(2)
-              },
-              Revenue : {
-                DrCr : 'C',
-                CurrencyMasterSid : td.SaleCurrency,
-                Rate : Number(td.SalePerUnitPrice).toFixed(2),
-                Amount : (Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
-                LocalAmount : (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
-                ExchangeRate : Number(td.revenueExchangeRate).toFixed(2)
+            .map((td: any) => {
+              const charge = this.getCharge(td.ChargeCode);
+              return {
+                ChargeMasterSid: charge.ChargeMasterSid,
+                ChargeDescription: td.Description,
+                PrepaidCollect: "Collect",
+                ChargeUomSid: td.UOMSid,
+                NumberOfUnit: value,
+                Cost: {
+                  DrCr: 'D',
+                  CurrencyMasterSid: td.BuyCurrency,
+                  Rate: Number(td.BuyPerUnitPrice).toFixed(2),
+                  Amount: (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
+                  LocalAmount: (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
+                  ExchangeRate: Number(td.costExchangeRate).toFixed(2)
+                },
+                Revenue: {
+                  DrCr: 'C',
+                  CurrencyMasterSid: td.SaleCurrency,
+                  Rate: Number(td.SalePerUnitPrice).toFixed(2),
+                  Amount: (Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
+                  LocalAmount: (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
+                  ExchangeRate: Number(td.revenueExchangeRate).toFixed(2)
+                }
               }
-            }
-          })
+            })
           console.log(this.tariffDetails);
           this.tariffLoading = false;
         } else {
@@ -828,7 +741,7 @@ syncScroll(event: Event) {
         }
       }
     )
-    
+
   }
 
   getCharge(chargeCode) {
@@ -839,41 +752,38 @@ syncScroll(event: Event) {
     return charge;
   }
 
-  hasRequiredFieldsFilled(){
+  hasRequiredFieldsFilled() {
     const data = this.parentFormValue;
     return (data.DepartmentMasterSid || data.POLSid || data.PODSid || data.EffectiveDate || data.ExpiredDate)
   }
 
-  applyTariff(detail){
-    const costFormValue = {
+  applyTariff(detail) {
+    console.log(detail);
+
+    const rateFormValue = {
       ChargeMasterSid: detail.ChargeMasterSid,
       ChargeDescription: detail.ChargeDescription,
-      PrepaidCollect: "Collect",
+      PrepaidCollect: detail.PrepaidCollect,
       ChargeUomSid: detail.ChargeUomSid,
       NumberOfUnit: detail.NumberOfUnit,
-      CostRevenue : "Cost",
-      ...detail.Cost
+
+      RevenueCurrencyMasterSid: detail.Revenue.CurrencyMasterSid,
+      RevenueDrCr: detail.Revenue.DrCr,
+      RevenueExchangeRate: detail.Revenue.ExchangeRate,
+      RevenueRate: detail.Revenue.Rate,
+      RevenueAmount: detail.Revenue.Amount,
+      RevenueLocalAmount: detail.Revenue.LocalAmount,
+
+      CostCurrencyMasterSid: detail.Cost.CurrencyMasterSid,
+      CostDrCr: detail.Cost.DrCr,
+      CostExchangeRate: detail.Cost.ExchangeRate,
+      CostRate: detail.Cost.Rate,
+      CostAmount: detail.Cost.Amount,
+      CostLocalAmount: detail.Cost.LocalAmount,
     }
-    console.log(costFormValue);
-    const costFormGroup = this.createRateFormGroup(costFormValue); 
-    this.costFormArray.push(costFormGroup);
-    const revenueFormValue = {
-      ChargeMasterSid: detail.ChargeMasterSid,
-      ChargeDescription: detail.ChargeDescription,
-      PrepaidCollect: "Collect",
-      ChargeUomSid: detail.ChargeUomSid,
-      NumberOfUnit: detail.NumberOfUnit,
-      CostRevenue : "Revenue",
-      ...detail.Revenue
-    }
-    const revenueFormGroup = this.createRateFormGroup(revenueFormValue);
-    this.revenueFormArray.push(revenueFormGroup)
-    this.costDataLength = this.costFormArray.length;
-    this.revenueDataLength = this.revenueFormArray.length;
-    this.costFormArray.updateValueAndValidity();
-    this.revenueFormArray.updateValueAndValidity();
-    this.updateCostPagination();
-    this.updateRevenuePagination();
+
+    // const revenueFormGroup = this.createRateFormGroup(rateFormValue);
+    // this.revenueRows.push(rateFormValue)
     this.calculateProfit();
     this.syncDataWithParentComponent();
     this.modalService.dismissAll();
@@ -883,122 +793,100 @@ syncScroll(event: Event) {
     this.tariffDetails = [];
     this.modalService.dismissAll();
   }
+  // setTab(tab1: string) {
+  // reportCostRates(): void {
+  //   const allCostRates = this.slicedCostFormArray;
 
-  activeTab1: string = 'revenue';
+  //   const formattedData = allCostRates.map(rate => ({
+  //     ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
+  //     ChargeName: this.getChargeName(rate.ChargeMasterSid),
+  //     ChargeDescription: rate.ChargeDescription || '',
+  //     PrepaidCollect: rate.PrepaidCollect || '',
+  //     UnitCode: this.getUnitCode(rate.ChargeUomSid),
+  //     NumberOfUnit: rate.NumberOfUnit || 0,
+  //     DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
+  //     Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
+  //     ExchangeRate: rate.ExchangeRate || 0,
+  //     Rate: rate.Rate || 0,
+  //     Amount: rate.Amount || 0,
+  //     LocalAmount: rate.LocalAmount || 0,
+  //     Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
+  //     VoucherHeaderSid: rate.VoucherHeaderSid || '',
+  //     DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
+  //   }));
 
-  setTab(tab1: string) {
-    this.activeTab1 = tab1;
-  }
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
 
-    openRevenueModal(content: any) {
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
+  //   this.excelExportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'ChargeCode', label: 'Charge Code' },
+  //       { key: 'ChargeName', label: 'Charge Name' },
+  //       { key: 'ChargeDescription', label: 'Charge Description' },
+  //       { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
+  //       { key: 'UnitCode', label: 'Unit Code' },
+  //       { key: 'NumberOfUnit', label: 'Number Of Unit' },
+  //       { key: 'DebitCredit', label: 'Debit/Credit' },
+  //       { key: 'Currency', label: 'Currency' },
+  //       { key: 'ExchangeRate', label: 'Exchange Rate' },
+  //       { key: 'Rate', label: 'Rate' },
+  //       { key: 'Amount', label: 'Amount' },
+  //       { key: 'LocalAmount', label: 'Local Amount' },
+  //       { key: 'Customer', label: 'Customer' },
+  //       { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
+  //       { key: 'DocumentType', label: 'Document Type' }
+  //     ],
+  //     fileName: 'Cost-Rates-Report',
+  //     title: companyName
+  //   });
+  // }
 
-  openCostModal(content: any) {
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
+  // reportRevenueRates(): void {
+  //   const allCostRates = this.slicedRevenueFormArray;
 
-  reportCostRates(): void {
-    const allCostRates = this.slicedCostFormArray;
+  //   const formattedData = allCostRates.map(rate => ({
+  //     ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
+  //     ChargeName: this.getChargeName(rate.ChargeMasterSid),
+  //     ChargeDescription: rate.ChargeDescription || '',
+  //     PrepaidCollect: rate.PrepaidCollect || '',
+  //     UnitCode: this.getUnitCode(rate.ChargeUomSid),
+  //     NumberOfUnit: rate.NumberOfUnit || 0,
+  //     DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
+  //     Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
+  //     ExchangeRate: rate.ExchangeRate || 0,
+  //     Rate: rate.Rate || 0,
+  //     Amount: rate.Amount || 0,
+  //     LocalAmount: rate.LocalAmount || 0,
+  //     Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
+  //     VoucherHeaderSid: rate.VoucherHeaderSid || '',
+  //     DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
+  //   }));
 
-    const formattedData = allCostRates.map(rate => ({
-      ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
-      ChargeName: this.getChargeName(rate.ChargeMasterSid),
-      ChargeDescription: rate.ChargeDescription || '',
-      PrepaidCollect: rate.PrepaidCollect || '',
-      UnitCode: this.getUnitCode(rate.ChargeUomSid),
-      NumberOfUnit: rate.NumberOfUnit || 0,
-      DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
-      Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
-      ExchangeRate: rate.ExchangeRate || 0,
-      Rate: rate.Rate || 0,
-      Amount: rate.Amount || 0,
-      LocalAmount: rate.LocalAmount || 0,
-      Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
-      VoucherHeaderSid: rate.VoucherHeaderSid || '',
-      DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
-    }));
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
 
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-
-    this.excelExportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'ChargeCode', label: 'Charge Code' },
-        { key: 'ChargeName', label: 'Charge Name' },
-        { key: 'ChargeDescription', label: 'Charge Description' },
-        { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
-        { key: 'UnitCode', label: 'Unit Code' },
-        { key: 'NumberOfUnit', label: 'Number Of Unit' },
-        { key: 'DebitCredit', label: 'Debit/Credit' },
-        { key: 'Currency', label: 'Currency' },
-        { key: 'ExchangeRate', label: 'Exchange Rate' },
-        { key: 'Rate', label: 'Rate' },
-        { key: 'Amount', label: 'Amount' },
-        { key: 'LocalAmount', label: 'Local Amount' },
-        { key: 'Customer', label: 'Customer' },
-        { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
-        { key: 'DocumentType', label: 'Document Type' }
-      ],
-      fileName: 'Cost-Rates-Report',
-      title: companyName
-    });
-  }
-
-  reportRevenueRates(): void {
-    const allCostRates = this.slicedRevenueFormArray;
-
-    const formattedData = allCostRates.map(rate => ({
-      ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
-      ChargeName: this.getChargeName(rate.ChargeMasterSid),
-      ChargeDescription: rate.ChargeDescription || '',
-      PrepaidCollect: rate.PrepaidCollect || '',
-      UnitCode: this.getUnitCode(rate.ChargeUomSid),
-      NumberOfUnit: rate.NumberOfUnit || 0,
-      DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
-      Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
-      ExchangeRate: rate.ExchangeRate || 0,
-      Rate: rate.Rate || 0,
-      Amount: rate.Amount || 0,
-      LocalAmount: rate.LocalAmount || 0,
-      Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
-      VoucherHeaderSid: rate.VoucherHeaderSid || '',
-      DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
-    }));
-
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-
-    this.excelExportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'ChargeCode', label: 'Charge Code' },
-        { key: 'ChargeName', label: 'Charge Name' },
-        { key: 'ChargeDescription', label: 'Charge Description' },
-        { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
-        { key: 'UnitCode', label: 'Unit Code' },
-        { key: 'NumberOfUnit', label: 'Number Of Unit' },
-        { key: 'DebitCredit', label: 'Debit/Credit' },
-        { key: 'Currency', label: 'Currency' },
-        { key: 'ExchangeRate', label: 'Exchange Rate' },
-        { key: 'Rate', label: 'Rate' },
-        { key: 'Amount', label: 'Amount' },
-        { key: 'LocalAmount', label: 'Local Amount' },
-        { key: 'Customer', label: 'Customer' },
-        { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
-        { key: 'DocumentType', label: 'Document Type' }
-      ],
-      fileName: 'Revenue-Rates-Report',
-      title: companyName
-    });
-  }
+  //   this.excelExportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'ChargeCode', label: 'Charge Code' },
+  //       { key: 'ChargeName', label: 'Charge Name' },
+  //       { key: 'ChargeDescription', label: 'Charge Description' },
+  //       { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
+  //       { key: 'UnitCode', label: 'Unit Code' },
+  //       { key: 'NumberOfUnit', label: 'Number Of Unit' },
+  //       { key: 'DebitCredit', label: 'Debit/Credit' },
+  //       { key: 'Currency', label: 'Currency' },
+  //       { key: 'ExchangeRate', label: 'Exchange Rate' },
+  //       { key: 'Rate', label: 'Rate' },
+  //       { key: 'Amount', label: 'Amount' },
+  //       { key: 'LocalAmount', label: 'Local Amount' },
+  //       { key: 'Customer', label: 'Customer' },
+  //       { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
+  //       { key: 'DocumentType', label: 'Document Type' }
+  //     ],
+  //     fileName: 'Revenue-Rates-Report',
+  //     title: companyName
+  //   });
+  // }
 
   reportProfitSummary(): void {
     const formattedData = this.profitSummary.map(row => ({
