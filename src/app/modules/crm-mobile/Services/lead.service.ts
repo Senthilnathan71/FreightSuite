@@ -133,7 +133,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   }
 
   getFollowUp(CompanyMasterSid:number,BranchMasterSid:number) {
-    return this.http.get(`precustomer-meeting/followup/meetingDate/${CompanyMasterSid}/${BranchMasterSid}`).pipe(
+    return this.http.get(`ff-precustomer-meeting/followup/meetingDate/${CompanyMasterSid}/${BranchMasterSid}`).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
