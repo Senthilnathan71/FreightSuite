@@ -1,7 +1,7 @@
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
                       <div class="brand-icon">
                         <i class="fas fa-building"></i>
@@ -15,7 +15,7 @@
 
                 </div>
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <!-- @if(isEditMode){
@@ -61,15 +61,15 @@
 
 
 
-    <form [formGroup]="departmentForm">
-        <div class="col-12">
+    <form [formGroup]="departmentForm" class="px-0">
+        <div class="col-12 ">
             <div class="card">
-                 <div class="card-body py-2 px-3">
-                <div class="row pb-2 rounded border border-top-0">
-                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                 <div class="card-body">
+                <div class="row">
+                      <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                          <i class="fas fa-building fs-4"></i>
                         <h5 class="card-titlename mb-0">Department Information</h5>
-                    </div>
+                    </div> -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="departmentName" placeholder=""
@@ -161,6 +161,7 @@
                                     <!-- <ng-option value="">Select Exp/Imp</ng-option> -->
                                     <ng-option value="Export">Export</ng-option>
                                     <ng-option value="Import">Import</ng-option>
+                                    <ng-option value="Others">Others</ng-option>
                                 </ng-select>
                                 <label for="text-input" class="input-label">Exp/Imp? <span
                                         class="text-danger fw-bold"></span></label>
@@ -186,6 +187,7 @@
                                     <!-- <ng-option value="">Select FCL/LCL</ng-option> -->
                                     <ng-option value="FCL">FCL</ng-option>
                                     <ng-option value="LCL">LCL</ng-option>
+                                    <ng-option value="Others">Others</ng-option>
                                 </ng-select>
                                 <label for="text-input" class="input-label">FCL/LCL? <span
                                         class="text-danger fw-bold"></span></label>
