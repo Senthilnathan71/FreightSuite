@@ -627,7 +627,7 @@
                             </aside>
                             <aside class="d-flex gap-3 justify-content-end">
                                 <p class="mb-0 col-3 fw-bold">Quotation Date</p>
-                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate }}</p>
                             </aside>
                             <aside class="d-flex gap-3 justify-content-end">
                                 <p class="mb-0 col-3 fw-bold">Reference</p>
@@ -658,10 +658,10 @@
                             <tr>
                                 <td colspan="6" class="p-0" style="border:2px solid black">
                                     <aside class="d-flex flex-wrap">
-                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.CarrierName}}
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.quoteCarrier[0]?.CarrierName}}
                                         </p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
-                                            {{route.CargoType}}</p>
+                                            {{route.quoteCargo[0]?.CargoType}}</p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
                                             {{route.effDate | formatDate }}</p>
                                         <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
@@ -678,14 +678,14 @@
                                 <td class="fw-bold table-secondary border border-dark">Rate</td>
                                 <td class="fw-bold table-secondary border border-dark">Total Amt</td>
                             </tr>
-                            @for(charge of route.quoteCharge;track charge){
+                            @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
                             <tr style="border:2px solid black">
                                 <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
-                                <td class="border border-dark">{{charge.uomMaster?.UOMName}}</td>
+                                <td class="border border-dark">{{charge.uomMaster?.UOMCode}}</td>
                                 <td class="border border-dark">{{charge.Qty}}</td>
-                                <td class="border border-dark">{{charge.currencyMaster?.currencyName}}</td>
-                                <td class="border border-dark">{{charge.perUnit}}</td>
-                                <td class="border border-dark">{{charge.Qty * charge.perUnit}}</td>
+                                <td class="border border-dark">{{charge.currencyMaster?.currencyCode}}</td>
+                                <td class="border border-dark">{{charge.CostRate}}</td>
+                                <td class="border border-dark">{{charge.Qty * charge.CostRate}}</td>
                             </tr>
                             }
 

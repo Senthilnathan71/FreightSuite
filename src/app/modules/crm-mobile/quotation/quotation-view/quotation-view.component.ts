@@ -20,6 +20,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
 @Component({
   selector: 'app-quotation-view',
   standalone: true,
@@ -132,7 +133,8 @@ export class QuotationViewComponent extends BaseListComponent implements OnInit 
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private datePipe: CustomDatePipe,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private globalDateService: GlobalDateFormatService
   ) {
     super(paginationService);
   }
@@ -860,5 +862,7 @@ fileBy(row: any, content: TemplateRef<any>) {
     this.searchQuotation();
   }
 
-
+  formatMyDate(date: Date): string {
+    return this.globalDateService.formatDate(date);
+  }
 }

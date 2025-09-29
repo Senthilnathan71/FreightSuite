@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -33,6 +33,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { ComboBoxColumn, MultiColumnComboboxComponent } from 'src/app/component/multicolumn-combobox/multicolumn-combobox.component';
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -50,7 +51,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     TextWithNumbersDirective,
     DecimalPrecisionDirective,
     FavoriteStarComponent,
-    SearchableDropdown
+    SearchableDropdown,
+    MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
   styleUrl: './quotation-entry.component.scss',
@@ -63,6 +65,8 @@ export class QuotationEntryComponent implements OnInit {
 
 
   // SECTION1 - VARIABLE DECLARATION
+  @ViewChildren('revenueLocalAmountInput') revenueLocalInputs!: QueryList<ElementRef<HTMLInputElement>>;
+  selectedCurrency : any;
 
   QuoteHeaderSid: number;
   currentMenuId: number;
@@ -89,7 +93,10 @@ export class QuotationEntryComponent implements OnInit {
   filteredPODPorts: any[][] = [];
   chargeMaster: any[] = [];
   currencyMaster: any[] = [];
-  unitMaster: any[] = [];
+  chargeUnitMaster: any[] = [];
+  packageUnitMaster: any[] = [];
+  measurementUnitList: any[] = [];
+  weightUnitList: any[] = [];
   incoList: any[] = [];
   salesmanList: any[] = [];
   cusBranchList: any[] = [];
@@ -101,8 +108,7 @@ export class QuotationEntryComponent implements OnInit {
   vendorSupplierList : any[] = [];
   productList : any[] =[];
   productLookupConfig = ['ProductCode','ProductName'];
-  measurementUnitList : any[] = [];
-  weightUnitList : any[] = [];
+
   
   quotationForm !: FormGroup;
   today = this.calendar.getToday();
@@ -160,6 +166,45 @@ dataFromEnqPage:any;
   selectTab1(tab: string) {
     this.selectedTab1 = tab;
   }
+
+  // Lookup Configuration
+  customerLookupConfig = {
+    displayFields : ['CustomerName','BranchName', 'Address'],
+    displayLabels : ['Customer','Branch', 'Address'],
+    labelFields :['CustomerName']
+  };
+  portLookupConfig = {
+    displayFields : ['PortCode', 'PortName'],
+    displayLabels : ['Code', 'Name'],
+    labelFields :['PortName']
+  };
+  chargeLookupConfig = {
+    displayFields : ['chargeCode'],
+    displayLabels : ['Code'],
+    labelFields :['chargeCode']
+  };
+  unitLookupConfig = {
+    displayFields : ['UOMCode'],
+    displayLabels : ['Code'],
+    labelFields :['UOMCode']
+  };
+  currencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code','Name','Country'],
+    labelFields :['currencyCode']
+  };
+
+  currencyColumns : ComboBoxColumn[] = [
+    { field: 'currencyCode', header: 'Code', width: '30%' },
+    { field: 'currencyName', header: 'Name', width: '70%' },
+    // { field: 'country', header: 'Role', width: '20%' },
+    // { field: 'department', header: 'Department', width: '25%' },
+  ];
+
+
+  digitsAfterDecimal = 2;
+  truncationLimit = 4;
+
   // SECTION2 - CONSTRUCTOR
   constructor(
     private fb: FormBuilder,
@@ -430,6 +475,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   onSelectionChange(selectedItem: any) {
+    this.handleCustomerChangeOnCharges(selectedItem);
     if (!selectedItem) {
       this.quotationForm.patchValue({
         CustomerName: '',
@@ -442,7 +488,6 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
 
     const isCustomer = this.quotationForm.get('LeadOrCustomer')?.value;
-    console.log(selectedItem);
     if (isCustomer) {
       this.quotationForm.patchValue({
         CustomerName: selectedItem.CustomerName,
@@ -941,15 +986,15 @@ private extractCargoData(enquiryCargo: any[]): any {
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
       salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
       masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
-      units : this.leadService.getAllUOMs().pipe(catchError(err => of([]))),
+      chargeUnits : this.leadService.getUOMsByType('C').pipe(catchError(err => of([]))),
+      packageTypes : this.leadService.getUOMsByType('P').pipe(catchError(err => of([]))),
+      measurementUnits : this.leadService.getUOMsByType('M').pipe(catchError(err => of([]))),
+      weightUnits : this.leadService.getUOMsByType('W').pipe(catchError(err => of([]))),
       vendors: this.leadService.getAllVendorSupplier(CompanyMasterSid).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
-      packageTypes : this.leadService.getAllPackageTypeUOM().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-      measurementUnits : this.leadService.getAllMeasurementUnit().pipe(catchError(err => of([]))),
-      weightUnits : this.leadService.getAllWeightUnit().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ cargoTypes, carriers, leads, customers, departments, vendors, ports, incos, salesman, masters,units, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ cargoTypes, carriers, leads, customers, departments, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
       this.leadList = leads.data;
@@ -958,16 +1003,16 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.ports = ports || [];
       this.chargeMaster = masters.charges || [];
       this.currencyMaster = masters.currencies || [];
-      this.unitMaster = units.data || [];
+      this.chargeUnitMaster = chargeUnits.data || [];
+      this.measurementUnitList = measurementUnits.data || [];
+      this.weightUnitList = weightUnits.data || [];
+      this.packageTypes = packageTypes.data || [];
       this.incoList = incos || [];
       this.salesmanList = salesman || [];
       this.containerTypeList = containerTypes || [],
       this.vendorSupplierList = vendors || [];
-      this.packageTypes = packageTypes.data || [];
       this.productList = products || [];
       this.imcoList = imcos.data || [];
-      this.measurementUnitList = measurementUnits.data || [];
-      this.weightUnitList = weightUnits.data || [];
     })
     );
   }
@@ -1286,7 +1331,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   onChargeChange(charge: any, routeIndex: number, carrierIndex:number, chargeIndex: number) {
     if (!charge || charge === undefined) {
       const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-      const clearFields = ['ChargeDisplayName', 'ChargeUomSid', 'RevenueCurrencyMasterSid', 'RevenueExchangeRate', 'RevenueAmount', 'RevenueLocalAmount'];
+      const clearFields = ['ChargeDisplayName', 'ChargeUomSid','Qty', 'RevenueCurrencyMasterSid', 'RevenueExchangeRate', 'RevenueAmount', 'RevenueLocalAmount'];
       const clearControls = (allCtrl:string[]) => {
         allCtrl.forEach(ctrl => {
           if (chargeForm.get(ctrl)) {
@@ -1298,16 +1343,24 @@ private extractCargoData(enquiryCargo: any[]): any {
       return;
     }
     const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-    const uomCode = (this.unitMaster.find(uom => uom.UOMMasterSid === charge.UOM))?.UOMCode;
+    const uomCode = (this.chargeUnitMaster.find(uom => uom.UOMMasterSid === charge.UOM))?.UOMCode;
     const currCode = (this.currencyMaster.find(curr => curr.CurrencyMasterSid === charge.CurrencyMasterSid))?.currencyCode;
 
     chargeForm.get('ChargeDisplayName')?.setValue(charge.chargeName);
+    const qty = this.findFieldForQty(charge.UnitQty);
+    console.log(qty);
+    if(qty){
+      const qtyValue = this.quoteRoutes.at(routeIndex).get(qty)?.value;
+      console.log(chargeForm.get('Qty')?.value);
+      chargeForm.get('Qty')?.setValue(Number(qtyValue));
+      console.log(chargeForm.get('Qty')?.value);
+    } 
 
     chargeForm.get('RevenueChargeUomSid')?.setValue(charge.UOM);
     chargeForm.get('RevenueCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
     chargeForm.get('CostChargeUomSid')?.setValue(charge.UOM);
     chargeForm.get('CostCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
-    this.handleQty(routeIndex,carrierIndex,chargeIndex);
+    // this.handleQty(routeIndex,carrierIndex,chargeIndex);
   }
 
   onCarrierChange(carrier: any, routeIndex: number) {
@@ -1426,20 +1479,34 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   calculateRevenueTotalAmount(routeIndex: number,carrierIndex:number, chargeIndex: number) {
     const chargeCtrl = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-    const qty = chargeCtrl.get('Qty')?.value;
-    const revenueRate = chargeCtrl.get('RevenueRate')?.value;
-    const revExRate = chargeCtrl.get('RevenueExchangeRate')?.value;
-
+    const qty = Number(chargeCtrl.get('Qty')?.value);
+    const revenueRate = Number(chargeCtrl.get('RevenueRate')?.value);
+    const revExRate = Number(chargeCtrl.get('RevenueExchangeRate')?.value);
+    console.log(this.revenueLocalInputs);
     if (qty && revenueRate) {
-      chargeCtrl.get('RevenueAmount')?.setValue(qty * revenueRate);
+      chargeCtrl.get('RevenueAmount')?.setValue((qty * revenueRate).toFixed(this.digitsAfterDecimal));
     } else {
-      chargeCtrl.get('RevenueAmount')?.setValue('0');
+      chargeCtrl.get('RevenueAmount')?.setValue((0).toFixed(this.digitsAfterDecimal));
     }
 
     if (qty && revenueRate && revExRate) {
-      chargeCtrl.get('RevenueLocalAmount')?.setValue(qty * revenueRate * revExRate);
+      chargeCtrl.get('RevenueLocalAmount')?.setValue((qty * revenueRate * revExRate).toFixed(this.digitsAfterDecimal));
+      this.blurRevenueLocalInput(routeIndex, carrierIndex, chargeIndex);
     } else {
-      chargeCtrl.get('RevenueLocalAmount')?.setValue('0');
+      chargeCtrl.get('RevenueLocalAmount')?.setValue((0).toFixed(this.digitsAfterDecimal));
+    }
+  }
+
+  blurRevenueLocalInput(routeIndex: number, carrierIndex: number, chargeIndex: number) {
+    const el = this.revenueLocalInputs.find(ref => {
+      const e = ref.nativeElement;
+      return +e.getAttribute('data-route') === routeIndex &&
+        +e.getAttribute('data-carrier') === carrierIndex &&
+        +e.getAttribute('data-charge') === chargeIndex;
+    });
+
+    if (el && document.activeElement !== el.nativeElement) {
+      el.nativeElement.blur();
     }
   }
 
@@ -1606,7 +1673,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     if(!UOMMasterSid){
       return '';
     }
-    return (this.unitMaster.find(uom => uom.UOMMasterSid === UOMMasterSid))?.UOMCode;
+    return (this.chargeUnitMaster.find(uom => uom.UOMMasterSid === UOMMasterSid))?.UOMCode;
   }
 
   checkIfLastChargeEmpty(routeIndex,carrierIndex) {
@@ -1913,9 +1980,46 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
   }
 
-  geteCarrierInfo(routeIndex:number,chargeIndex:number){
-    const routeForm = this.quoteCarriers(routeIndex).at(chargeIndex) as FormGroup;
-    
+
+  handleCustomerChangeOnCharges(customer:any){
+    this.quoteRoutes.controls.forEach((route:FormGroup,routeIndex:number)=>{
+      const carrierArr = this.quoteCarriers(routeIndex);
+      console.log(carrierArr);
+      carrierArr.controls.forEach((carrier:FormGroup,carrierIndex:number)=>{
+        const chargeArr = this.quoteCharges(routeIndex,carrierIndex);
+        chargeArr.controls.forEach((charge:FormGroup,chargeIndex:number)=>{
+          const revCusControl = charge.get('RevenueCustomerMasterSid');
+          if (customer) {
+            if (!revCusControl.value) {
+              revCusControl.setValue(customer.CustomerMasterSid);
+            }
+          } else {
+            revCusControl.setValue(null);
+          }
+        });
+      })
+    })
+  }
+
+  findFieldForQty(UnitQty:string){
+    switch(UnitQty){
+      case 'GrossWeight':
+        return 'GrossWeight';
+      case 'CBM':
+        return 'Volume';
+      case '20ft':
+        return 'Qty';
+      case '40ft':
+        return 'Qty';
+      case 'ChargeableWeight':
+        return 'ChargeableWeight';
+      case 'BL':
+        return '1';
+      case 'Shipment':
+        return '1';
+      default:
+        return '';
+    }
   }
 
 }
