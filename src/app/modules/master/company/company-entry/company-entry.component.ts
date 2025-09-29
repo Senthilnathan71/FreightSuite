@@ -60,7 +60,21 @@ export class CompanyEntryComponent implements OnInit {
 		{ id: 'Suspended', name: 'Suspended' },
 
 	];
+	selectedTab = 'Branch';
+	selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
+    tabs = [
+    { name: 'Branch', icon: 'fas fa-code-branch' },
+  ];
 
+  	selectedTab1 = 'Bank';
+	selectTab1(tab: string) {
+    this.selectedTab1 = tab;
+  }
+    tabs1 = [
+    { name: 'Bank', icon: 'fas fa-university' },
+  ];
 	//  DECLARATIONS
 	CompanyMasterSid: number;
 	BranchMasterSid: number;
