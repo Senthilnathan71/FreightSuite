@@ -63,7 +63,7 @@
                              <div class="col-12">
                                     <div class="row   align-items-center pt-2  justify-content-between mx-1" data-bs-theme="light">
                                         <div class="col pb-2">
-                                <h4 class="page-title mb-0">Quotation</h4>
+                                <h5 class="page-title mb-0 text-info">Quotation</h5>
                             </div>
 
                         
@@ -292,16 +292,22 @@
 
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
-    <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
+      <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #quotationTable [config]="tableConfig" [data]="allQuotation" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="">
 
             <div class="col-12 p-0">
-                <!-- #region filter and add new -->
-
-                <!-- #endregion -->
-
+           
                 <div class="">
-                    <!-- #region lead view -->
+           
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
@@ -313,7 +319,7 @@
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
-                                    <!-- <th class="bg-transparent text-light" scope="col">Quote Status</th> -->
+                                  
                                     <th class="bg-transparent text-light" scope="col">Booking No.</th>
                                     <th class="bg-transparent text-light" scope="col" >Status</th>
 
@@ -348,9 +354,7 @@
                                             {{ enq.QuoteDate | formatDate }}
                                         </div>
                                     </td>
-                                    <!-- <td>
-                                        {{findEnquiryName(enq.EnquirySid)}}
-                                    </td> -->
+                              
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.CustomerName }}
@@ -371,25 +375,13 @@
                                             {{ enq.quoteRoute[0]?.PortPOD?.PortName }}
                                         </div>
                                     </td>
-                                    
-                                     
-                                    <!-- <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            NA
-                                        </div>
-                                    </td> -->
+                     
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             NA
                                         </div>
                                     </td>
-                                    <!--<td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            @if(enq.authorizerStatus === 'Approved'){
-                                                <button class="btn btn-sm btn-info" (click)="goForBookingCreation(enq.QuoteHeaderSid)">Create Booking</button>
-                                            }
-                                        </div>
-                                    </td> -->
+                            
                                     <td >
                                         @if(enq.authorizerStatus === "Approved"){
                                         <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1" >
@@ -413,21 +405,21 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- #endregion -->
+
 
                     <div class="">
-                        <!-- #region Pagination -->
+                     
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
                     [ellipses]="false" [maxSize]="10">
                         </ngb-pagination>
-                        <!-- #endregion -->
+                       
                     </div>
                 </div>
 
             </div>
         </div>
-    </div>
+    </div> -->
 </ng-template>
 
 
@@ -635,7 +627,7 @@
                             </aside>
                             <aside class="d-flex gap-3 justify-content-end">
                                 <p class="mb-0 col-3 fw-bold">Quotation Date</p>
-                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate }}</p>
                             </aside>
                             <aside class="d-flex gap-3 justify-content-end">
                                 <p class="mb-0 col-3 fw-bold">Reference</p>
@@ -666,10 +658,10 @@
                             <tr>
                                 <td colspan="6" class="p-0" style="border:2px solid black">
                                     <aside class="d-flex flex-wrap">
-                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.CarrierName}}
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.quoteCarrier[0]?.CarrierName}}
                                         </p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
-                                            {{route.CargoType}}</p>
+                                            {{route.quoteCargo[0]?.CargoType}}</p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
                                             {{route.effDate | formatDate }}</p>
                                         <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
@@ -686,14 +678,14 @@
                                 <td class="fw-bold table-secondary border border-dark">Rate</td>
                                 <td class="fw-bold table-secondary border border-dark">Total Amt</td>
                             </tr>
-                            @for(charge of route.quoteCharge;track charge){
+                            @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
                             <tr style="border:2px solid black">
                                 <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
-                                <td class="border border-dark">{{charge.uomMaster?.UOMName}}</td>
+                                <td class="border border-dark">{{charge.uomMaster?.UOMCode}}</td>
                                 <td class="border border-dark">{{charge.Qty}}</td>
-                                <td class="border border-dark">{{charge.currencyMaster?.currencyName}}</td>
-                                <td class="border border-dark">{{charge.perUnit}}</td>
-                                <td class="border border-dark">{{charge.Qty * charge.perUnit}}</td>
+                                <td class="border border-dark">{{charge.currencyMaster?.currencyCode}}</td>
+                                <td class="border border-dark">{{charge.CostRate}}</td>
+                                <td class="border border-dark">{{charge.Qty * charge.CostRate}}</td>
                             </tr>
                             }
 

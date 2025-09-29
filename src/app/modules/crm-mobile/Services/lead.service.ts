@@ -339,6 +339,15 @@ private bookingDataSubject = new BehaviorSubject<any>({});
       })
     )
   }
+  
+  getUOMsByType(type:string){
+    return this.http.get<{ data: any }>(`uom/uom-type?type=${type}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
   getExchangeRate(payload) {
     return this.http.post<{ data: any }>('currency-exchange/exchange-rate', payload).pipe(

@@ -124,7 +124,7 @@
                   <span class="text-danger"></span></label>
               </div>
             </aside>
-            <aside class="col-md-4" *ngIf="!isEditMode">
+            <aside class="col-md-4">
               <div class="custom-form-group">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
@@ -138,7 +138,7 @@
             <aside class="col-md-4" *ngIf="quotationForm.get('LeadOrCustomer')?.value">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
-                <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                <!-- <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                   formControlName="CustomerMasterSid" appendTo="body" (change)="onSelectionChange($event)">
                   <ng-template ng-option-tmp let-item="item" let-index="index">
                     <div>
@@ -147,12 +147,15 @@
                       <small class="d-block">{{ item.Address }}</small>
                     </div>
                   </ng-template>
-                </ng-select>
-                <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
-                                          [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
-                                          [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                          (itemSelected)="onSelectionChange($event)">
-                                      </dofi-searchable-dropdown> -->
+                </ng-select> -->
+                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
+                  (itemSelected)="onSelectionChange($event)">
+                </dofi-searchable-dropdown>
+                <!-- <multicolumn-combobox [data]="currencyMaster" [columns]="currencyColumns" [(selectedItem)]="selectedCurrency"
+                  label="Select Currency" placeholder="Search by name, email, role, or department..."
+                  displayField="name"></multicolumn-combobox> -->
                 <label for="customerName" class="input-label">Customer <span class="text-danger">*</span></label>
                 <small *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid" class="error-message">
                   Required
@@ -224,16 +227,27 @@
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('SalesmanSid')?.value">
                 <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
-                  bindValue="CustomerSalesSid">
+                  bindValue="CustomerSalesSid" appendTo="body">
 
                 </ng-select>
                 <label for="" class="input-label">Salesman <span class="text-danger"></span></label>
               </div>
             </aside>
             <aside class="col-md-4">
+              <div class="custom-form-group">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
+                    formControlName="AgreedRate">
+                  <label class="form-check-label" for="flexCheckChecked">
+                    Rate Agreed
+                  </label>
+                </div>
+              </div>
+            </aside>
+            <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('FreightPPCC')?.value">
-                <ng-select formControlName="FreightPPCC">
+                <ng-select formControlName="FreightPPCC" appendTo="body">
                   <ng-option value="Prepaid">Prepaid</ng-option>
                   <ng-option value="Collect">Collect</ng-option>
                 </ng-select>
@@ -284,8 +298,8 @@
               [collapsed]="routeIndex !== 0">
               <h2 ngbAccordionHeader>
                 <button ngbAccordionButton
-                  class="d-flex justify-content-between align-items-center w-100 position-relative">
-                  <h5 class="font-bold my-1 text-light">Route Details</h5>
+                  class="d-flex justify-content-between align-items-center w-100 position-relative p-1">
+                  <h5 class="font-bold my-1 text-light">{{getRouteInfo(routeIndex)}}</h5>
                   @if(quoteRoutes.length > 1){
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
@@ -449,11 +463,9 @@
                         <aside class="col-md-3">
                           <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!quoteRoutes.at(routeIndex).get('ServiceLevel')?.value">
-                            <ng-select formControlName="ServiceLevel" [items]="serviceLevel" bindLabel="name"
-                              bindValue="name" placeholder="">
-
+                            <ng-select class="ng-select" [items]="incoList" bindLabel="IncoCode" bindValue="IncoCode" formControlName="ServiceLevel" >
                             </ng-select>
-                            <label for="text-input" class="input-label">Shipment Terms <span
+                            <label for="text-input" class="input-label">Inco Terms <span
                                 class="text-danger"></span></label>
                           </div>
                         </aside>
@@ -503,10 +515,21 @@
                           <aside class="col-md-3"
                             *ngIf="route.value.segmentType === 'LCL' || route.value.segmentType === 'AIR'">
                             <div class="custom-form-group">
-                              <input type="text" id="text-input" placeholder=""
-                                class="form-control custom-input-field sm" formControlName="GrossWeight">
+                              <input 
+                              type="text" 
+                              id="text-input" 
+                              placeholder="" 
+                              DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="3"
+                              class="form-control custom-input-field sm" 
+                              formControlName="GrossWeight"
+                              >
                               <label for="text-input" class="input-label">Gross Weight <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
+                              <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
+                                Gr weight > Net weight
+                              </span>
                             </div>
                           </aside>
                           <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
@@ -554,8 +577,8 @@
                           <aside class="col-md-3" *ngIf="route.value.segmentType === 'FCL'">
                             <div class="custom-form-group custom-form-group-select"
                               [class.filled]="!!quoteRoutes.at(routeIndex).get('ContainerType')?.value">
-                              <ng-select [items]="containerTypeList" bindLabel="ContainerName"
-                                bindValue="ContainerTypeMasterSid" formControlName="ContainerType" placeholder="">
+                              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerCode"
+                                formControlName="ContainerType" appendTo="body" placeholder="">
                               </ng-select>
                               <label class="input-label">Container Type <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'ContainerType') ? '*' : '' }}</span></label>
@@ -615,11 +638,12 @@
                               <thead>
                                 <tr class="bg-info text-center">
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
-                                  @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
+                                  
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg <span
                                       class="text-danger">*</span></th>
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg <span
                                       class="text-danger">*</span></th>
+                                  @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Weight <span
                                       class="text-danger">*</span></th>
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Weight <span
@@ -627,18 +651,19 @@
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM <span
                                       class="text-danger">*</span></th>
                                   }
-                                  <th class="bg-transparent text-light" scope="col">Is Haz</th>
-
-                                  <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
-                                  <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
-                                  <th class="bg-transparent text-light dofi-min-w-150" scope="col">Pkg Group</th>
-
                                   @if(route.value.segmentType === 'AIR'){
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">Length</th>
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">Width</th>
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">Height</th>
                                   <th class="bg-transparent text-light dofi-min-w-150" scope="col">UOM</th>
                                   }
+                                  <th class="bg-transparent text-light" scope="col">Is Haz</th>
+
+                                  <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
+                                  <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
+                                  <th class="bg-transparent text-light dofi-min-w-150" scope="col">Pkg Group</th>
+
+
                                   <th class="bg-transparent text-light" scope="col"
                                     *ngIf="quoteProducts(routeIndex).length > 1">Action</th>
                                 </tr>
@@ -658,29 +683,60 @@
                                       (itemSelected)="onProductChange($event,routeIndex,productIndex)">
                                     </dofi-searchable-dropdown>
                                   </td>
-                                  @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
+                                  
                                   <td>
                                     <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg"
                                       [placeholder]="''" [displayFields]="[ 'UOMCode','UOMName']"
                                       [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMName']"
-                                      [bindValue]="'UOMCode'">
+                                      [bindValue]="'UOMMasterSid'">
                                     </dofi-searchable-dropdown>
                                   </td>
                                   <td>
                                     <input type="text" id="text-input" formControlName="ExternalQty" placeholder=""
+                                    (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm">
+                                  </td>
+                                  @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
+                                  <td>
+                                    <div class="custom-form-group">
+                                      <input type="text" id="text-input" formControlName="GrossWeight" placeholder=""
+                                      (input)="handleCalculation(routeIndex)"
+                                        class="custom-input-field sm">
+                                      <span *ngIf="product.get('GrossWeight')?.hasError('grossNotGreater')"
+                                        class="error-message">
+                                        Gr weight > Net weight
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <input type="text" id="text-input" formControlName="NetWeight"
+                                    (input)="handleCalculation(routeIndex)" placeholder=""
                                       class="custom-input-field sm">
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="GrossWeight" placeholder=""
+                                    <input type="text" id="text-input" formControlName="Volume" placeholder="" (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm" >
+                                  </td>
+                                  }
+
+                                  <!-- AIR Part -->
+                                  @if(route.value.segmentType === 'AIR'){
+                                  <td>
+                                    <input type="text" id="text-input" formControlName="Length" placeholder="" (input)="handleCalculation(routeIndex)"
                                       class="custom-input-field sm">
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="NetWeight" placeholder=""
+                                    <input type="text" id="text-input" formControlName="Width" placeholder="" (input)="handleCalculation(routeIndex)"
                                       class="custom-input-field sm">
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="Volume" placeholder=""
-                                      class="custom-input-field sm" (input)="logProduct(routeIndex,productIndex)">
+                                    <input type="text" id="text-input" formControlName="Height" placeholder="" (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm">
+                                  </td>
+                                  <td>
+                                    <ng-select class="ng-select" formControlName="ProductUnit"
+                                      [items]="measurementUnitList" bindLabel="UOMName" bindValue="UOMMasterSid"
+                                      appendTo="body"></ng-select>
                                   </td>
                                   }
 
@@ -697,7 +753,8 @@
                                       bindValue="ImcoMasterSid" appendTo="body" formControlName="ImcoClass"></ng-select>
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                    <input type="text" id="text-input" formControlName="UnNo" placeholder=""
+                                      class="custom-input-field sm">
                                   </td>
                                   <td>
                                     <input type="text" id="text-input" formControlName="PkgGroup" placeholder=""
@@ -713,26 +770,7 @@
                                   </td>
 
 
-                                  <!-- AIR Part -->
-                                  @if(route.value.segmentType === 'AIR'){
-                                  <td>
-                                    <input type="text" id="text-input" formControlName="Length" placeholder=""
-                                      class="custom-input-field sm">
-                                  </td>
-                                  <td>
-                                    <input type="text" id="text-input" formControlName="Width" placeholder=""
-                                      class="custom-input-field sm">
-                                  </td>
-                                  <td>
-                                    <input type="text" id="text-input" formControlName="Height" placeholder=""
-                                      class="custom-input-field sm">
-                                  </td>
-                                  <td>
-                                    <ng-select class="ng-select" formControlName="ProductUnit"
-                                      [items]="measurementUnitList" bindLabel="UOMName" bindValue="UOMMasterSid"
-                                      appendTo="body"></ng-select>
-                                  </td>
-                                  }
+
                                 </tr>
                                 }
                               </tbody>
@@ -745,10 +783,11 @@
                           <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center px-1">
                               <div>
-                                <h5 class="text-info mb-0">Carrier</h5>
+                                <!-- <h5 class="text-info mb-0">Carrier</h5> -->
                               </div>
-                              <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-plus me-1"></i> Add
+                              <button class="btn btn-sm btn-info dofi-min-w-120 dofi-max-w-120"
+                                (click)="addQuoteCarrier(routeIndex)">
+                                <i class="fas fa-plus me-1"></i> Add Carrier
                               </button>
                             </div>
                           </div>
@@ -760,7 +799,8 @@
                               <h2 ngbAccordionHeader>
                                 <button ngbAccordionButton
                                   class="d-flex justify-content-between align-items-center w-100 position-relative p-1">
-                                  <h5 class="font-bold my-1 text-light">Carrier Details</h5>
+                                  <h5 class="font-bold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
+                                    Details'}}</h5>
                                   @if(quoteCarriers(routeIndex).length > 1){
                                   <button class="btn btn-sm waves-effect waves-light text-light"
                                     (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)">
@@ -804,7 +844,7 @@
                                   </div>
                                 </div>
                                 <div class="card-header bg-white d-flex align-items-center px-0 py-1">
-                                  <h5 class="card-title text-info ms-1">Charge Details</h5>
+                                  <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
                                   <div class="ms-auto">
                                     <button class="btn btn-light-secondary btn-sm me-1" type="button"
                                       (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
@@ -839,20 +879,22 @@
                                             <label class="form-label mb-0 pb-3">Qty <span
                                                 class="text-danger">*</span></label>
                                           </td>
-                                          <td class="bg-transparent text-light text-center" colspan="7">
+                                          <td class="bg-transparent text-light text-center"
+                                            [attr.colspan]="f['AgreedRate']?.value ? 7 : 5">
                                             <label class="form-label mb-0">Sale</label>
                                           </td>
-                                          <td class="bg-transparent text-light text-center" colspan="7">
+                                          <td class="bg-transparent text-light text-center" colspan="7"
+                                            [attr.colspan]="f['AgreedRate']?.value ? 7 : 5">
                                             <label class="form-label mb-0">Cost</label>
                                           </td>
 
                                         </tr>
                                         <tr class="bg-info">
-                                          <td class="bg-transparent text-light text-center dofi-min-w-70">
+                                          <td class="bg-transparent text-light text-center dofi-min-w-100">
                                             <label class="form-label mb-0">Unit <span
                                                 class="text-danger">*</span></label>
                                           </td>
-                                          <td class="bg-transparent text-light text-center dofi-min-w-70">
+                                          <td class="bg-transparent text-light text-center dofi-min-w-100">
                                             <label class="form-label mb-0">Currency <span
                                                 class="text-danger">*</span></label>
                                           </td>
@@ -860,27 +902,31 @@
                                             <label class="form-label mb-0">Per Unit <span
                                                 class="text-danger">*</span></label>
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td class="bg-transparent text-light text-center dofi-min-w-100">
                                             <label class="form-label mb-0">Ex Rate <span
                                                 class="text-danger">*</span></label>
                                           </td>
+                                          }
                                           <td class="bg-transparent text-light text-center dofi-min-w-150">
                                             <label class="form-label mb-0">Amt <span
                                                 class="text-danger">*</span></label>
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td class="bg-transparent text-light text-center dofi-min-w-150">
                                             <label class="form-label mb-0">Local Amt <span
                                                 class="text-danger">*</span></label>
                                           </td>
+                                          }
                                           <td class="bg-transparent text-light text-center dofi-min-w-150">
                                             <label class="form-label mb-0">Party <span
                                                 class="text-danger">*</span></label>
                                           </td>
-                                          <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                          <td class="bg-transparent text-light text-center dofi-min-w-80">
                                             <label class="form-label mb-0">Unit <span
                                                 class="text-danger">*</span></label>
                                           </td>
-                                          <td class="bg-transparent text-light text-center dofi-min-w-70">
+                                          <td class="bg-transparent text-light text-center dofi-min-w-80">
                                             <label class="form-label mb-0">Currency <span
                                                 class="text-danger">*</span></label>
                                           </td>
@@ -888,18 +934,22 @@
                                             <label class="form-label mb-0">Per Unit <span
                                                 class="text-danger">*</span></label>
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td class="bg-transparent text-light text-center dofi-min-w-100">
                                             <label class="form-label mb-0">Ex Rate
                                               <span class="text-danger"></span></label>
                                           </td>
+                                          }
                                           <td class="bg-transparent text-light text-center dofi-min-w-150">
                                             <label class="form-label mb-0"> Amt
                                               <span class="text-danger"></span></label>
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td class="bg-transparent text-light text-center dofi-min-w-150">
                                             <label class="form-label mb-0">Local Amt <span
                                                 class="text-danger">*</span></label>
                                           </td>
+                                          }
                                           <td class="bg-transparent text-light text-center dofi-min-w-150">
                                             <label class="form-label mb-0">Vendor <span
                                                 class="text-danger"></span></label>
@@ -919,12 +969,17 @@
                                             </button>
                                           </td>
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <ng-select [items]="chargeMaster" bindLabel="chargeCode"
+                                            <!-- <ng-select [items]="chargeMaster" bindLabel="chargeCode"
                                               bindValue="ChargeMasterSid" appendTo="body" formControlName="ChargeUomSid"
                                               class="ng-select"
                                               (change)="onChargeChange($event,routeIndex,carrierIndex,chargeIndex)"
                                               [class.filled]="!!quoteRoutes.at(routeIndex).get('ChargeUomSid')?.value">
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="chargeMaster" formControlName="ChargeUomSid" placeholder=""
+                                              [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
+                                              [labelFields]="chargeLookupConfig.labelFields" bindLabel="chargeCode" bindValue="ChargeMasterSid"
+                                              (itemSelected)="onChargeChange($event,routeIndex,carrierIndex,chargeIndex)">
+                                            </dofi-searchable-dropdown>
                                           </td>
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <input type="text" id="text-input" placeholder=""
@@ -939,25 +994,30 @@
 
                                           </td>
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <ng-select [items]="unitMaster" formControlName="RevenueChargeUomSid"
-                                              bindLabel="UOMCode" bindValue="UOMMasterSid" appendTo="body"
-                                              [class.filled]="!!quoteRoutes.at(routeIndex).get('RevenueChargeUomSid')?.value">
-                                            </ng-select>
+                                            <dofi-searchable-dropdown [items]="chargeUnitMaster" formControlName="RevenueChargeUomSid" placeholder=""
+                                              [displayFields]="unitLookupConfig.displayFields" [displayLabels]="unitLookupConfig.displayLabels"
+                                              [labelFields]="unitLookupConfig.labelFields" bindLabel="UOMCode" bindValue="UOMMasterSid">
+                                            </dofi-searchable-dropdown>
                                           </td>
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <ng-select [items]="currencyMaster" bindLabel="currencyName"
+                                            <dofi-searchable-dropdown [items]="currencyMaster" formControlName="RevenueCurrencyMasterSid" placeholder=""
+                                              [displayFields]="currencyLookupConfig.displayFields" [displayLabels]="currencyLookupConfig.displayLabels"
+                                              [labelFields]="currencyLookupConfig.labelFields" bindLabel="currencyCode" bindValue="CurrencyMasterSid">
+                                            </dofi-searchable-dropdown>
+                                            <!-- <ng-select [items]="currencyMaster" bindLabel="currencyName"
                                               bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid"
                                               appendTo="body"
                                               (change)="patchRevenueExchangeRate(routeIndex,carrierIndex,chargeIndex)"
                                               [class.filled]="!!quoteRoutes.at(routeIndex).get('RevenueCurrencyMasterSid')?.value">
-                                            </ng-select>
+                                            </ng-select> -->
                                           </td>
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <div class="custom-form-group">
                                               <input type="text" id="text-input" formControlName="RevenueRate"
-                                                placeholder="" class="custom-input-field sm text-end"
+                                                placeholder="" class="custom-input-field sm text-end"  DecimalPrecision
+                                              [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                                 (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
-                                                [onlyNumbers]>
+                                              >
                                               @if(charge.get("RevenueRate")?.touched &&
                                               charge.get("RevenueRate")?.invalid){
                                               <div class="error-message">
@@ -968,46 +1028,56 @@
                                               }
                                             </div>
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <input type="text" id="text-input" formControlName="RevenueExchangeRate"
+                                            <input type="text"  #revenueLocalAmountInput [attr.data-route]="routeIndex" [attr.data-carrier]="carrierIndex" [attr.data-charge]="chargeIndex" id="text-input" formControlName="RevenueExchangeRate"
                                               placeholder=""
                                               (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               class="form-control custom-input-field sm  text-end" DecimalPrecision
-                                              [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
+                                              [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                           </td>
+                                          }
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <input type="text" id="text-input" formControlName="RevenueAmount"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
                                               readonly DecimalPrecision [DecimalPrecisionBefore]="12"
-                                              [DecimalPrecisionAfter]="3">
+                                              [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <input type="text" id="text-input" formControlName="RevenueLocalAmount"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
                                               readonly DecimalPrecision [DecimalPrecisionBefore]="12"
-                                              [DecimalPrecisionAfter]="3">
+                                              [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                           </td>
+                                          }
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <div class="custom-form-group custom-form-group-select">
-                                              <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
-                                                bindValue="CustomerMasterSid" formControlName="RevenueCustomerMasterSid"
-                                                appendTo="body">
-                                              </ng-select>
-                                              @if(charge.get("RevenueCustomerMasterSid")?.touched &&
-                                              charge.get("RevenueCustomerMasterSid")?.invalid){
-                                              <div class="error-message">
-                                                @if(charge.get("RevenueCustomerMasterSid")?.hasError('required')){
-                                                <span>required</span>
-                                                }
-                                              </div>
-                                              }
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!charge.get('CarrierMasterSid')?.value">
+                                              <dofi-searchable-dropdown [items]="customers" formControlName="RevenueCustomerMasterSid" placeholder=""
+                                                [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                                                [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerMasterSid">
+                                              </dofi-searchable-dropdown>
                                             </div>
+                                            <!-- <div class="custom-form-group custom-form-group-select">
+                                           <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
+                                           bindValue="CustomerMasterSid" formControlName="RevenueCustomerMasterSid"
+                                            appendTo="body">
+                                            </ng-select>
+                                            @if(charge.get("RevenueCustomerMasterSid")?.touched &&
+                                             charge.get("RevenueCustomerMasterSid")?.invalid){
+                                                                                        <div class="error-message">
+                                                                                          @if(charge.get("RevenueCustomerMasterSid")?.hasError('required')){
+                                                                                          <span>required</span>
+                                                                                          }
+                                                                                        </div>
+                                                                                        }
+                                                                                      </div> -->
                                           </td>
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <ng-select [items]="unitMaster" formControlName="CostChargeUomSid"
+                                            <ng-select [items]="chargeUnitMaster" formControlName="CostChargeUomSid"
                                               bindLabel="UOMName" bindValue="UOMMasterSid" appendTo="body"
                                               [class.filled]="!!quoteRoutes.at(routeIndex).get('costUnit')?.value">
                                             </ng-select>
@@ -1035,7 +1105,7 @@
                                               }
                                             </div>
                                           </td>
-
+                                          @if(f['AgreedRate']?.value){
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <input type="text" id="text-input" formControlName="CostExchangeRate"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
@@ -1044,6 +1114,7 @@
                                               [DecimalPrecisionAfter]="3">
 
                                           </td>
+                                          }
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <input type="text" id="text-input" formControlName="CostAmount"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
@@ -1051,6 +1122,7 @@
                                               [DecimalPrecisionAfter]="3">
 
                                           </td>
+                                          @if(f['AgreedRate']?.value){
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <input type="text" id="text-input" formControlName="CostLocalAmount"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
@@ -1058,7 +1130,7 @@
                                               [DecimalPrecisionAfter]="3">
 
                                           </td>
-
+                                          }
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
                                               bindValue="CustomerMasterSid" formControlName="CostAgentMasterSid"
