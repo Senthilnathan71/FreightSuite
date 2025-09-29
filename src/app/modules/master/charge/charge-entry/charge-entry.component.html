@@ -148,7 +148,19 @@
                                         </div>
                                     </div>
                                 </aside>
-
+                                     <aside class="col-md-4">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!chargeForm.get('UnitQty')?.value">
+        <ng-select formControlName="UnitQty" [items]="unitQtyOptions" bindLabel="name"
+            bindValue="value" placeholder="">
+        </ng-select>
+        <label class="input-label">Unit Quantity <span class="text-danger">*</span></label>
+        <div *ngIf="chargeForm.get('UnitQty')?.touched && chargeForm.get('UnitQty')?.invalid"
+            class="error-message">
+            <span *ngIf="chargeForm.get('UnitQty')?.hasError('required')">Required</span>
+        </div>
+    </div>
+</aside>
                                 <!-- Currency -->
                                 <aside class="col-md-4">
                                     <div class="custom-form-group custom-form-group-select"
