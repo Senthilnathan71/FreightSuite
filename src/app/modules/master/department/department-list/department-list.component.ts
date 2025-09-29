@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -13,54 +13,106 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-department-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent,FavoriteStarComponent,NgxSpinnerModule],
+  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent],
   templateUrl: './department-list.component.html',
   styleUrl: './department-list.component.scss'
 })
-export class DepartmentListComponent {
+export class DepartmentListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('departmentTable') departmentTable!: ReusableTableComponent;
   searchType = 'departmentName';
-  filterValue = '';
+
   results: any[] = [];
   departmentList: any[] = []
-  searchPerformed = false;
-  allDepartments: any[] = []; 
-  sortColumn: string = 'departmentCode'; 
-  sortDirection: string = 'asc';
+
+  allDepartments: any[] = [];
+
   loading = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Department',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Department',
+        class: "text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'DepartmentMasterSid',
+    emptyMessage: 'No Department found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'department-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'departmentCode',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allDepartment() { return this.allItems; }
   // pagination
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection: number;
-  userData:any
+
+  userData: any
   // Company
-  currentCompany : any;
-  currentBranch : any;
-  constructor(private userService: authService,private masterService: MasterService, private excelReportService:ExcelExportService, private router: Router,
-    private appSettingService: AppSettingsService, private dialog: MatDialog, private spinner: NgxSpinnerService
-  ) { }
-  ngOnInit() {
-// this.appSettingService.getUser().subscribe(user => {
-//       if (user) {
-//         this.userData = user;
-//         console.log(this.userData,'userData');
-//         this.checkPermissions();
-//       }
-//     }); 
+  currentCompany: any;
+  currentBranch: any;
+  constructor(private userService: authService, private masterService: MasterService, private excelReportService: ExcelExportService, private router: Router,
+    private appSettingService: AppSettingsService, private dialog: MatDialog, private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
+  override ngOnInit() {
+    // this.appSettingService.getUser().subscribe(user => {
+    //       if (user) {
+    //         this.userData = user;
+    //         console.log(this.userData,'userData');
+    //         this.checkPermissions();
+    //       }
+    //     }); 
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		} 
+    }
     this.loadDepartments();
+    // Initialize table configuration
+    this.initializeTableConfig();
+    // Initialize base component
+    super.ngOnInit();
   }
 
   checkPermissions() {
@@ -69,64 +121,202 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
-
-  
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      // Reverse the sort direction if clicking the same column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // Set new sort column and default to ascending
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    
-    this.loadDepartments();
+    return this.permissions.includes(permission);
   }
 
-  applySorting() {
-    this.departmentList.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-      
-      // Handle null/undefined values
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-      
-      // Convert to string for case-insensitive comparison
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
-    
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchDepartmentList(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching departments.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching departments.');
+    console.error('Error searching departments', error);
+    super.handleSearchError(error);
+  }
+
+  searchDepartment() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.DepartmentMasterSid || index;
+  }
+
+
+  viewDepartment(item: any): void {
+    this.router.navigate(['/master/department/entry/', item.DepartmentMasterSid])
+  }
+
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'departmentCode',
+        label: 'Dept Code ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'departmentName',
+        label: 'Dept Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'departmentType',
+        label: 'Dept Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ExportImport',
+        label: 'Exp/Imp',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'FCLLCL',
+        label: 'FCL/LCL',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        cellClass: 'vessel-column'
+      },
+      {
+        key: 'Division',
+        label: 'Division',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
       }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewDepartment(event.row);
+    } else if (event.action === "delete") {
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(id: any) {
+    this.deleteDepartment(id.DepartmentMasterSid)
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allDepartment;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.departmentTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+    console.log(formattedData);
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Department-Report',
+      title: companyName
     });
   }
 
 
   updatePaginatedData(): void {
-  const startIndex = (this.page - 1) * this.pageSize;
-  const endIndex = startIndex + this.pageSize;
-  this.loadDepartments();
-}
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.loadDepartments();
+  }
 
   trackByIndex(index: number, item: any): number {
     return index;
@@ -140,6 +330,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/department/list'])
           this.loadDepartments();
+          this.searchDepartment();
         });
       }
     });
@@ -154,20 +345,20 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
       pageSize: this.pageSize,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
-      activeCompanyId : CompanyMasterSid
+      activeCompanyId: CompanyMasterSid
     };
 
     this.masterService.searchDepartmentList(params).subscribe({
       next: (response) => {
-        if(response.status) {
+        if (response.status) {
           this.departmentList = response.data.items;
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searchPerformed = true;
         }
         else {
-        this.appSettingService.showError(response.message);
-      }
+          this.appSettingService.showError(response.message);
+        }
         this.spinner.hide();
         this.loading = false;
       },
@@ -183,54 +374,12 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
   navigateToCreateDepartment() {
     this.router.navigate(['master/department/entry'])
   }
-  clearFilterValue() {
-    this.filterValue = '';
-    this.loadDepartments();
+
+  isFavorite: boolean = false;
+
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
   }
-
-  resetPage() {
-    this.searchPerformed = false;
-    this.departmentList = [];
-    this.totalLengthOfCollection = 0;
-    this.filterValue = '';
-    this.searchType = 'departmantName';
-    this.page = 1;
-    this.sortColumn = 'departmentCode';
-    this.sortDirection = 'asc';
-    this.loadDepartments();
-  }
-
-  report(): void {
-   const formattedData = this.departmentList.map(item => ({
-    ...item,
-    Status: item.Status === 'A' ? 'Active' : 'Suspended'
-  }));
-
-  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
- 
-  this.excelReportService.exportAsExcel({
-    data: formattedData,
-    headers: [
-      { key: 'departmentCode', label: 'Dept Code' },
-      { key: 'departmentName', label: 'Dept Name' },
-      { key: 'departmentType', label: 'Dept Type' },
-      { key: 'ExportImport', label: 'Exp/Imp' },
-      { key: 'FCLLCL', label: 'FCL/LCL' },
-      { key: 'Division', label: 'Division' },
-      { key: 'Status', label: 'Status' }
-    ],
-  fileName: 'Department-Report', // Will also be used as sheet name: DepartmentReport
-    title: companyName
-  });
-}
-
-
-isFavorite: boolean = false;
-
-toggleFavorite() {
-  this.isFavorite = !this.isFavorite;
-}
 
 }
 
