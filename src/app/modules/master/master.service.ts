@@ -471,6 +471,14 @@ export class MasterService {
       })
     );
   }
+  getChargeUOMBasedOnSegment(segment: 'LCL' | 'FCL' | 'AIR' | 'ALL' = 'ALL') {
+  return this.http.get(`uom/charge-uom`, {params: { segment }}).pipe(
+    map((resp: any) => {
+      return resp.data; 
+    })
+  );
+}
+
   searchUomList(params) {
     return this.http.post("uom/search-list", params).pipe(
       map((resp: any) => {

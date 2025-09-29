@@ -48,6 +48,15 @@ export class ChargeEntryComponent implements OnInit {
   { name: "GST Details", icon: "fas fa-file-invoice" },
   { name: "TDS Details", icon: "fas fa-percent" }
 ];
+unitQtyOptions = [
+  { value: '20ft (FCL)', name: '20ft ])' },
+  { value: '40ft (FCL)', name: '40ft ' },
+  { value: 'CBM (LCL)', name: 'CBM ' },
+  { value: 'BL (Common)', name: 'BL ' },
+  { value: 'ChargeableWeight (AIR)', name: 'ChargeableWeight ' },
+  { value: 'Shipment (Common)', name: 'Shipment ' },
+  { value: 'Gross Weight (LCL)', name: 'Gross Weight ' }
+];
 selectedTab = this.tab[0].name;
   chargeForm: FormGroup;
   isEditMode = false;
@@ -126,6 +135,7 @@ selectedTab = this.tab[0].name;
         Validators.maxLength(100)
       ]],
       UOM: ['', Validators.required],
+      UnitQty: ['', Validators.required],
       ChargeGroupSid: ['', Validators.required],
       CurrencyMasterSid: ['', Validators.required],
       DepartmentMasterSid: [[], Validators.required],
@@ -212,18 +222,18 @@ selectedTab = this.tab[0].name;
       this.masterService.getAllChargeGroups(CompanyMasterSid),
       this.masterService.getAllCurrencies(),
       this.masterService.getAllDepartments(CompanyMasterSid),
-      this.masterService.getAllUom(),
+      this.masterService.getChargeUOMBasedOnSegment('ALL'), // CHANGED: Use new API
       this.masterService.getAllHssac(),
       this.masterService.getAllTds(CompanyMasterSid)
     ]).subscribe({
-      next: ([chargeGroups, currencies, departments, uoms, hsnsacs, tdsSets]) => {
+      next: ([chargeGroups, currencies, departments, chargeUoms, hsnsacs, tdsSets]) => {
         this.chargeGroupOptions = Array.isArray(chargeGroups) ? chargeGroups : chargeGroups.data;
         this.currencyOptions = currencies.data || currencies;
         this.departmentOptions = departments.data || departments;
-        const allUoms = (uoms && (uoms.data || uoms)) || [];
-      this.uomOptions = Array.isArray(allUoms)
-        ? allUoms.filter((u: any) => String(u.UOMType).toUpperCase() === 'C')
-        : [];
+        
+        // UPDATED: Use charge UOM data from new API
+        this.uomOptions = chargeUoms.data || chargeUoms || [];
+        
         this.hsnsacOptions = hsnsacs.data || hsnsacs;
         this.tdsOptions = tdsSets.data || tdsSets;
       },
@@ -248,6 +258,7 @@ selectedTab = this.tab[0].name;
         chargeCode: charge.chargeCode,
         chargeName: charge.chargeName,
         UOM: charge.UOM,
+        UnitQty: charge.UnitQty,
         ChargeGroupSid: charge.ChargeGroupSid,
         CurrencyMasterSid: charge.CurrencyMasterSid,
         DepartmentMasterSid: charge.DepartmentMasterSid,
@@ -316,6 +327,7 @@ selectedTab = this.tab[0].name;
         chargeCode: this.chargeForm.value.chargeCode,
         chargeName: this.chargeForm.value.chargeName,
         UOM: this.chargeForm.value.UOM,
+         UnitQty: this.chargeForm.value.UnitQty,
         ChargeGroupSid: this.chargeForm.value.ChargeGroupSid,
         CurrencyMasterSid: this.chargeForm.value.CurrencyMasterSid,
         DepartmentMasterSid: this.chargeForm.value.DepartmentMasterSid,
@@ -474,6 +486,7 @@ selectedTab = this.tab[0].name;
         chargeCode: '',
         chargeName: '',
         UOM: null,
+         UnitQty: null,
         ChargeGroupSid: null,
         CurrencyMasterSid: null,
         DepartmentMasterSid: [],
