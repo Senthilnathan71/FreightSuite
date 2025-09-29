@@ -175,6 +175,18 @@ export class MasterService {
       })
     );
   }
+  checkCustomerUnique(payload: {
+  CompanyMasterSid: number;
+  customerName?: string;
+  customerShortCode?: string;
+  excludeCustomerMasterSid?: number;
+}) {
+  return this.http.post('customer/check-unique', payload).pipe(
+    map((resp: any) => {
+      let response = resp.data;       return response;
+    })
+  );
+}
 
   //customer-branch
 
@@ -393,6 +405,14 @@ export class MasterService {
       })
     );
   }
+
+  getBranchSidsByCustomerMasterSid(CustomerMasterSid: number) {
+  return this.http.get<any>(`customer-branch/sids/${CustomerMasterSid}`).pipe(
+    map((resp) => {
+      return resp.data || [];
+    })
+  );
+}
 
 
 

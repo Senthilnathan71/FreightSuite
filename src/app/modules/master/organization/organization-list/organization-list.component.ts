@@ -160,7 +160,8 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
       this.allItems = response.data.items.map(item => ({
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
-        countryName: this.getCountryName(item.CountryMasterSid)
+        countryName: this.getCountryName(item.CountryMasterSid),
+        
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -211,7 +212,7 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
         dataType: 'string'
       },
       {
-        key: 'CompanyType',
+        key: 'CustomerType',
         label: 'Type ',
         sortable: true,
         filterable: true,
