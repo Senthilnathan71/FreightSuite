@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -22,7 +22,12 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-charge-tax',
   standalone: true,
@@ -40,13 +45,16 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReusableTableComponent
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',
   providers: [DatePipe]
 })
-export class ChargeTaxComponent implements OnInit {
+export class ChargeTaxComponent extends BaseListComponent implements OnInit {
+  @ViewChild('charegeTaxTable') charegeTaxTable!: ReusableTableComponent;
+  @ViewChild('content') content: TemplateRef<any>
   chargeTaxForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -57,33 +65,69 @@ export class ChargeTaxComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
   searchType = 'description';
-  filterValue = '';
-  searchPerformed = false;
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+
   isLoading = false;
-  userData:any;
+  userData: any;
   companyList: any[] = [];
   selectedCompanyId: number;
-  chargeTaxData : any;
+  chargeTaxData: any;
   currentMenuId: number;
-  TandCList: any[]=[];
+  TandCList: any[] = [];
   isFavorite: boolean = false;
-  sortColumn: string = 'description'; 
-  sortDirection: string = 'asc';
-   permissions: string[] = [];
+  permissions: string[] = [];
   currentMenuPermissions: any = {};
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ChargeTax',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete charge-tax',
+        class: "text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No charge-tax found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'charge-tax-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'description',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allChargeTax() { return this.allItems; }
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   // Company
-  currentCompany : any;
-  currentBranch : any;
+  currentCompany: any;
+  currentBranch: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
-  
+
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -94,10 +138,13 @@ export class ChargeTaxComponent implements OnInit {
     private dialog: MatDialog,
     private datePipe: DatePipe,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // this.appSettingService.getUser().subscribe(user => {
     //   if (user) {
     //     this.userData = user;
@@ -106,10 +153,10 @@ export class ChargeTaxComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.loadCompanies();
     this.initForm();
     this.loadChargeTaxes();
@@ -121,28 +168,189 @@ export class ChargeTaxComponent implements OnInit {
       }
     });
     this.checkPermissions();
+    this.initializeTableConfig();
+    super.ngOnInit();
   }
 
-   checkPermissions() {
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
 
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
+
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchChargeTax(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching bookings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching bookings.');
+    console.error('Error searching bookings', error);
+    super.handleSearchError(error);
+  }
+
+  searchChargeTax() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.ChargeTaxMasterSid || index;
+  }
+
+
+
+
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'description',
+        label: 'Description',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'TaxGroup',
+        label: 'Tax Group',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'TaxRate',
+        label: 'Tax Rate',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewCharegeTax(event.row, this.content);
+    } else if (event.action === 'delete') {
+      this.deleteBy(event.row)
+    }
+  }
+
+
+  deleteBy(row: any) {
+    this.deleteChargeTaxById(row.ChargeTaxMasterSid)
+  }
+
+  viewCharegeTax(row: any, content: TemplateRef<any>) {
+    this.editChargeTax(row.ChargeTaxMasterSid, content)
+    this.searchChargeTax()
+  }
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allChargeTax;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+    const visibleColumns = this.charegeTaxTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Booking-Report',
+      title: companyName
+    });
+  }
+
   loadChargeTaxes(): void {
     this.spinner.show();
     this.isLoading = true;
@@ -151,7 +359,7 @@ export class ChargeTaxComponent implements OnInit {
       search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
-      activeCompanyId : CompanyMasterSid,
+      activeCompanyId: CompanyMasterSid,
     };
 
     this.masterService.searchChargeTax(params).subscribe({
@@ -162,7 +370,7 @@ export class ChargeTaxComponent implements OnInit {
           this.updatePaginationData();
           this.chargeTaxList = [...this.results];
           this.totalLengthOfCollection = response.data.totalCount || 0;
-          
+
         } else {
           this.results = [];
           this.chargeTaxList = [];
@@ -179,6 +387,7 @@ export class ChargeTaxComponent implements OnInit {
       }
     });
   }
+
   loadCompanies(): void {
     this.masterService.getAllCompanies().subscribe({
       next: (res) => {
@@ -198,7 +407,7 @@ export class ChargeTaxComponent implements OnInit {
       TaxGroup: ['', [Validators.required, Validators.maxLength(10)]],
       TaxRate: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
       Remarks: ['', [Validators.maxLength(100)]],
-      status: [{value: 'Active', disabled: false}, Validators.required],
+      status: [{ value: 'Active', disabled: false }, Validators.required],
       // CompanyMasterSid: ['', Validators.required]
     });
   }
@@ -211,32 +420,32 @@ export class ChargeTaxComponent implements OnInit {
   // }
 
   resetForm(): void {
-  // If editing an existing charge tax, reload it (restore original state)
-  if (this.isEditMode && this.ChargeTaxMasterSid) {
-    this.loadChargeTaxData(this.ChargeTaxMasterSid);
-    return;
+    // If editing an existing charge tax, reload it (restore original state)
+    if (this.isEditMode && this.ChargeTaxMasterSid) {
+      this.loadChargeTaxData(this.ChargeTaxMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.chargeTaxForm.reset({
+      // HSNCode: null,
+      description: null,
+      TaxGroup: null,
+      TaxRate: null,
+      Remarks: null,
+      status: 'Active'
+    });
+
+    // Re-enable the status field if it was disabled
+    this.chargeTaxForm.get('status')?.enable();
+
+    // Reset validation state
+    this.chargeTaxForm.markAsUntouched();
+    this.chargeTaxForm.markAsPristine();
+
+    // Clear any stored data
+    this.chargeTaxData = null;
   }
-
-  // Create-mode: reset form to initial state with proper default values
-  this.chargeTaxForm.reset({
-    // HSNCode: null,
-    description: null,
-    TaxGroup: null,
-    TaxRate: null,
-    Remarks: null,
-    status: 'Active'
-  });
-
-  // Re-enable the status field if it was disabled
-  this.chargeTaxForm.get('status')?.enable();
-  
-  // Reset validation state
-  this.chargeTaxForm.markAsUntouched();
-  this.chargeTaxForm.markAsPristine();
-  
-  // Clear any stored data
-  this.chargeTaxData = null;
-}
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -249,7 +458,7 @@ export class ChargeTaxComponent implements OnInit {
     this.ChargeTaxMasterSid = id;
     this.masterService.getChargeTaxById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
-        const chargeTax = response.data; 
+        const chargeTax = response.data;
         this.chargeTaxData = chargeTax;
         this.chargeTaxForm.get('status')?.enable();
         this.chargeTaxForm.patchValue({
@@ -261,7 +470,7 @@ export class ChargeTaxComponent implements OnInit {
           status: chargeTax.Status === 'A' ? 'Active' : 'Suspended',
           CompanyMasterSid: chargeTax.CompanyMasterSid
         });
-        this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
       },
       error: (err) => {
         console.error('Error fetching Charge Tax', err);
@@ -290,188 +499,148 @@ export class ChargeTaxComponent implements OnInit {
     );
   }
 
-//   openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.ChargeTaxMasterSid) return;
+  //   openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.ChargeTaxMasterSid) return;
 
-//   this.masterService.getAuditLogsChargeTax('ChargeTaxMaster', this.ChargeTaxMasterSid.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
+  //   this.masterService.getAuditLogsChargeTax('ChargeTaxMaster', this.ChargeTaxMasterSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
 
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
 
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.ChargeTaxMasterSid) return;
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.ChargeTaxMasterSid) return;
 
-  this.masterService.getAuditLogsChargeTax(
-    'ChargeTaxMaster',
-    this.ChargeTaxMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','UpdatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogsChargeTax(
+      'ChargeTaxMaster',
+      this.ChargeTaxMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'UpdatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
   onSubmit() {
-  const statusControl = this.chargeTaxForm.get('status');
-  if (statusControl?.disabled) {
-    statusControl.enable();
-  }
-
-  if (this.chargeTaxForm.invalid) {
-    this.chargeTaxForm.markAllAsTouched();
-    this.chargeTaxForm.updateValueAndValidity();
-    this.appSettingService.showWarning('Please fill all required fields correctly.');
-    return;
-  }
-
-  const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-  const formValue = this.chargeTaxForm.value;
-
-  // Prepare the payload with both CreatedBy and UpdatedBy
-  const payload: any = {
-    // HSNCode: formValue.HSNCode,
-    description: formValue.description,
-    TaxGroup: formValue.TaxGroup,
-    TaxRate: parseFloat(formValue.TaxRate),
-    Remarks: formValue.Remarks || '',
-    Status: formValue.status === "Active" ? "A" : "S",
-    CompanyMasterSid:this.currentCompany?.CompanyMasterSid,
-    CreatedBy: currentUserEmail,
-    UpdatedBy: currentUserEmail  // ✅ Always include both
-  };
-
-  if (this.isEditMode) {
-    this.masterService.updateChargeTaxById(this.ChargeTaxMasterSid, payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.appSettingService.showSuccess(resp.message);
-          this.closeModal();
-          this.loadChargeTaxes();
-        } else {
-          this.appSettingService.showError(resp.message);
-        }
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error updating:', error);
-        this.appSettingService.showError('Failed to update Charge Tax');
-      }
-    );
-  } else {
-    this.masterService.createNewChargeTax(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.appSettingService.showSuccess(resp.message);
-          this.closeModal();
-          this.loadChargeTaxes();
-        } else {
-          this.appSettingService.showError(resp.message);
-        }
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error creating:', error);
-        this.appSettingService.showError('Failed to create Charge Tax');
-      }
-    );
-  }
-}
-clearFilterValue() {
-    this.filterValue = '';
-    this.loadChargeTaxes();
-  }
-
-
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-  this.updatePaginationData();
-}
-
-applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
+    const statusControl = this.chargeTaxForm.get('status');
+    if (statusControl?.disabled) {
+      statusControl.enable();
     }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
+
+    if (this.chargeTaxForm.invalid) {
+      this.chargeTaxForm.markAllAsTouched();
+      this.chargeTaxForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
     }
-    return 0;
-  });
-}
+
+    const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const formValue = this.chargeTaxForm.value;
+
+    // Prepare the payload with both CreatedBy and UpdatedBy
+    const payload: any = {
+      // HSNCode: formValue.HSNCode,
+      description: formValue.description,
+      TaxGroup: formValue.TaxGroup,
+      TaxRate: parseFloat(formValue.TaxRate),
+      Remarks: formValue.Remarks || '',
+      Status: formValue.status === "Active" ? "A" : "S",
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      CreatedBy: currentUserEmail,
+      UpdatedBy: currentUserEmail  // ✅ Always include both
+    };
+
+    if (this.isEditMode) {
+      this.masterService.updateChargeTaxById(this.ChargeTaxMasterSid, payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.closeModal();
+            this.loadChargeTaxes();
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error updating:', error);
+          this.appSettingService.showError('Failed to update Charge Tax');
+        }
+      );
+    } else {
+      this.masterService.createNewChargeTax(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.closeModal();
+            this.loadChargeTaxes();
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error creating:', error);
+          this.appSettingService.showError('Failed to create Charge Tax');
+        }
+      );
+    }
+  }
+
+
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.chargeTaxList = this.results.slice(startIndex, endIndex);
   }
-onPageChange(newPage: number) {
-  this.page = newPage;
-  this.loadChargeTaxes(); 
-}
+  // onPageChange(newPage: number) {
+  //   this.page = newPage;
+  //   this.loadChargeTaxes();
+  // }
   trackByIndex(index: number, item: any): number {
     return index;
   }
@@ -483,44 +652,14 @@ onPageChange(newPage: number) {
         this.masterService.deleteChargeTaxById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.loadChargeTaxes();
+          this.searchChargeTax();
         });
       }
     });
   }
 
-  resetPage(): void {
-    this.chargeTaxList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'description';
-    this.sortColumn = 'description';
-    this.sortDirection = 'asc';
-    this.loadChargeTaxes();
-  }
 
-  report(): void {
-   const formattedData = this.chargeTaxList.map(item => ({
-    ...item,
-    Status: item.Status === 'A' ? 'Active' : 'Suspended'
-  }));
 
-  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-  const companyName = this.currentCompany?.companyName ?? 'Company';
-  this.excelReportService.exportAsExcel({
-    data: formattedData,
-    headers: [
-      // { key: 'HSNCode', label: 'HSN Code' },
-        { key: 'description', label: 'Description' },
-        { key: 'TaxGroup', label: 'Tax Group' },
-        { key: 'TaxRate', label: 'Tax Rate (%)' },
-        { key: 'Remarks', label: 'Remarks' },
-        { key: 'Status', label: 'Status' }
-    ],
-  fileName: 'Charge-tax-Report', 
-    title: companyName
-  });
-}
 
   closeModal(): void {
     if (this.modalRef) {
@@ -529,7 +668,7 @@ onPageChange(newPage: number) {
   }
 
   showInfo() {
-    if(!this.chargeTaxData) return;
+    if (!this.chargeTaxData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.chargeTaxData;
     modalRef.componentInstance.idLabel = 'ChargeTax Id';
@@ -573,24 +712,24 @@ onPageChange(newPage: number) {
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.ChargeTaxMasterSid;
   }
 
-openEDoc() {
-  if (!this.chargeTaxData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeTaxData;
-  modalRef.componentInstance.idLabel = 'ChargeTax Id';
-  modalRef.componentInstance.idValue = this.chargeTaxData?.ChargeTaxMasterSid;
-}
+  openEDoc() {
+    if (!this.chargeTaxData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.chargeTaxData;
+    modalRef.componentInstance.idLabel = 'ChargeTax Id';
+    modalRef.componentInstance.idValue = this.chargeTaxData?.ChargeTaxMasterSid;
+  }
 }

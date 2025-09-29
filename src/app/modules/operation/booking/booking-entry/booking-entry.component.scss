@@ -272,45 +272,6 @@
   }
 }
 
-// .smart-select {
-//   .ng-select.ng-select-single .ng-select-container {
-//     height: 28px;
-//     min-height: 28px;
-//     border: 1px solid #e5e7eb;
-//     border-radius: 6px;
-//     background: #ffffff;
-//     font-size: 11px;
-
-//     .ng-value-container {
-//       padding-left: 8px;
-//       padding-right: 8px;
-
-//       .ng-placeholder {
-//         color: #9ca3af;
-//         font-size: 11px;
-//       }
-
-//       .ng-value {
-//         font-size: 11px;
-//       }
-//     }
-
-//     .ng-arrow-wrapper {
-//       width: 16px;
-
-//       .ng-arrow {
-//         border-color: #999 transparent transparent;
-//         border-width: 3px 3px 0;
-//       }
-//     }
-//   }
-
-//   &.ng-select-focused .ng-select-container {
-//     border-color: #17a2b8;
-//     box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.1);
-//   }
-// }
-
 .select-icon {
   position: absolute;
   right: 24px;
@@ -340,108 +301,8 @@
   }
 }
 
-/* Compact Navigation Pills */
-.nav-pills-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 8px;
-  padding: 4px;
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
 
-.nav-pills {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.nav-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 20px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  position: relative;
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 1.2rem !important;
-
-   &:hover {
-    background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
-    color: #05608d; 
-  }
-
-  &.active {
-    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
-    color: white;
-
-    .pill-icon {
-      color: white;
-    }
-  }
-}
-
-.pill-icon {
-  font-size: 10px;
-  transition: color 0.2s ease;
-}
-
-.pill-label {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.nav-actions {
-  display: flex;
-  gap: 2px;
-}
-
-.nav-action-btn {
-  background: none;
-  border: none;
-  padding: 4px;
-  border-radius: 4px;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 10px;
-
-  &:hover {
-    background: rgba(23, 162, 184, 0.1);
-    color: #17a2b8;
-  }
-}
-
-/* Compact Content Workspace */
-.content-workspace {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 8px;
-
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  overflow: hidden;
-}
-
-.workspace-content {
- 
-  height: 100%;
-  overflow-y: auto;
-  animation: fadeInUp 0.50s ease;
-}
 
 @keyframes fadeInUp {
   from {
@@ -457,8 +318,8 @@
 /* Compact Content Layout */
 .content-layout {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 12px;
+  grid-template-columns: 1fr 160px;
+  gap: 6px;
   height: 100%;
 }
 
@@ -676,8 +537,9 @@
 .info-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap:6px;
 }
+
 
 .stats-widget,
 .activity-widget {
@@ -702,7 +564,7 @@
 }
 
 .widget-body {
-  padding: 12px;
+  padding: 4px 10px;
 }
 
 .stat-item {
@@ -718,7 +580,7 @@
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 12px;
   color: #6b7280;
   font-weight: 500;
 }
@@ -758,7 +620,7 @@
 }
 
 .activity-text {
-  font-size: 10px;
+  font-size: 12px;
   color: #1a202c;
   font-weight: 500;
 }
@@ -1375,8 +1237,8 @@
 .two-column-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 4px;
+  // margin-bottom: 12px;
 }
 
 .compact-form-grid {

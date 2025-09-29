@@ -93,19 +93,22 @@
 
         </div>
     </div>
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
+      <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #charegeTaxTable [config]="tableConfig" [data]="allChargeTax" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('HSNCode')" width="10%">
-                                HSN Code
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'HSNCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'HSNCode'}"></i>
-                            </th> -->
                             <th class="bg-transparent text-light" scope="col" (click)="sort('description')">
                                 Description
                                 <i class="fas fa-sort ms-1"
@@ -143,7 +146,7 @@
                                 }
                                 </div>
                             </td>
-                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.HSNCode}}</td> -->
+
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.description}}</td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.TaxGroup}}</td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.TaxRate}}</td>
@@ -176,7 +179,7 @@
     </div>
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div>No records found</div>
-    </div>
+    </div> -->
     <ng-template #content let-modal>
         <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Charge Tax</h4>

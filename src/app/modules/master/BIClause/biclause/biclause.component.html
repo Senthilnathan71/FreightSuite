@@ -5,74 +5,13 @@
 
 
 <div class="row compact-form">
-    <div class="col-12">
-
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
-            <div class="col-md pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <h4 class="page-title mb-0">BL Clause</h4>
-                     <app-favorite-star screenName="BL Clause" class="mt-1 me-1"></app-favorite-star>
-                </div>
-            </div>
-
-            <div class="col-md pb-1">
-                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-                        <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input">
-                            <button *ngIf="filterValue"
-                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
-                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-    (click)="loadAllClauses()">
-    <i class="fas fa-search me-1"></i> Search
-</button>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-
-            <div class="col-md-auto pb-1">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                   
-                    @if(hasPermission('Add')) {
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openModal(content)">
-                        <i class="fas fa-plus me-1"></i> Create
-                    </button>
-                }
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                        [disabled]="!searchPerformed">
-                        <i class="fas fa-file-alt me-1"></i> Report
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-    (click)="resetPage()">
-    <i class="fas fa-sync-alt me-1"></i> Reset
-</button>
-                </form>
-            </div>
-
-            <!-- <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        
-                    </div>
-                </div>
-            </div> -->
-        </div>
-    </div>
+    <app-page-header 
+    [title]="'BL Clause'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
     <div class="col-12 px-0">
         <app-reusable-table
         #biclauseTable
@@ -178,22 +117,8 @@
             </a>
 
             <div class="ms-auto d-flex align-items-center">
-                <div ngbDropdown class="d-inline-block me-2">
-                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-                        ngbDropdownToggle>
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
-                                class="fas fa-file-alt me-1"></i> Edoc</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                                class="fas fa-shield-alt me-1"></i> Authorize</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                                class="fas fa-envelope me-1"></i> Email</button>
-                    </div>
-                </div>
+                <app-tools-dropdown [items]="modalDropdownItems" [disabled]="!isEditMode" (itemClick)="onModalDropdownItemClick($event)">
+                </app-tools-dropdown>
 
                 <button type="button" class="btn-close btn-close-white" aria-label="Close"
                     (click)="modal.dismiss()"></button>

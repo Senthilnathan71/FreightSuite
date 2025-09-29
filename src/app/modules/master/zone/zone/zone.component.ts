@@ -244,7 +244,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
   }
 
   override trackBy(index: number, item: any): number {
-    return item.BookingHeaderSid || index;
+    return item.ZoneMasterSid || index;
   }
 
   // Table configuration

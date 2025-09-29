@@ -364,7 +364,7 @@ dataFromQuotation:any
   this.initCargoForm();
   this.initOtherForm();
   this.initDetailsForm();
-
+  this.onShipmentTypeChange();
   const historyState = history?.state;
   const quotationData = historyState?.dataFromQuotation;
 
@@ -817,6 +817,12 @@ dataFromQuotation:any
 
     this.bookingRateArr = response.bookingRates || [];
     this.rateResult = [...this.bookingRateArr];
+    const shipmentTypeValue = response.ShipmentType === "Y" ? true : false;
+if (shipmentTypeValue) {
+    this.bookingForm.get('NominatedBy')?.setValue('Nomination');
+} else {
+    this.bookingForm.get('NominatedBy')?.setValue('Self');
+}
 
   }
 
@@ -2180,5 +2186,23 @@ openAuditLogs(modal: TemplateRef<any>) {
   ngOnDestroy(){
   this.dataFromQuotation = null;
   }
+ getFilteredNominationList() {
+    const isShipmentTypeChecked = this.bookingForm.get('ShipmentType')?.value;
+    if (isShipmentTypeChecked) {
+        return this.nominationList.filter(item => item.name === 'Nomination');
+    } else {
+        return this.nominationList.filter(item => item.name === 'Self');
+    }
+}
+
+onShipmentTypeChange() {
+    const isShipmentTypeChecked = this.bookingForm.get('ShipmentType')?.value;
+    
+    if (isShipmentTypeChecked) {
+        this.bookingForm.get('NominatedBy')?.setValue('Nomination');
+    } else {
+        this.bookingForm.get('NominatedBy')?.setValue('Self');
+    }
+}
 
 }

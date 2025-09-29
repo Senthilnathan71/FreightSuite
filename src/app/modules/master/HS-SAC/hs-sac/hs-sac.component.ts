@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -33,6 +33,10 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+
 @Component({
   selector: 'app-hs-sac',
   standalone: true,
@@ -56,15 +60,19 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
     NgxSpinnerModule,
     NgbDropdownModule,
     CommonPaginationComponent,
+    ReusableTableComponent
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
   providers: [
+    CustomDatePipe,
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
 export class HSSACComponent extends BaseListComponent implements OnInit {
+  @ViewChild('hasacTable') hasacTable!: ReusableTableComponent;
+  @ViewChild('content') content : TemplateRef<any>
   hssacForm!: FormGroup;
   isEditMode: boolean = false;
   hssacs: HSSAC[] = [];
@@ -77,38 +85,67 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   taxList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'HSSACCode';
-  
-	userData : any;
+
+  userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-	today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month,this.today.day);
-  hssacData : any;
+  today = this.calendar.getToday();
+  todayDate = new Date(this.today.year, this.today.month, this.today.day);
+  hssacData: any;
   currentMenuId: number;
   TandCList: any;
-  
-  loading = true; 
+
+  loading = true;
   // Alias for compatibility with existing template
- 
 
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Ha-sac',
+        condition: (row: any) => this.hasPermission('View')
+      },
+        {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete Zone',
+        class:"text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'HSSACMasterSid',
+    emptyMessage: 'No Ha-sac found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
   protected config: ListComponentConfig = {
-        storageKey: 'hssac-type-state',
-        defaultPageSize: 10,
-        defaultSortColumn: 'HSSACCode',
-        defaultSortDirection: 'desc',
-        pageSizeOptions: [10, 20, 50, 100, 500],
-        maxPagesToShow: 3
-    };
+    storageKey: 'hssac-type-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'HSSACCode',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
 
-    // Alias for compatibility with existing template
-    get hssacLists() { return this.allItems; }
+  // Alias for compatibility with existing template
+  get hssacLists() { return this.allItems; }
   isFavorite: boolean = false;
-    // Company
-  currentCompany : any;
-  currentBranch : any;
+  // Company
+  currentCompany: any;
+  currentBranch: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
+  }
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   constructor(
@@ -121,15 +158,16 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private calendar : NgbCalendar,
+    private calendar: NgbCalendar,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+     private datePipe: CustomDatePipe
   ) {
     super(paginationService);
   }
-  
 
- override ngOnInit(): void {
+
+  override ngOnInit(): void {
     // this.loadHssac()
     this.initForm();
     // this.appSettingService.getUser().subscribe(
@@ -143,10 +181,10 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.route.paramMap.subscribe(params => {
       this.HSSACMasterSid = +params.get('id');
       if (this.HSSACMasterSid) {
@@ -155,7 +193,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       }
     });
     super.ngOnInit();
-     this.loadTaxData();
+    this.initializeTableConfig()
+    this.loadTaxData();
   }
   loadTaxData(): void {
     this.masterService.getAllTax().subscribe({
@@ -175,7 +214,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     if (selectedTaxType) {
       // Find the selected tax object from the taxList
       const selectedTax = this.taxList.find(tax => tax.TaxCode === selectedTaxType);
-      
+
       if (selectedTax) {
         // Auto-fill the TaxRate field with the selected tax's rate
         this.hssacForm.patchValue({
@@ -196,22 +235,22 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
 
-// Implement abstract methods from BaseListComponent
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
+
+  // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
     this.spinner.show();
     return this.masterService.searchHssac(this.getSearchParams());
@@ -232,7 +271,11 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   protected processSearchResults(response: any): void {
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items;
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended',
+        EffectiveFrom: this.datePipe.transform(item?.EffectiveFrom)
+      }))
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
     } else {
@@ -251,7 +294,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
 
   // Legacy method for template compatibility
   loadHssacs() {
-    this.page=1;
+    this.page = 1;
     this.search();
   }
 
@@ -261,9 +304,6 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   }
 
 
-  
-
-  
   initForm() {
     this.hssacForm = this.fb.group({
       HSSACCode: ['', [Validators.required]],
@@ -273,45 +313,178 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       TaxType: ['', [Validators.required]],
       EffectiveFrom: ['', [Validators.required]],
       Remarks: [''],
-      status: [{value: 'Active', disabled: false}, Validators.required], 
+      status: [{ value: 'Active', disabled: false }, Validators.required],
     });
-     this.hssacForm.get('TaxType').valueChanges.subscribe(value => {
+    this.hssacForm.get('TaxType').valueChanges.subscribe(value => {
       this.onTaxTypeChange(value);
     });
   }
-  
 
- 
 
-  resetForm(): void {
-  // If editing an existing HSSAC, reload it (restore original state)
-  if (this.isEditMode && this.HSSACMasterSid) {
-    this.loadHssacData(this.HSSACMasterSid);
-    return;
+  override trackBy(index: number, item: any): number {
+    return item.HSSACMasterSid || index;
   }
 
-  // Create-mode: reset form to initial state with proper default values
-  this.hssacForm.reset({
-    HSSACCode: null,
-    HSSACName: null,
-    ServiceName: null,
-    TaxRate: 'Default',
-    TaxType: null,
-    EffectiveFrom: null,
-    Remarks: null,
-    status: 'Active'
-  });
 
-  // Re-enable the status field if it was disabled
-  this.hssacForm.get('status')?.enable();
-  
-  // Reset validation state
-  this.hssacForm.markAsUntouched();
-  this.hssacForm.markAsPristine();
-  
-  // Clear any stored data
-  this.hssacData = null;
-}
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+
+      {
+        key: 'HSSACCode',
+        label: 'HS-SAC Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width:"130px"
+      },
+      {
+        key: 'HSSACName',
+        label: 'HS-SAC Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ServiceName',
+        label: 'Service Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'TaxRate',
+        label: 'Tax Rate',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width:"120px"
+      },
+      {
+        key: 'TaxType',
+        label: ' Tax Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+      
+          width:"120px"
+      },
+      {
+        key: 'EffectiveFrom',
+        label: 'Effective From',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+          width:"150px"
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewHasac(event.row,this.content);
+    }else if(event.action==='delete'){
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row){
+    this.softDeleteHssac(row.HSSACMasterSid)
+  }
+  viewHasac(row: any,content:TemplateRef<any>) {
+    this.editHssac(row.HSSACMasterSid,content)
+  }
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.hssacLists;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.hasacTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Ha-sac-Report',
+      title: companyName
+    });
+  }
+
+
+  resetForm(): void {
+    // If editing an existing HSSAC, reload it (restore original state)
+    if (this.isEditMode && this.HSSACMasterSid) {
+      this.loadHssacData(this.HSSACMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.hssacForm.reset({
+      HSSACCode: null,
+      HSSACName: null,
+      ServiceName: null,
+      TaxRate: 'Default',
+      TaxType: null,
+      EffectiveFrom: null,
+      Remarks: null,
+      status: 'Active'
+    });
+
+    // Re-enable the status field if it was disabled
+    this.hssacForm.get('status')?.enable();
+
+    // Reset validation state
+    this.hssacForm.markAsUntouched();
+    this.hssacForm.markAsPristine();
+
+    // Clear any stored data
+    this.hssacData = null;
+  }
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -320,38 +493,38 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   }
 
   openEditModal(content: any, id: number): void {
-  this.isEditMode = true;
-  this.HSSACMasterSid = id;
-  this.getHssacById(id).add(() => {
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-  });
-}
+    this.isEditMode = true;
+    this.HSSACMasterSid = id;
+    this.getHssacById(id).add(() => {
+      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    });
+  }
 
-editHssac(id: number, content: any) {
-  this.isEditMode = true;
-  this.HSSACMasterSid = id;
-  this.masterService.getHssacById(id).pipe(take(1)).subscribe({
-    next: (hssac: any) => {
-      this.hssacData = hssac;
-      this.hssacForm.get('status')?.enable();
-      this.hssacForm.patchValue({
-        HSSACCode: hssac.HSSACCode,
-        HSSACName: hssac.HSSACName,
-        ServiceName: hssac.ServiceName,
-        TaxRate: hssac.TaxRate,
-        TaxType: hssac.TaxType,
-        EffectiveFrom: new Date(hssac.EffectiveFrom),
-        Remarks: hssac.Remarks,
-        status: hssac.status === 'A' ? 'Active' : 'Suspended'
-      });
-      this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
-    },
-    error: (err) => {
-      console.error('Error fetching HSSAC', err);
-      this.appSettingService.showError('Error fetching data for editing');
-    }
-  });
-}
+  editHssac(id: number, content: any) {
+    this.isEditMode = true;
+    this.HSSACMasterSid = id;
+    this.masterService.getHssacById(id).pipe(take(1)).subscribe({
+      next: (hssac: any) => {
+        this.hssacData = hssac;
+        this.hssacForm.get('status')?.enable();
+        this.hssacForm.patchValue({
+          HSSACCode: hssac.HSSACCode,
+          HSSACName: hssac.HSSACName,
+          ServiceName: hssac.ServiceName,
+          TaxRate: hssac.TaxRate,
+          TaxType: hssac.TaxType,
+          EffectiveFrom: new Date(hssac.EffectiveFrom),
+          Remarks: hssac.Remarks,
+          status: hssac.status === 'A' ? 'Active' : 'Suspended'
+        });
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      },
+      error: (err) => {
+        console.error('Error fetching HSSAC', err);
+        this.appSettingService.showError('Error fetching data for editing');
+      }
+    });
+  }
 
 
   closeModal(): void {
@@ -361,26 +534,26 @@ editHssac(id: number, content: any) {
   }
 
   getHssacById(id: number) {
-  this.resetForm();
-  return this.masterService.getHssacById(id).pipe(take(1)).subscribe(
-    (hssac: any) => {
-      console.log('HSSAC from backend:', hssac);
-      this.hssacForm.patchValue({
-        HSSACCode: hssac.HSSACCode,
-        HSSACName: hssac.HSSACName,
-        ServiceName: hssac.ServiceName,
-        TaxRate: hssac.TaxRate,
-        TaxType: hssac.TaxType,
-        EffectiveFrom: hssac.EffectiveFrom,
-        Remarks: hssac.Remarks,
-        status: hssac.status === 'A' ? 'Active' : 'Suspended'
-      });
-    },
-    (error) => {
-      this.appSettingService.showError('Error loading');
-    }
-  );
-}
+    this.resetForm();
+    return this.masterService.getHssacById(id).pipe(take(1)).subscribe(
+      (hssac: any) => {
+        console.log('HSSAC from backend:', hssac);
+        this.hssacForm.patchValue({
+          HSSACCode: hssac.HSSACCode,
+          HSSACName: hssac.HSSACName,
+          ServiceName: hssac.ServiceName,
+          TaxRate: hssac.TaxRate,
+          TaxType: hssac.TaxType,
+          EffectiveFrom: hssac.EffectiveFrom,
+          Remarks: hssac.Remarks,
+          status: hssac.status === 'A' ? 'Active' : 'Suspended'
+        });
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading');
+      }
+    );
+  }
 
   onSubmit() {
     if (this.btnDisable) return;
@@ -420,7 +593,7 @@ editHssac(id: number, content: any) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
-               this.loadHssacs()
+              this.loadHssacs()
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -440,7 +613,7 @@ editHssac(id: number, content: any) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
-                this.loadHssacs()
+              this.loadHssacs()
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -476,9 +649,7 @@ editHssac(id: number, content: any) {
     );
   }
 
-  
 
-  
   trackByIndex(index: number, item: any): number {
     return index;
   }
@@ -496,35 +667,10 @@ editHssac(id: number, content: any) {
     });
   }
 
-  
 
-  report(): void {
-    const formattedData = this.hssacList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
-
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'HSSACCode', label: 'HS-SAC Code' },
-        { key: 'HSSACName', label: 'HS-SAC Name' },
-        { key: 'ServiceName', label: 'Service Name' },
-        { key: 'TaxRate', label: 'Tax Rate' },
-        { key: 'TaxType', label: 'Tax Type' },
-        { key: 'EffectiveFrom', label: 'Effective From' },
-        { key: 'Remarks', label: 'Remarks' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'HSSAC-Report',
-      title: companyName
-    });
-  }
 
   showInfo() {
-    if(!this.hssacData) return;
+    if (!this.hssacData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.hssacData;
     modalRef.componentInstance.idLabel = 'HSSAC Id';
@@ -532,30 +678,30 @@ editHssac(id: number, content: any) {
   }
 
   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.HSSACMasterSid;
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.HSSACMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
   openEmail() {
     if (!this.hssacData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {
@@ -568,89 +714,89 @@ editHssac(id: number, content: any) {
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.HSSACMasterSid;
   }
 
-openEDoc() {
-  if (!this.hssacData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.hssacData;
-  modalRef.componentInstance.idLabel = 'HSSAC Id';
-  modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
-}
+  openEDoc() {
+    if (!this.hssacData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.hssacData;
+    modalRef.componentInstance.idLabel = 'HSSAC Id';
+    modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
+  }
 
 
-//  openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.HSSACMasterSid) return;
+  //  openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.HSSACMasterSid) return;
 
-//   this.masterService.getAuditLogs('HSSACMaster', this.HSSACMasterSid.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
+  //   this.masterService.getAuditLogs('HSSACMaster', this.HSSACMasterSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
 
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
 
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.HSSACMasterSid) return;
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.HSSACMasterSid) return;
 
-  this.masterService.getAuditLogs(
-    'HSSACMaster',
-    this.HSSACMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogs(
+      'HSSACMaster',
+      this.HSSACMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 }

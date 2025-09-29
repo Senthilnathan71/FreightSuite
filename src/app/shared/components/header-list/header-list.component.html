@@ -1,0 +1,54 @@
+<div class="col-12">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+
+        <!-- Title Section -->
+        <div class="col-md pb-1">
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="page-title mb-0">{{ title }}</h4>
+                <app-favorite-star *ngIf="showFavorite" [screenName]="title" class="mt-1 me-1">
+                </app-favorite-star>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="col-md pb-1" *ngIf="showSearch">
+            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
+                    <div class="form-outline flex-grow-1 position-relative">
+                        <input name="filterValue" type="text" class="form-control pe-5"
+                            [placeholder]="searchPlaceholder" [(ngModel)]="searchValue" aria-label="Search input"
+                            (keyup.enter)="onSearch()">
+                        <button *ngIf="searchValue"
+                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                            (click)="onClearSearch()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Clear search"
+                            onfocus="this.classList.replace('text-secondary','text-danger')"
+                            onblur="this.classList.replace('text-danger','text-secondary')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-md-0 mt-1">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="onSearch()">
+                            <i class="fas fa-search me-1"></i> {{ searchButtonText }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="col-md-auto pb-1" *ngIf="actions.length > 0">
+            <div
+                class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <button *ngFor="let action of actions" type="button"
+                    [class]="'btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 ' + (action.cssClass || '')"
+                    [disabled]="action.disabled" (click)="onActionClick(action.action)"
+                    [style.display]="action.condition === false ? 'none' : 'inline-block'">
+                    <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>

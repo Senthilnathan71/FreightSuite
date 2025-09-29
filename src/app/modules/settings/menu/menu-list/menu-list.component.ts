@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -20,7 +20,12 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-menu-list',
   standalone: true,
@@ -35,13 +40,15 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FormsModule,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ReusableTableComponent
   ],
   templateUrl: './menu-list.component.html',
   styleUrl: './menu-list.component.scss',
   providers: [DatePipe]
 })
-export class MenuListComponent implements OnInit {
+export class MenuListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('menuTable') menuTable!: ReusableTableComponent;
   menuForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -53,44 +60,74 @@ export class MenuListComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
   searchType = 'MenuName';
-  filterValue = '';
-  searchPerformed = false;
-  page = 1;
-  pageSize = 10;
-  totalLengthOfCollection = 0;
+
   isLoading = false;
   userData: any;
-  menuData : any;
-  sortColumn: string = 'ModuleName'; 
-  sortDirection: string = 'desc';
+  menuData: any;
+
   loading = false;
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Menu',
+        // condition: (row: any) => this.hasPermission('View')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No Menu found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'menu-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'ModuleName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allMenus() { return this.allItems; }
   // Company
-  currentCompany : any;
-  currentBranch : any;
-modeOfPermissions = [
-  { value: 'Y', name: "Allowed" },
-  { value: 'N', name: "Restricted" }
-];
+  currentCompany: any;
+  currentBranch: any;
+  modeOfPermissions = [
+    { value: 'Y', name: "Allowed" },
+    { value: 'N', name: "Restricted" }
+  ];
   iconOptions = [
-  { value: 'home', label: 'Home' },
-  { value: 'settings', label: 'Settings' },
-  { value: 'users', label: 'Users' },
-  { value: 'file-text', label: 'Documents' },
-  { value: 'bar-chart-2', label: 'Reports' },
-  { value: 'calendar', label: 'Calendar' },
-  { value: 'mail', label: 'Mail' },
-  { value: 'shopping-cart', label: 'Shopping' },
-  { value: 'disc', label: 'Disc' }
-  
-];
+    { value: 'home', label: 'Home' },
+    { value: 'settings', label: 'Settings' },
+    { value: 'users', label: 'Users' },
+    { value: 'file-text', label: 'Documents' },
+    { value: 'bar-chart-2', label: 'Reports' },
+    { value: 'calendar', label: 'Calendar' },
+    { value: 'mail', label: 'Mail' },
+    { value: 'shopping-cart', label: 'Shopping' },
+    { value: 'disc', label: 'Disc' }
+
+  ];
   currentMenuId: number;
   TandCList: any;
-   isFavorite: boolean = false;
+  isFavorite: boolean = false;
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
-  
+
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -102,10 +139,13 @@ modeOfPermissions = [
     private datePipe: DatePipe,
     private userService: authService,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // this.appSettingService.getUser().subscribe(
     //   user => {
     //     if (user) {
@@ -116,14 +156,154 @@ modeOfPermissions = [
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-		}
+    if (userProfile) {
+      this.userData = userProfile;
+    }
     this.loadMenus();
-
     this.initForm();
-    this.loadModules(); 
-    
+    this.loadModules();
+    this.initializeTableConfig();
+    super.ngOnInit();
+  }
+
+
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.settingsService.searchMenuList(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching bookings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching bookings.');
+    console.error('Error searching bookings', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchMenu() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.BookingHeaderSid || index;
+  }
+
+
+ 
+
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      
+      {
+        key: 'MenuName',
+        label: 'Menu Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ModuleName',
+        label: 'Module Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewMenu(event.row);
+    }
+  }
+
+   viewMenu(item): void {
+    this.router.navigate(['/settings/menu/entry/', item.MenuMasterSid]);
+  }
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allMenus;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+    const visibleColumns = this.menuTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Menu-Report',
+      title: companyName
+    });
   }
 
   // Load all modules for dropdown
@@ -145,47 +325,47 @@ modeOfPermissions = [
     this.menuForm = this.fb.group({
       MenuName: ['', [Validators.required, Validators.maxLength(50), this.noSpecialCharsValidator()]],
       MenuCode: ['', [Validators.required, Validators.maxLength(3), this.uppercaseValidator()]],
-      ModuleMasterSid: ['', Validators.required], 
-      ModuleName: [''], 
-      path: ['', [Validators.required, this.pathValidator()]], 
-      icon: [''], 
-      status: [{value: 'Active', disabled: false}, Validators.required],
+      ModuleMasterSid: ['', Validators.required],
+      ModuleName: [''],
+      path: ['', [Validators.required, this.pathValidator()]],
+      icon: [''],
+      status: [{ value: 'Active', disabled: false }, Validators.required],
       AllowAdd: ['N'],
-    AllowModify: ['N'],
-    AllowView: ['N'],
-    AllowDelete: ['N'],
-    TandCRequire: ['N'],
-    AttachmentRequire: ['N'],
-    FollowupRequire: ['N']
+      AllowModify: ['N'],
+      AllowView: ['N'],
+      AllowDelete: ['N'],
+      TandCRequire: ['N'],
+      AttachmentRequire: ['N'],
+      FollowupRequire: ['N']
     });
   }
   private noSpecialCharsValidator(): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} | null => {
-    if (!control.value) return null;
-    const valid = /^[a-zA-Z0-9\s]*$/.test(control.value); // Only alphanumeric and spaces
-    return valid ? null : { invalidChars: true };
-  };
-}
-private pathValidator(): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} | null => {
-    if (!control.value) return null;
-    // Allows lowercase letters, numbers, hyphens, and forward slashes
-    const valid = /^[a-z0-9-/]+$/.test(control.value);
-    return valid ? null : { invalidPath: true };
-  };
-}
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      if (!control.value) return null;
+      const valid = /^[a-zA-Z0-9\s]*$/.test(control.value); // Only alphanumeric and spaces
+      return valid ? null : { invalidChars: true };
+    };
+  }
+  private pathValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      if (!control.value) return null;
+      // Allows lowercase letters, numbers, hyphens, and forward slashes
+      const valid = /^[a-z0-9-/]+$/.test(control.value);
+      return valid ? null : { invalidPath: true };
+    };
+  }
 
   private uppercaseValidator(): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} | null => {
-    if (!control.value) return null;
-    const valid = /^[A-Z0-9]+$/.test(control.value); // Only uppercase and numbers
-    return valid ? null : { invalidUppercase: true };
-  };
-}
-onToggleChange(controlName: string, event: Event) {
-  const isChecked = (event.target as HTMLInputElement).checked;
-  this.menuForm.get(controlName)?.setValue(isChecked ? 'Y' : 'N');
-}
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      if (!control.value) return null;
+      const valid = /^[A-Z0-9]+$/.test(control.value); // Only uppercase and numbers
+      return valid ? null : { invalidUppercase: true };
+    };
+  }
+  onToggleChange(controlName: string, event: Event) {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.menuForm.get(controlName)?.setValue(isChecked ? 'Y' : 'N');
+  }
 
 
   resetForm(): void {
@@ -206,24 +386,24 @@ onToggleChange(controlName: string, event: Event) {
     this.MenuMasterSid = id;
     this.settingsService.getMenuById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
-        const menu = response.data; 
+        const menu = response.data;
         this.menuData = menu;
         this.menuForm.get('status')?.enable();
         this.menuForm.patchValue({
           MenuName: menu.MenuName,
           MenuCode: menu.MenuCode,
-          ModuleMasterSid: menu.ModuleMasterSid|| '',
+          ModuleMasterSid: menu.ModuleMasterSid || '',
           ModuleName: menu.ModuleName || '',
-          path: menu.path || '', 
-          icon: menu.icon || '', 
+          path: menu.path || '',
+          icon: menu.icon || '',
           status: menu.status === 'A' ? 'Active' : 'Suspended',
           AllowAdd: menu.AllowAdd || 'N',
-        AllowModify: menu.AllowModify || 'N',
-        AllowView: menu.AllowView || 'N',
-        AllowDelete: menu.AllowDelete || 'N',
-        TandCRequire: menu.TandCRequire || 'N',
-        AttachmentRequire: menu.AttachmentRequire || 'N',
-        FollowupRequire: menu.FollowupRequire || 'N'
+          AllowModify: menu.AllowModify || 'N',
+          AllowView: menu.AllowView || 'N',
+          AllowDelete: menu.AllowDelete || 'N',
+          TandCRequire: menu.TandCRequire || 'N',
+          AttachmentRequire: menu.AttachmentRequire || 'N',
+          FollowupRequire: menu.FollowupRequire || 'N'
         });
         // this.menuForm.get('status')?.enable();
         this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
@@ -234,7 +414,7 @@ onToggleChange(controlName: string, event: Event) {
       }
     });
   }
-  
+
 
   closeModal(): void {
     if (this.modalRef) {
@@ -274,7 +454,7 @@ onToggleChange(controlName: string, event: Event) {
       const selectedModule = this.moduleList.find(
         module => module.ModuleMasterSid == this.menuForm.value.ModuleMasterSid
       );
-      
+
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.menuForm.value;
@@ -292,7 +472,7 @@ onToggleChange(controlName: string, event: Event) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              
+
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -308,7 +488,7 @@ onToggleChange(controlName: string, event: Event) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              
+
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -322,83 +502,42 @@ onToggleChange(controlName: string, event: Event) {
     }
   }
   loadMenus(): void {
-  this.spinner.show();
-  this.loading = true;
-  
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize,
-    sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection
-  };
+    this.spinner.show();
+    this.loading = true;
 
-  this.settingsService.searchMenuList(params).subscribe({
-    next: (response) => {
-      if(response.status) {
-        this.menuList = response.data.items || response.data;
-        this.totalLengthOfCollection = response.data.totalCount || response.length;
-        this.applySorting();
-        this.searchPerformed = true;
-      }else {
-        this.appSettingService.showError(response.message);
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.settingsService.searchMenuList(params).subscribe({
+      next: (response) => {
+        if (response.status) {
+          this.menuList = response.data.items || response.data;
+          this.totalLengthOfCollection = response.data.totalCount || response.length;
+          this.applySorting();
+          this.searchPerformed = true;
+        } else {
+          this.appSettingService.showError(response.message);
+        }
+
+        this.spinner.hide();
+
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching menus:', err);
+        this.menuList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
       }
-
-      this.spinner.hide();
-
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error fetching menus:', err);
-      this.menuList = [];
-      this.totalLengthOfCollection = 0;
-      this.loading = false;
-    }
-  });
-}
-
-
-  // Rest of the methods remain the same as before...
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
+    });
   }
-  
-  this.loadMenus();
-}
-
-applySorting() {
-  const moduleOrder = ['Account', 'CRM', 'Master', 'Settings'];
-
-  this.menuList.sort((a, b) => {
-    const moduleA = a.ModuleName || '';
-    const moduleB = b.ModuleName || '';
-    const indexA = moduleOrder.indexOf(moduleA);
-    const indexB = moduleOrder.indexOf(moduleB);
-
-    if (indexA !== indexB) {
-      return indexA - indexB;
-    }
-
-    const menuA = (a.MenuName || '').toLowerCase();
-    const menuB = (b.MenuName || '').toLowerCase();
-
-    return this.sortDirection === 'asc' 
-      ? menuA.localeCompare(menuB) 
-      : menuB.localeCompare(menuA);
-  });
-}
 
 
-clearFilterValue() {
-    this.filterValue = '';
-   this.loadMenus();
-  }
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -422,40 +561,8 @@ clearFilterValue() {
   //   });
   // }
 
-  resetPage(): void {
-    this.menuList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'MenuName';
-    this.sortColumn = 'ModuleName';
-    this.sortDirection = 'asc';
-  }
-
-  report(): void {
-    const formattedData = this.menuList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      path: item.path || 'N/A',
-      icon: item.icon || 'N/A'
-    }));
-
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'MenuName', label: 'Menu Name' },
-        { key: 'ModuleName', label: 'Module Name' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'Menu-Report', 
-      title: companyName
-    });
-  }
-
   showInfo() {
-    if(!this.menuData) return;
+    if (!this.menuData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.menuData;
     modalRef.componentInstance.idLabel = 'Menu Id';
@@ -463,68 +570,68 @@ clearFilterValue() {
   }
 
   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.settingsService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.MenuMasterSid;
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.settingsService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.MenuMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
   openEmail() {
-  if (!this.menuData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.menuData;
-  modalRef.componentInstance.idLabel = 'Menu Id';
-  modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
-}
+    if (!this.menuData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.menuData;
+    modalRef.componentInstance.idLabel = 'Menu Id';
+    modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+  }
 
-openAuthority() {
-  if (!this.menuData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.menuData;
-  modalRef.componentInstance.idLabel = 'Menu Id';
-  modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
-}
+  openAuthority() {
+    if (!this.menuData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.menuData;
+    modalRef.componentInstance.idLabel = 'Menu Id';
+    modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+  }
 
-openEDoc() {
-  if (!this.menuData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.menuData;
-  modalRef.componentInstance.idLabel = 'Menu Id';
-  modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
-}
+  openEDoc() {
+    if (!this.menuData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.menuData;
+    modalRef.componentInstance.idLabel = 'Menu Id';
+    modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+  }
 
-navigateToCreate(){
-  this.router.navigate(['settings/menu/entry'])
-}
+  navigateToCreate() {
+    this.router.navigate(['settings/menu/entry'])
+  }
 
 }
