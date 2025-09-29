@@ -1,5 +1,5 @@
 :root {
-    --vml:true;
+  --vml: true;
 }
 
 
@@ -16,7 +16,7 @@
 
 .modal-responsive-wrapper {
   width: 90vw;
-  max-width: 1400px; 
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
 }
@@ -27,7 +27,7 @@
   overflow-y: auto;
   background: white;
   border-radius: 0.3rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive width rules */
@@ -94,7 +94,7 @@
 }
 
 .ng-dropdown-panel {
-    z-index: 9999 !important;
+  z-index: 9999 !important;
 }
 
 // Nav Bar
@@ -136,11 +136,11 @@
   position: relative;
   color: #6b7280;
   font-weight: 500;
-  font-size: 1.2rem !important;
 
-   &:hover {
+
+  &:hover {
     background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
-    color: #05608d; 
+    color: #05608d;
   }
 
   &.active {
@@ -159,7 +159,7 @@
 }
 
 .pill-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -204,7 +204,7 @@
 
 
 .table-toolbar {
- 
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -226,7 +226,45 @@
 }
 
 
-.form-control:disabled{
+.form-control:disabled {
   background-color: white;
   cursor: not-allowed;
+}
+
+
+// Custom-accordian
+
+.custom-accordion .accordion-button {
+  background-color: #05608d;
+  color: #fff;
+  padding: 8px;
+}
+
+.custom-accordion .accordion-button::after {
+  position: relative;
+  right: 45px;
+  filter: brightness(0) invert(1);
+}
+
+.custom-accordion-organization .accordion-button {
+  background-color: #05608d;
+  color: #fff;
+  padding: 8px;
+}
+.custom-accordion-organization .accordion-button::after {
+  position: relative;
+  right: 10px;
+  filter: brightness(0) invert(1);
+}
+
+// organization  table structure
+.table-borderless {
+
+  .table tbody tr td,
+  .table tbody tr th {
+    border-bottom: none !important;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
 }
