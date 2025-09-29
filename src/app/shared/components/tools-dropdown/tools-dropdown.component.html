@@ -1,0 +1,20 @@
+<div ngbDropdown class="d-inline-block" [ngClass]="containerClass">
+    <button type="button" [class]="buttonClass" [id]="dropdownId" ngbDropdownToggle [disabled]="disabled">
+        <i [class]="buttonIcon"></i>
+    </button>
+    <div ngbDropdownMenu [attr.aria-labelledby]="dropdownId">
+        <ng-container *ngFor="let item of visibleItems; trackBy: trackByAction">
+            <button [class]="'text-dark ' + (item.cssClass || '')" ngbDropdownItem appPreventMultiClick
+                (click)="onItemClick(item.action)" [disabled]="item.disabled"
+                [style.display]="item.condition === false ? 'none' : 'block'">
+                <i [class]="item.icon + ' me-1'"></i> {{ item.label }}
+            </button>
+            <div *ngIf="item.divider" class="dropdown-divider"></div>
+        </ng-container>
+
+        <!-- Show message when no items are available -->
+        <div *ngIf="visibleItems.length === 0" class="dropdown-item-text text-muted">
+            {{ emptyMessage }}
+        </div>
+    </div>
+</div>

@@ -464,7 +464,7 @@
     </div>
    
    <div class="nav-pills-container mt-1">
-    <div class="nav-pills">
+    <!-- <div class="nav-pills">
       <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
         (click)="selectTab(tab.name)">
         <div class="pill-icon">
@@ -473,6 +473,9 @@
         <span class="pill-label">{{ tab.name }}</span>
         <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
       </div>
+    </div> -->
+    <div>
+        <h5 class="mb-0 ">Tarrif Details</h5>
     </div>
     <div>
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate)"> <i class="fas fa-plus me-1"></i> Add</button>
@@ -492,7 +495,10 @@
 
 </div>
 
+
+
 <ng-template #tariffDetailListTemplate>
+                       
     <div class="table-responsive mt-1">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
             <thead>

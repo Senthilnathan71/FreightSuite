@@ -79,7 +79,7 @@
     <table class="dropdown-table">
       <thead>
         <tr>
-          <th *ngFor="let label of displayLabels" class="px-2">{{ label }}</th>
+          <th *ngFor="let label of displayLabels" class=" ng-selecatable-item fw-bold">{{ label }}</th>
         </tr>
       </thead>
     </table>
@@ -92,7 +92,7 @@
     <table class="dropdown-table">
       <tbody>
         <tr>
-          <td *ngFor="let field of displayFields" class="px-2">{{ item[field] }}</td>
+          <td *ngFor="let field of displayFields" class="ng-selecatable-item" ngbTooltip="{{item[field]}}">{{ item[field] }} </td>
         </tr>
       </tbody>
     </table>

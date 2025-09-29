@@ -77,7 +77,8 @@
         </div>
       </div>
       <div class="smart-field-group">
-        <div class=" custom-form-group custom-form-group-select-date" [class.filled]="!!bookingForm.get('BookingDateTime')?.value">
+        <div class=" custom-form-group custom-form-group-select-date"
+          [class.filled]="!!bookingForm.get('BookingDateTime')?.value">
           <div class="input-group ">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
               (click)="d1.toggle()" formControlName="BookingDateTime" [minDate]="minDate"
@@ -91,10 +92,11 @@
         </div>
       </div>
       <div class="smart-field-group">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
           <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-            class="ng-select" formControlName="DepartmentMasterSid" placeholder=""
-            (change)="onDeptChange($event)" appendTo="body">
+            class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
+            appendTo="body">
           </ng-select>
           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
           @if(bookingForm.get('DepartmentMasterSid')?.touched && bookingForm.get('DepartmentMasterSid')?.invalid){
@@ -204,7 +206,7 @@
               <div class="header-content">
                 <h4 class="card-title">
                   <i class="fas fa-users fs-4"></i>
-                  Party Information
+                  Party
                 </h4>
                 <!-- <button class="card-action-btn">
                   <i class="fas fa-plus"></i>
@@ -218,10 +220,11 @@
                 <div class="row compact-form" [formGroup]="bookingForm">
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
                       <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                        class="ng-select" formControlName="CustomerMasterSid" placeholder=""
-                        appendTo="body" (change)="onCustomerChange($event)">
+                        class="ng-select" formControlName="CustomerMasterSid" placeholder="" appendTo="body"
+                        (change)="onCustomerChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
                       @if(bookingForm.get('CustomerMasterSid')?.touched &&
@@ -235,10 +238,11 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerAddress')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('CustomerAddress')?.value">
                       <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
-                        formControlName="CustomerAddress" placeholder=""
-                        (change)="onCustomerBranchChange($event)" appendTo="body">
+                        formControlName="CustomerAddress" placeholder="" (change)="onCustomerBranchChange($event)"
+                        appendTo="body">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer Address <span
                           class="text-danger">*</span></label>
@@ -252,7 +256,8 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('ShipperName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('ShipperName')?.value">
                       <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ShipperName" placeholder=""
                         (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
@@ -278,7 +283,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" >
+                    <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ShipperAddress">
                       <label for="text-input" class="input-label">Shipper Address <span
@@ -294,7 +299,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
                       <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ConsigneeName" placeholder=""
                         (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
@@ -319,7 +325,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" >
+                    <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
@@ -335,7 +341,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('Notify')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('Notify')?.value">
                       <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="Notify" placeholder=""
                         (change)="setAddress('NotifyAddress',$event)" appendTo="body">
@@ -351,7 +358,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" >
+                    <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NotifyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
@@ -361,7 +368,8 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DestinationAgent')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('DestinationAgent')?.value">
                       <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="DestinationAgent" placeholder=""
                         (change)="setAddress('AgentAddress',$event)" appendTo="body">
@@ -397,7 +405,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CarrierName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('CarrierName')?.value">
                       <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="CarrierName" placeholder="" appendTo="body">
                       </ng-select>
@@ -407,7 +416,8 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('SalesmanSid')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('SalesmanSid')?.value">
                       <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
                         formControlName="SalesmanSid" placeholder="" appendTo="body">
                       </ng-select>
@@ -415,16 +425,6 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" class="form-control custom-input-field sm"
-                        formControlName="QuotationHeaderSid" [disabled]="true" />
-                      <label for="text-input" [ngClass]="{
-                        'input-label': true,
-                         'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
-                      }">Quotation No<span class="text-danger"></span></label>
-                    </div>
-                  </aside>
 
 
                   <aside class="col-md-6">
@@ -453,14 +453,23 @@
 
                     </div>
                   </div>
-                  <aside class="col-md-6" *ngIf="b['ShipmentType']?.value">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('NominatedBy')?.value">
-                      <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select"
-                        appendTo="body" formControlName="NominatedBy" placeholder="">
-                      </ng-select>
-                      <label for="text-input" class="input-label">Nominated By <span class="text-danger"></span></label>
-                    </div>
-                  </aside>
+                <aside class="col-md-6">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!bookingForm.get('NominatedBy')?.value">
+        <ng-select [items]="getFilteredNominationList()" 
+                   bindLabel="name" 
+                   bindValue="name" 
+                   class="ng-select"
+                   appendTo="body" 
+                   formControlName="NominatedBy" 
+                   [disabled]="true"
+                   [clearable]="false"
+                   [searchable]="false"
+                   placeholder="">
+        </ng-select>
+        <label for="text-input" class="input-label">Nominated By <span class="text-danger"></span></label>
+    </div>
+</aside>
 
                 </div>
               </div>
@@ -473,7 +482,7 @@
               <div class="header-content">
                 <h4 class="card-title">
                   <i class="fas fa-ship fs-4"></i>
-                  Vessel & Route
+                  Route
                 </h4>
                 <!-- <div class="card-status">
                   <span class="status-badge status-draft">Draft</span>
@@ -486,7 +495,8 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POO')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('POO')?.value">
                       <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POO" appendTo="body" placeholder="">
                       </ng-select>
@@ -495,7 +505,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POL')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('POL')?.value">
                       <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POL" appendTo="body" placeholder=""
                         (change)="handlePOLChange($event) ; onVesselChange($event)">
@@ -512,7 +523,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POD')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('POD')?.value">
                       <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="">
@@ -529,10 +541,10 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"  [class.filled]="!!bookingForm.get('FPD')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('FPD')?.value">
                       <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
-                        formControlName="FPD" appendTo="body" placeholder=""
-                        (change)="handleFPODChange($event)">
+                        formControlName="FPD" appendTo="body" placeholder="" (change)="handleFPODChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                     </div>
@@ -555,7 +567,8 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('VesselName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('VesselName')?.value">
                       <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
                         class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
                         (change)="onVesselChange($event)">
@@ -564,10 +577,10 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('VoyageNo')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!bookingForm.get('VoyageNo')?.value">
                       <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                        appendTo="body" formControlName="VoyageNo" placeholder=""
-                        (change)="onVoyageChange($event)">
+                        appendTo="body" formControlName="VoyageNo" placeholder="" (change)="onVoyageChange($event)">
                         <ng-template ng-option-tmp let-item="item">
                           <!-- Voyage Number -->
                           <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
@@ -580,7 +593,7 @@
                             <!-- POL Section -->
                             <div style="flex: 1; text-align: left;">
                               <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
-                              <div>ETD: {{ item.ETD | formatDate }}</div>
+                              <div>ETA: {{ item.POL?.ETD | formatDate }}</div>
                               <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
                             </div>
 
@@ -588,7 +601,7 @@
                             <div style="flex: 1; text-align: right;">
                               <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
                               <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
-                              <div>ETA: {{ item.ETA | formatDate }}</div>
+                              <div>ETD: {{ item.POD?.ETA | formatDate }}</div>
                             </div>
 
                           </div>
@@ -644,7 +657,8 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1" [class.filled]="!!bookingForm.get('IncoTerms')?.value">
+                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
+                      [class.filled]="!!bookingForm.get('IncoTerms')?.value">
                       <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
                         appendTo="body" formControlName="IncoTerms" placeholder="">
                       </ng-select>
@@ -675,8 +689,9 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6"> 
-                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"  [class.filled]="!!bookingForm.get('FreightTerms')?.value">
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
+                      [class.filled]="!!bookingForm.get('FreightTerms')?.value">
                       <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
                         appendTo="body" placeholder="" formControlName="FreightTerms">
                       </ng-select>
@@ -689,20 +704,21 @@
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Coload"
                           (keydown.enter)="toggleHeaderCheckboxes($event,'Coload')">
-                        <label for="" class="form-check-label sm">CoLoad <span class="text-danger"></span></label>
+                        <label for="" class="form-check-label sm ps-0">CoLoad <span class="text-danger"></span></label>
                       </div>
                     </div>
                   </aside>
                   <aside class="col-md-3 d-flex align-items-center mx-0">
-                    <div class="form-check form-check-inline p-0">
-                      <div class="form-check d-flex align-items-center">
-                        <input type="checkbox" id="" class="focus-ring form-check-input sm"
-                          formControlName="ShipmentType"
-                          (keydown.enter)="toggleHeaderCheckboxes($event,'ShipmentType')">
-                        <label for="" class="form-check-label sm">Nominated <span class="text-danger"></span></label>
-                      </div>
-                    </div>
-                  </aside>
+    <div class="form-check form-check-inline p-0">
+        <div class="form-check d-flex align-items-center">
+            <input type="checkbox" id="shipmentTypeCheckbox" class="focus-ring form-check-input sm"
+                formControlName="ShipmentType"
+                (change)="onShipmentTypeChange()">
+            <label for="shipmentTypeCheckbox" class="form-check-label sm ps-0">Nominated <span
+                    class="text-danger"></span></label>
+        </div>
+    </div>
+</aside>
 
                   <aside class="col-md-6">
                     <div class="custom-form-group">
@@ -761,21 +777,21 @@
             } @else if(selectedFCLLCL === "LCL"){
             <div class="widget-body">
               <div class="stat-item">
-                <div class="stat-label">Gross Weight</div>
+                <div class="stat-label">GW</div>
                 <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Net Weight</div>
+                <div class="stat-label">NW</div>
                 <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Volume</div>
+                <div class="stat-label">CBM</div>
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Status</div>
+                <div class="stat-label">Char W</div>
                 <div class="stat-value">
-                  <span class="status-badge status-active">{{b['status']?.value}}</span>
+                  <span class="status-badge status-active">-</span>
                 </div>
               </div>
             </div>
@@ -827,8 +843,21 @@
                   <div class="activity-time">5 minutes ago</div>
                 </div>
               </div>
+              <div class="compact-form">
+                <aside class="col-md-12">
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                      [value]="quotationNumber" disabled>
+                    <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                         'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
+                      }">Quotation No<span class="text-danger"></span></label>
+                  </div>
+                </aside>
+              </div>
             </div>
           </div>
+
 
         </div>
       </div>
@@ -855,9 +884,10 @@
       </div>
       <div class="col-md-12">
         <div class="row compact-form" [formGroup]="cargoForm">
-          
+
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('CargoType')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('CargoType')?.value">
               <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
                 formControlName="CargoType" placeholder="" appendTo="body">
               </ng-select>
@@ -866,7 +896,8 @@
           </aside>
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ContainerType')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ContainerType')?.value">
               <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                 class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                 (change)="onContainerTypeChange($event)">
@@ -983,7 +1014,8 @@
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
               <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
                 appendTo="body" placeholder="" formControlName="ShipmentTerms">
               </ng-select>
@@ -992,26 +1024,29 @@
           </aside>
 
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('MovementType')?.value">
-              <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="" formControlName="MovementType" appendTo="body">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('MovementType')?.value">
+              <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="MovementType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Movement Type <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
-              <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name"
-                placeholder="" formControlName="ModeOfTransport" appendTo="body">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
+              <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" placeholder=""
+                formControlName="ModeOfTransport" appendTo="body">
 
               </ng-select>
               <label for="" class="input-label">Mode of Transport <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!cargoForm.get('StuffingAt')?.value">
-              <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="" formControlName="StuffingAt" (change)="handleCFSOrYard()
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('StuffingAt')?.value">
+              <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="StuffingAt" (change)="handleCFSOrYard()
                 " appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">Stuffing at<span class="text-danger"></span></label>
@@ -1023,13 +1058,12 @@
       </div>
       <div>
         <div class="table-toolbar">
-          <div class="toolbar-left">
+          <div class="toolbar-left"></div>
+
+          <div class="toolbar-right">
             <button class="table-action-btn primary" (click)="openProductModal(productModal)">
               <i class="fas fa-plus"></i> Add Product
             </button>
-          </div>
-
-          <div class="toolbar-right">
             <button class="table-action-btn export" (click)="reportProducts()">
               <i class="fas fa-download fs-2"></i>
               Export
@@ -1143,9 +1177,10 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('ReleaseType')?.value">
-              <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="" formControlName="ReleaseType" appendTo="body">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('ReleaseType')?.value">
+              <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="ReleaseType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
             </div>
@@ -1162,10 +1197,11 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Forwarder')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('Forwarder')?.value">
               <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                placeholder="" (change)="setAddressOthers('ForwarderAddress',$event)"
-                formControlName="Forwarder" [textWithNumbers]="20" appendTo="body">
+                placeholder="" (change)="setAddressOthers('ForwarderAddress',$event)" formControlName="Forwarder"
+                [textWithNumbers]="20" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
                     <strong>{{ item.CustomerName }}</strong><br>
@@ -1183,7 +1219,7 @@
               <label for="text-input" class="input-label">Forwarder Address<span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-3">
+          <!-- <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('NotifyParty')?.value">
               <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="NotifyParty" placeholder="" appendTo="body"
@@ -1204,7 +1240,7 @@
                 formControlName="NotifyPartyAddress" [textWithNumbers]="20">
               <label for="text-input" class="input-label">Notify Address<span class="text-danger"></span></label>
             </div>
-          </aside>
+          </aside> -->
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Notify2')?.value">
               <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
@@ -1299,7 +1335,8 @@
 
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('CargoCurrency')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('CargoCurrency')?.value">
               <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
                 placeholder="" formControlName="CargoCurrency" appendTo="body">
               </ng-select>
@@ -1338,8 +1375,8 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="CarrierBookingDate" #d10="ngbDatepicker" (keydown.arrowDown)="d10.open()"
                   (click)="d10.toggle()" container="body">
-                <button class="btn bi bi-calendar3" (click)="d10.toggle()" type="button"> <i-feather
-                    name="calendar" class="feather-sm"></i-feather></button>
+                <button class="btn bi bi-calendar3" (click)="d10.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span
                   class="text-danger"></span>
@@ -1351,7 +1388,8 @@
             <div class="form-check form-check-inline p-0 ">
               <div class="form-check d-flex align-items-center mt-0">
                 <input type="checkbox" id="switchBl" class="form-check-input sm" formControlName="SwitchBL">
-                <label for="switchBl" class="form-check-label sm">Switch BL <span class="text-danger"></span></label>
+                <label for="switchBl" class="form-check-label sm  ps-0">Switch BL <span
+                    class="text-danger"></span></label>
               </div>
             </div>
           </aside>
@@ -1359,7 +1397,7 @@
             <div class="form-check form-check-inline p-0 ">
               <div class="form-check d-flex align-items-center mt-0">
                 <input type="checkbox" id="BacktoBack" class="form-check-input sm" formControlName="BacktoBack">
-                <label for="BacktoBack" class="form-check-label sm">Back to Back <span
+                <label for="BacktoBack" class="form-check-label sm  ps-0">Back to Back <span
                     class="text-danger"></span></label>
               </div>
             </div>
@@ -1389,7 +1427,8 @@
           }
           @if(otherForm.get('SwitchBL')?.value){
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLAgent')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('SwitchBLAgent')?.value">
               <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName"
                 placeholder="" formControlName="SwitchBLAgent" appendTo="body"
                 (change)="setAddressOthers('AgentAddress',$event)">
@@ -1413,7 +1452,8 @@
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLShipper')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('SwitchBLShipper')?.value">
               <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
                 placeholder="" formControlName="SwitchBLShipper" appendTo="body">
               </ng-select>
@@ -1422,7 +1462,8 @@
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
               <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
                 formControlName="SwitchBLConsignee" placeholder="" appendTo="body">
               </ng-select>
@@ -1560,7 +1601,8 @@
   <div class="modal-body">
     <div class="row compact-form" [formGroup]="productForm">
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ProductName')?.value">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!productForm.get('ProductName')?.value">
           <ng-select [items]="productList" bindLabel="ProductName" bindValue="ProductName" formControlName="ProductName"
             placeholder="" (change)="handleProductChange($event)">
           </ng-select>
@@ -1711,7 +1753,7 @@
         <div class="form-check form-check-inline p-0">
           <div class="form-check d-flex align-items-center">
             <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
-            <label for="" class="form-check-label sm">If Haz <span class="text-danger"></span></label>
+            <label for="" class="form-check-label sm  ps-0">If Haz <span class="text-danger"></span></label>
           </div>
         </div>
       </aside>
@@ -1762,7 +1804,8 @@
         </div>
       </aside>
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('UomMasterSid')?.value">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!productForm.get('UomMasterSid')?.value">
           <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="UomMasterSid"
             placeholder="">
           </ng-select>
@@ -1851,7 +1894,7 @@
         <div class="form-check form-check-inline p-0">
           <div class="form-check d-flex align-items-center">
             <input type="checkbox" id="" class="focus-ring form-check-input sm p-0">
-            <label for="" class="form-check-label sm">Auto Caputered <span class="text-danger"></span></label>
+            <label for="" class="form-check-label sm  ps-0">Auto Caputered <span class="text-danger"></span></label>
           </div>
         </div>
       </aside>
