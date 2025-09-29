@@ -173,6 +173,9 @@ isCheckingDuplicates = false;
   { id: '6', name: 'SEZ' },
   { id: '7', name: 'Zero Rated' },
 ];
+airlineNumber: string = '';
+airlineCode: string = '';
+isAirlineSelected: boolean = false;
 
   selectedStatus: string[] = [];
 
@@ -1426,8 +1429,11 @@ validateEmailForm(emailForm: FormGroup): boolean {
       CustomerType: [{}],
       Network: [''],
       cusMilestone: this.fb.array([]),
-      cusSalesteam: this.fb.array([])
+      cusSalesteam: this.fb.array([]),
+      AirlineNumber: [''],
+    AirlineCode: ['']
     });
+
   }
 
 
@@ -1486,6 +1492,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
         this.selectedStatus.push('Customer');
       }
     })
+    this.isAirlineSelected = this.selectedStatus.includes('Air Line');
     this.updateCustomerType();
   }
   
@@ -1560,7 +1567,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
     if (!errors) return '';
     if (errors['invalidPAN']) return 'Invalid PAN format. Format: AAAAA9999A';
     if (errors['invalidVAT']) return 'Invalid VAT format. Should be 15 digits starting with 1-9';
-    if (errors['required']) return 'This field is required';
+    if (errors['required']) return 'Required';
     return 'Invalid format';
   }
 
@@ -1696,7 +1703,9 @@ initializePanFields(): void {
           paymentType: customerData.CashCredit,
           KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
           PanAvailable: customerData.PanType || customerData.PanName ? true : false,
-          CustomerType: customerType
+          CustomerType: customerType,
+           AirlineNumber: customerData.AirlineNumber || '',
+        AirlineCode: customerData.AirlineCode || ''
         });
         
         setTimeout(() => {
@@ -2120,6 +2129,8 @@ loadCustomerMilestoneData() {
         Website: formValue.Website,
         Network: formValue.Network,
         Remarks: formValue.Remarks,
+        AirlineNumber: formValue.AirlineNumber,
+      AirlineCode: formValue.AirlineCode,
         CountryMasterSid: Number(formValue.CountryMasterSid),
         CustomerType: formValue.CustomerType,
         CashCredit: selectedPaymentType,
@@ -2149,6 +2160,8 @@ loadCustomerMilestoneData() {
         IsMSME: formValue.IsMSME ? 'A' : 'I',
         CompanyType: formValue.CompanyType,
         RegistrationNo: formValue.RegistrationNo,
+         AirlineNumber: formValue.AirlineNumber,
+      AirlineCode: formValue.AirlineCode,
         ...createdBy,
         status: statusValue,
       };
@@ -2212,6 +2225,8 @@ loadCustomerMilestoneData() {
     GroupName: '',
     Website: '',
     paymentType: '',
+    AirlineNumber: '',
+    AirlineCode: '',
     IsMSME: '',
     KYCSpecified: false,
     RegistrationNo: { value: '', disabled: true },

@@ -161,7 +161,7 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         countryName: this.getCountryName(item.CountryMasterSid),
-        
+        type : this.getFirstTrueKey(item.CustomerType) || "N/A"
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -212,7 +212,7 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
         dataType: 'string'
       },
       {
-        key: 'CustomerType',
+        key: 'type',
         label: 'Type ',
         sortable: true,
         filterable: true,
@@ -405,5 +405,17 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
     this.filterValue = '';
     this.loadOrganizations();
   }
+
+  getFirstTrueKey(jsonStr) {
+    // const obj = JSON.parse(jsonStr);
+ 
+    for (const [key, value] of Object.entries(jsonStr)) {
+      if (value === "isTrue") {
+        return String(key).toUpperCase()+ "...";
+      }
+    }
+ 
+    return "N/A";
+}
 
 }
