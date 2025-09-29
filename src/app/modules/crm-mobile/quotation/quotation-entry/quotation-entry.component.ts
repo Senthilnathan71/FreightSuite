@@ -33,7 +33,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
-import { ComboBoxColumn, MultiColumnComboboxComponent } from 'src/app/component/multicolumn-combobox/multicolumn-combobox.component';
+// import { ComboBoxColumn, MultiColumnComboboxComponent } from 'src/app/component/multicolumn-combobox/multicolumn-combobox.component';
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -52,7 +52,7 @@ import { ComboBoxColumn, MultiColumnComboboxComponent } from 'src/app/component/
     DecimalPrecisionDirective,
     FavoriteStarComponent,
     SearchableDropdown,
-    MultiColumnComboboxComponent
+    // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
   styleUrl: './quotation-entry.component.scss',
@@ -194,12 +194,12 @@ dataFromEnqPage:any;
     labelFields :['currencyCode']
   };
 
-  currencyColumns : ComboBoxColumn[] = [
-    { field: 'currencyCode', header: 'Code', width: '30%' },
-    { field: 'currencyName', header: 'Name', width: '70%' },
-    // { field: 'country', header: 'Role', width: '20%' },
-    // { field: 'department', header: 'Department', width: '25%' },
-  ];
+  // currencyColumns : ComboBoxColumn[] = [
+  //   { field: 'currencyCode', header: 'Code', width: '30%' },
+  //   { field: 'currencyName', header: 'Name', width: '70%' },
+  //   // { field: 'country', header: 'Role', width: '20%' },
+  //   // { field: 'department', header: 'Department', width: '25%' },
+  // ];
 
 
   digitsAfterDecimal = 2;

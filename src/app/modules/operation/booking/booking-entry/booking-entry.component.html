@@ -866,6 +866,7 @@
     <!-- Charges Tab -->
     <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
       <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
+      [agentList]="agentList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
         (dataEmitter)="handleRateChange($event)"></app-cost-entry>
     </div>

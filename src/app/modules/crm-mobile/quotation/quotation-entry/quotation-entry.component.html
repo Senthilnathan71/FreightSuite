@@ -113,7 +113,7 @@
               </div>
             </div>
             }
-            <aside class="col-md-4">
+            <aside *ngIf="enquiryNumber" class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                   [value]="enquiryNumber" disabled style="background-color: white;cursor: not-allowed;">

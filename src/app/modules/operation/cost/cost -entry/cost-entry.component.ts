@@ -97,6 +97,7 @@ export class CostEntryComponent implements OnInit {
   @Input() screenName: string;
   private _currencyList: any[] = [];
   private _customerList: any[] = [];
+  private _agentList: any[] = [];
   private _dataItems: any[] = [];
 
   @Input()
@@ -115,13 +116,20 @@ export class CostEntryComponent implements OnInit {
     return this._customerList;
   }
 
+
+  @Input()
+  set agentList(value: any[]) {
+    this._agentList = value || [];
+  }
+  get agentList(): any[] {
+    return this._agentList;
+  }
+
   private prevValue;
   @Input()
   set resetTrigger(value: boolean) {
     if (value !== this.prevValue) {
       this.prevValue = value;
-      // this.costFormArray?.clear();
-      // this.revenueFormArray?.clear();
       this.costDataLength = 0;
       this.revenueDataLength = 0;
       this.profitSummary = [];
@@ -159,6 +167,8 @@ export class CostEntryComponent implements OnInit {
     }
   }
 
+  
+
   @Output() dataEmitter = new EventEmitter<any[]>();
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
@@ -189,6 +199,11 @@ export class CostEntryComponent implements OnInit {
     }
     this.initRateForm();
     this.loadRateLookups();
+
+    this.rateFormArray.valueChanges.subscribe(() => {
+    this.dataEmitter.emit(this.rateFormArray.getRawValue());
+  });
+
   }
 
   loadRateLookups() {
@@ -212,31 +227,34 @@ export class CostEntryComponent implements OnInit {
       ChargeMasterSid: [null],
       ChargeDescription: [''],
       ChargeUomSid: [null],
-      NoOfUnit:[null],
+      NumberOfUnit:[''],
       // Cost 
       CostCurrencyMasterSid: [null],
       CostPrepaidCollect: [''],
       CostExchangeRate: [''],
-      CostRate: [''],
+      // CostRate: [''],
       CostDrCr: [''],
       CostAmount: [''],
       CostLocalAmount: [''],
       CostChargeUomSid:[''],
-      PerUnitRevenue:[''],
+      CostVoucherHeaderSid: [''],
+      CostVoucherTypeSid: [null],
 
       RevenuePrepaidCollect:[''],
       RevenueCurrencyMasterSid: [null],
       RevenueExchangeRate: [''],
-      RevenueRate: [''],
+      CustomerMasterSid: [''],
+      // RevenueRate: [''],
       RevenueChargeUomSid:[''],
       RevenueDrCr: [''],
       RevenueAmount: [''],
       RevenueLocalAmount: [''],
+
+      RevenueVoucherHeaderSid: [''],
+      RevenueVoucherTypeSid: [null],
+      AgentSid: [''],
       // 
-      CustomerMasterSid: [null],
       CustomerBranchSid: [null],
-      VoucherHeaderSid: [null],
-      VoucherTypeSid: [null],
       rateFormArray: this.fb.array([])  // <-- Must include this
     });
   }
@@ -265,42 +283,52 @@ get r() {
   }
 createRateFormGroup(data?: any): FormGroup {
   console.log(data,'createRateFormGroup')
-  return this.fb.group({
+    console.log(this.docTypeList,'this.docTypeList',this.vouchers,'vouchers')
+
+  const form = this.fb.group({
     BookingRatesSid: [data?.BookingRatesSid ?? null],
     BookingHeaderSid: [data?.BookingHeaderSid ?? null],
     CompanyMasterSid: [data?.CompanyMasterSid ?? null],
     BranchMasterSid: [data?.BranchMasterSid ?? null],
     CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
+
     TransactionSid: [data?.TransactionSid ?? null],
     SerialNumber: [data?.SerialNumber ?? ''],
+
     ChargeMasterSid: [data?.ChargeMasterSid ?? null],
     ChargeDescription: [data?.ChargeDescription ?? ''],
-    NoOfUnit: [data?.ChargeDescription ?? ''],
-    CostPrepaidCollect: [data?.CostPrepaidCollect ?? null],
-    RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
+    NumberOfUnit: [data?.NoOfUnit ?? ''],
     ChargeUomSid: [data?.ChargeUomSid ?? null],
-    NumberOfUnit: [data?.NumberOfUnit ?? ''],
+
+    CostPrepaidCollect: [data?.CostPrepaidCollect ?? null],
     CostChargeUomSid:[data?.CostChargeUomSid ?? ''],
-    RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
-    CostDrCr: [data?.CostDrCr ?? null],
-    RevenueDrCr: [data?.RevenueDrCr ?? null],
     CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
-    RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid ?? null],
     CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate).toFixed(2) : ''],
-    RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(2) : ''],
-    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
-    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
     CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(2) : ''],
-    RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
+    CostDrCr: [data?.CostDrCr ?? null],
     CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(2) : ''],
+    CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
+    CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
+
+    RevenueDrCr: [data?.RevenueDrCr ?? null],
+    RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
+    RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
+    RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid ?? null],
+    RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(2) : ''],
+    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
+    RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
     RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(2) : ''],
     CustomerMasterSid: [data?.CustomerMasterSid ?? null],
+    AgentSid: [data?.AgentMasterSid ?? null],
     CustomerBranchSid: [data?.CustomerBranchSid ?? null],
-    VoucherHeaderSid: [data?.VoucherHeaderSid ?? null],
-    VoucherTypeSid: [data?.VoucherTypeMasterSid ?? null],
+    RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
+    RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
     Status: [data?.Status ?? ''],
     Remarks: [data?.Remarks ?? '']
   });
+  return form
+
 }
 
 
@@ -358,7 +386,7 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
 
-  onChangeUOM(uom: any) {
+  onChangeUOM(uom: any,i?:any) {
     if (!uom) {
       this.rateForm.get('ChargeUomSid')?.setValue('');
       return;
@@ -402,7 +430,7 @@ createRateFormGroup(data?: any): FormGroup {
 
 
 
-  onCurrencyChange(currency) {
+  onCurrencyChange(currency,i?:any) {
     if (!currency) {
       this.rateForm.get('CostExchangeRate')?.setValue('');
       this.rateForm.get('CostLocalAmount')?.setValue('');
@@ -620,6 +648,13 @@ createRateFormGroup(data?: any): FormGroup {
     return (this.customerList.find(customer => customer.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
   }
 
+  getAgentName(CustomerMasterSid) {
+    if (!CustomerMasterSid || this.agentList.length === 0) {
+      return '';
+    }
+    return (this.agentList.find(customer => customer.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
+  }
+
   getDocTypeName(VoucherTypeSid) {
     if (!VoucherTypeSid || this.docTypeList.length === 0) {
       return '';
@@ -766,6 +801,38 @@ createRateFormGroup(data?: any): FormGroup {
       title: companyName
     });
   }
+
+
+  onRevenueTypeChange(e: any, i:any) {
+const array = this.rateForm.get('rateFormArray') as FormArray;
+  const row = array.at(i) as FormGroup;
+  row.patchValue({ RevenueVoucherTypeSid: e?.VoucherTypeMasterSid ?? null });
+  console.log('Updated row:', row.value);}
+
+
+onRevenueVoucherChange(e: any,i) {
+  const array = this.rateForm.get('rateFormArray') as FormArray;
+  const row = array.at(i) as FormGroup;
+  row.patchValue({ RevenueVoucherHeaderSid: e?.VoucherHeaderSid ?? null });
+  console.log('Updated row:', row.value);
+}
+
+
+onCostTypeChange(e: any,i) {
+   const array = this.rateForm.get('rateFormArray') as FormArray;
+  const row = array.at(i) as FormGroup;
+  row.patchValue({ CostVoucherTypeSid: e?.VoucherTypeMasterSid ?? null });
+  console.log('Updated row:', row.value);
+}
+
+onCostVoucherChange(e: any,i) {
+ const array = this.rateForm.get('rateFormArray') as FormArray;
+  const row = array.at(i) as FormGroup;
+  row.patchValue({ CostVoucherHeaderSid: e?.VoucherHeaderSid ?? null });
+  console.log('Updated row:', row.value);
+}
+
+
 
 
 

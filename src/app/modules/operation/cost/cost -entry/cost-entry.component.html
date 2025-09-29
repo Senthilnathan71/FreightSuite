@@ -177,7 +177,7 @@
               </td>
               <td>
                 <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
-                  <input type="number" formControlName="NoOfUnit" id="text-input" class="custom-input-field sm">
+                  <input type="number" min="0" formControlName="NumberOfUnit" id="text-input" class="custom-input-field sm">
                 </div>
               </td>
             </tr>
@@ -194,47 +194,33 @@
               <tr>
                 <!-- Revenue -->
                 <th style="background-color: #6e91d3;" class="table-header currHeader">Curr</th>
-                <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span>
-                </th>
+                <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span></th>
                 <th style="background-color: #6e91d3;" class="table-header">Per Unit</th>
                 <th style="background-color: #6e91d3;" class="table-header"> Amt</th>
                 <th style="background-color: #6e91d3;" class="table-header">Local Amt</th>
-                <!-- <th style="background-color: #6e91d3;" class="table-header">Revenue Rate</th> -->
                 <th style="background-color: #6e91d3;" class="text-white">PP/CC</th>
                 <th style="background-color: #6e91d3;" class="table-header">Billing Party</th>
                 <th style="background-color: #6e91d3;" class="table-header">Type</th>
                 <th style="background-color: #6e91d3;" class="table-header">Voucher No</th>
-                <!-- <th style="background-color: #6e91d3;" class="table-header">DR/CR<span class="text-danger"></span></th> -->
                 <!-- Cost -->
-                <!-- <th style="background-color: #6e91d3;" class="table-header">Curr</th> -->
-                <!-- <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span> -->
                 <th style="background-color: #9dd376;" class="table-header">Curr</th>
                 <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
                 <th style="background-color: #9dd376;" class="table-header">Per Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Amt</th>
                 <th style="background-color: #9dd376;" class="table-header">Local Amt</th>
-                <!-- <th style="background-color: #9dd376;" class="table-header">Cost Rate</th> -->
                 <th style="background-color: #9dd376;" class="text-white">PP/CC</th>
                 <th style="background-color: #9dd376;" class="table-header">Party</th>
-                <!-- <th style="background-color: #9dd376;" class="table-header">DR/CR<span class="text-danger"></span></th> -->
                 <th style="background-color: #9dd376;" class="table-header">Type</th>
                 <th style="background-color: #9dd376;" class="table-header">Voucher No</th>
-
-                <!-- common -->
-
-                <!-- <th  class="table-header">Party<span class="text-danger"></span></th> -->
-
               </tr>
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
-
-
                 <!-- Revenue -->
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-                      formControlName="RevenueCurrencyMasterSid" (change)="onCurrencyChange($event)" appendTo="body">
+                      formControlName="RevenueCurrencyMasterSid" (change)="onCurrencyChange($event,i)" appendTo="body">
                     </ng-select>
 
                   </div>
@@ -247,7 +233,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
                       formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
                     </ng-select>
                   </div>
@@ -265,13 +251,6 @@
                       formControlName="RevenueLocalAmount">
                   </div>
                 </td>
-                <!-- <td>
-                  <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" formControlName="RevenueRate"
-                      class="custom-input-field sm text-end">
-                  </div>
-                </td> -->
-
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-40">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
@@ -280,46 +259,35 @@
                   </div>
                 </td>
 
-                <!-- <td>
-                  <div class="custom-form-group dofi-min-w-70">
-                    <ng-select [items]="drcr" formControlName="RevenueDrCr" bindLabel="name" bindValue="name"
-                      class="ng-select" container="body" appendTo="body">
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                    <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      formControlName="AgentSid" appendTo="body">
                     </ng-select>
-
                   </div>
-                </td> -->
+                </td>
+
                 <td>
                   <div class="custom-form-group dofi-min-w-150">
                     <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
-                      formControlName="VoucherTypeSid" appendTo="body">
+                      formControlName="RevenueVoucherTypeSid" appendTo="body" (change)="onRevenueTypeChange($event,i)">
                     </ng-select>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="vouchers" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid"
-                      formControlName="VoucherHeaderSid" appendTo="body">
+                      formControlName="RevenueVoucherHeaderSid" appendTo="body" (change)="onRevenueVoucherChange($event,i)">
                     </ng-select>
                   </div>
                 </td>
-
-
-                <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                      formControlName="CustomerMasterSid" appendTo="body">
-                    </ng-select>
-                  </div>
-                </td>
-
 
                 <!-- cost -->
-
 
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-                      formControlName="CostCurrencyMasterSid" (change)="onCurrencyChange($event)" appendTo="body">
+                      formControlName="CostCurrencyMasterSid" (change)="onCurrencyChange($event,i)" appendTo="body">
                     </ng-select>
 
                   </div>
@@ -332,7 +300,7 @@
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
                       formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
                     </ng-select>
                   </div>
@@ -366,17 +334,19 @@
                   </div>
                 </td>
 
-                <td>
-                  <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" class="custom-input-field sm text-end">
+                 <td>
+                  <div class="custom-form-group dofi-min-w-150">
+                    <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
+                      formControlName="CostVoucherTypeSid" appendTo="body"   (change)="onCostTypeChange($event,i)">
+>
+                    </ng-select>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select formControlName="" bindLabel="name" bindValue="name" class="ng-select" container="body"
-                      appendTo="body">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                    <ng-select [items]="vouchers" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid"
+                      formControlName="CostVoucherHeaderSid" appendTo="body" (change)="onCostVoucherChange($event,i)">
                     </ng-select>
-
                   </div>
                 </td>
               </tr>
