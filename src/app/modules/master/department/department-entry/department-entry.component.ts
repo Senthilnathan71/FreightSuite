@@ -54,7 +54,7 @@ export class DepartmentEntryComponent {
   statusList = ["Active", "Suspended"]
   currentMenuId: any;
   TandCList: any[]=[];
-  departmentTypeOptions = ['Sea', 'Air', 'Road', 'Transport'];
+  departmentTypeOptions = ['Sea', 'Air', 'Road', 'Transport', 'Others'];
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   currentCompany: any;

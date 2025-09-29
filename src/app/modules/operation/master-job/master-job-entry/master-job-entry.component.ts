@@ -1601,66 +1601,103 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   // Add this method to your component
-  AuditLogs(modal: TemplateRef<any>) {
+  // AuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.masterJobSid) return;
+
+  //   this.operationService.getAuditLogsmasterjob('MasterJob', this.masterJobSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         if (obj && obj.updatedOn) delete obj.updatedOn; // Remove updatedOn field if it exists
+  //         if (!obj || Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
+
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
+
+  //       this.auditLogModalRef = this.modalService.open(modal, { 
+  //         centered: true, 
+  //         scrollable: true, 
+  //         windowClass: 'audit-log-modal',
+  //         size: 'xl'
+  //       });
+  //     },
+  //     error: err => {
+  //       console.error('Error fetching audit logs:', err);
+  //       this.toastr.error('Failed to fetch audit logs');
+  //     }
+  //   });
+  // }
+
+  openAuditLogs(modal: TemplateRef<any>) {
     if (!this.masterJobSid) return;
-
-    this.operationService.getAuditLogsmasterjob('MasterJob', this.masterJobSid.toString()).subscribe({
+  
+    this.operationService.getAuditLogsmasterjob(
+      'MasterJob',
+      this.masterJobSid.toString()
+    ).subscribe({
       next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+  
         const formatFields = (val: any) => {
-          if (!val) return ['NA'];
+          if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (obj && obj.updatedOn) delete obj.updatedOn; // Remove updatedOn field if it exists
-          if (!obj || Object.keys(obj).length === 0) return ['NA'];
-          return Object.entries(obj).map(
-            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-          );
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
-
-        this.auditLogs = logs.map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal)
-        }));
-
-        this.auditLogModalRef = this.modalService.open(modal, { 
-          centered: true, 
-          scrollable: true, 
-          windowClass: 'audit-log-modal',
-          size: 'xl'
+  
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+  
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
         });
       },
-      error: err => {
-        console.error('Error fetching audit logs:', err);
-        this.toastr.error('Failed to fetch audit logs');
-      }
+      error: err => console.error('Error fetching audit logs:', err)
     });
   }
 
-  exportAuditLogs() {
-    if (this.auditLogs.length === 0) {
-      this.toastr.warning('No audit logs to export');
-      return;
-    }
+  // exportAuditLogs() {
+  //   if (this.auditLogs.length === 0) {
+  //     this.toastr.warning('No audit logs to export');
+  //     return;
+  //   }
     
-    // Simple CSV export implementation
-    const headers = ['Changed At', 'Changed By', 'Operation', 'Old Value', 'New Value'];
-    const csvData = this.auditLogs.map(log => [
-      new Date(log.changedAt).toLocaleString(),
-      log.changedBy || '-',
-      log.operation,
-      JSON.stringify(log.oldVal || {}),
-      JSON.stringify(log.newVal || {})
-    ]);
+  //   // Simple CSV export implementation
+  //   const headers = ['Changed At', 'Changed By', 'Operation', 'Old Value', 'New Value'];
+  //   const csvData = this.auditLogs.map(log => [
+  //     new Date(log.changedAt).toLocaleString(),
+  //     log.changedBy || '-',
+  //     log.operation,
+  //     JSON.stringify(log.oldVal || {}),
+  //     JSON.stringify(log.newVal || {})
+  //   ]);
     
-    const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `audit-logs-masterjob-${this.masterJobForm.get('MasterJobNumber')?.value}.csv`;
-    link.click();
-    window.URL.revokeObjectURL(url);
-  }
+  //   const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
+  //   const blob = new Blob([csvContent], { type: 'text/csv' });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.download = `audit-logs-masterjob-${this.masterJobForm.get('MasterJobNumber')?.value}.csv`;
+  //   link.click();
+  //   window.URL.revokeObjectURL(url);
+  // }
 
   navigateToBooking(): void {
     this.router.navigate(['operation/booking/entry']);
