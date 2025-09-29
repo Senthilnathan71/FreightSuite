@@ -8,15 +8,17 @@
           </div>
           <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Organization</h5>
           @if (isEditMode) {
-            <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCustomerInfo()">
-              <i class="fas fs-6 fa-info-circle"></i>
-            </a>
+          <a class="text-info d-flex align-items-center w-2 h-2" (click)="showCustomerInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
           }
         </div>
       </div>
       <div class="col-md-8 pb-1">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode" (click)="openAuditLogs(auditLogModal)">
+        <div
+          class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+            (click)="openAuditLogs(auditLogModal)">
             <i class="fas fa-history me-1"></i>Logs
           </button>
 
@@ -28,19 +30,25 @@
             <i class="fas fa-sync-alt me-1"></i>
             Reset
           </button>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="customerForm.invalid">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+            [disabled]="customerForm.invalid">
             <i class="fas fa-save me-1"></i>
             {{ isEditMode ? 'Edit' : 'Save' }}
           </button>
           <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+              ngbDropdownToggle>
               <i class="fas fa-ellipsis-v"></i>
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                  class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                  class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                  class="fas fa-envelope me-1"></i> Email</button>
             </div>
           </div>
         </div>
@@ -51,7 +59,8 @@
   <!-- Tabs -->
   <div class="nav-pills-container pt-1">
     <div class="nav-pills">
-      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name" (click)="selectTab(tab.name)">
+      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+        (click)="selectTab(tab.name)">
         <div class="pill-icon">
           <i [class]="tab.icon"></i>
         </div>
@@ -87,8 +96,10 @@
           <div class="card-body">
             <div class="row">
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="customerForm.get('CountryMasterSid')?.value">
-                  <ng-select [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid" formControlName="CountryMasterSid" placeholder="Country" [searchable]="true" [clearable]="false">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="customerForm.get('CountryMasterSid')?.value">
+                  <ng-select [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid"
+                    formControlName="CountryMasterSid" placeholder="Country" [searchable]="true" [clearable]="false">
                     <ng-template ng-option-tmp let-item="item">
                       {{ item.countryName }} - {{ item.countryCode }}
                     </ng-template>
@@ -97,141 +108,137 @@
                     Country <span class="text-danger">*</span>
                   </label>
                   @if (customerForm.get('CountryMasterSid')?.touched && customerForm.get('CountryMasterSid')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('CountryMasterSid')?.hasError('required')) { <span>Required</span> }
-                    </div>
+                  <div class="error-message">
+                    @if (customerForm.get('CountryMasterSid')?.hasError('required')) { <span>Required</span> }
+                  </div>
                   }
                 </div>
               </aside>
 
               <aside class="col-md-4">
-  <div class="custom-form-group">
-    <input type="text"
-           id="CustomerName"
-           formControlName="CustomerName"
-           placeholder=""
-           class="custom-input-field sm"
-           [onlyText]="100" />
-    <label for="CustomerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
+                <div class="custom-form-group">
+                  <input type="text" id="CustomerName" formControlName="CustomerName" placeholder=""
+                    class="custom-input-field sm" [onlyText]="100" />
+                  <label for="CustomerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
 
-    <div class="error-message">
-      @if (customerForm.get('CustomerName')?.hasError('customerNameTaken')) {
-        <span>Customer name already exists</span>
-      }
-    </div>
-  </div>
-</aside>
+                  <div class="error-message">
+                    @if (customerForm.get('CustomerName')?.hasError('customerNameTaken')) {
+                    <span>Customer name already exists</span>
+                    }
+                  </div>
+                </div>
+              </aside>
 
-<aside class="col-md-4">
-  <div class="custom-form-group">
-    <input type="text"
-           id="CustomerShortCode"
-           formControlName="CustomerShortCode"
-           placeholder=""
-           class="custom-input-field sm"
-           [textWithNumbers]="50" />
-    <label for="CustomerShortCode" class="input-label">Code <span class="text-danger">*</span></label>
+              <aside class="col-md-4">
+                <div class="custom-form-group">
+                  <input type="text" id="CustomerShortCode" formControlName="CustomerShortCode" placeholder=""
+                    class="custom-input-field sm" [textWithNumbers]="50" />
+                  <label for="CustomerShortCode" class="input-label">Code <span class="text-danger">*</span></label>
 
-    <div class="error-message">
-      @if (customerForm.get('CustomerShortCode')?.hasError('customerCodeTaken')) {
-        <span>Customer code already exists</span>
-      }
-    </div>
-  </div>
-</aside>
+                  <div class="error-message">
+                    @if (customerForm.get('CustomerShortCode')?.hasError('customerCodeTaken')) {
+                    <span>Customer code already exists</span>
+                    }
+                  </div>
+                </div>
+              </aside>
 
-<!-- 🔴 Shared API message -->
-<div *ngIf="duplicateMessage" class="text-danger">
-  {{ duplicateMessage }}
-</div>
+              <!-- 🔴 Shared API message -->
+              <div *ngIf="duplicateMessage" class="text-danger">
+                {{ duplicateMessage }}
+              </div>
 
 
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select" [class.filled]="selectedStatus?.length > 0">
-                  <multi-select
-                    [items]="modeOfCustomerType"
-                    bindLabel="name"
-                    bindValue="name"
-                    placeholder=""
-                    [(ngModel)]="selectedStatus"
-                    (valueChange)="handleSelectedStatus($event)"
-                    [ngModelOptions]="{standalone: true}"
-                  ></multi-select>
+                  <multi-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name" placeholder=""
+                    [(ngModel)]="selectedStatus" (valueChange)="handleSelectedStatus($event)"
+                    [ngModelOptions]="{standalone: true}"></multi-select>
                   <label class="input-label">Customer Type</label>
                 </div>
               </aside>
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" id="CustomerAliasName" placeholder="" class="custom-input-field sm" formControlName="CustomerAliasName" [textWithNumbers]="100">
+                  <input type="text" id="CustomerAliasName" placeholder="" class="custom-input-field sm"
+                    formControlName="CustomerAliasName" [textWithNumbers]="100">
                   <label for="CustomerAliasName" class="input-label">Alias <span class="text-danger">*</span></label>
-                  @if (customerForm.get('CustomerAliasName')?.touched && customerForm.get('CustomerAliasName')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('CustomerAliasName')?.hasError('required')) { <span>Required</span> }
-                      @else if (customerForm.get('CustomerAliasName')?.hasError('maxlength')) { <span>Max 100 chars</span> }
-                    </div>
+                  @if (customerForm.get('CustomerAliasName')?.touched && customerForm.get('CustomerAliasName')?.invalid)
+                  {
+                  <div class="error-message">
+                    @if (customerForm.get('CustomerAliasName')?.hasError('required')) { <span>Required</span> }
+                    @else if (customerForm.get('CustomerAliasName')?.hasError('maxlength')) { <span>Max 100 chars</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" id="GroupName" placeholder="" class="custom-input-field sm" formControlName="GroupName" [textWithNumbers]="20">
+                  <input type="text" id="GroupName" placeholder="" class="custom-input-field sm"
+                    formControlName="GroupName" [textWithNumbers]="20">
                   <label for="GroupName" class="input-label">Group Name</label>
                   @if (customerForm.get('GroupName')?.touched && customerForm.get('GroupName')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('GroupName')?.hasError('maxlength')) { <span>Max 20 chars</span> }
-                    </div>
+                  <div class="error-message">
+                    @if (customerForm.get('GroupName')?.hasError('maxlength')) { <span>Max 20 chars</span> }
+                  </div>
                   }
                 </div>
               </aside>
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" id="CustomerAddress1" placeholder="" class="custom-input-field sm" formControlName="CustomerAddress1" [textWithNumbers]="300">
+                  <input type="text" id="CustomerAddress1" placeholder="" class="custom-input-field sm"
+                    formControlName="CustomerAddress1" [textWithNumbers]="300">
                   <label for="CustomerAddress1" class="input-label">Address1 <span class="text-danger">*</span></label>
                   @if (customerForm.get('CustomerAddress1')?.touched && customerForm.get('CustomerAddress1')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('CustomerAddress1')?.hasError('required')) { <span>Required</span> }
-                      @else if (customerForm.get('CustomerAddress1')?.hasError('maxlength')) { <span>Max 300 chars</span> }
-                    </div>
+                  <div class="error-message">
+                    @if (customerForm.get('CustomerAddress1')?.hasError('required')) { <span>Required</span> }
+                    @else if (customerForm.get('CustomerAddress1')?.hasError('maxlength')) { <span>Max 300 chars</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" id="CustomerAddress2" placeholder="" class="custom-input-field sm" formControlName="CustomerAddress2">
+                  <input type="text" id="CustomerAddress2" placeholder="" class="custom-input-field sm"
+                    formControlName="CustomerAddress2">
                   <label for="CustomerAddress2" class="input-label">Address2</label>
                   @if (customerForm.get('CustomerAddress2')?.touched && customerForm.get('CustomerAddress2')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('CustomerAddress2')?.hasError('maxlength')) { <span>Max 300 chars</span> }
-                    </div>
+                  <div class="error-message">
+                    @if (customerForm.get('CustomerAddress2')?.hasError('maxlength')) { <span>Max 300 chars</span> }
+                  </div>
                   }
                 </div>
               </aside>
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" id="Website" placeholder="" class="custom-input-field sm" formControlName="Website" [maxlength]="50">
+                  <input type="text" id="Website" placeholder="" class="custom-input-field sm" formControlName="Website"
+                    [maxlength]="50">
                   <label for="Website" class="input-label">Website</label>
                   @if (customerForm.get('Website')?.touched && customerForm.get('Website')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('Website')?.hasError('maxlength')) { <span>Max 50 Chars</span> }
-                    </div>
+                  <div class="error-message">
+                    @if (customerForm.get('Website')?.hasError('maxlength')) { <span>Max 50 Chars</span> }
+                  </div>
                   }
                 </div>
               </aside>
 
-              <aside class="col-md-4">
+              <aside class="col-md-4 mt-md-2 mt-0">
                 <div class="custom-form-group">
                   <div class="d-flex gap-3">
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentTypeCash" value="Cash">
+                      <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentTypeCash"
+                        value="Cash">
                       <label class="form-check-label" for="paymentTypeCash">Cash</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentTypeCredit" value="Credit">
+                      <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentTypeCredit"
+                        value="Credit">
                       <label class="form-check-label" for="paymentTypeCredit">Credit</label>
                     </div>
                   </div>
@@ -240,19 +247,21 @@
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" id="Network" placeholder="" class="custom-input-field sm" formControlName="Network">
+                  <input type="text" id="Network" placeholder="" class="custom-input-field sm"
+                    formControlName="Network">
                   <label for="Network" class="input-label">Network</label>
                 </div>
               </aside>
 
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <textarea rows="1" class="custom-input-field sm" formControlName="Remarks" [textWithNumbers]="100"></textarea>
+                  <textarea rows="1" class="custom-input-field sm" formControlName="Remarks" [textWithNumbers]="100"
+                    placeholder=""></textarea>
                   <label class="input-label">Remarks</label>
                   @if (customerForm.get('Remarks')?.touched && customerForm.get('Remarks')?.invalid) {
-                    <div class="error-message">
-                      @if (customerForm.get('Remarks')?.hasError('maxlength')) { <span>Max 100 Chars</span> }
-                    </div>
+                  <div class="error-message">
+                    @if (customerForm.get('Remarks')?.hasError('maxlength')) { <span>Max 100 Chars</span> }
+                  </div>
                   }
                 </div>
               </aside>
@@ -267,8 +276,10 @@
               </aside>
 
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="customerForm.get('status')?.getRawValue()">
-                  <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect" style="background-color: white;">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="customerForm.get('status')?.getRawValue()">
+                  <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect"
+                    style="background-color: white;">
                     <ng-option value="Active">Active</ng-option>
                     <ng-option value="Suspended">Suspended</ng-option>
                   </ng-select>
@@ -276,76 +287,85 @@
                 </div>
               </aside>
 
-              <!-- KYC Section -->
-              <div class="row border mx-0 rounded" >
-                <div class="d-flex align-items-center gap-2">
-                  <h5 class="card-titlename mb-0 text-info">KYC Section</h5>
-                </div>
+              <div class="mx-0">
+                <div class="row border mx-0 rounded">
+                  <div class="d-flex align-items-center gap-2 ps-md-0 mt-1">
+                    <h5 class="card-titlename mb-0 text-info fw-bold">KYC Section</h5>
+                  </div>
 
-                <aside class="col-md-4 d-flex align-items-center mt-md-2 mt-0">
-                  <div class="form-check form-check-inline p-0">
-                    <div class="form-check d-flex align-items-center">
-                      <input type="checkbox" formControlName="KYCSpecified" id="KYCSpecified" class="form-check-input sm">
-                      <label for="KYCSpecified" class="form-check-label sm">Specified / Not Specified</label>
+                  <aside class="col-md-4 d-flex align-items-center ps-md-0">
+                    <div class="form-check form-check-inline p-0">
+                      <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" formControlName="KYCSpecified" id="KYCSpecified"
+                          class="form-check-input sm">
+                        <label for="KYCSpecified" class="form-check-label sm">Specified / Not Specified</label>
+                      </div>
                     </div>
-                  </div>
-                </aside>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" id="RegistrationNo" placeholder="" class="custom-input-field sm" formControlName="RegistrationNo" [textWithNumbers]="20">
-                    <label for="RegistrationNo" class="input-label">Registration No</label>
-                  </div>
-                </aside>
-
-                <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select" [class.filled]="customerForm.get('CompanyType')?.value">
-                    <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType" placeholder="Select Company Type" [searchable]="false" [clearable]="false">
-                    </ng-select>
-                    <label class="input-label">Company Type <span class="text-danger">*</span></label>
-                  </div>
-                </aside>
-
-                <aside class="col-md-4 d-flex align-items-center">
-                  <div class="form-check form-check-inline p-0">
-                    <div class="form-check d-flex align-items-center">
-                      <input type="checkbox" formControlName="PanAvailable" id="PanAvailable" class="form-check-input sm" />
-                      <label for="PanAvailable" class="form-check-label sm">
-                        {{ isIndianCountry() ? 'PAN/VAt Available' : isUaeCountry() ? 'VAT Available' : 'PAN Available' }}
-                      </label>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" id="RegistrationNo" placeholder="" class="custom-input-field sm"
+                        formControlName="RegistrationNo" [textWithNumbers]="20">
+                      <label for="RegistrationNo" class="input-label">Registration No</label>
                     </div>
-                  </div>
-                </aside>
+                  </aside>
 
-                <div class="col-md-4" *ngIf="customerForm.get('PanAvailable')?.value">
-                  <input
-                    type="text"
-                    formControlName="PanType"
-                    class="custom-form-group "
-                    [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
-                    [placeholder]="isIndianCountry() ? 'Eg: ABCDE1234F' : isUaeCountry() ? 'Eg: 123456789012345' : 'Tax ID'"
-                  >
-                  <label for="PanType" class="input-label sm">
-                    {{ currentTaxIdLabel }} <span class="text-danger">*</span>
-                  </label>
-                  <div class="" *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
-                    {{ getTaxIdErrorMessage() }}
-                  </div>
-                  <small class="" *ngIf="isIndianCountry()">Format: 5 letters + 4 numbers + 1 letter (e.g., ABCDE1234F)</small>
-                  <small class="" *ngIf="isUaeCountry()">Format: 15 digits starting with 1-9</small>
-                </div>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="customerForm.get('CompanyType')?.value">
+                      <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
+                        placeholder="Select Company Type" [searchable]="false" [clearable]="false">
+                      </ng-select>
+                      <label class="input-label">Company Type <span class="text-danger">*</span></label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" id="PanName" placeholder="" class="custom-input-field sm" formControlName="PanName" />
-                    <label for="PanName" class="input-label">Name as per PAN / VAT <span class="text-danger">*</span></label>
-                    @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched || customerForm.get('PanName')?.dirty)) {
+                  <aside class="col-md-4 d-flex align-items-center ps-md-0">
+                    <div class="form-check form-check-inline p-0">
+                      <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
+                          class="form-check-input sm" />
+                        <label for="PanAvailable" class="form-check-label sm">
+                          {{ isIndianCountry() ? 'PAN/VAt Available' : isUaeCountry() ? 'VAT Available' : 'PAN
+                          Available'
+                          }}
+                        </label>
+                      </div>
+                    </div>
+                  </aside>
+
+                  <div class="col-md-4" *ngIf="customerForm.get('PanAvailable')?.value">
+                    <input type="text" formControlName="PanType" class="custom-form-group "
+                      [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
+                      [placeholder]="isIndianCountry() ? 'Eg: ABCDE1234F' : isUaeCountry() ? 'Eg: 123456789012345' : 'Tax ID'">
+                    <label for="PanType" class="input-label sm">
+                      {{ currentTaxIdLabel }} <span class="text-danger">*</span>
+                    </label>
+                    <div class="" *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
+                      {{ getTaxIdErrorMessage() }}
+                    </div>
+                    <small class="" *ngIf="isIndianCountry()">Format: 5 letters + 4 numbers + 1 letter (e.g.,
+                      ABCDE1234F)</small>
+                    <small class="" *ngIf="isUaeCountry()">Format: 15 digits starting with 1-9</small>
+                  </div>
+
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
+                        formControlName="PanName" />
+                      <label for="PanName" class="input-label">Name as per PAN / VAT <span
+                          class="text-danger">*</span></label>
+                      @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched ||
+                      customerForm.get('PanName')?.dirty)) {
                       <div class="error-message"><span>Required</span></div>
-                    }
-                  </div>
-                </aside>
+                      }
+                    </div>
+                  </aside>
+                </div>
+                <!-- /KYC Section -->
               </div>
-              <!-- /KYC Section -->
+
 
             </div>
           </div>
@@ -354,101 +374,101 @@
     </div>
   </form>
 </ng-template>
- 
+
 <!-- BRANCH -->
 <ng-template #branchList>
-  <div class="table-toolbar">
-    <div class="d-flex justify-content-end align-items-end">
-      <button class="table-action-btn primary" (click)="addNewBranch()">
+  <div class="toolbar-right1">
+    <div class="d-flex align-items-center gap-1">
+      <button class="btn btn-sm btn-info" (click)="addNewBranch()">
         <i class="fas fa-plus"></i> Add Branch
       </button>
+      <div>
+        <button class="btn btn-sm btn-info" (click)="saveAllBranches()">
+          <i class="fas fa-save me-1"></i> Save All Branches
+        </button>
+      </div>
     </div>
-    <div class="ms-auto">
-      <button class="table-action-btn primary" (click)="saveAllBranches()">
-        <i class="fas fa-save me-1"></i> Save All Branches
-      </button>
-    </div>
+
   </div>
 
   <div class="col-12">
     <!-- Branch Accordion -->
-    <div class="accordion" id="branchAccordion">
-      <div class="accordion-item" *ngFor="let branch of (branches?.controls || []); let branchIndex = index">
-        <h2 class="accordion-header">
-          <button class="accordion-button" type="button" [class.collapsed]="!isBranchExpanded(branchIndex)" (click)="toggleBranch(branchIndex)">
+    <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion-organization">
+      <div ngbAccordionItem *ngFor="let branch of (branches?.controls || []); let branchIndex = index">
+        <h2 ngbAccordionHeader>
+          <button ngbAccordionButton [class.collapsed]="!isBranchExpanded(branchIndex)"
+            (click)="toggleBranch(branchIndex)" class="p-1">
             <div class="d-flex justify-content-between align-items-center w-100 ">
               <div>
                 <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'New Branch' }}</strong>
-                <span class="badge bg-secondary ms-2">{{ getBranchFormGroup(branch).get('CustBranchType')?.value }}</span>
-                <span
-                  class="badge ms-2"
+                <span class="badge bg-secondary ms-2">{{ getBranchFormGroup(branch).get('CustBranchType')?.value
+                  }}</span>
+                <span class="badge ms-2"
                   [class.bg-success]="getBranchFormGroup(branch).get('status')?.value === 'Active'"
-                  [class.bg-danger]="getBranchFormGroup(branch).get('status')?.value === 'Suspended'"
-                >
+                  [class.bg-danger]="getBranchFormGroup(branch).get('status')?.value === 'Suspended'">
                   {{ getBranchFormGroup(branch).get('status')?.value }}
                 </span>
-              </div>
-              <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeBranch(branchIndex); $event.stopPropagation()">
-                  <i class="fas fa-trash"></i>
+
+                <button type="button" class="btn btn-sm" (click)="removeBranch(branchIndex); $event.stopPropagation()">
+                  <i class="fas fa-trash text-danger"></i>
                 </button>
+
               </div>
+
             </div>
           </button>
         </h2>
 
-        <div [class.show]="isBranchExpanded(branchIndex)" class="accordion-collapse collapse">
-          <div class="accordion-body">
+        <div ngbAccordionCollapse [class.show]="isBranchExpanded(branchIndex)" class="accordion-collapse collapse">
+          <div class="accordion-body p-1">
             <!-- Branch Main Details -->
-            <div class="row compact-form mb-4" [formGroup]="getBranchFormGroup(branch)">
+            <div class="row compact-form" [formGroup]="getBranchFormGroup(branch)">
               <!-- <h5 class="text-info pb-2">Branch Details</h5> -->
 
               <!-- State Dropdown (Filtered by Country from Party tab) -->
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select"  [class.filled]="!!getBranchFormGroup(branch).get('CustBranchState')?.value">
-                  <ng-select 
-                    id="state_{{branchIndex}}" 
-                    formControlName="CustBranchState" 
-                    class=""
-                    (change)="onStateChange(branchIndex, $event)"
-                  >
-                    <ng-option value="" disabled>Select State</ng-option>
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!getBranchFormGroup(branch).get('CustBranchState')?.value">
+                  <ng-select id="state_{{branchIndex}}" formControlName="CustBranchState" class=""
+                    (change)="onStateChange(branchIndex, $event)" aria-placeholder="">
+                    <!-- <ng-option value="" disabled>Select State</ng-option> -->
                     <ng-option *ngFor="let option of stateList" [value]="option.StateMasterSid">
                       {{option.stateName}} - {{option.stateCode}}
                     </ng-option>
                   </ng-select>
-                  <label for="state_{{branchIndex}}" class="input-label">State <span class="text-danger">*</span></label>
-                  @if (getBranchFormGroup(branch).get('CustBranchState')?.touched && getBranchFormGroup(branch).get('CustBranchState')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchState')?.hasError('required')) {
-                        <span>Required</span>
-                      }
-                    </div>
+                  <label for="state_{{branchIndex}}" class="input-label">State <span
+                      class="text-danger">*</span></label>
+                  @if (getBranchFormGroup(branch).get('CustBranchState')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchState')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchState')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
 
               <!-- City Dropdown (Filtered by State selection) -->
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="!!getBranchFormGroup(branch).get('CustBranchCity')?.value">
-                  <ng-select 
-                    id="city_{{branchIndex}}" 
-                    formControlName="CustBranchCity" 
-                    class=""
-                    (change)="onCityChange(branchIndex)"
-                  >
-                    <ng-option value="">Select City</ng-option>
-                    <ng-option *ngFor="let option of (getBranchFormGroup(branch)['cities'] || [])" [value]="option.CityMasterSid">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!getBranchFormGroup(branch).get('CustBranchCity')?.value">
+                  <ng-select id="city_{{branchIndex}}" formControlName="CustBranchCity" class=""
+                    (change)="onCityChange(branchIndex)" aria-placeholder="">
+                    <!-- <ng-option value="">Select City</ng-option> -->
+                    <ng-option *ngFor="let option of (getBranchFormGroup(branch)['cities'] || [])"
+                      [value]="option.CityMasterSid">
                       {{option.cityName}} - {{option.cityCode}}
                     </ng-option>
                   </ng-select>
                   <label for="city_{{branchIndex}}" class="input-label">City <span class="text-danger">*</span></label>
-                  @if (getBranchFormGroup(branch).get('CustBranchCity')?.touched && getBranchFormGroup(branch).get('CustBranchCity')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchCity')?.hasError('required')) {
-                        <span>Required</span>
-                      }
-                    </div>
+                  @if (getBranchFormGroup(branch).get('CustBranchCity')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchCity')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchCity')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
@@ -456,24 +476,19 @@
               <!-- Branch Name -->
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input 
-                    type="text" 
-                    placeholder="" 
-                    class="custom-input-field sm" 
-                    formControlName="CustBranchName"
-                    [textWithNumbers]="20"
-                    (input)="onBranchNameChange(branchIndex)"
-                  >
+                  <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchName"
+                    [textWithNumbers]="20" (input)="onBranchNameChange(branchIndex)">
                   <label class="input-label">Branch Name <span class="text-danger">*</span></label>
-                  @if (getBranchFormGroup(branch).get('CustBranchName')?.touched && getBranchFormGroup(branch).get('CustBranchName')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchName')?.hasError('required')) {
-                        <span>Required</span>
-                      }
-                      @else if (getBranchFormGroup(branch).get('CustBranchName')?.hasError('maxlength')) {
-                        <span>Max 20 Chars</span>
-                      }
-                    </div>
+                  @if (getBranchFormGroup(branch).get('CustBranchName')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchName')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchName')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                    @else if (getBranchFormGroup(branch).get('CustBranchName')?.hasError('maxlength')) {
+                    <span>Max 20 Chars</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
@@ -484,24 +499,20 @@
                   <label class="form-check-label mx-0">Branch Type <span class="text-danger">*</span></label>
                   <div class="d-flex gap-3">
                     <div class="form-check" *ngFor="let option of modeOfBranchType">
-                      <input 
-                        class="form-check-input mb-0" 
-                        type="radio" 
-                        formControlName="CustBranchType" 
-                        [id]="'branchType' + option.id + branchIndex" 
-                        [value]="option.id"
-                      >
+                      <input class="form-check-input mb-0" type="radio" formControlName="CustBranchType"
+                        [id]="'branchType' + option.id + branchIndex" [value]="option.id">
                       <label class="form-check-label" [for]="'branchType' + option.id + branchIndex">
                         {{ option.name }}
                       </label>
                     </div>
                   </div>
-                  @if (getBranchFormGroup(branch).get('CustBranchType')?.touched && getBranchFormGroup(branch).get('CustBranchType')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchType')?.hasError('required')) {
-                        <span>Required</span>
-                      }
-                    </div>
+                  @if (getBranchFormGroup(branch).get('CustBranchType')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchType')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchType')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
@@ -509,7 +520,8 @@
               <!-- Branch Code (Auto-generated) -->
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchCode" [textWithNumbers]="10" readonly>
+                  <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchCode"
+                    [textWithNumbers]="10" readonly>
                   <label class="input-label">Branch Code</label>
                 </div>
               </aside>
@@ -525,17 +537,19 @@
               <!-- Phone -->
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="tel" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone" [onlyNumbers]="10">
+                  <input type="tel" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
+                    [onlyNumbers]="10">
                   <label class="input-label">Phone</label>
-                  @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched && getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
-                        <span>Please enter a valid phone number (6-15 digits)</span>
-                      }
-                      @else if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('maxlength')) {
-                        <span>Phone number too long (max 15 digits)</span>
-                      }
-                    </div>
+                  @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
+                    <span>Please enter a valid phone number (6-15 digits)</span>
+                    }
+                    @else if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('maxlength')) {
+                    <span>Phone number too long (max 15 digits)</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
@@ -545,15 +559,17 @@
                 <div class="custom-form-group">
                   <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchEmail">
                   <label class="input-label">Email <span class="text-danger">*</span></label>
-                  @if ((getBranchFormGroup(branch).get('CustBranchEmail')?.touched || getBranchFormGroup(branch).get('CustBranchEmail')?.dirty) && getBranchFormGroup(branch).get('CustBranchEmail')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('required')) {
-                        <span>Required</span>
-                      }
-                      @else if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('invalidEmails')) {
-                        <span>Invalid email format</span>
-                      }
-                    </div>
+                  @if ((getBranchFormGroup(branch).get('CustBranchEmail')?.touched ||
+                  getBranchFormGroup(branch).get('CustBranchEmail')?.dirty) &&
+                  getBranchFormGroup(branch).get('CustBranchEmail')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                    @else if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('invalidEmails')) {
+                    <span>Invalid email format</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
@@ -561,146 +577,105 @@
               <!-- Address -->
               <aside class="col-md-4">
                 <div class="custom-form-group">
-                  <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchAddress" [textWithNumbers]="200">
+                  <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchAddress"
+                    [textWithNumbers]="200">
                   <label class="input-label">Address <span class="text-danger">*</span></label>
-                  @if (getBranchFormGroup(branch).get('CustBranchAddress')?.touched && getBranchFormGroup(branch).get('CustBranchAddress')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchAddress')?.hasError('required')) {
-                        <span>Required</span>
-                      }
-                      @else if (getBranchFormGroup(branch).get('CustBranchAddress')?.hasError('maxlength')) {
-                        <span>Max 200 Chars</span>
-                      }
-                    </div>
+                  @if (getBranchFormGroup(branch).get('CustBranchAddress')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchAddress')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchAddress')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                    @else if (getBranchFormGroup(branch).get('CustBranchAddress')?.hasError('maxlength')) {
+                    <span>Max 200 Chars</span>
+                    }
+                  </div>
                   }
                 </div>
               </aside>
-<!-- After Contact Person field -->
-<aside class="col-md-4">
-  <div class="custom-form-group">
-    <input 
-      type="text" 
-      placeholder="" 
-      class="custom-input-field sm" 
-      formControlName="CustBranchZipPostCode"
-      [onlyNumbers]="6"
-    >
-    <label class="input-label">Zip/Post Code</label>
-    @if (getBranchFormGroup(branch).get('CustBranchZipPostCode')?.touched && getBranchFormGroup(branch).get('CustBranchZipPostCode')?.invalid) {
-      <div class="error-message">
-        @if (getBranchFormGroup(branch).get('CustBranchZipPostCode')?.hasError('maxlength')) {
-          <span>Zip/Post Code 6 digits</span>
-        }
-      </div>
-    }
-  </div>
-</aside>
-<!-- After Phone field -->
-<aside class="col-md-4">
-   <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!getBranchFormGroup(branch).get('CustBranchGSTtype')?.value">
-    <ng-select 
-      [items]="gstTypeList"
-      bindLabel="name"
-      bindValue="name"
-      formControlName="CustBranchGSTtype"
-      placeholder="Select GST Type"
-      appendTo="body"
-    >
-    </ng-select>
-    <label class="input-label">GST Type <span class="text-danger">*</span></label>
-    @if (getBranchFormGroup(branch).get('CustBranchGSTtype')?.touched && getBranchFormGroup(branch).get('CustBranchGSTtype')?.invalid) {
-      <div class="error-message">
-        @if (getBranchFormGroup(branch).get('CustBranchGSTtype')?.hasError('required')) {
-          <span>Required</span>
-        }
-      </div>
-    }
-  </div>
-</aside>
+              <!-- After Contact Person field -->
+              <aside class="col-md-4">
+                <div class="custom-form-group">
+                  <input type="text" placeholder="" class="custom-input-field sm"
+                    formControlName="CustBranchZipPostCode" [onlyNumbers]="6">
+                  <label class="input-label">Zip/Post Code</label>
+                  @if (getBranchFormGroup(branch).get('CustBranchZipPostCode')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchZipPostCode')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchZipPostCode')?.hasError('maxlength')) {
+                    <span>Zip/Post Code 6 digits</span>
+                    }
+                  </div>
+                  }
+                </div>
+              </aside>
+              <!-- After Phone field -->
+              <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!getBranchFormGroup(branch).get('CustBranchGSTtype')?.value">
+                  <ng-select [items]="gstTypeList" bindLabel="name" bindValue="name" formControlName="CustBranchGSTtype"
+                    placeholder="Select GST Type" appendTo="body">
+                  </ng-select>
+                  <label class="input-label">GST Type <span class="text-danger">*</span></label>
+                  @if (getBranchFormGroup(branch).get('CustBranchGSTtype')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchGSTtype')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchGSTtype')?.hasError('required')) {
+                    <span>Required</span>
+                    }
+                  </div>
+                  }
+                </div>
+              </aside>
 
               <!-- GSTIN Section -->
-<aside class="col-md-4">
-  <div class="custom-form-group gstin-group">
-    <!-- State Code - Make sure it displays even if empty -->
-    <input 
-      type="text" 
-      class="custom-input-field sm gstin-fixed"
-      [value]="getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value) || ''" 
-      tabindex="-1"
-      aria-label="State Code" 
-      style="width: 3.5em;" 
-      disabled
-      [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)"
-    />
+              <aside class="col-md-4">
+                <div class="custom-form-group gstin-group">
+                  <!-- State Code - Make sure it displays even if empty -->
+                  <input type="text" class="custom-input-field sm gstin-fixed"
+                    [value]="getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value) || ''"
+                    tabindex="-1" aria-label="State Code" style="width: 5em;" disabled
+                    [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)" />
 
-    <input 
-      type="text" 
-      class="custom-input-field sm gstin-fixed" 
-      [value]="customerForm.get('PanType')?.value || ''" 
-      disabled 
-      tabindex="-1" 
-      aria-label="PAN" 
-      style="width: 12em;" 
-    />
+                  <input type="text" class="custom-input-field sm gstin-fixed"
+                    [value]="customerForm.get('PanType')?.value || ''" disabled tabindex="-1" aria-label="PAN"
+                    style="width: 12em;" />
 
-    <!-- Rest of your GSTIN inputs remain the same -->
-    <input 
-      type="text" 
-      [id]="'thirteenthDigit_' + branchIndex" 
-      maxlength="1" 
-      class="custom-input-field sm gstin-editable"
-      (input)="generateGST(branchIndex)" 
-      [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)" 
-      aria-label="13th Digit" 
-      style="width: 4em;"
-    />
+                  <!-- Rest of your GSTIN inputs remain the same -->
+                  <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
+                    class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
+                    [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)"
+                    aria-label="13th Digit" style="width: 4em;" />
 
-    <input 
-      type="text" 
-      class="custom-input-field sm gstin-fixed" 
-      value="Z" 
-      disabled 
-      tabindex="-1"
-      aria-label="14th Digit"  
-      style="width: 2.5em;"
-    />
+                  <input type="text" class="custom-input-field sm gstin-fixed" value="Z" disabled tabindex="-1"
+                    aria-label="14th Digit" style="width: 3em;" />
 
-    <input 
-      type="text" 
-      [id]="'fifteenthDigit_' + branchIndex" 
-      maxlength="1" 
-      class="custom-input-field sm gstin-editable"
-      (input)="generateGST(branchIndex)" 
-      aria-label="15th Digit" 
-      style="width: 3.5em;" 
-      [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)"
-    />
-    
-    <label class="input-label d-block mt-1">GSTIN</label>
-    
-     @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.touched && getBranchFormGroup(branch).get('CustBranchGSTIN')?.invalid) {
-    <div class="error-message">
-      @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('invalidGST')) {
-        <span>Provided GSTIN is invalid</span>
-      }
-      @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('maxlength')) {
-        <span>Max 15 Chars</span>
-      }
-    </div>
-  }
-  </div>
-</aside>
+                  <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
+                    class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
+                    aria-label="15th Digit" style="width: 4em;"
+                    [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" />
+
+                  <label class="input-label d-block mt-1">GSTIN</label>
+
+                  @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchGSTIN')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('invalidGST')) {
+                    <span>Provided GSTIN is invalid</span>
+                    }
+                    @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('maxlength')) {
+                    <span>Max 15 Chars</span>
+                    }
+                  </div>
+                  }
+                </div>
+              </aside>
               <!-- Status -->
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="!!getBranchFormGroup(branch).get('status')?.value">
-                  <ng-select 
-                    formControlName="status" 
-                    [items]="modeOfStatus"
-                    bindLabel="name" 
-                    bindValue="name"
-                    appendTo="body"
-                  >
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!getBranchFormGroup(branch).get('status')?.value">
+                  <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name"
+                    appendTo="body" aria-placeholder="">
                   </ng-select>
                   <label class="input-label">Status</label>
                 </div>
@@ -709,247 +684,302 @@
             </div>
 
             <!-- Contacts Section -->
-            <div class="row mb-4">
+            <div class="row compact-form">
               <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="border-bottom pb-2 mb-0">Branch Contact</h6>
-                  <button type="button" class="btn btn-sm btn-primary" (click)="addContact(branchIndex)">
+                <!-- Add Contact Button -->
+                <div class="d-flex justify-content-end align-items-center mb-1">
+                  <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="addContact(branchIndex)">
                     <i class="fas fa-plus me-1"></i> Add Contact
                   </button>
                 </div>
 
-                <div class="table-responsive" *ngIf="(getContacts(branchIndex)?.length || 0) > 0">
-                  <table class="table table-sm table-bordered">
-                    <thead class="bg-light">
-                      <tr>
-                        <th>Action</th>
-                        <th>Contact Type</th>
-                        <th>Contact Name</th>
-                        <th>Mobile No</th>
-                        <th>Email</th>
-                        <th>Status</th>
+                <!-- Table -->
+                <div class="table-responsive table-borderless" *ngIf="(getContacts(branchIndex)?.length || 0) > 0"
+                  style="max-height: 250px; overflow-y: auto;">
+                  <table class="table table-hover align-middle no-wrap table-sm mb-1"
+                    style="max-height: 300px; overflow-y: scroll;">
+                    <thead>
+                      <tr class="bg-info">
+                        <th class="bg-transparent text-light" width="2%"></th>
+                        <th class="bg-transparent text-light">Contact Type</th>
+                        <th class="bg-transparent text-light">Contact Name</th>
+                        <th class="bg-transparent text-light">Mobile No</th>
+                        <th class="bg-transparent text-light">Email</th>
+                        <th class="bg-transparent text-light" width="8%">Status</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      <tr *ngFor="let contact of (getContacts(branchIndex)?.controls || []); let contactIndex = index">
-                        <td>
-                          <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeContact(branchIndex, contactIndex)">
-                            <i class="fas fa-trash"></i>
+                      <tr *ngFor="let contact of (getContacts(branchIndex)?.controls || []); let contactIndex = index"
+                        [formGroup]="getContactFormGroup(contact)" class="py-0">
+
+                        <!-- Delete -->
+                        <td class="text-center px-1">
+                          <button type="button" class="btn btn-sm" (click)="removeContact(branchIndex, contactIndex)">
+                            <i class="fas fa-trash text-danger"></i>
                           </button>
                         </td>
-                        <td [formGroup]="getContactFormGroup(contact)">
-                          <select class="form-select form-select-sm" formControlName="ContactType">
-                            <option value="">Select Type</option>
-                            <option *ngFor="let type of contactList" [value]="type.name">{{ type.name }}</option>
-                          </select>
-                          @if (getContactFormGroup(contact).get('ContactType')?.touched && getContactFormGroup(contact).get('ContactType')?.invalid) {
-                            <div class="error-message">Required</div>
+
+                        <!-- Contact Type -->
+                        <td class="px-1">
+                          <ng-select class="custom-form-group custom-form-group-select mt-1"
+                            formControlName="ContactType" appendTo="body">
+                            <!-- <ng-option value="">Select Type</ng-option> -->
+                            <ng-option *ngFor="let type of contactList" [value]="type.name">{{ type.name }}</ng-option>
+                          </ng-select>
+                          @if (getContactFormGroup(contact).get('ContactType')?.touched &&
+                          getContactFormGroup(contact).get('ContactType')?.invalid) {
+                          <div class="error-message">Required</div>
                           }
                         </td>
-                        <td [formGroup]="getContactFormGroup(contact)">
-                          <input type="text" class="form-control form-control-sm" formControlName="ContactName">
-                          @if (getContactFormGroup(contact).get('ContactName')?.touched && getContactFormGroup(contact).get('ContactName')?.invalid) {
-                            <div class="error-message">Required</div>
+
+                        <!-- Contact Name -->
+                        <td class="px-1">
+                          <input type="text" class="custom-input-field sm" formControlName="ContactName">
+                          @if (getContactFormGroup(contact).get('ContactName')?.touched &&
+                          getContactFormGroup(contact).get('ContactName')?.invalid) {
+                          <div class="error-message">Required</div>
                           }
                         </td>
-                        <td [formGroup]="getContactFormGroup(contact)">
-                          <input type="text" class="form-control form-control-sm" formControlName="MobileNo">
+
+                        <!-- Mobile No -->
+                        <td class="px-1">
+                          <input type="text" class="custom-input-field sm" formControlName="MobileNo">
                         </td>
-                        <td [formGroup]="getContactFormGroup(contact)">
-                          <input type="text" class="form-control form-control-sm" formControlName="Email">
-                          @if (getContactFormGroup(contact).get('Email')?.touched && getContactFormGroup(contact).get('Email')?.invalid) {
-                            <div class="error-message">Required</div>
+
+                        <!-- Email -->
+                        <td class="px-1">
+                          <input type="text" class="custom-input-field sm" formControlName="Email">
+                          @if (getContactFormGroup(contact).get('Email')?.touched &&
+                          getContactFormGroup(contact).get('Email')?.invalid) {
+                          <div class="error-message">Required</div>
                           }
                         </td>
-                        <td [formGroup]="getContactFormGroup(contact)">
-                          <select class="form-select form-select-sm" formControlName="status">
-                            <option value="Active">Active</option>
-                            <option value="Suspended">Suspended</option>
-                          </select>
+
+                        <!-- Status -->
+                        <td class="px-1">
+                          <ng-select class="custom-form-group custom-form-group-select mt-1" formControlName="status"
+                            appendTo="body">
+                            <ng-option value="Active">Active</ng-option>
+                            <ng-option value="Suspended">Suspended</ng-option>
+                          </ng-select>
+                        </td>
+
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Empty Message -->
+                <div *ngIf="(getContacts(branchIndex)?.length || 0) === 0" class="text-center text-muted py-2">
+                     No records found
+                </div>
+              </div>
+            </div>
+
+
+
+            <div class="row compact-form">
+              <div class="col-12">
+                <!-- Add Email Button -->
+                <div class="d-flex justify-content-end align-items-center mb-1">
+                  <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="addEmail(branchIndex)">
+                    <i class="fas fa-plus me-1"></i> Add Email
+                  </button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive table-borderless" *ngIf="(getEmails(branchIndex)?.length || 0) > 0"
+                  style="max-height: 250px; overflow-y: auto;">
+                  <table class="table  align-middle no-wrap table-sm mb-1 table-hover">
+                    <thead>
+                      <tr class="bg-info">
+                        <th class="bg-transparent text-light" width="3%"></th>
+                        <th class="bg-transparent text-light">Branch Name</th>
+                        <th class="bg-transparent text-light" width="10%">Menu</th>
+                        <th class="bg-transparent text-light" width="20%">Department</th>
+                        <th class="bg-transparent text-light">To Email</th>
+                        <th class="bg-transparent text-light">CC Email</th>
+                        <th class="bg-transparent text-light" width="8%">Status</th>
+                      </tr>
+                    </thead>
+
+                    <tbody style="max-height: 300px; overflow-y: scroll;">
+                      <tr *ngFor="let email of (getEmails(branchIndex)?.controls || []); let emailIndex = index"
+                        [formGroup]="getEmailFormGroup(email)" class="py-0">
+
+                        <!-- Delete -->
+                        <td class="text-center px-1">
+                          <button type="button" class="btn btn-sm" (click)="removeEmail(branchIndex, emailIndex)">
+                            <i class="fas fa-trash text-danger"></i>
+                          </button>
+                        </td>
+
+                        <!-- Branch Name -->
+                        <td class="px-1">
+                          <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value }}</strong>
+                        </td>
+
+                        <!-- Menu -->
+                        <td class="px-1">
+                          <ng-select class="custom-form-group custom-form-group-select mt-1"
+                            formControlName="MenuMasterSid" appendTo="body">
+                            <ng-option *ngFor="let menu of menuList" [value]="menu.MenuMasterSid">
+                              {{ menu.MenuName }}
+                            </ng-option>
+                          </ng-select>
+                          @if (getEmailFormGroup(email).get('MenuMasterSid')?.touched &&
+                          getEmailFormGroup(email).get('MenuMasterSid')?.invalid) {
+                          <div class="error-message">Required</div>
+                          }
+                        </td>
+
+                        <!-- Department -->
+                        <td class="px-1">
+                          <multi-select class="custom-form-group custom-form-group-select mt-1"
+                            [control]="getEmailFormGroup(email).get('DepartmentMasterSid')" appenTo="body"
+                            [items]="departmentList" bindLabel="departmentName" bindValue="departmentName"
+                            placeholder="" multiple=true>
+                          </multi-select>
+                          @if (getEmailFormGroup(email).get('DepartmentMasterSid')?.touched &&
+                          getEmailFormGroup(email).get('DepartmentMasterSid')?.invalid) {
+                          <div class="error-message">Required</div>
+                          }
+                        </td>
+
+                        <!-- To Email -->
+                        <td class="px-1">
+                          <input type="text" class="custom-input-field sm" formControlName="Toemail">
+                          @if (getEmailFormGroup(email).get('Toemail')?.touched &&
+                          getEmailFormGroup(email).get('Toemail')?.invalid) {
+                          <div class="error-message">Required</div>
+                          }
+                        </td>
+
+                        <!-- CC Email -->
+                        <td class="px-1">
+                          <input type="text" class="custom-input-field sm" formControlName="CCemail">
+                        </td>
+
+                        <!-- Status -->
+                        <td class="px-1">
+                          <ng-select class="custom-form-group custom-form-group-select mt-1" formControlName="status"
+                            appendTo="body">
+                            <ng-option value="Active">Active</ng-option>
+                            <ng-option value="Suspended">Suspended</ng-option>
+                          </ng-select>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                <div *ngIf="(getContacts(branchIndex)?.length || 0) === 0" class="text-center text-muted py-3">
-                  No contacts added
+                <!-- Empty Message -->
+                <div *ngIf="(getEmails(branchIndex)?.length || 0) === 0" class="text-center text-muted py-2">
+                     No records found
+                  <!-- {{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'this branch' }} -->
                 </div>
               </div>
             </div>
 
-           <!-- Emails Section -->
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h6 class="border-bottom pb-2 mb-0">
-        Emails 
-      </h6>
-      <button type="button" class="btn btn-sm btn-primary" (click)="addEmail(branchIndex)">
-        <i class="fas fa-plus me-1"></i> Add Email
-      </button>
-    </div>
-
-    <div class="table-responsive" *ngIf="(getEmails(branchIndex)?.length || 0) > 0">
-      <table class="table table-sm table-bordered">
-        <thead class="bg-light">
-          <tr>
-            <th>Action</th>
-            <th>Branch Name</th>
-            <th>Menu</th>
-            <th>Department</th>
-            <th>To Email</th>
-            <th>CC Email</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let email of (getEmails(branchIndex)?.controls || []); let emailIndex = index">
-            <td>
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEmail(branchIndex, emailIndex)">
-                <i class="fas fa-trash"></i>
-              </button>
-            </td>
-            <td>
-              <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value }}</strong>
-              <br>
-             
-            </td>
-            <td [formGroup]="getEmailFormGroup(email)">
-              <select class="form-select form-select-sm" formControlName="MenuMasterSid">
-                <option value="">Select Menu</option>
-                <option *ngFor="let menu of menuList" [value]="menu.MenuMasterSid">{{ menu.MenuName }}</option>
-              </select>
-              @if (getEmailFormGroup(email).get('MenuMasterSid')?.touched && getEmailFormGroup(email).get('MenuMasterSid')?.invalid) {
-                <div class="error-message">Required</div>
-              }
-            </td>
-           <td [formGroup]="getEmailFormGroup(email)">
-  <multi-select [control]="getEmailFormGroup(email).get('DepartmentMasterSid')" [items]="departmentList"
-                bindLabel="departmentName" bindValue="departmentName" placeholder="Select Departments"
-                multiple=true></multi-select>
-  
-  @if (getEmailFormGroup(email).get('DepartmentMasterSid')?.touched && 
-       getEmailFormGroup(email).get('DepartmentMasterSid')?.invalid) {
-    <div class="error-message">Required</div>
-  }
-</td>
-            <td [formGroup]="getEmailFormGroup(email)">
-              <input type="text" class="form-control form-control-sm" formControlName="Toemail">
-              @if (getEmailFormGroup(email).get('Toemail')?.touched && getEmailFormGroup(email).get('Toemail')?.invalid) {
-                <div class="error-message">Required</div>
-              }
-            </td>
-            <td [formGroup]="getEmailFormGroup(email)">
-              <input type="text" class="form-control form-control-sm" formControlName="CCemail">
-            </td>
-            <td [formGroup]="getEmailFormGroup(email)">
-              <select class="form-select form-select-sm" formControlName="status">
-                <option value="Active">Active</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div *ngIf="(getEmails(branchIndex)?.length || 0) === 0" class="text-center text-muted py-3">
-      No emails added for {{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'this branch' }}
-    </div>
-  </div>
-</div>
 
             <!-- Logins Section -->
-<div class="row">
-  <div class="col-12">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h6 class="border-bottom pb-2 mb-0">
-        eLogins 
-      </h6>
-      <button type="button" class="btn btn-sm btn-primary" (click)="addLogin(branchIndex)">
-        <i class="fas fa-plus me-1"></i> Add Login
-      </button>
-    </div>
+            <div class="row compact-form">
+              <div class="col-12">
+                <!-- Add Login Button -->
+                <div class="d-flex justify-content-end align-items-center mb-1">
+                  <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="addLogin(branchIndex)">
+                    <i class="fas fa-plus me-1"></i> Add Login
+                  </button>
+                </div>
 
-    <div class="table-responsive" *ngIf="(getLogins(branchIndex)?.length || 0) > 0">
-      <table class="table table-sm table-bordered">
-        <thead class="bg-light">
-          <tr>
-            <th>Action</th>
-            <th>Branch Name</th>
+                <!-- Table -->
+                <div class="table-responsive table-borderless" *ngIf="(getLogins(branchIndex)?.length || 0) > 0"
+                  style="max-height: 250px; overflow-y: auto;">
+                  <table class="table table-hover align-middle no-wrap table-sm mb-1 table-hover">
+                    <thead>
+                      <tr class="bg-info">
+                        <th class="bg-transparent text-light" width="3%"></th>
+                        <th class="bg-transparent text-light">Branch Name</th>
+                        <th class="bg-transparent text-light">Login Name</th>
+                        <th class="bg-transparent text-light">Email</th>
+                        <th class="bg-transparent text-light">Password</th>
+                        <th class="bg-transparent text-light" width="8%">Status</th>
+                      </tr>
+                    </thead>
 
-            <th>Login Name</th>
-            <th>Email</th>
-            <th>Password</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let login of (getLogins(branchIndex)?.controls || []); let loginIndex = index">
-            <td>
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLogin(branchIndex, loginIndex)">
-                <i class="fas fa-trash"></i>
-              </button>
-            </td>
-            <td>
-              <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value }}</strong>
-              <br>
-            
-            </td>
-            <!-- <td>
-              <strong>{{ customerName }}</strong>
-              <br>
-             
-            </td> -->
-            <td [formGroup]="getLoginFormGroup(login)">
-              <input type="text" class="form-control form-control-sm" formControlName="LoginName">
-              @if (getLoginFormGroup(login).get('LoginName')?.touched && getLoginFormGroup(login).get('LoginName')?.invalid) {
-                <div class="error-message">Required</div>
-              }
-            </td>
-            <td [formGroup]="getLoginFormGroup(login)">
-              <input type="text" class="form-control form-control-sm" formControlName="LoginEmail">
-              @if (getLoginFormGroup(login).get('LoginEmail')?.touched && getLoginFormGroup(login).get('LoginEmail')?.invalid) {
-                <div class="error-message">Required</div>
-              }
-            </td>
-            <td [formGroup]="getLoginFormGroup(login)">
-              <div class="input-group">
-                <input 
-                  type="password" 
-                  class="form-control form-control-sm" 
-                  formControlName="LoginPassword"
-                  [id]="'password_' + branchIndex + '_' + loginIndex"
-                >
-                <button 
-                  class="btn btn-outline-secondary btn-sm" 
-                  type="button"
-                  (click)="togglePasswordVisibility('password_' + branchIndex + '_' + loginIndex)"
-                >
-                  <i class="fas fa-eye"></i>
-                </button>
+                    <tbody>
+                      <tr *ngFor="let login of (getLogins(branchIndex)?.controls || []); let loginIndex = index"
+                        [formGroup]="getLoginFormGroup(login)" class="py-0">
+
+                        <!-- Delete -->
+                        <td class="text-center px-1">
+                          <button type="button" class="btn btn-sm" (click)="removeLogin(branchIndex, loginIndex)">
+                            <i class="fas fa-trash text-danger"></i>
+                          </button>
+                        </td>
+
+                        <!-- Branch Name -->
+                        <td class="px-1">
+                          <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value }}</strong>
+                        </td>
+
+                        <!-- Login Name -->
+                        <td class="px-1">
+                          <input type="text" class="form-control form-control-sm" formControlName="LoginName">
+                          @if (getLoginFormGroup(login).get('LoginName')?.touched &&
+                          getLoginFormGroup(login).get('LoginName')?.invalid) {
+                          <div class="error-message">Required</div>
+                          }
+                        </td>
+
+                        <!-- Email -->
+                        <td class="px-1">
+                          <input type="text" class="form-control form-control-sm" formControlName="LoginEmail">
+                          @if (getLoginFormGroup(login).get('LoginEmail')?.touched &&
+                          getLoginFormGroup(login).get('LoginEmail')?.invalid) {
+                          <div class="error-message">Required</div>
+                          }
+                        </td>
+
+                        <!-- Password -->
+                        <td class="px-1">
+                          <div class="input-group">
+                            <input type="password" class="form-control form-control-sm" formControlName="LoginPassword"
+                              [id]="'password_' + branchIndex + '_' + loginIndex">
+                            <button class="btn  btn-sm" type="button"
+                              (click)="togglePasswordVisibility('password_' + branchIndex + '_' + loginIndex)">
+                              <i class="fas fa-eye"></i>
+                            </button>
+                          </div>
+                          @if (getLoginFormGroup(login).get('LoginPassword')?.touched &&
+                          getLoginFormGroup(login).get('LoginPassword')?.invalid) {
+                          <div class="error-message">Required</div>
+                          }
+                        </td>
+
+                        <!-- Status -->
+                        <td class="px-1">
+                          <ng-select class="custom-form-group custom-form-group-select w-100" formControlName="status"
+                            appendTo="body">
+                            <ng-option value="Active">Active</ng-option>
+                            <ng-option value="Suspended">Suspended</ng-option>
+                          </ng-select>
+                        </td>
+
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Empty Message -->
+                <div *ngIf="(getLogins(branchIndex)?.length || 0) === 0" class="text-center text-muted py-2">
+                  No records found
+                  <!-- {{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'this branch' }} -->
+                </div>
               </div>
-              @if (getLoginFormGroup(login).get('LoginPassword')?.touched && getLoginFormGroup(login).get('LoginPassword')?.invalid) {
-                <div class="error-message">Required</div>
-              }
-            </td>
-            <td [formGroup]="getLoginFormGroup(login)">
-              <select class="form-select form-select-sm" formControlName="status">
-                <option value="Active">Active</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </div>
 
-    <div *ngIf="(getLogins(branchIndex)?.length || 0) === 0" class="text-center text-muted py-3">
-      No logins added for {{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'this branch' }}
-    </div>
-  </div>
-</div>
 
           </div>
         </div>
@@ -958,8 +988,10 @@
 
     <!-- No branches message -->
     <div class="col-12" *ngIf="(branches?.length || 0) === 0">
-      <div class="text-center text-muted py-5">
-        <i class="fas fa-building fa-3x mb-3"></i>
+      <div class="text-center text-muted">
+        <i class="fas fa-code-branch fa-3x mb-1"></i>
+
+        <!-- <i class="fas fa-building fa-3x mb-3"></i> -->
         <p>No branches added yet. Click "Add Branch" to get started.</p>
       </div>
     </div>
@@ -968,148 +1000,110 @@
 <!-- MILESTONE -->
 <ng-template #milestoneList>
   <form [formGroup]="customerForm" class="compact-form">
-    <div class="table-toolbar">
-      <div class="d-flex justify-content-end align-items-end">
-        <button type="button" class="table-action-btn primary" (click)="onAddMilestone()">
-          <i class="fas fa-plus"></i> Add Milestone
+    <div class="table-right1 mb-1">
+      <div class="d-flex justify-content-end align-items-end gap-1">
+        <button type="button" class="btn btn-sm btn-info" (click)="onAddMilestone()">
+          <i class="fas fa-plus me-1"></i> Add Milestone
         </button>
-      </div>
-      <div class="ms-auto">
-        <button type="button" class="table-action-btn primary" (click)="saveAllCusMilestones()">
+        <button type="button" class="btn btn-sm btn-info" (click)="saveAllCusMilestones()">
           <i class="fas fa-save me-1"></i>
           Save
         </button>
       </div>
+
+
+
     </div>
     <div class="col-12">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+      <div class="table-responsive table-borderless">
+        <table class="table table-hover align-middle no-wrap  table-sm mb-1"
+          style="max-height: 300px; overflow-y: scroll;">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light align-middle" scope="col">Action</th>
-              <th class="bg-transparent text-light align-middle" scope="col">Milestone</th>
-              <th class="bg-transparent text-light align-middle" scope="col">Update Type</th>
-              <th class="bg-transparent text-light align-middle" scope="col">Contact info</th>
-              <th class="bg-transparent text-light align-middle" scope="col">Effective From</th>
-              <th class="bg-transparent text-light align-middle" scope="col">Status</th>
+              <th class="bg-transparent text-light " scope="col" width="3%"></th>
+              <th class="bg-transparent text-light" scope="col">Milestone</th>
+              <th class="bg-transparent text-light " scope="col">Update Type</th>
+              <th class="bg-transparent text-light" scope="col">Contact info</th>
+              <th class="bg-transparent text-light " scope="col">Effective From</th>
+              <th class="bg-transparent text-light " scope="col">Status</th>
             </tr>
           </thead>
+
           <tbody formArrayName="cusMilestone">
+            <!-- No Records -->
             <tr *ngIf="(slicedCusMilestoneList?.length || 0) === 0">
-              <td [attr.colspan]="6" class="text-center text-muted">
+              <td [attr.colspan]="6" class="text-center text-muted py-1">
                 No records found
               </td>
             </tr>
-            <tr *ngFor="let item of (slicedCusMilestoneList || []); let mileIndex = index" 
-                [formGroupName]="getActualIndex(mileIndex)">
-              <td>
-                <div class="d-flex align-items-center">
-                  <a class="text-danger mx-2 ps-3" 
-                     (click)="deleteCustomerMilestone(item.value.CustomerMilestoneSid, mileIndex)">
-                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                  </a>
-                </div>
+
+            <!-- Rows -->
+            <tr *ngFor="let item of (slicedCusMilestoneList || []); let mileIndex = index"
+              [formGroupName]="getActualIndex(mileIndex)" class="py-0">
+
+              <!-- Delete -->
+              <td class="text-center">
+                <a class="text-danger cursor-pointer"
+                  (click)="deleteCustomerMilestone(item.value.CustomerMilestoneSid, mileIndex)">
+                  <i-feather name="trash-2" class="feather-sm"></i-feather>
+                </a>
               </td>
-              <td>
-                <div class="custom-form-group custom-form-group-select">
-                  <ng-select 
-                    [items]="milestoneListArr" 
-                    bindLabel="MilestoneName" 
-                    bindValue="MilestoneMasterSid" 
-                    appendTo="body"
-                    formControlName="MilestoneMasterSid" 
-                    class="ng-select" 
-                    placeholder="Select Milestone">
-                    <ng-template ng-label-tmp let-item="item">
-                      {{ item.MilestoneName }}
-                    </ng-template>
-                    <ng-template ng-option-tmp let-item="item" let-index="index">
-                      {{ item.MilestoneName }}
-                    </ng-template>
-                  </ng-select>
-                  <span *ngIf="item.get('MilestoneMasterSid')?.invalid && item.get('MilestoneMasterSid')?.touched" 
-                        class="error-message">
-                    Required
-                  </span>
-                </div>
+
+              <td class="px-1">
+                <ng-select [items]="milestoneListArr" bindLabel="MilestoneName" bindValue="MilestoneMasterSid"
+                  formControlName="MilestoneMasterSid" appendTo="body" placeholder="">
+                </ng-select>
               </td>
-              <td>
-                <div class="custom-form-group custom-form-group-select">
-                  <ng-select 
-                    [items]="updateTypeList" 
-                    bindLabel="name" 
-                    bindValue="name" 
-                    appendTo="body" 
-                    formControlName="UpdateType" 
-                    class="ng-select" 
-                    placeholder="Select Update Type">
-                  </ng-select>
-                  <span *ngIf="item.get('UpdateType')?.invalid && item.get('UpdateType')?.touched" 
-                        class="error-message">
-                    Required
-                  </span>
-                </div>
+
+              <td class="px-1">
+                <ng-select [items]="updateTypeList" bindLabel="name" bindValue="name" formControlName="UpdateType"
+                  appendTo="body">
+                </ng-select>
               </td>
-              <td>
-                <div class="custom-form-group">
-                  <input type="text" formControlName="ContactInfo" class="form-control" placeholder="Contact Info" />
-                  <span *ngIf="item.get('ContactInfo')?.invalid && item.get('ContactInfo')?.touched" 
-                        class="error-message">
-                    Required
-                  </span>
-                </div>
+
+              <td class="px-1">
+                <input type="text" placeholder="" class="custom-input-field sm" formControlName="ContactInfo">
               </td>
-              <td>
-                <div class="custom-form-group custom-form-group-select">
+
+              <td class="px-1">
+                <div class="custom-form-group custom-form-group-select-date mt-0">
                   <div class="input-group">
-                    <input
-                      class="form-control"
-                      placeholder="dd-mm-yyyy"
-                      name="dp"
-                      ngbDatepicker
-                      #d19="ngbDatepicker"
-                      (click)="d19.toggle()"
-                      readonly
-                      formControlName="EffectiveFrom"
+                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d19="ngbDatepicker"
+                      (click)="d19.toggle()" readonly formControlName="EffectiveFrom"
                       [minDate]="item.value.CustomerMilestoneSid ? null : toNgbDateStruct(todayDate)"
-                      container="body"
-                    />
-                    <button class="btn bi bi-calendar3" (click)="d19.toggle()" type="button">
+                      container="body" />
+                    <button class="btn btn-sm " type="button" (click)="d19.toggle()">
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
                 </div>
               </td>
-              <td>
+
+              <!-- Status -->
+              <td class="px-1">
                 @if (item.value.CustomerMilestoneSid) {
-                  <ng-select formControlName="Status" class="ng-select" appendTo="body">
-                    <ng-option value="Active">Active</ng-option>
-                    <ng-option value="Suspended">Suspended</ng-option>
-                  </ng-select>
+                <ng-select formControlName="Status" class="custom-form-group" appendTo="body">
+                  <ng-option value="Active">Active</ng-option>
+                  <ng-option value="Suspended">Suspended</ng-option>
+                </ng-select>
                 } @else {
-                  <input type="text" name="status" class="form-control custom-input-field sm" value="Active" disabled>
+                <input type="text" class="form-control form-control-sm" value="Active" disabled>
                 }
               </td>
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination -->
         <div>
-          <ngb-pagination
-            [collectionSize]="cusMilestone?.length || 0"
-            [(page)]="cusMilePage"
-            [pageSize]="cusMilePageSize"
-            [maxSize]="5"
-            [rotate]="true"
-            [ellipses]="false"
-            [boundaryLinks]="true"
-            (pageChange)="onPageChange($event)"
-            size="sm"
-            class="d-flex justify-content-end"
-          >
+          <ngb-pagination [collectionSize]="cusMilestone?.length || 0" [(page)]="cusMilePage"
+            [pageSize]="cusMilePageSize" [maxSize]="5" [rotate]="true" [ellipses]="false" [boundaryLinks]="true"
+            (pageChange)="onPageChange($event)" size="sm" class="d-flex justify-content-end">
           </ngb-pagination>
         </div>
       </div>
     </div>
+
   </form>
 </ng-template>
 <!-- MILESTONE ENTRY MODAL -->
@@ -1141,7 +1135,8 @@
         </aside>
         <aside class="col-md-6">
           <div class="custom-form-group">
-            <input type="text" id="EffectiveFromText" placeholder="" class="custom-input-field sm" formControlName="BranchCode">
+            <input type="text" id="EffectiveFromText" placeholder="" class="custom-input-field sm"
+              formControlName="BranchCode">
             <label for="EffectiveFromText" class="input-label">Effective From</label>
           </div>
         </aside>
@@ -1159,107 +1154,120 @@
 <!-- SALESMAN -->
 <ng-template #salesmanList>
   <form [formGroup]="customerForm" class="compact-form">
-    <div class="table-toolbar">
-      <div class="d-flex justify-content-end align-items-end">
-        <button type="button" class="table-action-btn primary" (click)="onAddSalesTeam()">
-          <i class="fas fa-plus"></i> Add Salesman
+    <div class="table-right1 mb-1">
+      <div class="d-flex justify-content-end align-items-end gap-1">
+        <button type="button" class="btn btn-sm btn-info" (click)="onAddSalesTeam()">
+          <i class="fas fa-plus me-1"></i> Add Salesman
         </button>
-      </div>
-      <div class="ms-auto">
-        <button type="button" class="table-action-btn primary" (click)="saveAllCustomerSalesTeam()">
+        <button type="button" class="btn btn-sm btn-info" (click)="saveAllCustomerSalesTeam()">
           <i class="fas fa-save me-1"></i>
           Save
         </button>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-body">
-        <div class="col-12">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-              <thead>
-                <tr class="bg-info">
-                  <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                  <th class="bg-transparent text-light" scope="col">Department</th>
-                  <th class="bg-transparent text-light" scope="col">Salesperson</th>
-                  <th class="bg-transparent text-light" scope="col">CS Person</th>
-                  <th class="bg-transparent text-light" scope="col">Doc Person</th>
-                  <th class="bg-transparent text-light" scope="col">Branch</th>
-                  <th class="bg-transparent text-light" scope="col">Effective From</th>
-                  <th class="bg-transparent text-light" scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody formArrayName="cusSalesteam">
-                <tr *ngIf="(slicedSalesTeamList?.length || 0) === 0">
-                  <td [attr.colspan]="7" class="text-center text-muted">No records found</td>
-                </tr>
 
-                <tr *ngFor="let item of (slicedSalesTeamList || []); let i = index" [formGroupName]="getActualSalesTeamIndex(i)">
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <a class="text-danger mx-2" (click)="deleteSalesTeam(item.value.CustomerSalesSid, i)">
-                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                      </a>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="custom-form-group custom-form-group-select">
-                      <multi-select [control]="item.get('DepartmentMasterSid')" [items]="spDepartmentList" bindLabel="departmentName" bindValue="departmentName" placeholder="Select Department"></multi-select>
-                      @if (item.get('DepartmentMasterSid')?.touched && item.get('DepartmentMasterSid')?.invalid) {
-                        <div class="error-message">
-                          @if (item.get('DepartmentMasterSid')?.hasError('required')) { <span>Required</span> }
-                        </div>
-                      }
-                    </div>
-                  </td>
-                  <td>
-                    <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="salesPersonList" bindLabel="userName" bindValue="UserMasterSid" appendTo="body" formControlName="Salesman" placeholder="Select Salesperson"></ng-select>
-                      <span *ngIf="item.get('Salesman')?.invalid && item.get('Salesman')?.touched" class="error-message">Required</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="allCS" bindLabel="userName" bindValue="UserMasterSid" appendTo="body" placeholder="Select CS Person" formControlName="CSPerson"></ng-select>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!item.get('DocPerson')?.value">
-                      <ng-select [items]="allDocs" bindLabel="userName" bindValue="UserMasterSid" placeholder="Select Doc Person" appendTo="body" formControlName="DocPerson"></ng-select>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!item.get('branches')?.value">
-                      <multi-select [control]="item.get('branches')" [items]="spBranchList" bindLabel="BranchName" bindValue="CustomerBranchSid" placeholder="Select Customer branch"></multi-select>
-                      @if (item.get('branches')?.touched && item.get('branches')?.invalid) {
-                        <div class="error-message">
-                          @if (item.get('branches')?.hasError('required')) { <span>Required</span> }
-                        </div>
-                      }
-                    </div>
-                  </td>
-                  <td>
-                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
-                      <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker" (click)="d.toggle()" formControlName="EffectiveFrom" container="body" readonly />
-                    </div>
-                  </td>
-                  <td>
-                    @if (item.value.CustomerSalesSid) {
-                      <ng-select formControlName="status" class="ng-select" appendTo="body">
-                        <ng-option value="Active">Active</ng-option>
-                        <ng-option value="Suspended">Suspended</ng-option>
-                      </ng-select>
-                    } @else {
-                      <input type="text" name="status" class="form-control custom-input-field sm" value="Active" disabled>
-                    }
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+
+
+    </div>
+
+    <div class="col-12">
+      <div class="table-responsive table-borderless" style="max-height: 300px; overflow-y: auto;">
+        <table class="table table-hover align-middle no-wrap table-sm mb-1">
+          <thead>
+            <tr class="bg-info">
+              <th class="bg-transparent text-light" scope="col" width="3%"></th>
+              <th class="bg-transparent text-light" scope="col" width="15%">Department</th>
+              <th class="bg-transparent text-light" scope="col">Salesperson</th>
+              <th class="bg-transparent text-light" scope="col">CS Person</th>
+              <th class="bg-transparent text-light" scope="col">Doc Person</th>
+              <th class="bg-transparent text-light" scope="col">Branch</th>
+              <th class="bg-transparent text-light" scope="col">Effective From</th>
+              <th class="bg-transparent text-light" scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="cusSalesteam">
+            <!-- No Records -->
+            <tr *ngIf="(slicedSalesTeamList?.length || 0) === 0">
+              <td [attr.colspan]="8" class="text-center text-muted py-1">No records found</td>
+            </tr>
+
+            <!-- Rows -->
+            <tr *ngFor="let item of (slicedSalesTeamList || []); let i = index"
+              [formGroupName]="getActualSalesTeamIndex(i)" class="py-0">
+
+              <!-- Delete -->
+              <td class="text-center px-1">
+                <a class="text-danger mx-2 cursor-pointer" (click)="deleteSalesTeam(item.value.CustomerSalesSid, i)">
+                  <i-feather name="trash-2" class="feather-sm"></i-feather>
+                </a>
+              </td>
+
+              <!-- Department -->
+              <td class="px-1">
+                <multi-select [control]="item.get('DepartmentMasterSid')" [items]="spDepartmentList"
+                  bindLabel="departmentName" bindValue="departmentName" placeholder=""></multi-select>
+                @if (item.get('DepartmentMasterSid')?.touched && item.get('DepartmentMasterSid')?.invalid) {
+                <div class="error-message">
+                  @if (item.get('DepartmentMasterSid')?.hasError('required')) { <span>Required</span> }
+                </div>
+                }
+              </td>
+
+              <!-- Salesperson -->
+              <td class="px-1">
+                <ng-select [items]="salesPersonList" bindLabel="userName" bindValue="UserMasterSid" appendTo="body"
+                  formControlName="Salesman" placeholder=""></ng-select>
+                <span *ngIf="item.get('Salesman')?.invalid && item.get('Salesman')?.touched"
+                  class="error-message">Required</span>
+              </td>
+
+              <!-- CS Person -->
+              <td class="px-1">
+                <ng-select [items]="allCS" bindLabel="userName" bindValue="UserMasterSid" appendTo="body"
+                  placeholder="" formControlName="CSPerson"></ng-select>
+              </td>
+
+              <!-- Doc Person -->
+              <td class="px-1">
+                <ng-select [items]="allDocs" bindLabel="userName" bindValue="UserMasterSid"
+                  placeholder="" appendTo="body" formControlName="DocPerson"></ng-select>
+              </td>
+
+              <!-- Branch -->
+              <td class="px-1">
+                <multi-select [control]="item.get('branches')" [items]="spBranchList" bindLabel="BranchName"
+                  bindValue="CustomerBranchSid" placeholder="" class="mt-1"></multi-select>
+                @if (item.get('branches')?.touched && item.get('branches')?.invalid) {
+                <div class="error-message">
+                  @if (item.get('branches')?.hasError('required')) { <span>Required</span> }
+                </div>
+                }
+              </td>
+
+              <!-- Effective From -->
+              <td class="px-1">
+                <input class="custom-input-field sm" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  #d="ngbDatepicker" (click)="d.toggle()" formControlName="EffectiveFrom" container="body" readonly />
+              </td>
+
+              <!-- Status -->
+              <td class="px-1">
+                @if (item.value.CustomerSalesSid) {
+                <ng-select formControlName="status" class="custom-form-group custom-form-group-select mt-0" appendTo="body">
+                  <ng-option value="Active">Active</ng-option>
+                  <ng-option value="Suspended">Suspended</ng-option>
+                </ng-select>
+                } @else {
+                <input type="text" class="form-control form-control-sm" value="Active" disabled>
+                }
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+
+
   </form>
 </ng-template>
 
@@ -1289,8 +1297,12 @@
           </thead>
           <tbody>
             <tr>
-              <td><div class="text-truncate">{{ salesmanData?.createdBy || '' }}</div></td>
-              <td><div class="text-truncate">{{ salesmanData?.createdOn | date:'dd/MM/yyyy, h:mm a' || '' }}</div></td>
+              <td>
+                <div class="text-truncate">{{ salesmanData?.createdBy || '' }}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{ salesmanData?.createdOn | date:'dd/MM/yyyy, h:mm a' || '' }}</div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -1303,8 +1315,12 @@
           </thead>
           <tbody>
             <tr>
-              <td><div class="text-truncate">{{ salesmanData?.updatedBy || '' }}</div></td>
-              <td><div class="text-truncate">{{ salesmanData?.updatedOn | date:'dd/MM/yyyy, h:mm a' || '' }}</div></td>
+              <td>
+                <div class="text-truncate">{{ salesmanData?.updatedBy || '' }}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{ salesmanData?.updatedOn | date:'dd/MM/yyyy, h:mm a' || '' }}</div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -1316,406 +1332,401 @@
   </div>
 </ng-template>
 
-
-
-
-
 <ng-template #TabMovementTerms>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Department</th>
-                        <th class="bg-transparent text-light" scope="col">Services Request</th>
-                        
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Department</th>
+            <th class="bg-transparent text-light" scope="col">Services Request</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                       
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
-
 
 
 <ng-template #arap>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+            <th class="bg-transparent text-light" scope="col">City</th>
+            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light" scope="col">Phone</th>
+            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+            <td>
+              <div class="text-truncate">RO</div>
+            </td>
+            <td>
+              <div class="text-truncate">Rial</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
 
 <ng-template #TDSDetails>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+            <th class="bg-transparent text-light" scope="col">City</th>
+            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light" scope="col">Phone</th>
+            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+            <td>
+              <div class="text-truncate">RO</div>
+            </td>
+            <td>
+              <div class="text-truncate">Rial</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
 
 <ng-template #sales>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+            <th class="bg-transparent text-light" scope="col">City</th>
+            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light" scope="col">Phone</th>
+            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+            <td>
+              <div class="text-truncate">RO</div>
+            </td>
+            <td>
+              <div class="text-truncate">Rial</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
 
 <ng-template #commodity>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+            <th class="bg-transparent text-light" scope="col">City</th>
+            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light" scope="col">Phone</th>
+            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+            <td>
+              <div class="text-truncate">RO</div>
+            </td>
+            <td>
+              <div class="text-truncate">Rial</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
 
 <ng-template #relation>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+            <th class="bg-transparent text-light" scope="col">City</th>
+            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light" scope="col">Phone</th>
+            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+            <td>
+              <div class="text-truncate">RO</div>
+            </td>
+            <td>
+              <div class="text-truncate">Rial</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
 
 <ng-template #members>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+  <div class="col-12">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+            <th class="bg-transparent text-light" scope="col">City</th>
+            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light" scope="col">Phone</th>
+            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+          <tr>
+            <td>
+              <div class="text-truncate">Oman Rials</div>
+            </td>
+            <td>
+              <div class="text-truncate">OMR</div>
+            </td>
+            <td>
+              <div class="text-truncate">RO</div>
+            </td>
+            <td>
+              <div class="text-truncate">Rial</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+            <td>
+              <div class="text-truncate">Baizas</div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
 </ng-template>
 
 <!-- AUDIT LOGS -->
@@ -1742,10 +1753,14 @@
             <td>{{ log.changedBy || '-' }}</td>
             <td>{{ log.operation }}</td>
             <td class="bg-light-danger">
-              <ul><li *ngFor="let field of (log.oldValDisplay || [])">{{ field }}</li></ul>
+              <ul>
+                <li *ngFor="let field of (log.oldValDisplay || [])">{{ field }}</li>
+              </ul>
             </td>
             <td class="bg-light-success">
-              <ul><li *ngFor="let field of (log.newValDisplay || [])">{{ field }}</li></ul>
+              <ul>
+                <li *ngFor="let field of (log.newValDisplay || [])">{{ field }}</li>
+              </ul>
             </td>
           </tr>
           <tr *ngIf="(auditLogs?.length || 0) === 0">
