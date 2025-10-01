@@ -27,13 +27,8 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
@@ -78,7 +73,7 @@
                         (click)="navigateToCreateCurrency()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
-                }
+                    }
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
                         [disabled]="!searchPerformed">
                         <i class="fas fa-file-alt me-1"></i> Report
@@ -94,12 +89,19 @@
 
         </div>
     </div>
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <div class="col-12 px-0">
+        <app-reusable-table #currencyTable [config]="tableConfig" [data]="allcurrency" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <!-- Update the table headers to make them sortable -->
+                
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
@@ -123,12 +125,14 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencyUnit', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencyUnit'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencySubUnit')" width="8%">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencySubUnit')"
+                                width="8%">
                                 Sub Unit
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencySubUnit', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencySubUnit'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencySubUnitIN')" width="8%">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencySubUnitIN')"
+                                width="8%">
                                 Sub Unit In
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencySubUnitIN', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencySubUnitIN'}"></i>
@@ -148,19 +152,19 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
- 
+
                                     <a class="text-info mx-2"
                                         [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </a>
-                                }
-                                @if(hasPermission('Delete')) {
- 
+                                    }
+                                    @if(hasPermission('Delete')) {
+
                                     <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
                                         (click)="deleteCurrency(item.CurrencyMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
-                                }
+                                    }
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -207,7 +211,8 @@
             </div>
             <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10"
+                    [rotate]="true" [ellipses]="false">
                 </ngb-pagination>
             </div>
         </div>
@@ -216,7 +221,7 @@
 
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div>No records found</div>
-    </div>
+    </div> -->
 
 
 </div>

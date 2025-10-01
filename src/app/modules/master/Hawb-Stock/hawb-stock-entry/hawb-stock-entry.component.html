@@ -1,7 +1,7 @@
 <div class="row compact-form">
-  <div class="col-12">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-      <div class="col-md-4 d-flex pb-2">
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
             <i class="fas fa-file-alt"></i>
@@ -15,7 +15,7 @@
         </div>
 
       </div>
-      <div class="col-md-8 pb-2">
+      <div class="col-md-8 pb-1">
         <div
           class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -58,15 +58,15 @@
     </div>
   </div>
 
-  <form [formGroup]="hawbForm">
+  <form [formGroup]="hawbForm" class="px-0">
     <div class="col-12">
       <div class="card">
-        <div class="card-body py-2 px-3">
-          <div class="row pb-3 rounded border border-top-0">
-            <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+        <div class="card-body">
+          <div class="row">
+            <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
               <i class="fas fa-file-alt fs-4"></i>
               <h5 class="card-titlename mb-0">Hawb Stock Information</h5>
-            </div>
+            </div> -->
             <!-- <aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select">
     <select class="form-select" formControlName="AirwayBillType">
@@ -234,10 +234,10 @@
               </div>
             </aside>
 
-            <aside class="col-md-4 mt-md-1">
+            <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select" [class.filled]="!!hawbForm.get('status')?.value">
 
-                <ng-select *ngIf="isEditMode" class="input-label w-100" formControlName="status">
+                <ng-select *ngIf="isEditMode" class="" formControlName="status">
                   <ng-option value="Active">Active</ng-option>
                   <ng-option value="Suspended">Suspended</ng-option>
                 </ng-select>
@@ -254,8 +254,8 @@
             </div>
 
             <!-- Update the AWB table to show generated numbers -->
-            <div class="mt-1">
-              <h6 class="card-title text-info">AirWay Bill</h6>
+            <div class="">
+              <h5 class="card-title text-info mb-1">AirWay Bill</h5>
               <div class="row mx-auto">
                 <div class="col-12 p-0">
                   <div class="table-responsive">

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import {
   FormsModule,
   FormGroup,
@@ -36,7 +36,12 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-division',
   standalone: true,
@@ -56,12 +61,15 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReusableTableComponent
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss',
 })
-export class DivisionComponent {
+export class DivisionComponent extends BaseListComponent implements OnInit {
+  @ViewChild('divisionTable') divisionTable!: ReusableTableComponent;
+  @ViewChild('content') content: TemplateRef<any>
   divisionForm!: FormGroup;
   isEditMode: boolean = false;
   divisions: Division[] = [];
@@ -75,30 +83,71 @@ export class DivisionComponent {
   modalRef!: NgbModalRef;
   companyMap: { [id: number]: string } = {};
   searchType = 'DivisionName';
-  filterValue = '';
+  // filterValue = '';
   searched = false;
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection = 0;
   userData: any;
   divisionData: any;
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
-  sortColumn: string = 'DivisionName';
-  sortDirection: string = 'asc';
+  // sortColumn: string = 'DivisionName';
+  // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-    // Company
-  currentCompany : any;
-  currentBranch : any;
+  // Company
+  currentCompany: any;
+  currentBranch: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View division',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete division',
+        class: "text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No division found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'division-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'DivisionName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get alldivision() { return this.allItems; }
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -108,10 +157,13 @@ export class DivisionComponent {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) {}
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // this.appSettingService.getUser().subscribe((user) => {
     //   if (user) {
     //     this.userData = user;
@@ -121,10 +173,10 @@ export class DivisionComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.getAllCompanies();
     this.loadCompanies();
     this.loadDivisions();
@@ -136,6 +188,9 @@ export class DivisionComponent {
         this.loadDivisionData(this.DivisionMasterSid);
       }
     });
+    this.initializeTableConfig();
+    // Initialize base component
+    super.ngOnInit();
   }
 
   checkPermissions() {
@@ -162,17 +217,171 @@ export class DivisionComponent {
     return this.permissions.includes(permission);
   }
 
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchDivisionList(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching division.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching division.');
+    console.error('Error searching division', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchDivision() {
+    this.search();
+  }
+
+  // clearFilterValue() {
+  //   this.clearFilter();
+  // }
+
+  override trackBy(index: number, item: any): number {
+    return item.DivisionMasterSid || index;
+  }
+
+
+  viewdivision(item: any, content: any): void {
+    this.updateDivisionById(item.DivisionMasterSid, content)
+  }
+
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+
+      {
+        key: 'DivisionName',
+        label: 'Division Name ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'DivisionCode',
+        label: 'Division Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewdivision(event.row, this.content);
+    } else if (event.action === 'delete') {
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row: any) {
+    this.deleteDivision(row.DivisionMasterSid)
+  }
+
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.alldivision;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.divisionTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Division-Report',
+      title: companyName
+    });
+  }
   loadDivisions(): void {
     this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    
+
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
       page: this.page,
       pageSize: this.pageSize,
       sortDirection: this.sortDirection,
-      activeCompanyId : CompanyMasterSid
-      
+      activeCompanyId: CompanyMasterSid
+
     };
 
     this.masterService.searchDivisionList(params).subscribe({
@@ -185,9 +394,9 @@ export class DivisionComponent {
           this.searched = true;
         }
         else {
-        this.appSettingService.showError(response.message);
-      }
-       this.spinner.hide();
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
 
       },
       error: (err) => {
@@ -216,34 +425,34 @@ export class DivisionComponent {
   //   this.divisionForm.reset({
   //     status: 'Active',
   //   });
-    
+
   // }
 
   resetForm(): void {
-  // If editing an existing division, reload it (restore original state)
-  if (this.isEditMode && this.DivisionMasterSid) {
-    this.loadDivisionData(this.DivisionMasterSid);
-    return;
+    // If editing an existing division, reload it (restore original state)
+    if (this.isEditMode && this.DivisionMasterSid) {
+      this.loadDivisionData(this.DivisionMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.divisionForm.reset({
+      DivisionName: null,
+      DivisionCode: null,
+      Remarks: null,
+      status: 'Active'
+    });
+
+    // Re-enable the status field if it was disabled
+    this.divisionForm.get('status')?.enable();
+
+    // Reset validation state
+    this.divisionForm.markAsUntouched();
+    this.divisionForm.markAsPristine();
+
+    // Clear any stored data
+    this.divisionData = null;
   }
-
-  // Create-mode: reset form to initial state with proper default values
-  this.divisionForm.reset({
-    DivisionName: null,
-    DivisionCode: null,
-    Remarks: null,
-    status: 'Active'
-  });
-
-  // Re-enable the status field if it was disabled
-  this.divisionForm.get('status')?.enable();
-  
-  // Reset validation state
-  this.divisionForm.markAsUntouched();
-  this.divisionForm.markAsPristine();
-  
-  // Clear any stored data
-  this.divisionData = null;
-}
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -295,69 +504,69 @@ export class DivisionComponent {
         },
       });
   }
-//   openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.DivisionMasterSid) return;
+  //   openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.DivisionMasterSid) return;
 
-//   this.masterService.getAuditLogsDivision('DivisionMaster', this.DivisionMasterSid.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
+  //   this.masterService.getAuditLogsDivision('DivisionMaster', this.DivisionMasterSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
 
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
 
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.DivisionMasterSid) return;
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.DivisionMasterSid) return;
 
-  this.masterService.getAuditLogsDivision(
-    'DivisionMaster',
-    this.DivisionMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogsDivision(
+      'DivisionMaster',
+      this.DivisionMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
   closeModal(): void {
     if (this.modalRef) {
       this.modalRef.close();
@@ -375,7 +584,7 @@ openAuditLogs(modal: TemplateRef<any>) {
           this.divisionForm.patchValue({
             DivisionName: division.DivisionName,
             DivisionCode: division.DivisionCode,
-            
+
             Remarks: division.Remarks,
             status: division.status === 'A' ? 'Active' : 'Suspended',
           });
@@ -410,17 +619,17 @@ openAuditLogs(modal: TemplateRef<any>) {
 
       const payload = this.isEditMode
         ? {
-            ...formValue,
-             CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-            ...updatedBy,
-            status: formValue.status === 'Active' ? 'A' : 'I',
-          }
+          ...formValue,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          ...updatedBy,
+          status: formValue.status === 'Active' ? 'A' : 'I',
+        }
         : {
-            ...formValue,
-             CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-            ...createdBy,
-            status: formValue.status === 'Active' ? 'A' : 'I',
-          };
+          ...formValue,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          ...createdBy,
+          status: formValue.status === 'Active' ? 'A' : 'I',
+        };
 
       console.log('payload', payload);
 
@@ -434,6 +643,7 @@ openAuditLogs(modal: TemplateRef<any>) {
                 this.closeModal();
                 this.router.navigate(['master/division']);
                 this.loadDivisions();
+                this.searchDivision();
               } else {
                 this.appSettingService.showError(resp.message);
               }
@@ -453,6 +663,7 @@ openAuditLogs(modal: TemplateRef<any>) {
               this.closeModal();
               this.router.navigate(['master/division']);
               this.loadDivisions();
+              this.searchDivision();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -487,48 +698,48 @@ openAuditLogs(modal: TemplateRef<any>) {
     );
   }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      // Reverse the sort direction if clicking the same column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // Set new sort column and default to ascending
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     // Reverse the sort direction if clicking the same column
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     // Set new sort column and default to ascending
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
 
-    this.applySorting();
-    this.updatePaginatedData();
-  }
+  //   this.applySorting();
+  //   this.updatePaginatedData();
+  // }
 
-  applySorting() {
-    this.results.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
+  // applySorting() {
+  //   this.results.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
 
-      // Handle null/undefined values
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
+  //     // Handle null/undefined values
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
 
-      // Special handling for company names
-      if (this.sortColumn === 'CompanyMasterSid') {
-        valueA = this.companyMap[valueA] || '';
-        valueB = this.companyMap[valueB] || '';
-      }
+  //     // Special handling for company names
+  //     if (this.sortColumn === 'CompanyMasterSid') {
+  //       valueA = this.companyMap[valueA] || '';
+  //       valueB = this.companyMap[valueB] || '';
+  //     }
 
-      // Convert to string for case-insensitive comparison
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
+  //     // Convert to string for case-insensitive comparison
+  //     valueA = valueA.toString().toLowerCase();
+  //     valueB = valueB.toString().toLowerCase();
 
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  // }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -550,6 +761,7 @@ openAuditLogs(modal: TemplateRef<any>) {
             this.appSettingService.showSuccess('Deleted!');
             this.router.navigate(['master/division/list']);
             this.loadDivisions();
+            this.searchDivision();
           });
       }
     });
@@ -570,43 +782,43 @@ openAuditLogs(modal: TemplateRef<any>) {
     });
   }
 
-  resetPage(): void {
-    this.filterValue = '';
-    this.page = 1;
-    this.divisions = [];
-    this.divisionList = [];
-    this.totalLengthOfCollection = 0;
-    this.searched = false;
-    this.sortColumn = 'DivisionName';
-    this.sortDirection = 'asc';
-    this.loadDivisions();
-  }
+  // resetPage(): void {
+  //   this.filterValue = '';
+  //   this.page = 1;
+  //   this.divisions = [];
+  //   this.divisionList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.searched = false;
+  //   this.sortColumn = 'DivisionName';
+  //   this.sortDirection = 'asc';
+  //   this.loadDivisions();
+  // }
 
-  report(): void {
-    const formattedData = this.divisionList.map((item) => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      CompanyName:
-        this.companyMap[item.CompanyMasterSid] || item.CompanyMasterSid,
-    }));
+  // report(): void {
+  //   const formattedData = this.divisionList.map((item) => ({
+  //     ...item,
+  //     status: item.status === 'A' ? 'Active' : 'Suspended',
+  //     CompanyName:
+  //       this.companyMap[item.CompanyMasterSid] || item.CompanyMasterSid,
+  //   }));
 
-    // const companyName =
-    //   this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
-    //   'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'DivisionName', label: 'Division Name' },
-        { key: 'DivisionCode', label: 'Division Code' },
-        { key: 'CompanyName', label: 'Company' },
-        { key: 'Remarks', label: 'Remarks' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'Division-Report',
-      title: companyName,
-    });
-  }
+  //   // const companyName =
+  //   //   this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
+  //   //   'Company';
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'DivisionName', label: 'Division Name' },
+  //       { key: 'DivisionCode', label: 'Division Code' },
+  //       { key: 'CompanyName', label: 'Company' },
+  //       { key: 'Remarks', label: 'Remarks' },
+  //       { key: 'status', label: 'Status' },
+  //     ],
+  //     fileName: 'Division-Report',
+  //     title: companyName,
+  //   });
+  // }
 
   showInfo() {
     if (!this.divisionData) return;
@@ -658,17 +870,17 @@ openAuditLogs(modal: TemplateRef<any>) {
     });
   }
 
-   openAuthority() {
-     const MenuMasterSid = localStorage.getItem('currentMenuId');
-     if (!MenuMasterSid) return;
-    const modalRef = this.modalService.open(AuthorityLogComponent, { 
-     size: 'lg', 
-     centered: true, 
-     backdrop: 'static' 
-   });
-     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-     modalRef.componentInstance.documentSid = this.DivisionMasterSid;
-   }
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.DivisionMasterSid;
+  }
 
   openEDoc() {
     if (!this.divisionData) return;

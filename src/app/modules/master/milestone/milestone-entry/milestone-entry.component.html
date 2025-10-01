@@ -1,9 +1,9 @@
 <div>
   <form [formGroup]="milestoneForm">
     <div class="row compact-form">
-      <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-          <div class="col-md-4 d-flex pb-2">
+      <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+          <div class="col-md-4 d-flex pb-1">
             <div class="d-flex align-items-center gap-2">
               <div class="brand-icon">
                 <i class="fas fa-map-marker-alt"></i>
@@ -16,7 +16,7 @@
               }
             </div>
           </div>
-          <div class="col-md-8 pb-2">
+          <div class="col-md-8 pb-1">
             <div
               class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
               <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -55,23 +55,22 @@
         </div>
       </div>
 
-      <div class="col-12">
+      <div class="col-12 px-0">
         <ng-container *ngTemplateOutlet="milestoneform"></ng-container>
       </div>
 
 
       <ng-template #milestoneform>
-        <div class="card">
-          <div class="card-body">
+        
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-6 pe-md-1">
                 <div class="card h-100 mb-0">
-                  <div class="card-body py-2 ">
-                    <div class="row pb-2 rounded border border-top-0">
-                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                  <div class="card-body  ">
+                    <div class="row ">
+                      <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                         <i class="fas fa-map-marker-alt fs-4"></i>
                         <h5 class="card-titlename mb-0">Milestone Information</h5>
-                      </div>
+                      </div> -->
                       <aside class="col-md-12">
                         <div class="custom-form-group">
                           <input type="text" id="MilestoneName" formControlName="MilestoneName"
@@ -142,14 +141,14 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-6 ps-md-1">
                 <div class="card h-100 mb-0">
-                  <div class="card-body py-2">
-                    <div class="row compact-form pb-2 rounded border border-top-0">
-                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                  <div class="card-body">
+                    <div class="row">
+                      <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                         <i class="fas fa-bullseye fs-4"></i>
                         <h5 class="card-titlename mb-0">Milestone Setup</h5>
-                      </div>
+                      </div> -->
 
                       <aside class="col-md-6">
                         <div class="custom-form-group">
@@ -167,7 +166,7 @@
                           </div>
                         </div>
                       </aside>
-                      <aside class="col-md-6 d-flex align-items-center">
+                      <aside class="col-md-6 d-flex align-items-center mt-md-2">
                         <div class="form-check form-check-inline ps-0">
                           <div class="form-check d-flex align-items-center">
                             <input type="checkbox" id="AutoCapture" class="form-check-input sm"
@@ -213,8 +212,7 @@
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+          
         </div>
 
 

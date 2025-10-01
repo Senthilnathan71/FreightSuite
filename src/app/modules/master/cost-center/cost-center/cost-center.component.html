@@ -86,7 +86,17 @@
 
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
+    <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #costcenterTable [config]="tableConfig" [data]="allCostcenter" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -167,7 +177,7 @@
     </div>
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
         <div>No records found</div>
-    </div>
+    </div> -->
 
     <ng-template #content let-modal>
         <div class="modal-header p-2 bg-info text-white">
@@ -268,10 +278,11 @@
                         <!-- ... (keep all existing HTML until the status field) -->
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!costCenterForm.get('Status')?.value">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!costCenterForm.get('Status')?.value">
                                 <ng-select [items]="statusList" formControlName="Status"
                                     [class.is-invalid]="costCenterForm.get('Status')?.invalid && costCenterForm.get('Status')?.touched"
-                                    [disabled]="costCenterForm.get('Status')?.disabled" >
+                                    [disabled]="costCenterForm.get('Status')?.disabled">
                                 </ng-select>
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 @if(costCenterForm.get('Status')?.touched && costCenterForm.get('Status')?.invalid){
@@ -319,14 +330,14 @@
             </button>
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
+                (click)="resetForm()">
+                <i class="fas fa-sync-alt me-1"></i>
+                Reset
+            </button>
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit(); modal.close()"
                 *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
                 [disabled]="btnDisable || costCenterForm.invalid">
-            Save
+                Save
             </button>
 
         </div>
