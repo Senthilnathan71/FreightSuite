@@ -128,7 +128,7 @@
               <th class="bg-info text-white">SNo</th>
               <th class="table-header1">Charge <span class="text-danger"></span></th>
               <th class="table-header1">ChargeDesc</th>
-              <th class="table-header1 ">Unit</th>
+              <!-- <th class="table-header1 ">Unit</th> -->
               <th class="table-header1 ">No of Unit</th>
             </tr>
           </thead>
@@ -167,17 +167,18 @@
                 </div>
               </td>
 
-              <td>
+              <!-- <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                   <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
                     formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
                   </ng-select>
 
                 </div>
-              </td>
+              </td> -->
               <td>
                 <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
-                  <input type="number" min="0" formControlName="NumberOfUnit" id="text-input" class="custom-input-field sm">
+                  <input type="number" min="0" formControlName="NumberOfUnit" id="text-input"
+                    class="custom-input-field sm">
                 </div>
               </td>
             </tr>
@@ -194,7 +195,9 @@
               <tr>
                 <!-- Revenue -->
                 <th style="background-color: #6e91d3;" class="table-header currHeader">Curr</th>
-                <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span></th>
+                <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span>
+                </th>
+                <th style="background-color: #6e91d3;" class="table-header">Unit</th>
                 <th style="background-color: #6e91d3;" class="table-header">Per Unit</th>
                 <th style="background-color: #6e91d3;" class="table-header"> Amt</th>
                 <th style="background-color: #6e91d3;" class="table-header">Local Amt</th>
@@ -205,6 +208,7 @@
                 <!-- Cost -->
                 <th style="background-color: #9dd376;" class="table-header">Curr</th>
                 <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
+                <th style="background-color: #9dd376;" class="table-header">Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Per Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Amt</th>
                 <th style="background-color: #9dd376;" class="table-header">Local Amt</th>
@@ -229,6 +233,14 @@
                   <div class="custom-form-group dofi-min-w-100">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate"
                       class="custom-input-field sm text-end">
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                      formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
+                    </ng-select>
+
                   </div>
                 </td>
                 <td>
@@ -299,6 +311,14 @@
                   </div>
                 </td>
                 <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                      formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
                   <div class="custom-form-group dofi-min-w-100">
                     <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
                       formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
@@ -326,7 +346,7 @@
                     </ng-select>
                   </div>
                 </td>
-                  <td>
+                <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                       formControlName="CustomerMasterSid" appendTo="body">
@@ -334,11 +354,11 @@
                   </div>
                 </td>
 
-                 <td>
+                <td>
                   <div class="custom-form-group dofi-min-w-150">
                     <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
                       formControlName="CostVoucherTypeSid" appendTo="body">
->
+                      >
                     </ng-select>
                   </div>
                 </td>
@@ -357,12 +377,211 @@
     </div>
 
 
+
+
     <div class="mt-2 mb-1">
       <ngb-pagination class="d-flex justify-content-end" [collectionSize]="revenueDataLength" [pageSize]="pageSize1"
         [(page)]="page1" (pageChange)="updateRevenuePagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
       </ngb-pagination>
     </div>
 
+
+    <!-- <div class="table-responsive compact-form">
+      <div>
+        <table class="table table-hover align-middle no-wrap table-bordered table-sm">
+          <thead>
+            <tr class="bg-info">
+              <td class="bg-transparent text-light text-center" rowspan="2">
+                <label class="form-label mb-0 pb-3">Action</label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-70" rowspan="2">
+                <label class="form-label mb-0 pb-3">Charge <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-150" rowspan="2">
+                <label class="form-label mb-0 pb-3">Charge Name
+                  <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center  dofi-min-w-50" rowspan="2">
+                <label class="form-label mb-0 pb-3">Qty <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center" colspan="7">
+                <label class="form-label mb-0">Revenue</label>
+              </td>
+              <td class="bg-transparent text-light text-center" colspan="7">
+                <label class="form-label mb-0">Cost</label>
+              </td>
+
+            </tr>
+            <tr class="bg-info">
+              <td class="bg-transparent text-light text-center dofi-min-w-100">
+                <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-100">
+                <label class="form-label mb-0">Currency <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-100">
+                <label class="form-label mb-0">Per Unit <span class="text-danger">*</span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-100">
+                <label class="form-label mb-0">Ex Rate <span class="text-danger">*</span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-150">
+                <label class="form-label mb-0">Amt <span class="text-danger">*</span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-150">
+                <label class="form-label mb-0">Local Amt <span class="text-danger">*</span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-150">
+                <label class="form-label mb-0">Party <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-80">
+                <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-80">
+                <label class="form-label mb-0">Currency <span class="text-danger">*</span></label>
+              </td>
+              <td class="bg-transparent text-light text-center dofi-min-w-100">
+                <label class="form-label mb-0">Per Unit <span class="text-danger">*</span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-100">
+                <label class="form-label mb-0">Ex Rate
+                  <span class="text-danger"></span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-150">
+                <label class="form-label mb-0"> Amt
+                  <span class="text-danger"></span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-150">
+                <label class="form-label mb-0">Local Amt <span class="text-danger">*</span></label>
+              </td>
+
+              <td class="bg-transparent text-light text-center dofi-min-w-150">
+                <label class="form-label mb-0">Vendor <span class="text-danger"></span></label>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <button class="btn btn-link text-danger">
+                  <i class="fas fa-trash text-center"></i>
+                </button>
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                
+                <dofi-searchable-dropdown [items]="" placeholder="" bindLabel="chargeCode" bindValue="ChargeMasterSid">
+                </dofi-searchable-dropdown>
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" placeholder=""
+                  class="form-control custom-input-field sm overflow-auto" formControlName="" readonly>
+
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" formControlName="" placeholder=""
+                  class="custom-input-field sm text-end">
+
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <dofi-searchable-dropdown [items]="" formControlName="" placeholder="" bindLabel="UOMCode"
+                  bindValue="UOMMasterSid">
+                </dofi-searchable-dropdown>
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <dofi-searchable-dropdown [items]="" formControlName="" placeholder="" bindLabel="currencyCode"
+                  bindValue="CurrencyMasterSid">
+                </dofi-searchable-dropdown>
+              
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" formControlName="" placeholder=""
+                    class="custom-input-field sm text-end">
+                </div>
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" formControlName="" placeholder=""
+                  class="form-control custom-input-field sm  text-end">
+
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" formControlName="" placeholder=""
+                  class="form-control custom-input-field sm  text-end">
+
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" formControlName="" placeholder=""
+                  class="form-control custom-input-field sm  text-end">
+
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <div class="custom-form-group custom-form-group-select">
+                  <dofi-searchable-dropdown [items]="" formControlName="" placeholder="" bindLabel="CustomerName"
+                    bindValue="CustomerMasterSid">
+                  </dofi-searchable-dropdown>
+                </div>
+               
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <ng-select [items]="" formControlName="" bindLabel="UOMName" bindValue="UOMMasterSid" appendTo="body">
+                </ng-select>
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <ng-select [items]="" bindLabel="currencyName" bindValue="CurrencyMasterSid" formControlName="">
+                </ng-select>
+              </td>
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" formControlName="" placeholder=""
+                    class="custom-input-field sm  text-end">
+
+
+
+                </div>
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" formControlName="" placeholder=""
+                  class="form-control custom-input-field sm  text-end">
+
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" formControlName="" placeholder=""
+                  class="form-control custom-input-field sm  text-end">
+
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <input type="text" id="text-input" formControlName="" placeholder=""
+                  class="form-control custom-input-field sm  text-end" readonly>
+
+              </td>
+
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <ng-select [items]="" bindLabel="CustomerName" bindValue="CustomerMasterSid" formControlName=""
+                  appendTo="body">
+                </ng-select>
+
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div> -->
 
   </div>
 
