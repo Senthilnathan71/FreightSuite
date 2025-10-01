@@ -681,6 +681,7 @@ createRateFormGroup(data?: any): FormGroup {
     this.operationService.getTariffDetails(this.parentFormValue).subscribe(
       (resp: any) => {
         if (resp.status) {
+          console.log(resp.data)
           const response: any[] = resp.data || [];
           this.tariffDetails = response
             .map((td: any) => {
@@ -803,34 +804,34 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
 
-  onRevenueTypeChange(e: any, i:any) {
-const array = this.rateForm.get('rateFormArray') as FormArray;
-  const row = array.at(i) as FormGroup;
-  row.patchValue({ RevenueVoucherTypeSid: e?.VoucherTypeMasterSid ?? null });
-  console.log('Updated row:', row.value);}
+//   onRevenueTypeChange(e: any, i:any) {
+// const array = this.rateForm.get('rateFormArray') as FormArray;
+//   const row = array.at(i) as FormGroup;
+//   row.patchValue({ RevenueVoucherTypeSid: e?.VoucherTypeMasterSid ?? null });
+//   console.log('Updated row:', row.value);}
 
 
-onRevenueVoucherChange(e: any,i) {
-  const array = this.rateForm.get('rateFormArray') as FormArray;
-  const row = array.at(i) as FormGroup;
-  row.patchValue({ RevenueVoucherHeaderSid: e?.VoucherHeaderSid ?? null });
-  console.log('Updated row:', row.value);
-}
+// onRevenueVoucherChange(e: any,i) {
+//   const array = this.rateForm.get('rateFormArray') as FormArray;
+//   const row = array.at(i) as FormGroup;
+//   row.patchValue({ RevenueVoucherHeaderSid: e?.VoucherHeaderSid ?? null });
+//   console.log('Updated row:', row.value);
+// }
 
 
-onCostTypeChange(e: any,i) {
-   const array = this.rateForm.get('rateFormArray') as FormArray;
-  const row = array.at(i) as FormGroup;
-  row.patchValue({ CostVoucherTypeSid: e?.VoucherTypeMasterSid ?? null });
-  console.log('Updated row:', row.value);
-}
+// onCostTypeChange(e: any,i) {
+//    const array = this.rateForm.get('rateFormArray') as FormArray;
+//   const row = array.at(i) as FormGroup;
+//   row.patchValue({ CostVoucherTypeSid: e?.VoucherTypeMasterSid ?? null });
+//   console.log('Updated row:', row.value);
+// }
 
-onCostVoucherChange(e: any,i) {
- const array = this.rateForm.get('rateFormArray') as FormArray;
-  const row = array.at(i) as FormGroup;
-  row.patchValue({ CostVoucherHeaderSid: e?.VoucherHeaderSid ?? null });
-  console.log('Updated row:', row.value);
-}
+// onCostVoucherChange(e: any,i) {
+//  const array = this.rateForm.get('rateFormArray') as FormArray;
+//   const row = array.at(i) as FormGroup;
+//   row.patchValue({ CostVoucherHeaderSid: e?.VoucherHeaderSid ?? null });
+//   console.log('Updated row:', row.value);
+// }
 
 
 

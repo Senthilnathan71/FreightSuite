@@ -67,7 +67,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="YearName" placeholder=""
-                                    class="custom-input-field sm" [onlyText]="20">
+                                    class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Year Name <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
@@ -79,8 +79,8 @@
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" formControlName="YearCode" id="text-input" placeholder=""
-                                    class="custom-input-field sm" [textWithNumbers]="5">
+                                <input type="number" formControlName="YearCode" id="text-input" placeholder=""
+                                    class="custom-input-field sm" min="0" maxlength="4">
 
                                 <label for="text-input" class="input-label">Year Code <span
                                         class="text-danger fw-bold">*</span></label>

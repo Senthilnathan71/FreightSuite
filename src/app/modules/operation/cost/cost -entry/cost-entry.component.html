@@ -270,14 +270,14 @@
                 <td>
                   <div class="custom-form-group dofi-min-w-150">
                     <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
-                      formControlName="RevenueVoucherTypeSid" appendTo="body" (change)="onRevenueTypeChange($event,i)">
+                      formControlName="RevenueVoucherTypeSid" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="vouchers" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid"
-                      formControlName="RevenueVoucherHeaderSid" appendTo="body" (change)="onRevenueVoucherChange($event,i)">
+                      formControlName="RevenueVoucherHeaderSid" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
@@ -337,7 +337,7 @@
                  <td>
                   <div class="custom-form-group dofi-min-w-150">
                     <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
-                      formControlName="CostVoucherTypeSid" appendTo="body"   (change)="onCostTypeChange($event,i)">
+                      formControlName="CostVoucherTypeSid" appendTo="body">
 >
                     </ng-select>
                   </div>
@@ -345,7 +345,7 @@
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <ng-select [items]="vouchers" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid"
-                      formControlName="CostVoucherHeaderSid" appendTo="body" (change)="onCostVoucherChange($event,i)">
+                      formControlName="CostVoucherHeaderSid" appendTo="body">
                     </ng-select>
                   </div>
                 </td>

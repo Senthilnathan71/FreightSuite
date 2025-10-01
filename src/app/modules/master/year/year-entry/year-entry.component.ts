@@ -152,6 +152,7 @@ export class YearEntryComponent {
     YearEndCompleted: ['', [Validators.required, Validators.maxLength(1)]],
       Remarks: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
+      CompanyMasterSid: [null],
     });
   }
 
