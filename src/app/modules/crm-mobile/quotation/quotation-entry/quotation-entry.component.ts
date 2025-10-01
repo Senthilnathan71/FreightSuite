@@ -151,6 +151,7 @@ export class QuotationEntryComponent implements OnInit {
   ]
 
   tabs: string[] = ['Quotation', 'Route Details'];
+  requiredFieldsToGetTariff = ['DepartmentMasterSid','POLSid','PODSid','effDate','expDate']
   selectedTab = 'Quotation';
 dataFromEnqPage:any;
   imcoList: any[] = [];
@@ -1528,18 +1529,26 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
   }
 
-  hasEveryRequiredFieldsFilled(){
-    const data = this.quotationForm.getRawValue();
-    return (data.DepartmentMasterSid || data.PORSid || data.POLSid || data.PODSid || data.EffectiveDate || data.ExpiredDate)
+  hasEveryRequiredFieldsFilled(routeIndex: number) {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+
+    for (let index = 0; index < this.requiredFieldsToGetTariff.length; index++) {
+      const element = routeForm.get(this.requiredFieldsToGetTariff[index]);
+      console.log(element.value);
+      if (!element.value) {
+        return false
+      }
+    }
+    return true
   }
 
   getTariffDetails(routeIndex:number,carrierIndex:number,template:TemplateRef<any>){
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    if(this.hasEveryRequiredFieldsFilled()){
+    const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    if(!this.hasEveryRequiredFieldsFilled(routeIndex)){
       this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
 
-      const compulsoryFields = ['DepartmentMasterSid','PORSid','POLSid','PODSid','FPODSid','CargoType','effDate','expDate']
-      compulsoryFields.forEach(ctrl => {
+      this.requiredFieldsToGetTariff.forEach(ctrl => {
         if(routeForm.get(ctrl)){
           routeForm.get(ctrl).markAsTouched();
         }
@@ -1550,19 +1559,15 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.currentRouteIndex = routeIndex;
     this.currentCarrierIndex = carrierIndex;
     const routeCtrl = this.quoteRoutes.at(this.currentRouteIndex) as FormGroup;
-    const segment = routeCtrl?.get('segmentType').getRawValue();
-    console.log(segment);
-    let value;
-    if(segment === "FCL"){
-      value = routeCtrl.get('ContainerQty')?.getRawValue()
-    } else if(segment === "LCL"){
-      value = routeCtrl.get('CBM')?.getRawValue();
-    } else if(segment === "AIR"){
-      value = routeCtrl.get('ChargeableWeight')?.getRawValue();
-    }
-    console.log(value);
-    this.ngbModal.open(template,{size : 'lg',centered : true , backdrop:'static'});
+
+    this.ngbModal.open(template,{
+      size : 'lg',
+      centered : true , 
+      backdrop:'static'
+    });
+
     const payload = {
+      CompanyMasterSid : this.currentCompany.CompanyMasterSid,
       DepartmentMasterSid : routeForm.get('DepartmentMasterSid')?.value,
       PORSid : routeForm.get('PORSid')?.value,
       POLSid : routeForm.get('POLSid')?.value,
@@ -1571,24 +1576,51 @@ private extractCargoData(enquiryCargo: any[]): any {
       CargoType : routeForm.get('CargoType')?.value,
       EffectiveDate : routeForm.get('effDate')?.value,
       ExpiredDate : routeForm.get('expDate')?.value,
+      Carrier : carrierForm.get('CarrierMasterSid')?.value,
+      IncoTerms : routeForm.get('ServiceLevel')?.value,
     }
+
     this.leadService.getTariffDetailsByQuote(payload).subscribe(
       (resp:any)=>{
         if(resp.status){
           const response : any[] = resp.data || [];
           const existingValue = routeForm.getRawValue();
-          const existingTariffDetailId = existingValue?.quoteCharges.map((ch)=> ch.TariffDetailSid)
+          const existingTariffDetailId = (existingValue?.quoteCharges || []).map((ch)=> ch.TariffDetailSid)
           this.tariffDetails = response
             .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
             .map((td:any)=>{
             const charge = this.getCharge(td.ChargeCode);
+            let Qty = this.findFieldForQty(charge.UnitQty);
+            console.log(Qty);
+            let qtyValue;
+            if(Qty){
+              qtyValue = routeForm.get(Qty)?.value;
+            }
+            console.log(qtyValue);
             return {
               ...td,
-              chargeName : charge?.chargeName,
+              ChargeDisplayName : charge?.chargeName,
               chargeCode : charge?.chargeCode,
-              ChargeMasterSid : charge?.ChargeMasterSid,
-              Qty : Number(value),
-              Amount : Number(value) * Number(td?.SalePerUnitPrice)
+              ChargeUomSid : charge?.ChargeMasterSid,
+              Qty : Number(qtyValue),
+
+              RevenueChargeUomSid : td?.UOMSid,
+              RevenuePrepaidCollect : "Prepaid",
+              RevenueCurrencyMasterSid : td?.SaleCurrency,
+              RevenueRate : Number(td?.SalePerUnitPrice).toFixed(this.digitsAfterDecimal),
+              RevenueExchangeRate : Number(td?.revenueExchangeRate).toFixed(this.digitsAfterDecimal),
+              RevenueDrCr : "C",
+              RevenueAmount : (Number(qtyValue) * Number(td?.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+              RevenueLocalAmount : (Number(td?.revenueExchangeRate) * Number(qtyValue) * Number(td?.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+
+              CostChargeUomSid : td?.UOMSid,
+              CostPrepaidCollect : "Prepaid",
+              CostCurrencyMasterSid : td?.BuyCurrency,
+              CostRate : Number(td?.BuyPerUnitPrice).toFixed(this.digitsAfterDecimal),
+              CostExchangeRate : Number(td?.costExchangeRate).toFixed(this.digitsAfterDecimal),
+              CostDrCr : "D",
+              CostAmount : (Number(qtyValue) * Number(td?.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
+              CostLocalAmount : (Number(td?.costExchangeRate) * Number(qtyValue) * Number(td?.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
             }
           })
           console.log(this.tariffDetails);
@@ -1630,42 +1662,30 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   applyTariff(tariffData:any){
     
-    const data = {
-      ChargeUomSid : tariffData?.ChargeMasterSid,
-      ChargeDisplayName : tariffData?.chargeName,
-      CurrencyMasterSid : tariffData?.SaleCurrency,
-      perUnit : Number(tariffData?.SalePerUnitPrice),
-      costCurrency : tariffData?.currencyMasterBuy?.currencyCode,
-      costPerUnit : Number(tariffData?.BuyPerUnitPrice),
-      TariffDetailSid : tariffData?.TariffDetailSid,
-      UOMMasterSid : tariffData?.UOMSid,
-      costUnit : this.getUOMCode(tariffData?.UOMSid),
-      Qty : tariffData?.Qty
-    }
     const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex,this.currentCarrierIndex);
     let chargeIndex;
     if(isEmpty){
       chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
       const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
       chargeForm.patchValue({
-        ...data
+        ...tariffData
       })
       chargeForm.updateValueAndValidity();
     } else {
-      this.addQuoteCharge(this.currentRouteIndex,this.currentCarrierIndex,data);
+      this.addQuoteCharge(this.currentRouteIndex,this.currentCarrierIndex,tariffData);
       chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
     }
     
-    this.handleQty(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
-    this.calculateRevenueTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
-    this.calculateCostTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
+    // this.handleQty(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
+    // this.calculateRevenueTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
+    // this.calculateCostTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
 
-    const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
-    Object.keys(data).forEach(field => {
-      if(chargeForm.get(field) && field !== "Qty"){
-        chargeForm.get(field)?.disable();
-      }
-    })
+    // const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
+    // Object.keys(data).forEach(field => {
+    //   if(chargeForm.get(field) && field !== "Qty"){
+    //     chargeForm.get(field)?.disable();
+    //   }
+    // })
     this.closeTariffModal();
   }
 
@@ -1680,13 +1700,34 @@ private extractCargoData(enquiryCargo: any[]): any {
     const chargeLen = this.quoteCharges(routeIndex,carrierIndex).length - 1;
     const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeLen) as FormGroup;
     const rawValue = chargeForm.getRawValue();
+    console.log(rawValue);
 
-    return Object.entries(rawValue).every(([key, value]) => {
-      if (key === 'Qty') {
-        return value === 1;
+    const keyHasDefaultValue = {
+      "Qty" : 1,
+      "RevenuePrepaidCollect" : "Prepaid",
+      "RevenueDrCr" : "C",
+      "CostPrepaidCollect" : "Prepaid",
+      "CostDrCr" : "D",
+    }
+
+    const hasDefaultValue = (key:string) => {
+      return Object.keys(keyHasDefaultValue).includes(key)
+    }
+
+   const isEmpty =  Object.entries(rawValue).every(([key, value]) => {
+      let result:boolean;
+      if(hasDefaultValue(key)){
+        result = keyHasDefaultValue[key] === value;
+      } else {
+        result = value === null || value === undefined || value === '' || value === 0;
       }
-      return value === null || value === undefined || value === '' || value === 0;
+
+      console.log(key,value,result);
+      return result;
+      
     });
+    console.log("isEmpty",isEmpty);
+    return isEmpty;
   }
 
 
@@ -2018,7 +2059,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       case 'Shipment':
         return '1';
       default:
-        return '';
+        return '1';
     }
   }
 

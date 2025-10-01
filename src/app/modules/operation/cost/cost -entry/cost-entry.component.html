@@ -194,10 +194,10 @@
             <thead>
               <tr>
                 <!-- Revenue -->
+                <th style="background-color: #6e91d3;" class="table-header">Unit</th>
                 <th style="background-color: #6e91d3;" class="table-header currHeader">Curr</th>
                 <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span>
                 </th>
-                <th style="background-color: #6e91d3;" class="table-header">Unit</th>
                 <th style="background-color: #6e91d3;" class="table-header">Per Unit</th>
                 <th style="background-color: #6e91d3;" class="table-header"> Amt</th>
                 <th style="background-color: #6e91d3;" class="table-header">Local Amt</th>
@@ -206,9 +206,9 @@
                 <th style="background-color: #6e91d3;" class="table-header">Type</th>
                 <th style="background-color: #6e91d3;" class="table-header">Voucher No</th>
                 <!-- Cost -->
+                <th style="background-color: #9dd376;" class="table-header">Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Curr</th>
                 <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
-                <th style="background-color: #9dd376;" class="table-header">Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Per Unit</th>
                 <th style="background-color: #9dd376;" class="table-header">Amt</th>
                 <th style="background-color: #9dd376;" class="table-header">Local Amt</th>
@@ -221,6 +221,13 @@
             <tbody #rightTableBody formArrayName="rateFormArray">
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
                 <!-- Revenue -->
+                <td>
+                  <div class="custom-form-group dofi-min-w-100">
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
+                      formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
+                    </ng-select>
+                  </div>
+                </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
@@ -241,13 +248,6 @@
                       formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
                     </ng-select>
 
-                  </div>
-                </td>
-                <td>
-                  <div class="custom-form-group dofi-min-w-100">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
-                      formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                    </ng-select>
                   </div>
                 </td>
                 <td>
@@ -295,7 +295,13 @@
                 </td>
 
                 <!-- cost -->
-
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)" formControlName="ChargeUomSid"
+                      bindValue="CostChargeUomSid" appendTo="body">
+                    </ng-select>
+                  </div>
+                </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
@@ -310,14 +316,7 @@
                       class="custom-input-field sm text-end">
                   </div>
                 </td>
-                <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
-                      formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                    </ng-select>
-
-                  </div>
-                </td>
+                
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
                     <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
