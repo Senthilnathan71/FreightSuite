@@ -121,7 +121,9 @@ auditLogs: any[] = []; // Stores audit logs
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
      const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
-    console.info(this.currentBranch)
+    console.info(this.currentBranch, this.userData,'userData')
+
+  
 
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
@@ -130,7 +132,18 @@ auditLogs: any[] = []; // Stores audit logs
         this.isEditMode = true;
         this.loadLeadData(this.PreCustomerMasterSid);
       }
+       else {
+      // 👇 Only patch default Country when creating new
+      if (this.userData?.CountryMasterSid) {
+        this.leadForm.patchValue({
+          CountryMasterSid: this.userData.CountryMasterSid
+        });
+      }
+    }
+
     });
+
+
      this.leadForm.get('isQualify')?.valueChanges.subscribe((checked: boolean) => {
     if (checked) {
       this.leadForm.get('leadStatus')?.setValue('Qualify');
@@ -295,9 +308,11 @@ openAuditLogs(modal: TemplateRef<any>) {
             this.filterCityByStateId(response);
             
             let formattedStatus = this.findStatus(response.status);
-          
+          console.log("From API leadStatus:", response.leadStatus); // "Qualify"
+
             this.leadForm.patchValue({
                ...response,
+               leadStatus: response.leadStatus, 
                status : formattedStatus,
               
              })
