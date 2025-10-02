@@ -46,14 +46,14 @@ export class MeetingUpdateListComponent implements OnInit {
   isMobile: boolean = false;
   modalRef: NgbModalRef;
   meetingForm: FormGroup;
-  salesPersons: any[]=[];
+  salesPersons: any[] = [];
   btnDisable: boolean = false;
   selectedMeeting: any;
-  meetingData : any;
+  meetingData: any;
   currentMenuId: number;
   TandCList: any;
   currentCompany: any;
-  currentBranch:any;
+  currentBranch: any;
 
   constructor(
     private router: Router,
@@ -63,7 +63,7 @@ export class MeetingUpdateListComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private commonModalService: ModalService,
-     private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -116,22 +116,21 @@ export class MeetingUpdateListComponent implements OnInit {
 
   loadMeetings(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentCompany?.BranchMasterSid;
-    this.leadService.getAllPreCustomerMeetings(CompanyMasterSid,BranchMasterSid).subscribe(
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    this.leadService.getAllPreCustomerMeetings(CompanyMasterSid, BranchMasterSid).subscribe(
       (resp: any) => {
         if (resp.status && resp.data.length) {
           // Filter meetings to only include specified statuses
           this.meetings = resp.data
-            .filter((meeting: any) => 
-              meeting.meetingStatus === 'scheduled' || 
-              meeting.meetingStatus === 'pending' || 
-              meeting.meetingStatus === 'on hold'
-            )
+            .filter((meeting: any) => {
+              const status = meeting.meetingStatus?.toLowerCase();
+              return status === 'scheduled' || status === 'pending' || status === 'on hold';
+            })
             .map((meeting: any) => {
               const salesPerson = this.salesPersons?.find(
                 (person: any) => person.UserMasterSid === meeting.leadAssignTo
               );
-              console.log(meeting,'meeting')
+              console.log(meeting, 'meeting')
               return {
                 id: meeting.PreCustomerMeetingSid,
                 customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
@@ -139,10 +138,8 @@ export class MeetingUpdateListComponent implements OnInit {
                 meetingDate: meeting.meetingDate,
                 salesPerson: salesPerson?.userName || 'N/A',
                 leadAssignTo: meeting.leadAssignTo,
-                status: meeting.meetingStatus === 'scheduled' ? 'Scheduled' :
-                        meeting.meetingStatus === 'pending' ? 'In Progress' :
-                        meeting.meetingStatus === 'on hold' ? 'On Hold' : 'N/A',
-                meetingStatus: meeting.meetingStatus,
+                status: meeting.status === "A" ? "Active" : "InActive",
+                meetingStatus: meeting.meetingStatus?.toLowerCase() || '',
                 leadStatus: meeting?.preCustomerMaster?.leadStatus || 'N/A',
                 preCustomerMaster: meeting.preCustomerMaster,
                 userMaster: meeting.userMaster,
@@ -150,10 +147,10 @@ export class MeetingUpdateListComponent implements OnInit {
                 followUpDate: meeting.followUpDate,
                 followUpNote: meeting.followUpNote,
                 meetingNote: meeting.meetingNote,
-                createdBy : meeting.createdBy,
-                createdOn : meeting.createdOn,
-                updatedBy : meeting.updatedBy,
-                updatedOn : meeting.updatedOn,
+                createdBy: meeting.createdBy,
+                createdOn: meeting.createdOn,
+                updatedBy: meeting.updatedBy,
+                updatedOn: meeting.updatedOn,
               };
             });
           this.filteredMeetings = [...this.meetings];
@@ -187,7 +184,7 @@ export class MeetingUpdateListComponent implements OnInit {
           meeting.salesPerson?.toLowerCase().includes(searchQuery) ||
           String(meeting.meetingDate).toLowerCase().includes(searchQuery) ||
           meeting.status.toLowerCase().includes(searchQuery) ||
-          meeting.preCustomerMaster.leadStatus.toLowerCase().includes(searchQuery) 
+          meeting.preCustomerMaster.leadStatus.toLowerCase().includes(searchQuery)
         );
       });
     }
@@ -282,11 +279,11 @@ export class MeetingUpdateListComponent implements OnInit {
     }
 
     this.btnDisable = true;
-    
+
     const payload = {
       PreCustomerMeetingSid: this.selectedMeeting.id,
-      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       ...this.meetingForm.getRawValue(),
     };
 
@@ -323,57 +320,57 @@ export class MeetingUpdateListComponent implements OnInit {
     this.router.navigate(['/crm/calendar']);
   }
 
-  getSalesmanById(id:number){
-    if(!id || !this.salesPersons.length) return;
-    
+  getSalesmanById(id: number) {
+    if (!id || !this.salesPersons.length) return;
+
     const user = this.salesPersons.find(person => person.UserMasterSid === id)
-    
+
     return user?.userName
- 
+
   }
 
   resetForm(): void {
-  // If editing an existing meeting, reload the original data
-  if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.id) {
-    this.loadMeetingData(this.selectedMeeting.id);
-    return;
+    // If editing an existing meeting, reload the original data
+    if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.id) {
+      this.loadMeetingData(this.selectedMeeting.id);
+      return;
+    }
+
+    // Create-mode: reset only modified fields to their original values
+    const originalValues = {
+      customerName: this.selectedMeeting?.preCustomerMaster?.preCustomerName || '',
+      PreCustomerMeetingid: this.selectedMeeting?.id || '',
+      meetingDate: this.selectedMeeting?.meetingDate ? this.formatDateForInput(this.selectedMeeting.meetingDate) : '',
+      followUpDate: this.selectedMeeting?.followUpDate ? this.formatDateForInput(this.selectedMeeting.followUpDate) : '',
+      followUp: !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote),
+      meetingType: this.selectedMeeting?.meetingType || '',
+      leadAssignTo: this.selectedMeeting?.leadAssignTo || '',
+      meetingNote: this.selectedMeeting?.meetingNote || '',
+      meetingStatus: this.selectedMeeting?.meetingStatus || 'scheduled',
+      followUpNote: this.selectedMeeting?.followUpNote || ''
+    };
+
+    // Patch the form with original values instead of resetting completely
+    this.meetingForm.patchValue(originalValues);
+
+    // Reset validation states
+    this.meetingForm.markAsPristine();
+    this.meetingForm.markAsUntouched();
+
+    // Reset individual control validation states
+    Object.keys(this.meetingForm.controls).forEach(key => {
+      const control = this.meetingForm.get(key);
+      control?.markAsPristine();
+      control?.markAsUntouched();
+      control?.setErrors(null);
+    });
+
+    // Reset button state
+    this.btnDisable = false;
+
+    // Note: Removed the loadMeetings() call since we don't want to refresh the entire list
+    // when just resetting form modifications
   }
-
-  // Create-mode: reset only modified fields to their original values
-  const originalValues = {
-    customerName: this.selectedMeeting?.preCustomerMaster?.preCustomerName || '',
-    PreCustomerMeetingid: this.selectedMeeting?.id || '',
-    meetingDate: this.selectedMeeting?.meetingDate ? this.formatDateForInput(this.selectedMeeting.meetingDate) : '',
-    followUpDate: this.selectedMeeting?.followUpDate ? this.formatDateForInput(this.selectedMeeting.followUpDate) : '',
-    followUp: !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote),
-    meetingType: this.selectedMeeting?.meetingType || '',
-    leadAssignTo: this.selectedMeeting?.leadAssignTo || '',
-    meetingNote: this.selectedMeeting?.meetingNote || '',
-    meetingStatus: this.selectedMeeting?.meetingStatus || 'scheduled',
-    followUpNote: this.selectedMeeting?.followUpNote || ''
-  };
-
-  // Patch the form with original values instead of resetting completely
-  this.meetingForm.patchValue(originalValues);
-
-  // Reset validation states
-  this.meetingForm.markAsPristine();
-  this.meetingForm.markAsUntouched();
-  
-  // Reset individual control validation states
-  Object.keys(this.meetingForm.controls).forEach(key => {
-    const control = this.meetingForm.get(key);
-    control?.markAsPristine();
-    control?.markAsUntouched();
-    control?.setErrors(null);
-  });
-
-  // Reset button state
-  this.btnDisable = false;
-
-  // Note: Removed the loadMeetings() call since we don't want to refresh the entire list
-  // when just resetting form modifications
-}
 
   toggleFollowUp(event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
@@ -393,56 +390,56 @@ export class MeetingUpdateListComponent implements OnInit {
     modalRef.componentInstance.idValue = this.meetingData?.id;
   }
 
-  
-    openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-      const payload = { MenuMasterSid: this.currentMenuId };
-      this.leadService.getTandCByCondition(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.TandCList = resp.data;
-            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-              size: 'lg',
-              backdrop: 'static',
-              centered: true
-            });
-            modalRef.componentInstance.terms = this.TandCList;
-            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-            modalRef.componentInstance.DocumentSid = this.meetingData?.id;
-  
-          } else {
-            this.appSettingService.showError('Error loading Terms and Conditions');
-          }
-        },
-        (error) => {
-          this.appSettingService.showError('Error loading Terms and Conditions', error);
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.leadService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.meetingData?.id;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
         }
-      );
-    }
-    openEmail() {
-      if (!this.meetingData) return;
-      const modalRef = this.modalService.open(EmailEntryComponent, {
-        size: 'lg',
-        centered: true,
-        backdrop: 'static'
-      });
-    }
-  
-    openAuthority() {
-      // if (!this.tariffData) return;
-      // const modalRef = this.modalService.open(AuthorityEntryComponent, {
-      // 	size: 'lg',
-      // 	centered: true,
-      // 	backdrop: 'static'
-      // });
-    }
-  
-    openEDoc() {
-      // if (!this.tariffData) return;
-      // const modalRef = this.modalService.open(EdocComponent, {
-      // 	size: 'lg',
-      // 	centered: true,
-      // 	backdrop: 'static'
-      // });
-    }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+  openEmail() {
+    if (!this.meetingData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  openAuthority() {
+    // if (!this.tariffData) return;
+    // const modalRef = this.modalService.open(AuthorityEntryComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
+
+  openEDoc() {
+    // if (!this.tariffData) return;
+    // const modalRef = this.modalService.open(EdocComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
 }

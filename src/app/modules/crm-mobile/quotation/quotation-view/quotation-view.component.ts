@@ -708,25 +708,46 @@ fileBy(row: any, content: TemplateRef<any>) {
     });
   }
 
-  downloadPDF(): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-      const element = document.getElementById('pdfContent');
+downloadPDF() {
+  const element = document.getElementById('pdfContent');
 
-      const opt = {
-        margin: 0.5,
-        filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-
-      if (!element) return reject('No element found');
-
-      html2pdf().from(element).set(opt).outputPdf('blob')
-        .then((blob: Blob) => resolve(blob))
-        .catch((err: any) => reject(err));
-    });
+  if (!element) {
+    console.error('No element found');
+    return;
   }
+
+  const opt = {
+    margin: 0.5,
+    filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().from(element).set(opt).save(); // ✅ this triggers download
+}
+
+
+  generatePDFBlob(): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const element = document.getElementById('pdfContent');
+
+    const opt = {
+      margin: 0.5,
+      filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (!element) return reject('No element found');
+
+    html2pdf().from(element).set(opt).outputPdf('blob')
+      .then((blob: Blob) => resolve(blob))
+      .catch((err: any) => reject(err));
+  });
+}
+
 
 
   orgEmail: any
@@ -736,7 +757,7 @@ fileBy(row: any, content: TemplateRef<any>) {
     try {
       this.isLoading = true;
 
-      const pdfBlob = await this.downloadPDF();
+      const pdfBlob = await this.generatePDFBlob();
 
       const formData = new FormData();
       const toEmailSet = new Set<string>();

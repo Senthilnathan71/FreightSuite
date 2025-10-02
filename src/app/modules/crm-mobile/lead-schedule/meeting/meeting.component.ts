@@ -100,8 +100,10 @@ export class MeetingComponent {
       phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       status: ['A', Validators.required],
       customerProfile: ['', Validators.required],
-      meetingDuration: ['', Validators.required],
+      meetingDuration: ['10 min'],
     });
+    this.selectedTime = '10 min';
+
 
     this.meetingForm.get('customerName')?.disable();
     this.meetingForm.get('contactPerson')?.disable();
@@ -121,18 +123,12 @@ export class MeetingComponent {
 
 changeTime(time: string) {
   this.meetingForm.get('meetingDuration')?.setValue(time);
-  this.selectedTime = time; // update button display
+  this.selectedTime = time ; // update button display
 }
 
 
   // Handle Form Submission
   onSubmit() {
-    if (this.meetingForm.invalid) {
-      this.meetingForm.markAllAsTouched(); // Force validation messages to show
-      this.meetingForm.updateValueAndValidity(); // Ensure validation is refreshed
-      this.appSettingService.showWarning('Please fill all required fields correctly.')
-      return;
-    }
     this.meetingForm.get('customerName')?.enable();
     this.meetingForm.get('contactPerson')?.enable();
     this.meetingForm.get('phone')?.enable();
@@ -141,11 +137,12 @@ changeTime(time: string) {
     const meetingDateStr = this.meetingForm.value.meetingDate;
     // const meetingDate = new Date(meetingDateStr);
     const meetingDate = meetingDateStr;
-    const timeDropdown = this.meetingForm.value.meetingDuration;    
-    if (isNaN(meetingDate.getTime())) {
-      this.appSettingService.showError("Invalid meeting date");
-      return;
-    }
+    const timeDropdown = this.meetingForm.value.meetingDuration;
+    // console.log(meetingDate.getTime(),'meetingDate.getTime')    
+    // if (isNaN(meetingDate.getTime())) {
+    //   this.appSettingService.showError("Invalid meeting date");
+    //   return;
+    // }
     const payload = {
       ...this.meetingForm.value,
       meetingDuration:timeDropdown,
@@ -155,6 +152,7 @@ changeTime(time: string) {
       createdBy: this.userData?.userEmail,
       LeadOrCustomer: 'L',
       PreCustomerMasterSid: this.PreCustomerMasterSid,
+      status: this.meetingForm.get('status')?.value === "Active" ? "A" : "D"
     };
     this.btnDisable = true;
     console.log(payload, "PAYLOAD")

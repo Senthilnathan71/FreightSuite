@@ -823,19 +823,19 @@ onSelectionChange(selectedItem: any) {
   }
 
   onSubmit() {
-    if (this.rateRequestForm.invalid) {
-      this.rateRequestForm.markAllAsTouched();
-      this.rateRequestForm.updateValueAndValidity();
-      this.appSettingsService.showWarning('Please fill all the required fields correctly');
-      return;
-    }
-    if (this.enquiryOtherForm.invalid) {
-      this.active = 2;
-      this.enquiryOtherForm.markAllAsTouched();
-      this.enquiryOtherForm.updateValueAndValidity();
-      this.appSettingsService.showWarning('Please fill all the required fields correctly');
-      return;
-    }
+    // if (this.rateRequestForm.invalid) {
+    //   this.rateRequestForm.markAllAsTouched();
+    //   this.rateRequestForm.updateValueAndValidity();
+    //   this.appSettingsService.showWarning('Please fill all the required fields correctly');
+    //   return;
+    // }
+    // if (this.enquiryOtherForm.invalid) {
+    //   this.active = 2;
+    //   this.enquiryOtherForm.markAllAsTouched();
+    //   this.enquiryOtherForm.updateValueAndValidity();
+    //   this.appSettingsService.showWarning('Please fill all the required fields correctly');
+    //   return;
+    // }
     this.btnDisable = true;
     const otherFormValue = this.enquiryOtherForm.value;
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;

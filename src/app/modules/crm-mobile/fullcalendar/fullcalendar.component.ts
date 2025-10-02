@@ -564,7 +564,7 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
   followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
 }
    const payload = {
-    PreCustomerMeetingSid: this.PreCustomerMeetingSid,
+    PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
     ...this.meetingForm.getRawValue(),
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,

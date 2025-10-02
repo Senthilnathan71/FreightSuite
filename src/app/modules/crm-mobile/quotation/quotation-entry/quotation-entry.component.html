@@ -544,7 +544,7 @@
                           <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
                             <div class="custom-form-group">
                               <input type="text" id="text-input" placeholder=""
-                                class="form-control custom-input-field sm" formControlName="Volume" [onlyNumbers]>
+                                class="form-control custom-input-field sm" formControlName="Volume">
                               <label for="text-input" class="input-label">CBM <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
                               @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){

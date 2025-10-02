@@ -352,6 +352,7 @@ export class LeadComponent implements OnInit {
           this.filteredStatuses = this.allStatuses.slice(currentIndex);
           this.leadForm.patchValue({
             ...response,
+            isQualify: response.isQualify === "Y" ? true : false, 
             leadStatus: response.leadStatus,
             status: formattedStatus,
           })
