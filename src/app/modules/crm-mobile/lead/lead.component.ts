@@ -53,16 +53,16 @@ export class LeadComponent implements OnInit {
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
   PreCustomerMasterSid: number;
-  companyList : any[];
-  countryList : any[];
-  stateList : any[];
-  cityList : any[];
-  leadData : any;
-  currentCompany : any;
-  currentBranch : any;
-  userData : any;
+  companyList: any[];
+  countryList: any[];
+  stateList: any[];
+  cityList: any[];
+  leadData: any;
+  currentCompany: any;
+  currentBranch: any;
+  userData: any;
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
-  leadSourceList = ['Email', 'Advertisement','Website', 'Inquiries', 'Referrals',"Trade shows", "Cold calls", "Social media", 'Others']
+  leadSourceList = ['Email', 'Advertisement', 'Website', 'Inquiries', 'Referrals', "Trade shows", "Cold calls", "Social media", 'Others']
   statusList = ["Active", "Suspended"];
   // CountryISO = CountryISO;
   // PhoneNumberFormat = PhoneNumberFormat;
@@ -85,14 +85,36 @@ export class LeadComponent implements OnInit {
   }
 
 
-  modeOfPreferredContactMode=[
-    {id:"1",name:"Email"},
-    {id:"2",name:"Phone"},
-    {id:"3",name:"Text"}
+  modeOfPreferredContactMode = [
+    { id: "1", name: "Email" },
+    { id: "2", name: "Phone" },
+    { id: "3", name: "Text" }
   ]
 
-  
-auditLogs: any[] = []; // Stores audit logs
+    modeOfCustomerType = [
+  { id: 1, name: "Agent" },
+  { id: 2, name: "Air Line" },
+  { id: 3, name: "Carrier" },
+  { id: 4, name: "CFS" },
+  { id: 5, name: "Consignee" },
+  { id: 6, name: "Customer" },
+  { id: 7, name: "Feeder" },
+  { id: 8, name: "Forwarder" },
+  { id: 9, name: "NVOCC" },
+  { id: 10, name: "Notify" },
+  { id: 11, name: "Overseas Agent" },
+  { id: 12, name: "Shipper" },
+  { id: 13, name: "Shipping Line" },
+  { id: 14, name: "Transporter" },
+  { id: 15, name: "Vendor" },
+  { id: 16, name: "Warehouse" },
+  { id: 17, name: "Yard" }
+]
+
+
+
+
+  auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
 
@@ -114,16 +136,16 @@ auditLogs: any[] = []; // Stores audit logs
     this.initForm();
     this.isMobile = this.appService.getDevice()
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-    if(userProfile){
+    if (userProfile) {
       this.userData = userProfile;
     }
-     const storedCompany = localStorage.getItem('selected-company');
+    const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
-     const storedBranch = localStorage.getItem('selected-branch');
+    const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
-    console.info(this.currentBranch, this.userData,'userData')
+    console.info(this.currentBranch, this.userData, 'userData')
 
-  
+
 
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
@@ -132,25 +154,26 @@ auditLogs: any[] = []; // Stores audit logs
         this.isEditMode = true;
         this.loadLeadData(this.PreCustomerMasterSid);
       }
-       else {
-      // 👇 Only patch default Country when creating new
-      if (this.userData?.CountryMasterSid) {
-        this.leadForm.patchValue({
-          CountryMasterSid: this.userData.CountryMasterSid
-        });
+      else {
+        // 👇 Only patch default Country when creating new
+        if (this.userData?.CountryMasterSid) {
+          this.leadForm.patchValue({
+            CountryMasterSid: this.userData.CountryMasterSid
+          });
+          this.filterStateByCountryId(this.userData?.CountryMasterSid)
+        }
       }
-    }
 
     });
 
 
-     this.leadForm.get('isQualify')?.valueChanges.subscribe((checked: boolean) => {
-    if (checked) {
-      this.leadForm.get('leadStatus')?.setValue('Qualify');
-    } else {
-      this.leadForm.get('leadStatus')?.setValue('Discovery');
-    }
-  });
+    this.leadForm.get('isQualify')?.valueChanges.subscribe((checked: boolean) => {
+      if (checked) {
+        this.leadForm.get('leadStatus')?.setValue('Qualify');
+      } else {
+        this.leadForm.get('leadStatus')?.setValue('Discovery');
+      }
+    });
   }
 
   // // Method to load the city data
@@ -168,36 +191,36 @@ auditLogs: any[] = []; // Stores audit logs
   // }
 
   // Initialize the Form
-    initForm() {
-      this.leadForm = this.fb.group({
-        preCustomerName : [,[Validators.required]],
-        leadReferredBy : [,[Validators.required]],
-        leadFrom : [],
-        preCustomerType : [],
-        preCustomerAddress1 : ['',[Validators.required]],
-        preCustomerAddress2 : [''],
-        POBOX : [''],
-        CountryMasterSid : [,[Validators.required]],
-        StateMasterSid : [,[Validators.required]],
-        CityMasterSid : [,[Validators.required]],
-        contactPerson : ['',[Validators.required]],
-        email : ['',[Validators.required,EmailValidators.multipleEmails(),Validators.maxLength(100)]],
-        phone : ['',[Validators.required]],
-        leadStatus:['Discovery'],
-      PreferredContactMode : ['Email'],
-      LanguagePreferrence : [''],
-      ServiceOfInterest : [''],
-      PurchaseTimeline : [''],
-      SpecificRequirements : [''],
-      Industry : [''],
-      CompanySize : [''],
-      AnnualRevenue : [''],
-      Notes : [''],
-      isQualify:[false],
-      status : ['Active',[Validators.required]]
+  initForm() {
+    this.leadForm = this.fb.group({
+      preCustomerName: [, [Validators.required]],
+      leadReferredBy: [, [Validators.required]],
+      leadFrom: [],
+      preCustomerType: [],
+      preCustomerAddress1: ['', [Validators.required]],
+      preCustomerAddress2: [''],
+      POBOX: [''],
+      CountryMasterSid: [, [Validators.required]],
+      StateMasterSid: [, [Validators.required]],
+      CityMasterSid: [, [Validators.required]],
+      contactPerson: ['', [Validators.required]],
+      email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
+      phone: ['', [Validators.required]],
+      leadStatus: ['Discovery'],
+      PreferredContactMode: ['Email'],
+      LanguagePreferrence: [''],
+      ServiceOfInterest: [''],
+      // PurchaseTimeline : [''],
+      SpecificRequirements: [''],
+      Industry: [''],
+      CompanySize: [''],
+      AnnualRevenue: [''],
+      Notes: [''],
+      isQualify: [false],
+      status: ['Active', [Validators.required]]
     });
     this.leadForm.get('email').valueChanges.subscribe(
-      ()=>{
+      () => {
         console.log(this.leadForm.get('email'));
       }
     )
@@ -220,152 +243,170 @@ auditLogs: any[] = []; // Stores audit logs
     console.log(formData)
     const payload = {
       ...formData,
-      CompanySize : parseInt(formData.CompanySize),
-      AnnualRevenue : parseInt(formData.AnnualRevenue),
-      ...(this.isEditMode ? {updatedBy : userEmail}:{createdBy : userEmail}),
-      status : formData.status.charAt(0),
-      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-			BranchMasterSid : this.currentBranch?. BranchMasterSid,
-      isQualify:formData.isQualify,
-      leadStatus:formData.leadStatus,
+      CompanySize: parseInt(formData.CompanySize),
+      AnnualRevenue: parseInt(formData.AnnualRevenue),
+      ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
+      status: formData.status.charAt(0),
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      isQualify: formData.isQualify ? "Y" : "N",
+      leadStatus: formData.leadStatus,
     }
-    console.log(payload,"PAYLOAD")
-    if(this.isEditMode){
-      this.leadService.updateLeadById(this.PreCustomerMasterSid,payload).subscribe(
-        (resp:any)=>{
-          if(resp.status){
+    console.log(payload, "PAYLOAD")
+    if (this.isEditMode) {
+      this.leadService.updateLeadById(this.PreCustomerMasterSid, payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
             this.appSettingService.showSuccess('Lead Updated Successfully');
             this.router.navigate(['crm/lead/list']);
           } else {
             this.appSettingService.showError('Error Updating Lead');
           }
         },
-        (error)=>{
-          console.error('Error Updating Lead',error)
+        (error) => {
+          console.error('Error Updating Lead', error)
         }
       )
     } else {
       this.leadService.createNewLead(payload).subscribe(
-        (resp:any)=>{
-          if(resp.status){
+        (resp: any) => {
+          if (resp.status) {
             this.appSettingService.showSuccess('Lead Created Successfully');
             this.router.navigate(['crm/lead/list']);
           } else {
             this.appSettingService.showError('Error Creating Lead');
           }
         },
-        (error)=>{
-          console.error('Error Creating Lead',error)
+        (error) => {
+          console.error('Error Creating Lead', error)
         }
       )
     }
   }
 
-  
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.PreCustomerMasterSid) return;
 
-  this.leadService.getAuditLogsLead('PreCustomerMaster', this.PreCustomerMasterSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.PreCustomerMasterSid) return;
 
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
+    this.leadService.getAuditLogsLead('PreCustomerMaster', this.PreCustomerMasterSid.toString()).subscribe({
+      next: (logs: any[]) => {
+        const formatFields = (val: any) => {
+          if (!val) return ['NA'];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          delete obj.updatedOn; // Remove updatedOn field
+          // If no fields exist after deleting updatedOn
+          if (Object.keys(obj).length === 0) return ['NA'];
+          return Object.entries(obj).map(
+            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+          );
+        };
 
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogs = logs.map(log => ({
+          ...log,
+          oldValDisplay: formatFields(log.oldVal),
+          newValDisplay: formatFields(log.newVal)
+        }));
+
+        this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',
     S: 'Suspended'
   };
 
+  allStatuses = [
+    "Discovery",
+    "Qualify",
+    "MeetingScheduled",
+    "MeetingCompleted",
+    "EnquiryGenerated",
+    "QuotationCreated",
+    "QuotationConfirmed",
+    "ContractSigned",
+    "DealWon",
+    "DealLost"
+  ];
 
+  filteredStatuses: string[] = [];
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
     this.leadService.getLeadById(leadId).subscribe(
-      (resp:any) => {
-          if(resp.status){
-            let response = resp.data;
-            this.leadData = response;
-            this.filterStateByCountryId(response);
-            this.filterCityByStateId(response);
-            
-            let formattedStatus = this.findStatus(response.status);
-          console.log("From API leadStatus:", response.leadStatus); // "Qualify"
+      (resp: any) => {
+        if (resp.status) {
+          let response = resp.data;
+          this.leadData = response;
+          this.filterStateByCountryId(response);
+          this.filterCityByStateId(response);
 
-            this.leadForm.patchValue({
-               ...response,
-               leadStatus: response.leadStatus, 
-               status : formattedStatus,
-              
-             })
-          } else { 
-            this.appSettingService.showError('Error Loading Lead Data')
-          }
+          let formattedStatus = this.findStatus(response.status);
+          console.log("From API leadStatus:", response.leadStatus); // "Qualify"
+          // Get the index of current status
+          const currentIndex = this.allStatuses.indexOf(response.leadStatus);
+
+          // Filter to only include current and future statuses
+          this.filteredStatuses = this.allStatuses.slice(currentIndex);
+          this.leadForm.patchValue({
+            ...response,
+            leadStatus: response.leadStatus,
+            status: formattedStatus,
+          })
+        } else {
+          this.appSettingService.showError('Error Loading Lead Data')
+        }
       },
       (error) => {
-        console.log('Error Loading Lead Data',error);
+        console.log('Error Loading Lead Data', error);
       }
     );
   }
 
-  loadAllFields(){
+  loadAllFields() {
     forkJoin({
-      companies : this.leadService.getAllCompanies(),
-      countries : this.leadService.fetchAllCountries(),
-    }).subscribe(({companies,countries})=>{
+      companies: this.leadService.getAllCompanies(),
+      countries: this.leadService.fetchAllCountries(),
+    }).subscribe(({ companies, countries }) => {
       this.companyList = companies.data;
       this.countryList = countries
       console.log(this.countryList);
     })
   }
 
-  filterStateByCountryId(country){
-      const countryId = country.CountryMasterSid;
-      this.leadService.getStateByCountryId(countryId).subscribe(
-        (resp:any)=>{
-          if(resp.status){
-            this.stateList = resp.data;
-          } else {
-            this.appSettingService.showError('Error Loading States')
-          }
-        },
-        (error)=>{
-          console.error('Error Loading States',error)
+  filterStateByCountryId(country) {
+    const countryId = country.CountryMasterSid ? country.CountryMasterSid:country;
+    this.leadService.getStateByCountryId(countryId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.stateList = resp.data;
+        } else {
+          this.appSettingService.showError('Error Loading States')
         }
-      )
+      },
+      (error) => {
+        console.error('Error Loading States', error)
+      }
+    )
   }
-  filterCityByStateId(state){
-      const stateId = state.StateMasterSid;
-      this.leadService.getCityByStateId(stateId).subscribe(
-        (resp:any)=>{
-          if(resp.status){
-            this.cityList = resp.data;
-          } else {
-            this.appSettingService.showError('Error Loading City')
-          }
-        },
-        (error)=>{
-          console.error('Error Loading City',error)
+
+  filterCityByStateId(state) {
+
+    const stateId = state.StateMasterSid
+    this.leadService.getCityByStateId(stateId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.cityList = resp.data;
+        } else {
+          this.appSettingService.showError('Error Loading City')
         }
-      )
+      },
+      (error) => {
+        console.error('Error Loading City', error)
+      }
+    )
   }
 
   // Handle city selection change
@@ -384,51 +425,52 @@ openAuditLogs(modal: TemplateRef<any>) {
   // reset() {
   //   this.leadForm.reset();
   // }
-reset() {
-  // If editing an existing lead, reload it (restore original state)
-  if (this.isEditMode && this.PreCustomerMasterSid) {
-    this.loadLeadData(this.PreCustomerMasterSid);
-    return;
+  reset() {
+    // If editing an existing lead, reload it (restore original state)
+    if (this.isEditMode && this.PreCustomerMasterSid) {
+      this.loadLeadData(this.PreCustomerMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.leadForm.reset({
+      preCustomerName: null,
+      leadReferredBy: null,
+      leadFrom: null,
+      preCustomerType: null,
+      preCustomerAddress1: null,
+      preCustomerAddress2: null,
+      POBOX: null,
+      CountryMasterSid: null,
+      StateMasterSid: null,
+      CityMasterSid: null,
+      contactPerson: null,
+      email: null,
+      phone: null,
+      PreferredContactMode: 'Email',
+      LanguagePreferrence: null,
+      ServiceOfInterest: null,
+      // PurchaseTimeline: null,
+      SpecificRequirements: null,
+      Industry: null,
+      CompanySize: null,
+      AnnualRevenue: null,
+      Notes: null,
+
+      status: 'Active'
+    });
+
+    // Reset validation state
+    this.leadForm.markAsUntouched();
+    this.leadForm.markAsPristine();
+
+    // Reset related data arrays
+    this.stateList = [];
+    this.cityList = [];
+
+    // Clear selected data
+    this.leadData = null;
   }
-
-  // Create-mode: reset form to initial state with proper default values
-  this.leadForm.reset({
-    preCustomerName: null,
-    leadReferredBy: null,
-    leadFrom: null,
-    preCustomerType: null,
-    preCustomerAddress1: null,
-    preCustomerAddress2: null,
-    POBOX: null,
-    CountryMasterSid: null,
-    StateMasterSid: null,
-    CityMasterSid: null,
-    contactPerson: null,
-    email: null,
-    phone: null,
-    PreferredContactMode: 'Email',
-    LanguagePreferrence: null,
-    ServiceOfInterest: null,
-    PurchaseTimeline: null,
-    SpecificRequirements: null,
-    Industry: null,
-    CompanySize: null,
-    AnnualRevenue: null,
-    Notes: null,
-    status: 'Active'
-  });
-
-  // Reset validation state
-  this.leadForm.markAsUntouched();
-  this.leadForm.markAsPristine();
-  
-  // Reset related data arrays
-  this.stateList = [];
-  this.cityList = [];
-  
-  // Clear selected data
-  this.leadData = null;
-}
   goBack() {
     this.router.navigate(['crm/lead/list'])
   }
@@ -445,15 +487,15 @@ reset() {
 
       if (emails.length === 0) return null;
 
-      
+
       const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-      
+
       for (const email of emails) {
         if (!emailPattern.test(email)) {
           return {
             emailInvalid: true,
-            invalidEmail: email 
+            invalidEmail: email
           };
         }
       }
@@ -462,7 +504,7 @@ reset() {
     };
   }
 
-  findStatus(value){
+  findStatus(value) {
     switch (value) {
       case 'A':
         return 'Active'
@@ -475,14 +517,14 @@ reset() {
 
       case 'N':
         return 'No Progress'
-    
+
       default:
         return 'Closed'
     }
   }
 
   showInfo() {
-    if(!this.leadData) return;
+    if (!this.leadData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.leadData;
     modalRef.componentInstance.idLabel = 'Lead Id';
@@ -490,57 +532,57 @@ reset() {
   }
 
   openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-      const payload = { MenuMasterSid: this.currentMenuId };
-      this.leadService.getTandCByCondition(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.TandCList = resp.data;
-            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-              size: 'lg',
-              backdrop: 'static',
-              centered: true
-            });
-            modalRef.componentInstance.terms = this.TandCList;
-            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-            modalRef.componentInstance.DocumentSid = this.currentClauseId;
-  
-          } else {
-            this.appSettingService.showError('Error loading Terms and Conditions');
-          }
-        },
-        (error) => {
-          this.appSettingService.showError('Error loading Terms and Conditions', error);
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.leadService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.currentClauseId;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
         }
-      );
-    }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
 
   openEmail() {
-		if (!this.leadData) return;
-		const modalRef = this.modalService.open(EmailEntryComponent, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-	}
+    if (!this.leadData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
-	openAuthority() {
-		// if (!this.leadData) return;
-		// const modalRef = this.modalService.open(AuthorityEntryComponent, {
-		// 	size: 'lg',
-		// 	centered: true,
-		// 	backdrop: 'static'
-		// });
-	}
+  openAuthority() {
+    // if (!this.leadData) return;
+    // const modalRef = this.modalService.open(AuthorityEntryComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
 
-	openEDoc() {
-		// if (!this.leadData) return;
-		// const modalRef = this.modalService.open(EdocComponent, {
-		// 	size: 'lg',
-		// 	centered: true,
-		// 	backdrop: 'static'
-		// });
-	}
+  openEDoc() {
+    // if (!this.leadData) return;
+    // const modalRef = this.modalService.open(EdocComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
 
 
 }
