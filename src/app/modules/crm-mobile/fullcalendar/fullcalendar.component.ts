@@ -480,10 +480,22 @@ private meetingNoteValidator(control: AbstractControl) {
     const meetingDateStr = this.meetingForm.value.meetingDate;
     const meetingDate = new Date(meetingDateStr);
     const timeDropdown = this.meetingForm.value.meetingDuration;
-  
+  // Convert followUpDate in same format as meetingDate
+let followUpDate: string = null;
+if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
+  const dt = new Date(this.meetingForm.value.followUpDate);
+  const hours = dt.getHours().toString().padStart(2, '0');
+  const minutes = dt.getMinutes().toString().padStart(2, '0');
+  const year = dt.getFullYear();
+  const month = (dt.getMonth() + 1).toString().padStart(2, '0');
+  const day = dt.getDate().toString().padStart(2, '0');
+
+  followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+}
   const payload = {
     ...this.meetingForm.value,
     meetingDate : meetingDate,
+    followUpDate: followUpDate,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     userEmail: userEmail
@@ -510,6 +522,7 @@ private meetingNoteValidator(control: AbstractControl) {
       this.modalService.openErrorModal('Error creating meeting: ' + error.message);
     }
   );
+  this.btnDisable = false;
 }
   // Handle Form Submission
   onEditMeeting() {
@@ -527,6 +540,9 @@ private meetingNoteValidator(control: AbstractControl) {
     return;
   }
 
+
+  
+
   // Rest of your existing code...
   this.btnDisable = true;
   if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
@@ -534,12 +550,26 @@ private meetingNoteValidator(control: AbstractControl) {
     return;
   }
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+
+    // Convert followUpDate in same format as meetingDate
+let followUpDate: string = null;
+if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
+  const dt = new Date(this.meetingForm.value.followUpDate);
+  const hours = dt.getHours().toString().padStart(2, '0');
+  const minutes = dt.getMinutes().toString().padStart(2, '0');
+  const year = dt.getFullYear();
+  const month = (dt.getMonth() + 1).toString().padStart(2, '0');
+  const day = dt.getDate().toString().padStart(2, '0');
+
+  followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+}
    const payload = {
     PreCustomerMeetingSid: this.PreCustomerMeetingSid,
     ...this.meetingForm.getRawValue(),
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    userEmail: userEmail 
+    userEmail: userEmail,
+    followUpDate:followUpDate
   };
 
   // If followUp is false, remove followUpNote and followUpDate from the payload
@@ -547,6 +577,7 @@ private meetingNoteValidator(control: AbstractControl) {
     delete payload.followUpNote;
     delete payload.followUpDate;
   }
+  
 
   this.leadService.createPreCustomerMeeting(payload).subscribe(
     resp => {
@@ -724,5 +755,8 @@ private meetingNoteValidator(control: AbstractControl) {
 		// 	backdrop: 'static'
 		// });
 	}
+
+
+  
 
 }
