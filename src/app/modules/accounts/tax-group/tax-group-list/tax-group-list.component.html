@@ -12,12 +12,12 @@
 
 <div class="row compact-form">
   <div class="col-12">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-      <div class="col pb-2">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm">
+      <div class="col pb-1">
         <h4 class="page-title mb-0">Tax Group</h4>
       </div>
 
-      <div class="col-md mx-auto px-0 pb-2">
+      <div class="col-md mx-auto px-0 pb-1">
         <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
           <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
             <div class="form-outline flex-grow-1 position-relative">
@@ -42,7 +42,7 @@
         </form>
       </div>
 
-      <div class="col-auto pb-2">
+      <div class="col-auto pb-1">
         <form
           class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <app-favorite-star screenName="Tax Group" class="mt-1 me-1"></app-favorite-star>
@@ -65,17 +65,26 @@
     </div>
   </div>
 
+    <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #taxGroupTable [config]="tableConfig" [data]="allTaxGroup" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
 
 
 
 
-  <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf= "searchPerformed && totalLengthOfCollection > 0">
+  <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf= "searchPerformed && totalLengthOfCollection > 0">
     <div class="col-12 p-0">
       <div class="table-responsive">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
           <thead>
             <tr class="bg-info">
-              <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
+              <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
 
               <th class="bg-transparent text-light" scope="col" (click)="sort('TaxName')">
                 Tax Name
@@ -95,11 +104,11 @@
                   [ngClass]="{ 'fa-sort-up': sortColumn === 'TaxType' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'TaxType' && sortDirection === 'desc' }"></i>
               </th>
 
-              <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
+              <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
               Effective From
               <i class="fas fa-sort ms-1"
                 [ngClass]="{ 'fa-sort-up': sortColumn === 'EffectiveFrom' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'EffectiveFrom' && sortDirection === 'desc' }"></i>
-            </th> -->
+            </th>
               <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
                 Effective From
                 <i class="fas fa-sort ms-1"
@@ -122,7 +131,7 @@
 
           <tbody>
             <tr *ngFor="let item of allTaxGroup; trackBy: trackByIndex">
-              <!-- <td>
+              <td>
               <div class="d-flex align-items-center justify-content-center gap-2">
                 <button class="btn btn-sm btn-link text-primary p-0 mx-2"
                      (click)="openEditModal(content, item.TaxMasterSid)"
@@ -135,7 +144,7 @@
                   <i-feather name="trash-2" class="feather-sm"></i-feather>
                 </button>
               </div>
-            </td> -->
+            </td>
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 <div class="text-truncate">{{ item.TaxName }}</div>
               </td>
@@ -160,9 +169,9 @@
       </div>
 
       <div >
-        <!-- <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+        <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
           (pageChange)="updatePaginationData()">
-        </ngb-pagination> -->
+        </ngb-pagination>
               <app-common-pagination 
               [config]="paginationConfig"
                (pageChange)="onPageChange($event)"
@@ -170,12 +179,12 @@
                     </app-common-pagination>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- No Records -->
-<div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
+<!-- <div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
     <div class="text-center ">No Records Found</div>
-</div>
+</div> -->
 
 
   <ng-template #content let-modal>

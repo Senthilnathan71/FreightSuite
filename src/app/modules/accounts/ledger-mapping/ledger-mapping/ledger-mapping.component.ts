@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component,OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -45,6 +45,8 @@ import { CommonPaginationComponent } from 'src/app/shared/components/pagination/
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { Observable } from 'rxjs';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 @Component({
   selector: 'app-ledger-mapping',
   standalone: true,
@@ -62,13 +64,14 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     EmailEntryComponent,
     EdocComponent,
-    TermsAndConditionsComponent, 
+    TermsAndConditionsComponent,
     AuthorityEntryComponent,
     DetailsComponent,
     CustomDatePipe,
     NgxSpinnerModule,
     NgbDropdownModule,
-    CommonPaginationComponent
+    CommonPaginationComponent,
+    ReusableTableComponent
   ],
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss',
@@ -77,7 +80,9 @@ import { Observable } from 'rxjs';
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class LedgerMappingComponent extends BaseListComponent implements OnInit{
+export class LedgerMappingComponent extends BaseListComponent implements OnInit {
+  @ViewChild('subledgerMappingable') subledgerMappingable!: ReusableTableComponent;
+   @ViewChild('content') content: TemplateRef<any>
   ledgerForm!: FormGroup;
   isEditMode = false;
   modalRef!: NgbModalRef;
@@ -108,14 +113,45 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
   customerList: any[] = [];
   chargeList: any[] = [];
 
-  
+
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
   // Company
-  currentCompany : any;
-  currentBranch : any;
-   protected config: ListComponentConfig = {
+  currentCompany: any;
+  currentBranch: any;
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        // condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        // condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'SubledgerMasterSid',
+    emptyMessage: 'No SubledgerMapping found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
+  protected config: ListComponentConfig = {
     storageKey: 'SubledgerMapping-list-state',
     defaultPageSize: 10,
     defaultSortColumn: 'LedgerName',
@@ -134,13 +170,13 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
     private userService: authService,
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService,
-  paginationService: PaginationService
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
   ) {
     super(paginationService);
   }
 
- override ngOnInit(): void {
+  override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.appSettingService.getUser().subscribe((user) => {
@@ -162,6 +198,7 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
       }
     });
     super.ngOnInit();
+      this.initializeTableConfig();
   }
 
   modeOfStatus = [
@@ -241,27 +278,31 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
-        status: item.status === 'A' ? 'Active' : 'Suspended'
+        LedgerName:item.CoaMaster?.LedgerName,
+        LedgerCode:item.CoaMaster?.LedgerCode,
+        branchName: item.CoaMaster?.CompanyMaster?.branchMaster?.[0]?.branchName || '',
+        currencyName:item.CoaMaster?.CurrencyMaster?.currencyName,
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
     } else {
-      this.appSettingService.showError('Error fetching Chart of Accounts.');
+      this.appSettingService.showError('Error fetching subledgerMapping.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
   }
-  
+
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
-    this.appSettingService.showError('Error fetching Chart of Accounts.');
-    console.error('Error fetching Chart of Accounts', error);
+    this.appSettingService.showError('Error fetching subledgerMapping.');
+    console.error('Error fetching subledgerMapping', error);
     super.handleSearchError(error);
   }
 
 
   searchSubledgerMpping() {
-    this.page=1;
+    this.page = 1;
     this.search();
   }
 
@@ -274,7 +315,121 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
   }
 
   override trackBy(index: number, item: any): number {
-    return item.LedgerSid || index;
+    return item.SubledgerMasterSid || index;
+  }
+
+
+  viewSubledgerMapping(row: any,content:any): void {
+    this.editLedgerMapping(row.SubledgerMasterSid,content)
+  }
+
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      // {
+      //   key: 'BookingNo',
+      //   label: 'Booking No',
+      //   sortable: true,
+      //   filterable: true,
+      //   visible: true,
+      //   template: 'link',
+      //   width: '180px',
+      //   dataType: 'string'
+      // },
+      {
+        key: 'LedgerName',
+        label: 'COA Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'LedgerCode',
+        label: 'COA Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'branchName',
+        label: 'Branch',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'currencyName',
+        label: 'Currency',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewSubledgerMapping(event.row,this.content);
+    }else if(event.action === 'delete'){
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row:any){
+    this.deleteSudledgerMaster(row.SubledgerMappingSid)
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allSubledagerMapping;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.subledgerMappingable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Subledger-Mapping-Report',
+      title: companyName
+    });
   }
   loadLedgers(): void {
     this.masterService.getAllSuledgermaster().subscribe({
@@ -308,7 +463,7 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
 
   onSubledgerTypeChange(selectedType: string): void {
     this.ledgerForm.get('SubledgerMappingSid')?.reset();
-     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
     if (selectedType === 'Customer') {
       this.masterService.getAllCustomers(CompanyMasterSid).subscribe((res: any) => {
@@ -346,42 +501,42 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit{
   }
 
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.LedgerMappingId) return;
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.LedgerMappingId) return;
 
-  this.masterService.getAuditLogsSubledgerMaster(
-    'SubledgerMaster',
-    this.LedgerMappingId.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogsSubledgerMaster(
+      'SubledgerMaster',
+      this.LedgerMappingId.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
   deleteSudledgerMaster(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -389,6 +544,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       if (result === true) {
         this.masterService.deleteSudledgerMaster(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
+          this.searchSubledgerMpping();
         });
       }
     });
@@ -486,18 +642,18 @@ openAuditLogs(modal: TemplateRef<any>) {
 
     const mappedStatus = form.Status === 'Active' ? 'A' : 'S';
     const currentuseremail =
-    this.appSettingService.userSettingSource.value['userEmail'];
+      this.appSettingService.userSettingSource.value['userEmail'];
     const payload = this.isEditMode
       ? {
-          ...this.ledgerForm.value,
-          Status: mappedStatus,
-          UpdatedBy: currentuseremail,
-        }
+        ...this.ledgerForm.value,
+        Status: mappedStatus,
+        UpdatedBy: currentuseremail,
+      }
       : {
-          ...this.ledgerForm.value,
-          Status: mappedStatus,
-          CreatedBy: currentuseremail,
-        };
+        ...this.ledgerForm.value,
+        Status: mappedStatus,
+        CreatedBy: currentuseremail,
+      };
 
     if (this.isEditMode) {
       this.masterService
@@ -535,36 +691,36 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
   reset(): void {
-  // If editing an existing ledger mapping, reload it (restore original state)
-  if (this.isEditMode && this.LedgerMappingId) {
-    this.loadLedgerMappingData(this.LedgerMappingId);
-    return;
+    // If editing an existing ledger mapping, reload it (restore original state)
+    if (this.isEditMode && this.LedgerMappingId) {
+      this.loadLedgerMappingData(this.LedgerMappingId);
+      return;
+    }
+
+    // Create-mode: reset form to sensible defaults
+    this.ledgerForm.reset({
+      SubledgerName: '',
+      SubledgerType: '',
+      SubledgerMappingSid: '',
+      COAMasterSid: '',
+      Status: 'Active',
+      Remarks: ''
+    });
+
+    // Reset search and pagination
+    this.filterValue = '';
+    this.page = 1;
+    this.sortColumn = 'ledgerName';
+    this.sortDirection = 'asc';
+
+    // Clear component state
+    this.ledgerMappingData = null;
+    this.LedgerMappingId = null;
+    this.subledgerMappingOptions = [];
+
+    // Reload the list
+    // this.loadLedgerMappings();
   }
-
-  // Create-mode: reset form to sensible defaults
-  this.ledgerForm.reset({
-    SubledgerName: '',
-    SubledgerType: '',
-    SubledgerMappingSid: '',
-    COAMasterSid: '',
-    Status: 'Active',
-    Remarks: ''
-  });
-
-  // Reset search and pagination
-  this.filterValue = '';
-  this.page = 1;
-  this.sortColumn = 'ledgerName';
-  this.sortDirection = 'asc';
-  
-  // Clear component state
-  this.ledgerMappingData = null;
-  this.LedgerMappingId = null;
-  this.subledgerMappingOptions = [];
-  
-  // Reload the list
-  // this.loadLedgerMappings();
-}
 
   closeModal(): void {
     if (this.modalRef && typeof this.modalRef.close === 'function') {
@@ -572,7 +728,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     }
   }
 
- 
+
   // sort(column: string): void {
   //   if (this.sortColumn === column) {
   //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -621,30 +777,30 @@ openAuditLogs(modal: TemplateRef<any>) {
   //   this.loadLedgerMappings();
   // }
 
-report(): void {
-  const formattedData = this.ledgerMappingList.map((item) => ({
-    LedgerCode: item.CoaMaster?.LedgerCode || '',
-    LedgerName: item.CoaMaster?.LedgerName || '',
-    branchName: item.CoaMaster?.CompanyMaster?.branchMaster?.[0]?.branchName || '',
-    currencyName: item.CoaMaster?.CurrencyMaster?.currencyName || '',
-    Status: item.Status === 'A' ? 'Active' : 'Suspended'
-  }));
+  // report(): void {
+  //   const formattedData = this.ledgerMappingList.map((item) => ({
+  //     LedgerCode: item.CoaMaster?.LedgerCode || '',
+  //     LedgerName: item.CoaMaster?.LedgerName || '',
+  //     branchName: item.CoaMaster?.CompanyMaster?.branchMaster?.[0]?.branchName || '',
+  //     currencyName: item.CoaMaster?.CurrencyMaster?.currencyName || '',
+  //     Status: item.Status === 'A' ? 'Active' : 'Suspended'
+  //   }));
 
-  const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
 
-  this.excelReportService.exportAsExcel({
-    data: formattedData,
-    headers: [
-      { key: 'LedgerName', label: 'COA Name' },
-      { key: 'LedgerCode', label: 'COA code' },
-      { key: 'branchName', label: 'Branch Name' },
-      { key: 'currencyName', label: 'Currency' },
-      { key: 'Status', label: 'Status' }
-    ],
-    fileName: 'Ledger-Mapping-Report',
-    title: companyName
-  });
-}
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'LedgerName', label: 'COA Name' },
+  //       { key: 'LedgerCode', label: 'COA code' },
+  //       { key: 'branchName', label: 'Branch Name' },
+  //       { key: 'currencyName', label: 'Currency' },
+  //       { key: 'Status', label: 'Status' }
+  //     ],
+  //     fileName: 'Ledger-Mapping-Report',
+  //     title: companyName
+  //   });
+  // }
 
 
   showInfo(): void {
@@ -670,7 +826,7 @@ report(): void {
   }
 
 
-    openAuthority() {
+  openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {

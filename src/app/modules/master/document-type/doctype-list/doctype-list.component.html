@@ -35,12 +35,12 @@
 
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col pb-1">
                 <h4 class="page-title mb-0">Document Type</h4>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -65,7 +65,7 @@
                  </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
@@ -151,8 +151,16 @@
         </div>
     </div> -->
 
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+ <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #doctTypeTable [config]="tableConfig" [data]="allDoctType" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -190,13 +198,13 @@
                                 <div class="d-flex align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
                                     <a class="text-info mx-2"
-                                        [routerLink]="['/master/doctype/entry/', item.DocumentTypeMasterSid]">
+                                        [routerLink]="['/master/doctype/entry/', item.VoucherTypeMasterSid]">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </a>
                                 }
                                 @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
-                                        (click)="deleteDocType(item.DocumentTypeMasterSid)">
+                                        (click)="deleteDocType(item.VoucherTypeMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 }
@@ -225,7 +233,7 @@
                                 </div>
                                 }
                             </td>
-                            <!-- <td>
+                            <td>
                                 <div class="text-truncate">OMR</div>
                             </td>
                               <td>
@@ -246,7 +254,7 @@
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                     Active
                                 </div>
-                            </td> -->
+                            </td>
 
                         </tr>
                         }
@@ -262,5 +270,5 @@
     </div>
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div>No records found</div>
-    </div>
+    </div> -->
 </div>
