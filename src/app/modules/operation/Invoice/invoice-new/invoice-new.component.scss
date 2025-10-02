@@ -1,0 +1,234 @@
+.nav-pills-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.nav-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 15px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 1rem !important;
+
+   &:hover {
+    background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
+    color: #05608d; 
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    color: white;
+
+    .pill-icon {
+      color: white;
+    }
+  }
+}
+
+.pill-icon {
+  font-size: 10px;
+  transition: color 0.2s ease;
+}
+
+.pill-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.nav-action-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 10px;
+
+  &:hover {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+  }
+}
+
+
+
+/* Compact Content Workspace */
+.content-workspace {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 8px;
+
+  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.workspace-content {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+  animation: fadeInUp 0.50s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Custom styles for improved invoice layout
+.invoice-items-container {
+  .invoice-items-header {
+    background-color: #f8f9fa;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .invoice-item-card {
+    border: 1px solid #e3e6f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      border-color: #d1ecf1;
+    }
+
+    .card-body {
+      background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 10px;
+    }
+  }
+
+  .tax-inputs {
+    .form-control-sm {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+
+  .invoice-summary {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+
+    .d-flex {
+      margin-bottom: 8px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    hr {
+      margin: 10px 0;
+      border-color: #dee2e6;
+    }
+
+    .fs-5 {
+      color: #2c5aa0;
+      font-weight: 700;
+    }
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: 991.98px) {
+  .invoice-items-container {
+    .invoice-item-card {
+      .card-body {
+        padding: 15px;
+      }
+    }
+
+    .tax-inputs {
+      .row {
+        margin: 0;
+      }
+
+      .col-4 {
+        padding: 2px;
+      }
+    }
+  }
+}
+
+// Enhanced form controls
+.custom-form-group {
+  .ng-select {
+    &.ng-select-focused {
+      .ng-select-container {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+    }
+  }
+}
+
+// Button improvements
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.btn-outline-danger {
+  border-radius: 6px;
+  font-size: 0.875rem;
+  padding: 6px 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}

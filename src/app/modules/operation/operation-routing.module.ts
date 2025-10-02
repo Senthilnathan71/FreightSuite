@@ -9,6 +9,7 @@ import { ProfitabilityReportListComponent } from './profitability-report/profita
 import { ProfitabilityReportEntryComponent } from './profitability-report/profitability-report-entry/profitability-report-entry.component';
 import { InvoiceListComponent } from './Invoice/invoice-list/invoice-list.component';
 import { InvoiceEntryComponent } from './Invoice/invoice-entry/invoice-entry.component';
+import { InvoiceNewComponent } from './Invoice/invoice-new/invoice-new.component';
 import { CragoReceiptEntryComponent } from './cargo-receipt/crago-receipt-entry/crago-receipt-entry.component';
 import { CragoReceiptListComponent } from './cargo-receipt/crago-receipt-list/crago-receipt-list.component';
 import { LoadingPlanEntryComponent } from './loading-plan/loading-plan-entry/loading-plan-entry.component';
@@ -125,6 +126,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Invoice',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
+        },
+      },
+      {
+        path: 'invoice/new',
+        component: InvoiceNewComponent,
+        data: {
+          title: 'Generate Invoice',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Generate Invoice' }],
         },
       },
         {

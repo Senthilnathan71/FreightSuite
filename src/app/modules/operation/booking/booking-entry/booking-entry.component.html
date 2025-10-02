@@ -865,6 +865,19 @@
 
     <!-- Charges Tab -->
     <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Booking Rates & Charges</h5>
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          (click)="openVoucherTypeModal()"
+          [disabled]="!isEditMode || !rateResult?.length"
+          title="Generate Invoice/Voucher from rates">
+          <i class="fas fa-file-invoice me-1"></i>
+          Generate Voucher
+        </button>
+      </div>
+
       <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
       [agentList]="agentList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
@@ -2357,3 +2370,142 @@
     </div>
   </div>
 </div>
+
+<!-- Voucher Type Selection Modal -->
+<ng-template #voucherTypeModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Generate Voucher</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <div class="text-center mb-4">
+      <p class="text-muted">Select the type of voucher you want to generate from the booking rates</p>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="voucher-type-card" (click)="selectVoucherType('Invoice')">
+          <div class="card h-100 border-2 border-primary voucher-card-hover">
+            <div class="card-body text-center">
+              <div class="voucher-icon mb-3">
+                <i class="fas fa-file-invoice fa-3x text-primary"></i>
+              </div>
+              <h5 class="card-title text-primary">Invoice</h5>
+              <p class="card-text text-muted">Generate customer invoice from sales charges</p>
+              <ul class="list-unstyled text-start small">
+                <li><i class="fas fa-check text-success me-2"></i>Revenue charges only</li>
+                <li><i class="fas fa-check text-success me-2"></i>Auto GST/VAT calculation</li>
+                <li><i class="fas fa-check text-success me-2"></i>Customer billing</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="voucher-type-card" (click)="selectVoucherType('Vendor-Invoice')">
+          <div class="card h-100 border-2 border-warning voucher-card-hover">
+            <div class="card-body text-center">
+              <div class="voucher-icon mb-3">
+                <i class="fas fa-file-import fa-3x text-warning"></i>
+              </div>
+              <h5 class="card-title text-warning">Vendor Invoice</h5>
+              <p class="card-text text-muted">Generate vendor/supplier invoice from cost charges</p>
+              <ul class="list-unstyled text-start small">
+                <li><i class="fas fa-check text-success me-2"></i>Cost charges only</li>
+                <li><i class="fas fa-check text-success me-2"></i>Supplier billing</li>
+                <li><i class="fas fa-check text-success me-2"></i>Purchase documentation</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-3">
+      <i class="fas fa-info-circle me-2"></i>
+      <strong>Note:</strong> Only charges without existing vouchers will be included in the generation process.
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('cancel')">
+      <i class="fas fa-times me-1"></i>Cancel
+    </button>
+  </div>
+</ng-template>
+
+<!-- Billing Party Selection Modal -->
+<ng-template #billingPartyModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Select Billing Party</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <div class="text-center mb-4">
+      <p class="text-muted">Multiple billing parties found. Please select one to proceed with invoice generation.</p>
+    </div>
+
+    <div class="billing-parties-list">
+      <div
+        *ngFor="let party of availableBillingParties; let i = index"
+        class="billing-party-item card mb-2 border-2"
+        [class.border-primary]="selectedBillingPartyIndex === i"
+        (click)="selectBillingParty(i)">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="form-check me-3">
+              <input
+                class="form-check-input"
+                type="radio"
+                [checked]="selectedBillingPartyIndex === i"
+                [id]="'party_' + i">
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-1">{{ party.customerName }}</h6>
+              <p class="mb-1 text-muted small">{{ party.customerAddress }}</p>
+              <div class="d-flex gap-3">
+                <small class="text-info">
+                  <i class="fas fa-file-invoice me-1"></i>
+                  {{ party.pendingChargesCount }} pending charges
+                </small>
+                <small class="text-success">
+                  <i class="fas fa-money-bill me-1"></i>
+                  {{ party.totalAmount | currency:'INR' }}
+                </small>
+              </div>
+            </div>
+            <div class="billing-party-arrow">
+              <i class="fas fa-chevron-right text-muted"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning mt-3" *ngIf="!availableBillingParties?.length">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      <strong>No billing parties found</strong> with pending charges for invoice generation.
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('cancel')">
+      <i class="fas fa-times me-1"></i>Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="selectedBillingPartyIndex === -1"
+      (click)="proceedWithBillingParty()">
+      <i class="fas fa-arrow-right me-1"></i>
+      Proceed with Invoice
+    </button>
+  </div>
+</ng-template>
