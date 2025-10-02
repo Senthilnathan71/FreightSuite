@@ -65,8 +65,16 @@
             </div>
         </div>
     </div>
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+        <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #containerTable [config]="tableConfig" [data]="allcontainer" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -152,7 +160,7 @@
                 </table>
             </div>
         </div>
-        <!-- Reusable Pagination Component -->
+      
         <app-common-pagination
             [config]="paginationConfig"
             (pageChange)="onPageChange($event)"
@@ -160,8 +168,7 @@
         </app-common-pagination>
     </div>
 
-    <!-- No records found -->
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div class="alert alert-info text-center">No records found</div>
-    </div>
+    </div> -->
 </div>

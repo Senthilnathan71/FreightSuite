@@ -3,8 +3,8 @@
  
  
         <div class="col-12 px-0">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col-md-4 d-flex pb-2">
+            <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+                <div class="col-md-4 d-flex pb-1">
                       <div class="d-flex align-items-center gap-2">
                          <div class="brand-icon">
                         <i class="fas fa-box"></i>
@@ -17,7 +17,7 @@
                     }
                     </div>
                 </div>
-                <div class="col-md-8 pb-2">
+                <div class="col-md-8 pb-1">
                     <div
                         class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -82,17 +82,16 @@
     </div>
  
     <ng-template #unitform>
-        <div class="card mb-0">
-            <div class="card-body">
+       
                  <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 pe-md-1">
                 <div class="card h-100 mb-0">
-                   <div class="card-body py-2">
-                        <div class="row compact-form pb-2 rounded border border-top-0">
-                             <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                   <div class="card-body">
+                        <div class="row compact-form">
+                             <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                          <i class="fas fa-box fs-4"></i>
                         <h5 class="card-titlename mb-0">Unit Information</h5>
-                    </div>
+                    </div> -->
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -162,14 +161,14 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 mt-md-0">
+            <div class="col-md-6 ps-md-1 mt-1 mt-md-0">
                 <div class="card h-100 mb-0">
-                    <div class="card-body py-2">
-                        <div class="row compact-form pb-2 rounded border border-top-0">
-                             <div class="card-header-title d-flex align-items-center gap-2">
+                    <div class="card-body">
+                        <div class="row compact-form">
+                             <!-- <div class="card-header-title d-flex align-items-center gap-2">
     <i class="fas fa-chart-bar fs-4"></i>
     <h5 class="card-titlename mb-0">Unit Classification</h5>
-</div>
+</div> -->
 
                         <div class="col-12   border-bottom">
                             <label class="form-check-label ms-2 my-1">Job Type</label>
@@ -198,9 +197,7 @@
                
             </div>
             </div>
-            </div>
            
-        </div>
  
     </ng-template>
  

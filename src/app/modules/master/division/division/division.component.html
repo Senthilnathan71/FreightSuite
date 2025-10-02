@@ -77,7 +77,15 @@
 
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searched && totalLengthOfCollection > 0">
+    <div class="col-12 px-0">
+        <app-reusable-table #divisionTable [config]="tableConfig" [data]="alldivision" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searched && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -94,10 +102,7 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'DivisionCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'DivisionCode'}"></i>
                             </th>
-                            <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('CompanyMasterSid')">
-            Company
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CompanyMasterSid', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CompanyMasterSid'}"></i>
-        </th> -->
+          
                             <th class="bg-transparent text-light" scope="col" (click)="sort('Remarks')">
                                 Remarks
                                 <i class="fas fa-sort ms-1"
@@ -132,9 +137,7 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.DivisionCode}}</div>
                             </td>
-                            <!-- <td>
-                                <div class="text-truncate">{{companyMap[item.CompanyMasterSid] || item.CompanyMasterSid}}</div>
-                            </td> -->
+                        
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.Remarks}}</div>
                             </td>
@@ -164,7 +167,7 @@
     </div>
     <div class="col-12" *ngIf="searched && totalLengthOfCollection === 0">
         <div>No records found</div>
-    </div>
+    </div> -->
     <ng-template #content let-modal>
         <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Division</h4>

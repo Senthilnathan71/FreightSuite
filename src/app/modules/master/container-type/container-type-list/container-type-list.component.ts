@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -18,7 +18,8 @@ import { CommonPaginationComponent } from 'src/app/shared/components/pagination/
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
-
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 @Component({
   selector: 'app-container-type-list',
   standalone: true,
@@ -31,12 +32,14 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
     ListpageComponent,
     NgxSpinnerModule,
     CommonPaginationComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    ReusableTableComponent
   ],
   templateUrl: './container-type-list.component.html',
   styleUrl: './container-type-list.component.scss'
 })
 export class ContainerTypeListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('containerTable') containerTable!: ReusableTableComponent;
   companyMap: { [id: number]: string } = {};
   userData: any;
   isFavorite: boolean = false;
@@ -47,18 +50,48 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
 
   // Alias for compatibility with existing template
   get containerList() { return this.allItems; }
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View container-type',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete container-type',
+        class: "text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'ContainerTypeMasterSid',
+    emptyMessage: 'No container-type found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
   protected config: ListComponentConfig = {
-        storageKey: 'container-type-state',
-        defaultPageSize: 10,
-        defaultSortColumn: 'ContainerName',
-        defaultSortDirection: 'desc',
-        pageSizeOptions: [10, 20, 50, 100, 500],
-        maxPagesToShow: 3
-    };
+    storageKey: 'container-type-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'ContainerName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
 
-    // Alias for compatibility with existing template
-    get allcontainer() { return this.allItems; }
+  // Alias for compatibility with existing template
+  get allcontainer() { return this.allItems; }
 
   constructor(
     private masterService: MasterService,
@@ -76,13 +109,13 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
   override ngOnInit() {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    
+
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    
+    this.initializeTableConfig();
     // Initialize base component
     super.ngOnInit();
   }
@@ -90,7 +123,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    
+
     if (currentMenuId && userRole) {
       this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
         next: (response) => {
@@ -101,10 +134,128 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
       });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
+
+
+
+  override trackBy(index: number, item: any): number {
+    return item.ContainerTypeMasterSid || index;
+  }
+
+
+  viewContainer(item: any): void {
+    this.router.navigate(['/master/container-type/entry/', item.ContainerTypeMasterSid]);
+  }
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+
+      {
+        key: 'ContainerName',
+        label: 'Container Name ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ContainerCode',
+        label: 'Container Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ContainerIsoCode',
+        label: 'ISO Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ContainerCategory',
+        label: 'Category',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'NoOfTeu',
+        label: 'No of TEU',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewContainer(event.row);
+    } else if (event.action === "delete") {
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row: any) {
+    this.deleteContainerType(row.ContainerTypeMasterSid)
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allcontainer;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.containerTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Container-Report',
+      title: companyName
+    });
+  }
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
       this.companyMap = {};
@@ -181,6 +332,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
         this.masterService.deleteContainerTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.search(); // Refresh the list after deletion
+          this.loadContainerTypes();
         });
       }
     });
@@ -190,25 +342,5 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
     this.router.navigate(['master/container-type/entry']);
   }
 
-  report(): void {
-    const formattedData = this.containerList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
 
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'ContainerName', label: 'Container Name' },
-        { key: 'ContainerCode', label: 'Container Code' },
-        { key: 'ContainerIsoCode', label: 'ISO Code' },
-        { key: 'ContainerCategory', label: 'Category' },
-        { key: 'NoOfTeu', label: 'No of TEU' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'Container-Type-Report',
-      title: companyName
-    });
-  }
 }

@@ -38,6 +38,7 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
     ReusableTableComponent,
 
   ],
+  providers: [CustomDatePipe],
   templateUrl: './sailing-schedule-lsit.component.html',
   styleUrl: './sailing-schedule-lsit.component.scss'
 })
@@ -88,7 +89,8 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+     private datePipe: CustomDatePipe,
   ) {
     super(paginationService);
   }
@@ -161,6 +163,8 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
         POLPort: item.portMasterPOL?.PortCode || this.getFormattedPort(item.POLSid),
         PODPort: item.portMasterPOD?.PortCode || this.getFormattedPort(item.PODSid),
         vslvoy: `${item.vesselMaster?.VesselName || ''} / ${item.VoyageNo || ''}`,
+        ETA:this.datePipe.transform(item?.ETA),
+        ETD:this.datePipe.transform(item?.ETD),
         status: item.status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;

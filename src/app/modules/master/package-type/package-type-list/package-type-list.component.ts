@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component,TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -22,7 +22,12 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-package-type-list',
   standalone: true,
@@ -40,13 +45,16 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReusableTableComponent
   ],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
   providers: [DatePipe]
 })
-export class PackageTypeListComponent {
+export class PackageTypeListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('packageTypeTable') packageTypeTable!: ReusableTableComponent;
+  @ViewChild('content') content: TemplateRef<any>
   packageTypeForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -57,28 +65,71 @@ export class PackageTypeListComponent {
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
   searchType = 'PackageName';
-  filterValue = '';
+  // filterValue = '';
   searched = false;
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection = 0;
   isLoading = false;
-  userData : any;
-  packageData : any;
+  userData: any;
+  packageData: any;
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
-  sortColumn: string = 'HSSACCode'; 
-  sortDirection: string = 'asc';
+  // sortColumn: string = 'HSSACCode';
+  // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-  currentCompany:any;
+  currentCompany: any;
   currentBranch: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
+  }
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete',
+        class: "text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No package-type found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'package-type-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'HSSACCode',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allPackageType() { return this.allItems; }
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -90,10 +141,13 @@ export class PackageTypeListComponent {
     private datePipe: DatePipe,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -101,38 +155,188 @@ export class PackageTypeListComponent {
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
- this.initForm();
-   
- 
-		if(this.userData){
-			
+    this.initForm();
+
+
+    if (this.userData) {
+
       this.checkPermissions();
-		}
-      this.loadPackageTypes();
-      
+    }
+    this.loadPackageTypes();
+    // Initialize table configuration
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
   }
 
 
-   checkPermissions() {
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
+
+    // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchPackageTypeList(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching package-type.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching package-type.');
+    console.error('Error searching package-type', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchPackageType() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.PackageTypeMasterSid || index;
+  }
+
+
+  viewPackageType(item: any, content: any): void {
+    this.editPackageType(item.PackageTypeMasterSid, content)
+  }
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+
+      {
+        key: 'PackageName',
+        label: 'Package Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'PackageCode',
+        label: 'Package Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewPackageType(event.row, this.content);
+    } else if (event.action === 'delete') {
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row: any) {
+    this.deletePackageTypeById(row.PackageTypeMasterSid)
+  }
+
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allPackageType;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.packageTypeTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'package-type-Report',
+      title: companyName
+    });
+  }
 
   loadPackageTypes(): void {
     this.spinner.show();
@@ -141,12 +345,12 @@ export class PackageTypeListComponent {
       search: this.filterValue ? this.filterValue.trim() : '',
       page: this.page,
       pageSize: this.pageSize,
-      activeCompanyId : CompanyMasterSid,
+      activeCompanyId: CompanyMasterSid,
     };
 
     this.masterService.searchPackageTypeList(params).subscribe({
       next: (response) => {
-        if(response.status) {
+        if (response.status) {
           this.packageTypeList = response.data.items;
           this.results = [...this.packageTypeList];
           this.totalLengthOfCollection = response.data.totalCount;
@@ -154,9 +358,9 @@ export class PackageTypeListComponent {
           this.searched = true;
         }
         else {
-        this.appSettingService.showError(response.message);
-      }
-      this.spinner.hide();
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
 
       },
       error: (err) => {
@@ -169,53 +373,53 @@ export class PackageTypeListComponent {
   }
 
   initForm() {
-  
-  
-  this.packageTypeForm = this.fb.group({
-    PackageName: ['', [Validators.required, Validators.maxLength(100)]],
-    PackageCode: ['', [Validators.required, Validators.maxLength(3)]],
-    status: [{value: 'Active', disabled: false}, Validators.required],
-    CompanyMasterSid: [this.currentCompany?.CompanyMasterSid]  
-  });
-  
-}
+
+
+    this.packageTypeForm = this.fb.group({
+      PackageName: ['', [Validators.required, Validators.maxLength(100)]],
+      PackageCode: ['', [Validators.required, Validators.maxLength(3)]],
+      status: [{ value: 'Active', disabled: false }, Validators.required],
+      CompanyMasterSid: [this.currentCompany?.CompanyMasterSid]
+    });
+
+  }
 
   // resetForm(): void {
 
-    
+
   //   this.packageTypeForm.get('status')?.disable();
   //   this.packageTypeForm.reset({
   //     status: 'Active',
-       
+
   //   });
   // }
 
   resetForm(): void {
-  // If editing an existing package type, reload it (restore original state)
-  if (this.isEditMode && this.PackageTypeMasterSid) {
-    // You might want to implement a loadPackageTypeData method similar to other components
-    this.editPackageType(this.PackageTypeMasterSid, this.modalRef);
-    return;
+    // If editing an existing package type, reload it (restore original state)
+    if (this.isEditMode && this.PackageTypeMasterSid) {
+      // You might want to implement a loadPackageTypeData method similar to other components
+      this.editPackageType(this.PackageTypeMasterSid, this.modalRef);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.packageTypeForm.reset({
+      PackageName: null,
+      PackageCode: null,
+      status: 'Active',
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+    });
+
+    // Re-enable the status field if it was disabled
+    this.packageTypeForm.get('status')?.enable();
+
+    // Reset validation state
+    this.packageTypeForm.markAsUntouched();
+    this.packageTypeForm.markAsPristine();
+
+    // Clear any stored data
+    this.packageData = null;
   }
-
-  // Create-mode: reset form to initial state with proper default values
-  this.packageTypeForm.reset({
-    PackageName: null,
-    PackageCode: null,
-    status: 'Active',
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid
-  });
-
-  // Re-enable the status field if it was disabled
-  this.packageTypeForm.get('status')?.enable();
-  
-  // Reset validation state
-  this.packageTypeForm.markAsUntouched();
-  this.packageTypeForm.markAsPristine();
-  
-  // Clear any stored data
-  this.packageData = null;
-}
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -236,7 +440,7 @@ export class PackageTypeListComponent {
           status: response.status === 'A' ? 'Active' : 'Suspended',
           CompanyMasterSid: response.CompanyMasterSid
         });
-        this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
       },
       error: (err) => {
         console.error('Error fetching Package Type', err);
@@ -252,7 +456,7 @@ export class PackageTypeListComponent {
   }
 
   onSubmit() {
-     if (this.packageTypeForm.get('status')?.disabled) {
+    if (this.packageTypeForm.get('status')?.disabled) {
       this.packageTypeForm.get('status')?.enable();
     }
     if (this.packageTypeForm.invalid) {
@@ -265,14 +469,14 @@ export class PackageTypeListComponent {
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.packageTypeForm.value;
 
-        const payload = {
-  PackageName: formValue.PackageName,
-  PackageCode: formValue.PackageCode,
-  status: formValue.status === "Active" ? "A" : "S",
-  createdBy: this.appSettingService.userSettingSource.value['userEmail'],
-  updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
-  CompanyMasterSid:this.currentCompany?.CompanyMasterSid
-};
+      const payload = {
+        PackageName: formValue.PackageName,
+        PackageCode: formValue.PackageCode,
+        status: formValue.status === "Active" ? "A" : "S",
+        createdBy: this.appSettingService.userSettingSource.value['userEmail'],
+        updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+      };
 
 
       if (this.isEditMode) {
@@ -282,7 +486,8 @@ export class PackageTypeListComponent {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.search();
-               this.loadPackageTypes();
+              this.loadPackageTypes();
+              this.searchPackageType();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -299,7 +504,8 @@ export class PackageTypeListComponent {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.search();
-               this.loadPackageTypes();
+              this.loadPackageTypes();
+               this.searchPackageType();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -314,65 +520,65 @@ export class PackageTypeListComponent {
   }
 
   onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.masterService.searchPackageTypeList(payload).subscribe((res: any) => {
-      this.results = res.data || res;
-      this.searched = true;
-      this.applySorting();
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
+    this.searchType = event.type;
+    this.filterValue = event.value;
+    console.log('Searching with:', this.searchType, this.filterValue);
+    this.search();
   }
 
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-}
+  // search() {
+  //   const payload = {
+  //     searchType: this.searchType,
+  //     filterValue: this.searchType === 'status'
+  //       ? this.filterValue === 'Active' ? 'A' : 'S'
+  //       : this.filterValue
+  //   };
 
-applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-  this.packageTypeList = [...this.results];
-}
+  //   this.masterService.searchPackageTypeList(payload).subscribe((res: any) => {
+  //     this.results = res.data || res;
+  //     this.searched = true;
+  //     this.applySorting();
+  //     this.updatePaginationData();
+  //     this.totalLengthOfCollection = this.results.length || 0;
+  //   });
+  // }
+
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     // Reverse the sort direction if clicking the same column
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     // Set new sort column and default to ascending
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+
+  //   this.applySorting();
+  // }
+
+  // applySorting() {
+  //   this.results.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
+
+  //     // Handle null/undefined values
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
+
+  //     // Convert to string for case-insensitive comparison
+  //     valueA = valueA.toString().toLowerCase();
+  //     valueB = valueB.toString().toLowerCase();
+
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  //   this.packageTypeList = [...this.results];
+  // }
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -391,44 +597,45 @@ applySorting() {
         this.masterService.deletePackageById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.loadPackageTypes();
+          this.searchPackageType();
         });
       }
     });
   }
 
-  resetPage(): void {
-    this.packageTypeList = [];
-    this.totalLengthOfCollection = 0;
-    this.searched = false;
-    this.filterValue = '';
-    this.searchType = 'PackageName';
-    this.sortColumn = 'PackageName';
-  this.sortDirection = 'asc';
-  this.loadPackageTypes();
-  }
+  // resetPage(): void {
+  //   this.packageTypeList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.searched = false;
+  //   this.filterValue = '';
+  //   this.searchType = 'PackageName';
+  //   this.sortColumn = 'PackageName';
+  //   this.sortDirection = 'asc';
+  //   this.loadPackageTypes();
+  // }
 
-  report(): void {
-    const formattedData = this.packageTypeList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
+  // report(): void {
+  //   const formattedData = this.packageTypeList.map(item => ({
+  //     ...item,
+  //     status: item.status === 'A' ? 'Active' : 'Suspended'
+  //   }));
 
-        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-      const companyName = this.currentCompany?.companyName ?? 'Company';
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: [
-                { key: 'PackageName', label: 'Package Name' },
-                { key: 'PackageCode', label: 'Package Code' },
-                { key: 'status', label: 'Status' },
-            ],
-            fileName: 'Package-Type-Report', 
-            title: companyName
-        });
-    }
+  //   // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'PackageName', label: 'Package Name' },
+  //       { key: 'PackageCode', label: 'Package Code' },
+  //       { key: 'status', label: 'Status' },
+  //     ],
+  //     fileName: 'Package-Type-Report',
+  //     title: companyName
+  //   });
+  // }
 
   showInfo() {
-    if(!this.packageData) return;
+    if (!this.packageData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.packageData;
     modalRef.componentInstance.idLabel = 'Package Type Id';
@@ -436,30 +643,30 @@ applySorting() {
   }
 
   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.PackageTypeMasterSid;
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.PackageTypeMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
   openEmail() {
     if (!this.packageData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {
@@ -472,90 +679,90 @@ applySorting() {
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.PackageTypeMasterSid;
   }
 
-openEDoc() {
-  if (!this.packageData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.packageData;
-  modalRef.componentInstance.idLabel = 'Package Type Id';
-  modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
-}
-clearFilterValue(){
-      this.filterValue = '';
-    }
-//  openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.PackageTypeMasterSid) return;
+  openEDoc() {
+    if (!this.packageData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.packageData;
+    modalRef.componentInstance.idLabel = 'Package Type Id';
+    modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
+  }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  // }
+  //  openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.PackageTypeMasterSid) return;
 
-//   this.masterService.getAuditLogs('PackageTypeMaster', this.PackageTypeMasterSid.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
+  //   this.masterService.getAuditLogs('PackageTypeMaster', this.PackageTypeMasterSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
 
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
 
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.PackageTypeMasterSid) return;
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.PackageTypeMasterSid) return;
 
-  this.masterService.getAuditLogs(
-    'PackageTypeMaster',
-    this.PackageTypeMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogs(
+      'PackageTypeMaster',
+      this.PackageTypeMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 }

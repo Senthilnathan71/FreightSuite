@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -13,7 +13,12 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
     selector: 'app-tds-set-list',
     standalone: true,
@@ -25,30 +30,75 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
         FavoriteStarComponent,
         CustomDatePipe,
         NgbPaginationModule,
-        NgxSpinnerModule
+        NgxSpinnerModule,
+        ReusableTableComponent,
     ],
+    providers: [CustomDatePipe],
     templateUrl: './tds-set-list.component.html',
     styleUrl: './tds-set-list.component.scss'
 })
-export class TdsSetListComponent implements OnInit {
-
-    filterValue: string;
+export class TdsSetListComponent extends BaseListComponent implements OnInit {
+    @ViewChild('tdssetTable') tdssetTable!: ReusableTableComponent;
+    // filterValue: string;
     results: any[];
     tdsList: any[];
     userData: any;
-    searchPerformed: boolean;
+    // searchPerformed: boolean;
 
-    page = 1;
-    pageSize = 15;
-    totalLengthOfCollection: number;
+    // page = 1;
+    // pageSize = 15;
+    // totalLengthOfCollection: number;
     permissions: string[] = [];
     currentMenuPermissions: any = {};
 
-    sortColumn: string = 'TDSSetName';
-    sortDirection: string = 'asc';
+    // sortColumn: string = 'TDSSetName';
+    // sortDirection: string = 'asc';
     // Company
-     currentCompany : any;
-     currentBranch : any;
+    currentCompany: any;
+    currentBranch: any;
+    // Table configuration
+    tableConfig: TableConfig = {
+        columns: [],
+        actions: [
+            {
+                icon: 'fas fa-eye',
+                label: 'View',
+                action: 'view',
+                tooltip: 'View tds-set',
+                condition: (row: any) => this.hasPermission('View')
+            },
+            {
+                icon: 'fas fa-trash',
+                label: 'Delete',
+                action: 'delete',
+                tooltip: 'Delete tds-set',
+                class: "text-danger",
+                condition: (row: any) => this.hasPermission('Delete')
+            }
+        ],
+        selectable: false,
+        multiSelect: false,
+        showColumnToggle: true,
+        showFilters: true,
+        showPagination: true,
+        trackByKey: 'TDSSetHeaderSid',
+        emptyMessage: 'No tsd-set found',
+        dragAndDrop: true
+    };
+
+    tableLoading = false;
+
+    protected config: ListComponentConfig = {
+        storageKey: 'tds-set-list-state',
+        defaultPageSize: 10,
+        defaultSortColumn: 'TDSSetName',
+        defaultSortDirection: 'desc',
+        pageSizeOptions: [10, 20, 50, 100, 500],
+        maxPagesToShow: 3
+    };
+
+    // Alias for compatibility with existing template
+    get allTdsset() { return this.allItems; }
     constructor(
         private router: Router,
         private appSettingService: AppSettingsService,
@@ -56,26 +106,193 @@ export class TdsSetListComponent implements OnInit {
         private dialog: MatDialog,
         private excelReportService: ExcelExportService,
         private settingService: SettingsService,
-        private spinner: NgxSpinnerService
-    ) { }
+        private spinner: NgxSpinnerService,
+        paginationService: PaginationService,
+        private datePipe: CustomDatePipe,
+    ) {
+        super(paginationService);
+    }
 
-    ngOnInit(): void {
+    override ngOnInit(): void {
         // this.appSettingService.getUser().subscribe(
         //     (res) => {
         //         this.userData = res;
         //         this.checkPermissions();
         //     }
         // )
-       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-      this.checkPermissions();
-		}
+        if (userProfile) {
+            this.userData = userProfile;
+            this.checkPermissions();
+        }
         this.loadTds();
+        this.initializeTableConfig();
+
+        // Initialize base component
+        super.ngOnInit();
+    }
+    // Implement abstract methods from BaseListComponent
+    protected searchItems(): Observable<any> {
+        this.tableLoading = true;
+        this.spinner.show();
+        return this.masterService.searchTds(this.getSearchParams());
     }
 
+    protected getSearchParams(): SearchParams {
+        return {
+            search: this.filterValue.trim(),
+            page: Number(this.page),
+            pageSize: Number(this.pageSize),
+            activeCompanyId: this.currentCompany?.CompanyMasterSid,
+            activeBranchId: this.currentBranch?.BranchMasterSid,
+            sortColumn: this.sortColumn,
+            sortDirection: this.sortDirection
+        };
+    }
+
+    protected processSearchResults(response: any): void {
+        this.tableLoading = false;
+        this.spinner.hide();
+        if (response.status) {
+            this.allItems = response.data.items.map(item => ({
+                ...item,
+                status: item.status === 'A' ? 'Active' : 'Suspended',
+                EffectiveFrom: this.datePipe.transform(item?.EffectiveFrom)
+            }));
+            this.totalLengthOfCollection = response.data.totalCount || 0;
+            this.applySorting();
+        } else {
+            this.appSettingService.showError('Error searching Tds-set.');
+            this.allItems = [];
+            this.totalLengthOfCollection = 0;
+        }
+    }
+
+    protected override handleSearchError(error: any): void {
+        this.tableLoading = false;
+        this.spinner.hide();
+        this.appSettingService.showError('Error searching Tds-set.');
+        console.error('Error searching Tds-set', error);
+        super.handleSearchError(error);
+    }
+
+    // Legacy methods for template compatibility
+    searchTds() {
+        this.search();
+    }
+
+    clearFilterValue() {
+        this.clearFilter();
+    }
+
+    override trackBy(index: number, item: any): number {
+        return item.TDSSetHeaderSid || index;
+    }
+
+
+    viewTds(row: any): void {
+        this.router.navigate(['/master/tds-set/entry', row.TDSSetHeaderSid]);
+    }
+
+    // Table configuration
+    private initializeTableConfig(): void {
+        this.tableConfig.columns = [
+
+            {
+                key: 'TDSSetName',
+                label: 'TDS Name',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'EffectiveFrom',
+                label: 'Effective Date',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'TransactionLimit',
+                label: 'Transaction Limit ',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'AnnualLimit',
+                label: 'Annual Limit ',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
+                key: 'status',
+                label: 'Status',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                template: 'status',
+                width: '100px',
+                dataType: 'string',
+                cellClass: 'status-column'
+            }
+        ];
+    }
+
+    // Table event handlers
+    onTableActionClick(event: TableEventData): void {
+        if (event.action === 'view') {
+            this.viewTds(event.row);
+        } else if (event.action === "delete") {
+            this.deleteBy(event.row)
+        }
+    }
+
+    deleteBy(row: any) {
+        this.deleteTdsSet(row.TDSSetHeaderSid)
+    }
+
+    onTableRowClick(row: any): void {
+        // Row clicking can be handled by the table component if needed
+    }
+
+    onTableSortChange(sort: TableSortConfig): void {
+        this.sortColumn = sort.column;
+        this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+        this.search();
+    }
+
+    onTableFilterChange(filters: TableFilter[]): void {
+        // For now, we'll handle this with the existing search functionality
+        // In a more advanced implementation, you could apply individual column filters
+        console.log('Filters changed:', filters);
+    }
+
+    report(): void {
+        const formattedData = this.allTdsset;
+        const companyName = this.currentCompany?.companyName ?? 'Company';
+
+        // Get visible columns in their current order from the table component
+        const visibleColumns = this.tdssetTable.getVisibleColumns();
+        const dynamicHeaders = visibleColumns.map(column => ({
+            key: column.key,
+            label: column.label
+        }));
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: dynamicHeaders,
+            fileName: 'Tds-Set-Report',
+            title: companyName
+        });
+    }
     checkPermissions() {
         const currentMenuId = Number(localStorage.getItem('currentMenuId'));
         const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
@@ -100,7 +317,7 @@ export class TdsSetListComponent implements OnInit {
             search: this.filterValue,
             page: this.page,
             pageSize: this.pageSize,
-            activeCompanyId : CompanyMasterSid
+            activeCompanyId: CompanyMasterSid
         }
         this.masterService.searchTds(payload).subscribe(
             (resp: any) => {
@@ -112,47 +329,14 @@ export class TdsSetListComponent implements OnInit {
                     this.applySorting();
                     this.searchPerformed = true;
                 } else {
-        this.appSettingService.showError(resp.message);
-      }
-      this.spinner.hide();
+                    this.appSettingService.showError(resp.message);
+                }
+                this.spinner.hide();
             }
         )
     }
 
-    applySorting() {
-        this.results.sort((a, b) => {
-            let valueA = a[this.sortColumn];
-            let valueB = b[this.sortColumn];
 
-            if (valueA == null) valueA = '';
-            if (valueB == null) valueB = '';
-
-            valueA = valueA.toString().toLowerCase();
-            valueB = valueB.toString().toLowerCase();
-
-            if (valueA < valueB) {
-                return this.sortDirection === 'asc' ? -1 : 1;
-            }
-            if (valueA > valueB) {
-                return this.sortDirection === 'asc' ? 1 : -1;
-            }
-            return 0;
-        });
-        this.tdsList = [...this.results];
-    }
-
-    sort(column: string) {
-        if (this.sortColumn === column) {
-            // Reverse the sort direction if clicking the same column
-            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            // Set new sort column and default to ascending
-            this.sortColumn = column;
-            this.sortDirection = 'asc';
-        }
-
-        this.applySorting();
-    }
 
     deleteTdsSet(TDSSetHeaderSid) {
         const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -161,7 +345,8 @@ export class TdsSetListComponent implements OnInit {
                 this.masterService.deleteTds(TDSSetHeaderSid).subscribe(
                     (resp: any) => {
                         this.appSettingService.showSuccess("Deleted!");
-                        this.loadTds()
+                        this.loadTds();
+                        this.searchTds();
                     });
             }
         })
@@ -176,31 +361,11 @@ export class TdsSetListComponent implements OnInit {
     navigateTocreatetdsSet() {
         this.router.navigate(['master/tds-set/entry'])
     }
-    clearFilterValue() {
-        this.filterValue = '';
-    }
+    // clearFilterValue() {
+    //     this.filterValue = '';
+    // }
 
-    report(): void {
-        const formattedData = this.tdsList.map(item => ({
-            ...item,
-            status: item.status === 'A' ? 'Active' : 'Suspended'
-        }));
 
-        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-        const companyName = this.currentCompany?.companyName ?? 'Company';
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: [
-                { key: 'TDSSetName', label: 'TDS Name' },
-                { key: 'EffectiveFrom', label: 'Effective From' },
-                { key: 'TDSsetTransactionLimit', label: 'Transaction Limit' },
-                { key: 'TDSSetAnnualLimit', label: 'Annual Limit' },
-                { key: 'status', label: 'Status' },
-            ],
-            fileName: 'Tds-Set-Report',
-            title: companyName
-        });
-    }
 
     hasPermission(permission: string): boolean {
         return this.permissions.includes(permission);

@@ -66,14 +66,14 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View hawb',
+        tooltip: 'View',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
+        tooltip: 'Delete',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -83,7 +83,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: '',
+    trackByKey: 'HawbStockSid',
     emptyMessage: 'No hawb found',
     dragAndDrop: true
   };
@@ -186,7 +186,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
     } else {
-      this.appSettingService.showError('Error searching bookings.');
+      this.appSettingService.showError('Error searching hawb-stock.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
@@ -195,8 +195,8 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
-    this.appSettingService.showError('Error searching bookings.');
-    console.error('Error searching bookings', error);
+    this.appSettingService.showError('Error searching hawb-stock.');
+    console.error('Error searching hawb-stock', error);
     super.handleSearchError(error);
   }
 

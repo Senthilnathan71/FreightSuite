@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -14,7 +14,12 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-post-master-list',
   standalone: true,
@@ -27,15 +32,17 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     MatDialogModule,
     ListpageComponent,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ReusableTableComponent
   ],
   templateUrl: './post-master-list.component.html',
   styleUrls: ['./post-master-list.component.scss']
 })
-export class PostMasterListComponent implements OnInit {
+export class PostMasterListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('portTable') portTable!: ReusableTableComponent;
   // search controls
   searchType = 'PortName';
-  filterValue = '';
+  // filterValue = '';
   searched = false;
   userData: any;
 
@@ -43,38 +50,84 @@ export class PostMasterListComponent implements OnInit {
   // raw + paged data
   results: any[] = [];
   portList: any[] = [];
-  totalLengthOfCollection = 0;
-  sortColumn: string = 'PortName'; 
-  sortDirection: string = 'asc'; 
+  // totalLengthOfCollection = 0;
+  // sortColumn: string = 'PortName';
+  // sortDirection: string = 'asc';
   // pagination
-  page = 1;
-  pageSize = 15;
+  // page = 1;
+  // pageSize = 15;
 
   // lookup arrays
   countryOptions: any[] = [];
   sectorOptions: any[] = [];
-  regionList : any[];
+  regionList: any[];
   isFavorite: boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   // Company
-  currentCompany : any;
-  currentBranch : any;
+  currentCompany: any;
+  currentBranch: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
-  
+  }
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete',
+        class: "text-danger",
+        condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No port-master found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'port-master-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'PortName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allPort() { return this.allItems; }
   constructor(
     private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService, 
-    private userService: authService ,
-    private spinner: NgxSpinnerService
-  ) { }
+    private excelReportService: ExcelExportService,
+    private userService: authService,
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService,
+    //  private datePipe: CustomDatePipe,
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     this.loadAllRegions();
     // this.appSettingService.getUser().subscribe(user => {
     //   if (user) {
@@ -85,33 +138,215 @@ export class PostMasterListComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.loadPorts();
+    // Initialize table configuration
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
   }
 
-      checkPermissions() {
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchPortList(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended',
+        countryName: item.countryMaster?.countryName,
+        ZoneName: item.sectorMaster?.ZoneName,
+        // ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching port-master.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching port-master.');
+    console.error('Error searching port-master', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchPortMaster() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.PortMasterSid || index;
+  }
+
+
+  viewHawb(row: any): void {
+    this.router.navigate(['/master/port-master/view/', row.PortMasterSid]);
+  }
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+
+      {
+        key: 'PortName',
+        label: 'Port Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'PortCode',
+        label: 'Port Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'countryName',
+        label: 'Country',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'ZoneName',
+        label: 'Region ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'PortType',
+        label: 'Port Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'TerminalCode',
+        label: 'Terminal Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewHawb(event.row);
+    } else if (event.action === "delete") {
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row: any) {
+    this.deletePort(row.PortMasterSid)
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+  report(): void {
+    const formattedData = this.allPort;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.portTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'port-master-Report',
+      title: companyName
+    });
+  }
   loadPorts(): void {
     this.spinner.show();
     const params = {
@@ -122,16 +357,16 @@ export class PostMasterListComponent implements OnInit {
 
     this.masterService.searchPortList(params).subscribe({
       next: (response) => {
-        if(response.status) {
+        if (response.status) {
           this.portList = response.data.items;
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
         }
-else {
-        this.appSettingService.showError(response.message);
-      }
-      this.spinner.hide();
+        else {
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching ports:', err);
@@ -155,84 +390,84 @@ else {
   /** Triggered when user clicks “Search” */
 
   onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-
-  search(): void {
-  const payload = {
-    searchType: 
-      this.searchType === 'countryName' ? 'CountryMasterSid' : 
-      this.searchType === 'sectorName' ? 'SectorMasterSid' : 
-      this.searchType,
-    filterValue: this.filterValue
-  };
-
-  this.masterService.searchPortList(payload).subscribe(res => {
-    const items = Array.isArray(res) ? res : res.data || [];
-    this.results = items.map((port: any) => {
-      // Find country and sector names from the options arrays
-      const country = this.countryOptions.find(c => c.CountryMasterSid === port.CountryMasterSid);
-      const sector = this.sectorOptions.find(s => s.SectorMasterSid === port.SectorMasterSid);
-
-      return {
-        ...port,
-        countryName: country?.countryName || '—',
-        sectorName: sector?.sectorName || '—',
-        statusText: port.status === 'A' ? 'Active' : 'Suspended'
-      };
-    });
-
-    this.searched = true;
-    this.totalLengthOfCollection = this.results.length;
-    this.page = 1;
-    this.updatePaginatedData();
-    this.applySorting();
-  });
-}
-
-sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
+    this.searchType = event.type;
+    this.filterValue = event.value;
+    console.log('Searching with:', this.searchType, this.filterValue);
+    this.search();
   }
-  
-  this.applySorting();
-}
 
-applySorting() {
-  if (!Array.isArray(this.portList)){
-    this.portList = [];
-    return;
-  }
-  this.portList.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
+
+  // search(): void {
+  //   const payload = {
+  //     searchType:
+  //       this.searchType === 'countryName' ? 'CountryMasterSid' :
+  //         this.searchType === 'sectorName' ? 'SectorMasterSid' :
+  //           this.searchType,
+  //     filterValue: this.filterValue
+  //   };
+
+  //   this.masterService.searchPortList(payload).subscribe(res => {
+  //     const items = Array.isArray(res) ? res : res.data || [];
+  //     this.results = items.map((port: any) => {
+  //       // Find country and sector names from the options arrays
+  //       const country = this.countryOptions.find(c => c.CountryMasterSid === port.CountryMasterSid);
+  //       const sector = this.sectorOptions.find(s => s.SectorMasterSid === port.SectorMasterSid);
+
+  //       return {
+  //         ...port,
+  //         countryName: country?.countryName || '—',
+  //         sectorName: sector?.sectorName || '—',
+  //         statusText: port.status === 'A' ? 'Active' : 'Suspended'
+  //       };
+  //     });
+
+  //     this.searched = true;
+  //     this.totalLengthOfCollection = this.results.length;
+  //     this.page = 1;
+  //     this.updatePaginatedData();
+  //     this.applySorting();
+  //   });
+  // }
+
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     // Reverse the sort direction if clicking the same column
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     // Set new sort column and default to ascending
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+
+  //   this.applySorting();
+  // }
+
+  // applySorting() {
+  //   if (!Array.isArray(this.portList)) {
+  //     this.portList = [];
+  //     return;
+  //   }
+  //   this.portList.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
+
+  //     // Handle null/undefined values
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
+
+  //     // Convert to string for case-insensitive comparison
+  //     valueA = valueA.toString().toLowerCase();
+  //     valueB = valueB.toString().toLowerCase();
+
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  // }
 
 
   /** Slice results for current page */
@@ -254,6 +489,7 @@ applySorting() {
         this.masterService.deletePortById(id).subscribe(() => {
           this.appSettingService.showSuccess('Deleted!');
           this.loadPorts();
+          this.searchPortMaster();
         });
       });
   }
@@ -262,57 +498,57 @@ applySorting() {
     this.router.navigate(['master/port-master/view']);
   }
 
-  loadAllRegions(){
+  loadAllRegions() {
     this.masterService.getAllZones().subscribe(
-      (resp)=>{
+      (resp) => {
         this.regionList = resp;
       }
     )
   }
 
   getRegionNameById(RegionMasterSid: number): string {
-  if (!this.regionList || !Array.isArray(this.regionList)) return '';
-  const region = this.regionList.find(r => r.ZoneMasterSid === RegionMasterSid);
-  return region?.ZoneName || '';
-}
-
-  resetPage(): void {
-    this.page = 1;
-    this.filterValue = '';
-    this.searched = false;
-    this.portList = [];
-    this.totalLengthOfCollection = 0;
-    this.sortColumn = 'PortName';
-  this.sortDirection = 'asc';
-  this.loadPorts();
+    if (!this.regionList || !Array.isArray(this.regionList)) return '';
+    const region = this.regionList.find(r => r.ZoneMasterSid === RegionMasterSid);
+    return region?.ZoneName || '';
   }
-  report(): void {
-    const formattedData = this.portList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      countryName: item.countryMaster?.countryName || '—',
-      regionName: this.getRegionNameById(item.ZoneMasterSid)
-    }));
 
-    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'PortName', label: 'Port Name' },
-        { key: 'PortCode', label: 'Port Code' },
-        { key: 'countryName', label: 'Country' },
-        { key: 'regionName', label: 'Region' },
-        { key: 'PortType', label: 'Port Type' },
-        { key: 'TerminalCode', label: 'Terminal Code' },
-        { key: 'status', label: 'Status' }
-      ],
-      fileName: 'Port-Report',
-      title: companyName
-    });
-  }
-  clearFilterValue(){
-      this.filterValue = '';
-    }
+  // resetPage(): void {
+  //   this.page = 1;
+  //   this.filterValue = '';
+  //   this.searched = false;
+  //   this.portList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.sortColumn = 'PortName';
+  //   this.sortDirection = 'asc';
+  //   this.loadPorts();
+  // }
+  // report(): void {
+  //   const formattedData = this.portList.map(item => ({
+  //     ...item,
+  //     status: item.status === 'A' ? 'Active' : 'Suspended',
+  //     countryName: item.countryMaster?.countryName || '—',
+  //     regionName: this.getRegionNameById(item.ZoneMasterSid)
+  //   }));
+
+  //   // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'PortName', label: 'Port Name' },
+  //       { key: 'PortCode', label: 'Port Code' },
+  //       { key: 'countryName', label: 'Country' },
+  //       { key: 'regionName', label: 'Region' },
+  //       { key: 'PortType', label: 'Port Type' },
+  //       { key: 'TerminalCode', label: 'Terminal Code' },
+  //       { key: 'status', label: 'Status' }
+  //     ],
+  //     fileName: 'Port-Report',
+  //     title: companyName
+  //   });
+  // }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  // }
 
 }

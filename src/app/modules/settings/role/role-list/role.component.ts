@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -21,7 +21,12 @@ import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-role',
   standalone: true,
@@ -38,13 +43,16 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReusableTableComponent
   ],
   templateUrl: './role.component.html',
   styleUrl: './role.component.scss',
   providers: [DatePipe]
 })
-export class RoleComponent implements OnInit {
+export class RoleComponent extends BaseListComponent implements OnInit {
+  @ViewChild('roleTable') roleTable!: ReusableTableComponent;
+   @ViewChild('content') content: TemplateRef<any>;
   roleForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -55,27 +63,54 @@ export class RoleComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
   searchType = 'UserRoleName';
-  filterValue = '';
-  searchPerformed = false;
-  page = 1;
-  pageSize = 10;
-  totalLengthOfCollection = 0;
   isLoading = false;
-  userData : any;
-  roleData : any;
+  userData: any;
+  roleData: any;
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
-  sortColumn: string = 'UserRoleName'; 
-  sortDirection: string = 'asc';
-  
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Role',
+        // condition: (row: any) => this.hasPermission('View')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No role found',
+    dragAndDrop: true
+  };
+
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'role-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'UserRoleName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allRole() { return this.allItems; }
   // Company
-  currentCompany : any;
-  currentBranch : any;
+  currentCompany: any;
+  currentBranch: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
-  
+
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -87,10 +122,13 @@ export class RoleComponent implements OnInit {
     private datePipe: DatePipe,
     private userService: authService,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // this.appSettingService.getUser().subscribe(
     //   user => {
     //     if (user) {
@@ -101,9 +139,9 @@ export class RoleComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-		}
+    if (userProfile) {
+      this.userData = userProfile;
+    }
 
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -114,56 +152,206 @@ export class RoleComponent implements OnInit {
       }
     });
     this.loadRoles();
+    // Initialize table configuration
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
+  }
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.settingsService.searchRole(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching role.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching role.');
+    console.error('Error searching role', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchRole() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.RoleMasterSid || index;
+  }
+
+
+  viewRole(row: any,content:any): void {
+    this.editRole(row.RoleMasterSid,content)
+  }
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+    
+      {
+        key: 'UserRoleName',
+        label: 'Role Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'UserRoleCode',
+        label: 'Role Code',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'LicenseType',
+        label: 'License Type ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewRole(event.row,this.content);
+    }
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allRole;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.roleTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Role-Report',
+      title: companyName
+    });
   }
   loadRoles(): void {
-  this.spinner.show();
-  this.isLoading = true;
-  let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize,
-    sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection,
-    activeCompanyId : CompanyMasterSid
-  };
+    this.spinner.show();
+    this.isLoading = true;
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection,
+      activeCompanyId: CompanyMasterSid
+    };
 
-  this.settingsService.searchRole(params).subscribe({
-    next: (response: any) => {
-      if(response.status){
-        this.roleList = response.data.items || response.data;
-        this.totalLengthOfCollection = response.data.totalCount || response.length;
-        this.applySorting();
-        this.searchPerformed = true;
-      }else {
-        this.appSettingService.showError(response.message);
+    this.settingsService.searchRole(params).subscribe({
+      next: (response: any) => {
+        if (response.status) {
+          this.roleList = response.data.items || response.data;
+          this.totalLengthOfCollection = response.data.totalCount || response.length;
+          this.applySorting();
+          this.searchPerformed = true;
+        } else {
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching roles:', err);
+        this.roleList = [];
+        this.totalLengthOfCollection = 0;
+        this.isLoading = false;
       }
-      this.spinner.hide();
-      this.isLoading = false;
-    },
-    error: (err) => {
-      console.error('Error fetching roles:', err);
-      this.roleList = [];
-      this.totalLengthOfCollection = 0;
-      this.isLoading = false;
-    }
-  });
-}
+    });
+  }
 
   initForm() {
     this.roleForm = this.fb.group({
       UserRoleName: ['', [Validators.required, Validators.maxLength(50), this.alphaSpaceValidator()]],
-    UserRoleCode: ['', [
-      Validators.required,
-      Validators.maxLength(3),
-      Validators.minLength(3),
-      this.alphaValidator() 
-    ]],
-    LicenseType: ['', [
-      Validators.maxLength(50),
-      this.alphaSpaceValidator() 
-    ]],
-      status: [{value: 'Active', disabled: false}, Validators.required]
+      UserRoleCode: ['', [
+        Validators.required,
+        Validators.maxLength(3),
+        Validators.minLength(3),
+        this.alphaValidator()
+      ]],
+      LicenseType: ['', [
+        Validators.maxLength(50),
+        this.alphaSpaceValidator()
+      ]],
+      status: [{ value: 'Active', disabled: false }, Validators.required]
     });
     this.roleForm.get('UserRoleCode')?.valueChanges.subscribe(val => {
       if (val) {
@@ -171,41 +359,41 @@ export class RoleComponent implements OnInit {
       }
     });
   }
-  
-  
-   private alphaValidator(): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} | null => {
+
+
+  private alphaValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
       if (!control.value) return null;
       const valid = /^[A-Za-z]+$/.test(control.value);
       return valid ? null : { invalidAlpha: true };
     };
   }
 
-   private alphaSpaceValidator(): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} | null => {
+  private alphaSpaceValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
       if (!control.value) return null;
       const valid = /^[A-Za-z\s]+$/.test(control.value);
       return valid ? null : { invalidAlphaSpace: true };
     };
   }
-onKeyPress(event: KeyboardEvent, field: string) {
- if (field === 'UserRoleCode') {
+  onKeyPress(event: KeyboardEvent, field: string) {
+    if (field === 'UserRoleCode') {
       const pattern = /[A-Za-z]/;
       if (!pattern.test(event.key)) {
         event.preventDefault();
       }
-  } else if (field === 'UserRoleName') {
-    const pattern = /[A-Za-z\s]/;
-    if (!pattern.test(event.key)) {
-      event.preventDefault();
-    }
-  } else if (field === 'LicenseType') {
-    const pattern = /[A-Za-z\s]/;
-    if (!pattern.test(event.key)) {
-      event.preventDefault();
+    } else if (field === 'UserRoleName') {
+      const pattern = /[A-Za-z\s]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
+    } else if (field === 'LicenseType') {
+      const pattern = /[A-Za-z\s]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
     }
   }
-}
 
   // resetForm(): void {
   //   this.roleForm.get('status')?.disable();
@@ -215,60 +403,60 @@ onKeyPress(event: KeyboardEvent, field: string) {
   // }
 
   resetForm(): void {
-  // If editing an existing role, reload it (restore original state)
-  if (this.isEditMode && this.RoleMasterSid) {
-    this.loadRoleData(this.RoleMasterSid);
-    return;
+    // If editing an existing role, reload it (restore original state)
+    if (this.isEditMode && this.RoleMasterSid) {
+      this.loadRoleData(this.RoleMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to sensible defaults
+    this.roleForm.reset({
+      UserRoleName: '',
+      UserRoleCode: '',
+      LicenseType: '',
+      status: 'Active'
+    });
+
+    // Enable status field if it was disabled
+    this.roleForm.get('status')?.enable();
+
+    // Clear form validation states
+    this.roleForm.markAsUntouched();
+    this.roleForm.updateValueAndValidity();
+
+    // Reset error message
+    this.errorMessage = '';
   }
 
-  // Create-mode: reset form to sensible defaults
-  this.roleForm.reset({
-    UserRoleName: '',
-    UserRoleCode: '',
-    LicenseType: '',
-    status: 'Active'
-  });
-
-  // Enable status field if it was disabled
-  this.roleForm.get('status')?.enable();
-
-  // Clear form validation states
-  this.roleForm.markAsUntouched();
-  this.roleForm.updateValueAndValidity();
-
-  // Reset error message
-  this.errorMessage = '';
-}
-
- openModal(content: any): void {
-  this.isEditMode = false;
-  this.resetForm();
-  this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-}
+  openModal(content: any): void {
+    this.isEditMode = false;
+    this.resetForm();
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+  }
 
   editRole(id: number, content: any) {
-  this.isEditMode = true;
-  this.RoleMasterSid = id;
-  this.settingsService.getRoleById(id).pipe(take(1)).subscribe({
-    next: (response: any) => {
-      const role = response.data; 
-      this.roleData = role;
-      this.roleForm.get('status')?.enable();
-      this.roleForm.patchValue({
-        UserRoleName: role.UserRoleName,
-        UserRoleCode: role.UserRoleCode,
-        LicenseType: role.LicenseType || '',
-        status: role.status === 'A' ? 'Active' : 'Suspended'
-      });
-      this.roleForm.get('status')?.enable();
-      this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
-    },
-    error: (err) => {
-      console.error('Error fetching Role', err);
-      this.appSettingService.showError('Error fetching data for editing');
-    }
-  });
-}
+    this.isEditMode = true;
+    this.RoleMasterSid = id;
+    this.settingsService.getRoleById(id).pipe(take(1)).subscribe({
+      next: (response: any) => {
+        const role = response.data;
+        this.roleData = role;
+        this.roleForm.get('status')?.enable();
+        this.roleForm.patchValue({
+          UserRoleName: role.UserRoleName,
+          UserRoleCode: role.UserRoleCode,
+          LicenseType: role.LicenseType || '',
+          status: role.status === 'A' ? 'Active' : 'Suspended'
+        });
+        this.roleForm.get('status')?.enable();
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      },
+      error: (err) => {
+        console.error('Error fetching Role', err);
+        this.appSettingService.showError('Error fetching data for editing');
+      }
+    });
+  }
   closeModal(): void {
     if (this.modalRef) {
       this.modalRef.close();
@@ -276,21 +464,21 @@ onKeyPress(event: KeyboardEvent, field: string) {
   }
 
   loadRoleData(id: number) {
-  this.settingsService.getRoleById(id).subscribe(
-    (response: any) => {
-      const data = response.data; // Access the data property from the response
-      this.roleForm.patchValue({
-        UserRoleName: data.UserRoleName,
-        UserRoleCode: data.UserRoleCode,
-        LicenseType: data.LicenseType,
-        status: data.status === 'A' ? 'Active' : 'Suspended'
-      });
-    },
-    (error) => {
-      this.appSettingService.showError('Error loading data.');
-    }
-  );
-}
+    this.settingsService.getRoleById(id).subscribe(
+      (response: any) => {
+        const data = response.data; // Access the data property from the response
+        this.roleForm.patchValue({
+          UserRoleName: data.UserRoleName,
+          UserRoleCode: data.UserRoleCode,
+          LicenseType: data.LicenseType,
+          status: data.status === 'A' ? 'Active' : 'Suspended'
+        });
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading data.');
+      }
+    );
+  }
 
   onSubmit() {
     if (this.roleForm.get('status')?.disabled) {
@@ -307,11 +495,11 @@ onKeyPress(event: KeyboardEvent, field: string) {
       const formValue = this.roleForm.value;
 
       const payload = {
-    ...formValue,
-    ...(this.isEditMode ? updatedBy : createdBy),
-    status: formValue.status === "Active" ? "A" : "S",
-    CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-  };
+        ...formValue,
+        ...(this.isEditMode ? updatedBy : createdBy),
+        status: formValue.status === "Active" ? "A" : "S",
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      };
 
       if (this.isEditMode) {
         this.settingsService.updateRoleById(this.RoleMasterSid, payload).subscribe(
@@ -319,7 +507,7 @@ onKeyPress(event: KeyboardEvent, field: string) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-             
+              this.searchRole();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -335,7 +523,7 @@ onKeyPress(event: KeyboardEvent, field: string) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              
+              this.searchRole();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -349,42 +537,6 @@ onKeyPress(event: KeyboardEvent, field: string) {
     }
   }
 
-  
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.loadRoles();
-}
-
-applySorting() {
-  this.roleList.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -408,41 +560,13 @@ applySorting() {
   //   });
   // }
 
-  resetPage(): void {
-    this.roleList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'UserRoleName';
-    this.sortColumn = 'UserRoleName'; 
-    this.sortDirection = 'asc';
-    this.loadRoles();
-  }
-  clearFilterValue() {
-  this.filterValue = '';
-  this.loadRoles();
-}
 
-  report(): void {
-    const formattedData = this.roleList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  //   this.loadRoles();
+  // }
 
-        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-        const companyName = this.currentCompany?.companyName ?? 'Company';
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: [
-                { key: 'UserRoleName', label: 'Role Name' },
-                { key: 'UserRoleCode', label: 'Role Code' },
-                { key: 'LicenseType', label: 'License Type' },
-                { key: 'status', label: 'Status' },
-            ],
-            fileName: 'Role-Report', 
-            title: companyName
-        });
-    }
+
 
   showInfo() {
     if (!this.roleData) return;
@@ -453,45 +577,45 @@ applySorting() {
   }
 
   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.settingsService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.RoleMasterSid;
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.settingsService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.RoleMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
 
   openEmail() {
-  if (!this.roleData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.roleData;
-  modalRef.componentInstance.idLabel = 'Role Id';
-  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
-}
+    if (!this.roleData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.roleData;
+    modalRef.componentInstance.idLabel = 'Role Id';
+    modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+  }
 
 
-    openAuthority() {
+  openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
@@ -503,17 +627,17 @@ applySorting() {
     modalRef.componentInstance.documentSid = this.RoleMasterSid;
   }
 
-openEDoc() {
-  if (!this.roleData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.roleData;
-  modalRef.componentInstance.idLabel = 'Role Id';
-  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
-}
+  openEDoc() {
+    if (!this.roleData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.roleData;
+    modalRef.componentInstance.idLabel = 'Role Id';
+    modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+  }
 
 
 }

@@ -20,12 +20,15 @@
 <div class="row compact-form">
 
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
-                <h4 class="page-title mb-0">UOM</h4>
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col py-1">
+                <div class="d-flex align-itens-center gap-1">
+                    <h4 class="page-title mb-0">UOM</h4>
+                    <app-favorite-star screenName="UOM"></app-favorite-star>
+                </div>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -51,10 +54,9 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="UOM" class="mt-1 me-1"></app-favorite-star>
                     @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToCreateUom()">
@@ -76,8 +78,16 @@
 
         </div>
     </div>
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+          <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #uomTable [config]="tableConfig" [data]="allUom" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -145,6 +155,6 @@
 
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
         <div class="alert alert-info text-center">No records found</div>
-    </div>
+    </div> -->
 
 </div>
