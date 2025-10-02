@@ -155,7 +155,7 @@
               <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                   <ng-select class="ng-select " [items]="chargeList" formControlName="ChargeMasterSid"
-                    bindValue="ChargeMasterSid" bindLabel="chargeName" (change)="onChargeChange($event)"
+                     bindLabel="chargeName" (change)="onChargeChange($event)"
                     appendTo="body">
                   </ng-select>
                 </div>
@@ -244,9 +244,9 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
-                      formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                    </ng-select>
+                    
+                    <input type="text" id="text-input" formControlName="RevenueNoOfUnit"
+                      class="custom-input-field sm text-end">
 
                   </div>
                 </td>
@@ -297,7 +297,7 @@
                 <!-- cost -->
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)" formControlName="ChargeUomSid"
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)" formControlName="CostChargeUomSid"
                       bindValue="CostChargeUomSid" appendTo="body">
                     </ng-select>
                   </div>
@@ -319,9 +319,9 @@
                 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
-                      formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                    </ng-select>
+                    
+                    <input type="text" id="text-input" formControlName="CostNumberOfUnit"
+                      class="custom-input-field sm text-end">
                   </div>
                 </td>
                 <td>

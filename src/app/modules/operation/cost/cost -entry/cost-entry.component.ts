@@ -140,14 +140,13 @@ export class CostEntryComponent implements OnInit {
 
   @Input()
   set dataItems(value: any[]) {
+    this.rateFormArray.clear(); // clear existing rows first
     if (value && value.length > 0) {
       this._dataItems = value;
       console.log(value);
       this.patchValues(this._dataItems);
     } else {
       this._dataItems = [];
-      this.costDataLength = 0;
-      this.revenueDataLength = 0;
       this.profitSummary = [];
       this.slicedCostFormArray = [];
       this.slicedRevenueFormArray = [];
@@ -203,7 +202,11 @@ export class CostEntryComponent implements OnInit {
     this.rateFormArray.valueChanges.subscribe(() => {
     this.dataEmitter.emit(this.rateFormArray.getRawValue());
   });
-
+  }
+  ngOnChanges(){
+    if(!this.dataItems){
+      this.addRateRow()
+    }
   }
 
   loadRateLookups() {
@@ -226,7 +229,7 @@ export class CostEntryComponent implements OnInit {
       SerialNumber: [{ value: '', disabled: true }],
       ChargeMasterSid: [null],
       ChargeDescription: [''],
-      ChargeUomSid: [null],
+      // ChargeUomSid: [null],
       NumberOfUnit:[''],
       // Cost 
       CostCurrencyMasterSid: [null],
@@ -239,17 +242,19 @@ export class CostEntryComponent implements OnInit {
       CostChargeUomSid:[''],
       CostVoucherHeaderSid: [''],
       CostVoucherTypeSid: [null],
+      CostNumberOfUnit:[null],
+      
 
       RevenuePrepaidCollect:[''],
       RevenueCurrencyMasterSid: [null],
       RevenueExchangeRate: [''],
       CustomerMasterSid: [''],
       // RevenueRate: [''],
+      RevenueNumberOfUnit:[null],
       RevenueChargeUomSid:[''],
       RevenueDrCr: [''],
       RevenueAmount: [''],
       RevenueLocalAmount: [''],
-
       RevenueVoucherHeaderSid: [''],
       RevenueVoucherTypeSid: [null],
       AgentSid: [''],
@@ -257,6 +262,7 @@ export class CostEntryComponent implements OnInit {
       CustomerBranchSid: [null],
       rateFormArray: this.fb.array([])  // <-- Must include this
     });
+
   }
 
   // Getter
@@ -271,11 +277,13 @@ get r() {
 
 
   patchValues(items: any[]) {
-
-     if (items && items.length > 0) {
+    console.log(items,'patchValues')
+  if (items && items.length > 0) {
     for (const item of items) {
       this.addRateRow(item);
     }
+  }else{
+    this.addRateRow(); // <-- Add one empty row when no data
   }
     this.updateCostPagination();
     this.updateRevenuePagination();
@@ -288,42 +296,48 @@ createRateFormGroup(data?: any): FormGroup {
   const form = this.fb.group({
     BookingRatesSid: [data?.BookingRatesSid ?? null],
     BookingHeaderSid: [data?.BookingHeaderSid ?? null],
+
     CompanyMasterSid: [data?.CompanyMasterSid ?? null],
     BranchMasterSid: [data?.BranchMasterSid ?? null],
+
     CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
 
     TransactionSid: [data?.TransactionSid ?? null],
+    
     SerialNumber: [data?.SerialNumber ?? ''],
-
     ChargeMasterSid: [data?.ChargeMasterSid ?? null],
-    ChargeDescription: [data?.ChargeDescription ?? ''],
+    ChargeDescription: [data?.ChargeDescription ?? null],
     NumberOfUnit: [data?.NoOfUnit ?? ''],
-    ChargeUomSid: [data?.ChargeUomSid ?? null],
+
+    // ChargeUomSid: [data?.ChargeUomSid ?? null],
 
     CostPrepaidCollect: [data?.CostPrepaidCollect ?? null],
     CostChargeUomSid:[data?.CostChargeUomSid ?? ''],
     CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
     CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate).toFixed(2) : ''],
     CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(2) : ''],
-    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
-    CostDrCr: [data?.CostDrCr ?? null],
+    // CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
     CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(2) : ''],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
-
-    RevenueDrCr: [data?.RevenueDrCr ?? null],
+    CostNumberOfUnit: [data?.CostNumberOfUnit ?? null],
+    // CostDrCr: [data?.CostDrCr ?? null],
+    // RevenueDrCr: [data?.RevenueDrCr ?? null],
+    RevenueNumberOfUnit:[data?.RevenueNumberOfUnit ?? ''],
     RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
     RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
     RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid ?? null],
     RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(2) : ''],
-    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
+    // RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
     RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
     RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(2) : ''],
+    RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
+    RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
+
     CustomerMasterSid: [data?.CustomerMasterSid ?? null],
     AgentSid: [data?.AgentMasterSid ?? null],
     CustomerBranchSid: [data?.CustomerBranchSid ?? null],
-    RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
-    RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
+    
     Status: [data?.Status ?? ''],
     Remarks: [data?.Remarks ?? '']
   });
@@ -345,28 +359,7 @@ createRateFormGroup(data?: any): FormGroup {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     }
-
     const formValue = this.rateForm.getRawValue();
-    if (this.currentRateIndex !== -1) {
-      if (this.selectedTab === "Cost") {
-        // const existingForm = this.costFormArray.at(this.currentRateIndex) as FormGroup;
-        // existingForm.patchValue(formValue);
-      } else {
-        // const existingForm = this.revenueFormArray.at(this.currentRateIndex) as FormGroup;
-        // existingForm.patchValue(formValue);
-      }
-    } else {
-      if (this.selectedTab === "Cost") {
-        // this.costFormArray.push(this.rateForm);
-      } else {
-        // this.revenueFormArray.push(this.rateForm);
-      }
-    }
-
-    // this.costDataLength = this.costFormArray.length;
-    // this.revenueDataLength = this.revenueFormArray.length;
-    // this.costFormArray.updateValueAndValidity();
-    // this.revenueFormArray.updateValueAndValidity();
     this.updateCostPagination();
     this.updateRevenuePagination();
     this.calculateProfit();
@@ -374,12 +367,13 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   onChargeChange(charge: any) {
+    console.log(charge,'charge')
     if (!charge) {
       this.rateForm.get('ChargeDescription')?.setValue('');
       return;
     }
+    this.rateForm.get('ChargeMasterSid')?.setValue(charge.ChargeMasterSid);
     this.rateForm.get('ChargeDescription')?.setValue(charge.chargeName);
-    this.rateForm.get('ChargeUomSid')?.setValue(charge.UOM);
     this.rateForm.get('CurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
     this.calculateAmount();
     this.getExchangeRate();

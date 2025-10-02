@@ -328,7 +328,7 @@
                         <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
                           class="form-check-input sm" />
                         <label for="PanAvailable" class="form-check-label sm">
-                          {{ isIndianCountry() ? 'PAN/VAt Available' : isUaeCountry() ? 'VAT Available' : 'PAN
+                          {{ isIndianCountry() ? 'PAN/VAT Available' : isUaeCountry() ? 'VAT Available' : 'PAN
                           Available'
                           }}
                         </label>
@@ -357,12 +357,7 @@
                     <div class="custom-form-group">
                       <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
                         formControlName="PanName" />
-                      <label for="PanName" class="input-label">Name as per PAN / VAT <span
-                          class="text-danger">*</span></label>
-                      @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched ||
-                      customerForm.get('PanName')?.dirty)) {
-                      <div class="error-message"><span>Required</span></div>
-                      }
+                      <label for="PanName" class="input-label">Name as per PAN / VAT</label>
                     </div>
                   </aside>
                 </div>
