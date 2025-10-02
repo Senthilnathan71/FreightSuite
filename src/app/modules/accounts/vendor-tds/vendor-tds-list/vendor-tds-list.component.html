@@ -11,12 +11,12 @@
 
 
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col pb-1">
                 <h4 class="page-title mb-0">Supplier TDS Mapping</h4>
             </div>
 
-            <div class="col-md pb-2">
+            <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -42,7 +42,7 @@
                 </form>
             </div>
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="Supplier TDS Mapping" class="mt-1 me-1"></app-favorite-star>
@@ -67,8 +67,16 @@
         </div>
     </div>
 
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+     <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #supplierTdsTable [config]="tableConfig" [data]="allSupplierTDS" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered mb-1">
@@ -136,9 +144,9 @@
             </div>
         </div>
         <div>
-            <!-- <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
-            </ngb-pagination> -->
+            </ngb-pagination>
              <app-common-pagination
             [config]="paginationConfig"
             (pageChange)="onPageChange($event)"
@@ -148,5 +156,5 @@
     </div>
     <div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
         <div class=" text-center">No Records Found</div>
-    </div>
+    </div> -->
 </div>

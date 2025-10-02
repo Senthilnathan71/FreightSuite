@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component,TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -24,6 +24,12 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -42,59 +48,103 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     NgbModalModule,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReusableTableComponent
   ],
   templateUrl: './inco.component.html',
   styleUrl: './inco.component.scss'
 })
-export class IncoComponent{
+export class IncoComponent extends BaseListComponent implements OnInit {
+  @ViewChild('incoTable') incoTable!: ReusableTableComponent;
+  @ViewChild('content') content: TemplateRef<any>
   incoForm!: FormGroup;
   isEditMode: boolean = false;
-  incos: Inco[] [];
+  incos: Inco[][];
   results: any[] = [];
   IncoMasterSid!: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
-  incoList: any[] = [] ;
+  incoList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'IncoName';
-  filterValue = '';
-  searchPerformed = false;
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
-	userData : any;
+  // filterValue = '';
+  // searchPerformed = false;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection = 0;
+  userData: any;
   incoData: any;
   currentMenuId: number;
   TandCList: any;
-  sortColumn: string = 'IncoName';
-  sortDirection: string = 'asc';
+  // sortColumn: string = 'IncoName';
+  // sortDirection: string = 'asc';
   isFavorite: boolean = false;
   loading = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-    // Company
-  currentCompany : any;
-  currentBranch : any;
+  // Company
+  currentCompany: any;
+  currentBranch: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
+  }
 
   statusList = ["Active", "Suspended"];
 
   incoTypeOptions = [
-    { id: 'Sea' , name: 'Sea'},
-    { id: 'All' , name: 'All'}
+    { id: 'Sea', name: 'Sea' },
+    { id: 'All', name: 'All' }
   ];
 
   oceanFreightOptions = [
-    { id: 'Prepaid' , name: 'Prepaid'},
-    { id: 'Collect' , name: 'Collect'}
+    { id: 'Prepaid', name: 'Prepaid' },
+    { id: 'Collect', name: 'Collect' }
   ];
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        condition: (row: any) => this.hasPermission('View')
+      },
+      // {
+      //   icon: 'fas fa-trash',
+      //   label: 'Delete',
+      //   action: 'delete',
+      //   tooltip: 'Delete ',
+      //   class: "text-danger",
+      //   condition: (row: any) => this.hasPermission('Delete')
+      // }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No incofound',
+    dragAndDrop: true
+  };
 
-  constructor( 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'inco-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'IncoName',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allInco() { return this.allItems; }
+  constructor(
     private router: Router,
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -104,10 +154,13 @@ export class IncoComponent{
     private userService: authService,
     private excelReportService: ExcelExportService,
     private route: ActivatedRoute,
-    private spinner: NgxSpinnerService
-  ) {  }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // this.loadInco()
     this.initForm();
     // this.appSettingService.getUser().subscribe(
@@ -121,10 +174,10 @@ export class IncoComponent{
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
     this.route.paramMap.subscribe(params => {
       this.IncoMasterSid = +params.get('id');
       if (this.IncoMasterSid) {
@@ -133,62 +186,230 @@ export class IncoComponent{
       }
     });
     this.loadIncos();
+    // Initialize table configuration
+    this.initializeTableConfig();
+
+    // Initialize base component
+    super.ngOnInit();
   }
 
-      checkPermissions() {
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
+
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.masterService.searchInco(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+    } else {
+      this.appSettingService.showError('Error searching profit-center.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching profit-center.');
+    console.error('Error searching profit-center', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchProfitCenter() {
+    this.search();
+  }
+
+  // clearFilterValue() {
+  //   this.clearFilter();
+  // }
+
+  override trackBy(index: number, item: any): number {
+    return item.IncoMasterSid || index;
+  }
+
+
+  viewinco(item: any, content: any): void {
+    this.editInco(item.IncoMasterSid, content)
+  }
+
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'IncoName',
+        label: 'IncoName',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'IncoCode',
+        label: 'IncoCode ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+
+      {
+        key: 'IncoType',
+        label: 'Inco Type ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'OceanFreight',
+        label: 'Ocean Freight',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewinco(event.row, this.content);
+    } else if (event.action === 'delete') {
+      this.deleteBy(event.row)
+    }
+  }
+
+  deleteBy(row: any) {
+    this.softDeleteInco(row.IncoMasterSid)
+  }
+
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allInco;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.incoTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Profit-Center-Report',
+      title: companyName
+    });
+  }
 
   loadIncos(): void {
-  this.spinner.show();
-  this.loading = true;
-  
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize,
-    sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection
-  };
+    this.spinner.show();
+    this.loading = true;
 
-  this.masterService.searchInco(params).subscribe({
-    next: (response) => {
-      if(response.status) {
-        this.incoList = response.data.items;
-        this.totalLengthOfCollection = response.data.totalCount;
-        this.applySorting();
-        this.searchPerformed = true;
-      }else {
-        this.appSettingService.showError(response.message);
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.masterService.searchInco(params).subscribe({
+      next: (response) => {
+        if (response.status) {
+          this.incoList = response.data.items;
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+        } else {
+          this.appSettingService.showError(response.message);
+        }
+        this.spinner.hide();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching incos:', err);
+        this.incoList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
       }
-      this.spinner.hide();
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error fetching incos:', err);
-      this.incoList = [];
-      this.totalLengthOfCollection = 0;
-      this.loading = false;
-    }
-  });
-}
+    });
+  }
 
   // loadInco(): void {
   //   this.masterService.getAllInco().subscribe(
@@ -209,9 +430,9 @@ export class IncoComponent{
       IncoName: ['', [Validators.required]],
       IncoType: ['', [Validators.required]],
       OceanFreight: ['', [Validators.required]],
-      Remarks : [''],
-      IncoDescription : [''],
-      Status: [{value: 'A', disabled: false}, Validators.required]
+      Remarks: [''],
+      IncoDescription: [''],
+      Status: [{ value: 'A', disabled: false }, Validators.required]
     });
   }
   //  resetForm(): void {
@@ -222,51 +443,51 @@ export class IncoComponent{
   //  }
 
   resetForm(): void {
-  // If editing an existing Inco, reload it (restore original state)
-  if (this.isEditMode && this.IncoMasterSid) {
-    this.loadIncoData(this.IncoMasterSid);
-    return;
+    // If editing an existing Inco, reload it (restore original state)
+    if (this.isEditMode && this.IncoMasterSid) {
+      this.loadIncoData(this.IncoMasterSid);
+      return;
+    }
+
+    // Create-mode: reset form to sensible defaults
+    this.incoForm.reset({
+      IncoCode: '',
+      IncoName: '',
+      IncoType: '',
+      OceanFreight: '',
+      Remarks: '',
+      IncoDescription: '',
+      Status: 'Active'
+    });
+
+    // Reset search and pagination
+    this.filterValue = '';
+    this.page = 1;
+    this.sortColumn = 'IncoName';
+    this.sortDirection = 'asc';
+
+    // Clear selected data
+    this.incoData = null;
+    this.IncoMasterSid = null;
+
+    // Reload the list if needed
+    this.loadIncos();
   }
-
-  // Create-mode: reset form to sensible defaults
-  this.incoForm.reset({
-    IncoCode: '',
-    IncoName: '',
-    IncoType: '',
-    OceanFreight: '',
-    Remarks: '',
-    IncoDescription: '',
-    Status: 'Active'
-  });
-
-  // Reset search and pagination
-  this.filterValue = '';
-  this.page = 1;
-  this.sortColumn = 'IncoName';
-  this.sortDirection = 'asc';
-  
-  // Clear selected data
-  this.incoData = null;
-  this.IncoMasterSid = null;
-  
-  // Reload the list if needed
-  this.loadIncos();
-}
-   openModal(content: any): void {
+  openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-   }
+  }
 
-   openEditModal(content: any, id: number): void {
+  openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.IncoMasterSid = id;
     this.getIncoById(id).add(() => {
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
-  });
-   }
+      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    });
+  }
 
-   editInco(id: number, content: any) {
+  editInco(id: number, content: any) {
     this.isEditMode = true;
     this.IncoMasterSid = id;
     this.masterService.getIncoById(id).pipe(take(1)).subscribe({
@@ -278,20 +499,20 @@ export class IncoComponent{
           IncoName: inco.IncoName,
           IncoType: inco.IncoType,
           OceanFreight: inco.OceanFreight,
-          Remarks : inco.Remarks,
-          IncoDescription : inco.IncoDescription,
+          Remarks: inco.Remarks,
+          IncoDescription: inco.IncoDescription,
           Status: inco.Status === 'A' ? 'Active' : 'Suspended'
         });
-        this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
       },
       error: (err) => {
         console.error('Error fetching Inco', err);
         this.appSettingService.showError('Error fetching data for edting');
       }
     });
-   }
+  }
 
-   closeModal(): void {
+  closeModal(): void {
     if (this.modalRef && typeof this.modalRef.close === 'function') {
       this.modalRef.close();
       this.modalRef = null!;
@@ -308,8 +529,8 @@ export class IncoComponent{
           IncoName: inco.IncoName,
           IncoType: inco.IncoType,
           OceanFreight: inco.OceanFreight,
-          Remarks : inco.Remarks,
-          IncoDescription : inco.IncoDescription,
+          Remarks: inco.Remarks,
+          IncoDescription: inco.IncoDescription,
           Status: inco.Status === 'A' ? 'Active' : 'Suspended'
         });
       },
@@ -332,7 +553,7 @@ export class IncoComponent{
       let CreatedBy = { CreatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let UpdatedBy = { UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.incoForm.value;
-      
+
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...UpdatedBy,
@@ -350,10 +571,10 @@ export class IncoComponent{
           (resp: any) => {
             console.log(resp.message);
             if (resp.Status) {
-              this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/inco']);
               this.loadIncos();
+              this.appSettingService.showSuccess(resp.message);
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -368,10 +589,10 @@ export class IncoComponent{
           (resp: any) => {
             console.log(resp);
             if (resp.Status) {
-              this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/inco']);
               this.loadIncos();
+              this.appSettingService.showSuccess(resp.message);
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -397,7 +618,7 @@ export class IncoComponent{
           ...data,
           Status: data.Status === 'A' ? 'Active' : 'Suspended'
         },
-      );
+        );
       },
       (error) => {
         this.appSettingService.showError('Error loading data.');
@@ -405,48 +626,48 @@ export class IncoComponent{
     );
   }
 
-  
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.loadIncos();
-  }
 
-  applySorting() {
-  this.incoList.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
-updatePaginationData(): void {
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.loadIncos();
+  // }
+
+  // applySorting() {
+  //   this.incoList.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
+
+  //     // Handle null/undefined values
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
+
+  //     // Convert to string for case-insensitive comparison
+  //     valueA = valueA.toString().toLowerCase();
+  //     valueB = valueB.toString().toLowerCase();
+
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  // }
+  updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.loadIncos();
   }
 
-   clearFilterValue() {
+  clearFilterValue() {
     this.filterValue = '';
-   this.loadIncos();
+    this.loadIncos();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -461,146 +682,146 @@ updatePaginationData(): void {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/inco']);
           this.loadIncos();
-          
+
         });
       }
     });
   }
 
-  resetPage(): void {
-    this.incoList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'IncoName';
-    this.page = 1;
-    this.incos = [];
-    this.sortColumn = 'IncoName';
-    this.sortDirection = 'asc';
-    this.loadIncos();
-  }
+  // resetPage(): void {
+  //   this.incoList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.searchPerformed = false;
+  //   this.filterValue = '';
+  //   this.searchType = 'IncoName';
+  //   this.page = 1;
+  //   this.incos = [];
+  //   this.sortColumn = 'IncoName';
+  //   this.sortDirection = 'asc';
+  //   this.loadIncos();
+  // }
 
-  report(): void {
-    const formattedData = this.incoList.map(item => ({
-      ...item,
-      Status: item.Status === 'A' ? 'Active' : 'Suspended'
-    }));
-    //  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-     this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'IncoCode', label: 'Inco Code' },
-        { key: 'IncoName', label: 'Inco Name' },
-        { key: 'IncoType', label: 'Inco Type' },
-        { key: 'OceanFreight', label: 'Ocean Freight' },
-        { key: 'Status', label: 'Status' },
-      ],
-      fileName: 'Inco-Report',
-      title: companyName
-     });
-  }
+  // report(): void {
+  //   const formattedData = this.incoList.map(item => ({
+  //     ...item,
+  //     Status: item.Status === 'A' ? 'Active' : 'Suspended'
+  //   }));
+  //   //  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'IncoCode', label: 'Inco Code' },
+  //       { key: 'IncoName', label: 'Inco Name' },
+  //       { key: 'IncoType', label: 'Inco Type' },
+  //       { key: 'OceanFreight', label: 'Ocean Freight' },
+  //       { key: 'Status', label: 'Status' },
+  //     ],
+  //     fileName: 'Inco-Report',
+  //     title: companyName
+  //   });
+  // }
 
   showInfo() {
-    if(!this.incoData) return;
-        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-        modalRef.componentInstance.item = this.incoData;
-        modalRef.componentInstance.idLabel = 'Inco Id';
-        modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
+    if (!this.incoData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.incoData;
+    modalRef.componentInstance.idLabel = 'Inco Id';
+    modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
   }
 
   openTandC() {
-      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-      const payload = { MenuMasterSid: this.currentMenuId };
-      this.masterService.getTandCByCondition(payload).subscribe(
-        (resp: any) => {
-          if (resp.Status) {
-            this.TandCList = resp.data;
-            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-              size: 'lg',
-              backdrop: 'static',
-              centered: true
-            });
-            modalRef.componentInstance.terms = this.TandCList;
-            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-            modalRef.componentInstance.DocumentSid = this.IncoMasterSid;
-  
-          } else {
-            this.appSettingService.showError('Error loading Terms and Conditions');
-          }
-        },
-        (error) => {
-          this.appSettingService.showError('Error loading Terms and Conditions', error);
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.Status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.IncoMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
         }
-      );
-    }
-    openEmail() {
-      if (!this.incoData) return;
-      const modalRef = this.modalService.open(EmailEntryComponent, {
-        size: 'lg',
-        centered: true,
-        backdrop: 'static'
-      });
-    }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+  openEmail() {
+    if (!this.incoData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
-openAuthority() {
-  if (!this.incoData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.incoData;
-  modalRef.componentInstance.idLabel = 'Inco Id';
-  modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
-}
+  openAuthority() {
+    if (!this.incoData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.incoData;
+    modalRef.componentInstance.idLabel = 'Inco Id';
+    modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
+  }
 
-openEDoc() {
-  if (!this.incoData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.incoData;
-  modalRef.componentInstance.idLabel = 'Inco Id';
-  modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
-}
+  openEDoc() {
+    if (!this.incoData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.incoData;
+    modalRef.componentInstance.idLabel = 'Inco Id';
+    modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
+  }
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.IncoMasterSid) return;
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.IncoMasterSid) return;
 
-  this.masterService.getAuditLogs(
-    'IncoMaster',
-    this.IncoMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['UpdatedOn','UpdatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogs(
+      'IncoMaster',
+      this.IncoMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 }

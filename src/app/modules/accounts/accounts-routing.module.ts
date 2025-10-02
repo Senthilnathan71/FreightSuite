@@ -13,6 +13,7 @@ import { VendorTdsEntryComponent } from './vendor-tds/vendor-tds-entry/vendor-td
 import { LedgerMappingComponent } from './ledger-mapping/ledger-mapping/ledger-mapping.component';
 import { Dashboard1Component } from './dashboard1/dashboard1/dashboard1.component';
 import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
+import { PrintsComponent } from './print-structure/prints/prints.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -196,6 +197,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Receipt" },
+          ],
+        },
+      },
+       {
+        path: "print",
+        component: PrintsComponent,
+        data: {
+          title: "Print",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Print" },
           ],
         },
       },

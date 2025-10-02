@@ -11,13 +11,13 @@
 
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
-            <div class="col pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+            <div class="col pb-1">
                 <h4 class="page-title mb-0">Chart of Accounts</h4>
             </div>
 
          
-                    <div class="col-md pb-2">
+                    <div class="col-md pb-1">
                         <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="d-flex gap-2 col-12 px-0 align-items-center">
                                 <div class="form-outline flex-grow-1 position-relative">
@@ -38,7 +38,7 @@
                     </div>
                
 
-            <div class="col-md-auto pb-2">
+            <div class="col-md-auto pb-1">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                      <app-favorite-star screenName="Chart of Accounts" class="mt-1 me-1"></app-favorite-star>
@@ -62,9 +62,17 @@
            
         </div>
     </div>
+     <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #chartAccountTable [config]="tableConfig" [data]="allChartAccounts" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
 
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="card">
                 <div class="table-responsive">
@@ -152,7 +160,7 @@
 </div>
 
 
-            </div>
+            </div> -->
     
 
             
@@ -160,6 +168,6 @@
    
 
     <!-- No Records -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
+    <!-- <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
         <div>No records found</div>
-    </div>
+    </div> -->
