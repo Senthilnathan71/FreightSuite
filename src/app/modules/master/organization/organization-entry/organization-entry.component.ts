@@ -110,8 +110,10 @@ export class OrganizationEntryComponent implements OnInit {
   tabs = [
     { name: 'Party', icon: 'fas fa-user-tie' },
     { name: 'Branch', icon: 'fas fa-boxes' },
-    { name: 'Milestone', icon: 'fas fa-rupee-sign' },
     { name: 'Salesman', icon: 'fas fa-flag-checkered' },
+    { name: 'Email', icon: 'fas fa-envelope' },
+    { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+    { name: 'Milestone', icon: 'fas fa-rupee-sign' },
   ];
 
   selectedTab1 = "Contact";
