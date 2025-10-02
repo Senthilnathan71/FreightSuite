@@ -679,7 +679,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   }
 
   getTariffDetailsByQuote(payload: any) {
-    return this.http.post<{ data: any[] }>('ff-quotation/tariffDetails', payload).pipe(
+    return this.http.post<{ data: any[] }>('ff-booking/tariffDetails', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

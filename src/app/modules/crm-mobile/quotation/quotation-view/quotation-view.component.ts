@@ -99,6 +99,13 @@ export class QuotationViewComponent extends BaseListComponent implements OnInit 
         tooltip: 'File Quotation',
         // condition: (row: any) => this.hasPermission('View')
       },
+       {
+        icon: 'fas fa-book',
+        label: 'Booking',
+        action: 'booking',
+        tooltip: 'Create Booking',
+        // condition: (row: any) => this.hasPermission('View')
+      },
     ],
     selectable: false,
     multiSelect: false,
@@ -311,6 +318,8 @@ export class QuotationViewComponent extends BaseListComponent implements OnInit 
       this.viewQuotation(event.row);
     } else if (event.action === "File") {
       this.fileBy(event.row,this.content)
+    } else if (event.action === "booking") {
+      this.goForBookingCreation(event.row)
     }
   }
  
@@ -834,17 +843,100 @@ fileBy(row: any, content: TemplateRef<any>) {
   // }
 
   goForBookingCreation(QuoteData) {
-    console.log(QuoteData, 'QuoteData')
+    console.log(QuoteData, 'QuoteData');
+
+    // TODO : need to fix this after completion of Authorization
+    // const approvedRoute = (QuoteData.quoteRoute || []).find(route =>
+    //   route.quoteCarrier.some(carrier => carrier.ApprovalStatus === "A")
+    // ) || {};
+    const approvedRoute = QuoteData.quoteRoute[0] || [];
+    const POO = this.ports.find(port => port.PortMasterSid === approvedRoute.PORSid);
+    const POL = this.ports.find(port => port.PortMasterSid === approvedRoute.POLSid);
+    const POD = this.ports.find(port => port.PortMasterSid === approvedRoute.PODSid);
+    const FPD = this.ports.find(port => port.PortMasterSid === approvedRoute.FDPSid);
+
+
+    // TODO : need to fix this after completion of Authorization
+    // const approvedCarrier = (approvedRoute?.quoteCarrier || []).find(
+    //   carrier => carrier.ApprovalStatus === "A"
+    // ) || {};
+    const approvedCarrier = approvedRoute?.quoteCarrier?.[0] || {};
+
+    const cargo = approvedRoute?.quoteCargo?.[0] || {};
+
     const data = {
       quotation: true,
-      DepartmentMasterSid: QuoteData.DepartmentMasterSid,
-      CustomerMasterSid: QuoteData.CustomerMasterSid,
-      CustomerName: QuoteData.CustomerName,
-      CustomerAddress: QuoteData.CustomerAddress,
-      SalesmanSid: QuoteData.SalesmanSid,
-      FreightTerms: QuoteData.FreightPPCC,
-      QuotationHeaderSid: QuoteData.QuoteNumber,
-    }
+      DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
+      CustomerMasterSid: QuoteData.CustomerMasterSid || null,
+      CustomerBranchSid: QuoteData.CustomerBranchSid || null,
+      CustomerName: QuoteData.CustomerName || "",
+      CustomerAddress: QuoteData.CustomerAddress || "",
+      SalesmanSid: QuoteData.SalesmanSid || null,
+      FreightTerms: QuoteData.FreightPPCC || "",
+      QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
+      CarrierName: approvedCarrier?.CarrierName || "",
+
+      POO: POO?.PortCode || null,
+      POL: POL?.PortCode || null,
+      POD: POD?.PortCode || null,
+      FPD: FPD?.PortCode || null,
+
+      bookingCargo: cargo ? [
+        {
+          CargoType: cargo.CargoType,
+          GrossWeight: cargo.GrossWeight,
+          NetWeight: cargo.NetWeight,
+          Volume: cargo.Volume,
+          ChargeableWeight: cargo.ChargeableWeight,
+          ContainerType: cargo.ContainerType,
+          NoofContainers: cargo.Qty,
+        }
+      ] : [],
+
+      bookingProduct: (cargo?.quoteProduct || []).map(product => ({
+        ProductName: product.ProductName,
+        ExternaPkg: product.ExternalPkg,
+        ExternlQty: product.ExternalQty,
+        GrossWeight: product.GrossWeight,
+        NetWeight: product.NetWeight,
+        Volume: product.Volume,
+        IsHaz: product.IsHaz,
+        ImcoClass: product.ImcoClass,
+        UnNo: product.UnNo,
+        PkgGroup: product.PkgGroup,
+        Length: product.Length,
+        Width: product.Width,
+        Height: product.Height,
+        UomMasterSid: product.UomMasterSid,
+      })),
+
+      bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
+        CompanyMasterSid: charge.CompanyMasterSid,
+        BranchMasterSid: charge.BranchMasterSid,
+        SerialNumber: index + 1,
+        ChargeMasterSid: charge.ChargeUomSid, 
+        ChargeDescription: charge.ChargeDisplayName,
+        NoOfUnit: charge.Qty,
+
+        CostChargeUomSid: charge.CostChargeUomSid,
+        CostPrepaidCollect: charge.CostPrepaidCollect,
+        CostDrCr: charge.CostDrCr,
+        CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
+        CostExchangeRate: charge.CostExchangeRate,
+        CostRate: charge.CostRate,
+        CostAmount: charge.CostAmount,
+        CostLocalAmount: charge.CostLocalAmount,
+
+        RevenueChargeUomSid: charge.RevenueChargeUomSid,
+        RevenuePrepaidCollect: charge.RevenuePrepaidCollect,
+        RevenueDrCr: charge.RevenueDrCr,
+        RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
+        RevenueExchangeRate: charge.RevenueExchangeRate,
+        RevenueRate: charge.RevenueRate,
+        RevenueAmount: charge.RevenueAmount,
+        RevenueLocalAmount: charge.RevenueLocalAmount,
+      }))
+    };
 
     this.route.navigate(['operation/booking/entry'], {
       state: {

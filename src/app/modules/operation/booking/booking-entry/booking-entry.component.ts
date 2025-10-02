@@ -381,7 +381,8 @@ dataFromQuotation:any
     this.loadOtherLookups();
 
     if (this.dataFromQuotation?.quotation) {
-      this.patchBookingFromQuotation(this.dataFromQuotation);
+      // this.patchBookingFromQuotation(this.dataFromQuotation);
+      this.patchValues(this.dataFromQuotation);
       this.minDate = this.today;
     } else {
       this.currentRoute.paramMap.subscribe((param) => {
@@ -762,7 +763,7 @@ dataFromQuotation:any
       StuffingAt: cargoData?.StuffingAt
     })
     this.handleCFSOrYard();
-    const otherData = response.bookingOthers[0];
+    const otherData = response.bookingOthers?.[0];
     this.otherForm.patchValue({
       BookingOthersSid: otherData?.BookingOthersSid,
       CustomerRefNo: otherData?.CustomerRefNo,

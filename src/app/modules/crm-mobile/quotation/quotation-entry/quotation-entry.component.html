@@ -352,7 +352,7 @@
                         </aside>
                         <aside class="col-md-3">
                           <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
+                            [class.filled]="!!quoteRoutes.at(routeIndex).get('POLSid')?.value">
                             <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
                               bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
 
@@ -369,7 +369,7 @@
                         </aside>
                         <aside class="col-md-3">
                           <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
+                            [class.filled]="!!quoteRoutes.at(routeIndex).get('PODSid')?.value">
                             <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
                               bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
                               (change)="onRouteChange(routeIndex)">
@@ -2271,17 +2271,25 @@
                   <th rowspan="2" class="bg-transparent text-light align-middle">Action</th>
                   <th rowspan="2" class="bg-transparent text-light align-middle">Charge Code</th>
                   <th rowspan="2" class="bg-transparent text-light align-middle">Qty</th>
-                  <th colspan="4" class="bg-transparent text-light align-middle">Sell</th>
-                  <th colspan="3" class="bg-transparent text-light align-middle">Cost</th>
+                  <th colspan="6" class="bg-transparent text-light align-middle">Sell</th>
+                  <th colspan="6" class="bg-transparent text-light align-middle">Cost</th>
                 </tr>
                 <tr class="bg-info text-white">
+                  <!-- Sell -->
                   <th class="bg-transparent text-light align-middle">Unit</th>
                   <th class="bg-transparent text-light align-middle">Currency</th>
                   <th class="bg-transparent text-light align-middle">Per Unit</th>
+                  <th class="bg-transparent text-light align-middle">Ex Rate</th>
                   <th class="bg-transparent text-light align-middle">Amount</th>
+                  <th class="bg-transparent text-light align-middle">Local Amount</th>
+
+                  <!-- Cost -->
                   <th class="bg-transparent text-light align-middle">Unit</th>
                   <th class="bg-transparent text-light align-middle">Currency</th>
                   <th class="bg-transparent text-light align-middle">Per Unit</th>
+                  <th class="bg-transparent text-light align-middle">Ex Rate</th>
+                  <th class="bg-transparent text-light align-middle">Amount</th>
+                  <th class="bg-transparent text-light align-middle">Local Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -2293,13 +2301,22 @@
                   </td>
                   <td>{{ sc.ChargeCode }}</td>
                   <td>{{ sc.Qty || '' }}</td>
-                  <td>{{ sc.UOMMaster?.UOMName }}</td>
-                  <td>{{ sc.currencyMasterSale?.currencyName }}</td>
+
+                  <!-- Sell -->
+                  <td>{{ sc.UOMMaster?.UOMCode }}</td>
+                  <td>{{ sc.currencyMasterSale?.currencyCode }}</td>
                   <td>{{ sc.SalePerUnitPrice }}</td>
-                  <td>{{ sc.Amount || ''}}</td>
-                  <td>{{ sc.UOMMaster?.UOMName }}</td>
-                  <td>{{ sc.currencyMasterBuy?.currencyName }}</td>
+                  <td>{{ sc.revenueExchangeRate }}</td>
+                  <td>{{ sc.RevenueAmount || ''}}</td>
+                  <td>{{ sc.RevenueLocalAmount || ''}}</td>
+
+                  <!-- Cost -->
+                  <td>{{ sc.UOMMaster?.UOMCode }}</td>
+                  <td>{{ sc.currencyMasterBuy?.currencyCode }}</td>
                   <td>{{ sc.BuyPerUnitPrice }}</td>
+                  <td>{{ sc.costExchangeRate }}</td>
+                  <td>{{ sc.CostAmount || ''}}</td>
+                  <td>{{ sc.CostLocalAmount || ''}}</td>
                 </tr>
               </tbody>
             </table>
