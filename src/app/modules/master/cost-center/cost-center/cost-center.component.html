@@ -29,7 +29,14 @@
 </ngx-spinner>
 
 <div class="row compact-form">
-    <div class="col-12">
+       <app-page-header 
+    [title]="'Cost Center'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+    <!-- <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Cost Center</h4>
@@ -85,7 +92,7 @@
 
 
         </div>
-    </div>
+    </div> -->
     <!-- Reusable Table Component -->
     <div class="col-12 px-0">
         <app-reusable-table #costcenterTable [config]="tableConfig" [data]="allCostcenter" [loading]="tableLoading"

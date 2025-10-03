@@ -289,7 +289,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
-        disabled: this.totalLengthOfCollection !== 0
+        disabled: this.totalLengthOfCollection === 0
       },
       {
         label: 'Reset',

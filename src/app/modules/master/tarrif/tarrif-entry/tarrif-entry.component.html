@@ -211,7 +211,7 @@
   [isLoading]="isDataLoading">
 </dofi-searchable-dropdown> -->
                             <ng-select class="ng-select" formControlName="FDCSid">
-                                <ng-option value="">Select FDC</ng-option>
+                                <!-- <ng-option value="">Select FDC</ng-option> -->
                                 @for (port of portList; track port) {
                                 <ng-option [value]="port.PortMasterSid"> {{port.PortCode}}-{{ port.PortName }} 
                                    </ng-option>

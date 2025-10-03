@@ -343,35 +343,53 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
   }
 
   // report/export
-  report(): void {
-    const formattedData = (this.allSchedules || []).map((item: any) => ({
-      vessel: item.vesselMaster?.VesselName || '',
-      voyage: item.VoyageNo || '',
-      POL: item.POLPort || this.getFormattedPort(item.POLSid),
-      POD: item.PODPort || this.getFormattedPort(item.PODSid),
-      ETA: item.ETA || '',
-      ETD: item.ETD || ''
-    }));
+  // report(): void {
+  //   const formattedData = (this.allSchedules || []).map((item: any) => ({
+  //     vessel: item.vesselMaster?.VesselName || '',
+  //     voyage: item.VoyageNo || '',
+  //     POL: item.POLPort || this.getFormattedPort(item.POLSid),
+  //     POD: item.PODPort || this.getFormattedPort(item.PODSid),
+  //     ETA: item.ETA || '',
+  //     ETD: item.ETD || ''
+  //   }));
 
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   const visibleColumns = this.scheduleTable?.getVisibleColumns?.() ?? [
+  //     { key: 'vslvoy', label: 'Vsl/Voy' },
+  //     { key: 'POLPort', label: 'POL' },
+  //     { key: 'PODPort', label: 'POD' },
+  //     { key: 'ETA', label: 'ETA' },
+  //     { key: 'ETD', label: 'ETD' }
+  //   ];
+
+  //   const headers = visibleColumns.map((c: any) => ({ key: c.key, label: c.label }));
+
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers,
+  //     fileName: 'Sailing-Schedule-Report',
+  //     title: companyName
+  //   });
+  // }
+
+    report(): void {
+    const formattedData = this.allSchedules;
     const companyName = this.currentCompany?.companyName ?? 'Company';
-    const visibleColumns = this.scheduleTable?.getVisibleColumns?.() ?? [
-      { key: 'vslvoy', label: 'Vsl/Voy' },
-      { key: 'POLPort', label: 'POL' },
-      { key: 'PODPort', label: 'POD' },
-      { key: 'ETA', label: 'ETA' },
-      { key: 'ETD', label: 'ETD' }
-    ];
 
-    const headers = visibleColumns.map((c: any) => ({ key: c.key, label: c.label }));
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.scheduleTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
 
     this.excelReportService.exportAsExcel({
       data: formattedData,
-      headers,
+      headers: dynamicHeaders,
       fileName: 'Sailing-Schedule-Report',
       title: companyName
     });
   }
-
   // small helpers for template
   searchSchedules() {
     this.page = 1;

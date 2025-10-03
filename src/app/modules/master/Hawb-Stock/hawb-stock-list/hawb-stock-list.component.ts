@@ -91,7 +91,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
   tableLoading = false;
 
   protected config: ListComponentConfig = {
-    storageKey: 'hawb-list-state',
+    storageKey: 'hawb-stock-list-state',
     defaultPageSize: 10,
     defaultSortColumn: 'AirwayBillType',
     defaultSortDirection: 'desc',
