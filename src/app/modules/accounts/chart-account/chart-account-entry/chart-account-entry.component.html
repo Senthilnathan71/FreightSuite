@@ -1,7 +1,7 @@
 <div class="row compact-form" [formGroup]="chartForm">
     <div class="col-12 px-0">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-auto">
-            <div class="col-md-4 pb-2">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-auto">
+            <div class="col-md-4 pb-1">
                   <div class="d-flex align-items-center gap-2">
                          <div class="brand-icon">
                         <i class="fas fa-chart-line"></i>
@@ -14,7 +14,7 @@
         }
                 </div>
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     
@@ -55,12 +55,12 @@
     </div>
     <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
-            <div class="card-body py-2 px-3">
-                <div class="row pb-2 rounded border border-top-0" >
-                       <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+            <div class="card-body">
+                <div class="row" >
+                       <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                          <i class="fas fa-chart-line"></i>
                         <h5 class="card-titlename mb-0">Chart of Accounts Information</h5>
-                    </div>
+                    </div> -->
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -93,36 +93,36 @@
                         </div>
                     </aside>
 
-                    <div class="row my-1">
-                        <aside class="col-6 col-md-2 mt-2">
+                    <div class="row">
+                        <aside class="col-4 col-md-2">
                             <div class="form-check">
                                 <input type="radio" id="asset" class="form-check-input" name="accountType" />
                                 <label for="asset" class="form-check-label">Asset</label>
                             </div>
                         </aside>
 
-                        <aside class="col-6 col-md-2 mt-2">
+                        <aside class="col-4 col-md-2">
                             <div class="form-check">
                                 <input type="radio" id="liability" class="form-check-input" name="accountType" />
                                 <label for="liability" class="form-check-label">Liability</label>
                             </div>
                         </aside>
 
-                        <aside class="col-6 col-md-2 mt-2">
+                        <aside class="col-4 col-md-2">
                             <div class="form-check">
                                 <input type="radio" id="equity" class="form-check-input" name="accountType" />
                                 <label for="equity" class="form-check-label">Equity</label>
                             </div>
                         </aside>
 
-                        <aside class="col-6 col-md-2 mt-2">
+                        <aside class="col-4 col-md-2">
                             <div class="form-check">
                                 <input type="radio" id="Income" class="form-check-input" name="accountType" />
                                 <label for="Income" class="form-check-label">Income</label>
                             </div>
                         </aside>
 
-                        <aside class="col-6 col-md-2 mt-2">
+                        <aside class="col-4 col-md-2">
                             <div class="form-check">
                                 <input type="radio" id="Expense" class="form-check-input" name="accountType" />
                                 <label for="Expense" class="form-check-label">Expense</label>
@@ -184,7 +184,7 @@
                             <label for="text-input" class="input-label">Sub Group</label>
                         </div>
                     </aside>
-                    <aside class="col-md-4 mt-3 mt-md-0">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('Category')?.value">
                             <ng-select formControlName="Category" [items]="modeOfCategory" bindLabel="name"
                                 bindValue="name">
@@ -197,7 +197,7 @@
                             </div>
                         </div>
                     </aside>
-                    <aside class="col-md-4 mt-3 mt-md-0">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('LedgerType')?.value">
                             <ng-select formControlName="LedgerType" [items]="modeOfReportType" bindLabel="name"
                                 bindValue="name">

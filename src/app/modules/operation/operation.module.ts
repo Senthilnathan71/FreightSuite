@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { OperationRoutes } from './operation-routing.module';
 import { OperationService } from './operation.service';
+import { TaxCalculationService } from './services/tax-calculation.service';
 import { MasterDocumentUploadComponent } from './master-document-upload/master-document-upload.component';
 
 
@@ -15,6 +16,6 @@ import { MasterDocumentUploadComponent } from './master-document-upload/master-d
     ReactiveFormsModule,
     RouterModule.forChild(OperationRoutes)
   ],
-  providers: [OperationService]
+  providers: [OperationService, TaxCalculationService]
 })
 export class OperationModule { }

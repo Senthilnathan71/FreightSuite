@@ -1272,3 +1272,84 @@
     margin-top: 0px;
   }
 }
+
+// Voucher Generation Modal Styles
+.voucher-type-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+
+    .card {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+.voucher-card-hover {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.voucher-icon {
+  transition: all 0.3s ease;
+}
+
+.voucher-type-card:hover .voucher-icon i {
+  transform: scale(1.1);
+}
+
+// Billing Party Selection Styles
+.billing-parties-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.billing-party-item {
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  &.border-primary {
+    background-color: rgba(0, 123, 255, 0.05);
+
+    .billing-party-arrow i {
+      color: #007bff;
+      transform: translateX(5px);
+    }
+  }
+}
+
+.billing-party-arrow {
+  transition: all 0.3s ease;
+}
+
+// Modal header improvements
+.modal-header {
+  border-bottom: 2px solid #f8f9fa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .modal-title {
+    font-weight: 600;
+  }
+
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
+.modal-footer {
+  border-top: 2px solid #f8f9fa;
+  background-color: #f8f9fa;
+}

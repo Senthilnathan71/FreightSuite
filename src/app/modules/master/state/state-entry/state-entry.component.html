@@ -3,30 +3,30 @@
   <form [formGroup]="stateForm">
     <div class="row compact-form">
       <!-- Top buttons -->
-      <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-          <div class="col-md-4 d-flex pb-2">
-             <div class="d-flex align-items-center gap-2">
-               <div class="brand-icon">
-                   <i class="fas fa-map-marker-alt"></i>
+      <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+          <div class="col-md-4 d-flex pb-1">
+            <div class="d-flex align-items-center gap-2">
+              <div class="brand-icon">
+                <i class="fas fa-map-marker-alt"></i>
 
-                    </div>
-            <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} State Master</h5>
-            @if(isEditMode){
-            <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-              <i class="fas fs-6 fa-info-circle"></i>
-            </a>
-            }
+              </div>
+              <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} State Master</h5>
+              @if(isEditMode){
+              <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                <i class="fas fs-6 fa-info-circle"></i>
+              </a>
+              }
             </div>
-           
+
           </div>
-          <div class="col-md-8 pb-2">
+          <div class="col-md-8 pb-1">
             <div
               class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
               <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
+                (click)="openAuditLogs(auditLogModal)">
+                <i class="fas fa-history me-1"></i>Logs
+              </button>
 
 
               <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -46,16 +46,21 @@
                 {{ isEditMode ? 'Edit' : 'Save' }}
               </button>
               <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div>
+                <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                  ngbDropdownToggle>
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                  <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                      class="fas fa-file-alt me-1"></i> Edoc</button>
+                  <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                      class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                  <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                      class="fas fa-shield-alt me-1"></i> Authorize</button>
+                  <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                      class="fas fa-envelope me-1"></i> Email</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -77,14 +82,14 @@
 
 
       <!-- Left card section -->
-      <div class="col-md-12">
+      <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
-                  <div class="card-body py-2 px-3">
-                <div class="row pb-2 rounded border border-top-0">
-                <div class="card-header-title d-flex align-items-center gap-2">
+          <div class="card-body">
+            <div class="row">
+              <!-- <div class="card-header-title d-flex align-items-center gap-2">
                          <i class="fas fa-map-marker-alt fs-4"></i>
                         <h5 class="card-titlename mb-0">State Information</h5>
-                    </div>
+                    </div> -->
               <!-- Name -->
               <!-- <aside class="col-md-12">
                 <div class="custom-form-group">
@@ -199,17 +204,19 @@
 
               <!-- Country -->
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="!!stateForm.get('CountryMasterSid')?.value">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!stateForm.get('CountryMasterSid')?.value">
                   <ng-select [items]="countries" bindLabel="countryName" bindValue="CountryMasterSid"
-                    formControlName="CountryMasterSid" id="CountryMasterSid" 
-                    [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"   placeholder="" ></ng-select>
+                    formControlName="CountryMasterSid" id="CountryMasterSid"
+                    [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
+                    placeholder=""></ng-select>
                   <label class="input-label">Country <span class="text-danger">*</span></label>
                   <div *ngIf="
         (stateForm.get('CountryMasterSid')?.touched || stateForm.get('CountryMasterSid')?.dirty) &&
         stateForm.get('CountryMasterSid')?.invalid
       " class="error-message">
                     <span *ngIf="stateForm.get('CountryMasterSid')?.hasError('required')">
-                     Required
+                      Required
                     </span>
                   </div>
                 </div>
@@ -217,7 +224,8 @@
 
 
               <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select" [class.filled]="!!stateForm.get('ZoneMasterSid')?.value">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!stateForm.get('ZoneMasterSid')?.value">
                   <ng-select formControlName="ZoneMasterSid" class="ng-select">
                     <!-- <ng-option value="">Select Zone</ng-option> -->
                     <ng-option *ngFor="let option of zones" [value]="option.ZoneMasterSid" placeholder="">
@@ -225,7 +233,7 @@
                     </ng-option>
                   </ng-select>
                   <label for="text-input" class="input-label">Zone <span class="text-danger fw-bold">*</span></label>
-                   <div *ngIf="
+                  <div *ngIf="
         (stateForm.get('ZoneMasterSid')?.touched || stateForm.get('ZoneMasterSid')?.dirty) &&
         stateForm.get('ZoneMasterSid')?.invalid
       " class="error-message">
@@ -237,7 +245,7 @@
               </aside>
 
 
-              
+
 
               <!-- Remarks -->
               <aside class="col-md-4">
@@ -249,12 +257,13 @@
               </aside>
               <!-- Status -->
               <aside class="col-md-4">
-                <div *ngIf="!isEditMode" class="custom-form-group" >
+                <div *ngIf="!isEditMode" class="custom-form-group">
                   <input type="text" class="custom-input-field sm" value="Active" readonly>
                   <label class="input-label">Status</label>
                 </div>
 
-                <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select" [class.filled]="!!stateForm.get('status')?.value">
+                <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!stateForm.get('status')?.value">
                   <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
                     formControlName="status"></ng-select>
                   <label class="input-label">Status</label>
@@ -266,7 +275,7 @@
         </div>
       </div>
     </div>
-     <!-- @if(isEditMode){
+    <!-- @if(isEditMode){
     <div class="col-12 mt-3">
     <div class="card">
         <div class="card-body">
@@ -311,40 +320,40 @@
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Changed At</th>
+            <th>Changed By</th>
+            <th>Operation</th>
+            <th class="text-center">Old Value</th>
+            <th class="text-center">New Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.changedAt | date:'medium' }}</td>
+            <td>{{ log.changedBy || '-' }}</td>
+            <td>{{ log.operation }}</td>
+            <td class="bg-light-danger">
+              <ul>
+                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+            <td class="bg-light-success">
+              <ul>
+                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+          </tr>
+          <tr *ngIf="auditLogs.length === 0">
+            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
   </div>

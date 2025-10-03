@@ -165,18 +165,40 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
     this.setDateStringModel();
   }
 
-  setDateStringModel() {
-    this.dateString = this.datetime.toString();
+  // setDateStringModel() {
+  //   this.dateString = this.datetime.toString();
 
-    if (!this.firstTimeAssign) {
-      this.onChange(this.dateString);
-    } else {
-      // Skip very first assignment to null done by Angular
-      if (this.dateString !== null) {
-        this.firstTimeAssign = false;
-      }
+  //   if (!this.firstTimeAssign) {
+  //     this.onChange(this.dateString);
+  //   } else {
+  //     // Skip very first assignment to null done by Angular
+  //     if (this.dateString !== null) {
+  //       this.firstTimeAssign = false;
+  //     }
+  //   }
+  // }
+
+
+  setDateStringModel() {
+  // if time is not set, default to 00:00:00 (12:00 AM)
+  if (this.datetime && 
+      (this.datetime.hour === null || this.datetime.minute === null || this.datetime.second === null)) {
+    this.datetime.hour = 0;     // 12 AM
+    this.datetime.minute = 0;
+    this.datetime.second = 0;
+  }
+
+  this.dateString = this.datetime.toString();
+
+  if (!this.firstTimeAssign) {
+    this.onChange(this.dateString);
+  } else {
+    if (this.dateString !== null) {
+      this.firstTimeAssign = false;
     }
   }
+}
+
 
   inputBlur($event) {
     this.onTouched();

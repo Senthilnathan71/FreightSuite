@@ -590,15 +590,14 @@
                         leadForm.get('leadReferredBy')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('leadReferredBy')?.hasError('required')){
-                           Required
+                            Required
                             }
                         </div>
                         }
                     </aside>
                     <aside class="col-md-3 mt-md-3">
                         <div class="form-check">
-                            <input type="checkbox" id="is-qualify" class="form-check-input"
-                                formControlName="isQualify">
+                            <input type="checkbox" id="is-qualify" class="form-check-input" formControlName="isQualify">
                             <label for="is-qualify" class="form-check-label">Qualify Lead</label>
                         </div>
                     </aside>
@@ -619,9 +618,12 @@
                         }
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="customer-ref" placeholder="" class="custom-input-field sm"
-                                formControlName="preCustomerType" [textWithNumbers]="10">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('preCustomerType')?.value">
+                            <!-- <input type="text" id="customer-ref" placeholder="" class="custom-input-field sm"
+                                formControlName="preCustomerType" [textWithNumbers]="10"> -->
+                                <ng-select class="ng-select" formControlName="preCustomerType" [items]="modeOfCustomerType" bindLabel="name"
+                                bindValue="name"
+                                placeholder=""></ng-select>
                             <label for="customer-ref" class="input-label">Customer Type</label>
                         </div>
                         @if(leadForm.get('preCustomerType')?.touched &&
@@ -639,16 +641,9 @@
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!leadForm.get('leadStatus')?.value">
                             <ng-select class="ng-select" formControlName="leadStatus" placeholder="">
-                                <ng-option value="Discovery">Discovery</ng-option>
-                                 <ng-option value="Qualify">Qualify</ng-option>
-                                <ng-option value="MeetingScheduled"> MeetingScheduled</ng-option>
-                                <ng-option value="MeetingCompleted"> MeetingCompleted</ng-option>
-                                <ng-option value="EnquiryGenerated"> EnquiryGenerated</ng-option>
-                                <ng-option value="QuotationCreated"> QuotationCreated</ng-option>
-                                <ng-option value="QuotationConfirmed"> QuotationConfirmed</ng-option>
-                                <ng-option value="ContractSigned"> ContractSigned</ng-option>
-                                <ng-option value="DealWon"> DealWon</ng-option>
-                                <ng-option value="DealLost"> DealLost</ng-option>
+                                <ng-option *ngFor="let status of filteredStatuses" [value]="status">
+                                    {{ status }}
+                                </ng-option>
                             </ng-select>
                             <label for="lead-source" class="input-label">leadStatus <span
                                     class="text-danger"></span></label>
@@ -936,7 +931,7 @@
                         </div>
                         }
                     </aside>
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="PurchaseTimeline" [textWithNumbers]="100">
@@ -951,7 +946,7 @@
                             }
                         </div>
                         }
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -1975,7 +1970,7 @@
                                 </div>
                                 }
                             </aside>
-                            <aside class="col-md-4">
+                            <!-- <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="PurchaseTimeline" [textWithNumbers]="100">
@@ -1990,7 +1985,7 @@
                                     }
                                 </div>
                                 }
-                            </aside>
+                            </aside> -->
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

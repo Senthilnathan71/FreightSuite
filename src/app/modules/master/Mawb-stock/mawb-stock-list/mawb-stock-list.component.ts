@@ -50,7 +50,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-  // Table configuration
+   // Table configuration
   tableConfig: TableConfig = {
     columns: [],
     actions: [
@@ -58,14 +58,14 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Mawb',
+        tooltip: 'View',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Mawb',
+        tooltip: 'Delete',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -75,8 +75,8 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: 'MawbStockSid',
-    emptyMessage: 'No mawb found',
+    trackByKey: 'HawbStockSid',
+    emptyMessage: 'No hawb found',
     dragAndDrop: true
   };
 
@@ -379,6 +379,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
             this.loadMawbStocks();
+            this.searchMawbs();
           },
           error: (err) => {
             console.error('Delete error:', err);
