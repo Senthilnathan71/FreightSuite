@@ -130,8 +130,10 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
+      console.log(response.data.items,'response.data.items')
        this.allItems = (response.data.items || []).map((item: any) => ({
       ...item,
+
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
