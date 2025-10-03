@@ -53,7 +53,8 @@
 
 
                     <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                        <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i>
+                        <!-- <i class="mdi mdi-plus" ></i> -->
+                         <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i> 
                         @if (!isMobile) {
                         Create 
                         }
@@ -152,7 +153,7 @@
          <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="row bg-white py-2 rounded shadow-sm mx-auto">
             <div class="col-12">
-                <div class="card mb-0">
+                <div class="card mb-0 border-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>

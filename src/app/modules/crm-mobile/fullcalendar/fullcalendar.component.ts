@@ -63,6 +63,14 @@ export class FullcalendarComponent implements OnInit {
   modalAddFormRef!: NgbModalRef;
   calendarEventData : any;
 
+  meetingDurations = [
+  { label: '10 min', value: '10 min' },
+  { label: '20 min', value: '20 min' },
+  { label: '30 min', value: '30 min' },
+  { label: '40 min', value: '40 min' },
+  { label: '50 min', value: '50 min' },
+  { label: '1 hr', value: '1 hr' }
+];
 
   viewDate: Date = new Date();
   customers: any
@@ -318,7 +326,8 @@ export class FullcalendarComponent implements OnInit {
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
       meetingStatus: ['scheduled', Validators.required],
-      followUpNote: ['']
+      followUpNote: [''],
+      meetingDuration:['10 min']
     });
      this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
     this.meetingForm.get('meetingNote').updateValueAndValidity();
@@ -478,8 +487,8 @@ private meetingNoteValidator(control: AbstractControl) {
   console.log('Current Branch:', this.currentBranch);
   console.log('Form Values:', this.meetingForm.value);
     const meetingDateStr = this.meetingForm.value.meetingDate;
-    const meetingDate = new Date(meetingDateStr);
-    const timeDropdown = this.meetingForm.value.meetingDuration;
+    // const meetingDate = new Date(meetingDateStr);
+    const meetingDuration = this.meetingForm.value.meetingDuration;
   // Convert followUpDate in same format as meetingDate
 let followUpDate: string = null;
 if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
@@ -494,11 +503,12 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
 }
   const payload = {
     ...this.meetingForm.value,
-    meetingDate : meetingDate,
+    meetingDate : meetingDateStr,
     followUpDate: followUpDate,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    userEmail: userEmail
+    userEmail: userEmail,
+    meetingDuration: meetingDuration,
   };
   
   console.log('Final Payload:', payload);
@@ -645,7 +655,8 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
           meetingStatus: this.preCustomerMeetingData.meetingStatus || 'scheduled',
           followUp: followUp,  // Automatically set followUp based on API response
           followUpDate: followUp ? followUpDate : '',
-          followUpNote: followUp ? this.preCustomerMeetingData.followUpNote || '' : ''
+          followUpNote: followUp ? this.preCustomerMeetingData.followUpNote || '' : '',
+          meetingDuration:this.preCustomerMeetingData.meetingDuration,
         });
 
         this.meetingForm.controls['meetingStatus'].enable();

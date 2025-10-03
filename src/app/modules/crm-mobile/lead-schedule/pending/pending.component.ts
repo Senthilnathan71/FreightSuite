@@ -30,7 +30,7 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   isMobile: boolean = false;
   currentCompany: any;
   currentBranch: any;
-
+  PreCustomerMasterSid:any;
   // Table configuration
   tableConfig: TableConfig = {
     columns: [],
@@ -76,7 +76,7 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   }
   tabs = [
     { name: 'Opportunity', icon: 'fas fa-calendar-check' },
-    { name: 'Existing Meeting', icon: 'fas fa-boxes' },
+    { name: 'Existing Customers', icon: 'fas fa-boxes' },
   ];
   pendingSchedule: any[] = []
 
@@ -98,13 +98,34 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     this.leadService.getAllPendingMeetings(CompanyMasterSid, BranchMasterSid).subscribe(
       (resp: any[]) => {
-        console.log(resp)
+        console.log(resp,"Pending Schedule")
         this.pendingSchedule = resp['data'];  // On success, store the leads data in the component
         this.spinner.hide();
       }
     );
 
   }
+
+  getAllExistingCustomers() {
+    this.spinner.show();
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const PreCustomerMasterSid = this.PreCustomerMasterSid;
+
+    const payload ={
+      CompanyMasterSid : CompanyMasterSid,
+      PreCustomerMasterSid :PreCustomerMasterSid
+    }
+    this.leadService.getAllExistingCustomers(payload).subscribe(
+      (resp: any[]) => {
+        console.log(resp)
+        this.pendingSchedule = resp['data'];  
+        this.spinner.hide();
+      }
+    );
+
+  }
+
 
   protected searchItems(): Observable<any> {
     this.tableLoading = true;

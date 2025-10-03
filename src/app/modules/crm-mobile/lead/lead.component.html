@@ -223,8 +223,8 @@
 
 <div class="row compact-form" [formGroup]="leadForm">
     <!-- Enhanced Header Section -->
-    <div class="col-12">
-        <div class="lead-header-card  text-white rounded  px-3">
+    <div class="col-12 px-0">
+        <div class="lead-header-card  text-white rounded">
             <div class="row align-items-center">
                 <div class="col-md-6 d-flex align-items-center">
                     <div class="header-icon me-2">
@@ -262,7 +262,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12">
+    <div class="col-md-12 px-0">
 
         <div class="col-12">
             <div *ngIf="isMobile; else desktopTemplate">
@@ -544,9 +544,9 @@
     <ng-template #desktopTemplate>
 
 
-        <div class="card mb-2">
+        <div class="card mb-1">
             <div class="card-body py-0">
-                <div class="row rounded border">
+                <div class="row ">
 
                     <div class="d-flex align-items-center pt-1">
                         <div class="header-icon me-2">
@@ -564,19 +564,19 @@
                                 formControlName="preCustomerName" [onlyText]="100">
                             <label for="company-name" class="input-label">Customer Name <span
                                     class="text-danger">*</span></label>
+                                    @if(leadForm.get('preCustomerName')?.touched &&
+                                    leadForm.get('preCustomerName')?.invalid){
+                                    <div class="error-message">
+                                        @if(leadForm.get('preCustomerName')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(leadForm.get('preCustomerName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        } @else if(leadForm.get('preCustomerName')?.hasError('maxlength')){
+                                        <span>Max 100 Chars</span>
+                                        }
+                                    </div>
+                                    }
                         </div>
-                        @if(leadForm.get('preCustomerName')?.touched &&
-                        leadForm.get('preCustomerName')?.invalid){
-                        <div class="error-message">
-                            @if(leadForm.get('preCustomerName')?.hasError('required')){
-                            <span>Required</span>
-                            } @else if(leadForm.get('preCustomerName')?.hasError('numberNotAllowed')){
-                            <span>Only Alphabets are allowed</span>
-                            } @else if(leadForm.get('preCustomerName')?.hasError('maxlength')){
-                            <span>Max 100 Chars</span>
-                            }
-                        </div>
-                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
@@ -585,8 +585,7 @@
                                 placeholder=""></ng-select>
                             <label for="lead-source" class="input-label">Lead Source <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(leadForm.get('leadReferredBy')?.touched &&
+                                      @if(leadForm.get('leadReferredBy')?.touched &&
                         leadForm.get('leadReferredBy')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('leadReferredBy')?.hasError('required')){
@@ -594,6 +593,8 @@
                             }
                         </div>
                         }
+                        </div>
+                      
                     </aside>
                     <aside class="col-md-3 mt-md-3">
                         <div class="form-check">
@@ -606,8 +607,7 @@
                             <input type="text" id="customer-ref" placeholder="" class="custom-input-field sm"
                                 formControlName="leadFrom" [textWithNumbers]="20">
                             <label for="customer-ref" class="input-label">Lead By</label>
-                        </div>
-                        @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
+                              @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('leadFrom')?.hasError('required')){
                             <span>Required</span>
@@ -616,6 +616,8 @@
                             }
                         </div>
                         }
+                        </div>
+                      
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('preCustomerType')?.value">
@@ -625,8 +627,7 @@
                                 bindValue="name"
                                 placeholder=""></ng-select>
                             <label for="customer-ref" class="input-label">Customer Type</label>
-                        </div>
-                        @if(leadForm.get('preCustomerType')?.touched &&
+                              @if(leadForm.get('preCustomerType')?.touched &&
                         leadForm.get('preCustomerType')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('preCustomerType')?.hasError('required')){
@@ -636,6 +637,8 @@
                             }
                         </div>
                         }
+                        </div>
+                      
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
@@ -647,8 +650,7 @@
                             </ng-select>
                             <label for="lead-source" class="input-label">leadStatus <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('leadStatus')?.touched &&
+                                      @if(leadForm.get('leadStatus')?.touched &&
                         leadForm.get('leadStatus')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('leadStatus')?.hasError('required')){
@@ -656,6 +658,8 @@
                             }
                         </div>
                         }
+                        </div>
+                      
                     </aside>
                     @if(isEditMode){
                     <aside class="col-md-3">
@@ -665,24 +669,25 @@
                                 placeholder=""></ng-select>
                             <label for="lead-status" class="input-label">Status <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(leadForm.get('status')?.touched && leadForm.get('status')?.invalid){
+                                       @if(leadForm.get('status')?.touched && leadForm.get('status')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('status')?.hasError('required')){
                             <span>Required</span>
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
                     }
                 </div>
             </div>
         </div>
 
-        <div class="card mb-2">
+        <div class="card mb-1">
             <div class="card-body py-0">
 
-                <div class="row rounded border ">
+                <div class="row  ">
                     <div class="d-flex align-items-center pt-1">
                         <div class="header-icon me-2">
                             <i class="fas fa-address-book"></i>
@@ -697,10 +702,10 @@
                                 formControlName="preCustomerAddress1" [textWithNumbers]="300">
                             <label for="text-input" class="input-label">Address1 <span
                                     class="text-danger">*</span></label>
-                            <!-- <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
-                                                        <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Address 1 is required</span>
+                            <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
+                                                        <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Required</span>
                                                         <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('maxlength')">Max 300 Characters</span> 
-                                                    </div> -->
+                                                    </div>
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -709,8 +714,7 @@
                                 formControlName="preCustomerAddress2" [textWithNumbers]="300">
                             <label for="text-input" class="input-label">Address2 <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('preCustomerAddress2')?.touched &&
+                                       @if(leadForm.get('preCustomerAddress2')?.touched &&
                         leadForm.get('preCustomerAddress2')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('preCustomerAddress2')?.hasError('maxlength')){
@@ -718,6 +722,8 @@
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -725,8 +731,7 @@
                                 formControlName="POBOX" [onlyNumbers]="100">
                             <label for="text-input" class="input-label">P.O Box <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('POBOX')?.touched && leadForm.get('POBOX')?.invalid){
+                                       @if(leadForm.get('POBOX')?.touched && leadForm.get('POBOX')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('POBOX')?.hasError('onlyNumbers')){
                             <span>Only Digits are allowed</span>
@@ -736,6 +741,8 @@
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
@@ -745,9 +752,7 @@
                                 (change)="filterStateByCountryId($event)"></ng-select>
                             <label for="text-input" class="input-label">Country <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        @if(leadForm.get('CountryMasterSid')?.touched &&
+                                   @if(leadForm.get('CountryMasterSid')?.touched &&
                         leadForm.get('CountryMasterSid')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('CountryMasterSid')?.hasError('required')){
@@ -755,6 +760,8 @@
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
@@ -765,8 +772,7 @@
 
                             </ng-select>
                             <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
-                        </div>
-                        @if(leadForm.get('StateMasterSid')?.touched &&
+                              @if(leadForm.get('StateMasterSid')?.touched &&
                         leadForm.get('StateMasterSid')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('StateMasterSid')?.hasError('required')){
@@ -774,6 +780,8 @@
                             }
                         </div>
                         }
+                        </div>
+                      
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
@@ -783,8 +791,7 @@
 
                             </ng-select>
                             <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
-                        </div>
-                        @if(leadForm.get('CityMasterSid')?.touched &&
+                                @if(leadForm.get('CityMasterSid')?.touched &&
                         leadForm.get('CityMasterSid')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('CityMasterSid')?.hasError('required')){
@@ -792,6 +799,8 @@
                             }
                         </div>
                         }
+                        </div>
+                    
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -799,8 +808,7 @@
                                 formControlName="contactPerson" [onlyText]="50">
                             <label for="text-input" class="input-label">Contact Person <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(leadForm.get('contactPerson')?.touched &&
+                                       @if(leadForm.get('contactPerson')?.touched &&
                         leadForm.get('contactPerson')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('contactPerson')?.hasError('required')){
@@ -812,6 +820,8 @@
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -819,9 +829,7 @@
                                 formControlName="email">
                             <label for="text-input" class="input-label">E-mail <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        @if((leadForm.get('email')?.touched || leadForm.get('email')?.dirty) &&
+                                 @if((leadForm.get('email')?.touched || leadForm.get('email')?.dirty) &&
                         leadForm.get('email')?.invalid) {
                         <div class="error-message">
                             @if(leadForm.get('email')?.hasError('required')) {
@@ -841,14 +849,15 @@
                             }
                         </div>
                         }
+                        </div>
+                       
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="phone" [onlyNumbers]="50">
                             <label for="text-input" class="input-label">Phone <span class="text-danger">*</span></label>
-                        </div>
-                        @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
+                              @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('phone')?.hasError('required')){
                             <span>Required</span>
@@ -861,6 +870,8 @@
                             }
                         </div>
                         }
+                        </div>
+                      
                     </aside>
                     <!-- <aside class="col-md-4">
                                                 <div class="custom-form-group">
@@ -888,8 +899,7 @@
                                 formControlName="LanguagePreferrence" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Language Preference <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('LanguagePreferrence')?.touched &&
+                                       @if(leadForm.get('LanguagePreferrence')?.touched &&
                         leadForm.get('LanguagePreferrence')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
@@ -897,6 +907,8 @@
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
 
                 </div>
@@ -904,9 +916,9 @@
             </div>
         </div>
 
-        <div class="card mb-2">
+        <div class="card mb-1">
             <div class="card-body py-0">
-                <div class="row rounded border">
+                <div class="row">
                     <div class="d-flex align-items-center pt-1">
                         <div class="header-icon me-2">
                             <i class="fas fa-bullseye"></i>
@@ -921,8 +933,7 @@
                                 formControlName="ServiceOfInterest" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Service of Interest <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('ServiceOfInterest')?.touched &&
+                                     @if(leadForm.get('ServiceOfInterest')?.touched &&
                         leadForm.get('ServiceOfInterest')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('ServiceOfInterest')?.hasError('maxlength')){
@@ -930,6 +941,8 @@
                             }
                         </div>
                         }
+                        </div>
+                       
                     </aside>
                     <!-- <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -953,8 +966,7 @@
                                 formControlName="SpecificRequirements" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Specific Requirement <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('SpecificRequirements')?.touched &&
+                                     @if(leadForm.get('SpecificRequirements')?.touched &&
                         leadForm.get('SpecificRequirements')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('SpecificRequirements')?.hasError('maxlength')){
@@ -962,6 +974,8 @@
                             }
                         </div>
                         }
+                        </div>
+                       
                     </aside>
                     <!-- <aside class="col-md-4 mt-2">
                         <div class="custom-form-group custom-form-group-select">
@@ -977,7 +991,7 @@
 
         <div class="card">
             <div class="card-body py-0">
-                <div class="row rounded border ">
+                <div class="row ">
                     <div class="d-flex align-items-center pt-1">
                         <div class="header-icon me-2">
                             <i class="fas fa-info-circle"></i>
@@ -992,14 +1006,15 @@
                                 formControlName="Industry" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Industry <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('Industry')?.touched && leadForm.get('Industry')?.invalid){
+                                     @if(leadForm.get('Industry')?.touched && leadForm.get('Industry')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('Industry')?.hasError('maxlength')){
                             <span>Max 100 Chars</span>
                             }
                         </div>
                         }
+                        </div>
+                       
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -1007,14 +1022,15 @@
                                 formControlName="CompanySize" [onlyNumbers]>
                             <label for="text-input" class="input-label">Company Size <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('CompanySize')?.touched && leadForm.get('CompanySize')?.invalid){
+                                         @if(leadForm.get('CompanySize')?.touched && leadForm.get('CompanySize')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('CompanySize')?.hasError('onlyNumbers')){
                             <span>Only Digits are allowed</span>
                             }
                         </div>
                         }
+                        </div>
+                   
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -1022,8 +1038,7 @@
                                 formControlName="AnnualRevenue" [onlyNumbers]>
                             <label for="text-input" class="input-label">Annual Revenue <span
                                     class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('AnnualRevenue')?.touched &&
+                                        @if(leadForm.get('AnnualRevenue')?.touched &&
                         leadForm.get('AnnualRevenue')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('AnnualRevenue')?.hasError('onlyNumbers')){
@@ -1031,20 +1046,23 @@
                             }
                         </div>
                         }
+                        </div>
+                    
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="Notes" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Notes <span class="text-danger"></span></label>
-                        </div>
-                        @if(leadForm.get('Notes')?.touched && leadForm.get('Notes')?.invalid){
+                               @if(leadForm.get('Notes')?.touched && leadForm.get('Notes')?.invalid){
                         <div class="error-message">
                             @if(leadForm.get('Notes')?.hasError('maxlength')){
                             <span>Max 100 Chars</span>
                             }
                         </div>
                         }
+                        </div>
+                     
                     </aside>
                     <!-- <aside class="col-md-4 mt-2">
                         <div class="custom-form-group custom-form-group-select">

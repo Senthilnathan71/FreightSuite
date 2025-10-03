@@ -43,6 +43,14 @@ export class MeetingComponent {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   selectedTime = '10 min';
+  meetingDurations = [
+  { label: '10 min', value: '10 min' },
+  { label: '20 min', value: '20 min' },
+  { label: '30 min', value: '30 min' },
+  { label: '40 min', value: '40 min' },
+  { label: '50 min', value: '50 min' },
+  { label: '1 hr', value: '1 hr' }
+];
 
  
 
