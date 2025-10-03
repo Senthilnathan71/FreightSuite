@@ -35,7 +35,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 
 export class DoctypeComponent implements OnInit {
 
-	DocumentTypeMasterSid: number;
+	VoucherTypeMasterSid: number;
 	isEditMode: boolean;
 
 	documentForm !: FormGroup;
@@ -89,10 +89,10 @@ currentBranch: any;
 		this.loadAllFields();
 		this.currentRoute.paramMap.subscribe(
 			(param) => {
-				this.DocumentTypeMasterSid = +param.get('id');
-				if (this.DocumentTypeMasterSid) {
+				this.VoucherTypeMasterSid = +param.get('id');
+				if (this.VoucherTypeMasterSid) {
 					this.isEditMode = true;
-					this.loadDocumentType(this.DocumentTypeMasterSid);
+					this.loadDocumentType(this.VoucherTypeMasterSid);
 				}
 			}
 		)
@@ -207,8 +207,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
     }
 }
 
-	loadDocumentType(DocumentTypeMasterSid) {
-		this.masterService.getDocTypeById(DocumentTypeMasterSid).subscribe(
+	loadDocumentType(VoucherTypeMasterSid) {
+		this.masterService.getDocTypeById(VoucherTypeMasterSid).subscribe(
 			(resp: any) => {
 				if (resp.status) {
 					this.documentData = resp.data;
@@ -256,9 +256,9 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 
 
 	openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.DocumentTypeMasterSid) return;
+  if (!this.VoucherTypeMasterSid) return;
 
-  this.masterService.getAuditLogsDocTypes('DocumentTypeMaster', this.DocumentTypeMasterSid.toString()).subscribe({
+  this.masterService.getAuditLogsDocTypes('DocumentTypeMaster', this.VoucherTypeMasterSid.toString()).subscribe({
     next: (logs: any[]) => {
       const formatFields = (val: any) => {
         if (!val) return ['NA'];
@@ -312,7 +312,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 		}
 
 		if (this.isEditMode) {
-			this.masterService.updateDocTypeById(this.DocumentTypeMasterSid, payload).subscribe(
+			this.masterService.updateDocTypeById(this.VoucherTypeMasterSid, payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message);
@@ -351,8 +351,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 
 	resetForm() {
   // If editing an existing document type, reload it from server to restore original values
-  if (this.isEditMode && this.DocumentTypeMasterSid) {
-    this.loadDocumentType(this.DocumentTypeMasterSid);
+  if (this.isEditMode && this.VoucherTypeMasterSid) {
+    this.loadDocumentType(this.VoucherTypeMasterSid);
     return;
   }
 
@@ -400,7 +400,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 		const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
 		modalRef.componentInstance.item = this.documentData;
 		modalRef.componentInstance.idLabel = 'Document Type Id';
-		modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+		modalRef.componentInstance.idValue = this.documentData?.VoucherTypeMasterSid;
 	}
 
 	getBranchesByCompanyId(company){
@@ -477,7 +477,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 					});
 					modalRef.componentInstance.terms = this.TandCList;
 					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.DocumentTypeMasterSid;
+					modalRef.componentInstance.DocumentSid = this.VoucherTypeMasterSid;
 
 				} else {
 					this.appSettingService.showError('Error loading Terms and Conditions');
@@ -506,7 +506,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 	backdrop: 'static' 
   });
 	modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-	modalRef.componentInstance.documentSid = this.DocumentTypeMasterSid;
+	modalRef.componentInstance.documentSid = this.VoucherTypeMasterSid;
   }
 
 openEDoc() {
@@ -518,7 +518,7 @@ openEDoc() {
   });
   modalRef.componentInstance.item = this.documentData;
   modalRef.componentInstance.idLabel = 'Document Type Id';
-  modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+  modalRef.componentInstance.idValue = this.documentData?.VoucherTypeMasterSid;
 }
 
 
