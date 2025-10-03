@@ -104,7 +104,7 @@ export class OrganizationEntryComponent implements OnInit {
   extraCustomerTypesCount = 0;
   currentTaxIdLabel: string = 'PAN/VAT Number';
   duplicateMessage: string = '';
-  
+
 
   selectedTab = 'Party';
   tabs = [
@@ -128,17 +128,17 @@ export class OrganizationEntryComponent implements OnInit {
   // Add active branch index for accordion
   activeBranchIndex: number | null = null;
   private setFieldErrorFlag(ctrl: AbstractControl | null, key: string, isError: boolean) {
-  if (!ctrl) return;
-  const cur = ctrl.errors || {};
-  if (isError) {
-    cur[key] = true;
-  } else {
-    delete cur[key];
+    if (!ctrl) return;
+    const cur = ctrl.errors || {};
+    if (isError) {
+      cur[key] = true;
+    } else {
+      delete cur[key];
+    }
+    const hasAny = Object.keys(cur).length > 0;
+    ctrl.setErrors(hasAny ? cur : null);
   }
-  const hasAny = Object.keys(cur).length > 0;
-  ctrl.setErrors(hasAny ? cur : null);
-}
-isCheckingDuplicates = false;
+  isCheckingDuplicates = false;
 
 
   // Mode arrays
@@ -163,43 +163,43 @@ isCheckingDuplicates = false;
     { id: '3', name: 'Not Applicable' },
   ];
   gstTypeList = [
-  { id: '1', name: 'Composite' },
-  { id: '2', name: 'Exempt' },
-  { id: '3', name: 'RCM Others' },
-  { id: '4', name: 'RCM Specified' },
-  { id: '5', name: 'Regular' },
-  { id: '6', name: 'SEZ' },
-  { id: '7', name: 'Zero Rated' },
-];
-airlineNumber: string = '';
-airlineCode: string = '';
-isAirlineSelected: boolean = false;
+    { id: '1', name: 'Composite' },
+    { id: '2', name: 'Exempt' },
+    { id: '3', name: 'RCM Others' },
+    { id: '4', name: 'RCM Specified' },
+    { id: '5', name: 'Regular' },
+    { id: '6', name: 'SEZ' },
+    { id: '7', name: 'Zero Rated' },
+  ];
+  airlineNumber: string = '';
+  airlineCode: string = '';
+  isAirlineSelected: boolean = false;
 
   selectedStatus: string[] = [];
 
   modeOfCustomerType = [
-  { id: 1, name: "Agent" },
-  { id: 2, name: "Air Line" },
-  { id: 3, name: "Carrier" },
-  { id: 4, name: "CFS" },
-  { id: 5, name: "Consignee" },
-  { id: 6, name: "Customer" },
-  { id: 7, name: "Feeder" },
-  { id: 8, name: "Forwarder" },
-  { id: 9, name: "NVOCC" },
-  { id: 10, name: "Notify" },
-  { id: 11, name: "Overseas Agent" },
-  { id: 12, name: "Shipper" },
-  { id: 13, name: "Shipping Line" },
-  { id: 14, name: "Transporter" },
-  { id: 15, name: "Vendor" },
-  { id: 16, name: "Warehouse" },
-  { id: 17, name: "Yard" }
-].sort((a, b) => a.name.localeCompare(b.name));
+    { id: 1, name: "Agent" },
+    { id: 2, name: "Air Line" },
+    { id: 3, name: "Carrier" },
+    { id: 4, name: "CFS" },
+    { id: 5, name: "Consignee" },
+    { id: 6, name: "Customer" },
+    { id: 7, name: "Feeder" },
+    { id: 8, name: "Forwarder" },
+    { id: 9, name: "NVOCC" },
+    { id: 10, name: "Notify" },
+    { id: 11, name: "Overseas Agent" },
+    { id: 12, name: "Shipper" },
+    { id: 13, name: "Shipping Line" },
+    { id: 14, name: "Transporter" },
+    { id: 15, name: "Vendor" },
+    { id: 16, name: "Warehouse" },
+    { id: 17, name: "Yard" }
+  ].sort((a, b) => a.name.localeCompare(b.name));
   isDepartmentSelected(item: any): boolean {
-  return this.selectedDepartments.includes(item.DepartmentMasterSid.toString());
-}
-validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
+    return this.selectedDepartments.includes(item.DepartmentMasterSid.toString());
+  }
+  validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
 
     const emails = control.value.split(',').map(email => email.trim());
@@ -210,22 +210,22 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   }
 
   toggleDepartmentSelection(item: any): void {
-  const deptId = item.DepartmentMasterSid.toString();
-  const index = this.selectedDepartments.indexOf(deptId);
-  if (index === -1) {
-    this.selectedDepartments.push(deptId);
-  } else {
-    this.selectedDepartments.splice(index, 1);
+    const deptId = item.DepartmentMasterSid.toString();
+    const index = this.selectedDepartments.indexOf(deptId);
+    if (index === -1) {
+      this.selectedDepartments.push(deptId);
+    } else {
+      this.selectedDepartments.splice(index, 1);
+    }
+    this.updateDisplayedDepartments();
+    this.customerBranchEmailForm.get('DepartmentMasterSid').setValue(this.selectedDepartments.join(','));
   }
-  this.updateDisplayedDepartments();
-  this.customerBranchEmailForm.get('DepartmentMasterSid').setValue(this.selectedDepartments.join(','));
-}
-updateDisplayedDepartments(): void {
-  this.displayedDepartments = this.departmentList
-    .filter(dept => this.selectedDepartments.includes(dept.DepartmentMasterSid.toString()))
-    .slice(0, 3);
-  this.extraDepartmentsCount = Math.max(0, this.selectedDepartments.length - 3);
-}
+  updateDisplayedDepartments(): void {
+    this.displayedDepartments = this.departmentList
+      .filter(dept => this.selectedDepartments.includes(dept.DepartmentMasterSid.toString()))
+      .slice(0, 3);
+    this.extraDepartmentsCount = Math.max(0, this.selectedDepartments.length - 3);
+  }
 
 
 
@@ -289,7 +289,7 @@ updateDisplayedDepartments(): void {
   departmentList: any;
   customerBranchName: any;
   customerName: any;
- 
+
   customerBranchLoginResults: any;
 
   companyList = [
@@ -306,7 +306,7 @@ updateDisplayedDepartments(): void {
   ];
   customerBranchEmailResults: any;
   customerBranchLoginData: any;
-  
+
   contactList = [
     { id: '1', name: 'Manager' },
     { id: '2', name: 'Accounts' },
@@ -366,120 +366,121 @@ updateDisplayedDepartments(): void {
     private cdRef: ChangeDetectorRef,
     private calendar: NgbCalendar,
     private leadService: LeadService,
-   
+
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
   }
   switchToEditMode() {
-  this.isEditMode = true;
-  this.selectedTab = 'Party'; 
-}
-
- ngOnInit(): void {
-  // ✅ Get current company & branch
-  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-
-  // ✅ Get logged-in user profile
-  const userProfile = this.appSettingService.getDecryptedUserProfile();
-  if (userProfile) {
-    this.userData = userProfile;
-    this.checkPermissions();
-  }
-  if (!this.isEditMode) {
+    this.isEditMode = true;
     this.selectedTab = 'Party';
   }
 
-  // ✅ Initial data loads
-  this.getAllCountries();
-  this.initForm();
-  this.initializePanFields();
-  this.loadAllSpfields();
-  // this.loadDepartments();
-  this.loadMenus();
-  this.loadCustomerMilestones();
-  // this.getAllSpCustomerBranch();
-  // this.loadCustomerBranch();
+  ngOnInit(): void {
+    // ✅ Get current company & branch
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
-  // ✅ If route has ID, switch to edit mode
-  this.route.paramMap.subscribe((params) => {
-    this.CustomerMasterSid = +params.get('id');
-    if (this.CustomerMasterSid) {
-      this.isEditMode = true;
-      this.loadCustomerData(this.CustomerMasterSid);
-      this.tabs=[
-        ...this.tabs,
-        { name: 'Salesman', icon: 'fas fa-flag-checkered' },
-    { name: 'Email', icon: 'fas fa-envelope' },
-    { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
-    { name: 'Milestone', icon: 'fas fa-rupee-sign' },
-      ]
-      
+    // ✅ Get logged-in user profile
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
+      this.checkPermissions();
     }
-  });
+    if (!this.isEditMode) {
+      this.selectedTab = 'Party';
+    }
 
-  // ✅ Auto-generate short code when name changes
-  this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
-    this.generateCustomerShortCode();
-  });
+    // ✅ Initial data loads
+    this.getAllCountries();
+    this.initForm();
+    this.initializePanFields();
+    this.loadAllSpfields();
+    // this.loadDepartments();
+            this.loadMenus();
 
-  // ✅ React to country changes
-  this.customerForm.get('CountryMasterSid')?.valueChanges.subscribe(() => {
-    this.updateShortCodeFieldState();
-    this.generateCustomerShortCode();
-    this.updateTaxIdFieldValidation();
-    this.updateTaxIdFieldState();
-    this.getStatesByCountryId(); // Load states when country changes
-  });
+    // this.loadCustomerBranch();
 
- 
-  const nameCtrl = this.customerForm.get('CustomerName');
-  const codeCtrl = this.customerForm.get('CustomerShortCode');
+    // ✅ If route has ID, switch to edit mode
+    this.route.paramMap.subscribe((params) => {
+      this.CustomerMasterSid = +params.get('id');
+      if (this.CustomerMasterSid) {
+        this.isEditMode = true;
+        this.loadCustomerData(this.CustomerMasterSid);
+    this.loadCustomerMilestones();
+    this.getAllSpCustomerBranch();
+        this.tabs = [
+          ...this.tabs,
+          { name: 'Salesman', icon: 'fas fa-flag-checkered' },
+          { name: 'Email', icon: 'fas fa-envelope' },
+          { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+          { name: 'Milestone', icon: 'fas fa-rupee-sign' },
+        ]
 
-  combineLatest([
-    nameCtrl!.valueChanges.pipe(startWith(nameCtrl!.value)),
-    codeCtrl!.valueChanges.pipe(startWith(codeCtrl!.value)),
-  ])
-    .pipe(
-      debounceTime(300),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-      switchMap(([name, code]) => {
-        // Skip API when both empty
-        if ((!name || String(name).trim() === '') && (!code || String(code).trim() === '')) {
-          this.setFieldErrorFlag(nameCtrl, 'customerNameTaken', false);
-          this.setFieldErrorFlag(codeCtrl, 'customerCodeTaken', false);
-          return [];
-        }
-
-        const payload = {
-          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          customerName: name ? String(name).trim() : undefined,
-          customerShortCode: code ? String(code).trim() : undefined,
-          excludeCustomerMasterSid: this.isEditMode ? this.CustomerMasterSid : undefined,
-        };
-
-        this.isCheckingDuplicates = true;
-        return this.masterService.checkCustomerUnique(payload).pipe(
-          finalize(() => (this.isCheckingDuplicates = false))
-        );
-      })
-    )
-    .subscribe((res: any) => {
-      if (!res) return;
-      
-      this.setFieldErrorFlag(nameCtrl, 'customerNameTaken', !!res.nameTaken);
-      this.setFieldErrorFlag(codeCtrl, 'customerCodeTaken', !!res.codeTaken);
-      if (res.nameTaken || res.codeTaken) {
-    this.duplicateMessage = res.message;  // from backend
-  } else {
-    this.duplicateMessage = '';
-  }
+      }
     });
-}
 
-// initializeBranchFormArray(): void {
-//   this.branchFormArray = this.fb.array([]);
-// }
+    // ✅ Auto-generate short code when name changes
+    this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
+      this.generateCustomerShortCode();
+    });
+
+    // ✅ React to country changes
+    this.customerForm.get('CountryMasterSid')?.valueChanges.subscribe(() => {
+      this.updateShortCodeFieldState();
+      this.generateCustomerShortCode();
+      this.updateTaxIdFieldValidation();
+      this.updateTaxIdFieldState();
+      this.getStatesByCountryId(); // Load states when country changes
+    });
+
+
+    const nameCtrl = this.customerForm.get('CustomerName');
+    const codeCtrl = this.customerForm.get('CustomerShortCode');
+
+    combineLatest([
+      nameCtrl!.valueChanges.pipe(startWith(nameCtrl!.value)),
+      codeCtrl!.valueChanges.pipe(startWith(codeCtrl!.value)),
+    ])
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        switchMap(([name, code]) => {
+          // Skip API when both empty
+          if ((!name || String(name).trim() === '') && (!code || String(code).trim() === '')) {
+            this.setFieldErrorFlag(nameCtrl, 'customerNameTaken', false);
+            this.setFieldErrorFlag(codeCtrl, 'customerCodeTaken', false);
+            return [];
+          }
+
+          const payload = {
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            customerName: name ? String(name).trim() : undefined,
+            customerShortCode: code ? String(code).trim() : undefined,
+            excludeCustomerMasterSid: this.isEditMode ? this.CustomerMasterSid : undefined,
+          };
+
+          this.isCheckingDuplicates = true;
+          return this.masterService.checkCustomerUnique(payload).pipe(
+            finalize(() => (this.isCheckingDuplicates = false))
+          );
+        })
+      )
+      .subscribe((res: any) => {
+        if (!res) return;
+
+        this.setFieldErrorFlag(nameCtrl, 'customerNameTaken', !!res.nameTaken);
+        this.setFieldErrorFlag(codeCtrl, 'customerCodeTaken', !!res.codeTaken);
+        if (res.nameTaken || res.codeTaken) {
+          this.duplicateMessage = res.message;  // from backend
+        } else {
+          this.duplicateMessage = '';
+        }
+      });
+  }
+
+  // initializeBranchFormArray(): void {
+  //   this.branchFormArray = this.fb.array([]);
+  // }
   // Type casting methods to fix template errors
   getBranchFormGroup(branch: AbstractControl): FormGroup {
     return branch as FormGroup;
@@ -535,9 +536,9 @@ updateDisplayedDepartments(): void {
     return branch ? (branch.get('emails') as FormArray) : this.fb.array([]);
   }
   onDepartmentChange(branchIndex: number, emailIndex: number, selectedDepartments: any[]): void {
-  const emailForm = this.getEmails(branchIndex).at(emailIndex);
-  emailForm.get('DepartmentMasterSid')?.setValue(selectedDepartments);
-}
+    const emailForm = this.getEmails(branchIndex).at(emailIndex);
+    emailForm.get('DepartmentMasterSid')?.setValue(selectedDepartments);
+  }
 
   // Get logins for a specific branch
   getLogins(branchIndex: number): FormArray {
@@ -593,73 +594,73 @@ updateDisplayedDepartments(): void {
   }
 
   debugEmailData(): void {
-  console.log('=== DEBUG EMAIL DATA ===');
-  for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-    const emails = this.getEmails(branchIndex).value;
-    console.log(`Branch ${branchIndex} emails:`, emails);
-    
-    emails.forEach((email, emailIndex) => {
-      console.log(`Email ${emailIndex}:`, {
-        CustomerBrEmailSid: email.CustomerBrEmailSid,
-        MenuMasterSid: email.MenuMasterSid,
-        DepartmentMasterSid: email.DepartmentMasterSid,
-        Toemail: email.Toemail,
-        CCemail: email.CCemail,
-        status: email.status
+    console.log('=== DEBUG EMAIL DATA ===');
+    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+      const emails = this.getEmails(branchIndex).value;
+      console.log(`Branch ${branchIndex} emails:`, emails);
+
+      emails.forEach((email, emailIndex) => {
+        console.log(`Email ${emailIndex}:`, {
+          CustomerBrEmailSid: email.CustomerBrEmailSid,
+          MenuMasterSid: email.MenuMasterSid,
+          DepartmentMasterSid: email.DepartmentMasterSid,
+          Toemail: email.Toemail,
+          CCemail: email.CCemail,
+          status: email.status
+        });
+      });
+    }
+    console.log('=== END DEBUG ===');
+  }
+  createEmailsArray(emails: any[]): FormGroup[] {
+    return emails.map(email => {
+      let departmentValue = email.DepartmentMasterSid;
+
+      console.log('Original email department data:', email.DepartmentMasterSid); // Debug
+
+      // Ensure department value is properly formatted as an array
+      if (typeof departmentValue === 'string') {
+        try {
+          const parsed = JSON.parse(departmentValue);
+          if (parsed.departmentIds && Array.isArray(parsed.departmentIds)) {
+            departmentValue = parsed.departmentIds;
+          } else if (Array.isArray(parsed)) {
+            departmentValue = parsed;
+          }
+        } catch (e) {
+          if (departmentValue.includes(',')) {
+            departmentValue = departmentValue.split(',').map((dept: string) => dept.trim());
+          } else if (departmentValue) {
+            departmentValue = [departmentValue];
+          } else {
+            departmentValue = [];
+          }
+        }
+      } else if (!Array.isArray(departmentValue)) {
+        departmentValue = [];
+      }
+
+      // Convert all department values to strings for consistency and remove empty values
+      if (Array.isArray(departmentValue)) {
+        departmentValue = departmentValue
+          .map(dept => String(dept).trim())
+          .filter(dept => dept !== '' && dept !== 'null' && dept !== 'undefined');
+      }
+
+      console.log('Processed department data:', departmentValue); // Debug
+
+      return this.fb.group({
+        CustomerBrEmailSid: [email.CustomerBrEmailSid || null],
+        MenuMasterSid: [email.MenuMasterSid || '', [Validators.required]],
+        DepartmentMasterSid: [departmentValue || [], [Validators.required]],
+        Toemail: [email.Toemail || '', [Validators.required, EmailValidators.multipleEmails()]],
+        CCemail: [email.CCemail || '', [EmailValidators.multipleEmails()]],
+        status: [email.status === 'A' ? 'Active' : email.status === 'S' ? 'Suspended' : 'Active']
       });
     });
   }
-  console.log('=== END DEBUG ===');
-}
- createEmailsArray(emails: any[]): FormGroup[] {
-  return emails.map(email => {
-    let departmentValue = email.DepartmentMasterSid;
-    
-    console.log('Original email department data:', email.DepartmentMasterSid); // Debug
-    
-    // Ensure department value is properly formatted as an array
-    if (typeof departmentValue === 'string') {
-      try {
-        const parsed = JSON.parse(departmentValue);
-        if (parsed.departmentIds && Array.isArray(parsed.departmentIds)) {
-          departmentValue = parsed.departmentIds;
-        } else if (Array.isArray(parsed)) {
-          departmentValue = parsed;
-        }
-      } catch (e) {
-        if (departmentValue.includes(',')) {
-          departmentValue = departmentValue.split(',').map((dept: string) => dept.trim());
-        } else if (departmentValue) {
-          departmentValue = [departmentValue];
-        } else {
-          departmentValue = [];
-        }
-      }
-    } else if (!Array.isArray(departmentValue)) {
-      departmentValue = [];
-    }
-    
-    // Convert all department values to strings for consistency and remove empty values
-    if (Array.isArray(departmentValue)) {
-      departmentValue = departmentValue
-        .map(dept => String(dept).trim())
-        .filter(dept => dept !== '' && dept !== 'null' && dept !== 'undefined');
-    }
-
-    console.log('Processed department data:', departmentValue); // Debug
-    
-    return this.fb.group({
-      CustomerBrEmailSid: [email.CustomerBrEmailSid || null],
-      MenuMasterSid: [email.MenuMasterSid || '', [Validators.required]],
-      DepartmentMasterSid: [departmentValue || [], [Validators.required]],
-      Toemail: [email.Toemail || '', [Validators.required, EmailValidators.multipleEmails()]],
-      CCemail: [email.CCemail || '', [EmailValidators.multipleEmails()]],
-      status: [email.status === 'A' ? 'Active' : email.status === 'S' ? 'Suspended' : 'Active']
-    });
-  });
-}
-// Update the createLoginsArray method to include customer/branch info
-createLoginsArray(logins: any[]): FormGroup[] {
+  // Update the createLoginsArray method to include customer/branch info
+  createLoginsArray(logins: any[]): FormGroup[] {
     return logins.map(login => this.fb.group({
       CustomerLoginSid: [login.CustomerLoginSid || null],
       LoginName: [login.LoginName || '', [Validators.required]],
@@ -670,13 +671,13 @@ createLoginsArray(logins: any[]): FormGroup[] {
   }
 
   // Add new branch
- addNewBranch() {
+  addNewBranch() {
     const newBranch = this.addBranchFormGroup();
     this.branches.push(newBranch);
     this.expandedBranches.add(this.branches.length - 1);
     this.cdRef.detectChanges();
   }
-   // Add contact to branch
+  // Add contact to branch
   addContact(branchIndex: number) {
     const contactForm = this.fb.group({
       CusBranchContactSid: [null],
@@ -688,16 +689,16 @@ createLoginsArray(logins: any[]): FormGroup[] {
     });
     this.getContacts(branchIndex).push(contactForm);
   }
-//   initCustomerBranchEmailForm() {
-//   this.customerBranchEmailForm = this.fb.group({
-//     CustomerBranchSid: [''],
-//     MenuMasterSid: ['', [Validators.required]],
-//     DepartmentMasterSid: [[], [Validators.required]],
-//     BranchName: [{ value: this.customerBranchName || '', disabled: true }],
-//     Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
-//     CCemail: ['', [EmailValidators.multipleEmails()]],
-//   });
-// }
+  //   initCustomerBranchEmailForm() {
+  //   this.customerBranchEmailForm = this.fb.group({
+  //     CustomerBranchSid: [''],
+  //     MenuMasterSid: ['', [Validators.required]],
+  //     DepartmentMasterSid: [[], [Validators.required]],
+  //     BranchName: [{ value: this.customerBranchName || '', disabled: true }],
+  //     Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
+  //     CCemail: ['', [EmailValidators.multipleEmails()]],
+  //   });
+  // }
 
   // Add email to branch
   addEmail(branchIndex: number) {
@@ -723,7 +724,7 @@ createLoginsArray(logins: any[]): FormGroup[] {
     this.getLogins(branchIndex).push(loginForm);
   }
   // Add this method to your component class
- togglePasswordVisibility(passwordFieldId: string): void {
+  togglePasswordVisibility(passwordFieldId: string): void {
     const passwordField = document.getElementById(passwordFieldId) as HTMLInputElement;
     if (passwordField) {
       if (passwordField.type === 'password') {
@@ -760,7 +761,7 @@ createLoginsArray(logins: any[]): FormGroup[] {
   }
 
   // Update expanded branches indices after removal
-   private updateExpandedBranchesAfterRemoval(removedIndex: number) {
+  private updateExpandedBranchesAfterRemoval(removedIndex: number) {
     const newExpandedBranches = new Set<number>();
     this.expandedBranches.forEach(index => {
       if (index < removedIndex) {
@@ -815,7 +816,7 @@ createLoginsArray(logins: any[]): FormGroup[] {
       this.getEmails(branchIndex).removeAt(emailIndex);
     }
   }
-    // Remove login
+  // Remove login
   removeLogin(branchIndex: number, loginIndex: number) {
     const login = this.getLogins(branchIndex).at(loginIndex);
     const loginSid = login.get('CustomerLoginSid')?.value;
@@ -838,248 +839,26 @@ createLoginsArray(logins: any[]): FormGroup[] {
   }
 
 
-//   // Save all branches
-//    saveAllBranches() {
-//   this.debugEmailData();
-//   if (this.branches.invalid) {
-//     this.appSettingService.showWarning('Please fill all required fields in the branches section.');
-//     this.markAllBranchesAsTouched();
-//     return;
-//   }
 
-//   const saveObservables = [];
-
-//   for (let i = 0; i < this.branches.length; i++) {
-//     const branchForm = this.branches.at(i);
-    
-//     // Validate each email in this branch before proceeding
-//     const emails = this.getEmails(i).value;
-//     for (let j = 0; j < emails.length; j++) {
-//       const emailForm = this.getEmails(i).at(j) as FormGroup;
-//       if (!this.validateEmailForm(emailForm)) {
-//         this.appSettingService.showWarning(`Please fix errors in email ${j + 1} of branch ${i + 1}`);
-//         return;
-//       }
-//     }
-
-//     const branchData = branchForm.value;
-
-//     // Prepare branch payload
-//     const branchPayload = {
-//       CustomerMasterSid: this.CustomerMasterSid,
-//       CityMasterSid: Number(branchData.CustBranchCity),
-//       StateMasterSid: Number(branchData.CustBranchState),
-//       Branch_Code: branchData.CustBranchCode,
-//       Contact_Person: branchData.Contact_Person,
-//       BranchName: branchData.CustBranchName,
-//       Branch_Type: branchData.CustBranchType,
-//       Zip_PostBox: String(branchData.CustBranchZipPostCode),
-//       ContactNo: String(branchData.CustBranchPhone),
-//       Email: branchData.CustBranchEmail,
-//       Address: branchData.CustBranchAddress,
-//       Registered: branchData.CustBranchRegistered,
-//       CustomerGstType: branchData.CustBranchGSTtype,
-//       GSTNo: branchData.CustBranchGSTIN,
-//       status: branchData.status === "Active" ? "A" : "S",
-//       createdBy: branchData.CustomerBranchSid ? undefined : this.userData?.userEmail,
-//       updatedBy: branchData.CustomerBranchSid ? this.userData?.userEmail : undefined
-//     };
-
-//     if (branchData.CustomerBranchSid) {
-//       saveObservables.push(
-//         this.masterService.updateCustomerBranchById(branchData.CustomerBranchSid, branchPayload)
-//       );
-//     } else {
-//       saveObservables.push(this.masterService.createCustomerBranch(branchPayload));
-//     }
-//   }
-
-//   forkJoin(saveObservables).subscribe({
-//     next: (responses: any[]) => {
-//       let allSuccess = true;
-//       responses.forEach((resp, index) => {
-//         if (resp.status) {
-//           if (!this.branches.at(index).get('CustomerBranchSid')?.value && resp.data) {
-//             this.branches.at(index).get('CustomerBranchSid')?.setValue(resp.data.CustomerBranchSid);
-//           }
-//         } else {
-//           allSuccess = false;
-//           this.appSettingService.showError(`Error saving branch ${index + 1}: ${resp.message || 'Unknown error'}`);
-//         }
-//       });
-
-//       if (allSuccess) {
-//         this.appSettingService.showSuccess('All branches saved successfully');
-//         this.saveAllBranchDetails();
-//       }
-//     },
-//     error: (error) => {
-//       console.error('Error saving branches:', error);
-//       this.appSettingService.showError('Error saving branches: ' + error.message);
-//     }
-//   });
-// }
-
-  // Save all branch details (contacts, emails, logins)
-   
-//    private saveAllBranchDetails(): void {
-//   const detailObservables = [];
-
-//   for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-//     const branchForm = this.branches.at(branchIndex);
-//     const branchSid = branchForm.get('CustomerBranchSid')?.value;
-
-//     if (!branchSid) continue;
-
-//     // Save contacts
-//     const contacts = this.getContacts(branchIndex).value;
-//     contacts.forEach(contact => {
-//       const contactPayload = {
-//         CustomerMasterSid: this.CustomerMasterSid,
-//         CustomerBranchSid: branchSid,
-//         ContactType: contact.ContactType,
-//         MobileNo: String(contact.MobileNo),
-//         Email: contact.Email,
-//         ContactName: contact.ContactName,
-//         status: contact.status === "Active" ? "A" : "S",
-//         createdBy: contact.CusBranchContactSid ? undefined : this.userData?.userEmail,
-//         updatedBy: contact.CusBranchContactSid ? this.userData?.userEmail : undefined
-//       };
-
-//       if (contact.CusBranchContactSid) {
-//         detailObservables.push(
-//           this.masterService.updateCustomerBranchContactById(contact.CusBranchContactSid, contactPayload)
-//         );
-//       } else {
-//         detailObservables.push(this.masterService.createCustomerBranchContact(contactPayload));
-//       }
-//     });
-
-//     // Save emails - FIXED VERSION
-//     // Save emails
-// const emails = this.getEmails(branchIndex).value;
-// emails.forEach(email => {
-//   let departmentValue = email.DepartmentMasterSid;
-  
-//   // Convert array to comma-separated string
-//   // if (Array.isArray(departmentValue)) {
-//   //   departmentValue = departmentValue.join(',');
-//   // } else if (typeof departmentValue === 'string' && departmentValue.startsWith('[')) {
-//   //   // Handle case where it might already be a stringified array
-//   //   try {
-//   //     const parsedArray = JSON.parse(departmentValue);
-//   //     if (Array.isArray(parsedArray)) {
-//   //       departmentValue = parsedArray.join(',');
-//   //     }
-//   //   } catch (e) {
-//   //     // If parsing fails, use as is
-//   //     console.warn('Failed to parse DepartmentMasterSid:', departmentValue);
-//   //   }
-//   // }
-  
-//   // // Ensure it's not empty
-//   // if (!departmentValue || (Array.isArray(departmentValue) && departmentValue.length === 0)) {
-//   //   departmentValue = '';
-//   // }
-
-//   const emailPayload = {
-//     CustomerBranchSid: branchSid,
-//     MenuMasterSid: Number(email.MenuMasterSid),
-//     DepartmentMasterSid: departmentValue, // This should now be a comma-separated string
-//     Toemail: email.Toemail,
-//     CCemail: email.CCemail,
-//     status: email.status === "Active" ? "A" : "S",
-//     createdBy: email.CustomerBrEmailSid ? undefined : this.userData?.userEmail,
-//     updatedBy: email.CustomerBrEmailSid ? this.userData?.userEmail : undefined
-//   };
-
-//   if (email.CustomerBrEmailSid) {
-//     detailObservables.push(
-//       this.masterService.updateCustomerBranchEmailById(email.CustomerBrEmailSid, emailPayload)
-//     );
-//   } else {
-//     detailObservables.push(this.masterService.createCustomerBranchEmail(emailPayload));
-//   }
-// });
-
-//     // Save logins
-//     const logins = this.getLogins(branchIndex).value;
-//     logins.forEach(login => {
-//       const loginPayload = {
-//         CustomerMasterSid: this.CustomerMasterSid,
-//         CustomerBranchSid: branchSid,
-//         LoginName: login.LoginName,
-//         LoginEmail: login.LoginEmail,
-//         LoginPassword: login.LoginPassword,
-//         status: login.status === "Active" ? "A" : "S",
-//         createdBy: login.CustomerLoginSid ? undefined : this.userData?.userEmail,
-//         updatedBy: login.CustomerLoginSid ? this.userData?.userEmail : undefined
-//       };
-
-//       if (login.CustomerLoginSid) {
-//         detailObservables.push(
-//           this.masterService.updateCustomerLoginById(login.CustomerLoginSid, loginPayload)
-//         );
-//       } else {
-//         detailObservables.push(this.masterService.createCustomerLogin(loginPayload));
-//       }
-//     });
-//   }
-
-//   if (detailObservables.length > 0) {
-//     forkJoin(detailObservables).subscribe({
-//       next: (responses: any[]) => {
-//         let allSuccess = true;
-//         let errorCount = 0;
-        
-//         responses.forEach((resp, index) => {
-//           if (!resp.status) {
-//             allSuccess = false;
-//             errorCount++;
-//             console.error(`Error saving detail at index ${index}:`, resp);
-            
-//             // Log more details about the failing request
-//             if (index === 1) { // The specific failing email
-//               console.error('Failing email data:', this.getEmailDataAtIndex(1));
-//             }
-//           }
-//         });
-
-//         if (allSuccess) {
-//           this.appSettingService.showSuccess('All branch details saved successfully');
-//           this.loadCustomerBranch();
-//         } else {
-//           this.appSettingService.showWarning(`Saved with ${errorCount} error(s). Some details may not have been saved.`);
-//           // Reload data to show current state
-//           this.loadCustomerBranch();
-//         }
-//       },
-//       error: (error) => {
-//         console.error('Error saving branch details:', error);
-//         this.appSettingService.showError('Error saving some branch details');
-//       }
-//     });
-//   }
-// }
-private getEmailDataAtIndex(index: number): any {
-  let currentIndex = 0;
-  for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-    const emails = this.getEmails(branchIndex).value;
-    for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
-      if (currentIndex === index) {
-        return {
-          branchIndex,
-          emailIndex,
-          emailData: emails[emailIndex]
-        };
+  private getEmailDataAtIndex(index: number): any {
+    let currentIndex = 0;
+    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+      const emails = this.getEmails(branchIndex).value;
+      for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
+        if (currentIndex === index) {
+          return {
+            branchIndex,
+            emailIndex,
+            emailData: emails[emailIndex]
+          };
+        }
+        currentIndex++;
       }
-      currentIndex++;
     }
+    return null;
   }
-  return null;
-}
   // Mark all branches as touched for validation
-   private markAllBranchesAsTouched() {
+  private markAllBranchesAsTouched() {
     this.branches.controls.forEach(branch => {
       branch.markAllAsTouched();
       (branch.get('contacts') as FormArray)?.controls.forEach(contact => contact.markAllAsTouched());
@@ -1090,92 +869,89 @@ private getEmailDataAtIndex(index: number): any {
 
   // Modified loadCustomerBranch to populate form array
   // Modified loadCustomerBranch to handle state/city relationships
-loadCustomerBranch(): void {
-  if (!this.CustomerMasterSid) return;
+  loadCustomerBranch(): void {
+    if (!this.CustomerMasterSid) return;
 
-  // Use the data already loaded from getCustomerById
-  if (this.customerData && this.customerData.CustomerBranch) {
-    this.populateBranchFormArray(this.customerData.CustomerBranch);
-    return;
-  }
-
-  // Fallback: Load customer data again if needed
-  this.loadCustomerData(this.CustomerMasterSid);
-}
-private populateBranchFormArray(branches: any[]): void {
-  // Clear existing form array
-  this.branchFormArray = this.fb.array([]);
-
-  // Populate form array with branch data
-  branches.forEach(branch => {
-    const branchWithDetails = {
-      ...branch,
-      contacts: branch.cusBranchContact || [],
-      emails: this.getBranchEmailsFromCustomerData(branch.CustomerBranchSid),
-      logins: this.getBranchLoginsFromCustomerData(branch.CustomerBranchSid),
-      StateMasterSid: branch.stateMaster?.StateMasterSid,
-      CityMasterSid: branch.cityMaster?.CityMasterSid,
-    };
-
-    const branchFormGroup = this.addBranchFormGroup(branchWithDetails);
-    this.branches.push(branchFormGroup);
-
-    
-    const currentBranchIndex = this.branches.length - 1;
-    if (branch.stateMaster?.StateMasterSid) {
-      this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
+    // Use the data already loaded from getCustomerById
+    if (this.customerData && this.customerData.CustomerBranch) {
+      this.populateBranchFormArray(this.customerData.CustomerBranch);
+      return;
     }
-    
-    
-    setTimeout(() => {
-      if (branch.GSTNo) {
-        this.initializeGSTINDigits(currentBranchIndex, branch.GSTNo);
+
+    // Fallback: Load customer data again if needed
+    this.loadCustomerData(this.CustomerMasterSid);
+  }
+  private populateBranchFormArray(branches: any[]): void {
+    // Clear existing form array
+    this.branchFormArray = this.fb.array([]);
+
+    // Populate form array with branch data
+    branches.forEach(branch => {
+      const branchWithDetails = {
+        ...branch,
+        contacts: branch.cusBranchContact || [],
+        emails: this.getBranchEmailsFromCustomerData(branch.CustomerBranchSid),
+        logins: this.getBranchLoginsFromCustomerData(branch.CustomerBranchSid),
+        StateMasterSid: branch.stateMaster?.StateMasterSid,
+        CityMasterSid: branch.cityMaster?.CityMasterSid,
+      };
+
+      const branchFormGroup = this.addBranchFormGroup(branchWithDetails);
+      this.branches.push(branchFormGroup);
+
+
+      const currentBranchIndex = this.branches.length - 1;
+      if (branch.stateMaster?.StateMasterSid) {
+        this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
       }
-    }, 100);
-  });
 
-  this.totalLengthOfBranch = this.branches.length || 0;
-  this.cdRef.detectChanges();
-}
-private getBranchEmailsFromCustomerData(branchSid: number): any[] {
-  if (!this.customerData || !this.customerData.CustomerBrEmail) return [];
-  
-  return this.customerData.CustomerBrEmail.filter(email => 
-    email.customerBranch?.CustomerBranchSid === branchSid
-  );
-}
 
-// Helper method to get logins for a specific branch from customerData
-private getBranchLoginsFromCustomerData(branchSid: number): any[] {
-  if (!this.customerData || !this.customerData.CustomerLogin) return [];
-  
-  return this.customerData.CustomerLogin.filter(login => 
-    login.customerBranch?.CustomerBranchSid === branchSid
-  );
-}
-  getAllSpCustomerBranch(): void {
-  if (!this.CustomerMasterSid) {
-    console.warn('No CustomerMasterSid available');
-    this.spBranchList = [];
-    return;
+      setTimeout(() => {
+        if (branch.GSTNo) {
+          this.initializeGSTINDigits(currentBranchIndex, branch.GSTNo);
+        }
+      }, 100);
+    });
+
+    this.totalLengthOfBranch = this.branches.length || 0;
+    this.cdRef.detectChanges();
+  }
+  private getBranchEmailsFromCustomerData(branchSid: number): any[] {
+    if (!this.customerData || !this.customerData.CustomerBrEmail) return [];
+
+    return this.customerData.CustomerBrEmail.filter(email =>
+      email.customerBranch?.CustomerBranchSid === branchSid
+    );
   }
 
-  this.masterService.getBranchSidsByCustomerMasterSid(this.CustomerMasterSid).subscribe({
-    next: (resp: any[]) => {
-      // Filter active branches for the current customer
-      this.spBranchList = resp.filter(
-        (item) => item.CustomerMasterSid === this.CustomerMasterSid && 
-                  (item.status === 'A' || item.status === 'Active')
-      );
-      
-      console.log('Sales team branches loaded:', this.spBranchList);
-    },
-    error: (error) => {
-      console.error('Error loading customer branches:', error);
+  // Helper method to get logins for a specific branch from customerData
+  private getBranchLoginsFromCustomerData(branchSid: number): any[] {
+    if (!this.customerData || !this.customerData.CustomerLogin) return [];
+
+    return this.customerData.CustomerLogin.filter(login =>
+      login.customerBranch?.CustomerBranchSid === branchSid
+    );
+  }
+  getAllSpCustomerBranch(): void {
+    if (!this.CustomerMasterSid) {
+      console.warn('No CustomerMasterSid available');
       this.spBranchList = [];
+      return;
     }
-  });
-}
+
+    this.masterService.getBranchSidsByCustomerMasterSid(this.CustomerMasterSid).subscribe({
+      next: (resp: any[]) => {
+        // Filter active branches for the current customer
+        this.spBranchList = resp
+
+        console.log('Sales team branches loaded:', this.spBranchList);
+      },
+      error: (error) => {
+        console.error('Error loading customer branches:', error);
+        this.spBranchList = [];
+      }
+    });
+  }
 
   getStatesByCountryId(): void {
     const countryId = this.customerForm.get('CountryMasterSid')?.value;
@@ -1197,76 +973,76 @@ private getBranchLoginsFromCustomerData(branchSid: number): any[] {
     }
   }
 
- getCitiesByStateIdForBranch(branchIndex: number, stateId: any): void {
-  const branchForm = this.branches.at(branchIndex) as FormGroup;
-  
-  if (!stateId) {
-    branchForm['cities'] = [];
-    branchForm.get('CustBranchCity')?.setValue('');
-    this.generateBranchCode(branchIndex);
-    this.generateGST(branchIndex);
-    return;
-  }
+  getCitiesByStateIdForBranch(branchIndex: number, stateId: any): void {
+    const branchForm = this.branches.at(branchIndex) as FormGroup;
 
-  this.leadService.getCityByStateId(stateId).subscribe(
-    (resp: any) => {
-      if (resp.status) {
-        // ✅ Store cities in the branch form
-        branchForm['cities'] = resp.data;
-        
-        // ✅ Force change detection
-        this.cdRef.detectChanges();
-        
-        console.log(`Loaded ${resp.data.length} cities for branch ${branchIndex}`);
-      } else {
-        console.error('Error fetching Cities with State Id');
-        branchForm['cities'] = [];
-      }
-      
+    if (!stateId) {
+      branchForm['cities'] = [];
+      branchForm.get('CustBranchCity')?.setValue('');
       this.generateBranchCode(branchIndex);
       this.generateGST(branchIndex);
-    },
-    (error) => {
-      console.error('Error loading cities:', error);
-      branchForm['cities'] = [];
+      return;
     }
-  );
-}
+
+    this.leadService.getCityByStateId(stateId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          // ✅ Store cities in the branch form
+          branchForm['cities'] = resp.data;
+
+          // ✅ Force change detection
+          this.cdRef.detectChanges();
+
+          console.log(`Loaded ${resp.data.length} cities for branch ${branchIndex}`);
+        } else {
+          console.error('Error fetching Cities with State Id');
+          branchForm['cities'] = [];
+        }
+
+        this.generateBranchCode(branchIndex);
+        this.generateGST(branchIndex);
+      },
+      (error) => {
+        console.error('Error loading cities:', error);
+        branchForm['cities'] = [];
+      }
+    );
+  }
   generateGST(branchIndex: number): void {
     const branchForm = this.branches.at(branchIndex) as FormGroup;
     const stateId = branchForm.get('CustBranchState')?.value;
-    const stateCode = this.getStateGSTCode(stateId); 
-    const pan = this.customerForm.get('PanType')?.value || ''; 
-    
+    const stateCode = this.getStateGSTCode(stateId);
+    const pan = this.customerForm.get('PanType')?.value || '';
+
     const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
     const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
-    
+
     const thirteenthDigit = thirteenthDigitInput?.value || '';
     const fifteenthDigit = fifteenthDigitInput?.value || '';
-    const fourteenthDigit = 'Z'; 
+    const fourteenthDigit = 'Z';
 
-    if (stateCode && stateCode.trim().length === 2 && 
-        pan && pan.length === 10 && 
-        thirteenthDigit.length === 1 && 
-        fifteenthDigit.length === 1) {
-      
+    if (stateCode && stateCode.trim().length === 2 &&
+      pan && pan.length === 10 &&
+      thirteenthDigit.length === 1 &&
+      fifteenthDigit.length === 1) {
+
       const gstin = `${stateCode.trim()}${pan}${thirteenthDigit}${fourteenthDigit}${fifteenthDigit}`;
       branchForm.get('CustBranchGSTIN')?.setValue(gstin);
     } else {
       branchForm.get('CustBranchGSTIN')?.setValue('');
     }
   }
-getStatesForSelect(): any[] {
-  if (!this.stateList || this.stateList.length === 0) {
-    this.getStatesByCountryId();
+  getStatesForSelect(): any[] {
+    if (!this.stateList || this.stateList.length === 0) {
+      this.getStatesByCountryId();
+    }
+    return this.stateList || [];
   }
-  return this.stateList || [];
-}
 
-// Handle state change for specific branch
- onStateChange(branchIndex: number, event: any): void {
+  // Handle state change for specific branch
+  onStateChange(branchIndex: number, event: any): void {
     let stateId: any;
-    
+
     if (event instanceof Event) {
       const element = event.target as HTMLSelectElement;
       stateId = element.value;
@@ -1280,20 +1056,20 @@ getStatesForSelect(): any[] {
     this.generateBranchCode(branchIndex);
   }
 
-// Handle branch name change for specific branch
-onBranchNameChange(branchIndex: number): void {
-  this.generateBranchCode(branchIndex);
-}
+  // Handle branch name change for specific branch
+  onBranchNameChange(branchIndex: number): void {
+    this.generateBranchCode(branchIndex);
+  }
 
 
- getStateGSTCode(StateMasterSid: number): string {
+  getStateGSTCode(StateMasterSid: number): string {
     if (!StateMasterSid || !this.stateList || this.stateList.length === 0) {
       return '';
     }
-    
+
     const stateSid = Number(StateMasterSid);
     const state = this.stateList.find(s => s.StateMasterSid === stateSid);
-    
+
     if (state && state.stateGSTCode) {
       return state.stateGSTCode;
     } else {
@@ -1301,19 +1077,19 @@ onBranchNameChange(branchIndex: number): void {
     }
   }
   parseGST(gstin: string, digit: number): string {
-  if (!gstin || gstin.length !== 15) return '';
-  return gstin[digit];
-}
-initializeGSTINDigits(branchIndex: number, gstin: string): void {
+    if (!gstin || gstin.length !== 15) return '';
+    return gstin[digit];
+  }
+  initializeGSTINDigits(branchIndex: number, gstin: string): void {
     if (!gstin || gstin.length !== 15) return;
-    
+
     const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
     const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
-    
+
     if (thirteenthDigitInput) thirteenthDigitInput.value = gstin[12] || '';
     if (fifteenthDigitInput) fifteenthDigitInput.value = gstin[14] || '';
   }
-  
+
   generateBranchCode(branchIndex: number): void {
     const branchForm = this.branches.at(branchIndex) as FormGroup;
     const branchName = branchForm.get('CustBranchName')?.value;
@@ -1339,25 +1115,25 @@ initializeGSTINDigits(branchIndex: number, gstin: string): void {
 
     branchForm.get('CustBranchCode')?.setValue(`${namePart}${statePart}${cityPart}`);
   }
-validateEmailForm(emailForm: FormGroup): boolean {
-  if (emailForm.invalid) {
-    emailForm.markAllAsTouched();
-    return false;
+  validateEmailForm(emailForm: FormGroup): boolean {
+    if (emailForm.invalid) {
+      emailForm.markAllAsTouched();
+      return false;
+    }
+
+    // Additional validation for department selection
+    const departments = emailForm.get('DepartmentMasterSid')?.value;
+    if (!departments || (Array.isArray(departments) && departments.length === 0)) {
+      this.appSettingService.showWarning('Please select at least one department for the email');
+      return false;
+    }
+
+    return true;
   }
-  
-  // Additional validation for department selection
-  const departments = emailForm.get('DepartmentMasterSid')?.value;
-  if (!departments || (Array.isArray(departments) && departments.length === 0)) {
-    this.appSettingService.showWarning('Please select at least one department for the email');
-    return false;
-  }
-  
-  return true;
-}
 
 
 
-  getCitiesByStateId(state){
+  getCitiesByStateId(state) {
     // To handle when we click clear
     this.cityList = [];
 
@@ -1365,27 +1141,27 @@ validateEmailForm(emailForm: FormGroup): boolean {
       this.customerBranchForm.get('CustBranchCity')?.reset();
       this.customerBranchForm.get('CustBranchCity').markAsTouched();
     }
-    
-    let stateId : any;
+
+    let stateId: any;
 
     // Handle Invalid Case
-    if(!state){
+    if (!state) {
       return;
     }
-    
+
     // Handle Event happened on Selecting Dropdown
-    if(state instanceof Event){
+    if (state instanceof Event) {
       let element = state.target as HTMLSelectElement;
       stateId = element.value;
-    } 
+    }
     // Used on Patching Value
     else {
       stateId = state;
     }
 
     this.leadService.getCityByStateId(stateId).subscribe(
-      (resp:any)=>{
-        if(resp.status){
+      (resp: any) => {
+        if (resp.status) {
           this.cityList = resp.data;
         } else {
           console.error('Error fetching Cities with State Id');
@@ -1396,30 +1172,30 @@ validateEmailForm(emailForm: FormGroup): boolean {
 
   // Get cities for specific branch
   getCitiesForBranch(branchIndex: number, stateId?: number): void {
-  const branchForm = this.branches.at(branchIndex) as FormGroup;
-  
-  if (!stateId) {
-    stateId = branchForm.get('CustBranchState')?.value;
-  }
-  
-  if (!stateId) {
-    branchForm.get('CustBranchCity')?.setValue('');
-    return;
-  }
+    const branchForm = this.branches.at(branchIndex) as FormGroup;
 
-  this.leadService.getCityByStateId(stateId).subscribe(
-    (resp: any) => {
-      if (resp.status) {
-        // Store cities for this specific branch
-        branchForm['cities'] = resp.data;
-        this.cdRef.detectChanges();
-      } else {
-        console.error('Error fetching Cities with State Id');
-        branchForm['cities'] = [];
-      }
+    if (!stateId) {
+      stateId = branchForm.get('CustBranchState')?.value;
     }
-  );
-}
+
+    if (!stateId) {
+      branchForm.get('CustBranchCity')?.setValue('');
+      return;
+    }
+
+    this.leadService.getCityByStateId(stateId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          // Store cities for this specific branch
+          branchForm['cities'] = resp.data;
+          this.cdRef.detectChanges();
+        } else {
+          console.error('Error fetching Cities with State Id');
+          branchForm['cities'] = [];
+        }
+      }
+    );
+  }
   // Track by function
   trackByIndex(index: number, item: any): number {
     return index;
@@ -1436,7 +1212,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
       CountryMasterSid: ['', [Validators.required]],
       CompanyType: [''],
       PanAvailable: [false],
-      PanType: [{ value: '', disabled: true }, [ this.panValidator]],
+      PanType: [{ value: '', disabled: true }, [this.panValidator]],
       PanName: [{ value: '', disabled: true },],
       GroupName: [''],
       Website: [''],
@@ -1451,7 +1227,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
       cusMilestone: this.fb.array([]),
       cusSalesteam: this.fb.array([]),
       AirlineNumber: [''],
-    AirlineCode: ['']
+      AirlineCode: ['']
     });
 
   }
@@ -1470,7 +1246,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
   gstValidator(control: AbstractControl): ValidationErrors | null {
     const gstin = control.value;
     if (!gstin) return null;
-    
+
     const GST_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
     return GST_REGEX.test(gstin) ? null : { invalidGST: true };
   }
@@ -1478,14 +1254,14 @@ validateEmailForm(emailForm: FormGroup): boolean {
   panValidator(control: AbstractControl): ValidationErrors | null {
     const pan = control.value;
     if (!pan) return null;
-    
+
     const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
   }
-   vatValidator(control: AbstractControl): ValidationErrors | null {
+  vatValidator(control: AbstractControl): ValidationErrors | null {
     const vat = control.value;
     if (!vat) return null;
-    
+
     const VAT_REGEX = /^[1-9][0-9]{14}$/;
     return VAT_REGEX.test(vat) ? null : { invalidVAT: true };
   }
@@ -1515,7 +1291,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
     this.isAirlineSelected = this.selectedStatus.includes('Air Line');
     this.updateCustomerType();
   }
-  
+
   toCamelCase(str: string): string {
     return str
       .replace(/[^a-zA-Z0-9 ]/g, '')
@@ -1550,7 +1326,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
       return;
     }
 
-     const selectedCountry = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const selectedCountry = this.countryList?.find(c => c.CountryMasterSid == countryId);
     if (!selectedCountry || !selectedCountry.countryCode) {
       this.customerForm.get('CustomerShortCode')?.disable();
       this.customerForm.get('CustomerShortCode')?.setValue('');
@@ -1565,7 +1341,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
     this.customerForm.get('CustomerShortCode')?.setValue(`${namePart}${countryPart}`);
   }
 
-   isIndianCountry(): boolean {
+  isIndianCountry(): boolean {
     const countryId = this.customerForm.get('CountryMasterSid')?.value;
     if (!countryId) return false;
     const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
@@ -1581,7 +1357,7 @@ validateEmailForm(emailForm: FormGroup): boolean {
       countryName.includes('dubai') ||
       countryName.includes('united arab emirates');
   }
-  
+
   getTaxIdErrorMessage(): string {
     const errors = this.customerForm.get('PanType')?.errors;
     if (!errors) return '';
@@ -1594,20 +1370,20 @@ validateEmailForm(emailForm: FormGroup): boolean {
   updateTaxIdFieldValidation(): void {
     const panTypeControl = this.customerForm.get('PanType');
     const countryId = this.customerForm.get('CountryMasterSid')?.value;
-    
+
     if (countryId) {
       const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
       const countryName = country?.countryName || '';
-      
+
       panTypeControl?.clearValidators();
-      
+
       if (countryName.toLowerCase().includes('india')) {
         panTypeControl?.setValidators([Validators.required, this.panValidator]);
         this.updateTaxIdLabel('PAN Number');
       }
-      else if (countryName.toLowerCase().includes('uae') || 
-               countryName.toLowerCase().includes('dubai') ||
-               countryName.toLowerCase().includes('united arab emirates')) {
+      else if (countryName.toLowerCase().includes('uae') ||
+        countryName.toLowerCase().includes('dubai') ||
+        countryName.toLowerCase().includes('united arab emirates')) {
         panTypeControl?.setValidators([Validators.required, this.vatValidator]);
         this.updateTaxIdLabel('VAT Number');
       }
@@ -1615,20 +1391,20 @@ validateEmailForm(emailForm: FormGroup): boolean {
         panTypeControl?.setValidators([Validators.required]);
         this.updateTaxIdLabel('Tax Identification Number');
       }
-      
+
       panTypeControl?.updateValueAndValidity();
     }
   }
 
-updateTaxIdLabel(label: string): void {
- 
-  this.currentTaxIdLabel = label;
-}
- updateTaxIdFieldState(): void {
+  updateTaxIdLabel(label: string): void {
+
+    this.currentTaxIdLabel = label;
+  }
+  updateTaxIdFieldState(): void {
     this.customerForm.get('PanAvailable')?.valueChanges.subscribe((panAvailable: boolean) => {
       const panType = this.customerForm.get('PanType');
       const panName = this.customerForm.get('PanName');
-      
+
       if (panAvailable) {
         panType?.enable();
         panName?.enable();
@@ -1643,11 +1419,11 @@ updateTaxIdLabel(label: string): void {
       }
     });
   }
-initializePanFields(): void {
+  initializePanFields(): void {
     const panAvailable = this.customerForm.get('PanAvailable')?.value;
     const panTypeControl = this.customerForm.get('PanType');
     const panNameControl = this.customerForm.get('PanName');
-    
+
     if (panAvailable) {
       panTypeControl?.enable();
       panNameControl?.enable();
@@ -1701,119 +1477,119 @@ initializePanFields(): void {
 
   // Fetch customer data and patch the form
   loadCustomerData(customerId: number) {
-  this.masterService.getCustomerById(customerId).subscribe(
-    (customerData: any) => {
-      this.customerData = customerData;
-      this.customerName = customerData.CustomerName;
-      this.status = customerData.status;
-      const formattedStatus = this.statusMap[customerData.status] || customerData.status;
-      let customerType = customerData.CustomerType;
-      
-      if (typeof customerType === 'string') {
-        try {
-          customerType = JSON.parse(customerType);
-        } catch (e) {
-          console.error('Error parsing CustomerType:', e);
-          customerType = {};
+    this.masterService.getCustomerById(customerId).subscribe(
+      (customerData: any) => {
+        this.customerData = customerData;
+        this.customerName = customerData.CustomerName;
+        this.status = customerData.status;
+        const formattedStatus = this.statusMap[customerData.status] || customerData.status;
+        let customerType = customerData.CustomerType;
+
+        if (typeof customerType === 'string') {
+          try {
+            customerType = JSON.parse(customerType);
+          } catch (e) {
+            console.error('Error parsing CustomerType:', e);
+            customerType = {};
+          }
         }
+
+        // Patch main customer form
+        this.customerForm.patchValue({
+          ...customerData,
+          CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
+          status: formattedStatus,
+          paymentType: customerData.CashCredit,
+          KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
+          PanAvailable: customerData.PanType || customerData.PanName ? true : false,
+          CustomerType: customerType,
+
+          AirlineNumber: customerData.AirlineNumber || '',
+          AirlineCode: customerData.AirlineCode || ''
+        });
+
+        // Auto-generate short code if missing
+        setTimeout(() => {
+          if (!customerData.CustomerShortCode) {
+            this.generateCustomerShortCode();
+          }
+        });
+
+        // Handle customer types
+        this.selectedStatus = this.modeOfCustomerType
+          .filter(type => {
+            const key = this.toCamelCase(type.name);
+            return customerType[key] === 'isTrue';
+          })
+          .map(type => type.name);
+
+        // Load all data from the single API response
+        this.loadAllCustomerDataFromResponse(customerData);
+
+        console.log('CustomerType loaded:', customerType);
+        console.log('Selected statuses:', this.selectedStatus);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading customer data.');
       }
-      
-      // Patch main customer form
-      this.customerForm.patchValue({
-        ...customerData,
-        CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
-        status: formattedStatus,
-        paymentType: customerData.CashCredit,
-        KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
-        PanAvailable: customerData.PanType || customerData.PanName ? true : false,
-        CustomerType: customerType,
-        
-        AirlineNumber: customerData.AirlineNumber || '',
-        AirlineCode: customerData.AirlineCode || ''
-      });
-
-      // Auto-generate short code if missing
-      setTimeout(() => {
-        if (!customerData.CustomerShortCode) {
-          this.generateCustomerShortCode();
-        }
-      });
-
-      // Handle customer types
-      this.selectedStatus = this.modeOfCustomerType
-        .filter(type => {
-          const key = this.toCamelCase(type.name);
-          return customerType[key] === 'isTrue';
-        })
-        .map(type => type.name);
-
-      // Load all data from the single API response
-      this.loadAllCustomerDataFromResponse(customerData);
-      
-      console.log('CustomerType loaded:', customerType);
-      console.log('Selected statuses:', this.selectedStatus);
-    },
-    (error) => {
-      this.appSettingService.showError('Error loading customer data.');
+    );
+  }
+  private loadAllCustomerDataFromResponse(customerData: any): void {
+    // 1. Load branches (with contacts, emails, logins)
+    if (customerData.CustomerBranch) {
+      this.populateBranchFormArray(customerData.CustomerBranch);
     }
-  );
-}
-private loadAllCustomerDataFromResponse(customerData: any): void {
-  // 1. Load branches (with contacts, emails, logins)
-  if (customerData.CustomerBranch) {
-    this.populateBranchFormArray(customerData.CustomerBranch);
-  }
 
-  // 2. Load sales team
-  if (customerData.CustomerSalesTeam) {
-    this.loadSalesTeamFromResponse(customerData.CustomerSalesTeam);
-  }
-
-  // 3. Load milestones
-  if (customerData.CustomerMilestone) {
-    this.loadMilestonesFromResponse(customerData.CustomerMilestone);
-  }
-
-  // 4. Load other data
-  this.getAllSpCustomerBranch();
-  this.loadMenus();
-  this.getStatesByCountryId();
-}
-
-private loadSalesTeamFromResponse(salesTeamData: any[]): void {
-  this.selectedCustomerBranch = salesTeamData.flatMap(st => {
-    if (st.branchMaster) {
-      return [{
-        customerBranchSid: st.branchMaster.CustomerBranchSid,
-        BranchName: st.branchMaster.BranchName
-      }];
+    // 2. Load sales team
+    if (customerData.CustomerSalesTeam) {
+      this.loadSalesTeamFromResponse(customerData.CustomerSalesTeam);
     }
-    return st.branches || [];
-  });
-  
-  console.log('Selected branches:', this.selectedCustomerBranch);
-  
-  this.cusSalesteam.clear();
-  salesTeamData.forEach(salesteam => {
-    this.cusSalesteam.push(this.createSalesTeamFormGroup(salesteam));
-  });
-  this.updateSalesTeamPagination();
-}
-// Load milestones from customer data
-private loadMilestonesFromResponse(milestoneData: any[]): void {
-  this.cusMilestoneList = milestoneData || [];
-  
-  // Clear and rebuild the form array
-  this.cusMilestone.clear();
-  
-  this.cusMilestoneList.forEach(milestone => {
-    const formWithData = this.createCusMilestoneFormGrp(milestone);
-    this.cusMilestone.push(formWithData);
-  });
-  
-  this.updateCustomerMilestonePagination();
-  this.cdRef.detectChanges();
-}
+
+    // 3. Load milestones
+    if (customerData.CustomerMilestone) {
+      this.loadMilestonesFromResponse(customerData.CustomerMilestone);
+    }
+
+    // 4. Load other data
+    this.getAllSpCustomerBranch();
+    this.loadMenus();
+    this.getStatesByCountryId();
+  }
+
+  private loadSalesTeamFromResponse(salesTeamData: any[]): void {
+    this.selectedCustomerBranch = salesTeamData.flatMap(st => {
+      if (st.branchMaster) {
+        return [{
+          customerBranchSid: st.branchMaster.CustomerBranchSid,
+          BranchName: st.branchMaster.BranchName
+        }];
+      }
+      return st.branches || [];
+    });
+
+    console.log('Selected branches:', this.selectedCustomerBranch);
+
+    this.cusSalesteam.clear();
+    salesTeamData.forEach(salesteam => {
+      this.cusSalesteam.push(this.createSalesTeamFormGroup(salesteam));
+    });
+    this.updateSalesTeamPagination();
+  }
+  // Load milestones from customer data
+  private loadMilestonesFromResponse(milestoneData: any[]): void {
+    this.cusMilestoneList = milestoneData || [];
+
+    // Clear and rebuild the form array
+    this.cusMilestone.clear();
+
+    this.cusMilestoneList.forEach(milestone => {
+      const formWithData = this.createCusMilestoneFormGrp(milestone);
+      this.cusMilestone.push(formWithData);
+    });
+
+    this.updateCustomerMilestonePagination();
+    this.cdRef.detectChanges();
+  }
 
   //  loadCustomerSalesTeam() {
   //   this.masterService.getCustomerSalesTeam(this.CustomerMasterSid).subscribe((resp: any) => {
@@ -1835,81 +1611,81 @@ private loadMilestonesFromResponse(milestoneData: any[]): void {
 
   // Customer Milestone Related Codes
   loadCustomerMilestones() {
-  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-  
-  console.log('Loading milestones with:', { CompanyMasterSid, BranchMasterSid, CustomerMasterSid: this.CustomerMasterSid });
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
-  // Always load milestones first, don't check if milestoneListArr is empty
-  this.masterService.getAllMilestones(CompanyMasterSid, BranchMasterSid).subscribe(
-    (resp: any) => {
-      console.log('Milestones API response:', resp);
-      if (resp.status) {
-        this.milestoneListArr = resp.data || [];
-        console.log('Milestones loaded successfully:', this.milestoneListArr.length, 'items');
-        
-        // Now load customer-specific milestones
-        // this.loadCustomerMilestoneData();
-      } else {
-        console.error('Error loading milestones:', resp.message);
-        this.appSettingService.showError('Error loading Milestones: ' + (resp.message || 'Unknown error'));
+    console.log('Loading milestones with:', { CompanyMasterSid, BranchMasterSid, CustomerMasterSid: this.CustomerMasterSid });
+
+    // Always load milestones first, don't check if milestoneListArr is empty
+    this.masterService.getAllMilestones(CompanyMasterSid, BranchMasterSid).subscribe(
+      (resp: any) => {
+        console.log('Milestones API response:', resp);
+        if (resp.status) {
+          this.milestoneListArr = resp.data || [];
+          console.log('Milestones loaded successfully:', this.milestoneListArr.length, 'items');
+
+          // Now load customer-specific milestones
+          // this.loadCustomerMilestoneData();
+        } else {
+          console.error('Error loading milestones:', resp.message);
+          this.appSettingService.showError('Error loading Milestones: ' + (resp.message || 'Unknown error'));
+          this.milestoneListArr = [];
+        }
+      },
+      (error) => {
+        console.error('Error in milestones API call:', error);
+        this.appSettingService.showError('Error loading Milestones');
         this.milestoneListArr = [];
       }
-    },
-    (error) => {
-      console.error('Error in milestones API call:', error);
-      this.appSettingService.showError('Error loading Milestones');
-      this.milestoneListArr = [];
-    }
-  );
-}
-// loadCustomerMilestoneData() {
-//   if (!this.CustomerMasterSid) {
-//     console.log('No CustomerMasterSid available for loading customer milestones');
-//     return;
-//   }
+    );
+  }
+  // loadCustomerMilestoneData() {
+  //   if (!this.CustomerMasterSid) {
+  //     console.log('No CustomerMasterSid available for loading customer milestones');
+  //     return;
+  //   }
 
-//   console.log('Loading customer milestones for CustomerMasterSid:', this.CustomerMasterSid);
+  //   console.log('Loading customer milestones for CustomerMasterSid:', this.CustomerMasterSid);
 
-//   this.masterService.getAllCustomerMilestone(this.CustomerMasterSid).subscribe(
-//     (resp: any) => {
-//       console.log('Customer milestones API response:', resp);
-//       if (resp.status) {
-//         this.cusMilestoneList = resp.data || [];
-//         console.log('Customer milestones loaded:', this.cusMilestoneList.length, 'items');
-        
-//         // Clear and rebuild the form array
-//         this.cusMilestone.clear();
-        
-//         this.cusMilestoneList.forEach(milestone => {
-//           const formWithData = this.createCusMilestoneFormGrp(milestone);
-//           this.cusMilestone.push(formWithData);
-//         });
-        
-//         this.updateCustomerMilestonePagination();
-//         this.cdRef.detectChanges();
-        
-//         console.log('Form array after loading:', this.cusMilestone.length, 'items');
-//       } else {
-//         console.error('Error loading customer milestones:', resp.message);
-//         this.appSettingService.showError('Error loading Customer Milestones: ' + (resp.message || 'Unknown error'));
-//       }
-//     },
-//     (error) => {
-//       console.error('Error in customer milestones API call:', error);
-//       this.appSettingService.showError('Error loading Customer Milestones');
-//     }
-//   );
-// }
+  //   this.masterService.getAllCustomerMilestone(this.CustomerMasterSid).subscribe(
+  //     (resp: any) => {
+  //       console.log('Customer milestones API response:', resp);
+  //       if (resp.status) {
+  //         this.cusMilestoneList = resp.data || [];
+  //         console.log('Customer milestones loaded:', this.cusMilestoneList.length, 'items');
 
-  loadAllSpfields(){
-     const companyMastersID = this.currentCompany?.CompanyMasterSid;
+  //         // Clear and rebuild the form array
+  //         this.cusMilestone.clear();
+
+  //         this.cusMilestoneList.forEach(milestone => {
+  //           const formWithData = this.createCusMilestoneFormGrp(milestone);
+  //           this.cusMilestone.push(formWithData);
+  //         });
+
+  //         this.updateCustomerMilestonePagination();
+  //         this.cdRef.detectChanges();
+
+  //         console.log('Form array after loading:', this.cusMilestone.length, 'items');
+  //       } else {
+  //         console.error('Error loading customer milestones:', resp.message);
+  //         this.appSettingService.showError('Error loading Customer Milestones: ' + (resp.message || 'Unknown error'));
+  //       }
+  //     },
+  //     (error) => {
+  //       console.error('Error in customer milestones API call:', error);
+  //       this.appSettingService.showError('Error loading Customer Milestones');
+  //     }
+  //   );
+  // }
+
+  loadAllSpfields() {
+    const companyMastersID = this.currentCompany?.CompanyMasterSid;
     forkJoin({
-      departments : this.masterService.getAllDepartments(companyMastersID),
-      salesman : this.masterService.getAllSalesperson(),
-      docs : this.masterService.getAllDoc(),
-      cs : this.masterService.getAllCS()
-    }).subscribe(({departments,salesman,docs,cs})=>{
+      departments: this.masterService.getAllDepartments(companyMastersID),
+      salesman: this.masterService.getAllSalesperson(),
+      docs: this.masterService.getAllDoc(),
+      cs: this.masterService.getAllCS()
+    }).subscribe(({ departments, salesman, docs, cs }) => {
       this.spDepartmentList = departments;
       this.salesPersonList = salesman.data;
       this.allCS = cs.data;
@@ -1926,10 +1702,10 @@ private loadMilestonesFromResponse(milestoneData: any[]): void {
   //     });
   //     return;
   //   }
-    
+
   //   const formValue = this.cusMilestone.value;
   //   const currentUserEmail = this.userData?.userEmail;
-    
+
   //   const payload = formValue.map(form => {
   //     return {
   //       CustomerMilestoneSid: form.CustomerMilestoneSid,
@@ -1973,136 +1749,136 @@ private loadMilestonesFromResponse(milestoneData: any[]): void {
     return this.customerForm.get('cusSalesteam') as FormArray;
   }
   updateCustomerMilestonePagination() {
-  const totalItems = this.cusMilestone.length;
-  this.totalCusMilePages = Math.ceil(totalItems / this.cusMilePageSize);
+    const totalItems = this.cusMilestone.length;
+    this.totalCusMilePages = Math.ceil(totalItems / this.cusMilePageSize);
 
-  const startIndex = (this.cusMilePage - 1) * this.cusMilePageSize;
-  const endIndex = startIndex + this.cusMilePageSize;
+    const startIndex = (this.cusMilePage - 1) * this.cusMilePageSize;
+    const endIndex = startIndex + this.cusMilePageSize;
 
-  this.slicedCusMilestoneList = this.cusMilestone.controls.slice(startIndex, endIndex);
-  this.cdRef.detectChanges(); // Force update
-}
-   createCusMilestoneFormGrp(data?: any) {
-  const formGroup = this.fb.group({
-    CustomerMilestoneSid: [data?.CustomerMilestoneSid || null],
-    MilestoneMasterSid: [data?.MilestoneMasterSid || null, [Validators.required]],
-    UpdateType: [data?.UpdateType || null, [Validators.required]],
-    ContactInfo: [data?.ContactInfo || '', [Validators.required]],
-    EffectiveFrom: [data ? new Date(data?.EffectiveFrom) : null],
-    Status: [data ? (data?.Status === "A" ? "Active" : "Suspended") : 'Active']
-  });
-  return formGroup;
-}
+    this.slicedCusMilestoneList = this.cusMilestone.controls.slice(startIndex, endIndex);
+    this.cdRef.detectChanges(); // Force update
+  }
+  createCusMilestoneFormGrp(data?: any) {
+    const formGroup = this.fb.group({
+      CustomerMilestoneSid: [data?.CustomerMilestoneSid || null],
+      MilestoneMasterSid: [data?.MilestoneMasterSid || null, [Validators.required]],
+      UpdateType: [data?.UpdateType || null, [Validators.required]],
+      ContactInfo: [data?.ContactInfo || '', [Validators.required]],
+      EffectiveFrom: [data ? new Date(data?.EffectiveFrom) : null],
+      Status: [data ? (data?.Status === "A" ? "Active" : "Suspended") : 'Active']
+    });
+    return formGroup;
+  }
 
 
- onPageChange(page: number) {
+  onPageChange(page: number) {
     this.cusMilePage = page;
     this.updateCustomerMilestonePagination();
   }
 
 
-  onAddMilestone(){
+  onAddMilestone() {
     const newGrp = this.createCusMilestoneFormGrp();
     this.cusMilestone.push(newGrp);
     this.updateCustomerMilestonePagination();
     this.cdRef.detectChanges();
   }
-//   saveAllCustomerSalesTeam() {
-//   if (this.cusSalesteam.invalid) {
-//     this.appSettingService.showWarning('Please fill all required fields in the sales team section.');
-//     this.cusSalesteam.markAllAsTouched();
-//     return;
-//   }
+  //   saveAllCustomerSalesTeam() {
+  //   if (this.cusSalesteam.invalid) {
+  //     this.appSettingService.showWarning('Please fill all required fields in the sales team section.');
+  //     this.cusSalesteam.markAllAsTouched();
+  //     return;
+  //   }
 
-//   const currentUserEmail = this.userData?.userEmail;
-//   const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const currentUserEmail = this.userData?.userEmail;
+  //   const companyMasterSid = this.currentCompany?.CompanyMasterSid;
 
-//   const payload = this.cusSalesteam.value.map(salesteam => {
-//     const branches = (salesteam.branches || []).map(branch => {
-//       const branchSid = branch.customerBranchSid ?? branch;
+  //   const payload = this.cusSalesteam.value.map(salesteam => {
+  //     const branches = (salesteam.branches || []).map(branch => {
+  //       const branchSid = branch.customerBranchSid ?? branch;
 
-//       const saleBranchFromResp = this.selectedCustomerBranch.find(
-//         b => b.customerBranchSid === branchSid
-//       );
+  //       const saleBranchFromResp = this.selectedCustomerBranch.find(
+  //         b => b.customerBranchSid === branchSid
+  //       );
 
-//       return {
-//         id: saleBranchFromResp ? saleBranchFromResp.id : null,
-//         customerBranchSid: branchSid
-//       };
-//     });
+  //       return {
+  //         id: saleBranchFromResp ? saleBranchFromResp.id : null,
+  //         customerBranchSid: branchSid
+  //       };
+  //     });
 
-//     return {
-//       CustomerSalesSid: salesteam.CustomerSalesSid,
-//       CompanyMasterSid: companyMasterSid,
-//       CustomerMasterSid: this.CustomerMasterSid,
-//       DepartmentMasterSid : salesteam.DepartmentMasterSid,
-//       Salesman: salesteam.Salesman,
-//       CSPerson: salesteam.CSPerson,
-//       DocPerson: salesteam.DocPerson,
-//       EffectiveFrom: salesteam.EffectiveFrom,
-//       status: salesteam.status === 'Active' ? 'A' : 'S',
-//       createdBy: salesteam.CustomerSalesSid ? undefined : currentUserEmail,
-//       updatedBy: salesteam.CustomerSalesSid ? currentUserEmail : undefined,
-//       branches: branches
-//     };
-//   });
+  //     return {
+  //       CustomerSalesSid: salesteam.CustomerSalesSid,
+  //       CompanyMasterSid: companyMasterSid,
+  //       CustomerMasterSid: this.CustomerMasterSid,
+  //       DepartmentMasterSid : salesteam.DepartmentMasterSid,
+  //       Salesman: salesteam.Salesman,
+  //       CSPerson: salesteam.CSPerson,
+  //       DocPerson: salesteam.DocPerson,
+  //       EffectiveFrom: salesteam.EffectiveFrom,
+  //       status: salesteam.status === 'Active' ? 'A' : 'S',
+  //       createdBy: salesteam.CustomerSalesSid ? undefined : currentUserEmail,
+  //       updatedBy: salesteam.CustomerSalesSid ? currentUserEmail : undefined,
+  //       branches: branches
+  //     };
+  //   });
 
-//   console.log('Payload to save:', payload);
+  //   console.log('Payload to save:', payload);
 
-//   this.masterService.saveCustomerSalesTeam(payload).subscribe(
-//     (resp: any) => {
-//       if (resp.status) {
-//         this.appSettingService.showSuccess('Sales team saved successfully');
-//         // this.loadCustomerSalesTeam();
-//       } else {
-//         this.appSettingService.showError('Error saving sales team');
-//       }
-//     },
-//     (error) => {
-//       console.error('Error saving sales team', error);
-//       this.appSettingService.showError('An unexpected error occurred.');
-//     }
-//   );
-// }
+  //   this.masterService.saveCustomerSalesTeam(payload).subscribe(
+  //     (resp: any) => {
+  //       if (resp.status) {
+  //         this.appSettingService.showSuccess('Sales team saved successfully');
+  //         // this.loadCustomerSalesTeam();
+  //       } else {
+  //         this.appSettingService.showError('Error saving sales team');
+  //       }
+  //     },
+  //     (error) => {
+  //       console.error('Error saving sales team', error);
+  //       this.appSettingService.showError('An unexpected error occurred.');
+  //     }
+  //   );
+  // }
 
 
-  findSalesmanName(id : number){
-    if(!this.salesPersonList){
+  findSalesmanName(id: number) {
+    if (!this.salesPersonList) {
       return;
     }
-    const user = this.salesPersonList.find(person => person.UserMasterSid === id );
-    if(user){
+    const user = this.salesPersonList.find(person => person.UserMasterSid === id);
+    if (user) {
       return user.userName;
     }
     return ''
   }
 
-  deleteSalesman(CustomerSalesSid : number){
+  deleteSalesman(CustomerSalesSid: number) {
     this.masterService.deleteSalesteamById(CustomerSalesSid).subscribe(
-      (resp:any)=>{
-        if(resp.status){
+      (resp: any) => {
+        if (resp.status) {
           this.appSettingService.showSuccess('Salesman Deleted Successfully')
           // this.loadCustomerSalesTeam();
         } else {
           this.appSettingService.showError('Error Deleting Salesman');
         }
       },
-      (error)=>{
-        console.error('Error Deleting Salesman',error);
+      (error) => {
+        console.error('Error Deleting Salesman', error);
       }
     )
   }
 
-   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
     return {
       year: date.getFullYear(),
       month: date.getMonth() + 1,
       day: date.getDate(),
     };
-   }
+  }
 
-  deleteCustomerMilestone(CustomerMilestoneSid:number,index:number){
+  deleteCustomerMilestone(CustomerMilestoneSid: number, index: number) {
     const actualIndex = this.getActualIndex(index);
     if (CustomerMilestoneSid) {
       this.masterService.deleteCustomerMilestoneById(CustomerMilestoneSid).subscribe(
@@ -2129,72 +1905,66 @@ private loadMilestonesFromResponse(milestoneData: any[]): void {
   getActualIndex(pageIndex: number): number {
     return (this.cusMilePage - 1) * this.cusMilePageSize + pageIndex;
   }
-   updateSalesTeamPagination() {
+  updateSalesTeamPagination() {
     const startIndex = (this.salesTeamPage - 1) * this.salesTeamPageSize;
     const endIndex = startIndex + this.salesTeamPageSize;
     this.slicedSalesTeamList = this.cusSalesteam.controls.slice(startIndex, endIndex);
   }
   createSalesTeamFormGroup(data?: any): FormGroup {
-  // Extract the actual user IDs from the nested structure
-  const salesmanId = data?.Salesman || data?.salesManUser?.UserMasterSid || null;
-  const csPersonId = data?.CSPerson || data?.CSPersonUser?.UserMasterSid || null;
-  const docPersonId = data?.DocPerson || data?.DocPersonUser?.UserMasterSid || null;
-  
-  // Handle department IDs - ensure they're strings in an array
-  let departmentIds: string[] = [];
-  if (data?.Departments && Array.isArray(data.Departments)) {
-    departmentIds = data.Departments.map((dept: any) => dept.DepartmentMasterSid.toString());
-  } else if (data?.DepartmentMasterSid) {
-    if (Array.isArray(data.DepartmentMasterSid)) {
-      departmentIds = data.DepartmentMasterSid.map((id: any) => id.toString());
-    } else if (typeof data.DepartmentMasterSid === 'string') {
-      departmentIds = data.DepartmentMasterSid.split(',').map(id => id.trim());
+    console.log(data,'createSalesTeamFormGroup')
+    // Extract the actual user IDs from the nested structure
+    const salesmanId = data?.Salesman || data?.salesManUser?.UserMasterSid || null;
+    const csPersonId = data?.CSPerson || data?.CSPersonUser?.UserMasterSid || null;
+    const docPersonId = data?.DocPerson || data?.DocPersonUser?.UserMasterSid || null;
+    const branchSid = data?.CustomerBranch.CustomerBranchSid || null
+
+    // ✅ Departments - always normalize to string[]
+    let departmentIds: string[] = [];
+    if (data?.Departments && Array.isArray(data.Departments)) {
+      departmentIds = data.Departments.map((dept: any) => dept.DepartmentMasterSid.toString());
+    } else if (data?.DepartmentMasterSid) {
+      if (Array.isArray(data.DepartmentMasterSid)) {
+        departmentIds = data.DepartmentMasterSid.map((id: any) => id.toString());
+      } else if (typeof data.DepartmentMasterSid === 'string') {
+        departmentIds = data.DepartmentMasterSid.split(',').map(id => id.trim());
+      }
     }
+
+  
+
+    return this.fb.group({
+      CustomerSalesSid: [data?.CustomerSalesSid || null],
+      DepartmentMasterSid: [departmentIds, [Validators.required]],  // 👈 Only IDs
+      Salesman: [salesmanId, [Validators.required]],
+      CSPerson: [csPersonId],
+      DocPerson: [docPersonId],
+      branchSid : [branchSid],
+      EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : new Date()],
+      status: [data ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active'],
+    });
   }
 
-  // Handle branches - extract from CustomerSalesBranch array
-  let branchIds: number[] = [];
-  if (data?.CustomerSalesBranch && Array.isArray(data.CustomerSalesBranch)) {
-    branchIds = data.CustomerSalesBranch.map(b => b.CustomerBranchSid);
-  } else if (data?.branches) {
-    branchIds = Array.isArray(data.branches) 
-      ? data.branches.map(b => typeof b === 'object' ? b.customerBranchSid : b)
-      : [];
+  getDepartmentNames(departmentIds: string[]): string {
+    if (!departmentIds || !this.spDepartmentList) return '';
+
+    const names = departmentIds.map(id => {
+      const dept = this.spDepartmentList.find(d =>
+        d.DepartmentMasterSid.toString() === id.toString()
+      );
+      return dept ? dept.departmentName : '';
+    }).filter(name => name !== '');
+
+    return names.join(', ');
   }
 
-  return this.fb.group({
-    CustomerSalesSid: [data?.CustomerSalesSid || null],
-    DepartmentMasterSid: [departmentIds, [Validators.required]],
-    Salesman: [salesmanId, [Validators.required]],
-    branches: [branchIds, [Validators.required, Validators.minLength(1)]],
-    CSPerson: [csPersonId],
-    DocPerson: [docPersonId],
-    EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : new Date()],
-    status: [data ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active'],
-  });
-}
-
-getDepartmentNames(departmentIds: string[]): string {
-  if (!departmentIds || !this.spDepartmentList) return '';
-  
-  const names = departmentIds.map(id => {
-    const dept = this.spDepartmentList.find(d => 
-      d.DepartmentMasterSid.toString() === id.toString()
-    );
-    return dept ? dept.departmentName : '';
-  }).filter(name => name !== '');
-  
-  return names.join(', ');
-}
-
-getDepartmentOptions(): any[] {
-  if (!this.spDepartmentList) return [];
-  return this.spDepartmentList.map(dept => ({
-    id: dept.DepartmentMasterSid.toString(),
-    name: dept.departmentName,
-    code: dept.departmentCode
-  }));
-}
+  getDepartmentOptions(): any[] {
+    if (!this.spDepartmentList) return [];
+    return this.spDepartmentList.map(dept => ({
+      id: dept.DepartmentMasterSid.toString(),
+      name: dept.departmentName,
+      code: dept.departmentCode
+    }));
+  }
 
   onAddSalesTeam() {
     this.cusSalesteam.push(this.createSalesTeamFormGroup());
@@ -2228,625 +1998,632 @@ getDepartmentOptions(): any[] {
   }
 
   // Add other template-referenced methods
- // Add this method to your OrganizationEntryComponent class
-// Replace your existing onSubmit method with this comprehensive version
-async onSubmit() {
-  // Validate main customer form
-  if (this.customerForm.invalid) {
-    this.appSettingService.showWarning('Please fill all required fields in the Party section.');
-    this.customerForm.markAllAsTouched();
-    this.selectedTab = 'Party';
-    return;
-  }
-
-  // Validate branches if any exist
-  if (this.branches.length > 0) {
-    const branchValidation = this.validateAllBranches();
-    if (!branchValidation.isValid) {
-      this.appSettingService.showWarning(branchValidation.message);
-      this.selectedTab = 'Branch';
+  // Add this method to your OrganizationEntryComponent class
+  // Replace your existing onSubmit method with this comprehensive version
+  async onSubmit() {
+    // Validate main customer form
+    if (this.customerForm.invalid) {
+      this.appSettingService.showWarning('Please fill all required fields in the Party section.');
+      this.customerForm.markAllAsTouched();
+      this.selectedTab = 'Party';
       return;
     }
-  }
 
-  // Validate sales team if in edit mode and any exist
-  if (this.isEditMode && this.cusSalesteam.length > 0) {
-    const salesTeamValidation = this.validateSalesTeam();
-    if (!salesTeamValidation.isValid) {
-      this.appSettingService.showWarning(salesTeamValidation.message);
-      this.selectedTab = 'Salesman';
-      return;
-    }
-  }
-
-  // Validate milestones if in edit mode and any exist
-  if (this.isEditMode && this.cusMilestone.length > 0) {
-    const milestoneValidation = this.validateMilestones();
-    if (!milestoneValidation.isValid) {
-      this.appSettingService.showWarning(milestoneValidation.message);
-      this.selectedTab = 'Milestone';
-      return;
-    }
-  }
-
-  try {
-    if (this.isEditMode) {
-      // UPDATE existing customer with all data
-      const updatePayload = this.prepareUpdatePayload();
-      await this.updateCustomerWithAllData(updatePayload);
-    } else {
-      // CREATE new customer with only customer and branches
-      const createPayload = this.prepareCreatePayload();
-      await this.createCustomerWithAllData(createPayload);
-    }
-  } catch (error) {
-    console.error('Error saving customer:', error);
-    this.appSettingService.showError('Error saving customer data');
-  }
-}
-
-// Add this missing validation method
-private validateAllBranches(): { isValid: boolean; message: string } {
-  if (this.branches.length === 0) {
-    return { isValid: true, message: '' }; // No branches is valid
-  }
-
-  if (this.branches.invalid) {
-    // this.markAllBranchesAsTouched();
-    return { isValid: false, message: 'Please fill all required fields in the Branches section.' };
-  }
-
-  // Validate each branch's nested entities
-  for (let i = 0; i < this.branches.length; i++) {
-    const branchForm = this.branches.at(i);
-    
-    // Validate contacts
-    const contacts = this.getContacts(i);
-    if (contacts.invalid) {
-      contacts.markAllAsTouched();
-      return { isValid: false, message: `Please fill all required fields in contacts for branch ${i + 1}.` };
-    }
-
-    // Validate each contact
-    for (let j = 0; j < contacts.length; j++) {
-      const contactForm = contacts.at(j) as FormGroup;
-      if (contactForm.invalid) {
-        contactForm.markAllAsTouched();
-        return { isValid: false, message: `Please fill all required contact fields in branch ${i + 1}.` };
+    // Validate branches if any exist
+    if (this.branches.length > 0) {
+      const branchValidation = this.validateAllBranches();
+      if (!branchValidation.isValid) {
+        this.appSettingService.showWarning(branchValidation.message);
+        this.selectedTab = 'Branch';
+        return;
       }
     }
 
-    // Validate emails
-    const emails = this.getEmails(i);
-    if (emails.invalid) {
-      emails.markAllAsTouched();
-      return { isValid: false, message: `Please fill all required fields in emails for branch ${i + 1}.` };
-    }
-
-    // Validate each email
-    for (let j = 0; j < emails.length; j++) {
-      const emailForm = emails.at(j) as FormGroup;
-      if (emailForm.invalid) {
-        emailForm.markAllAsTouched();
-        return { isValid: false, message: `Please fill all required email fields in branch ${i + 1}.` };
+    // Validate sales team if in edit mode and any exist
+    if (this.isEditMode && this.cusSalesteam.length > 0) {
+      const salesTeamValidation = this.validateSalesTeam();
+      if (!salesTeamValidation.isValid) {
+        this.appSettingService.showWarning(salesTeamValidation.message);
+        this.selectedTab = 'Salesman';
+        return;
       }
     }
 
-    // Validate logins
-    const logins = this.getLogins(i);
-    if (logins.invalid) {
-      logins.markAllAsTouched();
-      return { isValid: false, message: `Please fill all required fields in logins for branch ${i + 1}.` };
-    }
-
-    // Validate each login
-    for (let j = 0; j < logins.length; j++) {
-      const loginForm = logins.at(j) as FormGroup;
-      if (loginForm.invalid) {
-        loginForm.markAllAsTouched();
-        return { isValid: false, message: `Please fill all required login fields in branch ${i + 1}.` };
+    // Validate milestones if in edit mode and any exist
+    if (this.isEditMode && this.cusMilestone.length > 0) {
+      const milestoneValidation = this.validateMilestones();
+      if (!milestoneValidation.isValid) {
+        this.appSettingService.showWarning(milestoneValidation.message);
+        this.selectedTab = 'Milestone';
+        return;
       }
     }
+
+    try {
+      if (this.isEditMode && this.CustomerMasterSid) {
+        // UPDATE existing customer with all data
+        const updatePayload = this.prepareUpdatePayload();
+        await this.updateCustomerWithAllData(updatePayload);
+      } else {
+        // CREATE new customer with only customer and branches
+        const createPayload = this.prepareCreatePayload();
+        await this.createCustomerWithAllData(createPayload);
+      }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      this.appSettingService.showError('Error saving customer data');
+    }
   }
 
-  return { isValid: true, message: '' };
-}
+  // Add this missing validation method
+  private validateAllBranches(): { isValid: boolean; message: string } {
+    if (this.branches.length === 0) {
+      return { isValid: true, message: '' }; // No branches is valid
+    }
 
-// Validate sales team
-private validateSalesTeam(): { isValid: boolean; message: string } {
-  if (this.cusSalesteam.invalid) {
-    this.cusSalesteam.markAllAsTouched();
-    return { isValid: false, message: 'Please fill all required fields in the Sales Team section.' };
+    if (this.branches.invalid) {
+      // this.markAllBranchesAsTouched();
+      return { isValid: false, message: 'Please fill all required fields in the Branches section.' };
+    }
+
+    // Validate each branch's nested entities
+    for (let i = 0; i < this.branches.length; i++) {
+      const branchForm = this.branches.at(i);
+
+      // Validate contacts
+      const contacts = this.getContacts(i);
+      if (contacts.invalid) {
+        contacts.markAllAsTouched();
+        return { isValid: false, message: `Please fill all required fields in contacts for branch ${i + 1}.` };
+      }
+
+      // Validate each contact
+      for (let j = 0; j < contacts.length; j++) {
+        const contactForm = contacts.at(j) as FormGroup;
+        if (contactForm.invalid) {
+          contactForm.markAllAsTouched();
+          return { isValid: false, message: `Please fill all required contact fields in branch ${i + 1}.` };
+        }
+      }
+
+      // Validate emails
+      const emails = this.getEmails(i);
+      if (emails.invalid) {
+        emails.markAllAsTouched();
+        return { isValid: false, message: `Please fill all required fields in emails for branch ${i + 1}.` };
+      }
+
+      // Validate each email
+      for (let j = 0; j < emails.length; j++) {
+        const emailForm = emails.at(j) as FormGroup;
+        if (emailForm.invalid) {
+          emailForm.markAllAsTouched();
+          return { isValid: false, message: `Please fill all required email fields in branch ${i + 1}.` };
+        }
+      }
+
+      // Validate logins
+      const logins = this.getLogins(i);
+      if (logins.invalid) {
+        logins.markAllAsTouched();
+        return { isValid: false, message: `Please fill all required fields in logins for branch ${i + 1}.` };
+      }
+
+      // Validate each login
+      for (let j = 0; j < logins.length; j++) {
+        const loginForm = logins.at(j) as FormGroup;
+        if (loginForm.invalid) {
+          loginForm.markAllAsTouched();
+          return { isValid: false, message: `Please fill all required login fields in branch ${i + 1}.` };
+        }
+      }
+    }
+
+    return { isValid: true, message: '' };
   }
-  return { isValid: true, message: '' };
-}
 
-// Validate milestones
-private validateMilestones(): { isValid: boolean; message: string } {
-  if (this.cusMilestone.invalid) {
-    this.cusMilestone.controls.forEach((group: FormGroup) => {
-      group.markAllAsTouched();
-    });
-    return { isValid: false, message: 'Please fill all required fields in the Milestones section.' };
+  // Validate sales team
+  private validateSalesTeam(): { isValid: boolean; message: string } {
+    if (this.cusSalesteam.invalid) {
+      this.cusSalesteam.markAllAsTouched();
+      return { isValid: false, message: 'Please fill all required fields in the Sales Team section.' };
+    }
+    return { isValid: true, message: '' };
   }
-  return { isValid: true, message: '' };
-}
 
-// Prepare main customer payload (same as before)
-// For CREATE mode - only customer and branches
-private prepareCreatePayload(): any {
-  const formValue = this.customerForm.value;
-  const currentUserEmail = this.userData?.userEmail;
-  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+  // Validate milestones
+  private validateMilestones(): { isValid: boolean; message: string } {
+    if (this.cusMilestone.invalid) {
+      this.cusMilestone.controls.forEach((group: FormGroup) => {
+        group.markAllAsTouched();
+      });
+      return { isValid: false, message: 'Please fill all required fields in the Milestones section.' };
+    }
+    return { isValid: true, message: '' };
+  }
 
-  const statusValue = formValue.status === 'Active' ? 'A' : 'S';
-
-  return {
-    customer: {
-      CompanyMasterSid: activeCompanyId,
-      CustomerName: formValue.CustomerName,
-      CustomerShortCode: formValue.CustomerShortCode,
-      CustomerAliasName: formValue.CustomerAliasName,
-      CustomerAddress1: formValue.CustomerAddress1,
-      CustomerAddress2: formValue.CustomerAddress2,
-      CountryMasterSid: Number(formValue.CountryMasterSid),
-      CustomerType: formValue.CustomerType,
-      PanName: formValue.PanName,
-      PanType: formValue.PanType,
-      GroupName: formValue.GroupName,
-      Website: formValue.Website,
-      CashCredit: formValue.paymentType,
-      Network: formValue.Network,
-      Remarks: formValue.Remarks,
-      IsMSME: formValue.IsMSME ? 'A' : 'I',
-      RegistrationNo: formValue.RegistrationNo,
-      CompanyType: formValue.CompanyType,
-      status: statusValue,
-      createdBy: currentUserEmail,
-      AirlineNumber: formValue.AirlineNumber,
-      AirlineCode: formValue.AirlineCode
-    },
-    customerBranches: this.prepareCreateBranchesPayload()
-  };
-}
-
-private prepareCreateBranchesPayload(): any[] {
-  const branchesPayload = [];
-  
-  for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-    const branchForm = this.branches.at(branchIndex);
-    const branchData = branchForm.value;
+  // Prepare main customer payload (same as before)
+  // For CREATE mode - only customer and branches
+  private prepareCreatePayload(): any {
+    const formValue = this.customerForm.value;
+    const currentUserEmail = this.userData?.userEmail;
     const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-    const branchPayload = {
-      CompanyMasterSid: activeCompanyId,
-      BranchName: branchData.CustBranchName?.trim(),
-      StateMasterSid: branchData.CustBranchState,
-      CityMasterSid: branchData.CustBranchCity,
-      Branch_Type: branchData.CustBranchType,
-      Branch_Code: branchData.CustBranchCode,
-      Contact_Person: branchData.Contact_Person,
-      Zip_PostBox: String(branchData.CustBranchZipPostCode),
-      ContactNo: String(branchData.CustBranchPhone),
-      Email: branchData.CustBranchEmail,
-      Address: branchData.CustBranchAddress,
-      Registered: branchData.CustBranchRegistered,
-      CustomerGstType: branchData.CustBranchGSTtype,
-      GSTNo: branchData.CustBranchGSTIN,
-      status: branchData.status === 'Active' ? 'A' : 'S',
-      createdBy: this.userData?.userEmail,
-      
-      // Include nested entities for create
-      customerBranchContacts: this.prepareCreateContactsPayload(branchIndex),
-    };
-    
-    branchesPayload.push(branchPayload);
-  }
-  
-  return branchesPayload;
-}
 
-private prepareCreateContactsPayload(branchIndex: number): any[] {
-  const contactsPayload = [];
-  const contacts = this.getContacts(branchIndex);
-  
-  for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
-    const contactForm = contacts.at(contactIndex);
-    const contactData = contactForm.value;
-    
-    contactsPayload.push({
-      ContactType: contactData.ContactType,
-      ContactName: contactData.ContactName?.trim(),
-      MobileNo: String(contactData.MobileNo),
-      Email: contactData.Email,
-      status: contactData.status === 'Active' ? 'A' : 'S',
-      createdBy: this.userData?.userEmail
-    });
-  }
-  
-  return contactsPayload;
-}
+    const statusValue = formValue.status === 'A' ? 'A' : 'S';
 
-private prepareCreateEmailsPayload(branchIndex: number): any[] {
-  const emailsPayload = [];
-  const emails = this.getEmails(branchIndex);
-  
-  for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
-    const emailForm = emails.at(emailIndex);
-    const emailData = emailForm.value;
-    
-    let departmentValue = emailData.DepartmentMasterSid;
-    if (Array.isArray(departmentValue)) {
-      departmentValue = departmentValue.join(',');
-    }
-    
-    emailsPayload.push({
-      MenuMasterSid: Number(emailData.MenuMasterSid),
-      DepartmentMasterSid: departmentValue,
-      Toemail: emailData.Toemail,
-      CCemail: emailData.CCemail,
-      status: emailData.status === 'Active' ? 'A' : 'S',
-      createdBy: this.userData?.userEmail
-    });
-  }
-  
-  return emailsPayload;
-}
-
-private prepareCreateLoginsPayload(branchIndex: number): any[] {
-  const loginsPayload = [];
-  const logins = this.getLogins(branchIndex);
-  
-  for (let loginIndex = 0; loginIndex < logins.length; loginIndex++) {
-    const loginForm = logins.at(loginIndex);
-    const loginData = loginForm.value;
-    
-    loginsPayload.push({
-      LoginName: loginData.LoginName?.trim(),
-      LoginEmail: loginData.LoginEmail,
-      LoginPassword: loginData.LoginPassword,
-      status: loginData.status === 'Active' ? 'A' : 'S',
-      createdBy: this.userData?.userEmail
-    });
-  }
-  
-  return loginsPayload;
-}
-// For UPDATE mode - send all data including sales teams and milestones
-private prepareUpdatePayload(): any {
-  const formValue = this.customerForm.value;
-  const currentUserEmail = this.userData?.userEmail;
-  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-
-  const statusValue = formValue.status === 'Active' ? 'A' : 'S';
-
-  return {
-    customer: {
-      CompanyMasterSid: activeCompanyId,
-      CustomerName: formValue.CustomerName?.trim(),
-      CustomerShortCode: formValue.CustomerShortCode?.trim(),
-      CustomerAliasName: formValue.CustomerAliasName,
-      CustomerAddress1: formValue.CustomerAddress1,
-      CustomerAddress2: formValue.CustomerAddress2,
-      CountryMasterSid: Number(formValue.CountryMasterSid),
-      CustomerType: formValue.CustomerType,
-      PanName: formValue.PanName,
-      PanType: formValue.PanType,
-      GroupName: formValue.GroupName,
-      Website: formValue.Website,
-      CashCredit: formValue.paymentType,
-      Network: formValue.Network,
-      Remarks: formValue.Remarks,
-      IsMSME: formValue.IsMSME ? 'A' : 'I',
-      RegistrationNo: formValue.RegistrationNo,
-      CompanyType: formValue.CompanyType,
-      status: statusValue,
-      updatedBy: currentUserEmail,
-      AirlineNumber: formValue.AirlineNumber,
-      AirlineCode: formValue.AirlineCode
-    },
-    customerBranches: this.prepareUpdateBranchesPayload(),
-   
-  };
-}
-
-private prepareUpdateBranchesPayload(): any[] {
-  const branchesPayload = [];
-  
-  for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-    const branchForm = this.branches.at(branchIndex);
-    const branchData = branchForm.value;
-    
-    const branchPayload: any = {
-      CustomerBranchSid: branchData.CustomerBranchSid,
-      BranchName: branchData.CustBranchName?.trim(),
-      StateMasterSid: branchData.CustBranchState,
-      CityMasterSid: branchData.CustBranchCity,
-      Branch_Type: branchData.CustBranchType,
-      Branch_Code: branchData.CustBranchCode,
-      Contact_Person: branchData.Contact_Person,
-      Zip_PostBox: String(branchData.CustBranchZipPostCode),
-      ContactNo: String(branchData.CustBranchPhone),
-      Email: branchData.CustBranchEmail,
-      Address: branchData.CustBranchAddress,
-      Registered: branchData.CustBranchRegistered,
-      CustomerGstType: branchData.CustBranchGSTtype,
-      GSTNo: branchData.CustBranchGSTIN,
-      status: branchData.status === 'Active' ? 'A' : 'S',
-      updatedBy: this.userData?.userEmail,
-      
-     
-      customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
-      customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
-      customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
-      customerSalesTeams: this.prepareUpdateSalesTeamsPayload(),
-      customerMilestones: this.prepareUpdateMilestonesPayload()
-    };
-
-    // Only include createdBy if it's a new branch
-    if (!branchData.CustomerBranchSid) {
-      branchPayload.createdBy = this.userData?.userEmail;
-    }
-    
-    branchesPayload.push(branchPayload);
-  }
-  
-  return branchesPayload;
-}
-
-// ✅ ADD THESE METHODS FOR UPDATE OPERATION
-private prepareUpdateContactsPayload(branchIndex: number): any[] {
-  const contactsPayload = [];
-  const contacts = this.getContacts(branchIndex);
-  
-  for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
-    const contactForm = contacts.at(contactIndex);
-    const contactData = contactForm.value;
-    
-    const contactPayload: any = {
-      ContactType: contactData.ContactType,
-      ContactName: contactData.ContactName?.trim(),
-      MobileNo: String(contactData.MobileNo),
-      Email: contactData.Email,
-      status: contactData.status === 'Active' ? 'A' : 'S',
-      updatedBy: this.userData?.userEmail,
-    };
-
-    if (contactData.CusBranchContactSid) {
-      contactPayload.CusBranchContactSid = contactData.CusBranchContactSid;
-      contactPayload.updatedBy = this.userData?.userEmail;
-    } 
-    
-    contactsPayload.push(contactPayload);
-  }
-  
-  return contactsPayload;
-}
-
-private prepareUpdateEmailsPayload(branchIndex: number): any[] {
-  const emailsPayload = [];
-  const emails = this.getEmails(branchIndex);
-  
-  for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
-    const emailForm = emails.at(emailIndex);
-    const emailData = emailForm.value;
-    
-    let departmentValue = emailData.DepartmentMasterSid;
-    if (Array.isArray(departmentValue)) {
-      departmentValue = departmentValue.join(',');
-    }
-    
-    const emailPayload: any = {
-      MenuMasterSid: Number(emailData.MenuMasterSid),
-      DepartmentMasterSid: departmentValue,
-      Toemail: emailData.Toemail,
-      CCemail: emailData.CCemail,
-      status: emailData.status === 'Active' ? 'A' : 'S'
-    };
-
-    if (emailData.CustomerBrEmailSid) {
-      emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
-      emailPayload.updatedBy = this.userData?.userEmail;
-    } else {
-      emailPayload.createdBy = this.userData?.userEmail;
-    }
-    
-    emailsPayload.push(emailPayload);
-  }
-  
-  return emailsPayload;
-}
-
-private prepareUpdateLoginsPayload(branchIndex: number): any[] {
-  const loginsPayload = [];
-  const logins = this.getLogins(branchIndex);
-  
-  for (let loginIndex = 0; loginIndex < logins.length; loginIndex++) {
-    const loginForm = logins.at(loginIndex);
-    const loginData = loginForm.value;
-    
-    const loginPayload: any = {
-      LoginName: loginData.LoginName?.trim(),
-      LoginEmail: loginData.LoginEmail,
-      LoginPassword: loginData.LoginPassword,
-      status: loginData.status === 'Active' ? 'A' : 'S'
-    };
-
-    if (loginData.CustomerLoginSid) {
-      loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
-      loginPayload.updatedBy = this.userData?.userEmail;
-    } else {
-      loginPayload.createdBy = this.userData?.userEmail;
-    }
-    
-    loginsPayload.push(loginPayload);
-  }
-  
-  return loginsPayload;
-}
-
-private prepareUpdateSalesTeamsPayload(): any[] {
-  if (this.cusSalesteam.length === 0) return [];
-  
-  const salesTeamsPayload = [];
-  const salesTeams = this.cusSalesteam;
-  
-  for (let teamIndex = 0; teamIndex < salesTeams.length; teamIndex++) {
-    const teamForm = salesTeams.at(teamIndex);
-    const teamData = teamForm.value;
-    
-    const salesTeamPayload: any = {
-      DepartmentMasterSid: teamData.DepartmentMasterSid,
-      Salesman: teamData.Salesman,
-      CSPerson: teamData.CSPerson,
-      DocPerson: teamData.DocPerson,
-      EffectiveFrom: teamData.EffectiveFrom,
-      status: teamData.status === 'Active' ? 'A' : 'S'
-    };
-
-    if (teamData.CustomerSalesSid) {
-      salesTeamPayload.CustomerSalesSid = teamData.CustomerSalesSid;
-      salesTeamPayload.updatedBy = this.userData?.userEmail;
-    } else {
-      salesTeamPayload.createdBy = this.userData?.userEmail;
-    }
-    
-    salesTeamsPayload.push(salesTeamPayload);
-  }
-  
-  return salesTeamsPayload;
-}
-
-private prepareUpdateMilestonesPayload(): any[] {
-  if (this.cusMilestone.length === 0) return [];
-  
-  const milestonesPayload = [];
-  const milestones = this.cusMilestone;
-  
-  for (let mileIndex = 0; mileIndex < milestones.length; mileIndex++) {
-    const mileForm = milestones.at(mileIndex);
-    const mileData = mileForm.value;
-    
-    const milestonePayload: any = {
-      MilestoneMasterSid: mileData.MilestoneMasterSid,
-      UpdateType: mileData.UpdateType,
-      ContactInfo: mileData.ContactInfo,
-      EffectiveFrom: mileData.EffectiveFrom,
-      Status: mileData.Status === 'Active' ? 'A' : 'S'
-    };
-
-    if (mileData.CustomerMilestoneSid) {
-      milestonePayload.CustomerMilestoneSid = mileData.CustomerMilestoneSid;
-      milestonePayload.updatedBy = this.userData?.userEmail;
-    } else {
-      milestonePayload.createdBy = this.userData?.userEmail;
-    }
-    
-    milestonesPayload.push(milestonePayload);
-  }
-  
-  return milestonesPayload;
-}
-// Create customer with all data (same as before)
-private async createCustomerWithAllData(payload: any): Promise<void> {
-  return new Promise((resolve, reject) => {
-    this.masterService.createCustomer(payload).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.CustomerMasterSid = resp.data.CustomerMasterSid;
-          this.appSettingService.showSuccess('Customer created successfully with all data!');
-          this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
-          resolve();
-        } else {
-          this.appSettingService.showError(resp.message);
-          reject(resp.message);
-        }
+    return {
+      customer: {
+        CompanyMasterSid: activeCompanyId,
+        CustomerName: formValue.CustomerName,
+        CustomerShortCode: formValue.CustomerShortCode,
+        CustomerAliasName: formValue.CustomerAliasName,
+        CustomerAddress1: formValue.CustomerAddress1,
+        CustomerAddress2: formValue.CustomerAddress2,
+        CountryMasterSid: Number(formValue.CountryMasterSid),
+        CustomerType: formValue.CustomerType,
+        PanName: formValue.PanName,
+        PanType: formValue.PanType,
+        GroupName: formValue.GroupName,
+        Website: formValue.Website,
+        CashCredit: formValue.paymentType,
+        Network: formValue.Network,
+        Remarks: formValue.Remarks,
+        IsMSME: formValue.IsMSME ? 'A' : 'I',
+        RegistrationNo: formValue.RegistrationNo,
+        CompanyType: formValue.CompanyType,
+        status: statusValue,
+        createdBy: currentUserEmail,
+        AirlineNumber: formValue.AirlineNumber,
+        AirlineCode: formValue.AirlineCode
       },
-      error: (error) => {
-        this.errorMessage = error.message;
-        console.error('Error creating customer:', error);
-        this.appSettingService.showError('Error creating customer');
-        reject(error);
-      }
-    });
-  });
-}
-
-// Update customer with all data
-private async updateCustomerWithAllData(payload: any): Promise<void> {
-  return new Promise((resolve, reject) => {
-    this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.appSettingService.showSuccess('Customer updated successfully with all data!');
-          // Reload the data to reflect changes
-          this.loadCustomerData(this.CustomerMasterSid);
-          resolve();
-        } else {
-          this.appSettingService.showError(resp.message);
-          reject(resp.message);
-        }
-      },
-      error: (error) => {
-        this.errorMessage = error.message;
-        console.error('Error updating customer:', error);
-        this.appSettingService.showError('Error updating customer');
-        reject(error);
-      }
-    });
-  });
-}
-
-
-
-
- reset() {
-  // If editing an existing customer, reload it (restore original state)
-  if (this.isEditMode && this.CustomerMasterSid) {
-    this.loadCustomerData(this.CustomerMasterSid);
-    return;
+      customerBranches: this.prepareCreateBranchesPayload()
+    };
   }
 
-  // Create-mode: reset customer form to sensible defaults
-  this.customerForm.reset({
-    CustomerName: '',
-    CustomerShortCode: { value: '', disabled: true },
-    CustomerAliasName: '',
-    CustomerAddress1: '',
-    CustomerAddress2: '',
-    CountryMasterSid: '',
-    CompanyType: { value: '', disabled: true },
-    PanAvailable: false,
-    PanType: { value: '', disabled: true },
-    PanName: { value: '', disabled: true },
-    GroupName: '',
-    Website: '',
-    paymentType: '',
-    AirlineNumber: '',
-    AirlineCode: '',
-    IsMSME: '',
-    KYCSpecified: false,
-    RegistrationNo: { value: '', disabled: true },
-    Remarks: '',
-    status: { value: 'Active', disabled: !this.isEditMode },
-    CustomerType: {},
-    Network: ''
-  });
+  private prepareCreateBranchesPayload(): any[] {
+    const branchesPayload = [];
 
-  // Reset selected statuses and customer types
-  this.selectedStatus = [];
-  this.displayedCustomerTypes = [];
-  this.extraCustomerTypesCount = 0;
+    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+      const branchForm = this.branches.at(branchIndex);
+      const branchData = branchForm.value;
+      const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+      const branchPayload = {
+        CompanyMasterSid: activeCompanyId,
+        BranchName: branchData.CustBranchName?.trim(),
+        StateMasterSid: branchData.CustBranchState,
+        CityMasterSid: branchData.CustBranchCity,
+        Branch_Type: branchData.CustBranchType,
+        Branch_Code: branchData.CustBranchCode,
+        Contact_Person: branchData.Contact_Person,
+        Zip_PostBox: String(branchData.CustBranchZipPostCode),
+        ContactNo: String(branchData.CustBranchPhone),
+        Email: branchData.CustBranchEmail,
+        Address: branchData.CustBranchAddress,
+        Registered: branchData.CustBranchRegistered,
+        CustomerGstType: branchData.CustBranchGSTtype,
+        GSTNo: branchData.CustBranchGSTIN,
+        status: branchData.status === 'Active' ? 'A' : 'S',
+        createdBy: this.userData?.userEmail,
 
-  // Reset form validation state
-  this.customerForm.markAsUntouched();
-  this.customerForm.markAsPristine();
+        // Include nested entities for create
+        customerBranchContacts: this.prepareCreateContactsPayload(branchIndex),
+      };
 
-  // Enable/disable fields based on initial conditions
-  this.updateShortCodeFieldState();
-  
-  // Reset customer name reference
-  this.customerName = '';
-}
+      branchesPayload.push(branchPayload);
+    }
+
+    return branchesPayload;
+  }
+
+  private prepareCreateContactsPayload(branchIndex: number): any[] {
+    const contactsPayload = [];
+    const contacts = this.getContacts(branchIndex);
+
+    for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
+      const contactForm = contacts.at(contactIndex);
+      const contactData = contactForm.value;
+
+      contactsPayload.push({
+        ContactType: contactData.ContactType,
+        ContactName: contactData.ContactName?.trim(),
+        MobileNo: String(contactData.MobileNo),
+        Email: contactData.Email,
+        status: contactData.status === 'A' ? 'A' : 'S',
+        createdBy: this.userData?.userEmail
+      });
+    }
+
+    return contactsPayload;
+  }
+
+  private prepareCreateEmailsPayload(branchIndex: number): any[] {
+    const emailsPayload = [];
+    const emails = this.getEmails(branchIndex);
+
+    for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
+      const emailForm = emails.at(emailIndex);
+      const emailData = emailForm.value;
+
+      let departmentValue = emailData.DepartmentMasterSid;
+      if (Array.isArray(departmentValue)) {
+        departmentValue = departmentValue.join(',');
+      }
+
+      emailsPayload.push({
+        MenuMasterSid: Number(emailData.MenuMasterSid),
+        DepartmentMasterSid: departmentValue,
+        Toemail: emailData.Toemail,
+        CCemail: emailData.CCemail,
+        status: emailData.status === 'Active' ? 'A' : 'S',
+        createdBy: this.userData?.userEmail
+      });
+    }
+
+    return emailsPayload;
+  }
+
+  private prepareCreateLoginsPayload(branchIndex: number): any[] {
+    const loginsPayload = [];
+    const logins = this.getLogins(branchIndex);
+
+    for (let loginIndex = 0; loginIndex < logins.length; loginIndex++) {
+      const loginForm = logins.at(loginIndex);
+      const loginData = loginForm.value;
+
+      loginsPayload.push({
+        LoginName: loginData.LoginName?.trim(),
+        LoginEmail: loginData.LoginEmail,
+        LoginPassword: loginData.LoginPassword,
+        status: loginData.status === 'Active' ? 'A' : 'S',
+        createdBy: this.userData?.userEmail
+      });
+    }
+
+    return loginsPayload;
+  }
+  // For UPDATE mode - send all data including sales teams and milestones
+  private prepareUpdatePayload(): any {
+    const formValue = this.customerForm.value;
+    const currentUserEmail = this.userData?.userEmail;
+    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+
+    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
+    console.log(statusValue, 'statusValue')
+    return {
+      customer: {
+        CompanyMasterSid: activeCompanyId,
+        CustomerName: formValue.CustomerName?.trim(),
+        CustomerShortCode: formValue.CustomerShortCode?.trim(),
+        CustomerAliasName: formValue.CustomerAliasName,
+        CustomerAddress1: formValue.CustomerAddress1,
+        CustomerAddress2: formValue.CustomerAddress2,
+        CountryMasterSid: Number(formValue.CountryMasterSid),
+        CustomerType: formValue.CustomerType,
+        PanName: formValue.PanName,
+        PanType: formValue.PanType,
+        GroupName: formValue.GroupName,
+        Website: formValue.Website,
+        CashCredit: formValue.paymentType,
+        Network: formValue.Network,
+        Remarks: formValue.Remarks,
+        IsMSME: formValue.IsMSME ? 'A' : 'I',
+        RegistrationNo: formValue.RegistrationNo,
+        CompanyType: formValue.CompanyType,
+        status: statusValue,
+        createdBy: currentUserEmail,
+        updatedBy: currentUserEmail,
+        AirlineNumber: formValue.AirlineNumber,
+        AirlineCode: formValue.AirlineCode
+      },
+      customerBranches: this.prepareUpdateBranchesPayload(),
+
+    };
+  }
+
+  private prepareUpdateBranchesPayload(): any[] {
+    const branchesPayload = [];
+
+    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+      const branchForm = this.branches.at(branchIndex);
+      const branchData = branchForm.value;
+
+      const branchPayload: any = {
+        CustomerBranchSid: branchData.CustomerBranchSid,
+        BranchName: branchData.CustBranchName?.trim(),
+        StateMasterSid: branchData.CustBranchState,
+        CityMasterSid: branchData.CustBranchCity,
+        Branch_Type: branchData.CustBranchType,
+        Branch_Code: branchData.CustBranchCode,
+        Contact_Person: branchData.Contact_Person,
+        Zip_PostBox: String(branchData.CustBranchZipPostCode),
+        ContactNo: String(branchData.CustBranchPhone),
+        Email: branchData.CustBranchEmail,
+        Address: branchData.CustBranchAddress,
+        Registered: branchData.CustBranchRegistered,
+        CustomerGstType: branchData.CustBranchGSTtype,
+        GSTNo: branchData.CustBranchGSTIN,
+        status: branchData.status === 'Active' ? 'A' : 'S',
+        updatedBy: this.userData?.userEmail,
+        createdBy: this.userData?.userEmail,
+
+        customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
+        customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
+        customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
+        customerSalesTeams: this.prepareUpdateSalesTeamsPayload(),
+        customerMilestones: this.prepareUpdateMilestonesPayload()
+      };
+
+      branchesPayload.push(branchPayload);
+    }
+
+    return branchesPayload;
+  }
+
+  // ✅ ADD THESE METHODS FOR UPDATE OPERATION
+  private prepareUpdateContactsPayload(branchIndex: number): any[] {
+    const contactsPayload = [];
+    const contacts = this.getContacts(branchIndex);
+
+    for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
+      const contactForm = contacts.at(contactIndex);
+      const contactData = contactForm.value;
+
+      const contactPayload: any = {
+        ContactType: contactData.ContactType,
+        ContactName: contactData.ContactName?.trim(),
+        MobileNo: String(contactData.MobileNo),
+        Email: contactData.Email,
+        status: contactData.status === 'Active' ? 'A' : 'S',
+        createdBy: this.userData?.userEmail,
+      };
+
+      if (contactData.CusBranchContactSid) {
+        contactPayload.CusBranchContactSid = contactData.CusBranchContactSid;
+        contactPayload.updatedBy = this.userData?.userEmail;
+      }
+
+      contactsPayload.push(contactPayload);
+    }
+
+    return contactsPayload;
+  }
+
+  private prepareUpdateEmailsPayload(branchIndex: number): any[] {
+    const emailsPayload = [];
+    const emails = this.getEmails(branchIndex);
+
+    for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
+      const emailForm = emails.at(emailIndex);
+      const emailData = emailForm.value;
+
+      let departmentValue = emailData.DepartmentMasterSid;
+      if (Array.isArray(departmentValue)) {
+        departmentValue = departmentValue.join(',');
+      }
+
+      const emailPayload: any = {
+        MenuMasterSid: Number(emailData.MenuMasterSid),
+        DepartmentMasterSid: departmentValue,
+        Toemail: emailData.Toemail,
+        CCemail: emailData.CCemail,
+        status: emailData.status === 'Active' ? 'A' : 'S'
+      };
+
+      if (emailData.CustomerBrEmailSid) {
+        emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
+        emailPayload.updatedBy = this.userData?.userEmail;
+      } else {
+        emailPayload.createdBy = this.userData?.userEmail;
+      }
+
+      emailsPayload.push(emailPayload);
+    }
+
+    return emailsPayload;
+  }
+
+  private prepareUpdateLoginsPayload(branchIndex: number): any[] {
+    const loginsPayload = [];
+    const logins = this.getLogins(branchIndex);
+
+    for (let loginIndex = 0; loginIndex < logins.length; loginIndex++) {
+      const loginForm = logins.at(loginIndex);
+      const loginData = loginForm.value;
+
+      const loginPayload: any = {
+        LoginName: loginData.LoginName?.trim(),
+        LoginEmail: loginData.LoginEmail,
+        LoginPassword: loginData.LoginPassword,
+        status: loginData.status === 'Active' ? 'A' : 'S'
+      };
+
+      if (loginData.CustomerLoginSid) {
+        loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
+        loginPayload.updatedBy = this.userData?.userEmail;
+      } else {
+        loginPayload.createdBy = this.userData?.userEmail;
+      }
+
+      loginsPayload.push(loginPayload);
+    }
+
+    return loginsPayload;
+  }
+
+  private prepareUpdateSalesTeamsPayload(): any[] {
+    if (this.cusSalesteam.length === 0) return [];
+const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+    const salesTeamsPayload = [];
+    const salesTeams = this.cusSalesteam;
+
+    console.log(this.cusSalesteam, 'this.cusSalesteam')
+
+    for (let teamIndex = 0; teamIndex < salesTeams.length; teamIndex++) {
+      const teamForm = salesTeams.at(teamIndex);
+      const teamData = teamForm.value;
+
+      const salesTeamPayload: any = {
+        DepartmentMasterSid: Array.isArray(teamData.DepartmentMasterSid)
+          ? teamData.DepartmentMasterSid.map((id: any) => String(id)) // ✅ ensure numeric array
+          : teamData.DepartmentMasterSid
+            ? [String(teamData.DepartmentMasterSid)]
+            : [],
+        Salesman: teamData.Salesman,
+        CSPerson: teamData.CSPerson,
+        DocPerson: teamData.DocPerson,
+        EffectiveFrom: teamData.EffectiveFrom,
+        status: teamData.status === 'Active' ? 'A' : 'S',
+        createdBy: this.userData.userEmail,
+        updatedBy: this.userData.userEmail,
+        CompanyMasterSid: Number(activeCompanyId),
+        CustomerSalesBranchSid: teamData.branchId ? Number(teamData.branchId) : null
+      };
+
+
+      if (teamData.CustomerSalesSid) {
+        salesTeamPayload.CustomerSalesSid = teamData.CustomerSalesSid;
+        salesTeamPayload.updatedBy = this.userData?.userEmail;
+      } else {
+        salesTeamPayload.createdBy = this.userData?.userEmail;
+      }
+
+      salesTeamsPayload.push(salesTeamPayload);
+    }
+
+    return salesTeamsPayload;
+  }
+
+  private prepareUpdateMilestonesPayload(): any[] {
+    if (this.cusMilestone.length === 0) return [];
+
+    const milestonesPayload = [];
+    const milestones = this.cusMilestone;
+
+    for (let mileIndex = 0; mileIndex < milestones.length; mileIndex++) {
+      const mileForm = milestones.at(mileIndex);
+      const mileData = mileForm.value;
+
+      const milestonePayload: any = {
+        MilestoneMasterSid: mileData.MilestoneMasterSid,
+        UpdateType: mileData.UpdateType,
+        ContactInfo: mileData.ContactInfo,
+        EffectiveFrom: mileData.EffectiveFrom,
+        Status: mileData.Status === 'Active' ? 'A' : 'S'
+      };
+
+      if (mileData.CustomerMilestoneSid) {
+        milestonePayload.CustomerMilestoneSid = mileData.CustomerMilestoneSid;
+        milestonePayload.updatedBy = this.userData?.userEmail;
+      } else {
+        milestonePayload.createdBy = this.userData?.userEmail;
+      }
+
+      milestonesPayload.push(milestonePayload);
+    }
+
+    return milestonesPayload;
+  }
+  // Create customer with all data (same as before)
+  private async createCustomerWithAllData(payload: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.masterService.createCustomer(payload).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.CustomerMasterSid = resp.data.CustomerMasterSid;
+            this.appSettingService.showSuccess('Customer created successfully with all data!');
+            this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
+            resolve();
+          } else {
+            this.appSettingService.showError(resp.message);
+            reject(resp.message);
+          }
+        },
+        error: (error) => {
+          this.errorMessage = error.message;
+          console.error('Error creating customer:', error);
+          this.appSettingService.showError('Error creating customer');
+          reject(error);
+        }
+      });
+    });
+  }
+
+  // Update customer with all data
+  private async updateCustomerWithAllData(payload: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Customer updated successfully with all data!');
+            // Reload the data to reflect changes
+            this.loadCustomerData(this.CustomerMasterSid);
+            resolve();
+          } else {
+            this.appSettingService.showError(resp.message);
+            reject(resp.message);
+          }
+        },
+        error: (error) => {
+          this.errorMessage = error.message;
+          console.error('Error updating customer:', error);
+          this.appSettingService.showError('Error updating customer');
+          reject(error);
+        }
+      });
+    });
+  }
+
+
+
+
+  reset() {
+    // If editing an existing customer, reload it (restore original state)
+    if (this.isEditMode && this.CustomerMasterSid) {
+      this.loadCustomerData(this.CustomerMasterSid);
+      return;
+    }
+
+    // Create-mode: reset customer form to sensible defaults
+    this.customerForm.reset({
+      CustomerName: '',
+      CustomerShortCode: { value: '', disabled: true },
+      CustomerAliasName: '',
+      CustomerAddress1: '',
+      CustomerAddress2: '',
+      CountryMasterSid: '',
+      CompanyType: { value: '', disabled: true },
+      PanAvailable: false,
+      PanType: { value: '', disabled: true },
+      PanName: { value: '', disabled: true },
+      GroupName: '',
+      Website: '',
+      paymentType: '',
+      AirlineNumber: '',
+      AirlineCode: '',
+      IsMSME: '',
+      KYCSpecified: false,
+      RegistrationNo: { value: '', disabled: true },
+      Remarks: '',
+      status: { value: 'Active', disabled: !this.isEditMode },
+      CustomerType: {},
+      Network: ''
+    });
+
+    // Reset selected statuses and customer types
+    this.selectedStatus = [];
+    this.displayedCustomerTypes = [];
+    this.extraCustomerTypesCount = 0;
+
+    // Reset form validation state
+    this.customerForm.markAsUntouched();
+    this.customerForm.markAsPristine();
+
+    // Enable/disable fields based on initial conditions
+    this.updateShortCodeFieldState();
+
+    // Reset customer name reference
+    this.customerName = '';
+  }
 
 
 
@@ -2859,44 +2636,44 @@ private async updateCustomerWithAllData(payload: any): Promise<void> {
   }
 
   openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.CustomerMasterSid) return;
+    if (!this.CustomerMasterSid) return;
 
-  this.masterService.getAuditLogsCustomer(
-    'CustomerMaster',
-    this.CustomerMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+    this.masterService.getAuditLogsCustomer(
+      'CustomerMaster',
+      this.CustomerMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
 
- showCustomerInfo() {
+  showCustomerInfo() {
     if (!this.customerData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.customerData;
@@ -2905,67 +2682,67 @@ private async updateCustomerWithAllData(payload: any): Promise<void> {
   }
 
   openEDoc() {
-  if (!this.customerData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.customerData;
-  modalRef.componentInstance.idLabel = 'Customer Id';
-  modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
-}
+    if (!this.customerData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.customerData;
+    modalRef.componentInstance.idLabel = 'Customer Id';
+    modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+  }
 
 
-   openTandC() {
-		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.CustomerMasterSid;
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.CustomerMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading Terms and Conditions');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading Terms and Conditions', error);
-			}
-		);
-	}
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
 
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.CustomerMasterSid;
   }
 
-   openEmail() {
-  if (!this.customerData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.customerData;
-  modalRef.componentInstance.idLabel = 'Customer Id';
-  modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
-}
+  openEmail() {
+    if (!this.customerData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.customerData;
+    modalRef.componentInstance.idLabel = 'Customer Id';
+    modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+  }
 
 
   // Add other utility methods
