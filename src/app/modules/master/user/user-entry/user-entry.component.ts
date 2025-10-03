@@ -136,6 +136,7 @@ export class UserEntryComponent implements OnInit {
 		this.userForm = this.fb.group({
 			userName: ['', [Validators.required]],
 			userEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
+			designation: ['',[Validators.required]],
 			department: [[], [Validators.required]],
 			DefaultDept: [''],
 			isSalesperson: [false],
@@ -292,6 +293,19 @@ openAuditLogs(modal: TemplateRef<any>) {
 		return keys.includes(CompanyMasterSid);
 	}
 
+	toggleDefaultCompany(companyIndex: number, companySid: number, event: any) {
+  const userCompanies = this.userForm.get('userCompanies') as FormArray;
+
+  // Uncheck all companies first
+  userCompanies.controls.forEach(ctrl => {
+    ctrl.patchValue({ IsDefaultCompany: false }, { emitEvent: false });
+  });
+
+  // Set the selected company as default
+  const currentCompany = userCompanies.at(companyIndex);
+  currentCompany.patchValue({ IsDefaultCompany: event.target.checked }, { emitEvent: true });
+}
+
 	isDefaultBranch(BranchMasterSid){
 		const keys = Object.values(this.defaultItems);
 		return keys.includes(BranchMasterSid);
@@ -334,7 +348,10 @@ openAuditLogs(modal: TemplateRef<any>) {
 		}).subscribe(({ departments, userType, companies, roles, countries, menus }) => {
 			this.departmentList = departments,
 			this.userTypeList = userType.data,
-			this.companyList = companies
+			// this.companyList = companies
+			this.companyList = (companies || []).filter(
+      (company: any) => Array.isArray(company.branchMaster) && company.branchMaster.length > 0
+    );
 			this.roleList = roles.data;
 			this.countryList = countries.data;
 			this.menuList = menus;
@@ -363,6 +380,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 					this.userForm.patchValue({
 						userName: user.userName,
 						userEmail: user.userEmail,
+						designation: user.designation,
 						department: user.department, // Fixed syntax
 						DefaultDept: user.DefaultDept,
 						isSalesperson: user.isSalesperson === '1' ? true : false,
@@ -422,6 +440,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 		const payload = {
 			userName: formValue.userName,
 			userEmail: formValue.userEmail,
+			designation: formValue.designation,
 			department: formValue.department,
 			DefaultDept: formValue.DefaultDept,
 			isSalesperson: formValue.isSalesperson ? '1' : '0',
@@ -626,6 +645,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   this.userForm.reset({
     userName: '',
     userEmail: '',
+	designation: '',
     department: [],
     DefaultDept: '',
     isSalesperson: false,
