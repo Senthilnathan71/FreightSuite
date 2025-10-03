@@ -130,7 +130,7 @@
   <div class="col-12 mt-1 px-0">
     <div class="card border">
       <section class="card-body py-2 px-2">
-        <form [formGroup]="meetingForm" >
+        <form [formGroup]="meetingForm">
           <div class="row compact-form">
             <aside class="col-md-4">
               <div class="custom-form-group">
@@ -171,91 +171,114 @@
             <!-- <h6 class="card-title text-info mb-0 my-1">Schedule Meeting</h6> -->
 
             <div class="col-md-4">
-              <div class="d-flex align-items-center justify-content-between">
-                <div class=" custom-form-group custom-form-group-select-date w-100">
-                  <div class="input-group w-100">
-                    <app-date-time-picker  placeholder="dd-mm-yyyy" name="dp" class="w-100"  formControlName="meetingDate"></app-date-time-picker>
-                    <!-- <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="meetingDate"
+
+              <div class=" custom-form-group custom-form-group-select-date w-100">
+                <div class="input-group w-100">
+                  <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                    formControlName="meetingDate"></app-date-time-picker>
+                  <!-- <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="meetingDate"
                       ngbDatepicker #d2="ngbDatepicker" [min]="minDate" (keydown.arrowDown)="d2.open()"
                       (click)="d2.toggle()" container="body" />
                     <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                       <i-feather name="calendar" class="feather-sm"></i-feather></button> -->
-                  </div>
-                  <label for="shipmentDateExpected" class="input-label">Meeting Date <span class="text-danger">*</span>
-                  </label>
-                  <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
-                    Required
-                  </div>
                 </div>
-                <div>
-                  <div ngbDropdown class="d-inline-block">
-                    <button type="button" class="btn btn-sm btn-info" id="dropdownBasic1" formControlName="meetingDuration" ngbDropdownToggle>
-                      {{ selectedTime }}
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                      <button ngbDropdownItem (click)="changeTime('10 min')">10 min</button>
-                      <button ngbDropdownItem (click)="changeTime('20 min')">20 min</button>
-                      <button ngbDropdownItem (click)="changeTime('30 min')">30 min</button>
-                      <button ngbDropdownItem (click)="changeTime('40 min')">40 min</button>
-                      <button ngbDropdownItem (click)="changeTime('50 min')">50 min</button>
-                      <button ngbDropdownItem (click)="changeTime('1 hr')">1 hr</button>
-                    </div>
-                  </div>
+                <label for="shipmentDateExpected" class="input-label">Meeting Date <span class="text-danger">*</span>
+                </label>
+                <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
+                  Required
                 </div>
               </div>
             </div>
+            <aside class="col-md-4">
 
-            <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
-                [class.filled]="!!meetingForm.get('meetingType')?.value">
-                <ng-select formControlName="meetingType">
-                  <ng-option value="">Select</ng-option>
-                  <ng-option value="Call">Call</ng-option>
-                  <ng-option value="Visit">Visit</ng-option>
-                  <ng-option value="Phone">Phone</ng-option>
-                  <ng-option value="eMeeting">eMeeting</ng-option>
+                [class.filled]="!!meetingForm.get('meetingDuration')?.value">
+
+                <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
+                  formControlName="meetingDuration" placeholder="">
                 </ng-select>
-                <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
-                <div *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="error-message">
-                  Required
-                </div>
-              </div>
-            </aside>
-            <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select"
-                [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
-                <ng-select [items]="salesPersons" bindLabel="userName" bindValue="UserMasterSid"
-                  formControlName="leadAssignTo">
-                </ng-select>
-                <label class="input-label">Salesperson <span class="text-danger">*</span></label>
-                <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
+
+                <label class="input-label">
+                  Meeting Duration <span class="text-danger"></span>
+                </label>
+
+                <small *ngIf="f['meetingDuration']?.touched && f['meetingDuration']?.invalid" class="error-message">
                   Required.
                 </small>
               </div>
-            </aside>
+              </aside>
 
-            <aside class="col-md-4">
-              <div class="custom-form-group">
-                <textarea id="text-input" class="custom-input-field sm" formControlName="customerProfile" rows="1"
-                  placeholder="">
+
+              <!-- <div>
+                <div ngbDropdown class="d-inline-block">
+                  <button type="button" class="btn btn-sm btn-info" id="dropdownBasic1"
+                    formControlName="meetingDuration" ngbDropdownToggle>
+                    {{ selectedTime }}
+                  </button>
+                  <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                    <button ngbDropdownItem (click)="changeTime('10 min')">10 min</button>
+                    <button ngbDropdownItem (click)="changeTime('20 min')">20 min</button>
+                    <button ngbDropdownItem (click)="changeTime('30 min')">30 min</button>
+                    <button ngbDropdownItem (click)="changeTime('40 min')">40 min</button>
+                    <button ngbDropdownItem (click)="changeTime('50 min')">50 min</button>
+                    <button ngbDropdownItem (click)="changeTime('1 hr')">1 hr</button>
+                  </div>
+                </div>
+              </div> -->
+
+
+
+              <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!meetingForm.get('meetingType')?.value">
+                  <ng-select formControlName="meetingType">
+                    <ng-option value="">Select</ng-option>
+                    <ng-option value="Call">Call</ng-option>
+                    <ng-option value="Visit">Visit</ng-option>
+                    <ng-option value="Phone">Phone</ng-option>
+                    <ng-option value="eMeeting">eMeeting</ng-option>
+                  </ng-select>
+                  <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
+                  <div *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="error-message">
+                    Required
+                  </div>
+                </div>
+              </aside>
+              <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
+                  <ng-select [items]="salesPersons" bindLabel="userName" bindValue="UserMasterSid"
+                    formControlName="leadAssignTo">
+                  </ng-select>
+                  <label class="input-label">Salesperson <span class="text-danger">*</span></label>
+                  <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
+                    Required.
+                  </small>
+                </div>
+              </aside>
+
+              <aside class="col-md-4">
+                <div class="custom-form-group">
+                  <textarea id="text-input" class="custom-input-field sm" formControlName="customerProfile" rows="1"
+                    placeholder="">
                  </textarea>
-                <label for="text-input" class="input-label">Meeting Agenda <span class="text-danger">*</span></label>
-                <div *ngIf="f['customerProfile'].touched && f['customerProfile'].invalid" class="error-message pb-1">
-                  Required
+                  <label for="text-input" class="input-label">Meeting Agenda <span class="text-danger">*</span></label>
+                  <div *ngIf="f['customerProfile'].touched && f['customerProfile'].invalid" class="error-message pb-1">
+                    Required
+                  </div>
                 </div>
-              </div>
 
-            </aside>
-            <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="phone" formControlName="status" placeholder="" class="custom-input-field sm"
-                  [disabled]="true">
-                <label for="phone" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
-                <div *ngIf="f['status'].touched && f['status'].invalid" class="error-message">
-                  Required
+              </aside>
+              <aside class="col-md-4">
+                <div class="custom-form-group">
+                  <input type="text" id="phone" formControlName="status" placeholder="" class="custom-input-field sm"
+                    [disabled]="true">
+                  <label for="phone" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+                  <div *ngIf="f['status'].touched && f['status'].invalid" class="error-message">
+                    Required
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
           </div>
         </form>
       </section>

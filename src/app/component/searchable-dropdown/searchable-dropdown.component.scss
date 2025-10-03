@@ -1,48 +1,102 @@
-/* Wrapper for horizontal scroll */
-:host ::ng-deep .table-scroll-wrapper {
-  max-width: 100%;          /* fits dropdown width */
-  overflow-x: auto;         /* horizontal scroll if needed */
+/* Ensure ng-select container matches input width */
+:host .ng-select {
+  width: 100%;
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
 }
 
-/* Dropdown table */
-:host ::ng-deep .dropdown-table {
-  border-collapse: collapse;
-  width: max-content;       /* table grows based on content */
-  min-width: 600px;         /* minimum width */
-  table-layout: fixed;      /* fix column widths */
-}
-
-/* Header */
-:host ::ng-deep .dropdown-table th {
-  padding: 8px;
-  background-color: #f8f9fa;
-  font-weight: bold;
+/* Dropdown panel styling */
+:host ::ng-deep .ng-dropdown-panel {
+  width: 100%;
+  max-width: 100%;
   border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  background-color: #fff;
+}
+
+/* Scrollable wrapper inside panel */
+:host ::ng-deep .ng-dropdown-panel-items-wrapper {
+  display: block;
+  min-width: 800px; /* ensures all columns fit */
+  max-height: 300px;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* Header and rows styling */
+:host ::ng-deep .dropdown-header,
+:host ::ng-deep .dropdown-row {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  align-items: center;
+  padding: 8px 0;
+  box-sizing: border-box;
+}
+
+/* Columns inside header and rows */
+:host ::ng-deep .dropdown-header > div,
+:host ::ng-deep .dropdown-row > div {
+  padding: 0 12px;
   white-space: nowrap;
-  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 0 auto;
+  border-right: 1px solid #e0e0e0;
+  min-width: fit-content;
 }
 
-/* Rows */
-:host ::ng-deep .dropdown-table td {
-  padding: 2px;
-  white-space: nowrap;
-  font-size: 12px;
-  max-width: 300px !important;
-  overflow-x: scroll !important;
+/* Remove border for last column */
+:host ::ng-deep .dropdown-header > div:last-child,
+:host ::ng-deep .dropdown-row > div:last-child {
+  border-right: none;
 }
 
-/* Hover effect */
-:host ::ng-deep .dropdown-table tr:hover {
-  background-color: #f1f1f1;
+/* Sticky header */
+:host ::ng-deep .dropdown-header {
+  font-weight: 600;
+  background-color: #f1f3f5;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  box-shadow: 0 2px 2px -2px rgba(0,0,0,0.1);
 }
 
-/* Selected row */
-:host ::ng-deep .ng-option-selected table tr {
-  background-color: #05608D !important;
-  color: white;
+/* Highlight selected row */
+:host ::ng-deep .ng-option-selected .dropdown-row {
+  background-color: #007bff !important;
+  color: #fff !important;
+}
+
+/* Option container adjustments */
+:host ::ng-deep .ng-option {
+  padding: 0 !important;
+  display: block;
+}
+
+/* Horizontal scroll for large content */
+:host ::ng-deep .ng-dropdown-panel .scroll-host {
+  padding-left: 5px;
+  min-width: max-content !important;
+  overflow-x: auto !important;
 }
 
 
-.ng-dropdown-panel {
-  overflow-x: scroll;
+
+/* Smooth scrollbar styling (optional, modern look) */
+:host ::ng-deep .ng-dropdown-panel-items-wrapper::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+:host ::ng-deep .ng-dropdown-panel-items-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .ng-dropdown-panel-items-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
 }

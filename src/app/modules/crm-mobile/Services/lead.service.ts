@@ -813,4 +813,15 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     this.voiceEnquiryData = {};
   }
 
+
+  //Existing Customers
+   getAllExistingCustomers(payload:any) {
+      return this.http.post('existingcustomers',payload).pipe(
+        map((resp: any) => {
+          let response = resp.data;
+          return response;
+        })
+      );
+    }
+  
 }
