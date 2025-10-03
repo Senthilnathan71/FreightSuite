@@ -568,21 +568,21 @@ export class LeadComponent implements OnInit {
   }
 
   openAuthority() {
-    // if (!this.leadData) return;
-    // const modalRef = this.modalService.open(AuthorityEntryComponent, {
-    // 	size: 'lg',
-    // 	centered: true,
-    // 	backdrop: 'static'
-    // });
+    if (!this.leadData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+    	size: 'lg',
+    	centered: true,
+    	backdrop: 'static'
+    });
   }
 
   openEDoc() {
-    // if (!this.leadData) return;
-    // const modalRef = this.modalService.open(EdocComponent, {
-    // 	size: 'lg',
-    // 	centered: true,
-    // 	backdrop: 'static'
-    // });
+    if (!this.leadData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+    	size: 'lg',
+    	centered: true,
+    	backdrop: 'static'
+    });
   }
 
 
