@@ -8,7 +8,7 @@
   </div> -->
 
   <!-- Table Controls -->
-  <div class="table-controls d-flex justify-content-end mb-1"
+  <div class="table-controls mb-1"
        *ngIf="!loading && (config.showColumnToggle || config.showFilters)">
 
     
@@ -71,14 +71,21 @@
     </div>
 
    
-    <div class="filter-controls" *ngIf="config.showFilters && currentFilters.length > 0">
+    <!-- <div class="filter-controls" *ngIf="config.showFilters && currentFilters.length > 0">
       <button class="btn btn-outline-danger btn-sm"
               (click)="clearAllFilters()"
               title="Clear all filters">
         <i class="fas fa-times me-1"></i>
         Clear Filters ({{ currentFilters.length }})
       </button>
-    </div>
+    </div> -->
+    <div class="filter-controls" *ngIf="config.showFilters && currentFilters.length > 0">
+  <button class="clear-btn" (click)="clearAllFilters()" title="Clear all filters">
+    <i class="fas fa-times"></i>
+    <span>Clear Filters ({{ currentFilters.length }})</span>
+  </button>
+</div>
+
   </div>
 
   <!-- Table -->

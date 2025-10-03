@@ -19,10 +19,12 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-doctype-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent],
+  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent, PageHeaderComponent, ToolsDropdownComponent],
   templateUrl: './doctype-list.component.html',
   styleUrl: './doctype-list.component.scss'
 })
@@ -47,6 +49,7 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  headerActions: HeaderAction[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -61,13 +64,13 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
         tooltip: 'View',
         condition: (row: any) => this.hasPermission('View')
       },
-       {
+      {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-         condition: (row: any) => this.hasPermission('Delete')
+        condition: (row: any) => this.hasPermission('Delete')
       }
     ],
     selectable: false,
@@ -124,6 +127,7 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
 
     // Initialize base component
     super.ngOnInit();
+    this.initializeHeaderActions();
   }
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -137,6 +141,7 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+            this.initializeHeaderActions();
         }
       });
     }
@@ -176,11 +181,70 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchDoctType();
+  }
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset',
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateDocType();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      } else if (action.action === 'reset') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 }
+      }
+      return action;
+    });
   }
 
   protected override handleSearchError(error: any): void {
@@ -257,13 +321,13 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
       this.viewDoctType(event.row);
-    }else if(event.action === 'delete'){
+    } else if (event.action === 'delete') {
       this.deleteBy(event.row)
     }
   }
 
 
-  deleteBy(row:any){
+  deleteBy(row: any) {
     this.deleteDocType(row.VoucherTypeMasterSid)
   }
 

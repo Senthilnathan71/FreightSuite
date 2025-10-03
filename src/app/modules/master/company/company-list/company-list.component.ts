@@ -19,10 +19,12 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, CommonModule, RouterModule, ListpageComponent, NgbPaginationModule, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent],
+  imports: [FeatherModule, FormsModule, CommonModule, RouterModule, ListpageComponent, NgbPaginationModule, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent,PageHeaderComponent,ToolsDropdownComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -35,6 +37,8 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+   headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   // Table configuration
   tableConfig: TableConfig = {
     columns: [],
@@ -78,7 +82,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
-
+ 
   constructor(private masterService: MasterService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog,
     private userService: authService,
@@ -105,6 +109,8 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     // Initialize table configuration
     this.initializeTableConfig();
+      this.initializeHeaderActions();
+      this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
@@ -120,6 +126,8 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+             this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
         }
       });
     }
@@ -157,6 +165,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching company.');
       this.allItems = [];
@@ -164,6 +173,109 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     }
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchCompany();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+   initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateDepartment();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  // onModalDropdownItemClick(action: string): void {
+  //   switch (action) {
+  //     case 'edoc':
+  //       this.openEDoc();
+  //       break;
+  //     case 'terms':
+  //       this.openTandC();
+  //       break;
+  //     case 'authority':
+  //       this.openAuthority();
+  //       break;
+  //     case 'email':
+  //       this.openEmail();
+  //       break;
+  //     default:
+  //       console.warn(`Unknown dropdown action: ${action}`);
+  //   }
+  // }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();

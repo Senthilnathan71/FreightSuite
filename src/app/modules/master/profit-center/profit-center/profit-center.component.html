@@ -23,7 +23,14 @@
 
 
 <div class="row compact-form" >
-    <div class="col-12">
+    <app-page-header 
+    [title]="'Profit Center'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+    <!-- <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Profit Center</h4>
@@ -79,7 +86,7 @@
 
 
         </div>
-    </div>
+    </div> -->
       <div class="col-12 px-0">
         <app-reusable-table #profitcenterTable [config]="tableConfig" [data]="allProfitcenter" [loading]="tableLoading"
             [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
