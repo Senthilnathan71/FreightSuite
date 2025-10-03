@@ -697,6 +697,13 @@
                                 formControlName="preCustomerAddress1" [textWithNumbers]="300">
                             <label for="text-input" class="input-label">Address1 <span
                                     class="text-danger">*</span></label>
+                                    <div class="error-message"
+     *ngIf="leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">
+    <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('pattern')">
+        Special characters are NOT allowed!
+    </span>
+</div>
+
                             <!-- <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
                                                         <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Address 1 is required</span>
                                                         <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('maxlength')">Max 300 Characters</span> 
@@ -845,7 +852,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="phone" [onlyNumbers]="50">
+                                formControlName="phone" DecimalPrecision [DecimalPrecisionBefore]="15" [DecimalPrecisionAfter]="0">
                             <label for="text-input" class="input-label">Phone <span class="text-danger">*</span></label>
                         </div>
                         @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){

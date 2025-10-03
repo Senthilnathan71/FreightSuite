@@ -23,6 +23,7 @@ import { EmailEntryComponent } from '../../settings/email/email-entry/email-entr
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { AppService } from 'src/app/service/app.service';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 
 @Component({
@@ -40,7 +41,9 @@ import { AppService } from 'src/app/service/app.service';
     OnlyTextDirective,
     TextWithNumbersDirective,
     OnlyTextDirective,
-    DatePipe
+    DatePipe,
+    TextWithNumbersDirective,
+    DecimalPrecisionDirective
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -197,7 +200,11 @@ export class LeadComponent implements OnInit {
       leadReferredBy: [, [Validators.required]],
       leadFrom: [],
       preCustomerType: [],
-      preCustomerAddress1: ['', [Validators.required]],
+      preCustomerAddress1: ['', [
+  Validators.required,
+  Validators.pattern(/^[a-zA-Z0-9\s]+$/) // only letters, numbers, space
+]],
+
       preCustomerAddress2: [''],
       POBOX: [''],
       CountryMasterSid: [, [Validators.required]],
@@ -205,8 +212,11 @@ export class LeadComponent implements OnInit {
       CityMasterSid: [, [Validators.required]],
       contactPerson: ['', [Validators.required]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
-      phone: ['', [Validators.required]],
-      leadStatus: ['Discovery'],
+  phone: ['', [
+  Validators.required,
+  Validators.pattern(/^[0-9]{10,15}$/) // only digits, length 10-15 (edit as needed)
+]],
+    leadStatus: ['Discovery'],
       PreferredContactMode: ['Email'],
       LanguagePreferrence: [''],
       ServiceOfInterest: [''],
