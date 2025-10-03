@@ -130,12 +130,13 @@ export class EnquiryEntryComponent implements OnInit {
   ]
 
   terms = [
-    { id: 1, name: "FCL" },
-    { id: 2, name: "FCL,FCL" },
-    { id: 3, name: "LCL,LCL" },
+    { id: 1, name: "FCL/FCL" },
+    { id: 2, name: "FCL/LCL" },
+    { id: 3, name: "LCL/FCL" },
     { id: 4, name: "LCL,LCL" },
-    { id: 5, name: "FCL,FLT HH" },
-    { id: 6, name: "FTL,LTL" }
+    { id: 5, name: "LTL" },
+    { id: 6, name: "FTL" },
+    { id: 6, name: "FLT HH" }
   ]
 
   cargoTypes = [
@@ -288,7 +289,7 @@ export class EnquiryEntryComponent implements OnInit {
       leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
       weightUnits: this.leadService.getAllWeightUnits().pipe(catchError(() => of([]))),
-      packageTypes: this.leadService.getAllPackageTypes(this.currentCompany?.CompanyMasterSid).pipe(catchError(() => of([]))),
+      packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
       products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
     }).pipe(tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products }) => {
@@ -299,7 +300,7 @@ export class EnquiryEntryComponent implements OnInit {
       this.leadList = leads.data;
       this.incoList = incos;
       this.weightUnitList = weightUnits;
-      this.packageTypes = packageTypes;
+      this.packageTypes = packageTypes.data;
       this.containerTypes = containerTypes;
       this.productList = products;
     })
@@ -477,6 +478,30 @@ export class EnquiryEntryComponent implements OnInit {
     cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
       cargoForm.get('GrossWeight')?.updateValueAndValidity();
     });
+    cargoForm.get("GrossWeight").valueChanges.subscribe(() => {
+      this.setOrResetWeightError(cargoForm);
+    });
+    cargoForm.get("NetWeight").valueChanges.subscribe(() => {
+      this.setOrResetWeightError(cargoForm);
+    });
+  }
+
+  setOrResetWeightError(formGroup: FormGroup) {
+    const grossCtrl = formGroup.get('GrossWeight');
+    const grossValue = formGroup.get('GrossWeight')?.value;
+    const netValue = formGroup.get('NetWeight')?.value;
+
+    if (!grossValue || !netValue) {
+      grossCtrl.setErrors(null);
+      return;
+    }
+    if (grossCtrl) {
+      if (Number(grossValue) <= Number(netValue)) {
+        grossCtrl.setErrors({ grossNotGreater: true });
+      } else {
+        grossCtrl.setErrors(null);
+      }
+    }
   }
 
   onSegmentChange(event) {
@@ -727,7 +752,9 @@ onSelectionChange(selectedItem: any) {
     this.quotationDepartmentId = response.DepartmentMasterSid;
     this.getCustomerBranches(response.CustomerMasterSid);
     this.authStateCache = response.authorizerStatus,
-      this.rateRequestForm.patchValue({
+    this.rateRequestForm.patchValue({
+        PreCustomerMasterSid: response.PreCustomerMasterSid,
+        LeadOrCustomer : response.LeadOrCustomer === "C",
         CustomerMasterSid: response.CustomerMasterSid,
         customerName: response.CustomerName,
         enquiryNo: response.EnquiryNumber,
@@ -823,19 +850,26 @@ onSelectionChange(selectedItem: any) {
   }
 
   onSubmit() {
-    // if (this.rateRequestForm.invalid) {
-    //   this.rateRequestForm.markAllAsTouched();
-    //   this.rateRequestForm.updateValueAndValidity();
-    //   this.appSettingsService.showWarning('Please fill all the required fields correctly');
-    //   return;
-    // }
-    // if (this.enquiryOtherForm.invalid) {
-    //   this.active = 2;
-    //   this.enquiryOtherForm.markAllAsTouched();
-    //   this.enquiryOtherForm.updateValueAndValidity();
-    //   this.appSettingsService.showWarning('Please fill all the required fields correctly');
-    //   return;
-    // }
+    if (this.hasInvalidExcept('routes',this.rateRequestForm)) {
+      this.rateRequestForm.markAllAsTouched();
+      this.rateRequestForm.updateValueAndValidity();
+      this.appSettingsService.showWarning('Please fill all the required fields correctly');
+      return;
+    }
+    let routeInvalid : boolean;
+    this.routes.controls.forEach((routeGroup: FormGroup,index:number) => {
+      if(this.hasInvalidExcept('cargo',routeGroup)){
+        routeGroup.markAllAsTouched();
+        routeGroup.updateValueAndValidity();
+        this.appSettingsService.showWarning(`Please enter the Route.`);
+        routeInvalid = true;
+      }
+    });
+    if(routeInvalid){
+      this.selectedTab = "Route Details";
+      return;
+    }
+
     this.btnDisable = true;
     const otherFormValue = this.enquiryOtherForm.value;
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -845,7 +879,7 @@ onSelectionChange(selectedItem: any) {
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
         ...this.rateRequestForm.value,
-        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'Y' : 'N',
+        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
         enquiryOther: otherFormValue,
@@ -883,7 +917,7 @@ onSelectionChange(selectedItem: any) {
       const createPayload = {
         ...this.rateRequestForm.value,
         enquiryOther: otherFormValue,
-        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'Y' : 'N',
+        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
         createdBy: userEmail,
@@ -905,6 +939,12 @@ onSelectionChange(selectedItem: any) {
     }
     this.btnDisable = false;
   }
+
+hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
+  return Object.keys(formGroup.controls)
+    .filter(control => control !== controlName)
+    .some(control => formGroup.get(control)?.invalid);
+}
 
   resetForm() {
   // If editing an existing enquiry, reload it from server to restore original state
@@ -1003,8 +1043,9 @@ onSelectionChange(selectedItem: any) {
         cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
       }
     });
-      console.log(response);
-      const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    console.log("This is department");
+    const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    console.log("This is department",dept);
       let selectedFCLLCL;
       if (dept?.departmentType === "Sea") {
         selectedFCLLCL = dept?.FCLLCL;
@@ -1014,9 +1055,9 @@ onSelectionChange(selectedItem: any) {
 
       let routeDetails = response.enquiryRoute.flatMap(route => {
         return route.enquiryCargo.map(cargo => {
-          const containerTypeId = this.containerTypes.find(
+          const containerTypeCode = this.containerTypes.find(
             con => con.ContainerName === cargo.ContainerType
-          )?.ContainerTypeMasterSid || null;
+          )?.ContainerCode || null;
           return {
             PORSid: route.PORSid,
             POLSid: route.POLSid,
@@ -1024,9 +1065,9 @@ onSelectionChange(selectedItem: any) {
             FPODSid: route.FDPSid,
             CargoType: cargo.CargoType,
             CBM: cargo.Volume,
-            ContainerType: containerTypeId,
+            ContainerType: containerTypeCode,
             ChargeableWeight : cargo.ChargeableWeight,
-            ContainerQty: cargo.Qty
+            Qty: cargo.Qty
           };
         });
       });
@@ -1326,7 +1367,32 @@ onSelectionChange(selectedItem: any) {
     }
   }
 
+  getRouteInfo(routeIndex: number) {
+    const routeForm = this.routes.at(routeIndex) as FormGroup;
+    const POL = routeForm.get('POL')?.value;
+    const POD = routeForm.get('POD')?.value;
+    const FPOD = routeForm.get('FDC')?.value;
+    const portArray: String[] = [];
+    const POLName = this.ports.find(p => p.PortMasterSid === POL)?.PortCode;
+    const PODName = this.ports.find(p => p.PortMasterSid === POD)?.PortCode;
+    const FPODName = this.ports.find(p => p.PortMasterSid === FPOD)?.PortCode;
+    if (POLName && PODName) {
+      portArray.push(POLName);
+      portArray.push(PODName);
+      const isEqual = PODName === FPODName;
+      if (!isEqual && FPODName) {
+        portArray.push(FPODName);
+      }
+      return portArray.join(' - ');
+    } else {
+      return 'Route Details'
+    }
+  }
 
+  hasGrossWeightError(routeIndex: number) {
+    const cargoForm = this.routeCargo(routeIndex).at(0) as FormGroup;
+    return cargoForm.get('GrossWeight')?.hasError('grossNotGreater');
+  }
 
 
 

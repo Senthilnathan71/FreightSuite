@@ -539,7 +539,7 @@
                     <i class="fas fa-plus me-1"></i> New
                     Route</button>
                 <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-                <button class="btn btn-info btn-sm" (click)="navigateQuotation()" type="button"> <i
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid"  (click)="navigateQuotation()" type="button"> <i
                         class="fas fa-plus me-1"></i> Create
                     Quotation</button>
                 }
@@ -549,7 +549,7 @@
                     <i class="fas fa-plus me-1"></i>Add
                     Route</button>
                 <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-                <button class="btn btn-info btn-sm" (click)="navigateQuotation()" type="button"> <i
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid"  (click)="navigateQuotation()" type="button"> <i
                         class="fas fa-plus me-1"></i> Create
                     Quotation</button>
                 <!-- (click)="addNewRoute()" -->
@@ -561,13 +561,19 @@
                 <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
                     <div class="card border border-info position-relative">
                         <div class="card-header bg-info rounded-top-1 d-flex align-items-center">
-                            <h6 class="font-bold mb-0 text-light">Route Details</h6>
+                            <span class="fw-bold mb-0 text-light">{{getRouteInfo(routeIndex)}}</span>
                             @if(routes.controls.length > 1){
                             <button class="btn btn-sm waves-effect waves-light text-light"
                                 (click)="removeRoute(routeIndex)" [disabled]="disableAddButtons">
                                 <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                             </button>
                             }
+                            <span *ngIf="hasGrossWeightError(routeIndex)" class="d-flex align-items-center text-danger fw-bold ms-2 px-2 rounded"
+                                style="background-color: #fdecea; border: 1px solid #f5c2c7;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Gross Weight should be greater than Net Weight
+                            </span>
+                            
 
                         </div>
                         <div class="ribbon-e text-white">
@@ -692,7 +698,7 @@
                                                         </td>
                                                         <td class="bg-transparent text-light" style="width: 200px;"
                                                             [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                            <label class="form-label mb-0">Terms <span
+                                                            <label class="form-label mb-0">Shipment Terms <span
                                                                     class="text-danger">*</span></label>
                                                         </td>
                                                         <td class="bg-transparent text-light " style="width: 200px;"
@@ -739,8 +745,8 @@
                                                                 appendTo="body" placeholder=""
                                                                 [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
                                                                 <ng-option *ngFor="let item of packageTypes"
-                                                                    [value]="item.PackageCode">
-                                                                    {{ item.PackageName }}
+                                                                    [value]="item.UOMCode">
+                                                                    {{ item.UOMName }}
                                                                 </ng-option>
                                                             </ng-select>
                                                         </td>
@@ -758,10 +764,13 @@
                                                             </ng-select>
                                                         </td>
                                                         <td>
-                                                            <input type="text" formControlName="GrossWeight"
-                                                                class="form-control text-end w-100" DecimalPrecision
-                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
-                                                                appendTo="body">
+                                                            <!-- <div class="custom-form-group"> -->
+                                                                <input type="text" formControlName="GrossWeight" class="form-control text-end w-100" DecimalPrecision
+                                                                    [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" appendTo="body">
+                                                                <!-- <span *ngIf="cargo.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
+                                                                    Gr weight > Net weight
+                                                                </span> -->
+                                                            <!-- </div> -->
                                                         </td>
                                                         <td>
                                                             <input type="text" formControlName="NetWeight"
@@ -922,8 +931,8 @@
                                                                 appendTo="body" placeholder=""
                                                                 [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
                                                                 <ng-option *ngFor="let item of packageTypes"
-                                                                    [value]="item.PackageCode">
-                                                                    {{ item.PackageName }}
+                                                                    [value]="item.UOMCode">
+                                                                    {{ item.UOMName }}
                                                                 </ng-option>
                                                             </ng-select>
                                                         </td>

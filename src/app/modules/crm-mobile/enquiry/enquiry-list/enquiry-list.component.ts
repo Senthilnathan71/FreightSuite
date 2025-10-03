@@ -23,6 +23,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { NewLineKind } from 'typescript';
 @Component({
   selector: 'app-enquiry-list',
   standalone: true,
@@ -75,14 +76,14 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         tooltip: 'View Zone',
         // condition: (row: any) => this.hasPermission('View')
       },
-      {
-        icon: 'fas fa-file', 
-        label: 'File',
-        action: 'file',
-        tooltip: 'file Zone',
-        class: "text-info",
-        // condition: (row: any) => this.hasPermission('Delete')
-      }
+      // {
+      //   icon: 'fas fa-file', 
+      //   label: 'File',
+      //   action: 'file',
+      //   tooltip: 'Create Quotation',
+      //   class: "text-info",
+      //   condition: (row: any) => this.hasPermission('Delete')
+      // }
     ],
     selectable: false,
     multiSelect: false,
@@ -220,6 +221,7 @@ protected processSearchResults(response: any): void {
         sortable: true,
         filterable: true,
         visible: true,
+        template:'link',
         dataType: 'string'
       },
       {
@@ -494,19 +496,22 @@ protected processSearchResults(response: any): void {
 
     let routeDetails = response.enquiryRoute.flatMap(route => {
       return route.enquiryCargo.map(cargo => {
-        const containerTypeId = this.containerTypeList.find(
+        const containerTypeCode = this.containerTypeList.find(
           con => con.ContainerName === cargo.ContainerType
-        )?.ContainerTypeMasterSid || null;
+        )?.ContainerCode || null;
         return {
           PORSid: route.PORSid,
           POLSid: route.POLSid,
           PODSid: route.PODSid,
           FPODSid: route.FDPSid,
           CargoType: cargo.CargoType,
-          CBM: cargo.Volume,
-          ContainerType: containerTypeId,
+          GrossWeight : cargo.GrossWeight,
+          NetWeight : cargo.NetWeight,
+          Volume: cargo.Volume,
+          ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
-          ContainerQty: cargo.Qty
+          Qty: cargo.Qty,
+          ServiceLevel : response.IncoTerms
         };
       });
     });
@@ -535,6 +540,7 @@ protected processSearchResults(response: any): void {
       status: response.status,
       cargoTypeList: cargoTypeList,  // Merging from both possible sources
       ShipmentType: selectedFCLLCL,
+      FreightPPCC : response.FreightPPCC,
       rateRequest: true,
       quoteRoutes: routeDetails,
     };
