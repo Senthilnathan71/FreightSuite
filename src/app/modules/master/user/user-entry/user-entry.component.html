@@ -38,7 +38,7 @@
                         
                         *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
                         <i class="fas fa-save me-1"></i>
-                        {{isEditMode ? 'Edit' : 'Save'}}
+                        {{isEditMode ? 'Update' : 'Save'}}
                     </button>
                     <div ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
@@ -81,14 +81,24 @@
                             }
                         </div>
                     </aside>
-                    <!-- <aside class="col-md-4">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Login Id <span
-                                    class="text-danger"></span></label>
+                                formControlName="designation" [onlyText]="20">
+                            <label for="text-input" class="input-label">Designation <span class="text-danger"></span></label>
+                            @if(userForm.get('designation')?.touched && userForm.get('designation')?.invalid){
+                            <div class="error-message">
+                                @if(userForm.get('designation')?.hasError('required')){
+                                <div>Required</div>
+                                } @else if(userForm.get('designation')?.hasError('numberNotAllowed')){
+                                <div>Only Alphabets are allowed</div>
+                                } @else if(userForm.get('designation')?.hasError('maxlength')){
+                                <div>Max 20 Chars</div>
+                                }
+                            </div>
+                            }
                         </div>
-                    </aside> -->
+                    </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -314,7 +324,7 @@
 
         <!-- Card Header -->
         <div class="card-header bg-info rounded-top-1 d-flex align-items-center ">
-            <h6 class="font-bold mb-0 text-light">COMPANY</h6>
+            <h6 class="font-bold mb-0 text-light">Company</h6>
 
         </div>
 
@@ -351,6 +361,14 @@
                 <!-- Card Header -->
                 <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom">
                     <h6 class="font-bold mb-0 text-info text-start">{{company.value.companyName}}  <small class="text-warning">{{isDefaultCompany(company.value.CompanyMasterSid) ? '[DEFAULT]' : ''}}</small></h6>
+                    <div class="form-check ms-3">
+    <input type="checkbox"
+           class="form-check-input"
+           name="defaultCompany"
+           [checked]="isDefaultCompany(company.value.CompanyMasterSid)"
+           (click)="toggleDefaultCompany(companyIndex, company.value.CompanyMasterSid, $event)">
+    <label class="form-check-label text-secondary small">Default</label>
+  </div>
                     @if (userForm.get('userCompanies')?.hasError('noDefault') && (userForm.get('userCompanies')?.invalid)) {
                     <small class="text-end text-danger">At least one branch must be marked as default.</small>
                     }

@@ -250,6 +250,7 @@ export class UserListComponent {
       data: formattedData,
       headers: [
         { key: 'userName', label: 'User Name' },
+        { key: 'designation', label: 'Designation' },
         { key: 'userEmail', label: 'Email' },
         { key: 'salesperson', label: 'isSalesman' },
         { key: 'status', label: 'Status' },

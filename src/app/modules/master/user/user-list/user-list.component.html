@@ -102,6 +102,15 @@
                                 </i>
                             </th>
 
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('designation')">
+                                Designation
+                                <i class="fas fa-sort ms-1" [ngClass]="{
+                                'fa-sort-up': sortColumn === 'designation' && sortDirection === 'asc',
+                                'fa-sort-down': sortColumn === 'designation' && sortDirection === 'desc'
+                                }">
+                                </i>
+                            </th>
+
                             <th class="bg-transparent text-light" scope="col" (click)="sort('isSalesman')">
                                 Is Salesman
                                 <i class="fas fa-sort ms-1" [ngClass]="{
@@ -143,6 +152,9 @@
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{user.userEmail}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{user.designation}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{user.isSalesperson === '1' ? 'Yes' : 'No'}}</div>
