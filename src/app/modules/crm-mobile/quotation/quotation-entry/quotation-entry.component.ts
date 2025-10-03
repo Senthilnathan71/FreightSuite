@@ -312,6 +312,10 @@ patchEnqPageValues(enqData: any) {
       CarrierName: route?.CarrierName || '',
       CargoType: route?.CargoType || 'General',
       ContainerType: route?.ContainerType || null,
+      Qty : route?.Qty || 1,
+      GrossWeight : route?.GrossWeight || 0,
+      NetWeight : route?.NetWeight || 0,
+      Volume: route?.Volume || 1,
       ContainerQty: Number(route?.ContainerQty) || 1,
       CBM: route?.CBM || 1,
       ChargeableWeight: route?.ChargeableWeight || cargoData?.GrossWeight || 0,
@@ -329,6 +333,8 @@ patchEnqPageValues(enqData: any) {
 
     // Add the route to the form
     this.addQuoteRoute(routeData);
+    const lastAddedQuote = this.quoteRoutes.length - 1;
+    this.addQuoteCarrier(lastAddedQuote);
 
     // Handle additional logic
     // this.addQuoteCharge(routeIndex);
