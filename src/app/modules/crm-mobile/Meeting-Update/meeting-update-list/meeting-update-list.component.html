@@ -182,34 +182,34 @@
                                     <td data-label="Customer Name"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ meeting.preCustomerMaster?.preCustomerName || 'N/A' }}
+                                            {{ meeting?.preCustomerMaster?.preCustomerName || 'N/A' }}
                                         </div>
                                     </td>
                                     <td data-label="meetingType"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ (meeting.meetingType | titlecase) || 'N/A' }}
+                                            {{ (meeting?.meetingType | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
                                     <td data-label="Meeting Date"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
-                                            {{ meeting.meetingDate | date:'medium' }}
+                                            {{ meeting?.meetingDate }}
                                         </div>
                                     </td>
 
                                     <td data-label="leadStatus"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ (meeting.preCustomerMaster.leadStatus | titlecase) || 'N/A' }}
+                                            {{ (meeting?.preCustomerMaster?.leadStatus | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
 
                                     <td data-label="leadAssignTo"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ getSalesmanById(meeting.leadAssignTo) || 'N/A' }}
+                                            {{ getSalesmanById(meeting?.leadAssignTo) || 'N/A' }}
                                         </div>
                                     </td>
                                     <td data-label="Status"
@@ -220,7 +220,7 @@
                                                 'bg-warning': meeting.meetingStatus === 'pending',
                                                 'bg-danger': meeting.meetingStatus === 'on hold'
                                               }">
-                                                {{ meeting.meetingStatus }}
+                                                {{ meeting?.meetingStatus }}
                                             </span>
                                         </div>
                                     </td>
