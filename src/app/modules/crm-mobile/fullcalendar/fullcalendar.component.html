@@ -12,7 +12,7 @@
     <!-- ============================================================== -->
     <!-- Calander Area -->
     <!-- ============================================================== -->
-     
+
     <div [ngSwitch]="view">
       <mwl-calendar-month-view *ngSwitchCase="CalendarView.Month" [viewDate]="viewDate" [events]="events"
         [refresh]="refresh" [activeDayIsOpen]="activeDayIsOpen" (dayClicked)="dayClicked($event.day)"
@@ -152,17 +152,17 @@
               <aside class="col-md-4">
                 <div class="custom-form-group">
                   <input type="text" placeholder="" class="custom-input-field sm" formControlName="customerName">
-                  <label class="input-label">Customer Name</label>
+                  <label class="input-label">Customer Name </label>
                   <div *ngIf="f['customerName'].touched && f['customerName'].invalid" class="error-message">
                     Required
                   </div>
                 </div>
               </aside>
-              
+
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('meetingType')?.value">
-                  <label class="input-label">Meeting Type<span class="text-danger">*</span></label>
+                  <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="meetingType" placeholder="">
                     <ng-option value="Call">Call</ng-option>
                     <ng-option value="Visit">Visit</ng-option>
@@ -172,15 +172,15 @@
                 </div>
 
               </aside>
-             
+
               <aside class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select-date w-100">
-                      <div class="input-group w-100">
-                    <input placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                      formControlName="meetingDate" class="custom-input-field sm"/>
+                  <div class="input-group w-100">
+                    <input placeholder="dd-mm-yyyy" name="dp" class="w-100" formControlName="meetingDate"
+                      class="custom-input-field sm" />
                   </div>
                   <label class="input-label me-2">Meeting Date <span class="text-danger">*</span>
-                  </label>  
+                  </label>
                   <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
                     Required
                   </div>
@@ -188,27 +188,27 @@
               </aside>
               <aside class="col-md-4">
 
-              <div class="custom-form-group custom-form-group-select"
-                [class.filled]="!!meetingForm.get('meetingDuration')?.value">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!meetingForm.get('meetingDuration')?.value">
 
-                <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
-                  formControlName="meetingDuration" placeholder="">
-                </ng-select>
+                  <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
+                    formControlName="meetingDuration" placeholder="">
+                  </ng-select>
 
-                <label class="input-label">
-                  Meeting Duration <span class="text-danger"></span>
-                </label>
+                  <label class="input-label">
+                    Meeting Duration <span class="text-danger"></span>
+                  </label>
 
-                <small *ngIf="f['meetingDuration']?.touched && f['meetingDuration']?.invalid" class="error-message">
-                  Required.
-                </small>
-              </div>
+                  <small *ngIf="f['meetingDuration']?.touched && f['meetingDuration']?.invalid" class="error-message">
+                    Required.
+                  </small>
+                </div>
               </aside>
-              
+
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
-                  <label class="input-label">Salesperson<span class="text-danger">*</span></label>
+                  <label class="input-label">Salesperson <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="leadAssignTo" placeholder="">
                     <ng-option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
                       {{ person.userName }}
@@ -220,28 +220,10 @@
                 </div>
 
               </aside>
-             
-              <aside class="col-md-4">
-                <div class="custom-form-group">
-                  <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="meetingNote"
-                    rows="1"></textarea>
-                  <label class="input-label">Meeting Note
-                    <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'" class="text-danger">*</span>
-                  </label>
-                  <div *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
-                    <span *ngIf="f['meetingNote'].errors?.['required']">
-                      Meeting Note is required when status is "On Hold"
-                    </span>
-                  </div>
-
-
-                </div>
-              </aside>
-              
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('meetingStatus')?.value">
-                  <label class="input-label">Meeting Status<span class="text-danger">*</span></label>
+                  <label class="input-label">Meeting Status <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="meetingStatus" placeholder="">
                     <ng-option value="scheduled" selected>Scheduled</ng-option>
                     <ng-option value="confirmed">Confirmed</ng-option>
@@ -255,7 +237,22 @@
                 </div>
 
               </aside>
+              <aside class="col-md-4">
+                <div class="custom-form-group">
+                  <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="meetingNote"
+                    rows="1"></textarea>
+                  <label class="input-label">Meeting Note
+                    <span *ngIf="meetingForm.get('meetingNote')?.value === 'on hold'" class="text-danger">*</span>
+                  </label>
+                 <div *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="error-message pb-2">
+                    Required
+                  </div>
+
+                </div>
+              </aside>
+
               
+
               <div class="col-md-4" style="margin-top: -15px;">
                 <div class="">
                   <label class="control-label col-form-label">&nbsp;</label>
@@ -289,13 +286,16 @@
                   <label class="input-label">Follow Up Note
                     <span *ngIf="meetingForm.get('followUpNote')?.value === 'on hold'" class="text-danger">*</span>
                   </label>
+                   <div *ngIf="f['followUpNote'].touched && f['followUpNote'].invalid" class="error-message pb-2">
+                    Required
+                  </div>
                 </div>
               </aside>
-             
+
 
             </div>
           </section>
-         
+
 
         </div>
         <div class="modal-footer">
@@ -367,13 +367,13 @@
                   </ng-select>
                   <div
                     *ngIf="meetingForm.get('PreCustomerMasterSid')?.touched && meetingForm.get('PreCustomerMasterSid')?.invalid"
-                    class="text-danger">
+                    class="error-message">
                     Required
                   </div>
                 </div>
 
               </aside>
-              
+
               <aside class="col-md-4" *ngIf="meetingForm.get('LeadOrCustomer')?.value === 'C'">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('customerName')?.value">
@@ -388,57 +388,62 @@
                   </div>
                 </div>
               </aside>
-             
+
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('meetingType')?.value">
-                  <label class="input-label">Meeting Type<span class="text-danger">*</span></label>
+                  <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="meetingType" placeholder="">
                     <ng-option value="Call">Call</ng-option>
                     <ng-option value="Visit">Visit</ng-option>
                     <ng-option value="Phone">Phone</ng-option>
                     <ng-option value="eMeeting">eMeeting</ng-option>
                   </ng-select>
+                  <div class="error-message"
+                    *ngIf="meetingForm.get('meetingType')?.touched && meetingForm.get('meetingType')?.hasError('required')">
+                    Required
+                  </div>
                 </div>
 
               </aside>
-              
+
               <aside class="col-md-4">
-                 <div class=" custom-form-group custom-form-group-select-date w-100">
-                <div class="input-group w-100">
-                  <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                    formControlName="meetingDate"></app-date-time-picker>
+                <div class=" custom-form-group custom-form-group-select-date w-100">
+                  <div class="input-group w-100">
+                    <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                      formControlName="meetingDate"></app-date-time-picker>
+                  </div>
+                  <label for="" class="input-label">Meeting Date <span class="text-danger">*</span>
+                  </label>
+                  <div class="error-message pb-2 pe-4"
+                    *ngIf="meetingForm.get('meetingDate')?.touched && meetingForm.get('meetingDate')?.hasError('required')">
+                    Required
+                  </div>
                 </div>
-                <label for="" class="input-label">Meeting Date <span class="text-danger">*</span>
-                </label>
-                <div *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message pe-4 pb-2">
-                  Required
+              </aside>
+              <aside class="col-md-4">
+
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!meetingForm.get('meetingDuration')?.value">
+
+                  <ng-select [items]="meetingDurations"bindLabel="label" bindValue="value"
+                    formControlName="meetingDuration" placeholder="">
+                  </ng-select>
+
+                  <label class="input-label">
+                    Meeting Duration <span class="text-danger"></span>
+                  </label>
+
+                  <small *ngIf="f['meetingDuration']?.touched && f['meetingDuration']?.invalid" class="error-message">
+                    Required.
+                  </small>
                 </div>
-              </div>
               </aside>
-                <aside class="col-md-4">
 
-              <div class="custom-form-group custom-form-group-select"
-                [class.filled]="!!meetingForm.get('meetingDuration')?.value">
-
-                <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
-                  formControlName="meetingDuration" placeholder="">
-                </ng-select>
-
-                <label class="input-label">
-                  Meeting Duration <span class="text-danger"></span>
-                </label>
-
-                <small *ngIf="f['meetingDuration']?.touched && f['meetingDuration']?.invalid" class="error-message">
-                  Required.
-                </small>
-              </div>
-              </aside>
-             
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
-                  <label class="input-label">Salesperson<span class="text-danger">*</span></label>
+                  <label class="input-label">Salesperson <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="leadAssignTo" placeholder="">
                     <ng-option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
                       {{ person.userName }}
@@ -450,28 +455,10 @@
                 </div>
 
               </aside>
-            
-              <aside class="col-md-4">
-                <div class="custom-form-group">
-                  <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="meetingNote"
-                    rows="1"></textarea>
-                  <label class="input-label">Meeting Note
-                    <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'" class="text-danger">*</span>
-                  </label>
-                  <div *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
-                    <span *ngIf="f['meetingNote'].errors?.['required']">
-                      Meeting Note is required when status is "On Hold"
-                    </span>
-                  </div>
-
-
-                </div>
-              </aside>
-              
-              <aside class="col-md-4">
+               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('meetingStatus')?.value">
-                  <label class="input-label">Meeting Status<span class="text-danger">*</span></label>
+                  <label class="input-label">Meeting Status <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="meetingStatus" placeholder="">
                     <ng-option value="scheduled" selected>Scheduled</ng-option>
                     <ng-option value="confirmed">Confirmed</ng-option>
@@ -479,13 +466,28 @@
                     <ng-option value="on hold">On Hold</ng-option>
                     <ng-option value="completed">Completed</ng-option>
                   </ng-select>
-                  <div *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="text-danger">
+                  <div *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="error-message">
                     Required
                   </div>
                 </div>
 
               </aside>
-              
+              <aside class="col-md-4">
+                <div class="custom-form-group">
+                  <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="meetingNote"
+                    rows="1"></textarea>
+                  <label class="input-label">Meeting Note
+                    <span *ngIf="meetingForm.get('meetingNote')?.value === 'on hold'" class="text-danger">*</span>
+                  </label>
+                 <div *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="error-message pb-2">
+                    Required
+                  </div>
+
+                </div>
+              </aside>
+
+             
+
               <div class="col-md-4" style="margin-top: -15px;">
                 <div class="">
                   <label class="control-label col-form-label">&nbsp;</label>
@@ -496,7 +498,7 @@
                   </div>
                 </div>
               </div>
-             
+
 
               <!-- Follow Up Section (Conditional) -->
 
@@ -513,16 +515,19 @@
                     Required
                   </div>
                 </div>
-              </aside>   
-                <aside class="col-md-4" *ngIf="meetingForm.get('followUp')?.value">
+              </aside>
+              <aside class="col-md-4" *ngIf="meetingForm.get('followUp')?.value">
                 <div class="custom-form-group">
                   <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="followUpNote"
                     rows="1"></textarea>
                   <label class="input-label">Follow Up Note
                     <span *ngIf="meetingForm.get('followUpNote')?.value === 'on hold'" class="text-danger">*</span>
                   </label>
+                     <div *ngIf="f['followUpNote'].touched && f['followUpNote'].invalid" class="error-message pb-2">
+                    Required
+                  </div>
                 </div>
-              </aside>    
+              </aside>
             </div>
           </section>
         </div>

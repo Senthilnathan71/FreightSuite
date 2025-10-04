@@ -318,16 +318,16 @@ export class FullcalendarComponent implements OnInit {
       LeadOrCustomer: ["L", Validators.required],
       customerName: ['', Validators.required],
       CustomerMasterSid : [null],
-      PreCustomerMasterSid : [null],
-      meetingDate: [''],
-      followUpDate: [''],
-      followUp: [false],
+      PreCustomerMasterSid : ['',Validators.required],
+      meetingDate: ['',Validators.required],
+      followUpDate: ['',Validators.required],
+      followUp: ['',Validators.required],
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
       meetingStatus: ['scheduled', Validators.required],
-      followUpNote: [''],
-      meetingDuration:['10 min']
+      followUpNote: ['',Validators.required],
+      meetingDuration:['10 min',Validators.required]
     });
      this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
     this.meetingForm.get('meetingNote').updateValueAndValidity();
@@ -378,6 +378,24 @@ private meetingNoteValidator(control: AbstractControl) {
     ];
     this.modal.dismissAll();
   }
+
+  private formatDateTime(date: string | Date): string | null {
+  if (!date) return null;
+  const dt = new Date(date);
+
+  const day = dt.getDate();
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const month = monthNames[dt.getMonth()];
+  const year = dt.getFullYear();
+
+  let hours = dt.getHours();
+  const minutes = dt.getMinutes().toString().padStart(2,'0');
+  const seconds = dt.getSeconds().toString().padStart(2,'0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12; // Convert 0 to 12-hour format
+
+  return `${day}/${month}/${year} ${hours.toString().padStart(2,'0')}:${minutes}:${seconds} ${ampm}`;
+}
 
  getMeetingDates() {
   // first clear events
@@ -477,6 +495,7 @@ private meetingNoteValidator(control: AbstractControl) {
   //   }
   // }
 
+ 
 
   onAddMeeting() {
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -486,10 +505,11 @@ private meetingNoteValidator(control: AbstractControl) {
   console.log('Current Company:', this.currentCompany);
   console.log('Current Branch:', this.currentBranch);
   console.log('Form Values:', this.meetingForm.value);
-    const meetingDateStr = this.meetingForm.value.meetingDate;
+    // const meetingDateStr = this.meetingForm.value.meetingDate;
     // const meetingDate = new Date(meetingDateStr);
     const meetingDuration = this.meetingForm.value.meetingDuration;
-  // Convert followUpDate in same format as meetingDate
+     const meetingDateStr = this.formatDateTime(this.meetingForm.value.meetingDate);
+  // Convert meetingDateStr in same format as meetingDate
 let followUpDate: string = null;
 if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
   const dt = new Date(this.meetingForm.value.followUpDate);
@@ -552,7 +572,7 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
 
 
   
-
+   const meetingDateStr = this.formatDateTime(this.meetingForm.value.meetingDate);
   // Rest of your existing code...
   this.btnDisable = true;
   if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
@@ -579,7 +599,8 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     userEmail: userEmail,
-    followUpDate:followUpDate
+    followUpDate:followUpDate,
+    meetingDateStr:meetingDateStr
   };
 
   // If followUp is false, remove followUpNote and followUpDate from the payload
@@ -629,11 +650,11 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
 
       if (this.preCustomerMeetingData) {
         const meetingDate = this.preCustomerMeetingData.meetingDate
-          ? this.formatDateForInput(this.preCustomerMeetingData.meetingDate)
+          ? this.formatDateTime(this.preCustomerMeetingData.meetingDate)
           : '';
 
         const followUpDate = this.preCustomerMeetingData.followUpDate
-          ? this.formatDateForInput(this.preCustomerMeetingData.followUpDate)
+          ? this.formatDateTime(this.preCustomerMeetingData.followUpDate)
           : '';
 
         // Determine if followUp should be true based on followUpDate or followUpNote
@@ -656,7 +677,7 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
           followUp: followUp,  // Automatically set followUp based on API response
           followUpDate: followUp ? followUpDate : '',
           followUpNote: followUp ? this.preCustomerMeetingData.followUpNote || '' : '',
-          meetingDuration:this.preCustomerMeetingData.meetingDuration,
+          meetingDuration:this.preCustomerMeetingData.meetingDuration || '10 min',
         });
 
         this.meetingForm.controls['meetingStatus'].enable();
