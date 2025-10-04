@@ -100,7 +100,7 @@ reasonList=[
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
-      meetingStatus: ['scheduled', Validators.required],
+      meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
       meetingDuration:[''],
       reason:[''],
@@ -144,7 +144,7 @@ reasonList=[
           this.meetings = resp.data
             .filter((meeting: any) => {
               const status = meeting.meetingStatus?.toLowerCase();
-              return status === 'scheduled' || status === 'pending' || status === 'on hold';
+              return status === 'Scheduled' || status === 'In Progress' || status === 'On Hold';
             })
             .map((meeting: any) => {
               const salesPerson = this.salesPersons?.find(
@@ -251,7 +251,7 @@ reasonList=[
           meetingType: meeting.meetingType,
           leadAssignTo: meeting.leadAssignTo,
           meetingNote: meeting.meetingNote,
-          meetingStatus: meeting.meetingStatus || 'scheduled',
+          meetingStatus: meeting.meetingStatus || 'Scheduled',
           followUp: followUp,
           followUpDate: followUp ? followUpDate : '',
           followUpNote: followUp ? meeting.followUpNote || '' : '',
@@ -373,7 +373,7 @@ reasonList=[
       meetingType: this.selectedMeeting?.meetingType || '',
       leadAssignTo: this.selectedMeeting?.leadAssignTo || '',
       meetingNote: this.selectedMeeting?.meetingNote || '',
-      meetingStatus: this.selectedMeeting?.meetingStatus || 'scheduled',
+      meetingStatus: this.selectedMeeting?.meetingStatus || 'Scheduled',
       followUpNote: this.selectedMeeting?.followUpNote || ''
     };
 

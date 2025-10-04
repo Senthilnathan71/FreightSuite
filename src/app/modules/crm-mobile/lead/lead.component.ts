@@ -164,7 +164,7 @@ export class LeadComponent implements OnInit {
           this.leadForm.patchValue({
             CountryMasterSid: this.userData.CountryMasterSid
           });
-          this.filterStateByCountryId(this.userData?.CountryMasterSid)
+          this.filterStateByCountryId(this.userData)
         }
       }
 
@@ -349,8 +349,9 @@ export class LeadComponent implements OnInit {
     this.leadService.getLeadById(leadId).subscribe(
       (resp: any) => {
         if (resp.status) {
-          let response = resp.data;
+          let response = resp;
           this.leadData = response;
+          console.log(this.leadData,'this.leadData')
           this.filterStateByCountryId(response);
           this.filterCityByStateId(response);
 
@@ -390,7 +391,8 @@ export class LeadComponent implements OnInit {
   }
 
   filterStateByCountryId(country) {
-    const countryId = country.CountryMasterSid ? country.CountryMasterSid : country;
+    console.log(country,'country')
+    const countryId = country.CountryMasterSid
     this.leadService.getStateByCountryId(countryId).subscribe(
       (resp: any) => {
         if (resp.status) {
