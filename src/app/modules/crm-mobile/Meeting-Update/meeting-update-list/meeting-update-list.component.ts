@@ -15,6 +15,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { LeadStatus, LeadStatusLabels } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -140,7 +141,7 @@ export class MeetingUpdateListComponent implements OnInit {
                 leadAssignTo: meeting.leadAssignTo,
                 status: meeting.status === "A" ? "Active" : "InActive",
                 meetingStatus: meeting.meetingStatus?.toLowerCase() || '',
-                leadStatus: meeting?.preCustomerMaster?.leadStatus || 'N/A',
+                leadStatus: LeadStatusLabels[meeting?.preCustomerMaster?.leadStatus as LeadStatus] || "-",
                 preCustomerMaster: meeting.preCustomerMaster,
                 userMaster: meeting.userMaster,
                 followUp: meeting.followUpDate || meeting.followUpNote,
@@ -442,4 +443,6 @@ export class MeetingUpdateListComponent implements OnInit {
     // 	backdrop: 'static'
     // });
   }
+
+
 }
