@@ -104,6 +104,12 @@ export class TarrifEntryComponent implements OnInit {
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
 
+  portLookupConfig = {
+    displayFields : ['PortCode', 'PortName','Country'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['PortName']
+  };
+
   selectedTab = 'Tariff Details';
   tab = [{ name: 'Tariff Details', icon: 'fas fa-info-circle' }];
   page = 1;

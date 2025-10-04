@@ -2,7 +2,6 @@
 :host .ng-select {
   width: 100%;
   font-size: 14px;
-  font-family: 'Arial', sans-serif;
 }
 
 /* Dropdown panel styling */
@@ -19,8 +18,7 @@
 /* Scrollable wrapper inside panel */
 :host ::ng-deep .ng-dropdown-panel-items-wrapper {
   display: block;
-  min-width: 800px; /* ensures all columns fit */
-  max-height: 300px;
+  min-width: 800px; 
   overflow-x: auto;
   overflow-y: auto;
 }
@@ -32,7 +30,7 @@
   width: max-content;
   min-width: 100%;
   align-items: center;
-  padding: 8px 0;
+  padding: 5px 0;
   box-sizing: border-box;
 }
 
@@ -56,7 +54,7 @@
 
 /* Sticky header */
 :host ::ng-deep .dropdown-header {
-  font-weight: 600;
+  font-weight: 700;
   background-color: #f1f3f5;
   position: sticky;
   top: 0;

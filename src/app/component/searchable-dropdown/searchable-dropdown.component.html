@@ -1,17 +1,7 @@
 <div class="searchable-dropdown">
-  <ng-select 
-    [items]="items"
-    [formControl]="internalControl"
-    [searchable]="true"
-    [clearable]="true"
-    [placeholder]="placeholder"
-    [bindLabel]="bindLabel"
-    [bindValue]="bindValue"
-    [loading]="isLoading"
-    [searchFn]="searchFn"
-    (open)="onOpen()"
-    (change)="onSelectionChange($event)"
-  >
+  <ng-select [items]="items" [formControl]="internalControl" [searchable]="true" [clearable]="true"
+    [placeholder]="placeholder" [bindLabel]="bindLabel" [bindValue]="bindValue" [loading]="isLoading"
+    [searchFn]="searchFn" (open)="onOpen()" (change)="onSelectionChange($event)">
     <!-- Label Template -->
     <ng-template ng-label-tmp let-item="item">
       {{ getLabel(item) }}
@@ -20,10 +10,7 @@
     <!-- Header Template -->
     <ng-template ng-header-tmp>
       <div class="dropdown-header">
-        <div 
-          *ngFor="let label of displayLabels; let i = index"
-          [ngStyle]="getColumnStyle(i)"
-        >
+        <div *ngFor="let label of displayLabels; let i = index" [ngStyle]="getColumnStyle(i)">
           {{ label }}
         </div>
       </div>
@@ -32,10 +19,8 @@
     <!-- Option Template -->
     <ng-template ng-option-tmp let-item="item">
       <div class="dropdown-row">
-        <div 
-          *ngFor="let field of displayFields; let i = index"
-          [ngStyle]="getColumnStyle(i)"
-        >
+        <div *ngFor="let field of displayFields; let i = index" [ngStyle]="getColumnStyle(i)"
+          [ngbTooltip]="item[field]">
           {{ item[field] }}
         </div>
       </div>
@@ -102,4 +87,3 @@
     </ng-template>
   </ng-select>
 </div> -->
-
