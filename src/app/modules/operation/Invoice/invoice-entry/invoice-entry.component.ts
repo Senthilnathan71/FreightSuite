@@ -63,10 +63,14 @@ export class InvoiceEntryComponent implements OnInit {
 
   // master jobs
   masterJobList: any[] = [];
+  houseJobListByMasterJob: { [key: number]: any[] } = {};
 
   // UI state
-  selectedTab = 'Others';
-  tabs = [{ name: 'Others', icon: 'fas fa-ellipsis-h' }];
+  selectedTab = 'Invoice';
+  tabs = [
+    { name: 'Invoice', icon: 'fas fa-file-invoice' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' }
+  ];
 
   ModeofStatus = [
     { id: 'A', name: 'Active' },
@@ -533,7 +537,7 @@ export class InvoiceEntryComponent implements OnInit {
       HSSACMasterSid: [data?.HSSACMasterSid || null],
       ChargeUOMSid: [data?.ChargeUOMSid || null], // will hold the UOM id (UOMMasterSid)
       NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
-      DrCr: [data?.DrCr || 'Dr', Validators.required],
+      DrCr: [data?.DrCr || 'Cr', Validators.required], // Default to Cr for Invoice (revenue)
       CurrencyCode: [data?.CurrencyCode || this.invoiceForm.get('CurrencyCode')?.value || null],
       Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
       ExchangeRate: [data?.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value || 1],
@@ -656,6 +660,33 @@ export class InvoiceEntryComponent implements OnInit {
       }
       this.recalcRow(i);
     }
+  }
+
+  // Calculate total currency amount (sum of all amounts)
+  getTotalCurrencyAmount(): number {
+    let total = 0;
+    for (let i = 0; i < this.details.length; i++) {
+      const amount = Number(this.details.at(i).get('Amount')?.value || 0);
+      total += amount;
+    }
+    return this.round(total);
+  }
+
+  // Calculate total tax amount (CGST + SGST + IGST)
+  getTotalTaxAmount(): number {
+    let total = 0;
+    for (let i = 0; i < this.details.length; i++) {
+      const taxAmt1 = Number(this.details.at(i).get('TaxAmount1')?.value || 0);
+      const taxAmt2 = Number(this.details.at(i).get('TaxAmount2')?.value || 0);
+      const igstAmt = Number(this.details.at(i).get('TaxAmountIGST')?.value || 0);
+      total += taxAmt1 + taxAmt2 + igstAmt;
+    }
+    return this.round(total);
+  }
+
+  // Calculate grand total (Currency Amount + Tax Amount)
+  getGrandTotal(): number {
+    return this.round(this.getTotalCurrencyAmount() + this.getTotalTaxAmount());
   }
 
   round(val: number) {

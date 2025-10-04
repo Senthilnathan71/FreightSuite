@@ -1,14 +1,10 @@
 .nav-pills-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 8px;
-  padding: 4px;
-  margin-bottom: 6px;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .nav-pills {
@@ -113,73 +109,16 @@
   }
 }
 
-// Enterprise Table Styling - Compact with single color
-.enterprise-table {
-  border: none;
-  background: white;
-  margin: 0;
-
-  thead th {
+// Table header styling with solid color
+.table-header-booking {
+  th {
     background: #17a2b8 !important;
     color: white !important;
-    border: none !important;
-    padding: 6px 6px;
-    font-size: 11px;
     font-weight: 600;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.3px;
     vertical-align: middle;
-  }
-
-  thead tr:first-child th:first-child {
-    border-top-left-radius: 0.375rem;
-  }
-
-  thead tr:first-child th:last-child {
-    border-top-right-radius: 0.375rem;
-  }
-
-  tbody {
-    tr {
-      border-bottom: 1px solid #f0f0f0;
-      transition: all 0.15s ease;
-
-      &:hover {
-        background-color: #fafafa;
-      }
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    td {
-      border: none;
-      padding: 4px 6px;
-      vertical-align: middle;
-      font-size: 11px;
-      color: #333;
-      font-weight: 400;
-
-      input.form-control-sm,
-      ng-select {
-        font-size: 11px;
-        min-height: 28px;
-      }
-
-      input.form-control-sm {
-        padding: 2px 6px;
-        height: 28px;
-      }
-
-      // Increase Rate column width
-      &:nth-child(9) {
-        min-width: 120px;
-
-        input {
-          width: 100%;
-        }
-      }
-    }
+    border: none !important;
   }
 }

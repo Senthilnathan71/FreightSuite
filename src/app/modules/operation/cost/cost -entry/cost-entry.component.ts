@@ -324,6 +324,7 @@ createRateFormGroup(data?: any): FormGroup {
     CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
     CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(2) : ''],
     CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(2) : ''],
+    CostDrCr: ['D'], // Cost is always Debit
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
     CostVoucherHeader: [data?.CostVoucherHeader || null],  // Store voucher header object for display
@@ -337,6 +338,7 @@ createRateFormGroup(data?: any): FormGroup {
     RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
     RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
     RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(2) : ''],
+    RevenueDrCr: ['C'], // Revenue is always Credit
     RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
     RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
     RevenueVoucherHeader: [data?.RevenueVoucherHeader || null],  // Store voucher header object for display
