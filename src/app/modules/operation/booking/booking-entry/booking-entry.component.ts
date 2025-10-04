@@ -84,6 +84,7 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
+  @ViewChild('chargeSelectionModal') chargeSelectionModal!: TemplateRef<any>;
 
   parsedBookings: BookingData[] = [];
   showParsedData = false;
@@ -96,6 +97,14 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   pendingBookingRates: BookingRateDetails[] = [];
   voucherTypeModalRef?: NgbModalRef;
   billingPartyModalRef?: NgbModalRef;
+  chargeSelectionModalRef?: NgbModalRef;
+
+  // Charge selection properties
+  availableCharges: any[] = [];
+  selectedCharges: Set<number> = new Set();
+  currentBillingPartySid: number | null = null;
+  chargeSelectionTaxResult: any = null;
+  currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -405,6 +414,21 @@ dataFromQuotation:any
           this.loadBookingById(this.BookingHeaderSid);
         } else {
           this.minDate = this.today;
+        }
+      });
+
+      // Listen for voucher generation completion
+      this.currentRoute.queryParams.subscribe((queryParams) => {
+        if (queryParams['voucherGenerated'] === 'true' && this.BookingHeaderSid) {
+          // Reload booking data to refresh rates with new voucher information
+          this.loadBookingById(this.BookingHeaderSid);
+
+          // Clear the query param to avoid re-triggering
+          this.router.navigate([], {
+            relativeTo: this.currentRoute,
+            queryParams: {},
+            queryParamsHandling: 'merge'
+          });
         }
       });
     }
@@ -1649,10 +1673,17 @@ patchBookingFromQuotation(data: any) {
     const Volume = this.c['Volume']?.value;
     const ChargeableWeight = this.c['ChargeableWeight']?.value;
 
+    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
+    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    const BookingHeaderSid = this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
+
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
       BookingNumber,
+      BookingHeaderSid,
+      CustomerMasterSid,
+      CustomerBranchSid,
       departmentName,
       Segment : this.selectedFCLLCL,
       PORSid,
@@ -2233,6 +2264,9 @@ openAuditLogs(modal: TemplateRef<any>) {
     try {
       this.spinner.show();
 
+      // Store the type for later use in filtering
+      this.currentVoucherTypeFilter = type;
+
       // Get booking rates with full details including customer information
       const bookingRatesResp = await firstValueFrom(this.operationService.getBookingRatesWithDetails(this.BookingHeaderSid));
 
@@ -2245,8 +2279,11 @@ openAuditLogs(modal: TemplateRef<any>) {
       // Filter based on type and pending status
       const allRates = bookingRatesResp.data;
       const filteredRates = allRates.filter((rate: any) => {
-        const isCorrectType = type === 'revenue' ? rate.RevenueAmount > 0 : rate.CostAmount > 0;
-        const isPending = !rate.VoucherHeaderSid; // No voucher created yet
+        const isCorrectType = type === 'revenue' ? Number(rate.RevenueAmount) > 0 : Number(rate.CostAmount) > 0;
+        // Check specific voucher field based on type
+        const isPending = type === 'revenue'
+          ? !rate.RevenueVoucherHeaderSid
+          : !rate.CostVoucherHeaderSid;
         return isCorrectType && isPending;
       });
 
@@ -2256,8 +2293,8 @@ openAuditLogs(modal: TemplateRef<any>) {
         return;
       }
 
-      // Get unique billing parties
-      const uniqueBillingParties = this.taxCalculationService.getUniqueBillingParties(filteredRates);
+      // Get unique billing parties (pass type to determine which field to use)
+      const uniqueBillingParties = this.taxCalculationService.getUniqueBillingParties(filteredRates, type);
 
       if (uniqueBillingParties.length === 0) {
         this.appSettingService.showWarning('No billing parties found');
@@ -2266,7 +2303,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       } else if (uniqueBillingParties.length === 1) {
         // Single billing party - proceed directly
         const billingPartySid = uniqueBillingParties[0];
-        const pendingCharges = this.taxCalculationService.filterPendingCharges(filteredRates, billingPartySid);
+        const pendingCharges = this.taxCalculationService.filterPendingCharges(filteredRates, billingPartySid, type);
         this.proceedToInvoiceGeneration(billingPartySid, pendingCharges);
       } else {
         // Multiple billing parties - show selection modal
@@ -2283,17 +2320,44 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   private showBillingPartySelection(allRates: any[], uniqueBillingParties: number[]) {
     // Prepare billing party data for display
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+
     this.availableBillingParties = uniqueBillingParties.map(partySid => {
-      const pendingCharges = this.taxCalculationService.filterPendingCharges(allRates, partySid);
-      const firstCharge = pendingCharges[0];
-      const customerInfo = firstCharge?.customerMaster;
+      // Filter charges for this specific billing party
+      // Revenue: use CustomerMasterSid, Cost: use AgentMasterSid
+      const pendingCharges = allRates.filter((rate: any) => {
+        return isRevenue
+          ? rate.CustomerMasterSid === partySid
+          : rate.AgentMasterSid === partySid;
+      });
+
+      const firstCharge: any = pendingCharges[0];
+
+      // Get billing party info based on type
+      // Revenue: customerMasterBP, Cost: AgentMaster
+      const billingPartyInfo = isRevenue
+        ? firstCharge?.customerMasterBP
+        : firstCharge?.AgentMaster;
+
+      console.log(`Billing Party ${partySid} (${isRevenue ? 'Revenue' : 'Cost'}):`, {
+        billingPartyName: billingPartyInfo?.CustomerName,
+        chargesCount: pendingCharges.length,
+        charges: pendingCharges.map((c: any) => ({
+          id: c.BookingRatesSid,
+          desc: c.ChargeDescription,
+          customerSid: c.CustomerMasterSid,
+          agentSid: c.AgentMasterSid
+        }))
+      });
 
       return {
         billingPartySid: partySid,
-        customerName: customerInfo?.CustomerName || 'Unknown Customer',
-        customerAddress: customerInfo?.CustomerAddress1 || 'No Address',
+        customerName: billingPartyInfo?.CustomerName || 'Unknown Customer',
+        customerAddress: billingPartyInfo?.CustomerAddress1 || billingPartyInfo?.Address || 'No Address',
         pendingChargesCount: pendingCharges.length,
-        totalAmount: pendingCharges.reduce((sum, charge) => sum + (charge.RevenueLocalAmount || charge.CostLocalAmount || 0), 0),
+        totalAmount: pendingCharges.reduce((sum: number, charge: any) => {
+          return sum + (isRevenue ? Number(charge.RevenueLocalAmount) : Number(charge.CostLocalAmount) || 0);
+        }, 0),
         pendingCharges: pendingCharges
       };
     });
@@ -2325,24 +2389,204 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
   private proceedToInvoiceGeneration(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
-    // Navigate to invoice-new component with pre-populated data
-    const routeData = {
-      bookingHeaderSid: this.BookingHeaderSid,
-      billingPartySid: billingPartySid,
-      pendingCharges: pendingCharges
+    // Show charge selection modal
+    this.showChargeSelectionModal(billingPartySid, pendingCharges);
+  }
+
+  private showChargeSelectionModal(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
+    console.log('showChargeSelectionModal called with:', {
+      billingPartySid,
+      chargesCount: pendingCharges.length,
+      charges: pendingCharges.map((c: any) => ({
+        id: c.BookingRatesSid,
+        desc: c.ChargeDescription,
+        agentMasterSid: c.AgentMasterSid
+      }))
+    });
+
+    this.currentBillingPartySid = billingPartySid;
+    this.availableCharges = pendingCharges.map(charge => ({
+      ...charge,
+      isSelected: true // Select all by default
+    }));
+
+    // Select all charges by default
+    this.selectedCharges = new Set(pendingCharges.map(c => c.BookingRatesSid));
+
+    // Calculate initial tax
+    this.calculateChargeSelectionTax();
+
+    // Open charge selection modal with custom extra-wide size
+    this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
+      size: 'xl',
+      windowClass: 'modal-xxl',
+      backdrop: 'static',
+      keyboard: false
+    });
+  }
+
+  toggleChargeSelection(charge: any) {
+    if (this.selectedCharges.has(charge.BookingRatesSid)) {
+      this.selectedCharges.delete(charge.BookingRatesSid);
+      charge.isSelected = false;
+    } else {
+      this.selectedCharges.add(charge.BookingRatesSid);
+      charge.isSelected = true;
+    }
+    this.calculateChargeSelectionTax();
+  }
+
+  selectAllCharges() {
+    this.availableCharges.forEach(charge => {
+      this.selectedCharges.add(charge.BookingRatesSid);
+      charge.isSelected = true;
+    });
+    this.calculateChargeSelectionTax();
+  }
+
+  deselectAllCharges() {
+    this.selectedCharges.clear();
+    this.availableCharges.forEach(charge => {
+      charge.isSelected = false;
+    });
+    this.calculateChargeSelectionTax();
+  }
+
+  calculateChargeSelectionTax() {
+    const selectedChargeData = this.availableCharges.filter(c => this.selectedCharges.has(c.BookingRatesSid));
+
+    if (selectedChargeData.length === 0) {
+      this.chargeSelectionTaxResult = null;
+      return;
+    }
+
+    // Get the first charge's billing party info
+    // Revenue: customerMasterBP, Cost: AgentMaster
+    const firstCharge: any = selectedChargeData[0];
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+    const billingParty = {
+      ...(isRevenue ? (firstCharge?.customerMasterBP || {}) : (firstCharge?.AgentMaster || {})),
+      StateName: firstCharge?.customerBranch?.StateName || ''
     };
 
-    // Store data in session storage for the new component to pick up
-    sessionStorage.setItem('invoiceGenerationData', JSON.stringify(routeData));
+    const taxParams = {
+      companyMasterSid: this.currentCompany?.CompanyMasterSid || 0,
+      branchMasterSid: this.currentBranch?.BranchMasterSid || 0,
+      billingParty: billingParty,
+      charges: selectedChargeData
+    };
 
-    // Navigate to invoice-new route
-    this.router.navigate(['/operation/invoice/new'], {
-      queryParams: {
-        from: 'booking',
-        bookingId: this.BookingHeaderSid,
-        billingParty: billingPartySid
+    this.chargeSelectionTaxResult = this.taxCalculationService.calculateTax(taxParams);
+  }
+
+  getChargeTaxPercentage(charge: any): string {
+    if (!this.chargeSelectionTaxResult || !this.selectedCharges.has(charge.BookingRatesSid)) {
+      return '-';
+    }
+
+    const lineItem = this.chargeSelectionTaxResult.lineItems?.find(
+      item => item.description === charge.ChargeDescription
+    );
+
+    if (!lineItem) return '-';
+
+    if (this.chargeSelectionTaxResult.type === 'GST') {
+      const gstItem = lineItem as any;
+      if (gstItem.igstRate > 0) {
+        return `IGST ${gstItem.igstRate}%`;
+      } else if (gstItem.cgstRate > 0) {
+        return `CGST ${gstItem.cgstRate}% + SGST ${gstItem.sgstRate}%`;
       }
-    });
+    } else if (this.chargeSelectionTaxResult.type === 'VAT') {
+      const vatItem = lineItem as any;
+      return `VAT ${vatItem.vatRate}%`;
+    }
+
+    return '-';
+  }
+
+  getChargeTaxAmount(charge: any): number {
+    if (!this.chargeSelectionTaxResult || !this.selectedCharges.has(charge.BookingRatesSid)) {
+      return 0;
+    }
+
+    const lineItem = this.chargeSelectionTaxResult.lineItems?.find(
+      item => item.description === charge.ChargeDescription
+    );
+
+    return lineItem?.totalTaxAmount || 0;
+  }
+
+  async proceedWithSelectedCharges() {
+    if (this.selectedCharges.size === 0) {
+      this.appSettingService.showWarning('Please select at least one charge');
+      return;
+    }
+
+    try {
+      const selectedChargeData = this.availableCharges.filter(c => this.selectedCharges.has(c.BookingRatesSid));
+
+      // Close modal
+      this.chargeSelectionModalRef?.close();
+
+      this.appSettingService.showInfo('Generating voucher...');
+
+      const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+
+      // Get billing party branch based on type
+      // Revenue: CustomerBranchSid, Cost: AgentBranchSid
+      const billingPartyBranchSid = isRevenue
+        ? selectedChargeData[0]?.CustomerBranchSid
+        : selectedChargeData[0]?.AgentBranchSid;
+
+      // Prepare payload for voucher generation
+      // voucherTypeMasterSid will be found dynamically in backend based on voucherType + company + branch
+      const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+      const payload = {
+        bookingHeaderSid: this.BookingHeaderSid,
+        companyMasterSid: this.currentCompany?.CompanyMasterSid,
+        branchMasterSid: this.currentBranch?.BranchMasterSid,
+        voucherType: this.selectedVoucherType,
+        selectedRateIds: Array.from(this.selectedCharges),
+        billingPartySid: this.currentBillingPartySid,
+        customerBranchSid: billingPartyBranchSid || null,
+        createdBy: currUserEmail || 'System'
+      };
+
+      // Generate voucher via API
+      const result = await firstValueFrom(this.operationService.generateVoucherFromBooking(payload));
+
+      if (result?.status) {
+        const voucherNumber = result.data?.voucherHeader?.VoucherNumber || 'N/A';
+        const voucherHeaderSid = result.data?.voucherHeader?.VoucherHeaderSid;
+
+        this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${voucherNumber}`);
+
+        // Reload booking data to show updated rates with voucher information
+        await this.loadBookingById(this.BookingHeaderSid);
+
+        // Navigate to invoice-entry to view the generated voucher
+        if (voucherHeaderSid) {
+          this.router.navigate(['/operation/invoice/entry', voucherHeaderSid], {
+            queryParams: {
+              from: 'booking',
+              bookingId: this.BookingHeaderSid
+            }
+          });
+        }
+      } else {
+        this.appSettingService.showError('Failed to generate voucher: ' + (result?.message || 'Unknown error'));
+      }
+    } catch (error: any) {
+      this.appSettingService.showError('Error generating voucher: ' + (error?.error?.message || error.message || 'Unknown error'));
+      console.error('Error generating voucher:', error);
+    }
+  }
+
+  cancelChargeSelection() {
+    this.chargeSelectionModalRef?.close();
+    this.selectedCharges.clear();
+    this.availableCharges = [];
   }
   ngOnDestroy(){
   this.dataFromQuotation = null;

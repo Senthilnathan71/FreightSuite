@@ -1,14 +1,10 @@
 .nav-pills-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 8px;
-  padding: 4px;
-  margin-bottom: 6px;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .nav-pills {
@@ -110,5 +106,19 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// Table header styling with solid color
+.table-header-booking {
+  th {
+    background: #17a2b8 !important;
+    color: white !important;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+    border: none !important;
   }
 }

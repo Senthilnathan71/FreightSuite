@@ -344,7 +344,9 @@
                       <!-- Tax Details -->
                       <div class="col-lg-2 col-12 mb-2 mb-lg-0">
                         <div class="d-lg-none"><small class="text-muted">Tax Details</small></div>
-                        <div class="tax-inputs">
+
+                        <!-- GST Fields (India) -->
+                        <div class="tax-inputs" *ngIf="bookingModeCountry === 'india'">
                           <div class="row g-1">
                             <div class="col-4">
                               <input class="form-control form-control-sm"
@@ -381,7 +383,70 @@
                             <div class="col-4">
                               <input class="form-control form-control-sm"
                                      formControlName="TaxAmountIGST"
-                                     placeholder="IGST Amt">
+                                     placeholder="IGST Amt"
+                                     readonly>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- VAT Fields (UAE/Dubai) -->
+                        <div class="tax-inputs" *ngIf="bookingModeCountry === 'uae' || bookingModeCountry === 'dubai'">
+                          <div class="row g-1">
+                            <div class="col-6">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxPercentageIGST"
+                                     placeholder="VAT%"
+                                     (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                            </div>
+                            <div class="col-6">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxAmountIGST"
+                                     placeholder="VAT Amt"
+                                     readonly>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Default (other countries) -->
+                        <div class="tax-inputs" *ngIf="bookingModeCountry !== 'india' && bookingModeCountry !== 'uae' && bookingModeCountry !== 'dubai'">
+                          <div class="row g-1">
+                            <div class="col-4">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxPercentage1"
+                                     placeholder="Tax1%"
+                                     (input)="onDetailChange(i, 'TaxPercentage1')">
+                            </div>
+                            <div class="col-4">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxPercentage2"
+                                     placeholder="Tax2%"
+                                     (input)="onDetailChange(i, 'TaxPercentage2')">
+                            </div>
+                            <div class="col-4">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxPercentageIGST"
+                                     placeholder="Tax3%"
+                                     (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                            </div>
+                          </div>
+                          <div class="row g-1 mt-1">
+                            <div class="col-4">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxAmount1"
+                                     placeholder="Tax1 Amt"
+                                     readonly>
+                            </div>
+                            <div class="col-4">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxAmount2"
+                                     placeholder="Tax2 Amt"
+                                     readonly>
+                            </div>
+                            <div class="col-4">
+                              <input class="form-control form-control-sm"
+                                     formControlName="TaxAmountIGST"
+                                     placeholder="Tax3 Amt"
+                                     readonly>
                             </div>
                           </div>
                         </div>
@@ -463,24 +528,53 @@
                       <div class="invoice-summary">
                         <div class="d-flex justify-content-between">
                           <span>Subtotal:</span>
-                          <span class="fw-bold">{{ getSubtotal() | currency:'INR' }}</span>
+                          <span class="fw-bold">{{ getSubtotal() | number:'1.2-2' }}</span>
                         </div>
-                        <div class="d-flex justify-content-between" *ngIf="getTotalCGST() > 0">
-                          <span>CGST:</span>
-                          <span>{{ getTotalCGST() | currency:'INR' }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between" *ngIf="getTotalSGST() > 0">
-                          <span>SGST:</span>
-                          <span>{{ getTotalSGST() | currency:'INR' }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between" *ngIf="getTotalIGST() > 0">
-                          <span>IGST:</span>
-                          <span>{{ getTotalIGST() | currency:'INR' }}</span>
-                        </div>
+
+                        <!-- GST Summary (India) -->
+                        <ng-container *ngIf="bookingModeCountry === 'india'">
+                          <div class="d-flex justify-content-between" *ngIf="getTotalCGST() > 0">
+                            <span>CGST:</span>
+                            <span>{{ getTotalCGST() | number:'1.2-2' }}</span>
+                          </div>
+                          <div class="d-flex justify-content-between" *ngIf="getTotalSGST() > 0">
+                            <span>SGST:</span>
+                            <span>{{ getTotalSGST() | number:'1.2-2' }}</span>
+                          </div>
+                          <div class="d-flex justify-content-between" *ngIf="getTotalIGST() > 0">
+                            <span>IGST:</span>
+                            <span>{{ getTotalIGST() | number:'1.2-2' }}</span>
+                          </div>
+                        </ng-container>
+
+                        <!-- VAT Summary (UAE/Dubai) -->
+                        <ng-container *ngIf="bookingModeCountry === 'uae' || bookingModeCountry === 'dubai'">
+                          <div class="d-flex justify-content-between" *ngIf="getTotalIGST() > 0">
+                            <span>VAT:</span>
+                            <span>{{ getTotalIGST() | number:'1.2-2' }}</span>
+                          </div>
+                        </ng-container>
+
+                        <!-- Other Countries -->
+                        <ng-container *ngIf="bookingModeCountry !== 'india' && bookingModeCountry !== 'uae' && bookingModeCountry !== 'dubai'">
+                          <div class="d-flex justify-content-between" *ngIf="getTotalCGST() > 0">
+                            <span>Tax 1:</span>
+                            <span>{{ getTotalCGST() | number:'1.2-2' }}</span>
+                          </div>
+                          <div class="d-flex justify-content-between" *ngIf="getTotalSGST() > 0">
+                            <span>Tax 2:</span>
+                            <span>{{ getTotalSGST() | number:'1.2-2' }}</span>
+                          </div>
+                          <div class="d-flex justify-content-between" *ngIf="getTotalIGST() > 0">
+                            <span>Tax 3:</span>
+                            <span>{{ getTotalIGST() | number:'1.2-2' }}</span>
+                          </div>
+                        </ng-container>
+
                         <hr>
                         <div class="d-flex justify-content-between fs-5">
                           <span class="fw-bold">Total:</span>
-                          <span class="fw-bold">{{ getGrandTotal() | currency:'INR' }}</span>
+                          <span class="fw-bold">{{ getGrandTotal() | number:'1.2-2' }}</span>
                         </div>
                       </div>
                     </div>

@@ -101,8 +101,8 @@
             <button class="table-action-btn export">
               <i class="fas fa-download"></i> Export
             </button>
-            <button class="table-action-btn print">
-              <i class="fas fa-print"></i> Save
+            <button class="table-action-btn print" (click)="saveAllRates()">
+              <i class="fas fa-save"></i> Save
             </button>
             <!-- <button class="table-action-btn print">
           <i class="fas fa-print"></i> Print
@@ -136,13 +136,10 @@
             <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
               <td class="actions-cell" style="width: 10px;">
                 <div class="action-buttons">
-                  <!-- <button class="action-icon edit">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-icon copy">
-                    <i class="fas fa-copy"></i>
-                  </button> -->
-                  <button class="action-icon delete" (click)="deleteRate(i,row.value.BookingRatesSid)">
+                  <button class="action-icon delete"
+                    (click)="deleteRate(i,row.value.BookingRatesSid)"
+                    [disabled]="!canEditRate(i)"
+                    title="Delete rate">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -154,16 +151,26 @@
               </td>
               <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                  <ng-select class="ng-select " [items]="chargeList" formControlName="ChargeMasterSid"
-                     bindLabel="chargeName" (change)="onChargeChange($event)"
-                    appendTo="body">
+                  <ng-select class="ng-select" [items]="chargeList" formControlName="ChargeMasterSid"
+                     bindLabel="chargeCode" bindValue="ChargeMasterSid"
+                     (change)="onChargeChangeForRow($event, i)"
+                     [disabled]="!canEditRate(i)"
+                     appendTo="body"
+                     [dropdownPosition]="'auto'"
+                     panelClass="charge-dropdown-wide">
+                     <ng-template ng-label-tmp let-item="item">
+                       <span>{{item.chargeCode}}</span>
+                     </ng-template>
+                     <ng-template ng-option-tmp let-item="item">
+                       <div><strong>{{item.chargeCode}}</strong> - {{item.chargeName}}</div>
+                     </ng-template>
                   </ng-select>
                 </div>
               </td>
               <td>
                 <div class="custom-form-group dofi-min-w-100 dofi-min-w-150">
                   <input type="text" id="text-input" class="custom-input-field sm" formControlName="ChargeDescription"
-                    [textWithNumbers]="100">
+                    [textWithNumbers]="100" [disabled]="!canEditRate(i)">
                 </div>
               </td>
 
@@ -178,7 +185,9 @@
               <td>
                 <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
                   <input type="number" min="0" formControlName="NumberOfUnit" id="text-input"
-                    class="custom-input-field sm">
+                    class="custom-input-field sm"
+                    (input)="calculateCostAmount(i); calculateRevenueAmount(i)"
+                    [disabled]="!canEditRate(i)">
                 </div>
               </td>
             </tr>
@@ -224,148 +233,163 @@
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
                     <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
-                      formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
+                      formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid"
+                      [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-                      formControlName="RevenueCurrencyMasterSid" (change)="onCurrencyChange($event,i)" appendTo="body">
+                    <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
+                      formControlName="RevenueCurrencyMasterSid"
+                      (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)"
+                      [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
-
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" formControlName="RevenueExchangeRate"
-                      class="custom-input-field sm text-end">
+                    <input type="number" id="text-input" formControlName="RevenueExchangeRate"
+                      class="custom-input-field sm text-end"
+                      (input)="calculateRevenueLocalAmount(i)"
+                      [disabled]="!canEditRate(i)">
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    
-                    <input type="text" id="text-input" formControlName="RevenueNoOfUnit"
-                      class="custom-input-field sm text-end">
-
+                    <input type="number" id="text-input" formControlName="RevenueRate"
+                      class="custom-input-field sm text-end"
+                      (input)="calculateRevenueAmount(i)"
+                      [disabled]="!canEditRate(i)">
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" formControlName="RevenueAmount"
-                      class="custom-input-field sm text-end">
+                    <input type="number" id="text-input" formControlName="RevenueAmount"
+                      class="custom-input-field sm text-end"
+                      (input)="calculateRevenueLocalAmount(i)"
+                      [disabled]="!canEditRate(i)">
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" class="custom-input-field sm"
-                      formControlName="RevenueLocalAmount">
+                    <input type="number" id="text-input" class="custom-input-field sm text-end"
+                      formControlName="RevenueLocalAmount"
+                      readonly>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-40">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
-                      appendTo="body" formControlName="RevenuePrepaidCollect">
+                      appendTo="body" formControlName="RevenuePrepaidCollect"
+                      [disabled]="!canEditRate(i)">
                     </ng-select>
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                      formControlName="AgentSid" appendTo="body">
+                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      formControlName="CustomerMasterSid"
+                      [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group dofi-min-w-150">
-                    <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
-                      formControlName="RevenueVoucherTypeSid" appendTo="body">
-                    </ng-select>
+                    <input type="text" [value]="row.get('RevenueVoucherType')?.value?.DocumentTypeName || ''"
+                      class="custom-input-field sm" readonly>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="vouchers" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid"
-                      formControlName="RevenueVoucherHeaderSid" appendTo="body">
-                    </ng-select>
+                    <input type="text" [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''"
+                      class="custom-input-field sm" readonly>
                   </div>
                 </td>
 
                 <!-- cost -->
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)" formControlName="CostChargeUomSid"
-                      bindValue="CostChargeUomSid" appendTo="body">
+                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                      formControlName="CostChargeUomSid"
+                      bindValue="UOMMasterSid"
+                      [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-                      formControlName="CostCurrencyMasterSid" (change)="onCurrencyChange($event,i)" appendTo="body">
+                    <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
+                      formControlName="CostCurrencyMasterSid"
+                      (change)="getCostExchangeRate(i, $event?.CurrencyMasterSid)"
+                      [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
-
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" formControlName="CostExchangeRate"
-                      class="custom-input-field sm text-end">
-                  </div>
-                </td>
-                
-                <td>
-                  <div class="custom-form-group dofi-min-w-100">
-                    
-                    <input type="text" id="text-input" formControlName="CostNumberOfUnit"
-                      class="custom-input-field sm text-end">
-                  </div>
-                </td>
-                <td>
-                  <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" formControlName="CostAmount"
-                      class="custom-input-field sm text-end">
+                    <input type="number" id="text-input" formControlName="CostExchangeRate"
+                      class="custom-input-field sm text-end"
+                      (input)="calculateCostLocalAmount(i)"
+                      [disabled]="!canEditRate(i)">
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="text" id="text-input" formControlName="CostLocalAmount"
-                      class="custom-input-field sm text-end">
+                    <input type="number" id="text-input" formControlName="CostRate"
+                      class="custom-input-field sm text-end"
+                      (input)="calculateCostAmount(i)"
+                      [disabled]="!canEditRate(i)">
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="number" id="text-input" formControlName="CostAmount"
+                      class="custom-input-field sm text-end"
+                      (input)="calculateCostLocalAmount(i)"
+                      [disabled]="!canEditRate(i)">
+                  </div>
+                </td>
+
+                <td>
+                  <div class="custom-form-group dofi-min-w-100">
+                    <input type="number" id="text-input" formControlName="CostLocalAmount"
+                      class="custom-input-field sm text-end"
+                      readonly>
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-50">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
-                      appendTo="body" formControlName="CostPrepaidCollect">
+                      appendTo="body" formControlName="CostPrepaidCollect"
+                      [disabled]="!canEditRate(i)">
                     </ng-select>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                      formControlName="CustomerMasterSid" appendTo="body">
+                    <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      formControlName="AgentSid"
+                      [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group dofi-min-w-150">
-                    <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="VoucherTypeMasterSid"
-                      formControlName="CostVoucherTypeSid" appendTo="body">
-                      >
-                    </ng-select>
+                    <input type="text" [value]="row.get('CostVoucherType')?.value?.DocumentTypeName || ''"
+                      class="custom-input-field sm" readonly>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="vouchers" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid"
-                      formControlName="CostVoucherHeaderSid" appendTo="body">
-                    </ng-select>
+                    <input type="text" [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''"
+                      class="custom-input-field sm" readonly>
                   </div>
                 </td>
               </tr>

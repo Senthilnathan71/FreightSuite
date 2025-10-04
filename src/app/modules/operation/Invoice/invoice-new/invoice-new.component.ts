@@ -96,7 +96,13 @@ export class InvoiceNewComponent implements OnInit {
     bookingHeaderSid?: number;
     billingPartySid?: number;
     pendingCharges?: BookingRateDetails[];
+    selectedRateIds?: number[];
+    voucherType?: 'Invoice' | 'Vendor Invoice';
+    customerBranchSid?: number;
   } = {};
+
+  // Flag to determine if this is voucher generation mode
+  isVoucherGenerationMode = false;
 
   get f(): { [key: string]: AbstractControl } {
     return this.invoiceForm.controls;
@@ -819,6 +825,12 @@ export class InvoiceNewComponent implements OnInit {
   }
 
   async onSave() {
+    // Check if this is voucher generation mode
+    if (this.isVoucherGenerationMode) {
+      await this.generateVoucherFromBooking();
+      return;
+    }
+
     if (this.invoiceForm.invalid) {
       this.invoiceForm.markAllAsTouched();
       this.appSettingService.showWarning('Please fill required invoice fields.');
@@ -969,6 +981,48 @@ export class InvoiceNewComponent implements OnInit {
     }
   }
 
+  async generateVoucherFromBooking() {
+    try {
+      this.spinner.show();
+
+      // Get voucher type master SID based on voucher type
+      // For now, we'll use a default value or get it from the form
+      // You may need to adjust this based on your voucher type master data
+      const voucherTypeMasterSid = this.prePopulateData.voucherType === 'Invoice' ? 1 : 2; // Adjust these IDs
+
+      const payload = {
+        bookingHeaderSid: this.prePopulateData.bookingHeaderSid,
+        companyMasterSid: this.currentCompany?.CompanyMasterSid,
+        branchMasterSid: this.currentBranch?.BranchMasterSid,
+        voucherTypeMasterSid: voucherTypeMasterSid,
+        voucherType: this.prePopulateData.voucherType,
+        selectedRateIds: this.prePopulateData.selectedRateIds,
+        billingPartySid: this.prePopulateData.billingPartySid,
+        customerBranchSid: this.prePopulateData.customerBranchSid,
+        createdBy: this.currUserEmail || 'System'
+      };
+
+      const result = await firstValueFrom(this.operationService.generateVoucherFromBooking(payload));
+
+      this.spinner.hide();
+
+      if (result?.status) {
+        this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${result.data?.voucherHeader?.VoucherNumber || 'N/A'}`);
+
+        // Navigate back to booking entry
+        this.router.navigate(['/operation/booking/entry', this.prePopulateData.bookingHeaderSid], {
+          queryParams: { tab: 'rates', voucherGenerated: 'true' }
+        });
+      } else {
+        this.appSettingService.showError('Failed to generate voucher: ' + (result?.message || 'Unknown error'));
+      }
+    } catch (error) {
+      this.spinner.hide();
+      console.error('Error generating voucher:', error);
+      this.appSettingService.showError('Failed to generate voucher. Please try again.');
+    }
+  }
+
   onReset() {
     if (confirm('Reset invoice form?')) {
       this.invoiceForm.reset({ status: 'A', ExchangeRate: 1 });
@@ -1043,8 +1097,12 @@ export class InvoiceNewComponent implements OnInit {
     bookingHeaderSid: number;
     billingPartySid: number;
     pendingCharges: BookingRateDetails[];
+    selectedRateIds?: number[];
+    voucherType?: 'Invoice' | 'Vendor Invoice';
+    customerBranchSid?: number;
   }) {
     this.prePopulateData = data;
+    this.isVoucherGenerationMode = !!(data.selectedRateIds && data.selectedRateIds.length > 0);
 
     // Find the billing party details
     const billingParty = data.pendingCharges[0]?.customerMaster;

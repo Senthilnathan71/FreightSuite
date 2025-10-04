@@ -72,22 +72,32 @@ export interface VATLineItem {
 export interface GSTResult {
   type: 'GST';
   isInterState: boolean;
+  isSameState: boolean;
   lineItems: GSTLineItem[];
+  subtotal: number;
   totalAmount: number;
+  totalCGST: number;
   totalCGSTAmount: number;
+  totalSGST: number;
   totalSGSTAmount: number;
+  totalIGST: number;
   totalIGSTAmount: number;
   totalTaxAmount: number;
+  grandTotal: number;
   totalInvoiceAmount: number;
 }
 
 export interface VATResult {
   type: 'VAT';
   lineItems: VATLineItem[];
+  subtotal: number;
   totalAmount: number;
+  totalVAT: number;
   totalVATAmount: number;
   totalTaxAmount: number;
+  grandTotal: number;
   totalInvoiceAmount: number;
+  vatRate: number;
 }
 
 export type TaxCalculationResult = GSTResult | VATResult;
@@ -149,7 +159,7 @@ export class TaxCalculationService {
     let totalIGSTAmount = 0;
 
     charges.forEach(charge => {
-      const amount = charge.RevenueLocalAmount;
+      const amount = Number(charge.RevenueLocalAmount) || 0;
       totalAmount += amount;
 
       // Get tax rate from charge master or default
@@ -199,12 +209,18 @@ export class TaxCalculationService {
     return {
       type: 'GST',
       isInterState,
+      isSameState: !isInterState,
       lineItems,
+      subtotal: totalAmount,
       totalAmount,
+      totalCGST: totalCGSTAmount,
       totalCGSTAmount,
+      totalSGST: totalSGSTAmount,
       totalSGSTAmount,
+      totalIGST: totalIGSTAmount,
       totalIGSTAmount,
       totalTaxAmount,
+      grandTotal: totalInvoiceAmount,
       totalInvoiceAmount
     };
   }
@@ -219,12 +235,13 @@ export class TaxCalculationService {
     let totalAmount = 0;
     let totalVATAmount = 0;
 
+    // Get VAT rate (standard 5% for UAE/Dubai)
+    const vatRate = this.getVATRate();
+
     charges.forEach(charge => {
-      const amount = charge.RevenueLocalAmount;
+      const amount = Number(charge.RevenueLocalAmount) || 0;
       totalAmount += amount;
 
-      // Get VAT rate (standard 5% for UAE/Dubai)
-      const vatRate = this.getVATRate();
       const vatAmount = (amount * vatRate) / 100;
       totalVATAmount += vatAmount;
 
@@ -243,32 +260,38 @@ export class TaxCalculationService {
     return {
       type: 'VAT',
       lineItems,
+      subtotal: totalAmount,
       totalAmount,
+      totalVAT: totalVATAmount,
       totalVATAmount,
       totalTaxAmount: totalVATAmount,
-      totalInvoiceAmount
+      grandTotal: totalInvoiceAmount,
+      totalInvoiceAmount,
+      vatRate
     };
   }
 
   /**
    * Filter charges for pending invoices (no voucher created)
+   * Revenue: uses CustomerMasterSid, Cost: uses AgentMasterSid
    */
-  filterPendingCharges(charges: BookingRateDetails[], billingPartySid: number): BookingRateDetails[] {
-    return charges.filter(charge =>
-      charge.CustomerMasterSid === billingPartySid &&
-      !charge.VoucherHeaderSid && // Only charges without voucher created
-      charge.RevenueAmount > 0 // Only revenue charges (not cost)
-    );
+  filterPendingCharges(charges: BookingRateDetails[], billingPartySid: number, type: 'revenue' | 'cost' = 'revenue'): BookingRateDetails[] {
+    return charges.filter((charge: any) => {
+      const billingPartyField = type === 'revenue' ? charge.CustomerMasterSid : charge.AgentMasterSid;
+      return billingPartyField === billingPartySid;
+    });
   }
 
   /**
    * Get unique billing parties from charges
+   * Revenue: uses CustomerMasterSid, Cost: uses AgentMasterSid
    */
-  getUniqueBillingParties(charges: BookingRateDetails[]): number[] {
+  getUniqueBillingParties(charges: BookingRateDetails[], type: 'revenue' | 'cost' = 'revenue'): number[] {
     const uniqueParties = new Set<number>();
-    charges.forEach(charge => {
-      if (charge.CustomerMasterSid && charge.RevenueAmount > 0) {
-        uniqueParties.add(charge.CustomerMasterSid);
+    charges.forEach((charge: any) => {
+      const billingPartySid = type === 'revenue' ? charge.CustomerMasterSid : charge.AgentMasterSid;
+      if (billingPartySid) {
+        uniqueParties.add(billingPartySid);
       }
     });
     return Array.from(uniqueParties);

@@ -2509,3 +2509,186 @@
     </button>
   </div>
 </ng-template>
+
+<!-- Charge Selection Modal -->
+<ng-template #chargeSelectionModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Select Charges for {{ selectedVoucherType }}</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cancelChargeSelection()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <p class="text-muted mb-0">Select charges to include in the invoice. Deselected charges will remain in booking rates.</p>
+      <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-primary" (click)="selectAllCharges()">
+          <i class="fas fa-check-double me-1"></i>Select All
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="deselectAllCharges()">
+          <i class="fas fa-times me-1"></i>Deselect All
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive charge-selection-table">
+      <table class="table table-sm table-hover">
+        <thead class="table-light sticky-top">
+          <tr>
+            <th width="50">
+              <input type="checkbox" class="form-check-input"
+                [checked]="selectedCharges.size === availableCharges.length"
+                (change)="selectedCharges.size === availableCharges.length ? deselectAllCharges() : selectAllCharges()">
+            </th>
+            <th>Charge Code</th>
+            <th>Description</th>
+            <th class="text-center">Qty</th>
+            <th class="text-center">Currency</th>
+            <th class="text-end">Rate</th>
+            <th class="text-end">Amount</th>
+            <th class="text-end">Ex.Rate</th>
+            <th class="text-end">Local Amount</th>
+            <th class="text-end">Tax %</th>
+            <th class="text-end">Tax Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let charge of availableCharges" [class.table-primary]="charge.isSelected">
+            <td>
+              <input type="checkbox" class="form-check-input"
+                [checked]="charge.isSelected"
+                (change)="toggleChargeSelection(charge)">
+            </td>
+            <td>
+              <strong>{{ charge.ChargeMaster?.chargeCode || '-' }}</strong>
+            </td>
+            <td>
+              <small>{{ charge.ChargeDescription || charge.ChargeMaster?.chargeName || '-' }}</small>
+            </td>
+            <td class="text-center">
+              {{ charge.NoOfUnit || charge.NumberOfUnit || 1 }}
+            </td>
+            <td class="text-center">
+              <span class="badge bg-info">{{ (selectedVoucherType === 'Invoice' ? charge.RevenueCurrencyMaster?.currencyCode : charge.CostCurrencyMaster?.currencyCode) || 'USD' }}</span>
+            </td>
+            <td class="text-end">
+              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueRate : charge.CostRate) || 0 | number:'1.2-2' }}
+            </td>
+            <td class="text-end">
+              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueAmount : charge.CostAmount) || 0 | number:'1.2-2' }}
+            </td>
+            <td class="text-end">
+              {{ (selectedVoucherType === 'Invoice' ? charge.RevenueExchangeRate : charge.CostExchangeRate) || 1 | number:'1.4-4' }}
+            </td>
+            <td class="text-end">
+              <strong>{{ (selectedVoucherType === 'Invoice' ? charge.RevenueLocalAmount : charge.CostLocalAmount) || 0 | number:'1.2-2' }}</strong>
+            </td>
+            <td class="text-end">
+              <small class="text-muted">{{ getChargeTaxPercentage(charge) }}</small>
+            </td>
+            <td class="text-end">
+              <strong class="text-success">{{ getChargeTaxAmount(charge) | number:'1.2-2' }}</strong>
+            </td>
+          </tr>
+          <tr *ngIf="!availableCharges?.length">
+            <td colspan="11" class="text-center text-muted">No charges available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tax Summary -->
+    <div class="card mt-3 border-primary" *ngIf="chargeSelectionTaxResult && selectedCharges.size > 0">
+      <div class="card-header bg-primary text-white">
+        <h6 class="mb-0">
+          <i class="fas fa-calculator me-2"></i>Tax Summary
+          <small class="float-end">{{ chargeSelectionTaxResult.type }} Calculation</small>
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <table class="table table-sm table-borderless mb-0">
+              <tbody>
+                <tr>
+                  <td><strong>Selected Charges:</strong></td>
+                  <td class="text-end">{{ selectedCharges.size }} / {{ availableCharges.length }}</td>
+                </tr>
+                <tr *ngIf="chargeSelectionTaxResult.type === 'GST'">
+                  <td><strong>Tax Type:</strong></td>
+                  <td class="text-end">
+                    <span class="badge bg-info">{{ chargeSelectionTaxResult.isSameState ? 'CGST + SGST (Same State)' : 'IGST (Inter-State)' }}</span>
+                  </td>
+                </tr>
+                <tr *ngIf="chargeSelectionTaxResult.type === 'VAT'">
+                  <td><strong>Tax Type:</strong></td>
+                  <td class="text-end">
+                    <span class="badge bg-warning">VAT ({{ chargeSelectionTaxResult.vatRate }}%)</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-4">
+            <div class="border rounded p-3 bg-light">
+              <div class="d-flex justify-content-between mb-2">
+                <span>Subtotal:</span>
+                <strong>{{ chargeSelectionTaxResult.subtotal | number:'1.2-2' }}</strong>
+              </div>
+
+              <!-- GST Details -->
+              <div *ngIf="chargeSelectionTaxResult.type === 'GST'">
+                <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalCGST > 0">
+                  <small>CGST:</small>
+                  <small>{{ chargeSelectionTaxResult.totalCGST | number:'1.2-2' }}</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalSGST > 0">
+                  <small>SGST:</small>
+                  <small>{{ chargeSelectionTaxResult.totalSGST | number:'1.2-2' }}</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1" *ngIf="chargeSelectionTaxResult.totalIGST > 0">
+                  <small>IGST:</small>
+                  <small>{{ chargeSelectionTaxResult.totalIGST | number:'1.2-2' }}</small>
+                </div>
+              </div>
+
+              <!-- VAT Details -->
+              <div *ngIf="chargeSelectionTaxResult.type === 'VAT'">
+                <div class="d-flex justify-content-between mb-1">
+                  <small>VAT ({{ chargeSelectionTaxResult.vatRate }}%):</small>
+                  <small>{{ chargeSelectionTaxResult.totalVAT | number:'1.2-2' }}</small>
+                </div>
+              </div>
+
+              <hr class="my-2">
+              <div class="d-flex justify-content-between">
+                <strong>Grand Total:</strong>
+                <strong class="text-primary fs-5">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning mt-3" *ngIf="selectedCharges.size === 0">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      <strong>No charges selected.</strong> Please select at least one charge to proceed.
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancelChargeSelection()">
+      <i class="fas fa-times me-1"></i>Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-success"
+      [disabled]="selectedCharges.size === 0"
+      (click)="proceedWithSelectedCharges()">
+      <i class="fas fa-check me-1"></i>
+      Generate Voucher ({{ selectedCharges.size }} charges)
+    </button>
+  </div>
+</ng-template>
