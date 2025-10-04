@@ -3,46 +3,54 @@
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
-                      <div class="brand-icon">
-                     <i class="fas fa-dollar-sign"></i>
+                    <div class="brand-icon">
+                        <i class="fas fa-dollar-sign"></i>
 
                     </div>
-                <h5 class="page-title text-info mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Currency</h5>
-                @if(isEditMode){
+                    <h5 class="page-title text-info mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Currency</h5>
+                    @if(isEditMode){
                     <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
+                        <i class="fas fs-6 fa-info-circle"></i>
                     </a>
-                }
+                    }
                 </div>
-               
+
             </div>
             <div class="col-md-8 pb-1">
                 <div class="d-flex justify-content-end gap-2">
-                   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
 
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i> Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
                         [disabled]="loading || btnDisable || currencyForm.invalid">
                         <i class="fas fa-save me-1"></i>
                         {{ isEditMode ? 'Edit' : 'Save' }}
                     </button>
                     <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                            ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                    class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                    class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                    class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                    class="fas fa-envelope me-1"></i> Email</button>
                         </div>
                     </div>
                 </div>
@@ -55,7 +63,7 @@
             <div class="card-body">
                 <form [formGroup]="currencyForm">
                     <div class="row ">
-                         <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                        <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                        <i class="fas fa-dollar-sign fs-4"></i>
 
                         <h5 class="card-titlename mb-0">Currency Information</h5>
@@ -80,6 +88,31 @@
                                 </span>
                             </div>
                         </div> -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group  custom-form-group-select"
+                                [class.filled]="!!currencyForm.get('CountryMasterSid')?.value">
+
+                                <dofi-searchable-dropdown [items]="countryList" formControlName="CountryMasterSid"
+                                    [placeholder]="''" [displayFields]="currencylookupCofig.displayFields"
+                                    [displayLabels]="currencylookupCofig.displayLabels"
+                                    [labelFields]="currencylookupCofig.labelFields" [bindValue]="'CountryMasterSid'">
+                                </dofi-searchable-dropdown>
+                                <label for="text-input" class="input-label">
+                                    Country <span class="text-danger fw-bold">*</span>
+                                </label>
+
+                                @if(currencyForm.get('CountryMasterSid')?.touched &&
+                                currencyForm.get('CountryMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(currencyForm.get('CountryMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -191,7 +224,7 @@
                                 <input type="text" id="CurrencyUnit" formControlName="CurrencyUnit"
                                     class="custom-input-field sm" placeholder=""
                                     [class.is-invalid]="currencyForm.get('CurrencyUnit')?.invalid && (currencyForm.get('CurrencyUnit')?.touched || currencyForm.get('CurrencyUnit')?.dirty)"
-                                    maxlength="50" />
+                                    maxlength="50" [onlyText]="50"/>
                                 <label for="CurrencyUnit" class="input-label">Unit <span
                                         class="text-danger">*</span></label>
 
@@ -222,7 +255,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="CurrencySubUnit" formControlName="CurrencySubUnit"
-                                    class="custom-input-field sm" placeholder=""
+                                    class="custom-input-field sm" placeholder="" [onlyText]="50"
                                     [class.is-invalid]="currencyForm.get('CurrencySubUnit')?.invalid && (currencyForm.get('CurrencySubUnit')?.touched || currencyForm.get('CurrencySubUnit')?.dirty)"
                                     maxlength="50" />
                                 <label for="CurrencySubUnit" class="input-label">Sub Unit</label>
@@ -234,6 +267,23 @@
                                 </div>
                             </div>
                         </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="Symbol" formControlName="Symbol" placeholder=""
+                                    class="custom-input-field sm"
+                                    [class.is-invalid]="currencyForm.get('Symbol')?.invalid && (currencyForm.get('Symbol')?.touched || currencyForm.get('Symbol')?.dirty)" />
+                                <label for="Symbol" class="input-label">Symbol <span
+                                        class="text-danger">*</span></label>
+                                <div *ngIf="(currencyForm.get('Symbol')?.touched || currencyForm.get('Symbol')?.dirty) && currencyForm.get('Symbol')?.invalid"
+                                    class="error-message">
+                                    <span *ngIf="currencyForm.get('Symbol')?.hasError('required')">
+                                        Required</span>
+                                    <span *ngIf="currencyForm.get('Symbol')?.hasError('maxlength')">Max 5 chars
+                                    </span>
+                                </div>
+                            </div>
+                        </aside>
+
 
 
                         <!-- Sub Unit In -->
@@ -255,7 +305,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="SubUnitIn" formControlName="SubUnitIn"
-                                    class="custom-input-field sm" placeholder="" pattern="[1-9][0-9]{0,2}"
+                                    class="custom-input-field sm" placeholder="" pattern="[1-9][0-9]{0,2}" [textWithNumbers]="30"
                                     [class.is-invalid]="currencyForm.get('SubUnitIn')?.invalid && (currencyForm.get('SubUnitIn')?.touched || currencyForm.get('SubUnitIn')?.dirty)" />
                                 <label for="SubUnitIn" class="input-label">Sub Unit In</label>
 
@@ -286,22 +336,6 @@
                             </div>
                         </div> -->
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="Symbol" formControlName="Symbol" placeholder=""
-                                    class="custom-input-field sm"
-                                    [class.is-invalid]="currencyForm.get('Symbol')?.invalid && (currencyForm.get('Symbol')?.touched || currencyForm.get('Symbol')?.dirty)" />
-                                <label for="Symbol" class="input-label">Symbol <span
-                                        class="text-danger">*</span></label>
-                                <div *ngIf="(currencyForm.get('Symbol')?.touched || currencyForm.get('Symbol')?.dirty) && currencyForm.get('Symbol')?.invalid"
-                                    class="error-message">
-                                    <span *ngIf="currencyForm.get('Symbol')?.hasError('required')">
-                                        Required</span>
-                                    <span *ngIf="currencyForm.get('Symbol')?.hasError('maxlength')">Max 5 chars
-                                        </span>
-                                </div>
-                            </div>
-                        </aside>
 
                         <!-- Round Off -->
                         <!-- <div class="col-md-4">
@@ -318,7 +352,7 @@
                         </div> -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="RoundOf" formControlName="RoundOf" placeholder=""
+                                <input type="text" id="RoundOf" formControlName="RoundOf" placeholder=""[textWithNumbers]="100"
                                     class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('RoundOf')?.invalid && (currencyForm.get('RoundOf')?.touched || currencyForm.get('RoundOf')?.dirty)" />
                                 <label for="RoundOf" class="input-label">Round Off</label>
@@ -358,7 +392,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="number" id="amountDecimal" formControlName="amountDecimal" placeholder=""
+                                <input type="text" id="amountDecimal" formControlName="amountDecimal" placeholder=""[textWithNumbers]="50"
                                     class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('amountDecimal')?.invalid && (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)" />
                                 <label for="amountDecimal" class="input-label">
@@ -373,7 +407,7 @@
                                         Min value is 0
                                     </span>
                                     <span *ngIf="currencyForm.get('amountDecimal')?.hasError('max')">
-                                        Max value is 8
+                                        Max value is 50
                                     </span>
                                     <span *ngIf="currencyForm.get('amountDecimal')?.hasError('pattern')">
                                         Must be a whole number
@@ -409,7 +443,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="number" id="exchangeDecimal" formControlName="exchangeDecimal"
+                                <input type="text" id="exchangeDecimal" formControlName="exchangeDecimal" [textWithNumbers]="50"
                                     placeholder="" class="custom-input-field sm" [class.is-invalid]="
         currencyForm.get('exchangeDecimal')?.invalid &&
         (currencyForm.get('exchangeDecimal')?.touched || currencyForm.get('exchangeDecimal')?.dirty)
@@ -425,8 +459,8 @@
                                         *ngIf="currencyForm.get('exchangeDecimal')?.hasError('required')">Required</span>
                                     <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('min')">Min value is
                                         0</span>
-                                    <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('max')">Max value is
-                                        8</span>
+                                    <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('textWithNumbers')">Max value is
+                                        50</span>
                                     <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('pattern')">Must be a
                                         whole number</span>
                                 </div>
@@ -501,25 +535,22 @@
                             </div>
                         </aside> -->
                         <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!currencyForm.get('status')?.value">
-                            <ng-select 
-                            [items]="statusOptions"
-                            bindLabel="name" 
-                            bindValue="id"
-                            formControlName="status"
-                        
-                            [class.is-invalid]="currencyForm.get('status')?.invalid && currencyForm.get('status')?.touched"
-                            [disabled]="currencyForm.get('status')?.disabled">
-                            </ng-select>
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!currencyForm.get('status')?.value">
+                                <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
+                                    formControlName="status"
+                                    [class.is-invalid]="currencyForm.get('status')?.invalid && currencyForm.get('status')?.touched"
+                                    [disabled]="currencyForm.get('status')?.disabled">
+                                </ng-select>
 
-                            <label class="input-label">Status <span class="text-danger">*</span></label>
+                                <label class="input-label">Status <span class="text-danger">*</span></label>
 
-                            @if(currencyForm.get('status')?.touched && currencyForm.get('status')?.invalid){
-                            <div class="error-message">
-                                <span>Required</span>
+                                @if(currencyForm.get('status')?.touched && currencyForm.get('status')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
+                                }
                             </div>
-                            }
-                        </div>
                         </aside>
 
 
@@ -530,7 +561,7 @@
                 </form>
             </div>
         </div>
-         <!-- @if(isEditMode){
+        <!-- @if(isEditMode){
     <div class="col-12 mt-3">
     <div class="card">
         <div class="card-body">
@@ -568,46 +599,46 @@
     </div>
 </div>
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
 </ng-template>
