@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbTooltip, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'dofi-searchable-dropdown',
-  imports: [NgSelectModule, CommonModule, ReactiveFormsModule,NgbTooltip],
+  imports: [NgSelectModule, CommonModule, ReactiveFormsModule,NgbTooltipModule],
   standalone: true,
   templateUrl: './searchable-dropdown.component.html',
   styleUrls: ['./searchable-dropdown.component.scss'],
@@ -98,7 +98,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
 
   getColumnStyle(index: number): any {
     const width = this.columnWidths[index] || 50;
-    const finalWidth = index === 0 ? Math.max(width, 60) : width;
+    const finalWidth = index === 0 ? Math.max(width, 75) : width;
     return { width: `${finalWidth}px`, minWidth: `${finalWidth}px` };
   }
 
