@@ -187,7 +187,7 @@ changeTime(time: string) {
 
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
-    this.leadService.getPrecustomerById(leadId).subscribe(
+    this.leadService.getLeadById(leadId).subscribe(
       (leadData) => {
         // console.log(leadData, 'leadData')
         this.lead = leadData

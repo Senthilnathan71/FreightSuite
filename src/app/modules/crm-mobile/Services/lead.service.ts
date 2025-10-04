@@ -23,14 +23,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   private voiceEnquiryData: any = {};
 
 
-  getAllLeads(CompanyMasterSid:number,BranchMasterSid:number) {
-    return this.http.post<Lead>('ff-precustomer',{CompanyMasterSid,BranchMasterSid}).pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
+ 
 
   getAllPendingMeetings(CompanyMasterSid:number,BranchMasterSid:number) {
     return this.http.post('ff-pre-customer-meeting/pendingMeetings',{CompanyMasterSid,BranchMasterSid}).pipe(
@@ -68,22 +61,8 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  createPreCustomer(payLoad: any) {
-    return this.http.put("ff-precustomer", payLoad).pipe(
-      map((res: any) => {
-        return res;
-      })
-    )
-  }
 
-  getPrecustomerById(id: number) {
-    return this.http.get<{ data: PreCustomer }>(`ff-precustomer/${id}`).pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+
 
   getPreCustomerMeeting(id: number) {
     return this.http.get(`ff-pre-customer-meeting/${id}`).pipe(
@@ -141,7 +120,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
   getAllCustomers(CompanyMasterSid:number) {
-    return this.http.post('ff-precustomer/customer',{CompanyMasterSid}).pipe(
+    return this.http.post('ff-lead/customer',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         console.log(resp)
         let response = resp.data;

@@ -133,7 +133,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
       console.log(response.data.items,'response.data.items')
        this.allItems = (response.data.items || []).map((item: any) => ({
       ...item,
-
+      meetingStatus: this.splitOnCapitals(item.leadStatus) || '-',
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -201,7 +201,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
       {
-        key: 'POD',
+        key: 'meetingStatus',
         label: 'Schedule',
         sortable: true,
         filterable: true,
@@ -333,4 +333,10 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.searchPerformed = false;
     this.searchLeads();
   }
+
+    splitOnCapitals(str) {
+  return str
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/([a-z])([A-Z])/g, '$1 $2');
+}
 }
