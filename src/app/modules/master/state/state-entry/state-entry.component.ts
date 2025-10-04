@@ -309,14 +309,12 @@ openAuditLogs(modal: TemplateRef<any>) {
     operation.subscribe({
       next: (resp: any) => {
         this.btnDisable = false;
-        const message = resp.message || 
-          (this.isEditMode ? 'State updated successfully!' : 'State created successfully!');
-        
+        const message = resp.message;        
         if (resp.status) {
-          this.appSettingService.showSuccess(resp.message);
+          this.appSettingService.showSuccess(message);
           this.router.navigate(['/master/state/list']);
         } else {
-          this.appSettingService.showError(resp.message );
+          this.appSettingService.showError(message );
         }
       },
       error: (err) => {

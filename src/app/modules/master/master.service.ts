@@ -648,7 +648,7 @@ export class MasterService {
   editState(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`state/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -799,7 +799,7 @@ export class MasterService {
   updateCountryById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`country/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -854,7 +854,7 @@ export class MasterService {
   createCity(payload: City) {
     return this.http.post<{ data: any }>('city/add', payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -863,7 +863,7 @@ export class MasterService {
   updateCityById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`city/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -3013,7 +3013,7 @@ getFieldConfiguration() {
   editInco(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`inco/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
 

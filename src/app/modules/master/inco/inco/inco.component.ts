@@ -574,9 +574,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
               this.closeModal();
               this.router.navigate(['master/inco']);
               this.loadIncos();
-              this.appSettingService.showSuccess(resp.message);
             } else {
-              this.appSettingService.showError(resp.message);
+              this.appSettingService.showSuccess(resp.message);
             }
           },
           (error) => {
@@ -592,9 +591,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
               this.closeModal();
               this.router.navigate(['master/inco']);
               this.loadIncos();
-              this.appSettingService.showSuccess(resp.message);
             } else {
-              this.appSettingService.showError(resp.message);
+              this.appSettingService.showSuccess(resp.message);
             }
           },
           (error) => {
@@ -679,7 +677,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         this.masterService.softDeleteInco(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
+          this.appSettingService.showSuccess("Inco deleted successfully!");
           this.router.navigate(['master/inco']);
           this.loadIncos();
 
