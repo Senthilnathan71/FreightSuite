@@ -15,6 +15,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -28,7 +30,9 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     PreventMultiClickDirective,
     NgxSpinnerModule,
     NgbDropdownModule,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgSelectModule,
+    DateTimePickerComponent
   ],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
@@ -54,7 +58,17 @@ export class MeetingUpdateListComponent implements OnInit {
   TandCList: any;
   currentCompany: any;
   currentBranch: any;
-
+  meetingDurations = [
+  { label: '10 min', value: '10 min' },
+  { label: '20 min', value: '20 min' },
+  { label: '30 min', value: '30 min' },
+  { label: '40 min', value: '40 min' },
+  { label: '50 min', value: '50 min' },
+  { label: '1 hr', value: '1 hr' }
+];
+reasonList=[
+  {id:1,name:""}
+]
   constructor(
     private router: Router,
     private appService: AppService,
@@ -86,7 +100,10 @@ export class MeetingUpdateListComponent implements OnInit {
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
       meetingStatus: ['scheduled', Validators.required],
-      followUpNote: ['']
+      followUpNote: [''],
+      meetingDuration:[''],
+      reason:[''],
+       preCustomerMasterSid: [''] 
     });
 
     this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
@@ -234,14 +251,16 @@ export class MeetingUpdateListComponent implements OnInit {
           meetingStatus: meeting.meetingStatus || 'scheduled',
           followUp: followUp,
           followUpDate: followUp ? followUpDate : '',
-          followUpNote: followUp ? meeting.followUpNote || '' : ''
+          followUpNote: followUp ? meeting.followUpNote || '' : '',
+          meetingDuration: meeting.meetingDuration,
+           preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null,
         });
 
         // Disable fields that shouldn't be edited
-        this.meetingForm.get('customerName').disable();
-        this.meetingForm.get('meetingDate').disable();
-        this.meetingForm.get('meetingType').disable();
-        this.meetingForm.get('leadAssignTo').disable();
+        // this.meetingForm.get('customerName').disable();
+        // this.meetingForm.get('meetingDate').disable();
+        // this.meetingForm.get('meetingType').disable();
+        // this.meetingForm.get('leadAssignTo').disable();
 
         // Enable status field unless it's confirmed
         this.meetingForm.controls['meetingStatus'].enable();
@@ -284,8 +303,11 @@ export class MeetingUpdateListComponent implements OnInit {
       PreCustomerMeetingSid: this.selectedMeeting.id,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      ...this.meetingForm.getRawValue(),
-    };
+      PreCustomerMasterSid:
+    this.meetingForm.get('preCustomerMasterSid')?.value ||
+    this.selectedMeeting.preCustomerMaster?.PreCustomerMasterSid, // ✅ Corrected
+  ...this.meetingForm.getRawValue(),
+};
 
     // If followUp is false, remove followUpNote and followUpDate from the payload
     if (!this.meetingForm.get('followUp')?.value) {
