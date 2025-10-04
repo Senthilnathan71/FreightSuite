@@ -141,11 +141,13 @@ reasonList=[
       (resp: any) => {
         if (resp.status && resp.data.length) {
           // Filter meetings to only include specified statuses
+              console.log(resp.data, 'resp.data')
+
           this.meetings = resp.data
-            .filter((meeting: any) => {
-              const status = meeting.meetingStatus?.toLowerCase();
-              return status === 'Scheduled' || status === 'In Progress' || status === 'On Hold';
-            })
+            // .filter((meeting: any) => {
+            //   const status = meeting.meetingStatus?.toLowerCase();
+            //   return status === 'Scheduled' || status === 'In Progress' || status === 'On Hold';
+            // })
             .map((meeting: any) => {
               const salesPerson = this.salesPersons?.find(
                 (person: any) => person.UserMasterSid === meeting.leadAssignTo
@@ -159,7 +161,7 @@ reasonList=[
                 salesPerson: salesPerson?.userName || 'N/A',
                 leadAssignTo: meeting.leadAssignTo,
                 status: meeting.status === "A" ? "Active" : "InActive",
-                meetingStatus: meeting.meetingStatus?.toLowerCase() || '',
+                meetingStatus: meeting.meetingStatus || '',
                 leadStatus: LeadStatusLabels[meeting?.preCustomerMaster?.leadStatus as LeadStatus] || "-",
                 preCustomerMaster: meeting.preCustomerMaster,
                 userMaster: meeting.userMaster,
