@@ -389,6 +389,7 @@ export class OrganizationEntryComponent implements OnInit {
     if (!this.isEditMode) {
       this.selectedTab = 'Party';
     }
+     
 
     // ✅ Initial data loads
     this.getAllCountries();
@@ -405,6 +406,7 @@ export class OrganizationEntryComponent implements OnInit {
       this.CustomerMasterSid = +params.get('id');
       if (this.CustomerMasterSid) {
         this.isEditMode = true;
+        this.customerForm.get('status')?.enable();
         this.loadCustomerData(this.CustomerMasterSid);
     this.loadCustomerMilestones();
     this.getAllSpCustomerBranch();
@@ -1476,64 +1478,67 @@ export class OrganizationEntryComponent implements OnInit {
   }
 
   // Fetch customer data and patch the form
-  loadCustomerData(customerId: number) {
-    this.masterService.getCustomerById(customerId).subscribe(
-      (customerData: any) => {
-        this.customerData = customerData;
-        this.customerName = customerData.CustomerName;
-        this.status = customerData.status;
-        const formattedStatus = this.statusMap[customerData.status] || customerData.status;
-        let customerType = customerData.CustomerType;
+  
+loadCustomerData(customerId: number) {
+  this.masterService.getCustomerById(customerId).subscribe(
+    (customerData: any) => {
+      this.customerData = customerData;
+      this.customerName = customerData.CustomerName;
+      this.status = customerData.status;
+      
+      // Convert backend status ('A', 'S') to frontend display values
+      const formattedStatus = customerData.status === 'A' ? 'Active' : 'Suspended';
+      
+      let customerType = customerData.CustomerType;
 
-        if (typeof customerType === 'string') {
-          try {
-            customerType = JSON.parse(customerType);
-          } catch (e) {
-            console.error('Error parsing CustomerType:', e);
-            customerType = {};
-          }
+      if (typeof customerType === 'string') {
+        try {
+          customerType = JSON.parse(customerType);
+        } catch (e) {
+          console.error('Error parsing CustomerType:', e);
+          customerType = {};
         }
-
-        // Patch main customer form
-        this.customerForm.patchValue({
-          ...customerData,
-          CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
-          status: formattedStatus,
-          paymentType: customerData.CashCredit,
-          KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
-          PanAvailable: customerData.PanType || customerData.PanName ? true : false,
-          CustomerType: customerType,
-
-          AirlineNumber: customerData.AirlineNumber || '',
-          AirlineCode: customerData.AirlineCode || ''
-        });
-
-        // Auto-generate short code if missing
-        setTimeout(() => {
-          if (!customerData.CustomerShortCode) {
-            this.generateCustomerShortCode();
-          }
-        });
-
-        // Handle customer types
-        this.selectedStatus = this.modeOfCustomerType
-          .filter(type => {
-            const key = this.toCamelCase(type.name);
-            return customerType[key] === 'isTrue';
-          })
-          .map(type => type.name);
-
-        // Load all data from the single API response
-        this.loadAllCustomerDataFromResponse(customerData);
-
-        console.log('CustomerType loaded:', customerType);
-        console.log('Selected statuses:', this.selectedStatus);
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading customer data.');
       }
-    );
-  }
+
+      // Patch main customer form
+      this.customerForm.patchValue({
+        ...customerData,
+        CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
+        status: formattedStatus, // Use converted status
+        paymentType: customerData.CashCredit,
+        KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
+        PanAvailable: customerData.PanType || customerData.PanName ? true : false,
+        CustomerType: customerType,
+        AirlineNumber: customerData.AirlineNumber || '',
+        AirlineCode: customerData.AirlineCode || ''
+      });
+
+      // Auto-generate short code if missing
+      setTimeout(() => {
+        if (!customerData.CustomerShortCode) {
+          this.generateCustomerShortCode();
+        }
+      });
+
+      // Handle customer types
+      this.selectedStatus = this.modeOfCustomerType
+        .filter(type => {
+          const key = this.toCamelCase(type.name);
+          return customerType[key] === 'isTrue';
+        })
+        .map(type => type.name);
+
+      // Load all data from the single API response
+      this.loadAllCustomerDataFromResponse(customerData);
+
+      console.log('CustomerType loaded:', customerType);
+      console.log('Selected statuses:', this.selectedStatus);
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading customer data.');
+    }
+  );
+}
   private loadAllCustomerDataFromResponse(customerData: any): void {
     // 1. Load branches (with contacts, emails, logins)
     if (customerData.CustomerBranch) {
@@ -1542,6 +1547,7 @@ export class OrganizationEntryComponent implements OnInit {
 
     // 2. Load sales team
     if (customerData.CustomerSalesTeam) {
+      console.log(customerData.CustomerSalesTeam,'customerData.CustomerSalesTeam')
       this.loadSalesTeamFromResponse(customerData.CustomerSalesTeam);
     }
 
@@ -2283,81 +2289,81 @@ export class OrganizationEntryComponent implements OnInit {
   }
   // For UPDATE mode - send all data including sales teams and milestones
   private prepareUpdatePayload(): any {
-    const formValue = this.customerForm.value;
-    const currentUserEmail = this.userData?.userEmail;
-    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+  const formValue = this.customerForm.value;
+  const currentUserEmail = this.userData?.userEmail;
+  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
-    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
-    console.log(statusValue, 'statusValue')
-    return {
-      customer: {
-        CompanyMasterSid: activeCompanyId,
-        CustomerName: formValue.CustomerName?.trim(),
-        CustomerShortCode: formValue.CustomerShortCode?.trim(),
-        CustomerAliasName: formValue.CustomerAliasName,
-        CustomerAddress1: formValue.CustomerAddress1,
-        CustomerAddress2: formValue.CustomerAddress2,
-        CountryMasterSid: Number(formValue.CountryMasterSid),
-        CustomerType: formValue.CustomerType,
-        PanName: formValue.PanName,
-        PanType: formValue.PanType,
-        GroupName: formValue.GroupName,
-        Website: formValue.Website,
-        CashCredit: formValue.paymentType,
-        Network: formValue.Network,
-        Remarks: formValue.Remarks,
-        IsMSME: formValue.IsMSME ? 'A' : 'I',
-        RegistrationNo: formValue.RegistrationNo,
-        CompanyType: formValue.CompanyType,
-        status: statusValue,
-        createdBy: currentUserEmail,
-        updatedBy: currentUserEmail,
-        AirlineNumber: formValue.AirlineNumber,
-        AirlineCode: formValue.AirlineCode
-      },
-      customerBranches: this.prepareUpdateBranchesPayload(),
-
-    };
-  }
+  
+  const statusValue = formValue.status === 'Active' ? 'A' : 'S';
+  console.log(statusValue, 'statusValue')
+  return {
+    customer: {
+      CompanyMasterSid: activeCompanyId,
+      CustomerName: formValue.CustomerName?.trim(),
+      CustomerShortCode: formValue.CustomerShortCode?.trim(),
+      CustomerAliasName: formValue.CustomerAliasName,
+      CustomerAddress1: formValue.CustomerAddress1,
+      CustomerAddress2: formValue.CustomerAddress2,
+      CountryMasterSid:formValue.CountryMasterSid,
+      CustomerType: formValue.CustomerType,
+      PanName: formValue.PanName,
+      PanType: formValue.PanType,
+      GroupName: formValue.GroupName,
+      Website: formValue.Website,
+      CashCredit: formValue.paymentType,
+      Network: formValue.Network,
+      Remarks: formValue.Remarks,
+      IsMSME: formValue.IsMSME ? 'A' : 'I',
+      RegistrationNo: formValue.RegistrationNo,
+      CompanyType: formValue.CompanyType,
+      status: statusValue, 
+      createdBy: currentUserEmail,
+      updatedBy: currentUserEmail,
+      AirlineNumber: formValue.AirlineNumber,
+      AirlineCode: formValue.AirlineCode
+    },
+    customerBranches: this.prepareUpdateBranchesPayload(),
+  };
+}
 
   private prepareUpdateBranchesPayload(): any[] {
-    const branchesPayload = [];
+  const branchesPayload = [];
 
-    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-      const branchForm = this.branches.at(branchIndex);
-      const branchData = branchForm.value;
+  for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+    const branchForm = this.branches.at(branchIndex);
+    const branchData = branchForm.value;
 
-      const branchPayload: any = {
-        CustomerBranchSid: branchData.CustomerBranchSid,
-        BranchName: branchData.CustBranchName?.trim(),
-        StateMasterSid: branchData.CustBranchState,
-        CityMasterSid: branchData.CustBranchCity,
-        Branch_Type: branchData.CustBranchType,
-        Branch_Code: branchData.CustBranchCode,
-        Contact_Person: branchData.Contact_Person,
-        Zip_PostBox: String(branchData.CustBranchZipPostCode),
-        ContactNo: String(branchData.CustBranchPhone),
-        Email: branchData.CustBranchEmail,
-        Address: branchData.CustBranchAddress,
-        Registered: branchData.CustBranchRegistered,
-        CustomerGstType: branchData.CustBranchGSTtype,
-        GSTNo: branchData.CustBranchGSTIN,
-        status: branchData.status === 'Active' ? 'A' : 'S',
-        updatedBy: this.userData?.userEmail,
-        createdBy: this.userData?.userEmail,
+    const branchPayload: any = {
+      CustomerBranchSid: branchData.CustomerBranchSid,
+      BranchName: branchData.CustBranchName?.trim(),
+      StateMasterSid: branchData.CustBranchState,
+      CityMasterSid: branchData.CustBranchCity,
+      Branch_Type: branchData.CustBranchType,
+      Branch_Code: branchData.CustBranchCode,
+      Contact_Person: branchData.Contact_Person,
+      Zip_PostBox: String(branchData.CustBranchZipPostCode),
+      ContactNo: String(branchData.CustBranchPhone),
+      Email: branchData.CustBranchEmail,
+      Address: branchData.CustBranchAddress,
+      Registered: branchData.CustBranchRegistered,
+      CustomerGstType: branchData.CustBranchGSTtype,
+      GSTNo: branchData.CustBranchGSTIN,
+      status: branchData.status === 'Active' ? 'A' : 'S', 
+      updatedBy: this.userData?.userEmail,
+      createdBy: this.userData?.userEmail,
 
-        customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
-        customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
-        customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
-        customerSalesTeams: this.prepareUpdateSalesTeamsPayload(),
-        customerMilestones: this.prepareUpdateMilestonesPayload()
-      };
+      customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
+      customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
+      customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
+      customerSalesTeams: this.prepareUpdateSalesTeamsPayload(),
+      customerMilestones: this.prepareUpdateMilestonesPayload()
+    };
 
-      branchesPayload.push(branchPayload);
-    }
-
-    return branchesPayload;
+    branchesPayload.push(branchPayload);
   }
+
+  return branchesPayload;
+}
 
   // ✅ ADD THESE METHODS FOR UPDATE OPERATION
   private prepareUpdateContactsPayload(branchIndex: number): any[] {
@@ -2604,10 +2610,13 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
       KYCSpecified: false,
       RegistrationNo: { value: '', disabled: true },
       Remarks: '',
-      status: { value: 'Active', disabled: !this.isEditMode },
+      status: { value: 'Active', disabled: true },
       CustomerType: {},
       Network: ''
     });
+     if (!this.isEditMode) {
+    this.customerForm.get('status')?.disable();
+  }
 
     // Reset selected statuses and customer types
     this.selectedStatus = [];

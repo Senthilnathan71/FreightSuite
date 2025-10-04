@@ -281,18 +281,17 @@
           </aside>
 
 
-          <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="customerForm.get('status')?.getRawValue()">
-              <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect"
-                style="background-color: white;">
-                <ng-option value="Active">Active</ng-option>
-                <ng-option value="Suspended">Suspended</ng-option>
-              </ng-select>
-              <label class="input-label">Status <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
+         <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select"
+       [class.filled]="customerForm.get('status')?.getRawValue()">
+    <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect"
+              style="background-color: white;">
+      <ng-option value="Active">Active</ng-option>
+      <ng-option value="Suspended">Suspended</ng-option>
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+  </div>
+</aside>
           <div class="mx-0">
             <div class="row border mx-0 rounded">
               <div class="d-flex align-items-center gap-2 ps-md-0 mt-1">
@@ -1433,7 +1432,7 @@
               <!-- Branch -->
               <td class="px-1">
                 <ng-select [items]="spBranchList" bindLabel="BranchName" bindValue="CustomerBranchSid"
-                  formControlName="branchSid" placeholder="Select Branch">
+                  formControlName="branchSid" placeholder="Select Branch" appendTo="body">
                 </ng-select>
                 @if (item.get('branches')?.touched && item.get('branches')?.invalid) {
                 <div class="error-message">
