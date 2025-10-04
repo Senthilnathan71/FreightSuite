@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -61,7 +61,8 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
     CostEntryComponent,
     ArApComponent,
     BookingUploadComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbTooltip
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -2437,10 +2438,12 @@ openAuditLogs(modal: TemplateRef<any>) {
 
     // Open charge selection modal with custom extra-wide size
     this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
-      size: 'xl',
-      // windowClass: 'modal-xxl',
+      // size: 'xl',
+      // windowClass: 'test-class',
+      fullscreen: true,
       backdrop: 'static',
-      keyboard: false
+      keyboard: false,
+      scrollable: true
     });
   }
 

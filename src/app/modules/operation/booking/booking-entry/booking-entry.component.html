@@ -2515,7 +2515,6 @@
   <div class="modal-header">
     <h4 class="modal-title">Select Charges for {{ selectedVoucherType }}</h4>
     <button type="button" class="btn-close" aria-label="Close" (click)="cancelChargeSelection()">
-      <span aria-hidden="true">&times;</span>
     </button>
   </div>
 
@@ -2528,8 +2527,10 @@
         </h6>
       </div>
       <div class="card-body">
-        <div class="row g-3">
-          <!-- Billing Party -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="row">
+<!-- Billing Party -->
           <div class="col-md-6">
             <label class="form-label fw-bold">Billing Party</label>
             <div class="p-2 bg-light rounded">
@@ -2541,50 +2542,59 @@
           <div class="col-md-6">
             <label class="form-label fw-bold">Address</label>
             <div class="p-2 bg-light rounded">
-              <small>{{ billingPartyAddress || '-' }}</small>
+              <p class="mb-0 text-truncate" ngbTooltip="{{ billingPartyAddress || '-' }}">{{ billingPartyAddress || '-' }}</p>
             </div>
           </div>
-
-          <!-- Billing Currency -->
-          <div class="col-md-4">
-            <label class="form-label fw-bold">Billing Currency</label>
-            <ng-select
-              [(ngModel)]="invoiceHeaderCurrency"
-              [items]="currencyList"
-              bindLabel="currencyCode"
-              placeholder="Select Currency"
-              (change)="onHeaderCurrencyChange()"
-              [clearable]="false">
-              <ng-template ng-label-tmp let-item="item">
-                {{ item.currencyCode }} - {{ item.currencyName }}
-              </ng-template>
-              <ng-template ng-option-tmp let-item="item">
-                {{ item.currencyCode }} - {{ item.currencyName }}
-              </ng-template>
-            </ng-select>
+            </div>
           </div>
+          <div class="col-md-6">
 
-          <!-- Exchange Rate -->
-          <div class="col-md-4">
-            <label class="form-label fw-bold">Exchange Rate</label>
-            <input
-              type="number"
-              class="form-control"
-              [(ngModel)]="invoiceHeaderExchangeRate"
-              (ngModelChange)="onHeaderExchangeRateChange()"
-              step="0.0001"
-              min="0"
-              placeholder="Enter exchange rate">
-          </div>
-
-          <!-- Currency Display -->
-          <div class="col-md-4">
-            <label class="form-label fw-bold">Invoice Currency</label>
-            <div class="p-2 bg-info text-white rounded text-center">
-              <strong>{{ invoiceHeaderCurrency?.currencyCode || 'Not Selected' }}</strong>
+            <div class="row">
+              
+    
+              <!-- Billing Currency -->
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Billing Currency</label>
+                <ng-select
+                  [(ngModel)]="invoiceHeaderCurrency"
+                  [items]="currencyList"
+                  bindLabel="currencyCode"
+                  placeholder="Select Currency"
+                  (change)="onHeaderCurrencyChange()"
+                  [clearable]="false">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.currencyCode }} - {{ item.currencyName }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    {{ item.currencyCode }} - {{ item.currencyName }}
+                  </ng-template>
+                </ng-select>
+              </div>
+    
+              <!-- Exchange Rate -->
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Exchange Rate</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="invoiceHeaderExchangeRate"
+                  (ngModelChange)="onHeaderExchangeRateChange()"
+                  step="0.0001"
+                  min="0"
+                  placeholder="Enter exchange rate">
+              </div>
+    
+              <!-- Currency Display -->
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Invoice Currency</label>
+                <div class="p-2 bg-info text-white rounded text-center">
+                  <strong>{{ invoiceHeaderCurrency?.currencyCode || 'Not Selected' }}</strong>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
 
