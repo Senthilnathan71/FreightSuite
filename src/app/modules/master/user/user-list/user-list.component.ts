@@ -219,7 +219,7 @@ export class UserListComponent {
         this.masterServ.deleteFfUserById(UserMasterSid).subscribe(
           (resp: any) => {
             if (resp.status) {
-              this.appSettingServ.showSuccess("Deleted!");
+              this.appSettingServ.showSuccess("User deleted successfully!");
               this.loadUsers();
             } else {
               this.appSettingServ.showError('Error Deleting User');

@@ -90,7 +90,7 @@ export class AppSettingsService {
 
     showSuccess(
         message = '',
-        title = "Success!",
+        title = "",
         option = { closeButton: true }
     ): ActiveToast<any> {
         return this.toaster.success(message, title, option)

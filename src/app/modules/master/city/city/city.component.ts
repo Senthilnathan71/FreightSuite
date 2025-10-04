@@ -780,7 +780,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deleteCityById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
+          this.appSettingService.showSuccess("City deleted successfully!");
           this.router.navigate(['master/city/list'])
           this.loadCities();
           this.searchCity();
