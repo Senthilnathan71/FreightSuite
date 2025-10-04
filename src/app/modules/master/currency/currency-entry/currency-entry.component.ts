@@ -13,7 +13,11 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { forkJoin } from 'rxjs';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-currency-entry',
@@ -24,7 +28,10 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     FeatherModule,
     DatePipe,
     NgSelectModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown,
+    OnlyTextDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']
@@ -39,6 +46,7 @@ export class CurrencyEntryComponent implements OnInit {
   userData:any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  countryList: any[] = [];
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
@@ -47,6 +55,11 @@ export class CurrencyEntryComponent implements OnInit {
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  currencylookupCofig ={
+    displayFields : ['countryCode', 'countryName'],
+    displayLabels : ['Code', 'Name'],
+    labelFields :['countryCode', 'countryName'],
+  }
 
 
   constructor(
@@ -82,6 +95,7 @@ export class CurrencyEntryComponent implements OnInit {
 			this.userData = userProfile;
       this.checkPermissions();
 		}
+    this.loadlookup();
   }
 
    checkPermissions() {
@@ -106,6 +120,7 @@ export class CurrencyEntryComponent implements OnInit {
 }
   initForm() {
     this.currencyForm = this.fb.group({
+      CountryMasterSid:['',[Validators.required]],
       currencyName: ['', [
         Validators.required, 
         Validators.maxLength(100),
@@ -116,6 +131,7 @@ export class CurrencyEntryComponent implements OnInit {
         Validators.maxLength(3),
         Validators.pattern(/^[A-Z]{3}$/)
       ]],
+
       CurrencyUnit: ['', [
         Validators.required, 
         Validators.maxLength(50)
@@ -124,7 +140,7 @@ export class CurrencyEntryComponent implements OnInit {
         Validators.maxLength(50)
       ]],
       SubUnitIn: ['', [
-      Validators.pattern(/^[1-9]\d{0,2}$/), 
+     
       Validators.maxLength(3) 
     ]],
       ShortCode: ['', [
@@ -188,7 +204,14 @@ export class CurrencyEntryComponent implements OnInit {
       }
     });
   }
-
+loadlookup(){
+  forkJoin({
+    countries: this.masterService.getAllCountry(),
+  }).subscribe(({countries})=>{
+    this.countryList =countries.data;
+  
+  });
+}
   getCurrencyById(id: number) {
     this.loading = true;
     this.masterService.getCurrencyById(id).subscribe({
@@ -198,6 +221,7 @@ export class CurrencyEntryComponent implements OnInit {
         }
         this.currencyData = currency;
         this.currencyForm.patchValue({
+          CountryMasterSid: currency.CountryMasterSid,
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
           CurrencyUnit: currency.CurrencyUnit, 
@@ -296,6 +320,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
     const payload = {
+      CountryMasterSid: this.currencyForm.value.CountryMasterSid,
       currencyName: this.currencyForm.value.currencyName,
       currencyCode: this.currencyForm.value.currencyCode,
       CurrencyUnit: this.currencyForm.value.CurrencyUnit,
@@ -348,6 +373,7 @@ else {
       this.getCurrencyById(this.currencyID);
     } else {
       this.currencyForm.reset({
+        CountryMasterSid: '',
         currencyName: '',
         currencyCode: '',
         CurrencyUnit: '',

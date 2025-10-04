@@ -49,7 +49,7 @@ export class ChargeEntryComponent implements OnInit {
   { name: "TDS Details", icon: "fas fa-percent" }
 ];
 unitQtyOptions = [
-  { value: '20ft (FCL)', name: '20ft ])' },
+  { value: '20ft (FCL)', name: '20ft ' },
   { value: '40ft (FCL)', name: '40ft ' },
   { value: 'CBM (LCL)', name: 'CBM ' },
   { value: 'BL (Common)', name: 'BL ' },
@@ -171,9 +171,9 @@ selectedTab = this.tab[0].name;
   // ensure Status casing consistent: prefer 'Status' if present, otherwise fallback to 'status'
   const statusVal = tdsData?.Status ?? tdsData?.status ?? 'A';
     return this.fb.group({
-      TDSSet: [tdsData?.TDSSet || '',Validators.required ],
+      TDSSet: [tdsData?.TDSSet || '' ],
       EffectiveFrom: [tdsData?.EffectiveFrom ? new Date(tdsData.EffectiveFrom) : '', ],
-      Status: [tdsData?.status || 'A',Validators.required],
+      Status: [tdsData?.status || 'A'],
       ChargeTdsSid: [tdsData?.ChargeTdsSid || null]
     });
   }
@@ -469,9 +469,6 @@ selectedTab = this.tab[0].name;
       
       // Must have at least one GST record
       if (this.chargeTaxMasters.controls.length === 0) return false;
-      
-      // Must have at least one TDS record if GST exists
-      if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) return false;
       
       return true;
   }
