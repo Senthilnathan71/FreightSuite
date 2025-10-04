@@ -32,8 +32,8 @@
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
             [disabled]="btnDisable || customerForm.invalid">
-            <i class="fas fa-save me-1"></i>
-            {{ isEditMode ? 'Edit' : 'Save' }}
+            <i class="fas me-1" [class.fa-save]="!btnDisable" [class.fa-spinner]="btnDisable" [class.fa-spin]="btnDisable"></i>
+            {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
           </button>
           <div ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -1017,187 +1017,209 @@
 </ng-template>
 <!-- Elogin -->
 <ng-template #eLoginList>
-  <div class="row compact-form">
-    <div class="col-12">
-      <!-- Add Login Button -->
-      <div class="d-flex justify-content-end align-items-center mb-1">
-        <button type="button" class="btn btn-sm btn-info dofi-max-w-120">
-          <i class="fas fa-plus me-1"></i> Add Login
-        </button>
-      </div>
+  <form [formGroup]="customerForm" class="compact-form">
+    <div class="row">
+      <div class="col-12">
+        <!-- Add Login Button -->
+        <div class="d-flex justify-content-end align-items-center mb-1">
+          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerLogin()" [disabled]="!isEditMode">
+            <i class="fas fa-plus me-1"></i> Add Login
+          </button>
+        </div>
 
-      <!-- Table -->
-      <div class="table-responsive table-borderless" style="max-height: 250px; overflow-y: auto;">
-        <table class="table table-hover align-middle no-wrap table-sm mb-1 table-hover">
-          <thead>
-            <tr class="bg-info">
-              <th class="bg-transparent text-light" width="3%"></th>
-              <th class="bg-transparent text-light">Branch Name</th>
-              <th class="bg-transparent text-light">Login Name</th>
-              <th class="bg-transparent text-light">Email</th>
-              <th class="bg-transparent text-light">Password</th>
-              <th class="bg-transparent text-light" width="8%">Status</th>
-            </tr>
-          </thead>
+        <!-- Table -->
+        <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;" *ngIf="customerLogins.length > 0">
+          <table class="table align-middle no-wrap table-sm mb-1 table-hover">
+            <thead>
+              <tr class="bg-info">
+                <th class="bg-transparent text-light" width="3%"></th>
+                <th class="bg-transparent text-light" width="20%">Branch Name</th>
+                <th class="bg-transparent text-light">Login Name</th>
+                <th class="bg-transparent text-light">Email</th>
+                <th class="bg-transparent text-light">Password</th>
+                <th class="bg-transparent text-light" width="8%">Status</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr class="py-0">
+            <tbody formArrayName="customerLogins">
+              <tr class="py-0" *ngFor="let login of customerLogins.controls; let i = index" [formGroupName]="i">
 
-              <!-- Delete -->
-              <td class="text-center px-1">
-                <button type="button" class="btn btn-sm">
-                  <i class="fas fa-trash text-danger"></i>
-                </button>
-              </td>
-
-              <!-- Branch Name -->
-              <td class="px-1">
-                <!-- <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value }}</strong> -->
-              </td>
-
-              <!-- Login Name -->
-              <td class="px-1">
-                <input type="text" class="custom-input-field sm" formControlName="LoginName">
-                <!-- @if (getLoginFormGroup(login).get('LoginName')?.touched &&
-                getLoginFormGroup(login).get('LoginName')?.invalid) {
-                <div class="error-message">Required</div>
-                } -->
-              </td>
-
-              <!-- Email -->
-              <td class="px-1">
-                <input type="text" class="custom-input-field sm" formControlName="LoginEmail">
-                <!-- @if (getLoginFormGroup(login).get('LoginEmail')?.touched &&
-                getLoginFormGroup(login).get('LoginEmail')?.invalid) {
-                <div class="error-message">Required</div>
-                } -->
-              </td>
-
-              <!-- Password -->
-              <td class="px-1">
-                <div class="d-flex align-items-center">
-                  <input type="password" class="custom-input-field sm" formControlName="LoginPassword">
-                  <button class="btn  btn-sm" type="button">
-                    <i class="fas fa-eye"></i>
+                <!-- Delete -->
+                <td class="text-center px-1">
+                  <button type="button" class="btn btn-sm" (click)="removeCustomerLogin(i)" [disabled]="!isEditMode">
+                    <i class="fas fa-trash text-danger"></i>
                   </button>
-                </div>
-                <!-- @if (getLoginFormGroup(login).get('LoginPassword')?.touched &&
-                getLoginFormGroup(login).get('LoginPassword')?.invalid) {
-                <div class="error-message">Required</div>
-                } -->
-              </td>
+                </td>
 
-              <!-- Status -->
-              <td class="px-1">
-                <ng-select formControlName="status" appendTo="body">
-                  <ng-option value="Active">Active</ng-option>
-                  <ng-option value="Suspended">Suspended</ng-option>
-                </ng-select>
-              </td>
+                <!-- Branch Name -->
+                <td class="px-1">
+                  <ng-select formControlName="CustomerBranchSid" appendTo="body"
+                    placeholder="Select Branch" [disabled]="!isEditMode">
+                    <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
+                      {{ branch.BranchName }}
+                    </ng-option>
+                  </ng-select>
+                  @if (login.get('CustomerBranchSid')?.touched && login.get('CustomerBranchSid')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
 
-            </tr>
-          </tbody>
-        </table>
+                <!-- Login Name -->
+                <td class="px-1">
+                  <input type="text" class="custom-input-field sm" formControlName="LoginName" placeholder="Login Name">
+                  @if (login.get('LoginName')?.touched && login.get('LoginName')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
+
+                <!-- Email -->
+                <td class="px-1">
+                  <input type="text" class="custom-input-field sm" formControlName="LoginEmail" placeholder="Login Email">
+                  @if (login.get('LoginEmail')?.touched && login.get('LoginEmail')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
+
+                <!-- Password -->
+                <td class="px-1">
+                  <div class="d-flex align-items-center">
+                    <input [type]="'password'" [id]="'loginPassword' + i"
+                      class="custom-input-field sm" formControlName="LoginPassword" placeholder="Password">
+                    <button class="btn btn-sm" type="button" (click)="togglePasswordVisibility(i)">
+                      <i [id]="'eyeIcon' + i" class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                  @if (login.get('LoginPassword')?.touched && login.get('LoginPassword')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
+
+                <!-- Status -->
+                <td class="px-1">
+                  <ng-select formControlName="status" appendTo="body">
+                    <ng-option value="Active">Active</ng-option>
+                    <ng-option value="Suspended">Suspended</ng-option>
+                  </ng-select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- No data message -->
+        <div class="text-center py-3" *ngIf="customerLogins.length === 0">
+          <p class="text-muted">No logins configured. Click "Add Login" to configure login credentials.</p>
+        </div>
       </div>
-
-
-
     </div>
-  </div>
+  </form>
 </ng-template>
 <!-- Email -->
 
 <ng-template #emailList>
-  <div class="row compact-form">
-    <div class="col-12">
-      <!-- Add Email Button -->
-      <div class="d-flex justify-content-end align-items-center mb-1">
-        <button type="button" class="btn btn-sm btn-info dofi-max-w-120">
-          <i class="fas fa-plus me-1"></i> Add Email
-        </button>
-      </div>
+  <form [formGroup]="customerForm" class="compact-form">
+    <div class="row">
+      <div class="col-12">
+        <!-- Add Email Button -->
+        <div class="d-flex justify-content-end align-items-center mb-1">
+          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerEmail()" [disabled]="!isEditMode">
+            <i class="fas fa-plus me-1"></i> Add Email
+          </button>
+        </div>
 
-      <!-- Table -->
-      <div class="table-responsive table-borderless" style="max-height: 250px; overflow-y: auto;">
-        <table class="table  align-middle no-wrap table-sm mb-1 table-hover">
-          <thead>
-            <tr class="bg-info">
-              <th class="bg-transparent text-light" width="3%"></th>
-              <th class="bg-transparent text-light">Branch Name</th>
-              <th class="bg-transparent text-light" width="10%">Menu</th>
-              <th class="bg-transparent text-light" width="20%">Department</th>
-              <th class="bg-transparent text-light">To Email</th>
-              <th class="bg-transparent text-light">CC Email</th>
-              <th class="bg-transparent text-light" width="8%">Status</th>
-            </tr>
-          </thead>
+        <!-- Table -->
+        <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;" *ngIf="customerEmails.length > 0">
+          <table class="table align-middle no-wrap table-sm mb-1 table-hover">
+            <thead>
+              <tr class="bg-info">
+                <th class="bg-transparent text-light" width="3%"></th>
+                <th class="bg-transparent text-light" width="20%">Branch Name</th>
+                <th class="bg-transparent text-light" width="10%">Menu</th>
+                <th class="bg-transparent text-light" width="20%">Department</th>
+                <th class="bg-transparent text-light">To Email</th>
+                <th class="bg-transparent text-light">CC Email</th>
+                <th class="bg-transparent text-light" width="8%">Status</th>
+              </tr>
+            </thead>
 
-          <tbody style="max-height: 300px; overflow-y: scroll;">
-            <tr class="py-0">
+            <tbody formArrayName="customerEmails">
+              <tr class="py-0" *ngFor="let email of customerEmails.controls; let i = index" [formGroupName]="i">
 
-              <!-- Delete -->
-              <td class="text-center px-1">
-                <button type="button" class="btn btn-sm">
-                  <i class="fas fa-trash text-danger"></i>
-                </button>
-              </td>
+                <!-- Delete -->
+                <td class="text-center px-1">
+                  <button type="button" class="btn btn-sm" (click)="removeCustomerEmail(i)" [disabled]="!isEditMode">
+                    <i class="fas fa-trash text-danger"></i>
+                  </button>
+                </td>
 
-              <!-- Branch Name -->
-              <td class="px-1">
-                <!-- <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value }}</strong> -->
-              </td>
+                <!-- Branch Name -->
+                <td class="px-1">
+                  <ng-select formControlName="CustomerBranchSid" appendTo="body"
+                    placeholder="Select Branch" [disabled]="!isEditMode">
+                    <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
+                      {{ branch.BranchName }}
+                    </ng-option>
+                  </ng-select>
+                  @if (email.get('CustomerBranchSid')?.touched && email.get('CustomerBranchSid')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
 
-              <!-- Menu -->
-              <td class="px-1">
-                <ng-select formControlName="MenuMasterSid" appendTo="body">
-                  <ng-option *ngFor="let menu of menuList" [value]="menu.MenuMasterSid">
-                    {{ menu.MenuName }}
-                  </ng-option>
-                </ng-select>
-                <!-- @if (getEmailFormGroup(email).get('MenuMasterSid')?.touched &&
-                          getEmailFormGroup(email).get('MenuMasterSid')?.invalid) {
-                          <div class="error-message">Required</div>
-                          } -->
-              </td>
+                <!-- Menu -->
+                <td class="px-1">
+                  <ng-select formControlName="MenuMasterSid" appendTo="body" placeholder="Select Menu">
+                    <ng-option *ngFor="let menu of menuList" [value]="menu.MenuMasterSid">
+                      {{ menu.MenuName }}
+                    </ng-option>
+                  </ng-select>
+                  @if (email.get('MenuMasterSid')?.touched && email.get('MenuMasterSid')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
 
-              <!-- Department -->
-              <td class="px-1">
-                <multi-select appenTo="body" [items]="departmentList" bindLabel="departmentName"
-                  bindValue="departmentName" placeholder="" multiple=true>
-                </multi-select>
-                <!-- @if (getEmailFormGroup(email).get('DepartmentMasterSid')?.touched &&
-                          getEmailFormGroup(email).get('DepartmentMasterSid')?.invalid) {
-                          <div class="error-message">Required</div>
-                          } -->
-              </td>
+                <!-- Department -->
+                <td class="px-1">
+                  <multi-select [control]="email.get('DepartmentMasterSid')" appendTo="body"
+                    [items]="departmentListForSelect" bindLabel="departmentName"
+                    bindValue="DepartmentMasterSid" placeholder="Select Departments" multiple=true>
+                  </multi-select>
+                  @if (email.get('DepartmentMasterSid')?.touched && email.get('DepartmentMasterSid')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
 
-              <!-- To Email -->
-              <td class="px-1">
-                <input type="text" class="custom-input-field sm" formControlName="Toemail">
-                <!-- @if (getEmailFormGroup(email).get('Toemail')?.touched &&
-                          getEmailFormGroup(email).get('Toemail')?.invalid) {
-                          <div class="error-message">Required</div>
-                          } -->
-              </td>
+                <!-- To Email -->
+                <td class="px-1">
+                  <input type="text" class="custom-input-field sm" formControlName="Toemail" placeholder="Email addresses">
+                  @if (email.get('Toemail')?.touched && email.get('Toemail')?.invalid) {
+                    <div class="error-message">Required</div>
+                  }
+                </td>
 
-              <!-- CC Email -->
-              <td class="px-1">
-                <input type="text" class="custom-input-field sm" formControlName="CCemail">
-              </td>
+                <!-- CC Email -->
+                <td class="px-1">
+                  <input type="text" class="custom-input-field sm" formControlName="CCemail" placeholder="CC emails (optional)">
+                </td>
 
-              <!-- Status -->
-              <td class="px-1">
-                <ng-select formControlName="status" appendTo="body">
-                  <ng-option value="Active">Active</ng-option>
-                  <ng-option value="Suspended">Suspended</ng-option>
-                </ng-select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <!-- Status -->
+                <td class="px-1">
+                  <ng-select formControlName="status" appendTo="body">
+                    <ng-option value="Active">Active</ng-option>
+                    <ng-option value="Suspended">Suspended</ng-option>
+                  </ng-select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- No data message -->
+        <div class="text-center py-3" *ngIf="customerEmails.length === 0">
+          <p class="text-muted">No emails configured. Click "Add Email" to configure email settings.</p>
+        </div>
       </div>
     </div>
-  </div>
+  </form>
 </ng-template>
 
 <!-- MILESTONE -->
@@ -1221,6 +1243,7 @@
           <thead>
             <tr class="bg-info">
               <th class="bg-transparent text-light " scope="col" width="3%"></th>
+              <th class="bg-transparent text-light" scope="col">Branch</th>
               <th class="bg-transparent text-light" scope="col">Milestone</th>
               <th class="bg-transparent text-light " scope="col">Update Type</th>
               <th class="bg-transparent text-light" scope="col">Contact info</th>
@@ -1232,7 +1255,7 @@
           <tbody formArrayName="cusMilestone">
             <!-- No Records -->
             <tr *ngIf="(slicedCusMilestoneList?.length || 0) === 0">
-              <td [attr.colspan]="6" class="text-center text-muted py-1">
+              <td [attr.colspan]="7" class="text-center text-muted py-1">
                 No records found
               </td>
             </tr>
@@ -1249,6 +1272,17 @@
                 </a>
               </td>
 
+              <!-- Branch -->
+              <td class="px-1">
+                <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder="Select Branch"
+                  [disabled]="!isEditMode">
+                  <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
+                    {{ branch.BranchName }}
+                  </ng-option>
+                </ng-select>
+              </td>
+
+              <!-- Milestone -->
               <td class="px-1">
                 <ng-select [items]="milestoneListArr" bindLabel="MilestoneName" bindValue="MilestoneMasterSid"
                   formControlName="MilestoneMasterSid" appendTo="body" placeholder="">
@@ -1400,7 +1434,7 @@
 
               <!-- Department -->
               <td class="px-1">
-                <multi-select [control]="item.get('DepartmentMasterSid')" [items]="spDepartmentList"
+                <multi-select [control]="item.get('DepartmentMasterSid')" [items]="departmentListForSelect"
                   bindLabel="departmentName" bindValue="DepartmentMasterSid" placeholder=""></multi-select>
                 @if (item.get('DepartmentMasterSid')?.touched && item.get('DepartmentMasterSid')?.invalid) {
                 <div class="error-message">
