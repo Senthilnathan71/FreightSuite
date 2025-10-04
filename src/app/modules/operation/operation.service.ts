@@ -109,6 +109,46 @@ export class OperationService {
     );
   }
 
+  createBookingRate(payload: any) {
+    return this.http.post<{ data: any }>('ff-booking/rates/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateBookingRate(BookingRatesSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`ff-booking/rates/update/${BookingRatesSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getBookingRatesByBookingId(BookingHeaderSid: number) {
+    return this.http.get<{ data: any[] }>(`ff-booking/rates/${BookingHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getBookingRatesWithDetails(BookingHeaderSid: number) {
+    return this.http.get<{ data: any[] }>(`ff-booking/rates-with-details/${BookingHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  generateVoucherFromBooking(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-booking', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   getBookingByBookingNumber(BookingNumber: string) {
     return this.http.get<{ data: any }>(`house-job/shiping_Ins/fetch/${BookingNumber}`).pipe(
       map((resp) => {
@@ -230,15 +270,6 @@ getShipmentMilestones(payload: any) {
     return this.http.post<{ data: any }>(`ff-booking/rate-lookup`,payload).pipe(
       map((resp) => {
         return resp.data;
-      })
-    );
-  }
-
-  // Get booking rates with detailed customer information for invoice generation
-  getBookingRatesWithDetails(bookingHeaderSid: number) {
-    return this.http.get<{ data: any[] }>(`ff-booking/rates-with-details/${bookingHeaderSid}`).pipe(
-      map((resp) => {
-        return resp;
       })
     );
   }

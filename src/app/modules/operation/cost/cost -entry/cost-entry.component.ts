@@ -293,6 +293,12 @@ createRateFormGroup(data?: any): FormGroup {
   console.log(data,'createRateFormGroup')
     console.log(this.docTypeList,'this.docTypeList',this.vouchers,'vouchers')
 
+  // Extract voucher display values from enriched data
+  const costVoucherNumber = data?.CostVoucherHeader?.VoucherNumber || '';
+  const revenueVoucherNumber = data?.RevenueVoucherHeader?.VoucherNumber || '';
+  const costDocTypeName = data?.CostVoucherType?.DocumentTypeName || '';
+  const revenueDocTypeName = data?.RevenueVoucherType?.DocumentTypeName || '';
+
   const form = this.fb.group({
     BookingRatesSid: [data?.BookingRatesSid ?? null],
     BookingHeaderSid: [data?.BookingHeaderSid ?? null],
@@ -303,7 +309,7 @@ createRateFormGroup(data?: any): FormGroup {
     CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
 
     TransactionSid: [data?.TransactionSid ?? null],
-    
+
     SerialNumber: [data?.SerialNumber ?? ''],
     ChargeMasterSid: [data?.ChargeMasterSid ?? null],
     ChargeDescription: [data?.ChargeDescription ?? null],
@@ -315,31 +321,37 @@ createRateFormGroup(data?: any): FormGroup {
     CostChargeUomSid:[data?.CostChargeUomSid ?? ''],
     CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
     CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate).toFixed(2) : ''],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
     CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(2) : ''],
-    // CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
     CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(2) : ''],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
+    CostVoucherHeader: [data?.CostVoucherHeader || null],  // Store voucher header object for display
+    CostVoucherType: [data?.CostVoucherType || null],  // Store voucher type object for display
     CostNumberOfUnit: [data?.CostNumberOfUnit ?? null],
-    // CostDrCr: [data?.CostDrCr ?? null],
-    // RevenueDrCr: [data?.RevenueDrCr ?? null],
     RevenueNumberOfUnit:[data?.RevenueNumberOfUnit ?? ''],
     RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
     RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
     RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid ?? null],
     RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(2) : ''],
-    // RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
+    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
     RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
     RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(2) : ''],
     RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
     RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
+    RevenueVoucherHeader: [data?.RevenueVoucherHeader || null],  // Store voucher header object for display
+    RevenueVoucherType: [data?.RevenueVoucherType || null],  // Store voucher type object for display
 
     CustomerMasterSid: [data?.CustomerMasterSid ?? null],
     AgentSid: [data?.AgentMasterSid ?? null],
     CustomerBranchSid: [data?.CustomerBranchSid ?? null],
-    
+
     Status: [data?.Status ?? ''],
-    Remarks: [data?.Remarks ?? '']
+    Remarks: [data?.Remarks ?? ''],
+
+    // Store actual IDs separately for validation
+    _costVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
+    _revenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null]
   });
   return form
 
@@ -349,6 +361,23 @@ createRateFormGroup(data?: any): FormGroup {
   addRateRow(data?:any){
     const formGroup = this.createRateFormGroup(data);
     this.rateFormArray.push(formGroup);
+
+    // Auto-populate ONLY Revenue Billing Party from booking customer (CustomerMasterSid & CustomerBranchSid)
+    // Cost Billing Party (AgentSid & AgentBranchSid) should remain empty for manual selection
+    // Use setTimeout to ensure ng-select dropdowns are fully initialized before setting values
+    if (!data && this.parentFormValue?.CustomerMasterSid) {
+      setTimeout(() => {
+        const index = this.rateFormArray.length - 1;
+        const control = this.rateFormArray.at(index);
+        if (control) {
+          control.patchValue({
+            CustomerMasterSid: this.parentFormValue.CustomerMasterSid,
+            CustomerBranchSid: this.parentFormValue.CustomerBranchSid
+            // AgentSid is intentionally NOT set - user must select manually for cost billing party
+          });
+        }
+      }, 100);
+    }
   }
 
 
@@ -403,8 +432,16 @@ createRateFormGroup(data?: any): FormGroup {
     const end = start + this.pageSize1;
   }
 
-  deleteRate(index: number,BookingRatesSid?: number) {
-    let realIndex;
+  deleteRate(index: number, BookingRatesSid?: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+
+    // Check if voucher exists
+    // Check the hidden ID fields for voucher existence
+    if (formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('_revenueVoucherHeaderSid')?.value) {
+      this.appSettingService.showWarning('Cannot delete rate. Voucher already generated for this rate.');
+      return;
+    }
+
     if (BookingRatesSid) {
       this.operationService.deleteBookingRate(BookingRatesSid).subscribe(
         (resp: any) => {
@@ -412,14 +449,411 @@ createRateFormGroup(data?: any): FormGroup {
             this.rateFormArray.removeAt(index);
             this.appSettingService.showSuccess("Rate Deleted Successfully");
           } else {
-            this.appSettingService.showError('Error deleting rate');
+            this.appSettingService.showError(resp.message || 'Error deleting rate');
           }
+        },
+        (error) => {
+          this.appSettingService.showError(error?.error?.message || 'Error deleting rate');
         }
       );
     } else {
       this.rateFormArray.removeAt(index);
       this.appSettingService.showSuccess("Rate Deleted Successfully");
     }
+  }
+
+  /**
+   * Check if rate can be edited (no voucher generated)
+   */
+  canEditRate(index: number): boolean {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    // Check the hidden ID fields instead of display fields
+    return !formGroup.get('_costVoucherHeaderSid')?.value && !formGroup.get('_revenueVoucherHeaderSid')?.value;
+  }
+
+  /**
+   * Save all rates at once
+   */
+  saveAllRates() {
+    const ratesToSave = this.rateFormArray.controls.filter((control, index) => {
+      const rateData = control.getRawValue();
+      // Check if rate has charge and can be edited (no voucher)
+      return rateData.ChargeMasterSid && this.canEditRate(index);
+    });
+
+    if (ratesToSave.length === 0) {
+      this.appSettingService.showWarning('No charges to save');
+      return;
+    }
+
+    let savedCount = 0;
+    let errorCount = 0;
+
+    // Save each rate
+    ratesToSave.forEach((control, idx) => {
+      const index = this.rateFormArray.controls.indexOf(control);
+      const rateData = control.getRawValue();
+
+      // Validate required fields before creating payload
+      const bookingHeaderSid = this.parentFormValue?.BookingHeaderSid || rateData.BookingHeaderSid;
+
+      if (!bookingHeaderSid) {
+        errorCount++;
+        console.error('BookingHeaderSid is missing for rate at index:', index);
+        if (savedCount + errorCount === ratesToSave.length) {
+          this.showSaveResults(savedCount, errorCount);
+        }
+        return;
+      }
+
+      const payload = {
+        BookingHeaderSid: bookingHeaderSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        CreatedBy: localStorage.getItem('userName') || 'system',
+        UpdatedBy: localStorage.getItem('userName') || 'system',
+
+        ChargeMasterSid: rateData.ChargeMasterSid,
+        ChargeDescription: rateData.ChargeDescription,
+        NoOfUnit: rateData.NumberOfUnit || null,
+
+        // Cost Section
+        CostPrepaidCollect: rateData.CostPrepaidCollect || 'Prepaid',
+        CostCurrencyMasterSid: rateData.CostCurrencyMasterSid,
+        CostExchangeRate: rateData.CostExchangeRate,
+        CostRate: rateData.CostRate,
+        CostNumberOfUnit: null, // This field has Decimal(4,3) precision - max 9.999
+        CostDrCr: 'D',
+        CostAmount: rateData.CostAmount || 0,
+        CostLocalAmount: rateData.CostLocalAmount || 0,
+        CostChargeUomSid: rateData.CostChargeUomSid,
+
+        // Revenue Section
+        RevenuePrepaidCollect: rateData.RevenuePrepaidCollect || 'Prepaid',
+        RevenueCurrencyMasterSid: rateData.RevenueCurrencyMasterSid,
+        RevenueExchangeRate: rateData.RevenueExchangeRate,
+        RevenueRate: rateData.RevenueRate,
+        RevenueNumberOfUnit: null, // This field has Decimal(4,3) precision - max 9.999
+        RevenueDrCr: 'C',
+        RevenueAmount: rateData.RevenueAmount || 0,
+        RevenueLocalAmount: rateData.RevenueLocalAmount || 0,
+        RevenueChargeUomSid: rateData.RevenueChargeUomSid,
+
+        // Billing Parties
+        CustomerMasterSid: rateData.CustomerMasterSid || this.parentFormValue?.CustomerMasterSid,
+        CustomerBranchSid: rateData.CustomerBranchSid || this.parentFormValue?.CustomerBranchSid,
+        AgentMasterSid: rateData.AgentSid,
+
+        Remarks: rateData.Remarks
+      };
+
+      if (rateData.BookingRatesSid) {
+        // Update existing rate
+        this.operationService.updateBookingRate(rateData.BookingRatesSid, payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              savedCount++;
+              control.patchValue({
+                ...resp.data,
+                NumberOfUnit: resp.data.NoOfUnit
+              });
+
+              if (savedCount + errorCount === ratesToSave.length) {
+                this.showSaveResults(savedCount, errorCount);
+              }
+            } else {
+              errorCount++;
+              if (savedCount + errorCount === ratesToSave.length) {
+                this.showSaveResults(savedCount, errorCount);
+              }
+            }
+          },
+          (error) => {
+            errorCount++;
+            if (savedCount + errorCount === ratesToSave.length) {
+              this.showSaveResults(savedCount, errorCount);
+            }
+          }
+        );
+      } else {
+        // Create new rate
+        this.operationService.createBookingRate(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              savedCount++;
+              control.patchValue({
+                ...resp.data,
+                NumberOfUnit: resp.data.NoOfUnit
+              });
+
+              if (savedCount + errorCount === ratesToSave.length) {
+                this.showSaveResults(savedCount, errorCount);
+              }
+            } else {
+              errorCount++;
+              if (savedCount + errorCount === ratesToSave.length) {
+                this.showSaveResults(savedCount, errorCount);
+              }
+            }
+          },
+          (error) => {
+            errorCount++;
+            if (savedCount + errorCount === ratesToSave.length) {
+              this.showSaveResults(savedCount, errorCount);
+            }
+          }
+        );
+      }
+    });
+  }
+
+  /**
+   * Show save results
+   */
+  showSaveResults(savedCount: number, errorCount: number) {
+    if (savedCount > 0 && errorCount === 0) {
+      this.appSettingService.showSuccess(`${savedCount} charge(s) saved successfully`);
+    } else if (savedCount > 0 && errorCount > 0) {
+      this.appSettingService.showWarning(`${savedCount} charge(s) saved, ${errorCount} failed`);
+    } else {
+      this.appSettingService.showError('Failed to save charges');
+    }
+  }
+
+  /**
+   * Save individual rate (create or update)
+   */
+  saveRate(index: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    const rateData = formGroup.getRawValue();
+
+    // Validate required fields
+    if (!rateData.ChargeMasterSid) {
+      this.appSettingService.showWarning('Please select a charge');
+      return;
+    }
+
+    const payload = {
+      BookingHeaderSid: this.parentFormValue?.BookingHeaderSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      CreatedBy: localStorage.getItem('userName') || 'system',
+      UpdatedBy: localStorage.getItem('userName') || 'system',
+
+      ChargeMasterSid: rateData.ChargeMasterSid,
+      ChargeDescription: rateData.ChargeDescription,
+      NoOfUnit: rateData.NumberOfUnit || null,
+
+      // Cost Section
+      CostPrepaidCollect: rateData.CostPrepaidCollect || 'Prepaid',
+      CostCurrencyMasterSid: rateData.CostCurrencyMasterSid,
+      CostExchangeRate: rateData.CostExchangeRate,
+      CostNumberOfUnit: rateData.CostNumberOfUnit,
+      CostDrCr: 'D',
+      CostAmount: rateData.CostAmount || 0,
+      CostLocalAmount: rateData.CostLocalAmount || 0,
+      CostChargeUomSid: rateData.CostChargeUomSid,
+
+      // Revenue Section
+      RevenuePrepaidCollect: rateData.RevenuePrepaidCollect || 'Prepaid',
+      RevenueCurrencyMasterSid: rateData.RevenueCurrencyMasterSid,
+      RevenueExchangeRate: rateData.RevenueExchangeRate,
+      RevenueNumberOfUnit: rateData.RevenueNumberOfUnit,
+      RevenueDrCr: 'C',
+      RevenueAmount: rateData.RevenueAmount || 0,
+      RevenueLocalAmount: rateData.RevenueLocalAmount || 0,
+      RevenueChargeUomSid: rateData.RevenueChargeUomSid,
+
+      // Billing Parties
+      CustomerMasterSid: rateData.CustomerMasterSid || this.parentFormValue?.CustomerMasterSid,
+      CustomerBranchSid: rateData.CustomerBranchSid || this.parentFormValue?.CustomerBranchSid,
+      AgentMasterSid: rateData.AgentSid,
+
+      Remarks: rateData.Remarks
+    };
+
+    if (rateData.BookingRatesSid) {
+      // Update existing rate
+      this.operationService.updateBookingRate(rateData.BookingRatesSid, payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Rate updated successfully');
+            // Update form with returned data
+            formGroup.patchValue({
+              ...resp.data,
+              NumberOfUnit: resp.data.NoOfUnit
+            });
+          } else {
+            this.appSettingService.showError(resp.message || 'Error updating rate');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError(error?.error?.message || 'Error updating rate');
+        }
+      );
+    } else {
+      // Create new rate
+      this.operationService.createBookingRate(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Rate created successfully');
+            // Update form with returned data including the new ID
+            formGroup.patchValue({
+              ...resp.data,
+              NumberOfUnit: resp.data.NoOfUnit
+            });
+          } else {
+            this.appSettingService.showError(resp.message || 'Error creating rate');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError(error?.error?.message || 'Error creating rate');
+        }
+      );
+    }
+  }
+
+  /**
+   * Handle charge change for a specific row
+   */
+  onChargeChangeForRow(charge: any, index: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    if (!charge) {
+      formGroup.patchValue({
+        ChargeMasterSid: null,
+        ChargeDescription: ''
+      });
+      return;
+    }
+
+    formGroup.patchValue({
+      ChargeMasterSid: charge.ChargeMasterSid,
+      ChargeDescription: charge.chargeName
+    });
+  }
+
+  /**
+   * Calculate cost amount when per unit or number of units changes
+   */
+  calculateCostAmount(index: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    // Use NumberOfUnit (main field) if CostNumberOfUnit is not set
+    const numberOfUnits = Number(formGroup.get('CostNumberOfUnit')?.value || formGroup.get('NumberOfUnit')?.value || 0);
+    const perUnit = Number(formGroup.get('CostRate')?.value || 0);
+
+    const amount = numberOfUnits * perUnit;
+    formGroup.patchValue({
+      CostAmount: amount.toFixed(2)
+    }, { emitEvent: false });
+
+    this.calculateCostLocalAmount(index);
+  }
+
+  /**
+   * Calculate cost local amount when amount or exchange rate changes
+   */
+  calculateCostLocalAmount(index: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    const amount = Number(formGroup.get('CostAmount')?.value || 0);
+    const exchangeRate = Number(formGroup.get('CostExchangeRate')?.value || 1);
+
+    const localAmount = amount * exchangeRate;
+    formGroup.patchValue({
+      CostLocalAmount: localAmount.toFixed(2)
+    }, { emitEvent: false });
+  }
+
+  /**
+   * Calculate revenue amount when per unit or number of units changes
+   */
+  calculateRevenueAmount(index: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    // Use NumberOfUnit (main field) if RevenueNumberOfUnit is not set
+    const numberOfUnits = Number(formGroup.get('RevenueNumberOfUnit')?.value || formGroup.get('NumberOfUnit')?.value || 0);
+    const perUnit = Number(formGroup.get('RevenueRate')?.value || 0);
+
+    const amount = numberOfUnits * perUnit;
+    formGroup.patchValue({
+      RevenueAmount: amount.toFixed(2)
+    }, { emitEvent: false });
+
+    this.calculateRevenueLocalAmount(index);
+  }
+
+  /**
+   * Calculate revenue local amount when amount or exchange rate changes
+   */
+  calculateRevenueLocalAmount(index: number) {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    const amount = Number(formGroup.get('RevenueAmount')?.value || 0);
+    const exchangeRate = Number(formGroup.get('RevenueExchangeRate')?.value || 1);
+
+    const localAmount = amount * exchangeRate;
+    formGroup.patchValue({
+      RevenueLocalAmount: localAmount.toFixed(2)
+    }, { emitEvent: false });
+  }
+
+  /**
+   * Get exchange rate for cost currency
+   */
+  getCostExchangeRate(index: number, currencyMasterSid: number) {
+    if (!currencyMasterSid) return;
+
+    const toCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+    const fromCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === currencyMasterSid)?.currencyCode;
+    const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+
+    if (!fromCurrencyCode || !toCurrencyCode) return;
+
+    if (fromCurrencyCode === toCurrencyCode) {
+      const formGroup = this.rateFormArray.at(index) as FormGroup;
+      formGroup.patchValue({ CostExchangeRate: '1.00' });
+      this.calculateCostLocalAmount(index);
+      return;
+    }
+
+    const payload = { fromCurrencyCode, toCurrencyCode };
+    this.operationService.getExchangeRate(payload).subscribe(
+      (resp: any) => {
+        if (resp.status && resp.data) {
+          const formGroup = this.rateFormArray.at(index) as FormGroup;
+          formGroup.patchValue({ CostExchangeRate: Number(resp.data).toFixed(2) });
+          this.calculateCostLocalAmount(index);
+        }
+      }
+    );
+  }
+
+  /**
+   * Get exchange rate for revenue currency
+   */
+  getRevenueExchangeRate(index: number, currencyMasterSid: number) {
+    if (!currencyMasterSid) return;
+
+    const toCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+    const fromCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === currencyMasterSid)?.currencyCode;
+    const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+
+    if (!fromCurrencyCode || !toCurrencyCode) return;
+
+    if (fromCurrencyCode === toCurrencyCode) {
+      const formGroup = this.rateFormArray.at(index) as FormGroup;
+      formGroup.patchValue({ RevenueExchangeRate: '1.00' });
+      this.calculateRevenueLocalAmount(index);
+      return;
+    }
+
+    const payload = { fromCurrencyCode, toCurrencyCode };
+    this.operationService.getExchangeRate(payload).subscribe(
+      (resp: any) => {
+        if (resp.status && resp.data) {
+          const formGroup = this.rateFormArray.at(index) as FormGroup;
+          formGroup.patchValue({ RevenueExchangeRate: Number(resp.data).toFixed(2) });
+          this.calculateRevenueLocalAmount(index);
+        }
+      }
+    );
   }
 
 
