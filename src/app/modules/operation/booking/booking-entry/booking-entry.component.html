@@ -2520,6 +2520,74 @@
   </div>
 
   <div class="modal-body">
+    <!-- Invoice Header Section -->
+    <div class="card border-info mb-3">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 text-info">
+          <i class="fas fa-file-invoice me-2"></i>Invoice Header Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Billing Party -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Billing Party</label>
+            <div class="p-2 bg-light rounded">
+              <strong>{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</strong>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Address</label>
+            <div class="p-2 bg-light rounded">
+              <small>{{ billingPartyAddress || '-' }}</small>
+            </div>
+          </div>
+
+          <!-- Billing Currency -->
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Billing Currency</label>
+            <ng-select
+              [(ngModel)]="invoiceHeaderCurrency"
+              [items]="currencyList"
+              bindLabel="currencyCode"
+              placeholder="Select Currency"
+              (change)="onHeaderCurrencyChange()"
+              [clearable]="false">
+              <ng-template ng-label-tmp let-item="item">
+                {{ item.currencyCode }} - {{ item.currencyName }}
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                {{ item.currencyCode }} - {{ item.currencyName }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Exchange Rate -->
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Exchange Rate</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="invoiceHeaderExchangeRate"
+              (ngModelChange)="onHeaderExchangeRateChange()"
+              step="0.0001"
+              min="0"
+              placeholder="Enter exchange rate">
+          </div>
+
+          <!-- Currency Display -->
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Invoice Currency</label>
+            <div class="p-2 bg-info text-white rounded text-center">
+              <strong>{{ invoiceHeaderCurrency?.currencyCode || 'Not Selected' }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
       <p class="text-muted mb-0">Select charges to include in the invoice. Deselected charges will remain in booking rates.</p>
       <div class="btn-group btn-group-sm">
@@ -2549,6 +2617,7 @@
             <th class="text-end">Amount</th>
             <th class="text-end">Ex.Rate</th>
             <th class="text-end">Local Amount</th>
+            <th width="200">Tax Group</th>
             <th class="text-end">Tax %</th>
             <th class="text-end">Tax Amount</th>
           </tr>
@@ -2584,6 +2653,26 @@
             <td class="text-end">
               <strong>{{ (selectedVoucherType === 'Invoice' ? charge.RevenueLocalAmount : charge.CostLocalAmount) || 0 | number:'1.2-2' }}</strong>
             </td>
+            <td>
+              <ng-select
+                [items]="taxGroupList"
+                bindLabel="TaxName"
+                [ngModel]="getSelectedTaxGroup(charge)"
+                (ngModelChange)="onChargeTaxGroupChange(charge, $event)"
+                placeholder="Select Tax Group"
+                [clearable]="true"
+                appendTo="body">
+                <ng-template ng-label-tmp let-item="item">
+                  {{ item.TaxName }} ({{ item.TaxRate }}%)
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.TaxName }}</strong>
+                    <small class="d-block text-muted">{{ item.TaxCode }} - {{ item.TaxRate }}% {{ item.TaxType }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+            </td>
             <td class="text-end">
               <small class="text-muted">{{ getChargeTaxPercentage(charge) }}</small>
             </td>
@@ -2592,7 +2681,7 @@
             </td>
           </tr>
           <tr *ngIf="!availableCharges?.length">
-            <td colspan="11" class="text-center text-muted">No charges available</td>
+            <td colspan="12" class="text-center text-muted">No charges available</td>
           </tr>
         </tbody>
       </table>
@@ -2662,9 +2751,18 @@
               </div>
 
               <hr class="my-2">
-              <div class="d-flex justify-content-between">
-                <strong>Grand Total:</strong>
-                <strong class="text-primary fs-5">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
+              <div class="d-flex justify-content-between mb-2">
+                <strong>Grand Total (Local):</strong>
+                <strong class="text-primary">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
+              </div>
+
+              <!-- Invoice Currency Total -->
+              <div *ngIf="invoiceHeaderCurrency" class="border-top pt-2">
+                <div class="d-flex justify-content-between">
+                  <strong>Total ({{ invoiceHeaderCurrency.currencyCode }}):</strong>
+                  <strong class="text-success fs-5">{{ convertToHeaderCurrency(chargeSelectionTaxResult.grandTotal) | number:'1.2-2' }}</strong>
+                </div>
+                <small class="text-muted">&#64; {{ invoiceHeaderExchangeRate | number:'1.4-4' }}</small>
               </div>
             </div>
           </div>

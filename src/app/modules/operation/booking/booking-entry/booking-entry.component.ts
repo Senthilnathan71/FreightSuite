@@ -106,6 +106,14 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   chargeSelectionTaxResult: any = null;
   currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
 
+  // Invoice header properties
+  invoiceHeaderCurrency: any = null;
+  invoiceHeaderExchangeRate: number = 1;
+  billingPartyDetails: any = null;
+  billingPartyAddress: string = '';
+  taxGroupList: any[] = [];
+  chargeTaxGroupMap: Map<number, any> = new Map(); // Map of BookingRatesSid to selected tax group
+
   //Variable Declaration - Common 
   detailForm !: FormGroup;
   userData : any;
@@ -2410,8 +2418,19 @@ openAuditLogs(modal: TemplateRef<any>) {
       isSelected: true // Select all by default
     }));
 
+    console.log('Available charges set:', {
+      count: this.availableCharges.length,
+      charges: this.availableCharges
+    });
+
     // Select all charges by default
     this.selectedCharges = new Set(pendingCharges.map(c => c.BookingRatesSid));
+
+    // Initialize invoice header
+    this.initializeInvoiceHeader(pendingCharges);
+
+    // Load tax groups
+    this.loadTaxGroups();
 
     // Calculate initial tax
     this.calculateChargeSelectionTax();
@@ -2419,10 +2438,109 @@ openAuditLogs(modal: TemplateRef<any>) {
     // Open charge selection modal with custom extra-wide size
     this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
       size: 'xl',
-      windowClass: 'modal-xxl',
+      // windowClass: 'modal-xxl',
       backdrop: 'static',
       keyboard: false
     });
+  }
+
+  private initializeInvoiceHeader(charges: any[]) {
+    if (!charges || charges.length === 0) {
+      console.error('No charges provided to initialize invoice header');
+      return;
+    }
+
+    const firstCharge = charges[0];
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+
+    console.log('Initializing invoice header with:', {
+      firstCharge,
+      isRevenue,
+      currencyListLength: this.currencyList?.length
+    });
+
+    // Set billing party details
+    if (isRevenue) {
+      this.billingPartyDetails = firstCharge?.customerMasterBP || {};
+      const branch = firstCharge?.customerBranch || {};
+      this.billingPartyAddress = `${branch?.BranchAddress || ''}, ${branch?.CityName || ''}, ${branch?.StateName || ''} ${branch?.ZipCode || ''}`.trim();
+    } else {
+      this.billingPartyDetails = firstCharge?.AgentMaster || {};
+      this.billingPartyAddress = `${this.billingPartyDetails?.Address1 || ''}`.trim();
+    }
+
+    // Set default currency from booking or company
+    const defaultCurrency = isRevenue
+      ? firstCharge?.RevenueCurrencyMaster
+      : firstCharge?.CostCurrencyMaster;
+
+    this.invoiceHeaderCurrency = defaultCurrency || this.currencyList?.find(c => c?.currencyCode === 'INR') || null;
+
+    // Set default exchange rate
+    this.invoiceHeaderExchangeRate = isRevenue
+      ? (firstCharge?.RevenueExchangeRate || 1)
+      : (firstCharge?.CostExchangeRate || 1);
+
+    console.log('Invoice header initialized:', {
+      billingParty: this.billingPartyDetails,
+      address: this.billingPartyAddress,
+      currency: this.invoiceHeaderCurrency,
+      exchangeRate: this.invoiceHeaderExchangeRate
+    });
+  }
+
+  private loadTaxGroups() {
+    const params = {
+      search: '',
+      page: 1,
+      pageSize: 1000,
+      activeCompanyId: this.currentCompany?.CompanyMasterSid
+    };
+
+    this.masterService.searchTaxGroup(params).subscribe({
+      next: (response: any) => {
+        if (response.status) {
+          this.taxGroupList = response.data.items || [];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading tax groups:', error);
+      }
+    });
+  }
+
+  onHeaderCurrencyChange() {
+    // Recalculate exchange rate if needed
+    if (this.invoiceHeaderCurrency) {
+      // You might want to fetch exchange rate from API here
+      // For now, keep the existing exchange rate
+      this.calculateChargeSelectionTax();
+    }
+  }
+
+  onHeaderExchangeRateChange() {
+    this.calculateChargeSelectionTax();
+  }
+
+  onChargeTaxGroupChange(charge: any, taxGroup: any) {
+    if (taxGroup) {
+      this.chargeTaxGroupMap.set(charge.BookingRatesSid, taxGroup);
+    } else {
+      this.chargeTaxGroupMap.delete(charge.BookingRatesSid);
+    }
+    this.calculateChargeSelectionTax();
+  }
+
+  getSelectedTaxGroup(charge: any): any {
+    return this.chargeTaxGroupMap.get(charge.BookingRatesSid);
+  }
+
+  convertToHeaderCurrency(amount: number): number {
+    if (!this.invoiceHeaderCurrency || !this.invoiceHeaderExchangeRate) {
+      return amount;
+    }
+    // Convert amount to header currency using exchange rate
+    return amount * this.invoiceHeaderExchangeRate;
   }
 
   toggleChargeSelection(charge: any) {
@@ -2542,6 +2660,19 @@ openAuditLogs(modal: TemplateRef<any>) {
       // Prepare payload for voucher generation
       // voucherTypeMasterSid will be found dynamically in backend based on voucherType + company + branch
       const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+
+      // Prepare charge tax group mappings
+      const chargeTaxGroups: any[] = [];
+      this.chargeTaxGroupMap.forEach((taxGroup, chargeId) => {
+        chargeTaxGroups.push({
+          bookingRatesSid: chargeId,
+          taxGroupSid: taxGroup.TaxGroupSid,
+          taxName: taxGroup.TaxName,
+          taxRate: taxGroup.TaxRate,
+          taxType: taxGroup.TaxType
+        });
+      });
+
       const payload = {
         bookingHeaderSid: this.BookingHeaderSid,
         companyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2550,7 +2681,19 @@ openAuditLogs(modal: TemplateRef<any>) {
         selectedRateIds: Array.from(this.selectedCharges),
         billingPartySid: this.currentBillingPartySid,
         customerBranchSid: billingPartyBranchSid || null,
-        createdBy: currUserEmail || 'System'
+        createdBy: currUserEmail || 'System',
+
+        // Invoice header information
+        invoiceHeader: {
+          currencyMasterSid: this.invoiceHeaderCurrency?.CurrencyMasterSid,
+          currencyCode: this.invoiceHeaderCurrency?.currencyCode,
+          exchangeRate: this.invoiceHeaderExchangeRate,
+          billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
+          billingPartyAddress: this.billingPartyAddress
+        },
+
+        // Charge tax group mappings
+        chargeTaxGroups: chargeTaxGroups
       };
 
       // Generate voucher via API
