@@ -225,11 +225,11 @@
                   [class.filled]="!!meetingForm.get('meetingStatus')?.value">
                   <label class="input-label">Meeting Status <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="meetingStatus" placeholder="">
-                    <ng-option value="scheduled" selected>Scheduled</ng-option>
-                    <ng-option value="confirmed">Confirmed</ng-option>
-                    <ng-option value="pending">In Progress</ng-option>
-                    <ng-option value="on hold">On Hold</ng-option>
-                    <ng-option value="completed">Completed</ng-option>
+                    <ng-option value="Scheduled" selected>Scheduled</ng-option>
+                    <ng-option value="Confirmed">Confirmed</ng-option>
+                    <ng-option value="In Progress">In Progress</ng-option>
+                    <ng-option value="On Hold">On Hold</ng-option>
+                    <ng-option value="Completed">Completed</ng-option>
                   </ng-select>
                   <div *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="text-danger">
                     Required
@@ -460,11 +460,11 @@
                   [class.filled]="!!meetingForm.get('meetingStatus')?.value">
                   <label class="input-label">Meeting Status <span class="text-danger">*</span></label>
                   <ng-select class="ng-select" formControlName="meetingStatus" placeholder="">
-                    <ng-option value="scheduled" selected>Scheduled</ng-option>
-                    <ng-option value="confirmed">Confirmed</ng-option>
-                    <ng-option value="pending">In Progress</ng-option>
-                    <ng-option value="on hold">On Hold</ng-option>
-                    <ng-option value="completed">Completed</ng-option>
+                    <ng-option value="Scheduled" selected>Scheduled</ng-option>
+                    <ng-option value="Confirmed">Confirmed</ng-option>
+                    <ng-option value="In Progress">In Progress</ng-option>
+                    <ng-option value="On Hold">On Hold</ng-option>
+                    <ng-option value="Completed">Completed</ng-option>
                   </ng-select>
                   <div *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="error-message">
                     Required

@@ -272,7 +272,7 @@ export class FullcalendarComponent implements OnInit {
     this.meetingForm.reset({
       LeadOrCustomer: 'L',
       followUp: false,
-      meetingStatus: 'scheduled' 
+      meetingStatus: 'Scheduled' 
     });
 
     // Ensure the followUp checkbox has a default false value to prevent undefined state
@@ -325,7 +325,7 @@ export class FullcalendarComponent implements OnInit {
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
-      meetingStatus: ['scheduled', Validators.required],
+      meetingStatus: ['Scheduled', Validators.required],
       followUpNote: ['',Validators.required],
       meetingDuration:['10 min',Validators.required]
     });
@@ -663,7 +663,7 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
           meetingDate: meetingDate,
           meetingType: this.preCustomerMeetingData.meetingType,
           meetingNote: this.preCustomerMeetingData.meetingNote,
-          meetingStatus: this.preCustomerMeetingData.meetingStatus || 'scheduled',
+          meetingStatus: this.preCustomerMeetingData.meetingStatus || 'Scheduled',
           followUp: followUp,  // Automatically set followUp based on API response
           followUpDate: followUp ? followUpDate : '',
           followUpNote: followUp ? this.preCustomerMeetingData.followUpNote || '' : '',
