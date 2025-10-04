@@ -333,8 +333,8 @@ export class LeadComponent implements OnInit {
   allStatuses = [
     "Discovery",
     "Qualify",
-    "MeetingScheduled",
-    "MeetingCompleted",
+    "Meeting Scheduled",
+    "Meeting Completed",
     "EnquiryGenerated",
     "QuotationCreated",
     "QuotationConfirmed",
