@@ -93,7 +93,7 @@ reasonList=[
   initMeetingForm() {
     this.meetingForm = this.fb.group({
       customerName: ['', Validators.required],
-      PreCustomerMeetingid: [''],
+      PreCustomerMeetingSid: [''],
       meetingDate: ['', Validators.required],
       followUpDate: [''],
       followUp: [false],
@@ -104,7 +104,9 @@ reasonList=[
       followUpNote: [''],
       meetingDuration:[''],
       reason:[''],
-       preCustomerMasterSid: [''] 
+      preCustomerMasterSid: [''],
+      createdBy:[''],
+      updatedBy:['']
     });
 
     this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
@@ -150,7 +152,7 @@ reasonList=[
               );
               console.log(meeting, 'meeting')
               return {
-                id: meeting.PreCustomerMeetingSid,
+                PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
                 customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
                 meetingType: meeting.meetingType || 'N/A',
                 meetingDate: meeting.meetingDate,
@@ -222,7 +224,7 @@ reasonList=[
         leadAssignTo: ourSalesperson
       });
     }
-    this.loadMeetingData(meeting.id);
+    this.loadMeetingData(meeting.PreCustomerMeetingSid);
     this.modalRef = this.modalService.open(content, { size: 'lg' });
   }
 
@@ -244,7 +246,7 @@ reasonList=[
 
         this.meetingForm.patchValue({
           customerName: meeting.preCustomerMaster?.preCustomerName || '',
-          PreCustomerMeetingid: meeting.PreCustomerMeetingSid,
+          PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
           meetingDate: meetingDate,
           meetingType: meeting.meetingType,
           leadAssignTo: meeting.leadAssignTo,
@@ -255,11 +257,13 @@ reasonList=[
           followUpNote: followUp ? meeting.followUpNote || '' : '',
           meetingDuration: meeting.meetingDuration,
            preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null,
+           createdBy: meeting.createdBy,
+           updatedBy:meeting.updatedBy
         });
 
         // Disable fields that shouldn't be edited
         // this.meetingForm.get('customerName').disable();
-        // this.meetingForm.get('meetingDate').disable();
+        this.meetingForm.get('meetingDate').disable();
         // this.meetingForm.get('meetingType').disable();
         // this.meetingForm.get('leadAssignTo').disable();
 
@@ -301,7 +305,7 @@ reasonList=[
     this.btnDisable = true;
 
     const payload = {
-      PreCustomerMeetingSid: this.selectedMeeting.id,
+      PreCustomerMeetingSid: this.selectedMeeting.PreCustomerMeetingSid,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       PreCustomerMasterSid:
@@ -335,8 +339,8 @@ reasonList=[
     );
   }
 
-  viewMeeting(id: number) {
-    this.router.navigate(['/crm/calendar/update', id]);
+  viewMeeting(PreCustomerMeetingSid: number) {
+    this.router.navigate(['/crm/calendar/update', PreCustomerMeetingSid]);
   }
 
   createNew() {
@@ -354,15 +358,15 @@ reasonList=[
 
   resetForm(): void {
     // If editing an existing meeting, reload the original data
-    if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.id) {
-      this.loadMeetingData(this.selectedMeeting.id);
+    if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.PreCustomerMeetingSid) {
+      this.loadMeetingData(this.selectedMeeting.PreCustomerMeetingSid);
       return;
     }
 
     // Create-mode: reset only modified fields to their original values
     const originalValues = {
       customerName: this.selectedMeeting?.preCustomerMaster?.preCustomerName || '',
-      PreCustomerMeetingid: this.selectedMeeting?.id || '',
+      PreCustomerMeetingSid: this.selectedMeeting?.PreCustomerMeetingSid || '',
       meetingDate: this.selectedMeeting?.meetingDate ? this.formatDateForInput(this.selectedMeeting.meetingDate) : '',
       followUpDate: this.selectedMeeting?.followUpDate ? this.formatDateForInput(this.selectedMeeting.followUpDate) : '',
       followUp: !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote),
@@ -410,7 +414,7 @@ reasonList=[
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.meetingData;
     modalRef.componentInstance.idLabel = 'Meeting Id';
-    modalRef.componentInstance.idValue = this.meetingData?.id;
+    modalRef.componentInstance.idValue = this.meetingData?.PreCustomerMeetingSid;
   }
 
 
@@ -428,7 +432,7 @@ reasonList=[
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.meetingData?.id;
+          modalRef.componentInstance.DocumentSid = this.meetingData?.PreCustomerMeetingSid;
 
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');

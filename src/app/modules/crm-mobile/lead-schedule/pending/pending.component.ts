@@ -12,6 +12,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { LeadStatusLabels } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-pending',
@@ -203,7 +204,8 @@ export class PendingComponent extends BaseListComponent implements OnInit {
           ...schedule,
           cityName: schedule.cityMaster?.cityName || 'N/A',
           calendarIcon: '📅',
-          PreCustomerMasterSid: schedule.PreCustomerMasterSid
+          PreCustomerMasterSid: schedule.PreCustomerMasterSid,
+          leadStatus: LeadStatusLabels[schedule.leadStatus]
         }));
 
         this.totalLengthOfCollection = this.allItems.length;
@@ -273,6 +275,14 @@ export class PendingComponent extends BaseListComponent implements OnInit {
       {
         key: 'phone',
         label: 'Phone',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+       {
+        key: 'leadStatus',
+        label: 'Lead Status',
         sortable: true,
         filterable: true,
         visible: true,

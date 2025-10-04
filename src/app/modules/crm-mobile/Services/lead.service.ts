@@ -482,7 +482,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   getLeadById(PreCustomerMasterSid) {
     return this.http.get<{ data: any }>(`ff-lead/fetch/${PreCustomerMasterSid}`).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data;
         return response;
       })
     )
