@@ -42,6 +42,7 @@ const colors: any = {
 @Component({
   selector: 'app-fullcalendar',
   standalone: true,
+  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective, NgSelectModule, NgbDatepickerModule, DateTimePickerComponent],
 
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './fullcalendar.component.html',
