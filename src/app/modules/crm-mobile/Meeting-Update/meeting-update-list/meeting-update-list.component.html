@@ -1,11 +1,4 @@
-<!-- <ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
-</ngx-spinner> -->
+
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
@@ -74,23 +67,7 @@
         </div>
     </div>
     <!-- Search Panel -->
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-white shadow mb-2" data-bs-theme="light">
-            <form class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                        (input)="searchMeetings()" autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                    <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i>
-                    @if (!isMobile) {
-                    Create New Meeting
-                    }
-                </button>
-            </form>
-        </div>
-    </div> -->
+    
     <!-- End Search Panel -->
     <div class="col-12 px-0">
         <div *ngIf="isMobile; else desktopTemplate">
@@ -115,9 +92,9 @@
                             {{ meeting.preCustomerMaster?.preCustomerName || '' }}
                         </div>
                         <span class="ms-auto badge dofi-min-w-12 dofi-h-12 rounded-pill px-0 py-0" [ngClass]="{
-                                'bg-success': meeting.meetingStatus === 'scheduled',
-                                'bg-warning': meeting.meetingStatus === 'pending',
-                                'bg-danger': meeting.meetingStatus === 'on hold'
+                                'bg-success': meeting.meetingStatus === 'Scheduled',
+                                'bg-warning': meeting.meetingStatus === 'In Progress',
+                                'bg-danger': meeting.meetingStatus === 'On Hold'
                               }">&nbsp;</span>
                     </div>
                     <div class="d-flex align-items-center">
@@ -182,45 +159,45 @@
                                     <td data-label="Customer Name"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ meeting.preCustomerMaster?.preCustomerName || 'N/A' }}
+                                            {{ meeting?.preCustomerMaster?.preCustomerName || 'N/A' }}
                                         </div>
                                     </td>
                                     <td data-label="meetingType"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ (meeting.meetingType | titlecase) || 'N/A' }}
+                                            {{ (meeting?.meetingType | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
                                     <td data-label="Meeting Date"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
-                                            {{ meeting.meetingDate | date:'medium' }}
+                                            {{ meeting?.meetingDate }}
                                         </div>
                                     </td>
 
                                     <td data-label="leadStatus"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ meeting.preCustomerMaster.leadStatus || 'N/A' }}
+                                            {{ meeting?.leadStatus  || 'N/A' }}
                                         </div>
                                     </td>
 
                                     <td data-label="leadAssignTo"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ getSalesmanById(meeting.leadAssignTo) || 'N/A' }}
+                                            {{ getSalesmanById(meeting?.leadAssignTo) || 'N/A' }}
                                         </div>
                                     </td>
                                     <td data-label="Status"
                                         style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <span class="badge" [ngClass]="{
-                                                'bg-success': meeting.meetingStatus === 'scheduled',
-                                                'bg-warning': meeting.meetingStatus === 'pending',
-                                                'bg-danger': meeting.meetingStatus === 'on hold'
+                                                'bg-success': meeting.meetingStatus === 'Scheduled',
+                                                'bg-warning': meeting.meetingStatus === 'In Progress',
+                                                'bg-danger': meeting.meetingStatus === 'On Hold'
                                               }">
-                                                {{ meeting.meetingStatus }}
+                                                {{ meeting?.meetingStatus }}
                                             </span>
                                         </div>
                                     </td>
@@ -255,7 +232,7 @@
 <ng-template #modalContentAdd let-close="close">
     <div class="modal-header p-2 bg-info">
         <h5 class="modal-title text-white">Update Meeting</h5>
-        <a class="text-white ps-2" (click)="showInfo()">
+        <a class="text-white ps-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
         </a>
         <div class="ms-auto d-flex align-items-center">
@@ -285,51 +262,69 @@
 
                 <div class="row compact-form">
                     <!-- Customer Name -->
-                    <aside class="col-md-12">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" class="custom-input-field sm" formControlName="customerName" readonly />
+                            <input type="text" class="custom-input-field sm" formControlName="customerName" />
                             <label class="input-label">Customer Name</label>
                         </div>
                     </aside>
 
                     <!-- Meeting Type -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <select class="custom-input-field sm" formControlName="meetingType">
-                                <option value="">Select</option>
-                                <option value="Call">Call</option>
-                                <option value="Visit">Visit</option>
-                                <option value="Phone">Phone</option>
-                                <option value="eMeeting">eMeeting</option>
-                            </select>
-                            <label class="input-label">Meeting Type</label>
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!meetingForm.get('meetingType')?.value">
+                            <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
+                            <ng-select  formControlName="meetingType">
+                                <!-- <option value="">Select</option> -->
+                                <ng-option value="Call">Call</ng-option>
+                                <ng-option value="Visit">Visit</ng-option>
+                                <ng-option value="Phone">Phone</ng-option>
+                                <ng-option value="eMeeting">eMeeting</ng-option>
+                            </ng-select>
                         </div>
                     </aside>
 
                     <!-- Meeting Date -->
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="datetime-local" class="custom-input-field sm" formControlName="meetingDate"
-                                readonly />
-                            <label class="input-label">Meeting Date</label>
-                        </div>
-                    </aside>
+                    
+                     <div class="col-md-4">
 
+              <div class=" custom-form-group custom-form-group-select-date w-100">
+                <div class="input-group w-100">
+                  <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                    formControlName="meetingDate" minDate></app-date-time-picker>
+                </div>
+                <label for="" class="input-label">Meeting Date <span class="text-danger">*</span>
+                </label>
+              </div>
+            </div>
+            <aside class="col-md-4">
+
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!meetingForm.get('meetingDuration')?.value">
+
+                <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
+                  formControlName="meetingDuration" placeholder="">
+                </ng-select>
+
+                <label class="input-label">
+                  Meeting Duration <span class="text-danger"></span>
+                </label>
+              </div>
+              </aside>
                     <!-- Salesperson -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <select class="custom-input-field sm" formControlName="leadAssignTo">
-                                <option value="">Select</option>
-                                <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
+                            <ng-select formControlName="leadAssignTo" bindLabel="userName" bindValue="UserMasterSid">
+                                <!-- <ng-option value="">Select</ng-option> -->
+                                <ng-option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
                                     {{ person.userName }}
-                                </option>
-                            </select>
-                            <label class="input-label">Salesperson</label>
+                                </ng-option>
+                            </ng-select>
+                            <label class="input-label">Salesperson <span class="text-danger">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Meeting Note -->
-                    <aside class="col-md-12">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <textarea class="custom-input-field sm" formControlName="meetingNote" rows="1"></textarea>
                             <label class="input-label">
@@ -346,22 +341,22 @@
                     </aside>
 
                     <!-- Meeting Status -->
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <select class="custom-input-field sm" formControlName="meetingStatus">
-                                <option value="">Select</option>
-                                <option value="scheduled">Scheduled</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="pending">In Progress</option>
-                                <option value="on hold">On Hold</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                            <label class="input-label">Meeting Status</label>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!meetingForm.get('meetingStatus')?.value">
+                            <ng-select  formControlName="meetingStatus">
+                                <!-- <ng-option value="">Select</ng-option> -->
+                                <ng-option value="Scheduled">Scheduled</ng-option>
+                                <ng-option value="Confirmed">Confirmed</ng-option>
+                                <ng-option value="In Progress">In Progress</ng-option>
+                                <ng-option value="On Hold">On Hold</ng-option>
+                                <ng-option value="Completed">Completed</ng-option>
+                            </ng-select>
+                            <label class="input-label">Meeting Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Follow Up Toggle -->
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
                         <div class="">
                             <!-- <label class="control-label col-form-label">&nbsp;</label> -->
                             <div class="form-check form-switch dofi-mt-6">
@@ -375,17 +370,23 @@
 
                     <!-- Conditionally Show Follow Up Fields -->
                     <ng-container *ngIf="meetingForm.get('followUp')?.value">
-                        <!-- Follow Up Date -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="datetime-local" class="custom-input-field sm"
-                                    formControlName="followUpDate" />
-                                <label class="input-label">Follow Up Date</label>
-                            </div>
-                        </aside>
+                       
+                           <aside class="col-md-4">
+                <div class=" custom-form-group custom-form-group-select-date w-100">
+                  <div class="input-group w-100">
+                    <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                      formControlName="followUpDate"></app-date-time-picker>
+                  </div>
+                  <label class="input-label me-2">Follow Up Date <span class="text-danger">*</span>
+                  </label>
+                  <div *ngIf="f['followUpDate'].touched && f['followUpDate'].invalid" class="error-message pe-4 pb-2">
+                    Required
+                  </div>
+                </div>
+              </aside>
 
                         <!-- Follow Up Note -->
-                        <aside class="col-md-6">
+                        <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <textarea class="custom-input-field sm" formControlName="followUpNote"
                                     rows="1"></textarea>
@@ -393,115 +394,25 @@
                             </div>
                         </aside>
                     </ng-container>
+                     <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!meetingForm.get('reason')?.value">
+                  <ng-select [items]="reasonList" bindLabel="name" bindValue="name"
+                    formControlName="reason">
+                  </ng-select>
+                  <label class="input-label">Reason <span class="text-danger"></span></label>
+                  <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
+                    Required.
+                  </small>
+                </div>
+              </aside>
                 </div>
 
-                <!-- <div class="row">
-                    <div class="col-12 col-md-12">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">Customer Name</label>
-                            <input type="text" formControlName="customerName" class="form-control" readonly />
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">Meeting Type</label>
-                            <select formControlName="meetingType" class="form-select" >
-                                <option value="">Select</option>
-                                <option value="Call">Call</option>
-                                <option value="Visit">Visit</option>
-                                <option value="Phone">Phone</option>
-                                <option value="eMeeting">eMeeting</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">Meeting Date</label>
-                            <input type="datetime-local" formControlName="meetingDate" class="form-control" readonly />
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">Salesperson</label>
-                           <select formControlName="leadAssignTo" class="form-select">
-                                <option value="">Select</option>
-                                <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
-                                    {{ person.userName }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-12">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">Meeting Note 
-                                <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'" class="text-danger">*</span>
-                            </label>
-                            <textarea type="text" formControlName="meetingNote" class="form-control"></textarea>
-                            <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
-                                <span *ngIf="f['meetingNote'].errors?.['required']">
-                                    Meeting Note is required when status is "On Hold"
-                                </span>
-                            </small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">Meeting Status</label>
-                            <select formControlName="meetingStatus" class="form-select">
-                                <option value="">Select</option>
-                                <option value="scheduled">Scheduled</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="pending">In Progress</option>
-                                <option value="on hold">On Hold</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                            <small *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="text-danger">
-                                Meeting status is required.
-                            </small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="control-label col-form-label">&nbsp;</label>
-                            <div class="form-check form-switch dofi-mt-6">
-                                <input class="form-check-input" type="checkbox" role="switch" formControlName="followUp"
-                                    [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
-                                <label class="form-check-label">Follow up required?</label>
-                            </div>
-                        </div>
-                    </div>
-                   
-                    <div class="row" *ngIf="meetingForm.get('followUp')?.value">
-                        <div class="col-12 col-md-6">
-                            <div class="mb-2">
-                                <label class="control-label col-form-label">Follow Up Date</label>
-                                <input type="datetime-local" formControlName="followUpDate" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="mb-2">
-                                <label class="control-label col-form-label">Follow Up Note</label>
-                                <textarea formControlName="followUpNote" class="form-control"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
+               
             </section>
         </div>
         <div class="modal-footer">
-            <!-- <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
-        <i class="fas fa-envelope me-1"></i> Email
-      </button> -->
+           
             <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef.dismiss()">Cancel</button>
             <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                 (click)="resetForm()">

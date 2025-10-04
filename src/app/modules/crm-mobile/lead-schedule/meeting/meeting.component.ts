@@ -189,7 +189,7 @@ changeTime(time: string) {
   loadLeadData(leadId: number) {
     this.leadService.getLeadById(leadId).subscribe(
       (leadData) => {
-        // console.log(leadData, 'leadData')
+        console.log(leadData, 'leadData')
         this.lead = leadData
         this.lead.status = this.lead.status === "A" ? "Active" : "Suspend";
         if (this.lead) {
@@ -268,6 +268,7 @@ changeTime(time: string) {
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
+
 
 }
 

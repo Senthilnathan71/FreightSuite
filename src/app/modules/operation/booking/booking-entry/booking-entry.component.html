@@ -12,7 +12,7 @@
         <h1 class="workspace-title">Booking</h1>
       </div>
       @if(isEditMode){
-      <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+      <a class="text-info  d-flex align-items-center w-2 h-2" (click)="showInfo()">
         <i class="fas fs-6 fa-info-circle"></i>
       </a>
       }
@@ -24,7 +24,7 @@
           <i class="fas fa-history fs-2"></i>
           <span>Report</span>
         </button> -->
-        <button class="table-action-btn print" (click)="reportAndEmailModel(reportModel)">
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print"></i> Print
         </button>
       </div>

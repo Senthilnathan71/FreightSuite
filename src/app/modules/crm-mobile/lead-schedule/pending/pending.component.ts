@@ -12,6 +12,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { LeadStatusLabels } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-pending',
@@ -30,7 +31,7 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   isMobile: boolean = false;
   currentCompany: any;
   currentBranch: any;
-  PreCustomerMasterSid:any;
+  PreCustomerMasterSid: any;
   // Table configuration
   tableConfig: TableConfig = {
     columns: [],
@@ -43,6 +44,7 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     //     condition: (row: any) => this.hasPermission('View')
     //   }
     // ],
+    
     selectable: false,
     multiSelect: false,
     showColumnToggle: true,
@@ -52,6 +54,20 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No Schedule found',
     dragAndDrop: true
   };
+
+ tableCustomerConfig: TableConfig = {
+    columns: [],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'PreCustomerMasterSid',
+    emptyMessage: 'No Schedule found',
+    dragAndDrop: true
+  };
+
+
 
   tableLoading = false;
 
@@ -70,20 +86,35 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   ) {
     super(paginationService);
   }
-  selectedTab = 'Opportunity';
-  selectTab(tab: string) {
-    this.selectedTab = tab;
+
+  
+  // selectTab(tab: string) {
+  //   this.selectedTab = tab;
+  // }
+
+  selectTab(tabName: string): void {
+  this.selectedTab = tabName;
+
+  if (tabName === 'Existing Customers') {
+    this.search('existing'); // calls Existing Customers API
+  } else if (tabName === 'Opportunity') {
+    this.search('opportunity'); // calls Opportunity API
   }
+}
+
   tabs = [
     { name: 'Opportunity', icon: 'fas fa-calendar-check' },
     { name: 'Existing Customers', icon: 'fas fa-boxes' },
   ];
+  selectedTab = this.tabs[0].name;
+  
   pendingSchedule: any[] = []
+  allExistingCustomers: any[] = [];
 
   override ngOnInit() {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.getAllLeadPendingMeetings();
+    // this.getAllLeadPendingMeetings();
     this.isMobile = this.appService.getDevice()
     // Initialize table configuration
     this.initializeTableConfig();
@@ -92,49 +123,57 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     super.ngOnInit();
   }
 
-  getAllLeadPendingMeetings() {
-    this.spinner.show();
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    this.leadService.getAllPendingMeetings(CompanyMasterSid, BranchMasterSid).subscribe(
-      (resp: any[]) => {
-        console.log(resp,"Pending Schedule")
-        this.pendingSchedule = resp['data'];  // On success, store the leads data in the component
-        this.spinner.hide();
-      }
-    );
+  // getAllLeadPendingMeetings() {
+  //   this.spinner.show();
+  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  //   this.leadService.getAllPendingMeetings(CompanyMasterSid, BranchMasterSid).subscribe(
+  //     (resp: any[]) => {
+  //       console.log(resp,"Pending Schedule")
+  //       this.pendingSchedule = resp['data'];  // On success, store the leads data in the component
+  //       this.spinner.hide();
+  //     }
+  //   );
 
-  }
+  // }
 
-  getAllExistingCustomers() {
-    this.spinner.show();
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    const PreCustomerMasterSid = this.PreCustomerMasterSid;
+  // getAllExistingCustomers() {
+  //   this.spinner.show();
+  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  //   const PreCustomerMasterSid = this.PreCustomerMasterSid;
 
-    const payload ={
-      CompanyMasterSid : CompanyMasterSid,
-      PreCustomerMasterSid :PreCustomerMasterSid
-    }
-    this.leadService.getAllExistingCustomers(payload).subscribe(
-      (resp: any[]) => {
-        console.log(resp)
-        this.pendingSchedule = resp['data'];  
-        this.spinner.hide();
-      }
-    );
+  //   const payload ={
+  //     CompanyMasterSid : CompanyMasterSid,
+  //     PreCustomerMasterSid :PreCustomerMasterSid
+  //   }
+  //   this.leadService.getAllExistingCustomers(payload).subscribe(
+  //     (resp: any[]) => {
+  //       console.log(resp)
+  //       this.allExistingCustomers = resp['data'];  
+  //       this.spinner.hide();
+  //     }
+  //   );
 
-  }
+  // }
 
 
-  protected searchItems(): Observable<any> {
+  protected searchItems(context?: string): Observable<any> {
     this.tableLoading = true;
     this.spinner.show();
 
     const companyId = this.currentCompany?.CompanyMasterSid;
     const branchId = this.currentBranch?.BranchMasterSid;
 
-    return this.leadService.getAllPendingMeetings(companyId, branchId);
+    if (context === 'existing') {
+      return this.leadService.getAllExistingCustomers({
+        CompanyMasterSid: companyId,
+        BranchMasterSid: branchId
+      });
+    } else {
+      return this.leadService.getAllPendingMeetings(companyId, branchId);
+    }
+
   }
 
   protected getSearchParams(): SearchParams {
@@ -149,21 +188,30 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     };
   }
 
-  protected processSearchResults(response: any): void {
+  protected processSearchResults(response: any, context?: any): void {
     this.tableLoading = false;
     this.spinner.hide();
+    if (context === 'existing') {
+      if (response?.data && Array.isArray(response.data)) {
+        this.allExistingCustomers = response?.data || [];
+        this.totalLengthOfCollection = this.allExistingCustomers.length;
+        this.applySorting();
+        return;
+      }
+    } else {
+      if (response?.data && Array.isArray(response.data)) {
+        this.allItems = response.data.map((schedule: any) => ({
+          ...schedule,
+          cityName: schedule.cityMaster?.cityName || 'N/A',
+          calendarIcon: '📅',
+          PreCustomerMasterSid: schedule.PreCustomerMasterSid,
+          leadStatus: LeadStatusLabels[schedule.leadStatus]
+        }));
 
-    if (response?.data && Array.isArray(response.data)) {
-      this.allItems = response.data.map((schedule: any) => ({
-        ...schedule,
-        cityName: schedule.cityMaster?.cityName || 'N/A',
-        calendarIcon: '📅',
-        PreCustomerMasterSid: schedule.PreCustomerMasterSid
-      }));
-
-      this.totalLengthOfCollection = this.allItems.length;
-      this.applySorting();
-      return;
+        this.totalLengthOfCollection = this.allItems.length;
+        this.applySorting();
+        return;
+      }
     }
 
     // Error case
@@ -232,6 +280,14 @@ export class PendingComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string'
       },
+       {
+        key: 'leadStatus',
+        label: 'Lead Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
       {
         key: 'calendarIcon',
         label: 'Schedule',
@@ -245,8 +301,43 @@ export class PendingComponent extends BaseListComponent implements OnInit {
 
 
     ];
+    this.tableCustomerConfig.columns = [
+      {
+        key: 'preCustomerName',
+        label: 'Customer Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'cityName',
+        label: 'City',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'calendarIcon',
+        label: 'Schedule',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: "100px",
+        template: 'link',
+      }
+    ];
   }
-
+onTabChange(tab: string) {
+    this.selectedTab = tab;
+    if (tab === 'Existing Customers') {
+      this.search('existing');
+    } else if (tab === 'Opportunity') {
+      this.search('opportunity');
+    }
+  }
   onTableActionClick(event: any) {
     console.log(event);
     if (event.action === 'view') {

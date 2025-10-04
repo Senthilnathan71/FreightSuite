@@ -24,6 +24,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { AppService } from 'src/app/service/app.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { LeadStatus } from 'src/app/common/helper';
 
 
 @Component({
@@ -94,25 +95,25 @@ export class LeadComponent implements OnInit {
     { id: "3", name: "Text" }
   ]
 
-    modeOfCustomerType = [
-  { id: 1, name: "Agent" },
-  { id: 2, name: "Air Line" },
-  { id: 3, name: "Carrier" },
-  { id: 4, name: "CFS" },
-  { id: 5, name: "Consignee" },
-  { id: 6, name: "Customer" },
-  { id: 7, name: "Feeder" },
-  { id: 8, name: "Forwarder" },
-  { id: 9, name: "NVOCC" },
-  { id: 10, name: "Notify" },
-  { id: 11, name: "Overseas Agent" },
-  { id: 12, name: "Shipper" },
-  { id: 13, name: "Shipping Line" },
-  { id: 14, name: "Transporter" },
-  { id: 15, name: "Vendor" },
-  { id: 16, name: "Warehouse" },
-  { id: 17, name: "Yard" }
-]
+  modeOfCustomerType = [
+    { id: 1, name: "Agent" },
+    { id: 2, name: "Air Line" },
+    { id: 3, name: "Carrier" },
+    { id: 4, name: "CFS" },
+    { id: 5, name: "Consignee" },
+    { id: 6, name: "Customer" },
+    { id: 7, name: "Feeder" },
+    { id: 8, name: "Forwarder" },
+    { id: 9, name: "NVOCC" },
+    { id: 10, name: "Notify" },
+    { id: 11, name: "Overseas Agent" },
+    { id: 12, name: "Shipper" },
+    { id: 13, name: "Shipping Line" },
+    { id: 14, name: "Transporter" },
+    { id: 15, name: "Vendor" },
+    { id: 16, name: "Warehouse" },
+    { id: 17, name: "Yard" }
+  ]
 
 
 
@@ -163,7 +164,7 @@ export class LeadComponent implements OnInit {
           this.leadForm.patchValue({
             CountryMasterSid: this.userData.CountryMasterSid
           });
-          this.filterStateByCountryId(this.userData?.CountryMasterSid)
+          this.filterStateByCountryId(this.userData)
         }
       }
 
@@ -201,9 +202,9 @@ export class LeadComponent implements OnInit {
       leadFrom: [],
       preCustomerType: [],
       preCustomerAddress1: ['', [
-  Validators.required,
-  Validators.pattern(/^[a-zA-Z0-9\s]+$/) // only letters, numbers, space
-]],
+        Validators.required,
+        Validators.pattern(/^[a-zA-Z0-9\s]+$/) // only letters, numbers, space
+      ]],
 
       preCustomerAddress2: [''],
       POBOX: [''],
@@ -212,11 +213,11 @@ export class LeadComponent implements OnInit {
       CityMasterSid: [, [Validators.required]],
       contactPerson: ['', [Validators.required]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
-  phone: ['', [
-  Validators.required,
-  Validators.pattern(/^[0-9]{10,15}$/) // only digits, length 10-15 (edit as needed)
-]],
-    leadStatus: ['Discovery'],
+      phone: ['', [
+        Validators.required,
+        Validators.pattern(/^[0-9]{10,15}$/) // only digits, length 10-15 (edit as needed)
+      ]],
+      leadStatus: [LeadStatus.Discovery],
       PreferredContactMode: ['Email'],
       LanguagePreferrence: [''],
       ServiceOfInterest: [''],
@@ -332,8 +333,8 @@ export class LeadComponent implements OnInit {
   allStatuses = [
     "Discovery",
     "Qualify",
-    "MeetingScheduled",
-    "MeetingCompleted",
+    "Meeting Scheduled",
+    "Meeting Completed",
     "EnquiryGenerated",
     "QuotationCreated",
     "QuotationConfirmed",
@@ -348,8 +349,9 @@ export class LeadComponent implements OnInit {
     this.leadService.getLeadById(leadId).subscribe(
       (resp: any) => {
         if (resp.status) {
-          let response = resp.data;
+          let response = resp;
           this.leadData = response;
+          console.log(this.leadData,'this.leadData')
           this.filterStateByCountryId(response);
           this.filterCityByStateId(response);
 
@@ -362,10 +364,11 @@ export class LeadComponent implements OnInit {
           this.filteredStatuses = this.allStatuses.slice(currentIndex);
           this.leadForm.patchValue({
             ...response,
-            isQualify: response.isQualify === "Y" ? true : false, 
+            isQualify: response.isQualify === "Y" ? true : false,
             leadStatus: response.leadStatus,
             status: formattedStatus,
           })
+
         } else {
           this.appSettingService.showError('Error Loading Lead Data')
         }
@@ -388,7 +391,8 @@ export class LeadComponent implements OnInit {
   }
 
   filterStateByCountryId(country) {
-    const countryId = country.CountryMasterSid ? country.CountryMasterSid:country;
+    console.log(country,'country')
+    const countryId = country.CountryMasterSid
     this.leadService.getStateByCountryId(countryId).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -580,18 +584,18 @@ export class LeadComponent implements OnInit {
   openAuthority() {
     if (!this.leadData) return;
     const modalRef = this.modalService.open(AuthorityEntryComponent, {
-    	size: 'lg',
-    	centered: true,
-    	backdrop: 'static'
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     });
   }
 
   openEDoc() {
     if (!this.leadData) return;
     const modalRef = this.modalService.open(EdocComponent, {
-    	size: 'lg',
-    	centered: true,
-    	backdrop: 'static'
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     });
   }
 

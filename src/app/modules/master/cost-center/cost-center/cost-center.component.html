@@ -187,7 +187,7 @@
     </div> -->
 
     <ng-template #content let-modal>
-        <div class="modal-header p-2 bg-info text-white">
+        <div class="modal-header modalHeaderpart">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Cost Center</h4>
 
             <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
