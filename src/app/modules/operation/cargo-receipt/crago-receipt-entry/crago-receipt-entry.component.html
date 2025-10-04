@@ -1,10 +1,10 @@
 <div class="row compact-form" [formGroup]="cargoForm">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <h4 class="page-title mb-0">Cargo Receipt</h4>
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -31,7 +31,7 @@
         </div>
     </div>
 
-    <div class="col-md-12">
+    <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row">
@@ -44,7 +44,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="BookingDateTime" readonly/>
                             <label class="input-label">Booking Date <span class="text-danger"></span>
@@ -122,10 +122,10 @@
         </div>
     </div>
 
-    <div class="col-md-12 mt-2 mx-1">
+    <div class="col-md-12 mt-1">
         <div class="row bg-white py-2 rounded shadow-sm">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col">Commodity</th>
