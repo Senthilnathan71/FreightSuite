@@ -109,6 +109,12 @@
 .custom-form-group-select-date {
   position: relative;
   margin-bottom: 0px;
+   .input-label {
+    left: 0px;
+    padding-left: 0;
+    padding-right: 0;
+    color:#05567F;
+  }
 }
 
 .custom-form-group-select-date .input-label {
