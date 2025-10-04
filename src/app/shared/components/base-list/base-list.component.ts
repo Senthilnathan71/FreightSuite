@@ -59,12 +59,12 @@ export abstract class BaseListComponent implements OnInit, OnDestroy {
   }
 
   // Abstract methods to be implemented by child classes
-  protected abstract searchItems(): Observable<any>;
+  protected abstract searchItems(context?:any): Observable<any>;
   protected abstract getSearchParams(): SearchParams;
-  protected abstract processSearchResults(response: any): void;
+  protected abstract processSearchResults(response: any,context?:any): void;
 
   // Common search method
-  search(): void {
+  search(context?:any): void {
     const params = this.getSearchParams();
 
     // Ensure numeric types
@@ -76,11 +76,11 @@ export abstract class BaseListComponent implements OnInit, OnDestroy {
     this.updatePaginationConfig();
     this.saveSearchState();
 
-    this.searchItems()
+    this.searchItems(context)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.processSearchResults(response);
+          this.processSearchResults(response,context);
           this.updatePaginationConfig();
           this.searchPerformed = true;
         },

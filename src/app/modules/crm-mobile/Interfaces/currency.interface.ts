@@ -1,5 +1,6 @@
 export interface Currency {
   CurrencyMasterSid: number;
+  CountryMasterSid: number;
   currencyName: string;
   currencyCode: string;
   CurrencyUnit: string | null;

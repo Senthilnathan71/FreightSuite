@@ -499,11 +499,11 @@
 
 <ng-template #tariffDetailListTemplate>
                        
-    <div class="table-responsive mt-1">
-        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+    <div class="table-responsive mt-1 table-borderless">
+        <table class="table table-hover align-middle no-wrap  table-sm mb-1">
             <thead>
                 <tr class="bg-info">
-                    <th class="bg-transparent text-light" scope="col">Action</th>
+                    <th class="bg-transparent text-light" scope="col" width="3%"></th>
                     <th class="bg-transparent text-light" scope="col">Slab?</th>
                     <th class="bg-transparent text-light" scope="col">Effective From</th>
                     <th class="bg-transparent text-light" scope="col">Expired On</th>
@@ -516,8 +516,8 @@
                     <th class="bg-transparent text-light" scope="col">Buy Curr.</th>
                     <th class="bg-transparent text-light" scope="col">Buy Unit Price</th>
                     <th class="bg-transparent text-light" scope="col">Min Sale</th>
-                    <th class="bg-transparent text-light" scope="col">Status</th>
                     <th class="bg-transparent text-light" scope="col">Remarks</th>
+                    <th class="bg-transparent text-light" scope="col">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -582,6 +582,11 @@
                     <td>
                         {{tariffDetail.MinSale}}
                     </td>
+                     <td>
+                        <div class="dofi-max-w-200 text-truncate" [ngbTooltip]=remarksTemplate>
+                            {{tariffDetail.Remarks}}
+                        </div>
+                    </td>
                     <td>
                         @if(tariffDetail.status === "A"){
                         <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
@@ -595,11 +600,7 @@
                         </div>
                         }
                     </td>
-                    <td>
-                        <div class="dofi-max-w-200 text-truncate" [ngbTooltip]=remarksTemplate>
-                            {{tariffDetail.Remarks}}
-                        </div>
-                    </td>
+                   
                 </tr>
                 }
             </tbody>
@@ -861,7 +862,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailSalePerUnitPrice"
-                                        placeholder="" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
+                                        placeholder="" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
                                     <label for="text-input" class="input-label">Sale Per Unit Price <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.touched &&
@@ -901,7 +902,7 @@
                             <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailBuyPerUnitPrice"
-                                        placeholder="" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
+                                        placeholder="" class="custom-input-field sm tex text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
                                     <label for="text-input" class="input-label">Buy Per Unit Price <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.touched &&
@@ -919,7 +920,7 @@
                             <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailMinSale"
-                                        placeholder="" class="custom-input-field sm" [onlyNumbers]="100" min="0">
+                                        placeholder="" class="custom-input-field sm text-end" [onlyNumbers]="100" min="0">
                                     <label for="text-input" class="input-label">Min Sale</label>
                                     @if(tariffDetailsForm.get('detailMinSale')?.touched &&
                                     tariffDetailsForm.get('detailMinSale')?.errors){

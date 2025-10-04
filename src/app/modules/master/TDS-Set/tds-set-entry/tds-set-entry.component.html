@@ -334,11 +334,11 @@
           </div>
         </div>
     <div class="col-12">
-        <div class="table-responsive" style="height: 100%;max-height: 200px; overflow-y: scroll;">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-0">
+        <div class="table-responsive table-borderless" style="height: 100%;max-height: 200px; overflow-y: scroll;">
+            <table class="table table-hover align-middle no-wrap  table-sm mb-0">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
+                        <th class="bg-transparent text-light" scope="col" width="3%"></th>
                         <th class="bg-transparent text-light dofi-w-80" scope="col">Sno</th>
                         <th class="bg-transparent text-light dofi-w-150" scope="col">Country</th>
                         <th class="bg-transparent text-light" scope="col">Income Category</th>
@@ -427,11 +427,11 @@
           </div>
         </div>
     <div class="col-12">
-        <div class="table-responsive" style="height: 100%;max-height: 200px; overflow-y: scroll;">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-0">
+        <div class="table-responsive table-borderless" style="height: 100%;max-height: 200px; overflow-y: scroll;">
+            <table class="table table-hover align-middle no-wrap  table-sm mb-0">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
+                        <th class="bg-transparent text-light" scope="col" width="3%"></th>
                         <th class="bg-transparent text-light" scope="col">Vessel Name</th>
                         <th class="bg-transparent text-light" scope="col">Carrier Name</th>
                         <th class="bg-transparent text-light" scope="col">Transporter Name</th>
@@ -520,7 +520,7 @@
 </ng-template>
 <ng-template #tdsDetailEntryTemplate let-modal>
     <div class="col-12">
-        <div class="card mb-0 h-100">
+        
             <div class="modal-header p-2 bg-info text-white">
                 <h4 class="modal-title">{{detailModalEdit ? 'Update TDS Detail':'TDS Detail'}}</h4>
                 <button type="button" class="btn-close btn-close-white" aria-label="Close"
@@ -531,7 +531,7 @@
                 <form [formGroup]="tdsDetailForm">
                     <div class="col-md-12">
                         <div class="row compact-form">
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Sno" [onlyNumbers]="2">
@@ -551,7 +551,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsDetailForm.get('CountryMasterSid')?.value">
                                     <ng-select class="ng-select" formControlName="CountryMasterSid"
@@ -570,7 +570,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="IncomeCategory" [textWithNumbers]="100">
@@ -589,7 +589,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsDetailForm.get('CompanyType')?.value">
                                     <ng-select class="ng-select" formControlName="CompanyType" [items]="companyTypeList"
@@ -608,7 +608,7 @@
                                 </div>
                             </aside>
 
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="ITSectionCode" [textWithNumbers]="10">
@@ -627,7 +627,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="TDSAmount" DecimalPrecision [DecimalPrecisionBefore]="8"
@@ -649,7 +649,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="TDSRate" DecimalPrecision [DecimalPrecisionBefore]="2"
@@ -671,7 +671,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="d-flex">
                                     <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
                                         <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
@@ -705,7 +705,7 @@
                                     Close
                                 </button>
                             </ng-template>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsDetailForm.get('detailStatus')?.value">
                                     @if(detailModalEdit){
@@ -733,12 +733,12 @@
                     {{detailModalEdit ? 'Update' : 'Save'}}
                 </button>
             </div>
-        </div>
+       
     </div>
 </ng-template>
 <ng-template #tdsExemptionEntryTemplate let-modal1>
     <div class="col-12">
-        <div class="card mb-0 h-100">
+       
             <div class="modal-header p-2 bg-info text-white">
                 <h4 class="modal-title">{{exemptionModalEdit ? 'Update Exemption Detail':'Exemption Detail'}}</h4>
                 <button type="button" class="btn-close btn-close-white" aria-label="Close"
@@ -905,7 +905,7 @@
                     {{exemptionModalEdit ? 'Update' : 'Save'}}
                 </button>
             </div>
-        </div>
+     
     </div>
 </ng-template>
 <!-- @if(isEditMode){

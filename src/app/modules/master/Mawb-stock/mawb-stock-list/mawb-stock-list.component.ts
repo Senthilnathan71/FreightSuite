@@ -59,7 +59,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
+        condition: (row: any) => this.hasPermission('View') || this.hasPermission('Edit')
       },
       {
         icon: 'fas fa-trash',
@@ -148,7 +148,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
           this.currentMenuPermissions = response.data.MenuPermissions || {};
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions)
+          console.log(this.permissions,"Permission")
         }
       });
     }
@@ -157,6 +157,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
   }
+ 
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {

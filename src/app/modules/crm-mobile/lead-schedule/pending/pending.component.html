@@ -2,7 +2,7 @@
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
-<div class="nav-pills-container">
+<!-- <div class="nav-pills-container">
     <div class="nav-pills">
         <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
             (click)="selectTab(tab.name)">
@@ -13,7 +13,25 @@
             <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
         </div>
     </div>
+</div> -->
+
+<div class="nav-pills-container">
+  <div class="nav-pills">
+    <div
+      class="nav-pill"
+      *ngFor="let tab of tabs"
+      [class.active]="selectedTab === tab.name"
+      (click)="selectTab(tab.name)"
+    >
+      <div class="pill-icon">
+        <i [class]="tab.icon"></i>
+      </div>
+      <span class="pill-label">{{ tab.name }}</span>
+      <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+    </div>
+  </div>
 </div>
+
 
 <div class="content-workspace">
     <div class="workspace-content" *ngIf="selectedTab === 'Opportunity'">
@@ -146,7 +164,7 @@
     <div class="desktop-view">
         <div *ngIf="selectedTab === 'Existing Customers'">
 
-            <app-reusable-table #exitingCustomerTable [config]="tableConfig" [data]="allSchedule" [loading]="tableLoading"
+            <app-reusable-table #exitingCustomerTable [config]="tableCustomerConfig" [data]="allExistingCustomers" [loading]="tableLoading"
                 [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
                 (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
                 (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"

@@ -15,6 +15,9 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { LeadStatus, LeadStatusLabels } from 'src/app/common/helper';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -28,7 +31,9 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     PreventMultiClickDirective,
     NgxSpinnerModule,
     NgbDropdownModule,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgSelectModule,
+    DateTimePickerComponent
   ],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
@@ -54,7 +59,17 @@ export class MeetingUpdateListComponent implements OnInit {
   TandCList: any;
   currentCompany: any;
   currentBranch: any;
-
+  meetingDurations = [
+  { label: '10 min', value: '10 min' },
+  { label: '20 min', value: '20 min' },
+  { label: '30 min', value: '30 min' },
+  { label: '40 min', value: '40 min' },
+  { label: '50 min', value: '50 min' },
+  { label: '1 hr', value: '1 hr' }
+];
+reasonList=[
+  {id:1,name:""}
+]
   constructor(
     private router: Router,
     private appService: AppService,
@@ -78,15 +93,20 @@ export class MeetingUpdateListComponent implements OnInit {
   initMeetingForm() {
     this.meetingForm = this.fb.group({
       customerName: ['', Validators.required],
-      PreCustomerMeetingid: [''],
+      PreCustomerMeetingSid: [''],
       meetingDate: ['', Validators.required],
       followUpDate: [''],
       followUp: [false],
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
-      meetingStatus: ['scheduled', Validators.required],
-      followUpNote: ['']
+      meetingStatus: ['Scheduled', Validators.required],
+      followUpNote: [''],
+      meetingDuration:[''],
+      reason:[''],
+      preCustomerMasterSid: [''],
+      createdBy:[''],
+      updatedBy:['']
     });
 
     this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
@@ -121,26 +141,28 @@ export class MeetingUpdateListComponent implements OnInit {
       (resp: any) => {
         if (resp.status && resp.data.length) {
           // Filter meetings to only include specified statuses
+              console.log(resp.data, 'resp.data')
+
           this.meetings = resp.data
-            .filter((meeting: any) => {
-              const status = meeting.meetingStatus?.toLowerCase();
-              return status === 'scheduled' || status === 'pending' || status === 'on hold';
-            })
+            // .filter((meeting: any) => {
+            //   const status = meeting.meetingStatus?.toLowerCase();
+            //   return status === 'Scheduled' || status === 'In Progress' || status === 'On Hold';
+            // })
             .map((meeting: any) => {
               const salesPerson = this.salesPersons?.find(
                 (person: any) => person.UserMasterSid === meeting.leadAssignTo
               );
               console.log(meeting, 'meeting')
               return {
-                id: meeting.PreCustomerMeetingSid,
+                PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
                 customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
                 meetingType: meeting.meetingType || 'N/A',
                 meetingDate: meeting.meetingDate,
                 salesPerson: salesPerson?.userName || 'N/A',
                 leadAssignTo: meeting.leadAssignTo,
                 status: meeting.status === "A" ? "Active" : "InActive",
-                meetingStatus: meeting.meetingStatus?.toLowerCase() || '',
-                leadStatus: meeting?.preCustomerMaster?.leadStatus || 'N/A',
+                meetingStatus: meeting.meetingStatus || '',
+                leadStatus: LeadStatusLabels[meeting?.preCustomerMaster?.leadStatus as LeadStatus] || "-",
                 preCustomerMaster: meeting.preCustomerMaster,
                 userMaster: meeting.userMaster,
                 followUp: meeting.followUpDate || meeting.followUpNote,
@@ -204,7 +226,7 @@ export class MeetingUpdateListComponent implements OnInit {
         leadAssignTo: ourSalesperson
       });
     }
-    this.loadMeetingData(meeting.id);
+    this.loadMeetingData(meeting.PreCustomerMeetingSid);
     this.modalRef = this.modalService.open(content, { size: 'lg' });
   }
 
@@ -226,22 +248,26 @@ export class MeetingUpdateListComponent implements OnInit {
 
         this.meetingForm.patchValue({
           customerName: meeting.preCustomerMaster?.preCustomerName || '',
-          PreCustomerMeetingid: meeting.PreCustomerMeetingSid,
+          PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
           meetingDate: meetingDate,
           meetingType: meeting.meetingType,
           leadAssignTo: meeting.leadAssignTo,
           meetingNote: meeting.meetingNote,
-          meetingStatus: meeting.meetingStatus || 'scheduled',
+          meetingStatus: meeting.meetingStatus || 'Scheduled',
           followUp: followUp,
           followUpDate: followUp ? followUpDate : '',
-          followUpNote: followUp ? meeting.followUpNote || '' : ''
+          followUpNote: followUp ? meeting.followUpNote || '' : '',
+          meetingDuration: meeting.meetingDuration,
+           preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null,
+           createdBy: meeting.createdBy,
+           updatedBy:meeting.updatedBy
         });
 
         // Disable fields that shouldn't be edited
-        this.meetingForm.get('customerName').disable();
+        // this.meetingForm.get('customerName').disable();
         this.meetingForm.get('meetingDate').disable();
-        this.meetingForm.get('meetingType').disable();
-        this.meetingForm.get('leadAssignTo').disable();
+        // this.meetingForm.get('meetingType').disable();
+        // this.meetingForm.get('leadAssignTo').disable();
 
         // Enable status field unless it's confirmed
         this.meetingForm.controls['meetingStatus'].enable();
@@ -281,11 +307,14 @@ export class MeetingUpdateListComponent implements OnInit {
     this.btnDisable = true;
 
     const payload = {
-      PreCustomerMeetingSid: this.selectedMeeting.id,
+      PreCustomerMeetingSid: this.selectedMeeting.PreCustomerMeetingSid,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      ...this.meetingForm.getRawValue(),
-    };
+      PreCustomerMasterSid:
+    this.meetingForm.get('preCustomerMasterSid')?.value ||
+    this.selectedMeeting.preCustomerMaster?.PreCustomerMasterSid, // ✅ Corrected
+  ...this.meetingForm.getRawValue(),
+};
 
     // If followUp is false, remove followUpNote and followUpDate from the payload
     if (!this.meetingForm.get('followUp')?.value) {
@@ -312,8 +341,8 @@ export class MeetingUpdateListComponent implements OnInit {
     );
   }
 
-  viewMeeting(id: number) {
-    this.router.navigate(['/crm/calendar/update', id]);
+  viewMeeting(PreCustomerMeetingSid: number) {
+    this.router.navigate(['/crm/calendar/update', PreCustomerMeetingSid]);
   }
 
   createNew() {
@@ -331,22 +360,22 @@ export class MeetingUpdateListComponent implements OnInit {
 
   resetForm(): void {
     // If editing an existing meeting, reload the original data
-    if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.id) {
-      this.loadMeetingData(this.selectedMeeting.id);
+    if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.PreCustomerMeetingSid) {
+      this.loadMeetingData(this.selectedMeeting.PreCustomerMeetingSid);
       return;
     }
 
     // Create-mode: reset only modified fields to their original values
     const originalValues = {
       customerName: this.selectedMeeting?.preCustomerMaster?.preCustomerName || '',
-      PreCustomerMeetingid: this.selectedMeeting?.id || '',
+      PreCustomerMeetingSid: this.selectedMeeting?.PreCustomerMeetingSid || '',
       meetingDate: this.selectedMeeting?.meetingDate ? this.formatDateForInput(this.selectedMeeting.meetingDate) : '',
       followUpDate: this.selectedMeeting?.followUpDate ? this.formatDateForInput(this.selectedMeeting.followUpDate) : '',
       followUp: !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote),
       meetingType: this.selectedMeeting?.meetingType || '',
       leadAssignTo: this.selectedMeeting?.leadAssignTo || '',
       meetingNote: this.selectedMeeting?.meetingNote || '',
-      meetingStatus: this.selectedMeeting?.meetingStatus || 'scheduled',
+      meetingStatus: this.selectedMeeting?.meetingStatus || 'Scheduled',
       followUpNote: this.selectedMeeting?.followUpNote || ''
     };
 
@@ -387,7 +416,7 @@ export class MeetingUpdateListComponent implements OnInit {
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.meetingData;
     modalRef.componentInstance.idLabel = 'Meeting Id';
-    modalRef.componentInstance.idValue = this.meetingData?.id;
+    modalRef.componentInstance.idValue = this.meetingData?.PreCustomerMeetingSid;
   }
 
 
@@ -405,7 +434,7 @@ export class MeetingUpdateListComponent implements OnInit {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.meetingData?.id;
+          modalRef.componentInstance.DocumentSid = this.meetingData?.PreCustomerMeetingSid;
 
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
@@ -442,4 +471,6 @@ export class MeetingUpdateListComponent implements OnInit {
     // 	backdrop: 'static'
     // });
   }
+
+
 }

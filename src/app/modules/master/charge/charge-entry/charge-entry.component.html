@@ -30,7 +30,7 @@
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
                         [disabled]="btnDisable || chargeForm.invalid || !canSaveCharge()"
-                        [title]="!canSaveCharge() ? 'Please add at least one GST and one TDS record' : ''"
+                        [title]="!canSaveCharge() ? 'Please add at least one GST record' : ''"
                         *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
                         <i class="fas fa-save me-1"></i>
                         {{ isEditMode ? 'Edit' : 'Save' }}
@@ -148,32 +148,33 @@
                                         </div>
                                     </div>
                                 </aside>
-                                     <aside class="col-md-4">
-    <div class="custom-form-group custom-form-group-select"
-        [class.filled]="!!chargeForm.get('UnitQty')?.value">
-        <ng-select formControlName="UnitQty" [items]="unitQtyOptions" bindLabel="name"
-            bindValue="value" placeholder="">
-        </ng-select>
-        <label class="input-label">Unit Quantity <span class="text-danger">*</span></label>
-        <div *ngIf="chargeForm.get('UnitQty')?.touched && chargeForm.get('UnitQty')?.invalid"
-            class="error-message">
-            <span *ngIf="chargeForm.get('UnitQty')?.hasError('required')">Required</span>
-        </div>
-    </div>
-</aside>
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!chargeForm.get('UnitQty')?.value">
+                                        <ng-select formControlName="UnitQty" [items]="unitQtyOptions" bindLabel="name"
+                                            bindValue="value" placeholder="">
+                                        </ng-select>
+                                        <label class="input-label">Unit Quantity <span
+                                                class="text-danger">*</span></label>
+                                        <div *ngIf="chargeForm.get('UnitQty')?.touched && chargeForm.get('UnitQty')?.invalid"
+                                            class="error-message">
+                                            <span
+                                                *ngIf="chargeForm.get('UnitQty')?.hasError('required')">Required</span>
+                                        </div>
+                                    </div>
+                                </aside>
                                 <!-- Currency -->
                                 <aside class="col-md-4">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!chargeForm.get('CurrencyMasterSid')?.value">
-                                        <ng-select formControlName="CurrencyMasterSid" [items]="currencyOptions"
-                                            bindLabel="currencyCode" bindValue="CurrencyMasterSid"
-                                            placeholder="">
-                                        </ng-select>
+                                        <dofi-searchable-dropdown  [items]="currencyOptions" formControlName="CurrencyMasterSid" [placeholder]="''"
+                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
+                                        </dofi-searchable-dropdown>
                                         <label class="input-label">Currency <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('CurrencyMasterSid')?.touched && chargeForm.get('CurrencyMasterSid')?.invalid"
                                             class="error-message">
-                                            <span
-                                                *ngIf="chargeForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
+                                            <span *ngIf="chargeForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
                                         </div>
                                     </div>
                                 </aside>
@@ -183,8 +184,7 @@
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!chargeForm.get('ChargeGroupSid')?.value">
                                         <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions"
-                                            bindLabel="GroupName" bindValue="ChargeGroupSid"
-                                            placeholder="">
+                                            bindLabel="GroupName" bindValue="ChargeGroupSid" placeholder="">
                                         </ng-select>
                                         <label class="input-label">Charge Group <span
                                                 class="text-danger">*</span></label>
@@ -206,7 +206,7 @@
                                     <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!chargeForm.get('Status')?.value">
                                         <ng-select formControlName="Status" [items]="statusOptions" bindLabel="name"
-                                            bindValue="id" placeholder="Select Status">
+                                            bindValue="id" placeholder="" appendTo="body">
                                         </ng-select>
                                         <label class="input-label">Status <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('Status')?.touched && chargeForm.get('Status')?.invalid"
@@ -255,41 +255,46 @@
 
                             @if(chargeTaxMasters.controls.length > 0) {
                             <div class="col-12">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle no-wrap table-bordered table-sm">
+                                <div class="table-responsive table-borderless">
+                                    <table class="table table-hover align-middle no-wrap table-sm ">
                                         <thead class="bg-info">
                                             <tr>
+                                                <th class="bg-transparent text-light" width="3%"></th>
                                                 <th class="bg-transparent text-light">HSN/SAC Code</th>
                                                 <th class="bg-transparent text-light">Description</th>
                                                 <th class="bg-transparent text-light">Tax Group</th>
                                                 <th class="bg-transparent text-light">Tax Rate (%)</th>
                                                 <th class="bg-transparent text-light">Status</th>
-                                                <th class="bg-transparent text-light" width="5%">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody formArrayName="chargeTaxMasters">
                                             @for (gst of chargeTaxMasters.controls; track gst; let i = $index) {
                                             <tr [formGroupName]="i">
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm border-0"
+                                                        (click)="removeGstRow(i)"
+                                                        [disabled]="chargeTaxMasters.controls.length <= 1">
+                                                        <i class="fas fa-trash text-danger"></i>
+                                                    </button>
+                                                </td>
                                                 <td>
                                                     <ng-select [formControlName]="'HSNCode'" [items]="hsnsacOptions"
-                                                        bindLabel="HSSACCode" bindValue="HSSACCode"
-                                                        placeholder="Select HSN/SAC Code"
+                                                        bindLabel="HSSACCode" bindValue="HSSACCode" placeholder=""
                                                         (change)="onHsnsacSelect($event, i)" appendTo="body">
                                                     </ng-select>
-                                                    <div *ngIf="gst.get('HSNCode')?.touched && gst.get('HSNCode')?.invalid"
+                                                    <!-- <div *ngIf="gst.get('HSNCode')?.touched && gst.get('HSNCode')?.invalid"
                                                         class="error-message">
                                                         <span
                                                             *ngIf="gst.get('HSNCode')?.hasError('required')">Required</span>
-                                                    </div>
+                                                    </div> -->
                                                 </td>
                                                 <td>
                                                     <input type="text" [textWithNumbers]="100"
-                                                        formControlName="description"
-                                                        class="form-control form-control-sm" />
+                                                        formControlName="description" class="custom-input-field sm" />
                                                 </td>
                                                 <td>
                                                     <input type="text" formControlName="TaxGroup"
-                                                        class="form-control form-control-sm" readonly />
+                                                        class="custom-input-field sm" readonly />
                                                     <div *ngIf="gst.get('TaxGroup')?.touched && gst.get('TaxGroup')?.invalid"
                                                         class="error-message">
                                                         <span
@@ -298,7 +303,7 @@
                                                 </td>
                                                 <td>
                                                     <input type="number" formControlName="TaxRate"
-                                                        class="form-control form-control-sm text-end" min="0" max="100"
+                                                        class="custom-input-field sm text-end" min="0" max="100"
                                                         step="0.01" readonly />
                                                     <div *ngIf="gst.get('TaxRate')?.touched && gst.get('TaxRate')?.invalid"
                                                         class="error-message" DecimalPrecision
@@ -313,17 +318,10 @@
                                                 </td>
                                                 <td>
                                                     <ng-select [formControlName]="'Status'" [items]="statusOptions"
-                                                        bindLabel="name" bindValue="id" placeholder="Select Status"
-                                                        appendTo="bady">
+                                                        bindLabel="name" bindValue="id" placeholder="" appendTo="body">
                                                     </ng-select>
                                                 </td>
-                                                <td class="text-center">
-                                                    <button type="button" class="btn btn-sm border-0"
-                                                        (click)="removeGstRow(i)"
-                                                        [disabled]="chargeTaxMasters.controls.length <= 1">
-                                                        <i class="fas fa-trash text-danger"></i>
-                                                    </button>
-                                                </td>
+
                                             </tr>
                                             }
                                         </tbody>
@@ -349,45 +347,19 @@
 
 
                             <div class="col-12">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle no-wrap table-bordered table-sm">
+                                <div class="table-responsive table-borderless">
+                                    <table class="table table-hover align-middle no-wrap  table-sm">
                                         <thead class="bg-info">
                                             <tr>
+                                                <th class="bg-transparent text-light" width="3%"></th>
                                                 <th class="bg-transparent text-light">TDS Set</th>
                                                 <th class="bg-transparent text-light">Effective From</th>
                                                 <th class="bg-transparent text-light">Status</th>
-                                                <th class="bg-transparent text-light">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody formArrayName="chargeTds">
                                             @for (tds of chargeTds.controls; track tds; let i = $index) {
                                             <tr [formGroupName]="i">
-                                                <td>
-                                                    <ng-select [formControlName]="'TDSSet'" [items]="tdsOptions"
-                                                        bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
-                                                        placeholder="Select TDS Set">
-                                                    </ng-select>
-                                                    <div *ngIf="tds.get('TDSSet')?.touched && tds.get('TDSSet')?.invalid"
-                                                        class="error-message">
-                                                        <span
-                                                            *ngIf="tds.get('TDSSet')?.hasError('required')">Required</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <input type="date" formControlName="EffectiveFrom"
-                                                        class="form-control form-control-sm" />
-                                                    <div *ngIf="tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid"
-                                                        class="error-message">
-                                                        <span
-                                                            *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <ng-select [formControlName]="'Status'" [items]="statusOptions"
-                                                        bindLabel="name" bindValue="id" placeholder="Select Status"
-                                                        appendTo="bady">
-                                                    </ng-select>
-                                                </td>
                                                 <td>
                                                     <button type="button" class="btn btn-sm border-0"
                                                         (click)="removeTdsRow(i)"
@@ -395,6 +367,47 @@
                                                         <i class="fas fa-trash text-danger"></i>
                                                     </button>
                                                 </td>
+                                                <td>
+                                                    <ng-select [formControlName]="'TDSSet'" [items]="tdsOptions"
+                                                        bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
+                                                        placeholder="" appendTo="body" >
+                                                    </ng-select>
+                                                    <!-- <div *ngIf="tds.get('TDSSet')?.touched && tds.get('TDSSet')?.invalid"
+                                                        class="error-message">
+                                                        <span
+                                                            *ngIf="tds.get('TDSSet')?.hasError('required')">Required</span>
+                                                    </div> -->
+                                                </td>
+                                                <td>
+                                                    <div class="custom-form-group custom-form-group-select-date mt-0 ">
+                                                        <div class="input-group">
+                                                            <input class="form-control" placeholder="dd-mm-yyyy"
+                                                                name="dp" ngbDatepicker #d1="ngbDatepicker"
+                                                                (click)="d1.toggle()" readonly
+                                                                formControlName="EffectiveFrom" container="body" />
+                                                            <button class="btn btn-sm " type="button"
+                                                                (click)="d1.toggle()">
+                                                                <i-feather name="calendar"
+                                                                    class="feather-sm"></i-feather>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <!-- <td>
+                                                    <input type="date" formControlName="EffectiveFrom"
+                                                        class="custom-input-field sm" />
+                                                    <div *ngIf="tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid"
+                                                        class="error-message">
+                                                        <span
+                                                            *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
+                                                    </div>
+                                                </td> -->
+                                                <td>
+                                                    <ng-select [formControlName]="'Status'" [items]="statusOptions"
+                                                        bindLabel="name" bindValue="id" placeholder="" appendTo="body">
+                                                    </ng-select>
+                                                </td>
+
                                             </tr>
                                             }
                                         </tbody>

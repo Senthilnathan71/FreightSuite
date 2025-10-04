@@ -16,6 +16,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { LeadStatusLabels } from 'src/app/common/helper';
 @Component({
   selector: 'app-view',
   standalone: true,
@@ -133,7 +134,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
       console.log(response.data.items,'response.data.items')
        this.allItems = (response.data.items || []).map((item: any) => ({
       ...item,
-      meetingStatus: this.splitOnCapitals(item.leadStatus) || '-',
+      meetingStatus: LeadStatusLabels[item.leadStatus],
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -334,9 +335,4 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.searchLeads();
   }
 
-    splitOnCapitals(str) {
-  return str
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-    .replace(/([a-z])([A-Z])/g, '$1 $2');
-}
 }

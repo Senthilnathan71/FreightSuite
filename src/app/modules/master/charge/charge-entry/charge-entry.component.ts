@@ -19,6 +19,7 @@ import { forkJoin } from 'rxjs';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-charge-entry',
@@ -34,7 +35,8 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
     MultiSelectComponent,
     NgbDropdownModule,
     TextWithNumbersDirective,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    SearchableDropdown
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
@@ -49,7 +51,7 @@ export class ChargeEntryComponent implements OnInit {
   { name: "TDS Details", icon: "fas fa-percent" }
 ];
 unitQtyOptions = [
-  { value: '20ft (FCL)', name: '20ft ])' },
+  { value: '20ft (FCL)', name: '20ft ' },
   { value: '40ft (FCL)', name: '40ft ' },
   { value: 'CBM (LCL)', name: 'CBM ' },
   { value: 'BL (Common)', name: 'BL ' },
@@ -57,6 +59,11 @@ unitQtyOptions = [
   { value: 'Shipment (Common)', name: 'Shipment ' },
   { value: 'Gross Weight (LCL)', name: 'Gross Weight ' }
 ];
+CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode', 'currencyName','countryName'],
+  };
 selectedTab = this.tab[0].name;
   chargeForm: FormGroup;
   isEditMode = false;
@@ -171,9 +178,9 @@ selectedTab = this.tab[0].name;
   // ensure Status casing consistent: prefer 'Status' if present, otherwise fallback to 'status'
   const statusVal = tdsData?.Status ?? tdsData?.status ?? 'A';
     return this.fb.group({
-      TDSSet: [tdsData?.TDSSet || '',Validators.required ],
+      TDSSet: [tdsData?.TDSSet || '' ],
       EffectiveFrom: [tdsData?.EffectiveFrom ? new Date(tdsData.EffectiveFrom) : '', ],
-      Status: [tdsData?.status || 'A',Validators.required],
+      Status: [tdsData?.status || 'A'],
       ChargeTdsSid: [tdsData?.ChargeTdsSid || null]
     });
   }
@@ -470,8 +477,7 @@ selectedTab = this.tab[0].name;
       // Must have at least one GST record
       if (this.chargeTaxMasters.controls.length === 0) return false;
       
-      // Must have at least one TDS record if GST exists
-      if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) return false;
+      
       
       return true;
   }
