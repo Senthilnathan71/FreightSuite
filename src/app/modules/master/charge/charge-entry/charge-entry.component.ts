@@ -235,7 +235,13 @@ selectedTab = this.tab[0].name;
     ]).subscribe({
       next: ([chargeGroups, currencies, departments, chargeUoms, hsnsacs, tdsSets]) => {
         this.chargeGroupOptions = Array.isArray(chargeGroups) ? chargeGroups : chargeGroups.data;
-        this.currencyOptions = currencies.data || currencies;
+       const rawCurrencies = currencies.data || currencies || [];
+     
+      this.currencyOptions = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''  
+      }));
+
         this.departmentOptions = departments.data || departments;
         
         // UPDATED: Use charge UOM data from new API

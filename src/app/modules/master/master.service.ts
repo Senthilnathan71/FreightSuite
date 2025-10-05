@@ -3294,7 +3294,14 @@ getFieldConfiguration() {
     );
   }
 
-
+getCoaWithSubledger(CompanyMasterSid: number) {
+  return this.http.post<{ data: any[] }>('coa/with-subledger', { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
       map((resp) => {
