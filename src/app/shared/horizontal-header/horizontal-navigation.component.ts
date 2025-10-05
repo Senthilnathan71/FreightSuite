@@ -9,6 +9,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 declare var $: any;
 
@@ -143,11 +144,15 @@ export class HorizontalNavigationComponent implements AfterViewInit {
     },
   ];
 
+  userData:any
   constructor(
     private modalService: NgbModal,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private appSettingsService: AppSettingsService
   ) {
     translate.setDefaultLang('en');
+    this.userData = this.appSettingsService.getDecryptedUserProfile();
+  console.log('Decrypted userData:', this.userData);
   }
 
   ngAfterViewInit() {}
