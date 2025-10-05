@@ -2,7 +2,14 @@
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form">
-    <div class="col-12">
+     <app-page-header 
+    [title]="'Booking'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+    <!-- <div class="col-12">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col pb-1">
                 <div class="d-flex align-items-center gap-2">
@@ -63,7 +70,7 @@
             </div>
 
         </div>
-    </div>
+    </div> -->
     <!-- Reusable Table Component -->
     <div class="col-12 px-0">
         <app-reusable-table #bookingTable [config]="tableConfig" [data]="allBookings" [loading]="tableLoading"

@@ -2,26 +2,26 @@
     <div class="col-12 px-0">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-auto">
             <div class="col-md-4 pb-1">
-                  <div class="d-flex align-items-center gap-2">
-                         <div class="brand-icon">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add' }} Chart of Accounts</h5>
-                @if(isEditMode){
-        <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
-          <i class="fas fs-6 fa-info-circle"></i>
-        </a>
-        }
+                    <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add' }} Chart of Accounts</h5>
+                    @if(isEditMode){
+                    <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                    }
                 </div>
             </div>
             <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    
- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="nagivateback()">
@@ -36,17 +36,22 @@
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
                         [disabled]="chartForm.invalid">
                         <i class="fas fa-save me-1"></i>
-                         {{isEditMode ? 'Edit' : 'Save' }}
+                        {{isEditMode ? 'Edit' : 'Save' }}
                     </button>
                     <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                            ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                    class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                    class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                    class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                    class="fas fa-envelope me-1"></i> Email</button>
                         </div>
                     </div>
                 </div>
@@ -56,11 +61,24 @@
     <div class="col-md-12 px-0">
         <div class="card h-100 mb-0">
             <div class="card-body">
-                <div class="row" >
-                       <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                <div class="row">
+                    <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                          <i class="fas fa-chart-line"></i>
                         <h5 class="card-titlename mb-0">Chart of Accounts Information</h5>
                     </div> -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!chartForm.get('Category')?.value">
+                            <ng-select formControlName="Category" [items]="modeOfCategory" bindLabel="name"
+                                bindValue="name" placeholder="Select Category">
+                            </ng-select>
+                            <label class="input-label">Category <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="chartForm.get('Category')?.touched && chartForm.get('Category')?.invalid">
+                                <span>Required</span>
+                            </div>
+                        </div>
+                    </aside>
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -85,50 +103,36 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('LedgerCurrency')?.value">
-                            <ng-select formControlName="LedgerCurrency" [items]="currencyList" bindLabel="currencyName"
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!chartForm.get('LedgerCurrency')?.value">
+                            <!-- <ng-select formControlName="LedgerCurrency" [items]="currencyList" bindLabel="currencyName"
                                 bindValue="CurrencyMasterSid" placeholder="">
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="currencyList" formControlName="LedgerCurrency"
+                                [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
+                                [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'">
+                            </dofi-searchable-dropdown>
                             <label class="input-label">Currency Code</label>
                         </div>
                     </aside>
+                     <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="GroupName">
+                            <label for="text-input" class="input-label">Group<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
 
-                    <div class="row">
-                        <aside class="col-4 col-md-2">
-                            <div class="form-check">
-                                <input type="radio" id="asset" class="form-check-input" name="accountType" />
-                                <label for="asset" class="form-check-label">Asset</label>
-                            </div>
-                        </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="SubGroupName">
+                            <label for="text-input" class="input-label">Sub Group</label>
+                        </div>
+                    </aside>
 
-                        <aside class="col-4 col-md-2">
-                            <div class="form-check">
-                                <input type="radio" id="liability" class="form-check-input" name="accountType" />
-                                <label for="liability" class="form-check-label">Liability</label>
-                            </div>
-                        </aside>
 
-                        <aside class="col-4 col-md-2">
-                            <div class="form-check">
-                                <input type="radio" id="equity" class="form-check-input" name="accountType" />
-                                <label for="equity" class="form-check-label">Equity</label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-4 col-md-2">
-                            <div class="form-check">
-                                <input type="radio" id="Income" class="form-check-input" name="accountType" />
-                                <label for="Income" class="form-check-label">Income</label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-4 col-md-2">
-                            <div class="form-check">
-                                <input type="radio" id="Expense" class="form-check-input" name="accountType" />
-                                <label for="Expense" class="form-check-label">Expense</label>
-                            </div>
-                        </aside>
-                    </div>
 
                     <!-- <div class="row">
                         <aside class="col-md-4 my-3">
@@ -153,63 +157,141 @@
 
 
                     </div> -->
+    <aside class="col-md-4">
+        <div class="custom-form-group">
+            <label for="BranchType" class="form-check-label">Subledger Mapping<span class="text-danger"></span></label>
+            <div class="d-flex gap-3">
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="subledgerYes" formControlName="SubledgerName"
+                        [value]="'Y'" [disabled]="isEditMode && chartData?.SubledgerName === 'Y'" />
+                    <label class="form-check-label" for="branchTypeCash">
+                        Yes
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="subledgerNo" formControlName="SubledgerName"
+                        [value]="'N'" [disabled]="isEditMode && chartData?.SubledgerName === 'Y'" />
+                    <label class="form-check-label" for="branchTypeCredit">
+                        No
+                    </label>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <aside class="col-md-4">
+        <div class="custom-form-group">
+            <label for="BranchType" class="form-check-label">JobNoRequire<span class="text-danger"></span></label>
+            <div class="d-flex gap-3">
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="jobnoreqYes" formControlName="JobNoRequire"
+                        [value]="'Y'" [disabled]="isEditMode && chartData?.JobNoRequire === 'Y'" />
+                    <label class="form-check-label" for="branchTypeCash">
+                        Yes
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="jobnoreqNo" formControlName="JobNoRequire"
+                        [value]="'N'" [disabled]="isEditMode && chartData?.JobNoRequire === 'Y'" />
+                    <label class="form-check-label" for="branchTypeCredit">
+                        No
+                    </label>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <aside class="col-md-4">
+        <div class="custom-form-group">
+            <label for="BranchType" class="form-check-label">HSNRequire<span class="text-danger"></span></label>
+            <div class="d-flex gap-3">
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="hsnreqYes" formControlName="HSNRequire"
+                        [value]="'Y'" [disabled]="isEditMode && chartData?.HSNRequire === 'Y'" />
+                    <label class="form-check-label" for="branchTypeCash">
+                        Yes
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="hsnreqNo" formControlName="HSNRequire"
+                        [value]="'N'" [disabled]="isEditMode && chartData?.HSNRequire === 'Y'" />
+                    <label class="form-check-label" for="branchTypeCredit">
+                        No
+                    </label>
+                </div>
+            </div>
+        </div>
+    </aside>
+<!--                    
+              <aside class="col-md-4">
+  <label class="input-label">Subledger Mapping <span class="text-danger">*</span></label>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="SubledgerName">
-                            <label for="text-input" class="input-label">SubledgerName <span
-                                    class="text-danger">*</span></label>
-                            <div class="error-message"
-                                *ngIf="chartForm.get('SubledgerName')?.touched && chartForm.get('SubledgerName')?.invalid">
-                                <span> Required</span>
+  <div class="form-check form-check-inline">
+    <input
+      type="radio"
+      class="form-check-input"
+      id="subledgerYes"
+      formControlName="SubledgerName"
+      [value]="'Y'"
+      [disabled]="isEditMode && chartData?.SubledgerName === 'Y'"
+    />
+    <label for="subledgerYes" class="form-check-label">Yes</label>
+  </div>
+
+  <div class="form-check form-check-inline">
+    <input
+      type="radio"
+      class="form-check-input"
+      id="subledgerNo"
+      formControlName="SubledgerName"
+      [value]="'N'"
+      [disabled]="isEditMode && chartData?.SubledgerName === 'Y'"
+    />
+    <label for="subledgerNo" class="form-check-label">No</label>
+  </div>
+</aside> -->
+
+
+                    <!-- <aside class="col-4 col-md-2">
+                            <div class="form-check">
+                                <input type="radio" id="Expense" class="form-check-input" name="accountType" />
+                                <label for="Expense" class="form-check-label">Expense</label>
                             </div>
-                        </div>
-
-                    </aside>
+                        </aside> -->
 
 
 
+                   
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="GroupName">
-                            <label for="text-input" class="input-label">Group<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="SubGroupName">
-                            <label for="text-input" class="input-label">Sub Group</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('Category')?.value">
-                            <ng-select formControlName="Category" [items]="modeOfCategory" bindLabel="name"
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!chartForm.get('LedgerType')?.value">
+                            <ng-select formControlName="LedgerType" [items]="modeOfledgertype" bindLabel="name"
                                 bindValue="name">
 
                             </ng-select>
-                            <label for="" class="input-label">Category <span class="text-danger"></span></label>
+                            <label for="" class="input-label">Ledger Type <span class="text-danger"></span></label>
                             <div class="error-message"
-                                *ngIf="chartForm.get('Category')?.touched && chartForm.get('Category')?.invalid">
+                                *ngIf="chartForm.get('LedgerType')?.touched && chartForm.get('LedgerType')?.invalid">
                                 <span>Required</span>
                             </div>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('LedgerType')?.value">
-                            <ng-select formControlName="LedgerType" [items]="modeOfReportType" bindLabel="name"
-                                bindValue="name">
 
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!chartForm.get('ReportType')?.value">
+                            <ng-select formControlName="ReportType" [items]="modeofreporttype" bindLabel="name"
+                                bindValue="name">
                             </ng-select>
-                            <label for="" class="input-label">Report Type <span class="text-danger"></span></label>
+                            <label class="input-label">Report Type <span class="text-danger">*</span></label>
                             <div class="error-message"
-                                *ngIf="chartForm.get('reportType')?.touched && chartForm.get('reportType')?.invalid">
+                                *ngIf="chartForm.get('ReportType')?.touched && chartForm.get('ReportType')?.invalid">
                                 <span>Required</span>
                             </div>
                         </div>
                     </aside>
+
+
+
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -222,7 +304,8 @@
 
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!chartForm.get('Status')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!chartForm.get('Status')?.value">
                             <ng-container *ngIf="isEditMode; else readOnlyStatus">
                                 <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
                                     bindValue="name" placeholder="" class="ng-select">
@@ -238,6 +321,7 @@
 
                         </div>
                     </aside>
+                    
 
 
 
@@ -283,46 +367,46 @@
 } -->
 
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
 </ng-template>
