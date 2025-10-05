@@ -387,41 +387,42 @@
       <button class="btn btn-sm btn-info" (click)="addNewBranch()">
         <i class="fas fa-plus"></i> Add Branch
       </button>
-
     </div>
-
   </div>
+
 
   <div class="col-12">
     <!-- Branch Accordion -->
-    <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion-organization">
-      <div ngbAccordionItem *ngFor="let branch of (branches?.controls || []); let branchIndex = index">
-        <h2 ngbAccordionHeader>
-          <button ngbAccordionButton [class.collapsed]="!isBranchExpanded(branchIndex)"
-            (click)="toggleBranch(branchIndex)" class="p-1">
-            <div class="d-flex justify-content-between align-items-center w-100 ">
+    <div class="custom-accordion-organization">
+      <div *ngFor="let branch of (branches?.controls || []); let branchIndex = index" 
+           class="accordion-item">
+        <h2 class="accordion-header">
+          <button 
+            class="accordion-button" 
+            [class.collapsed]="!isBranchExpanded(branchIndex)" 
+            type="button"
+            (click)="toggleBranch(branchIndex)">
+            <div class="d-flex justify-content-between align-items-center w-100">
               <div>
                 <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'New Branch' }}</strong>
-                <span class="badge bg-secondary ms-2">{{ getBranchFormGroup(branch).get('CustBranchType')?.value
-                  }}</span>
+                <span class="badge bg-secondary ms-2">{{ getBranchFormGroup(branch).get('CustBranchType')?.value }}</span>
                 <span class="badge ms-2"
                   [class.bg-success]="getBranchFormGroup(branch).get('status')?.value === 'Active'"
                   [class.bg-danger]="getBranchFormGroup(branch).get('status')?.value === 'Suspended'">
                   {{ getBranchFormGroup(branch).get('status')?.value }}
                 </span>
-
+              </div>
                 <button type="button" class="btn btn-sm" (click)="removeBranch(branchIndex); $event.stopPropagation()">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
-
-              </div>
-
             </div>
           </button>
         </h2>
 
-        <div ngbAccordionCollapse [class.show]="isBranchExpanded(branchIndex)" class="accordion-collapse collapse">
-          <div class="accordion-body p-1">
+        <div [class.show]="isBranchExpanded(branchIndex)" 
+             [class.collapse]="true"
+             [id]="'branchCollapse' + branchIndex">
+         <div class="accordion-body p-1" *ngIf="isBranchExpanded(branchIndex)">
             <!-- Branch Main Details -->
             <div class="row compact-form" [formGroup]="getBranchFormGroup(branch)">
               <!-- <h5 class="text-info pb-2">Branch Details</h5> -->

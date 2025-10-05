@@ -68,7 +68,11 @@ export class MeetingUpdateListComponent implements OnInit {
   { label: '1 hr', value: '1 hr' }
 ];
 reasonList=[
-  {id:1,name:""}
+  {id:1,name:"Customer Postponed"},
+  {id:2,name:"Salesman on Leave"},
+  {id:3,name:"Salesman having other meeting"},
+  {id:4,name:"Natural Calamity"},
+  {id:5,name:"Assigned to New Salesman "}
 ]
   constructor(
     private router: Router,
@@ -78,9 +82,8 @@ reasonList=[
     private modalService: NgbModal,
     private fb: FormBuilder,
     private commonModalService: ModalService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
   ) { }
-
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -103,7 +106,7 @@ reasonList=[
       meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
       meetingDuration:[''],
-      reason:[''],
+      remarks:[''],
       preCustomerMasterSid: [''],
       createdBy:[''],
       updatedBy:['']
@@ -187,6 +190,20 @@ reasonList=[
     );
   }
 
+
+    // Treat UTC string as "local" without converting
+  convertUTCToLocal(utcDate: string): Date {
+    const parts = utcDate.match(/\d+/g); // extract [YYYY, MM, DD, HH, MM, SS]
+    return new Date(
+      Number(parts[0]),       // year
+      Number(parts[1]) - 1,   // month (0-indexed)
+      Number(parts[2]),       // day
+      Number(parts[3]),       // hour
+      Number(parts[4]),       // minute
+      Number(parts[5])        // second
+    );
+  }
+
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
@@ -265,7 +282,7 @@ reasonList=[
 
         // Disable fields that shouldn't be edited
         // this.meetingForm.get('customerName').disable();
-        this.meetingForm.get('meetingDate').disable();
+        // this.meetingForm.get('meetingDate').disable();
         // this.meetingForm.get('meetingType').disable();
         // this.meetingForm.get('leadAssignTo').disable();
 

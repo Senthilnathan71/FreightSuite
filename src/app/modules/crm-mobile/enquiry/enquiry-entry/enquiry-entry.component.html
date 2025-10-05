@@ -494,7 +494,7 @@
                                 class="text-danger"></span></label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <!-- <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('FreightTerms')?.value">
                         <ng-select formControlName="FreightTerms" class="ng-select" placeholder="" appendTo="body">
@@ -505,7 +505,7 @@
                         <label for="text-input" class="input-label">Shipment Terms <span
                                 class="text-danger"></span></label>
                     </div>
-                </aside>
+                </aside> -->
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
@@ -568,7 +568,9 @@
                                 <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                             </button>
                             }
-                            <span *ngIf="hasGrossWeightError(routeIndex)" class="d-flex align-items-center text-danger fw-bold ms-2 px-2 rounded"
+                            <span *ngIf="routeCargo(routeIndex).at(0).get('GrossWeight')?.hasError('grossNotGreater') 
+                                         && (routeCargo(routeIndex).at(0).get('GrossWeight')?.touched || routeCargo(routeIndex).at(0).get('GrossWeight')?.dirty)"
+                                class="d-flex align-items-center text-danger fw-bold ms-2 px-2 rounded"
                                 style="background-color: #fdecea; border: 1px solid #f5c2c7;">
                                 <i class="fas fa-info-circle me-2"></i>
                                 Gross Weight should be greater than Net Weight
@@ -696,16 +698,17 @@
                                                             <label for="" class="form-label mb-0">Net Weight <span
                                                                     class="text-danger">*</span></label>
                                                         </td>
-                                                        <td class="bg-transparent text-light" style="width: 200px;"
-                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                            <label class="form-label mb-0">Shipment Terms <span
-                                                                    class="text-danger">*</span></label>
-                                                        </td>
                                                         <td class="bg-transparent text-light " style="width: 200px;"
                                                             [ngClass]="{ '': isMobile, '': !isMobile }">
                                                             <label for="" class="form-label mb-0">CBM <span
                                                                     class="text-danger">*</span></label>
                                                         </td>
+                                                        <td class="bg-transparent text-light" style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Shipment Terms <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        
                                                         @if( routeCargo(routeIndex).controls.length > 1){
                                                         <td class="bg-transparent text-light " style="width: 200px;"
                                                             [ngClass]="{ '': isMobile, '': !isMobile }">
@@ -766,6 +769,8 @@
                                                         <td>
                                                             <!-- <div class="custom-form-group"> -->
                                                                 <input type="text" formControlName="GrossWeight" class="form-control text-end w-100" DecimalPrecision
+                                                                 (focus)="cargo.get('GrossWeight')?.updateValueAndValidity()" 
+                                                                (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
                                                                     [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" appendTo="body">
                                                                 <!-- <span *ngIf="cargo.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
                                                                     Gr weight > Net weight
@@ -774,6 +779,12 @@
                                                         </td>
                                                         <td>
                                                             <input type="text" formControlName="NetWeight"
+                                                                class="form-control text-end w-100" DecimalPrecision
+                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                                                appendTo="body">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="cbm"
                                                                 class="form-control text-end w-100" DecimalPrecision
                                                                 [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
                                                                 appendTo="body">
@@ -788,12 +799,7 @@
                                                                 </ng-option>
                                                             </ng-select>
                                                         </td>
-                                                        <td>
-                                                            <input type="text" formControlName="cbm"
-                                                                class="form-control text-end w-100" DecimalPrecision
-                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
-                                                                appendTo="body">
-                                                        </td>
+                                                        
                                                         @if( routeCargo(routeIndex).controls.length > 1){
                                                         <td data-label="Action" class="dofi-max-w-150">
                                                             <section class="action-items">

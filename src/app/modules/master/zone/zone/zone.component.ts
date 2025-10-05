@@ -302,7 +302,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
       if (result === true) {
         this.masterService.softDeleteZone(id).subscribe({
           next: () => {
-            this.appSettingService.showSuccess("Deleted!");
+            this.appSettingService.showSuccess("Zone deleted successfully!");
             this.searchZone();
           },
           error: (err) => {
@@ -622,7 +622,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.softDeleteZone(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
+          this.appSettingService.showSuccess("Zone deleted successfully!");
           this.router.navigate(['master/zone'])
           this.loadZones();
         });
