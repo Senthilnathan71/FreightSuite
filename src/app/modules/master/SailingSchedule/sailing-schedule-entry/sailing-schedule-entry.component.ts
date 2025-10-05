@@ -456,7 +456,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             this.masterService.updateSailingScheduleById(this.VoyageMasterHeaderSid,payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
-                        this.appSettingService.showSuccess('Sailing Schedule Updated Successfully');
+                        this.appSettingService.showSuccess(resp.message);
                         this.loadScheduleData();
                     } else {
                         this.appSettingService.showError(resp.message || 'Error updating sailing schedule');
@@ -470,7 +470,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             this.masterService.createNewSailingSchedule(payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
-                        this.appSettingService.showSuccess('Sailing Schedule Created Successfully');
+                        this.appSettingService.showSuccess(resp.message);
                         const sailId = resp.data?.VoyageMasterHeaderSid;
                         if(sailId){
                             this.route.navigate(['master/sailing-schedule/entry',sailId]);
