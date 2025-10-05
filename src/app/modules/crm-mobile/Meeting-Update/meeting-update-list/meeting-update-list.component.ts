@@ -68,7 +68,11 @@ export class MeetingUpdateListComponent implements OnInit {
   { label: '1 hr', value: '1 hr' }
 ];
 reasonList=[
-  {id:1,name:""}
+  {id:1,name:"Customer Postponed"},
+  {id:2,name:"Salesman on Leave"},
+  {id:3,name:"Salesman having other meeting"},
+  {id:4,name:"Natural Calamity"},
+  {id:5,name:"Assigned to New Salesman "}
 ]
   constructor(
     private router: Router,
@@ -102,7 +106,7 @@ reasonList=[
       meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
       meetingDuration:[''],
-      remarks:[''],
+      reason:[''],
       preCustomerMasterSid: [''],
       createdBy:[''],
       updatedBy:['']
@@ -264,7 +268,7 @@ reasonList=[
 
         // Disable fields that shouldn't be edited
         // this.meetingForm.get('customerName').disable();
-        this.meetingForm.get('meetingDate').disable();
+        // this.meetingForm.get('meetingDate').disable();
         // this.meetingForm.get('meetingType').disable();
         // this.meetingForm.get('leadAssignTo').disable();
 

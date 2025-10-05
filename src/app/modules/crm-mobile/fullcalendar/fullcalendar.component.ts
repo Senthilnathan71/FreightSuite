@@ -232,7 +232,7 @@ export class FullcalendarComponent implements OnInit {
     this.modalRef = this.modal.open(this.modalContentAdd, { size: 'lg' });
     // Ensure edit mode patches values and disables fields
     this.meetingForm.get('customerName').disable();
-    this.meetingForm.get('meetingDate').disable();
+    // this.meetingForm.get('meetingDate').disable();
     this.meetingForm.get('meetingType').disable();
     this.meetingForm.get('leadAssignTo').disable();
   }
