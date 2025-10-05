@@ -3,12 +3,42 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { GlobalDateFormatService } from './global-date-format.service';
 import { CompanyConfigService } from '../../modules/master/company/services/company-config.service';
 
+export interface NumberFormatSettings {
+  decimalSeparator: string;
+  thousandSeparator: string;
+  decimalPlaces: number;
+}
+
+export interface CurrencySettings {
+  code: string;
+  symbol: string;
+  position: 'before' | 'after';
+  decimalPlaces: number;
+  currencyMasterSid?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CompanySettingsManagerService {
   private currentCompanyIdSubject = new BehaviorSubject<number | null>(null);
   public currentCompanyId$ = this.currentCompanyIdSubject.asObservable();
+
+  private numberFormatSubject = new BehaviorSubject<NumberFormatSettings>({
+    decimalSeparator: '.',
+    thousandSeparator: ',',
+    decimalPlaces: 2
+  });
+  public numberFormat$ = this.numberFormatSubject.asObservable();
+
+  private currencySettingsSubject = new BehaviorSubject<CurrencySettings>({
+    code: 'USD',
+    symbol: '$',
+    position: 'before',
+    decimalPlaces: 2
+  });
+  public currencySettings$ = this.currencySettingsSubject.asObservable();
+
   private isLoggingOut = false;
 
   constructor(
@@ -47,8 +77,34 @@ export class CompanySettingsManagerService {
   private loadCompanySettings(companyId: number): void {
     this.configService.getCompanyConfiguration(companyId).subscribe({
       next: (config) => {
-        if (config?.systemSettings?.dateFormat) {
-          this.globalDateService.setDateFormat(config.systemSettings.dateFormat);
+        if (config?.systemSettings) {
+          // Apply date format
+          if (config.systemSettings.dateFormat) {
+            this.globalDateService.setDateFormat(config.systemSettings.dateFormat);
+          }
+
+          // Apply number format settings
+          if (config.systemSettings.numberFormat) {
+            const numberFormat: NumberFormatSettings = {
+              decimalSeparator: config.systemSettings.numberFormat.decimalSeparator || '.',
+              thousandSeparator: config.systemSettings.numberFormat.thousandSeparator || ',',
+              decimalPlaces: config.systemSettings.numberFormat.decimalPlaces ?? 2
+            };
+            this.numberFormatSubject.next(numberFormat);
+            localStorage.setItem('companyNumberFormat', JSON.stringify(numberFormat));
+          }
+
+          // Apply currency settings
+          if (config.systemSettings.currency) {
+            const currencySettings: CurrencySettings = {
+              code: config.systemSettings.currency.code || 'USD',
+              symbol: config.systemSettings.currency.symbol || '$',
+              position: config.systemSettings.currency.position || 'before',
+              decimalPlaces: config.systemSettings.currency.decimalPlaces ?? 2
+            };
+            this.currencySettingsSubject.next(currencySettings);
+            localStorage.setItem('companyCurrency', JSON.stringify(currencySettings));
+          }
         }
       },
       error: (error) => {
@@ -105,6 +161,78 @@ export class CompanySettingsManagerService {
   }
 
   /**
+   * Get current number format settings (synchronous)
+   */
+  getNumberFormat(): NumberFormatSettings {
+    return this.numberFormatSubject.value;
+  }
+
+  /**
+   * Get current currency settings (synchronous)
+   */
+  getCurrencySettings(): CurrencySettings {
+    return this.currencySettingsSubject.value;
+  }
+
+  /**
+   * Update number format settings
+   */
+  updateNumberFormat(numberFormat: NumberFormatSettings): void {
+    this.numberFormatSubject.next(numberFormat);
+    localStorage.setItem('companyNumberFormat', JSON.stringify(numberFormat));
+  }
+
+  /**
+   * Update currency settings
+   */
+  updateCurrencySettings(currencySettings: CurrencySettings): void {
+    this.currencySettingsSubject.next(currencySettings);
+    localStorage.setItem('companyCurrency', JSON.stringify(currencySettings));
+  }
+
+  /**
+   * Format a number using company settings
+   */
+  formatNumber(value: number, customDecimalPlaces?: number): string {
+    const settings = this.getNumberFormat();
+    const decimals = customDecimalPlaces ?? settings.decimalPlaces;
+
+    // Round to specified decimal places
+    const roundedValue = Number(value.toFixed(decimals));
+
+    // Split into integer and decimal parts
+    const parts = roundedValue.toString().split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1] || '';
+
+    // Add thousand separators
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, settings.thousandSeparator);
+
+    // Combine with decimal separator
+    if (decimals > 0) {
+      const paddedDecimals = decimalPart.padEnd(decimals, '0');
+      return `${formattedInteger}${settings.decimalSeparator}${paddedDecimals}`;
+    }
+
+    return formattedInteger;
+  }
+
+  /**
+   * Format a currency value using company settings
+   */
+  formatCurrency(value: number, customDecimalPlaces?: number): string {
+    const currencySettings = this.getCurrencySettings();
+    const decimals = customDecimalPlaces ?? currencySettings.decimalPlaces;
+    const formattedNumber = this.formatNumber(value, decimals);
+
+    if (currencySettings.position === 'before') {
+      return `${currencySettings.symbol}${formattedNumber}`;
+    } else {
+      return `${formattedNumber} ${currencySettings.symbol}`;
+    }
+  }
+
+  /**
    * Clear company settings (call during logout)
    */
   clearCompanySettings(): void {
@@ -112,7 +240,22 @@ export class CompanySettingsManagerService {
     this.currentCompanyIdSubject.next(null);
     localStorage.removeItem('selectedCompanyId');
     localStorage.removeItem('companyDateFormat');
+    localStorage.removeItem('companyNumberFormat');
+    localStorage.removeItem('companyCurrency');
     this.globalDateService.setDateFormat('DD/MM/YYYY'); // Reset to default
+
+    // Reset to defaults
+    this.numberFormatSubject.next({
+      decimalSeparator: '.',
+      thousandSeparator: ',',
+      decimalPlaces: 2
+    });
+    this.currencySettingsSubject.next({
+      code: 'USD',
+      symbol: '$',
+      position: 'before',
+      decimalPlaces: 2
+    });
   }
 
   /**
@@ -123,6 +266,26 @@ export class CompanySettingsManagerService {
     const cachedFormat = localStorage.getItem('companyDateFormat');
     if (cachedFormat) {
       this.globalDateService.setDateFormat(cachedFormat);
+    }
+
+    const cachedNumberFormat = localStorage.getItem('companyNumberFormat');
+    if (cachedNumberFormat) {
+      try {
+        const numberFormat = JSON.parse(cachedNumberFormat);
+        this.numberFormatSubject.next(numberFormat);
+      } catch (e) {
+        console.warn('Could not parse cached number format:', e);
+      }
+    }
+
+    const cachedCurrency = localStorage.getItem('companyCurrency');
+    if (cachedCurrency) {
+      try {
+        const currencySettings = JSON.parse(cachedCurrency);
+        this.currencySettingsSubject.next(currencySettings);
+      } catch (e) {
+        console.warn('Could not parse cached currency settings:', e);
+      }
     }
   }
 }

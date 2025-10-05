@@ -19,6 +19,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -32,7 +34,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgbDatepickerModule,
     ReactiveFormsModule,
     FormsModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NumberFormatPipe
   ],
   templateUrl: './invoice-entry.component.html',
   styleUrls: ['./invoice-entry.component.scss'],
@@ -102,7 +105,8 @@ export class InvoiceEntryComponent implements OnInit {
     private modalService: NgbModal,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private companySettings: CompanySettingsManagerService
   ) {}
 
   ngOnInit(): void {
@@ -132,7 +136,13 @@ export class InvoiceEntryComponent implements OnInit {
         this.headerId = Number(id);
         this.loadInvoiceById(this.headerId);
       } else {
-        this.invoiceForm.get('PartyMasterSid')?.setValue(3);
+        // New invoice - set default currency from company config
+        const currencySettings = this.companySettings.getCurrencySettings();
+        this.invoiceForm.patchValue({
+          PartyMasterSid: 3,
+          CurrencyCode: currencySettings.code,
+          ExchangeRate: 1 // Home currency always has exchange rate of 1
+        });
       }
     });
 
@@ -430,7 +440,7 @@ export class InvoiceEntryComponent implements OnInit {
       IRNNumber: header.IRNNumber || '',
       MasterJobSid: header.MasterJobSid || null,
       HBLNo: header.HouseJob || header.HBLNo || '',
-      CurrencyCode: header.CurrencyCode || null,
+      CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
       ExchangeRate: header.ExchangeRate || header.ExRate || 1,
       GSTNo: header.GSTNo || '',
       InvoiceType: header.InvoiceType || null,
@@ -494,7 +504,7 @@ export class InvoiceEntryComponent implements OnInit {
       }));
     }
 
-    this.recalculateAllRows();
+    // Don't recalculate when loading existing invoice - preserve the stored tax amounts
 
     const voucherOthersSource = (data.VoucherOthers && Array.isArray(data.VoucherOthers)) ? data.VoucherOthers[0]
       : data.VoucherOthers || data.voucherOthers || (Array.isArray(data.voucherOthers) ? data.voucherOthers[0] : undefined);
