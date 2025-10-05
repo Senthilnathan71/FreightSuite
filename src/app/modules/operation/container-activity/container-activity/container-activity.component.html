@@ -2,11 +2,12 @@
     <div>
         <div class="table-toolbar">
             <div class="toolbar-left">
-                <button class="table-action-btn primary" (click)="openActivityModal()" [disabled]="disableAddBtn">
-                    <i class="fas fa-plus"></i> Add Activity
-                </button>
+              
             </div>
             <div class="toolbar-right">
+                  <button class="table-action-btn primary" (click)="openActivityModal()" [disabled]="disableAddBtn">
+                    <i class="fas fa-plus"></i> Add
+                </button>
                 <button class="table-action-btn export" (click)="reportActivities()">
                     <i class="fas fa-download"></i> Export
                 </button>
@@ -61,7 +62,7 @@
         </div>
         } @else {
         <div class="col-12">
-            <div class="alert alert-info text-center">No activities added yet.</div>
+            <div class="text-center">No Record Found</div>
         </div>
         }
     </div>
