@@ -378,7 +378,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         this.loading = true;
         this.masterService.deleteMawbStock(id).subscribe({
           next: (resp: any) => {
-            this.appSettingService.showSuccess("Deleted successfully!");
+            this.appSettingService.showSuccess("MAWB-Stock deleted successfully!");
             this.loadMawbStocks();
             this.searchMawbs();
           },

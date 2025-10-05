@@ -700,7 +700,7 @@ export class TarrifEntryComponent implements OnInit {
         this.masterServ.createNewTariffDetail(payload).subscribe(
           (resp: any) => {
             if (resp.status) {
-              this.appSettingService.showSuccess('New Tariff Detail Created');
+              this.appSettingService.showSuccess(resp.message);
               this.tariffDetailsForm.reset();
               this.modalRef.close();
               this.loadTariffDetails();

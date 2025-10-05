@@ -288,7 +288,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deleteVesselById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
+          this.appSettingService.showSuccess("Zone deleted successfully!");
           this.loadVessels();
           this.searchVessels();
           // this.router.navigate(['master/vessel/list'])

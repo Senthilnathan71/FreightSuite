@@ -487,7 +487,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
       .subscribe(confirmed => {
         if (!confirmed) return;
         this.masterService.deletePortById(id).subscribe(() => {
-          this.appSettingService.showSuccess('Deleted!');
+          this.appSettingService.showSuccess("Zone deleted successfully!");
           this.loadPorts();
           this.searchPortMaster();
         });

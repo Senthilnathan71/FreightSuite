@@ -225,7 +225,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
         this.loading = true;
         this.masterService.deleteHawbStock(id).subscribe({
           next: (resp: any) => {
-            this.appSettingService.showSuccess("Deleted successfully!");
+            this.appSettingService.showSuccess("HAWB-Stock Deleted successfully!");
             this.loadHawbStocks();
             this.searchHawb()
           },

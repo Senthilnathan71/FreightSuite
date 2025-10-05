@@ -3075,7 +3075,7 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
         next: (resp: any) => {
           if (resp.status) {
             this.CustomerMasterSid = resp.data.CustomerMasterSid;
-            this.appSettingService.showSuccess('Customer created successfully with all data!');
+            this.appSettingService.showSuccess('Customer created successfully');
             this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
             resolve();
           } else {
@@ -3124,7 +3124,7 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
           await this.saveCustomerMilestones();
         }
 
-        this.appSettingService.showSuccess('Customer updated successfully with all data!');
+        this.appSettingService.showSuccess('Customer updated successfully');
 
         // Reload the data to reflect changes
         this.loadCustomerData(this.CustomerMasterSid);

@@ -381,7 +381,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deleteUomById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
+          this.appSettingService.showSuccess("Zone deleted successfully!");
           this.loadUoms();
           this.searchUOM();
         });

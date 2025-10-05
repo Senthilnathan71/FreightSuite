@@ -248,7 +248,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
       if (res) {
         this.masterServ.deleteTariffById(TariffHeaderSid).subscribe(
           (resp: any) => {
-            this.appSettingServ.showSuccess("Deleted!");
+            this.appSettingServ.showSuccess("Tariff deleted successfully!");
             // this.router.navigate([`master/tarrif/list`]);
             this.loadTariffs()
             this.searchTarrif();
