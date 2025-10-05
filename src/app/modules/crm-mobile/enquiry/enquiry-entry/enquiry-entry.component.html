@@ -471,9 +471,6 @@
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
-                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="ConsigneeName">
-                            
                         <ng-select class="ng-select" [items]="finalConsigneeList" bindLabel="CustomerName"
                             bindValue="CustomerName" placeholder="" formControlName="ConsigneeName"
                             (change)="filterShipper()" (clear)="filterShipper()" appendTo="body"></ng-select>
@@ -706,11 +703,11 @@
                                                             <label for="" class="form-label mb-0">CBM <span
                                                                     class="text-danger">*</span></label>
                                                         </td>
-                                                        <!-- <td class="bg-transparent text-light" style="width: 200px;"
+                                                        <td class="bg-transparent text-light" style="width: 200px;"
                                                             [ngClass]="{ '': isMobile, '': !isMobile }">
                                                             <label class="form-label mb-0">Shipment Terms <span
                                                                     class="text-danger">*</span></label>
-                                                        </td> -->
+                                                        </td>
                                                         
                                                         @if( routeCargo(routeIndex).controls.length > 1){
                                                         <td class="bg-transparent text-light " style="width: 200px;"
