@@ -37,6 +37,7 @@ import {
   debounceTime,
   distinctUntilChanged
 } from 'rxjs';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-enquiry-entry',
@@ -195,7 +196,6 @@ export class EnquiryEntryComponent implements OnInit {
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.initializeForm();
-    this.subscribeToLeadCustomerToggle(); 
     this.initOthersForm();
 
     this.userData = this.appSettingsService.getDecryptedUserProfile();
@@ -225,6 +225,7 @@ export class EnquiryEntryComponent implements OnInit {
       this.minExpDate = this.isEditMode ? undefined : this.today;
       this.checkPermissions();
     });
+    this.subscribeToLeadCustomerToggle(); 
   }
 
   checkPermissions() {
@@ -358,7 +359,36 @@ export class EnquiryEntryComponent implements OnInit {
     });
   }
 
-  toggleCustomerType(isCustomer: boolean) {
+  // toggleCustomerType(isCustomer: boolean) {
+    
+  //   this.rateRequestForm.patchValue({
+  //     PreCustomerMasterSid: null,
+  //     CustomerMasterSid: null,
+  //     customerName: '',
+  //     CustomerAddress: null,
+  //     CustomerBranchSid: null,
+  //     Email: null,
+  //   });
+  //   this.cusBranchList = []; 
+
+  //   const preCustomerControl = this.rateRequestForm.get('PreCustomerMasterSid');
+  //   const customerControl = this.rateRequestForm.get('CustomerMasterSid');
+
+  //   if (isCustomer) {
+  //     customerControl?.setValidators(Validators.required);
+  //     preCustomerControl?.clearValidators();
+  //   } else {
+  //     preCustomerControl?.setValidators(Validators.required);
+  //     customerControl?.clearValidators();
+  //   }
+
+  //   customerControl?.updateValueAndValidity();
+  //   preCustomerControl?.updateValueAndValidity();
+  // }
+
+  toggleCustomerType(isCustomer: boolean, isPatching = false) {
+  // Only reset if not patching existing record
+  if (!isPatching) {
     this.rateRequestForm.patchValue({
       PreCustomerMasterSid: null,
       CustomerMasterSid: null,
@@ -368,21 +398,22 @@ export class EnquiryEntryComponent implements OnInit {
       Email: null,
     });
     this.cusBranchList = []; 
-
-    const preCustomerControl = this.rateRequestForm.get('PreCustomerMasterSid');
-    const customerControl = this.rateRequestForm.get('CustomerMasterSid');
-
-    if (isCustomer) {
-      customerControl?.setValidators(Validators.required);
-      preCustomerControl?.clearValidators();
-    } else {
-      preCustomerControl?.setValidators(Validators.required);
-      customerControl?.clearValidators();
-    }
-
-    customerControl?.updateValueAndValidity();
-    preCustomerControl?.updateValueAndValidity();
   }
+
+  const preCustomerControl = this.rateRequestForm.get('PreCustomerMasterSid');
+  const customerControl = this.rateRequestForm.get('CustomerMasterSid');
+
+  if (isCustomer) {
+    customerControl?.setValidators(Validators.required);
+    preCustomerControl?.clearValidators();
+  } else {
+    preCustomerControl?.setValidators(Validators.required);
+    customerControl?.clearValidators();
+  }
+
+  customerControl?.updateValueAndValidity();
+  preCustomerControl?.updateValueAndValidity();
+}
 
   initOthersForm() {
     this.enquiryOtherForm = this.fb.group({
@@ -430,12 +461,32 @@ export class EnquiryEntryComponent implements OnInit {
       }
     );
 
+    
     this.routes.push(routeForm);
     this.subscribeToRouteChanges(routeForm, this.routes.length - 1);
     this.addCargo(this.routes.length - 1);
     const initialPorts = this.getFilteredPortsBySegment();
     this.filteredPOLPorts[this.routes.length - 1] = initialPorts;
     this.filteredPODPorts[this.routes.length - 1] = initialPorts;
+
+  //POD Selected Automatically changed the FDC Value 
+
+  // routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
+  //   routeForm.get('FDC')?.setValue(podValue, { emitEvent: false });
+  // });
+
+
+  //Only FDC Value empty
+    
+  routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
+    const fdcControl = routeForm.get('FDC');
+    const currentFDC = fdcControl?.value;
+
+    // ✅ Only assign when FDC is empty or null
+    if (!currentFDC || currentFDC.trim() === '') {
+      fdcControl?.setValue(podValue, { emitEvent: false });
+    }
+  });
   }
 
 
@@ -739,6 +790,36 @@ onSelectionChange(selectedItem: any) {
 
 
   patchValues(response: any) {
+
+ // Lead/Customer toggle first
+  const isCustomer = response.LeadOrCustomer === 'C';
+  this.rateRequestForm.get('LeadOrCustomer')?.setValue(isCustomer, { emitEvent: false });
+  this.toggleCustomerType(isCustomer, true);
+
+  if (!isCustomer) {
+    // patch lead only after leadList loaded
+    const selectedLead = this.leadList.find(l => l.PreCustomerMasterSid === Number(response.PreCustomerMasterSid));
+    if (selectedLead) {
+      this.rateRequestForm.patchValue({
+        PreCustomerMasterSid: selectedLead.PreCustomerMasterSid,
+        customerName: selectedLead.preCustomerName,
+        CustomerAddress: selectedLead.preCustomerAddress1,
+        Email: selectedLead.email,
+      });
+    }
+  }  else {
+    // patch customer fields
+    const selectedCustomer = this.customers.find(c => c.CustomerMasterSid === response.CustomerMasterSid);
+    if (selectedCustomer) {
+      this.rateRequestForm.patchValue({
+        CustomerMasterSid: selectedCustomer.CustomerMasterSid,
+        customerName: selectedCustomer.CustomerName,
+        CustomerAddress: selectedCustomer.Address,
+        Email: selectedCustomer.Email,
+      });
+    }
+  }
+
     this.selectedDepartment = response.ShipmentType;
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     if (selectedDept?.departmentType === "Sea") {
@@ -746,6 +827,12 @@ onSelectionChange(selectedItem: any) {
     } else {
       this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
     }
+// const selectedLead = this.leadList.find(l => l.PreCustomerMasterSid === Number(response.PreCustomerMasterSid));
+// if (selectedLead) {
+//   this.rateRequestForm.get('PreCustomerMasterSid')?.setValue(selectedLead.PreCustomerMasterSid);
+// }
+    
+    console.log(response.PreCustomerMasterSid,'response.PreCustomerMasterSid')
     // Patch header fields
     this.quotationEnquiryNumber = response.EnquiryNumber;
     this.quotationCustomerId = response.CustomerMasterSid;
@@ -753,16 +840,16 @@ onSelectionChange(selectedItem: any) {
     this.getCustomerBranches(response.CustomerMasterSid);
     this.authStateCache = response.authorizerStatus,
     this.rateRequestForm.patchValue({
-        PreCustomerMasterSid: response.PreCustomerMasterSid,
-        LeadOrCustomer : response.LeadOrCustomer === "C",
-        CustomerMasterSid: response.CustomerMasterSid,
-        customerName: response.CustomerName,
+        // PreCustomerMasterSid: Number(response.PreCustomerMasterSid),
+        // LeadOrCustomer : response.LeadOrCustomer === "C",
+        // CustomerMasterSid: response.CustomerMasterSid,
+        // customerName: response.CustomerName,
         enquiryNo: response.EnquiryNumber,
         EnquiryDate: new Date(response.EnquiryDate),
         shipmentDate: new Date(response.ShipmentExpectedDate),
         Segment: response.DepartmentMasterSid,
-        CustomerAddress: response.CustomerAddress,
-        Email: response.Email,
+        // CustomerAddress: response.CustomerAddress,
+        // Email: response.Email,
         EnquiryType: response.EnquiryType,
         IncoTerms: response.IncoTerms,
         ClearanceBy: response.ClearanceBy,
@@ -1255,11 +1342,11 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
 
   openEDoc() {
     // if (!this.tariffData) return;
-    // const modalRef = this.modalService.open(EdocComponent, {
-    // 	size: 'lg',
-    // 	centered: true,
-    // 	backdrop: 'static'
-    // });
+    const modalRef = this.ngbModal.open(EdocComponent, {
+    	size: 'lg',
+    	centered: true,
+    	backdrop: 'static'
+    });
   }
 
   private handleVoiceEnquiryData(): void {

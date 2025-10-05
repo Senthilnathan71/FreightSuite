@@ -471,6 +471,9 @@
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
+                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="ConsigneeName">
+                            
                         <ng-select class="ng-select" [items]="finalConsigneeList" bindLabel="CustomerName"
                             bindValue="CustomerName" placeholder="" formControlName="ConsigneeName"
                             (change)="filterShipper()" (clear)="filterShipper()" appendTo="body"></ng-select>
@@ -494,7 +497,7 @@
                                 class="text-danger"></span></label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <!-- <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('FreightTerms')?.value">
                         <ng-select formControlName="FreightTerms" class="ng-select" placeholder="" appendTo="body">
@@ -505,7 +508,7 @@
                         <label for="text-input" class="input-label">Shipment Terms <span
                                 class="text-danger"></span></label>
                     </div>
-                </aside>
+                </aside> -->
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
@@ -698,16 +701,17 @@
                                                             <label for="" class="form-label mb-0">Net Weight <span
                                                                     class="text-danger">*</span></label>
                                                         </td>
-                                                        <td class="bg-transparent text-light" style="width: 200px;"
-                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                            <label class="form-label mb-0">Shipment Terms <span
-                                                                    class="text-danger">*</span></label>
-                                                        </td>
                                                         <td class="bg-transparent text-light " style="width: 200px;"
                                                             [ngClass]="{ '': isMobile, '': !isMobile }">
                                                             <label for="" class="form-label mb-0">CBM <span
                                                                     class="text-danger">*</span></label>
                                                         </td>
+                                                        <!-- <td class="bg-transparent text-light" style="width: 200px;"
+                                                            [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Shipment Terms <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td> -->
+                                                        
                                                         @if( routeCargo(routeIndex).controls.length > 1){
                                                         <td class="bg-transparent text-light " style="width: 200px;"
                                                             [ngClass]="{ '': isMobile, '': !isMobile }">
@@ -783,6 +787,12 @@
                                                                 appendTo="body">
                                                         </td>
                                                         <td>
+                                                            <input type="text" formControlName="cbm"
+                                                                class="form-control text-end w-100" DecimalPrecision
+                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                                                appendTo="body">
+                                                        </td>
+                                                        <td>
                                                             <ng-select formControlName="ShipmentTerms"
                                                                 class="ng-select " placeholder="" appendTo="body"
                                                                 [class.filled]="!!routes.at(routeIndex).get('ShipmentTerms')?.value">
@@ -792,12 +802,7 @@
                                                                 </ng-option>
                                                             </ng-select>
                                                         </td>
-                                                        <td>
-                                                            <input type="text" formControlName="cbm"
-                                                                class="form-control text-end w-100" DecimalPrecision
-                                                                [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
-                                                                appendTo="body">
-                                                        </td>
+                                                        
                                                         @if( routeCargo(routeIndex).controls.length > 1){
                                                         <td data-label="Action" class="dofi-max-w-150">
                                                             <section class="action-items">
