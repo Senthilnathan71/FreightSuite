@@ -28,6 +28,31 @@
           <i class="fas fa-sync-alt me-1"></i>
           Reset
         </button>
+
+        @if(authorizerDetails.canAuthorize && authorizerDetails.AuthorityLevel !== "C"){
+        <div ngbDropdown class="d-inline-block">
+          <button class="btn btn-sm btn-outline-info" id="actionDropdown" ngbDropdownToggle aria-haspopup="true"
+            aria-expanded="false">
+            Select Approval status
+            <span class="ms-2 caret"></span>
+          </button>
+        
+          <div ngbDropdownMenu aria-labelledby="actionDropdown" class="py-1">
+            <button class="dropdown-item d-flex align-items-center text-success" type="button"
+              (click)="onApprovalStatusChange('Approved')" [disabled]="actionsDisabled">
+              <i class="fas fa-check me-2" aria-hidden="true"></i>
+              Approve
+            </button>
+        
+            <button class="dropdown-item d-flex align-items-center text-danger" type="button"
+              (click)="onApprovalStatusChange('Rejected')" [disabled]="actionsDisabled">
+              <i class="fas fa-times me-2" aria-hidden="true"></i>
+              Reject
+            </button>
+          </div>
+        </div>
+        }
+
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
           [disabled]="disableAllModification">
           <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : 'Save'}}
@@ -307,6 +332,14 @@
                     <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                   </button>
                   }
+                  <span
+                    *ngIf="quoteRoutes.at(routeIndex).get('GrossWeight')?.hasError('grossNotGreater') && (quoteRoutes.at(routeIndex).get('GrossWeight')?.touched || quoteRoutes.at(routeIndex).get('GrossWeight')?.dirty)"
+                    
+                    class="d-flex align-items-center text-danger fw-bold ms-2 px-2 rounded"
+                    style="background-color: #fdecea; border: 1px solid #f5c2c7;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Gross Weight should be greater than Net Weight
+                  </span>
                   <span class="ribbon-e text-white">
 
                     {{ route.value.segmentType || 'LCL' }}
@@ -521,21 +554,25 @@
                               placeholder="" 
                               DecimalPrecision
                               [DecimalPrecisionBefore]="6"
-                              [DecimalPrecisionAfter]="3"
-                              class="form-control custom-input-field sm" 
+                              [DecimalPrecisionAfter]="digitsAfterDecimal"
+                              class="form-control custom-input-field sm text-end" 
                               formControlName="GrossWeight"
+                              (focus)="route.get('GrossWeight')?.updateValueAndValidity()" 
+                              (blur)="route.get('GrossWeight')?.updateValueAndValidity()"
                               >
                               <label for="text-input" class="input-label">Gross Weight <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
-                              <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
+                              <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
                                 Gr weight > Net weight
-                              </span>
+                              </span> -->
                             </div>
                           </aside>
                           <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
                             <div class="custom-form-group">
                               <input type="text" id="text-input" placeholder=""
-                                class="form-control custom-input-field sm" formControlName="NetWeight">
+                                class="form-control custom-input-field sm text-end" formControlName="NetWeight"  DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="digitsAfterDecimal">
                               <label for="text-input" class="input-label">Net Weight <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'NetWeight') ? '*' : '' }}</span></label>
                             </div>
@@ -544,7 +581,9 @@
                           <aside class="col-md-3" *ngIf="route.value.segmentType === 'LCL'">
                             <div class="custom-form-group">
                               <input type="text" id="text-input" placeholder=""
-                                class="form-control custom-input-field sm" formControlName="Volume">
+                                class="form-control custom-input-field sm text-end" formControlName="Volume"  DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="digitsAfterDecimal">
                               <label for="text-input" class="input-label">CBM <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
                               @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
@@ -560,8 +599,10 @@
                           <aside class="col-md-3" *ngIf="route.value.segmentType === 'AIR'">
                             <div class="custom-form-group">
                               <input type="text" id="text-input" placeholder=""
-                                class="form-control custom-input-field sm" formControlName="ChargeableWeight"
-                                [onlyNumbers]>
+                                class="form-control custom-input-field sm text-end" formControlName="ChargeableWeight"
+                                 DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="digitsAfterDecimal">
                               <label for="text-input" class="input-label">Chargeable Weight <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'ChargeableWeight') ? '*' : '' }}</span></label>
                               @if(route.get('ChargeableWeight')?.invalid && route.get('ChargeableWeight')?.touched){
@@ -611,26 +652,14 @@
 
 
 
-                        @if(isEditMode && isAuthorizedUser){
-                        <aside class="col-md-3">
-                          <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!quoteRoutes.at(routeIndex).get('authorizerStatus')?.value">
-                            <ng-select formControlName="authorizerStatus" [items]="approvalStatus" bindLabel="name"
-                              bindValue="value">
 
-                            </ng-select>
-                            <label for="" class="input-label">Authorization Status <span
-                                class="text-danger"></span></label>
-                          </div>
-                        </aside>
-                        }
 
 
                         <div class="col-12 px-2">
                           <div class="d-flex justify-content-end">
-                            <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80"
+                            <button class="btn btn-sm btn-info dofi-min-w-130 dofi-max-w-130"
                               (click)="addQuoteProduct(routeIndex)">
-                              <i class="fas fa-plus me-1"></i> Add
+                              <i class="fas fa-plus me-1"></i> Add Product
                             </button>
                           </div>
                           <div class="table-responsive" formArrayName="quoteProducts">
@@ -665,7 +694,7 @@
 
 
                                   <th class="bg-transparent text-light" scope="col"
-                                    *ngIf="quoteProducts(routeIndex).length > 1">Action</th>
+                                    *ngIf="quoteProducts(routeIndex).length > 0">Action</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -692,46 +721,48 @@
                                     </dofi-searchable-dropdown>
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="ExternalQty" placeholder=""
+                                    <input type="text" id="text-input" formControlName="ExternalQty" [onlyNumbers]  placeholder=""
                                     (input)="handleCalculation(routeIndex)"
-                                      class="custom-input-field sm">
+                                      class="custom-input-field sm text-end">
                                   </td>
                                   @if(route.value.segmentType === 'LCL' || route.value.segmentType === 'FCL'){
                                   <td>
                                     <div class="custom-form-group">
-                                      <input type="text" id="text-input" formControlName="GrossWeight" placeholder=""
+                                      <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="digitsAfterDecimal" placeholder=""
                                       (input)="handleCalculation(routeIndex)"
-                                        class="custom-input-field sm">
-                                      <span *ngIf="product.get('GrossWeight')?.hasError('grossNotGreater')"
-                                        class="error-message">
-                                        Gr weight > Net weight
-                                      </span>
+                                        class="custom-input-field sm text-end">
                                     </div>
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="NetWeight"
+                                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="digitsAfterDecimal"
                                     (input)="handleCalculation(routeIndex)" placeholder=""
                                       class="custom-input-field sm">
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="Volume" placeholder="" (input)="handleCalculation(routeIndex)"
-                                      class="custom-input-field sm" >
+                                    <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
+                              [DecimalPrecisionBefore]="6"
+                              [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm text-end" >
                                   </td>
                                   }
 
                                   <!-- AIR Part -->
                                   @if(route.value.segmentType === 'AIR'){
                                   <td>
-                                    <input type="text" id="text-input" formControlName="Length" placeholder="" (input)="handleCalculation(routeIndex)"
-                                      class="custom-input-field sm">
+                                    <input type="text" id="text-input" formControlName="Length" placeholder="" [onlyNumbers]  (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm text-end">
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="Width" placeholder="" (input)="handleCalculation(routeIndex)"
-                                      class="custom-input-field sm">
+                                    <input type="text" id="text-input" formControlName="Width" placeholder="" [onlyNumbers] (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm text-end">
                                   </td>
                                   <td>
-                                    <input type="text" id="text-input" formControlName="Height" placeholder="" (input)="handleCalculation(routeIndex)"
-                                      class="custom-input-field sm">
+                                    <input type="text" id="text-input" formControlName="Height" placeholder="" [onlyNumbers] (input)="handleCalculation(routeIndex)"
+                                      class="custom-input-field sm text-end">
                                   </td>
                                   <td>
                                     <ng-select class="ng-select" formControlName="ProductUnit"
@@ -744,13 +775,13 @@
                                   <td>
                                     <div class="form-check ms-2">
                                       <input class="form-check-input" type="checkbox" id="leadOrCustomer"
-                                        formControlName="IsHaz" (change)="toggleHazProduct(routeIndex,productIndex)">
+                                        formControlName="IsHaz" (change)="onHazChange(routeIndex,productIndex,$event)" (keydown.enter)="onHazChange(routeIndex,productIndex,$event)">
                                     </div>
                                   </td>
 
                                   <td>
                                     <ng-select class="ng-select" [items]="imcoList" bindLabel="ImcoName"
-                                      bindValue="ImcoMasterSid" appendTo="body" formControlName="ImcoClass"></ng-select>
+                                      bindValue="ImcoMasterSid" appendTo="body" formControlName="ImcoClass" (change)="onImcoChange(routeIndex,productIndex,$event)"></ng-select>
                                   </td>
                                   <td>
                                     <input type="text" id="text-input" formControlName="UnNo" placeholder=""
@@ -760,7 +791,7 @@
                                     <input type="text" id="text-input" formControlName="PkgGroup" placeholder=""
                                       class="custom-input-field sm">
                                   </td>
-                                  <td *ngIf="quoteProducts(routeIndex).length > 1"
+                                  <td *ngIf="quoteProducts(routeIndex).length > 0"
                                     style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <button class="btn btn-link text-danger"
                                       (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid)"
@@ -809,6 +840,7 @@
                                   }
                                 </button>
                               </h2>
+                              
                               <div ngbAccordionCollapse [id]="'carrier-' + carrierIndex">
                                 <div class="card">
                                   <div class="card-body py-0 px-1">
@@ -840,6 +872,17 @@
                                           }
                                         </div>
                                       </aside>
+                                      @if(isEditMode && authorizerDetails.canAuthorize){
+                                      <aside class="col-md-3">
+                                        <div class="custom-form-group custom-form-group-select"
+                                          [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
+                                          <ng-select formControlName="authorizerStatus" [items]="approvalStatus" bindLabel="name" bindValue="value">
+                                      
+                                          </ng-select>
+                                          <label for="" class="input-label">Authorization Status <span class="text-danger"></span></label>
+                                        </div>
+                                      </aside>
+                                      }
                                     </div>
                                   </div>
                                 </div>
@@ -1094,6 +1137,8 @@
                                             <div class="custom-form-group">
                                               <input type="text" id="text-input" formControlName="CostRate"
                                                 placeholder=""
+                                                DecimalPrecision [DecimalPrecisionBefore]="12"
+                                                [DecimalPrecisionAfter]="digitsAfterDecimal"
                                                 (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                                 class="custom-input-field sm  text-end" [onlyNumbers]>
                                               @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
@@ -1111,7 +1156,7 @@
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
                                               DecimalPrecision [DecimalPrecisionBefore]="12"
-                                              [DecimalPrecisionAfter]="3">
+                                              [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                           </td>
                                           }
@@ -1119,7 +1164,7 @@
                                             <input type="text" id="text-input" formControlName="CostAmount"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
                                               readonly DecimalPrecision [DecimalPrecisionBefore]="12"
-                                              [DecimalPrecisionAfter]="3">
+                                              [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                           </td>
                                           @if(f['AgreedRate']?.value){
@@ -1127,7 +1172,7 @@
                                             <input type="text" id="text-input" formControlName="CostLocalAmount"
                                               placeholder="" class="form-control custom-input-field sm  text-end"
                                               readonly DecimalPrecision [DecimalPrecisionBefore]="12"
-                                              [DecimalPrecisionAfter]="3">
+                                              [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                           </td>
                                           }

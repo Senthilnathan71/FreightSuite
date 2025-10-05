@@ -18,7 +18,7 @@ import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, ReactiveForms
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, distinctUntilChanged, forkJoin, from, of, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, forkJoin, from, of, Subject, Subscription, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
@@ -33,6 +33,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { de } from 'date-fns/locale';
 // import { ComboBoxColumn, MultiColumnComboboxComponent } from 'src/app/component/multicolumn-combobox/multicolumn-combobox.component';
 @Component({
   selector: 'app-quotation-entry',
@@ -63,10 +64,23 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 })
 export class QuotationEntryComponent implements OnInit {
 
+  private subscription = new Subscription()
 
   // SECTION1 - VARIABLE DECLARATION
   @ViewChildren('revenueLocalAmountInput') revenueLocalInputs!: QueryList<ElementRef<HTMLInputElement>>;
   selectedCurrency : any;
+
+  actionsDisabled = false;
+  approvalDropdownValue = ""
+  authorizerDetails = {
+    isAuthorizer: false,
+    isAlreadyApproved: false,
+    canAuthorize: false,
+    AuthorityLevel: null,
+    AuthorityDetailSid: null
+  }
+
+  
 
   QuoteHeaderSid: number;
   currentMenuId: number;
@@ -146,10 +160,15 @@ export class QuotationEntryComponent implements OnInit {
 
   approvalStatus = [
     { value : "Pending" , name :"Waiting for Approval"},
+    { value : "WaitingForFinalApproval" , name :"Waiting for Final Approval"},
+    { value : "WaitingForCustomerApproval" , name :"Waiting for Customer Approval"},
     { value : "Approved" , name :"Approved"},
+    { value : "Counter" , name :"Counter"},
     { value : "Rejected" , name : "Rejected"}
   ]
 
+  
+  
   tabs: string[] = ['Quotation', 'Route Details'];
   requiredFieldsToGetTariff = ['DepartmentMasterSid','POLSid','PODSid','effDate','expDate']
   selectedTab = 'Quotation';
@@ -411,9 +430,36 @@ private extractCargoData(enquiryCargo: any[]): any {
       UserMasterSid: UserMasterSid,
       DocumentSid: QuoteHeaderSid
     }
+
+    const atleastOneApprovedCarrier = (this.quotationData?.quoteRoutes || []).some(route => {
+      return (route?.quoteCarriers || []).some(carrier => carrier.ApprovalStatus === "Approved")
+    })
+
+    if(atleastOneApprovedCarrier){
+      return;
+    }
+
+    if (UserMasterSid === this.quotationData?.CustomerMasterSid) {
+      this.authorizerDetails = {
+        isAuthorizer: true,
+        isAlreadyApproved: false,
+        canAuthorize: true,
+        AuthorityLevel: "C",
+        AuthorityDetailSid: null
+      }
+    }
+
     this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
-        this.isAuthorizedUser = resp.data?.canAuthorize
+        const data = resp.data;
+        this.isAuthorizedUser = data?.canAuthorize;
+        this.authorizerDetails = {
+          isAuthorizer : data?.canAuthorize,
+          isAlreadyApproved : data?.alreadyApproved,
+          canAuthorize : data?.canAuthorize && !data?.alreadyApproved,
+          AuthorityLevel : data?.AuthorityLevel,
+          AuthorityDetailSid : data?.AuthorityDetailSid
+        }
       }
     )
   }
@@ -641,7 +687,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       CarrierMasterSid : [data?.CarrierMasterSid || null],
       CarrierName : [data?.CarrierName || ''],
       TransitTime : [data?.TransitTime || null],
-      authorizerStatus : [data?.authorizerStatus || 'Pending'],
+      authorizerStatus : [{value : data?.ApprovalStatus || 'Pending' , disabled: true}],
+      authorizerRemarks : [data?.authorizerRemarks || ''],
 
       quoteCharges : this.fb.array([])
     })
@@ -901,6 +948,16 @@ private extractCargoData(enquiryCargo: any[]): any {
     return control ? control.hasValidator(Validators.required) : false;
   }
 
+  onHazChange(routeIndex:number,productIndex:number,event:any){
+      const element = event.target as HTMLInputElement;
+      const control = this.quoteProducts(routeIndex).at(productIndex).get('IsHaz');
+      if(event instanceof KeyboardEvent){
+        element.checked = !element.checked;
+      }
+      control.setValue(element.checked);
+      this.toggleHazProduct(routeIndex,productIndex);
+  }
+
   toggleHazProduct(routeIndex:number,productIndex:number){
     const isHaz = this.quoteProducts(routeIndex).at(productIndex).get('IsHaz')?.value;
     console.log(isHaz);
@@ -917,6 +974,18 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.clearValidators();
       this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.disable();
     }
+  }
+
+  onImcoChange(routeIndex:number,productIndex,item:any){
+    console.log(item);
+    const productForm = this.quoteProducts(routeIndex).at(productIndex) as FormGroup;
+    if(!item){
+      productForm.get('UnNo')?.setValue("");
+      productForm.get('PkgGroup')?.setValue("");
+      return;
+    }
+    productForm.get('UnNo')?.setValue(item.ImcoUn);
+    productForm.get('PkgGroup')?.setValue(item.PackingGroup);
   }
 
   deleteQuoteProduct(routeIndex:number, productIndex:number,QuoteProductSid:number){
@@ -1104,6 +1173,12 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   onSubmit() {
 
+    const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
+    if(canLoginUserAuthorize && !this.approvalDropdownValue){
+      this.appSettingService.showWarning("Please select approval status");
+      return;
+    }
+
     if (this.quoteRoutes.invalid) {
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.quoteRoutes.markAllAsTouched();
@@ -1123,7 +1198,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     let currentCompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
     let userEmail = this.userData?.userEmail;
-    console.log(formValue);
+    console.log(this.authorizerDetails);
 
     const payload = {
       CompanyMasterSid: currentCompanyMasterSid,
@@ -1143,6 +1218,11 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteDate: formValue.QuoteDate,
       EnquirySid: formValue.EnquirySid,
       status: formValue.status === "Active" ? 'A' : 'S',
+      authDetails : {
+          canAuthorize : this.authorizerDetails?.canAuthorize,
+          AuthorityDetailSid :  this.authorizerDetails?.AuthorityDetailSid || null,
+          ApprovalStatus : this.approvalDropdownValue
+      },
 
       quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => ({
         // Route Part
@@ -1176,17 +1256,38 @@ private extractCargoData(enquiryCargo: any[]): any {
         CargoDescription : route.CargoDescription,
 
         // Route - Cargo - Product
-        quoteProducts : (route.quoteProducts || []).map(product => ({
+        quoteProducts : (route.quoteProducts || []).map(product => {
+          const isHaz = product.ProductType === "2";
+          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
+          const imcoUnNo = this.imcoList.find(imco => imco.ImcoMasterSid === product.IMOClass)?.ImcoUn;
+          return {
           ...product,
-        })),
+          UnNo : productUnNo || imcoUnNo,
+          }
+        }),
 
         // Route - Carrier
         quoteCarriers : (route.quoteCarriers || []).map((carrier) => {
+          const canLoginUserAuthorize = this.authorizerDetails?.canAuthorize;
+          let approvalLevel = this.authorizerDetails?.AuthorityLevel;
+          console.log(this.approvalDropdownValue);
+          console.log(approvalLevel);
+
+
+
+          let finalValue;
+          if(this.approvalDropdownValue === "Approved"){
+            finalValue = this.statusMapBasedOnAuthLevel.get(String(approvalLevel));
+          } else {
+            finalValue = "Rejected";
+          }
+          console.log(finalValue);
           const allCharges = (carrier.quoteCharges || []).map(charge => ({
             ...charge,
           }))
           return {
             ...carrier,
+            ...(canLoginUserAuthorize ? {ApprovalStatus : finalValue} : {}),
             quoteCharges : allCharges
           }
         })
@@ -1359,9 +1460,9 @@ private extractCargoData(enquiryCargo: any[]): any {
     if(qty){
       const qtyValue = this.quoteRoutes.at(routeIndex).get(qty)?.value;
       console.log(chargeForm.get('Qty')?.value);
-      chargeForm.get('Qty')?.setValue(Number(qtyValue));
+      chargeForm.get('Qty')?.setValue(Number(qtyValue) || '');
       console.log(chargeForm.get('Qty')?.value);
-    } 
+    }
 
     chargeForm.get('RevenueChargeUomSid')?.setValue(charge.UOM);
     chargeForm.get('RevenueCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
@@ -1580,8 +1681,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       PODSid : routeForm.get('PODSid')?.value,
       FPODSid : routeForm.get('FPODSid')?.value,
       CargoType : routeForm.get('CargoType')?.value,
-      EffectiveDate : routeForm.get('effDate')?.value,
-      ExpiredDate : routeForm.get('expDate')?.value,
+      EffectiveDate : routeForm.get('effDate')?.value ? new Date(routeForm.get('effDate')?.value) : null,
+      ExpiredDate : routeForm.get('expDate')?.value ? new Date(routeForm.get('expDate')?.value) : null,
       Carrier : carrierForm.get('CarrierMasterSid')?.value,
       IncoTerms : routeForm.get('ServiceLevel')?.value,
     }
@@ -1998,11 +2099,13 @@ private extractCargoData(enquiryCargo: any[]): any {
     routeCtrl.get('NetWeight')?.setValue(totalNetWeight);
     routeCtrl.get('Volume')?.setValue(totalVolume);
     routeCtrl.get('ChargeableWeight')?.setValue(totalChargeableWeight);
+    routeCtrl.get('GrossWeight')?.updateValueAndValidity();
+
     routeCtrl.get('GrossWeight')?.disable();
     routeCtrl.get('NetWeight')?.disable()
     routeCtrl.get('Volume')?.disable();
     routeCtrl.get('ChargeableWeight')?.disable();
-    
+
   }
 
   getRouteInfo(routeIndex : number){
@@ -2067,6 +2170,32 @@ private extractCargoData(enquiryCargo: any[]): any {
       default:
         return '1';
     }
+  }
+
+  statusMapBasedOnAuthLevel = new Map<string, string>([
+    ['1', 'WaitingForFinalApproval'],
+    ['2', 'WaitingForCustomerApproval'],
+    ['C', 'Approved'],
+  ]);
+
+  statusMap = new Map<string, string>([
+    ['Pending', 'Waiting for Approval'],
+    ['Approved', 'Approved'],
+    ['Rejected', 'Rejected']
+  ]);
+
+  onApprovalStatusChange(status: any) {
+    this.approvalDropdownValue = status;
+    this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+      const carrierArr = this.quoteCarriers(routeIndex);
+      carrierArr.controls.forEach((carrier: FormGroup) => {
+        carrier.get('authorizerStatus')?.setValue(status);
+      })
+    })
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
 }
