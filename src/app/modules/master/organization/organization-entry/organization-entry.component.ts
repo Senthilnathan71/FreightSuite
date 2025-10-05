@@ -1,10 +1,12 @@
 import { CommonModule, DatePipe, JsonPipe } from '@angular/common';
 import {
   ChangeDetectorRef,
+  ChangeDetectionStrategy,
   Component,
   TemplateRef,
   ViewChild,
-  OnInit
+  OnInit,
+  OnDestroy
 } from '@angular/core';
 import {
   AbstractControl,
@@ -41,7 +43,7 @@ import { MasterService } from '../../master.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { combineLatest, forkJoin } from 'rxjs';
+import { combineLatest, forkJoin, Subject } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -58,11 +60,12 @@ import { PasswordValidators } from 'src/app/core/ValidationFn/password.validator
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
-import { debounceTime, distinctUntilChanged, switchMap, finalize, startWith } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, finalize, startWith, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-organization-entry',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgbNavModule,
     CommonModule,
@@ -82,8 +85,7 @@ import { debounceTime, distinctUntilChanged, switchMap, finalize, startWith } fr
     MultiSelectComponent,
     NgbDropdownModule,
     NgbAccordionModule,
-    SearchableDropdown,
-    MultiSelectComponent
+    SearchableDropdown
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',
@@ -92,7 +94,8 @@ import { debounceTime, distinctUntilChanged, switchMap, finalize, startWith } fr
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
   ],
 })
-export class OrganizationEntryComponent implements OnInit {
+export class OrganizationEntryComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   // Existing properties
   page = 1;
   pageSize = 5;
@@ -124,6 +127,9 @@ export class OrganizationEntryComponent implements OnInit {
 
   // Branch Form Array - Initialize immediately
   branchFormArray: FormArray = this.fb.array([]);
+
+  // Cache available branches for dropdown
+  availableBranchesCache: any[] = [];
 
   // Add active branch index for accordion
   activeBranchIndex: number | null = null;
@@ -233,9 +239,10 @@ export class OrganizationEntryComponent implements OnInit {
   salesTeamList: any[];
   CustomerSalesSid: number;
   salespersonForm!: FormGroup;
-  spDepartmentList: any[];
-  spBranchList: any[];
-  salesPersonList: any[];
+  spDepartmentList: any[] = [];
+  departmentListForSelect: any[] = []; // Convert from getter to property
+  spBranchList: any[] = [];
+  salesPersonList: any[] = [];
   allDocs: any[] = [];
   allCS: any[] = [];
   branchList: any[];
@@ -286,7 +293,7 @@ export class OrganizationEntryComponent implements OnInit {
   customerBranchData: any;
   customerBranchContactData: any;
   customerBranchEmailData: any;
-  departmentList: any;
+  departmentList: any[] = [];
   customerBranchName: any;
   customerName: any;
 
@@ -384,11 +391,16 @@ export class OrganizationEntryComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
+      console.log('User Profile loaded:', this.userData);
+      console.log('User Email:', this.userData?.userEmail || this.userData?.UserEmail);
       this.checkPermissions();
+    } else {
+      console.error('No user profile found in localStorage');
     }
     if (!this.isEditMode) {
       this.selectedTab = 'Party';
     }
+
 
     // ✅ Initial data loads
     this.getAllCountries();
@@ -396,7 +408,17 @@ export class OrganizationEntryComponent implements OnInit {
     this.initializePanFields();
     this.loadAllSpfields();
     // this.loadDepartments();
-            this.loadMenus();
+    this.loadMenus();
+
+    // ✅ Initialize tabs for both new and edit modes
+    this.tabs = [
+      { name: 'Party', icon: 'fas fa-address-card' },
+      { name: 'Branch', icon: 'fas fa-code-branch' },
+      { name: 'Salesman', icon: 'fas fa-flag-checkered' },
+      { name: 'Email', icon: 'fas fa-envelope' },
+      { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+      { name: 'Milestone', icon: 'fas fa-rupee-sign' },
+    ];
 
     // this.loadCustomerBranch();
 
@@ -405,28 +427,35 @@ export class OrganizationEntryComponent implements OnInit {
       this.CustomerMasterSid = +params.get('id');
       if (this.CustomerMasterSid) {
         this.isEditMode = true;
+        this.customerForm.get('status')?.enable();
         this.loadCustomerData(this.CustomerMasterSid);
-    this.loadCustomerMilestones();
-    this.getAllSpCustomerBranch();
-        this.tabs = [
-          ...this.tabs,
-          { name: 'Salesman', icon: 'fas fa-flag-checkered' },
-          { name: 'Email', icon: 'fas fa-envelope' },
-          { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
-          { name: 'Milestone', icon: 'fas fa-rupee-sign' },
-        ]
-
+        this.loadCustomerMilestones();
+        this.getAllSpCustomerBranch();
+        // Load sales team data in edit mode
+        this.loadCustomerSalesTeamData();
       }
     });
 
-    // ✅ Auto-generate short code when name changes
-    this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
-      this.generateCustomerShortCode();
-    });
+    // ✅ Auto-generate short code when name changes with debounce
+    this.customerForm.get('CustomerName')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.generateCustomerShortCode();
+      });
 
-    // ✅ React to country changes
-    this.customerForm.get('CountryMasterSid')?.valueChanges.subscribe(() => {
-      this.updateShortCodeFieldState();
+    // ✅ React to country changes with debounce
+    this.customerForm.get('CountryMasterSid')?.valueChanges
+      .pipe(
+        debounceTime(100),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.updateShortCodeFieldState();
       this.generateCustomerShortCode();
       this.updateTaxIdFieldValidation();
       this.updateTaxIdFieldState();
@@ -675,7 +704,11 @@ export class OrganizationEntryComponent implements OnInit {
     const newBranch = this.addBranchFormGroup();
     this.branches.push(newBranch);
     this.expandedBranches.add(this.branches.length - 1);
-    this.cdRef.detectChanges();
+
+    // Update the available branches cache
+    this.updateAvailableBranchesCache();
+
+    this.cdRef.markForCheck();
   }
   // Add contact to branch
   addContact(branchIndex: number) {
@@ -723,17 +756,7 @@ export class OrganizationEntryComponent implements OnInit {
     });
     this.getLogins(branchIndex).push(loginForm);
   }
-  // Add this method to your component class
-  togglePasswordVisibility(passwordFieldId: string): void {
-    const passwordField = document.getElementById(passwordFieldId) as HTMLInputElement;
-    if (passwordField) {
-      if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-      } else {
-        passwordField.type = 'password';
-      }
-    }
-  }
+
   // Remove branch
   removeBranch(branchIndex: number) {
     const branch = this.branches.at(branchIndex);
@@ -747,6 +770,9 @@ export class OrganizationEntryComponent implements OnInit {
             this.branches.removeAt(branchIndex);
             this.expandedBranches.delete(branchIndex);
             this.updateExpandedBranchesAfterRemoval(branchIndex);
+            // Update the available branches cache
+            this.updateAvailableBranchesCache();
+            this.cdRef.markForCheck();
           },
           error: (error) => {
             this.appSettingService.showError('Error deleting branch');
@@ -757,6 +783,9 @@ export class OrganizationEntryComponent implements OnInit {
       this.branches.removeAt(branchIndex);
       this.expandedBranches.delete(branchIndex);
       this.updateExpandedBranchesAfterRemoval(branchIndex);
+      // Update the available branches cache
+      this.updateAvailableBranchesCache();
+      this.cdRef.markForCheck();
     }
   }
 
@@ -914,7 +943,27 @@ export class OrganizationEntryComponent implements OnInit {
     });
 
     this.totalLengthOfBranch = this.branches.length || 0;
-    this.cdRef.detectChanges();
+
+    // Update the available branches cache
+    this.updateAvailableBranchesCache();
+
+    this.cdRef.markForCheck();
+  }
+
+  // Update the cache of available branches
+  private updateAvailableBranchesCache(): void {
+    this.availableBranchesCache = [];
+    for (let i = 0; i < this.branchFormArray.length; i++) {
+      const branch = this.branchFormArray.at(i);
+      const branchName = branch.get('CustBranchName')?.value;
+      const branchSid = branch.get('CustomerBranchSid')?.value;
+
+      this.availableBranchesCache.push({
+        CustomerBranchSid: branchSid || null,
+        BranchName: branchName || `Branch ${i + 1}`,
+        index: i
+      });
+    }
   }
   private getBranchEmailsFromCustomerData(branchSid: number): any[] {
     if (!this.customerData || !this.customerData.CustomerBrEmail) return [];
@@ -961,7 +1010,7 @@ export class OrganizationEntryComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.stateList = resp.data;
-            this.cdRef.detectChanges();
+            this.cdRef.markForCheck();
           } else {
             console.error('Error fetching States with Country Id');
             this.stateList = [];
@@ -991,7 +1040,7 @@ export class OrganizationEntryComponent implements OnInit {
           branchForm['cities'] = resp.data;
 
           // ✅ Force change detection
-          this.cdRef.detectChanges();
+          this.cdRef.markForCheck();
 
           console.log(`Loaded ${resp.data.length} cities for branch ${branchIndex}`);
         } else {
@@ -1188,7 +1237,7 @@ export class OrganizationEntryComponent implements OnInit {
         if (resp.status) {
           // Store cities for this specific branch
           branchForm['cities'] = resp.data;
-          this.cdRef.detectChanges();
+          this.cdRef.markForCheck();
         } else {
           console.error('Error fetching Cities with State Id');
           branchForm['cities'] = [];
@@ -1226,6 +1275,8 @@ export class OrganizationEntryComponent implements OnInit {
       Network: [''],
       cusMilestone: this.fb.array([]),
       cusSalesteam: this.fb.array([]),
+      customerEmails: this.fb.array([]), // Add customer emails FormArray
+      customerLogins: this.fb.array([]), // Add customer logins FormArray
       AirlineNumber: [''],
       AirlineCode: ['']
     });
@@ -1401,9 +1452,11 @@ export class OrganizationEntryComponent implements OnInit {
     this.currentTaxIdLabel = label;
   }
   updateTaxIdFieldState(): void {
-    this.customerForm.get('PanAvailable')?.valueChanges.subscribe((panAvailable: boolean) => {
-      const panType = this.customerForm.get('PanType');
-      const panName = this.customerForm.get('PanName');
+    this.customerForm.get('PanAvailable')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((panAvailable: boolean) => {
+        const panType = this.customerForm.get('PanType');
+        const panName = this.customerForm.get('PanName');
 
       if (panAvailable) {
         panType?.enable();
@@ -1457,6 +1510,15 @@ export class OrganizationEntryComponent implements OnInit {
   //   });
   // }
 
+  // Helper method to get user email safely
+  private getUserEmail(): string {
+    const email = this.userData?.userEmail || this.userData?.UserEmail || this.userData?.email;
+    if (!email) {
+      console.error('Unable to get user email from userData:', this.userData);
+    }
+    return email || '';
+  }
+
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
@@ -1476,64 +1538,67 @@ export class OrganizationEntryComponent implements OnInit {
   }
 
   // Fetch customer data and patch the form
-  loadCustomerData(customerId: number) {
-    this.masterService.getCustomerById(customerId).subscribe(
-      (customerData: any) => {
-        this.customerData = customerData;
-        this.customerName = customerData.CustomerName;
-        this.status = customerData.status;
-        const formattedStatus = this.statusMap[customerData.status] || customerData.status;
-        let customerType = customerData.CustomerType;
+  
+loadCustomerData(customerId: number) {
+  this.masterService.getCustomerById(customerId).subscribe(
+    (customerData: any) => {
+      this.customerData = customerData;
+      this.customerName = customerData.CustomerName;
+      this.status = customerData.status;
+      
+      // Convert backend status ('A', 'S') to frontend display values
+      const formattedStatus = customerData.status === 'A' ? 'Active' : 'Suspended';
+      
+      let customerType = customerData.CustomerType;
 
-        if (typeof customerType === 'string') {
-          try {
-            customerType = JSON.parse(customerType);
-          } catch (e) {
-            console.error('Error parsing CustomerType:', e);
-            customerType = {};
-          }
+      if (typeof customerType === 'string') {
+        try {
+          customerType = JSON.parse(customerType);
+        } catch (e) {
+          console.error('Error parsing CustomerType:', e);
+          customerType = {};
         }
-
-        // Patch main customer form
-        this.customerForm.patchValue({
-          ...customerData,
-          CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
-          status: formattedStatus,
-          paymentType: customerData.CashCredit,
-          KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
-          PanAvailable: customerData.PanType || customerData.PanName ? true : false,
-          CustomerType: customerType,
-
-          AirlineNumber: customerData.AirlineNumber || '',
-          AirlineCode: customerData.AirlineCode || ''
-        });
-
-        // Auto-generate short code if missing
-        setTimeout(() => {
-          if (!customerData.CustomerShortCode) {
-            this.generateCustomerShortCode();
-          }
-        });
-
-        // Handle customer types
-        this.selectedStatus = this.modeOfCustomerType
-          .filter(type => {
-            const key = this.toCamelCase(type.name);
-            return customerType[key] === 'isTrue';
-          })
-          .map(type => type.name);
-
-        // Load all data from the single API response
-        this.loadAllCustomerDataFromResponse(customerData);
-
-        console.log('CustomerType loaded:', customerType);
-        console.log('Selected statuses:', this.selectedStatus);
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading customer data.');
       }
-    );
-  }
+
+      // Patch main customer form
+      this.customerForm.patchValue({
+        ...customerData,
+        CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
+        status: formattedStatus, // Use converted status
+        paymentType: customerData.CashCredit,
+        KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
+        PanAvailable: customerData.PanType || customerData.PanName ? true : false,
+        CustomerType: customerType,
+        AirlineNumber: customerData.AirlineNumber || '',
+        AirlineCode: customerData.AirlineCode || ''
+      });
+
+      // Auto-generate short code if missing
+      setTimeout(() => {
+        if (!customerData.CustomerShortCode) {
+          this.generateCustomerShortCode();
+        }
+      });
+
+      // Handle customer types
+      this.selectedStatus = this.modeOfCustomerType
+        .filter(type => {
+          const key = this.toCamelCase(type.name);
+          return customerType[key] === 'isTrue';
+        })
+        .map(type => type.name);
+
+      // Load all data from the single API response
+      this.loadAllCustomerDataFromResponse(customerData);
+
+      console.log('CustomerType loaded:', customerType);
+      console.log('Selected statuses:', this.selectedStatus);
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading customer data.');
+    }
+  );
+}
   private loadAllCustomerDataFromResponse(customerData: any): void {
     // 1. Load branches (with contacts, emails, logins)
     if (customerData.CustomerBranch) {
@@ -1542,6 +1607,7 @@ export class OrganizationEntryComponent implements OnInit {
 
     // 2. Load sales team
     if (customerData.CustomerSalesTeam) {
+      console.log(customerData.CustomerSalesTeam,'customerData.CustomerSalesTeam')
       this.loadSalesTeamFromResponse(customerData.CustomerSalesTeam);
     }
 
@@ -1554,17 +1620,23 @@ export class OrganizationEntryComponent implements OnInit {
     this.getAllSpCustomerBranch();
     this.loadMenus();
     this.getStatesByCountryId();
+
+    // 5. Load emails data
+    this.loadCustomerEmailsData();
+
+    // 6. Load logins data
+    this.loadCustomerLoginsData();
   }
 
   private loadSalesTeamFromResponse(salesTeamData: any[]): void {
     this.selectedCustomerBranch = salesTeamData.flatMap(st => {
-      if (st.branchMaster) {
+      if (st.customerBranch) {
         return [{
-          customerBranchSid: st.branchMaster.CustomerBranchSid,
-          BranchName: st.branchMaster.BranchName
+          customerBranchSid: st.customerBranch.CustomerBranchSid,
+          BranchName: st.customerBranch.BranchName
         }];
       }
-      return st.branches || [];
+      return [];
     });
 
     console.log('Selected branches:', this.selectedCustomerBranch);
@@ -1574,6 +1646,7 @@ export class OrganizationEntryComponent implements OnInit {
       this.cusSalesteam.push(this.createSalesTeamFormGroup(salesteam));
     });
     this.updateSalesTeamPagination();
+    this.cdRef.markForCheck();
   }
   // Load milestones from customer data
   private loadMilestonesFromResponse(milestoneData: any[]): void {
@@ -1588,7 +1661,7 @@ export class OrganizationEntryComponent implements OnInit {
     });
 
     this.updateCustomerMilestonePagination();
-    this.cdRef.detectChanges();
+    this.cdRef.markForCheck();
   }
 
   //  loadCustomerSalesTeam() {
@@ -1663,7 +1736,7 @@ export class OrganizationEntryComponent implements OnInit {
   //         });
 
   //         this.updateCustomerMilestonePagination();
-  //         this.cdRef.detectChanges();
+  //         this.cdRef.markForCheck();
 
   //         console.log('Form array after loading:', this.cusMilestone.length, 'items');
   //       } else {
@@ -1685,13 +1758,75 @@ export class OrganizationEntryComponent implements OnInit {
       salesman: this.masterService.getAllSalesperson(),
       docs: this.masterService.getAllDoc(),
       cs: this.masterService.getAllCS()
-    }).subscribe(({ departments, salesman, docs, cs }) => {
-      this.spDepartmentList = departments;
-      this.salesPersonList = salesman.data;
-      this.allCS = cs.data;
-      this.allDocs = docs.data;
-    })
+    }).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(
+      ({ departments, salesman, docs, cs }) => {
+        this.spDepartmentList = departments || [];
+        this.departmentList = departments || []; // Also populate departmentList for email tab
+        this.salesPersonList = salesman?.data || [];
+        this.allCS = cs?.data || [];
+        this.allDocs = docs?.data || [];
+
+        // Populate departmentListForSelect once to avoid getter re-computation
+        this.departmentListForSelect = this.spDepartmentList.map(dept => ({
+          ...dept,
+          DepartmentMasterSid: dept.DepartmentMasterSid.toString()
+        }));
+
+        // Ensure dropdowns are populated with proper data structure
+        if (this.salesPersonList.length > 0) {
+          console.log('Sales person list loaded:', this.salesPersonList.length, 'items');
+        }
+
+        // Only trigger change detection once after all data is loaded
+        this.cdRef.markForCheck();
+      },
+      (error) => {
+        console.error('Error loading dropdown data:', error);
+        this.appSettingService.showError('Error loading dropdown data');
+        // Initialize with empty arrays to prevent errors
+        this.spDepartmentList = [];
+        this.departmentList = [];
+        this.departmentListForSelect = [];
+        this.salesPersonList = [];
+        this.allCS = [];
+        this.allDocs = [];
+        this.cdRef.markForCheck();
+      }
+    );
   }
+
+  // Load customer sales team data
+  loadCustomerSalesTeamData() {
+    if (!this.CustomerMasterSid) return;
+
+    this.masterService.getCustomerSalesTeam(this.CustomerMasterSid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (resp: any) => {
+          if (resp.status && resp.data) {
+            // Clear existing sales team form array
+            while (this.cusSalesteam.length > 0) {
+              this.cusSalesteam.removeAt(0);
+            }
+
+            // Add sales team data to form array
+            resp.data.forEach((salesTeam: any) => {
+              this.cusSalesteam.push(this.createSalesTeamFormGroup(salesTeam));
+            });
+
+            this.updateSalesTeamPagination();
+            this.cdRef.markForCheck();
+          }
+        },
+        (error) => {
+          console.error('Error loading sales team data:', error);
+          this.appSettingService.showWarning('Could not load sales team data');
+        }
+      );
+  }
+
 
   //    saveAllCusMilestones() {
   //   if (this.cusMilestone.invalid) {
@@ -1748,6 +1883,15 @@ export class OrganizationEntryComponent implements OnInit {
   get cusSalesteam(): FormArray {
     return this.customerForm.get('cusSalesteam') as FormArray;
   }
+
+  get customerEmails(): FormArray {
+    return this.customerForm.get('customerEmails') as FormArray;
+  }
+
+  get customerLogins(): FormArray {
+    return this.customerForm.get('customerLogins') as FormArray;
+  }
+
   updateCustomerMilestonePagination() {
     const totalItems = this.cusMilestone.length;
     this.totalCusMilePages = Math.ceil(totalItems / this.cusMilePageSize);
@@ -1756,11 +1900,12 @@ export class OrganizationEntryComponent implements OnInit {
     const endIndex = startIndex + this.cusMilePageSize;
 
     this.slicedCusMilestoneList = this.cusMilestone.controls.slice(startIndex, endIndex);
-    this.cdRef.detectChanges(); // Force update
+    this.cdRef.markForCheck(); // Force update
   }
   createCusMilestoneFormGrp(data?: any) {
     const formGroup = this.fb.group({
       CustomerMilestoneSid: [data?.CustomerMilestoneSid || null],
+      CustomerBranchSid: [data?.customerBranch?.CustomerBranchSid || data?.CustomerBranchSid || null],
       MilestoneMasterSid: [data?.MilestoneMasterSid || null, [Validators.required]],
       UpdateType: [data?.UpdateType || null, [Validators.required]],
       ContactInfo: [data?.ContactInfo || '', [Validators.required]],
@@ -1781,7 +1926,13 @@ export class OrganizationEntryComponent implements OnInit {
     const newGrp = this.createCusMilestoneFormGrp();
     this.cusMilestone.push(newGrp);
     this.updateCustomerMilestonePagination();
-    this.cdRef.detectChanges();
+
+    // Ensure branches cache is populated
+    if (this.availableBranchesCache.length === 0 && this.branchFormArray && this.branchFormArray.length > 0) {
+      this.updateAvailableBranchesCache();
+    }
+
+    this.cdRef.markForCheck();
   }
   //   saveAllCustomerSalesTeam() {
   //   if (this.cusSalesteam.invalid) {
@@ -1916,7 +2067,7 @@ export class OrganizationEntryComponent implements OnInit {
     const salesmanId = data?.Salesman || data?.salesManUser?.UserMasterSid || null;
     const csPersonId = data?.CSPerson || data?.CSPersonUser?.UserMasterSid || null;
     const docPersonId = data?.DocPerson || data?.DocPersonUser?.UserMasterSid || null;
-    const branchSid = data?.CustomerBranch.CustomerBranchSid || null
+    const branchSid = data?.customerBranch?.CustomerBranchSid || data?.CustomerBranchSid || null
 
     // ✅ Departments - always normalize to string[]
     let departmentIds: string[] = [];
@@ -1969,6 +2120,258 @@ export class OrganizationEntryComponent implements OnInit {
   onAddSalesTeam() {
     this.cusSalesteam.push(this.createSalesTeamFormGroup());
     this.updateSalesTeamPagination();
+
+    // Use setTimeout to prevent blocking the UI thread
+    setTimeout(() => {
+      this.cdRef.markForCheck();
+    }, 0);
+  }
+
+  // Save sales team data
+  saveSalesTeamData(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.cusSalesteam.length === 0) {
+        resolve({ success: true });
+        return;
+      }
+
+      const salesTeamsPayload = this.prepareUpdateSalesTeamsPayload();
+
+      if (salesTeamsPayload.length === 0) {
+        resolve({ success: true });
+        return;
+      }
+
+      const payload = {
+        CustomerMasterSid: this.CustomerMasterSid,
+        salesTeams: salesTeamsPayload
+      };
+
+      this.masterService.saveCustomerSalesTeam(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Sales team saved successfully');
+            resolve({ success: true });
+          } else {
+            this.appSettingService.showError('Error saving sales team');
+            reject({ success: false, message: 'Error saving sales team' });
+          }
+        },
+        (error) => {
+          console.error('Error saving sales team:', error);
+          this.appSettingService.showError('Error saving sales team');
+          reject({ success: false, error });
+        }
+      );
+    });
+  }
+
+  // Save customer milestones
+  saveCustomerMilestones(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.cusMilestone.length === 0) {
+        resolve({ success: true });
+        return;
+      }
+
+      const milestonesPayload = this.prepareUpdateMilestonesPayload();
+
+      if (milestonesPayload.length === 0) {
+        resolve({ success: true });
+        return;
+      }
+
+      // Assuming there's a save method for milestones, similar to sales team
+      // If not, this should be integrated into the main customer update
+      resolve({ success: true });
+    });
+  }
+
+  // Email tab methods
+  onAddCustomerEmail() {
+    const newEmail = this.fb.group({
+      CustomerBrEmailSid: [null],
+      CustomerBranchSid: ['', [Validators.required]], // Branch dropdown
+      MenuMasterSid: ['', [Validators.required]],
+      DepartmentMasterSid: [[], [Validators.required]],
+      Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
+      CCemail: ['', [EmailValidators.multipleEmails()]],
+      status: ['Active']
+    });
+
+    this.customerEmails.push(newEmail);
+    this.cdRef.markForCheck();
+  }
+
+  removeCustomerEmail(index: number) {
+    const email = this.customerEmails.at(index);
+    const emailSid = email.get('CustomerBrEmailSid')?.value;
+
+    if (emailSid) {
+      if (confirm('Are you sure you want to delete this email?')) {
+        this.masterService.deleteCustomerBranchEmailById(emailSid).subscribe({
+          next: (resp: any) => {
+            if (resp.status) {
+              this.customerEmails.removeAt(index);
+              this.appSettingService.showSuccess('Email deleted successfully');
+              this.cdRef.markForCheck();
+            } else {
+              this.appSettingService.showError('Failed to delete email');
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting email:', error);
+            this.appSettingService.showError('Error deleting email');
+          }
+        });
+      }
+    } else {
+      this.customerEmails.removeAt(index);
+      this.cdRef.markForCheck();
+    }
+  }
+
+  // Get available branches for dropdown
+  getAvailableBranches(): any[] {
+    // If cache is empty, update it
+    if (this.availableBranchesCache.length === 0 && this.branchFormArray && this.branchFormArray.length > 0) {
+      this.updateAvailableBranchesCache();
+    }
+
+    return this.availableBranchesCache;
+  }
+
+  // Load customer emails data
+  loadCustomerEmailsData() {
+    if (!this.customerData || !this.customerData.CustomerBrEmail) return;
+
+    // Clear existing emails
+    while (this.customerEmails.length > 0) {
+      this.customerEmails.removeAt(0);
+    }
+
+    // Ensure branches cache is populated
+    if (this.availableBranchesCache.length === 0 && this.branchFormArray && this.branchFormArray.length > 0) {
+      this.updateAvailableBranchesCache();
+    }
+
+    // Add emails from all branches
+    this.customerData.CustomerBrEmail.forEach((email: any) => {
+      const emailForm = this.fb.group({
+        CustomerBrEmailSid: [email.CustomerBrEmailSid || null],
+        CustomerBranchSid: [email.customerBranch?.CustomerBranchSid || '', [Validators.required]],
+        MenuMasterSid: [email.MenuMasterSid || '', [Validators.required]],
+        DepartmentMasterSid: [email.DepartmentMasterSid || [], [Validators.required]],
+        Toemail: [email.Toemail || '', [Validators.required, EmailValidators.multipleEmails()]],
+        CCemail: [email.CCemail || '', [EmailValidators.multipleEmails()]],
+        status: [email.status === 'A' ? 'Active' : email.status === 'S' ? 'Suspended' : 'Active']
+      });
+
+      this.customerEmails.push(emailForm);
+    });
+
+    this.cdRef.markForCheck();
+  }
+
+  // eLogin tab methods
+  onAddCustomerLogin() {
+    const newLogin = this.fb.group({
+      CustomerLoginSid: [null],
+      CustomerBranchSid: ['', [Validators.required]], // Branch dropdown
+      LoginName: ['', [Validators.required]],
+      LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
+      LoginPassword: ['', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+      status: ['Active', Validators.required]
+    });
+
+    this.customerLogins.push(newLogin);
+    this.cdRef.markForCheck();
+  }
+
+  removeCustomerLogin(index: number) {
+    const login = this.customerLogins.at(index);
+    const loginSid = login.get('CustomerLoginSid')?.value;
+
+    if (loginSid) {
+      if (confirm('Are you sure you want to delete this login?')) {
+        this.masterService.deleteCustomerLoginById(loginSid).subscribe({
+          next: (resp: any) => {
+            if (resp.status) {
+              this.customerLogins.removeAt(index);
+              this.appSettingService.showSuccess('Login deleted successfully');
+              this.cdRef.markForCheck();
+            } else {
+              this.appSettingService.showError('Failed to delete login');
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting login:', error);
+            this.appSettingService.showError('Error deleting login');
+          }
+        });
+      }
+    } else {
+      this.customerLogins.removeAt(index);
+      this.cdRef.markForCheck();
+    }
+  }
+
+  togglePasswordVisibility(indexOrId: number | string) {
+    let passwordField: HTMLInputElement | null;
+    let eyeIcon: HTMLElement | null;
+
+    if (typeof indexOrId === 'string') {
+      // Handle string ID (from branch logins)
+      passwordField = document.getElementById(indexOrId) as HTMLInputElement;
+      eyeIcon = null; // Branch logins don't have eye icons
+    } else {
+      // Handle number index (from eLogin tab)
+      passwordField = document.querySelector(
+        `#loginPassword${indexOrId}`
+      ) as HTMLInputElement;
+      eyeIcon = document.querySelector(`#eyeIcon${indexOrId}`) as HTMLElement;
+    }
+
+    if (passwordField) {
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        if (eyeIcon) eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        passwordField.type = 'password';
+        if (eyeIcon) eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+  }
+
+  // Load customer logins data
+  loadCustomerLoginsData() {
+    if (!this.customerData || !this.customerData.CustomerLogin) return;
+
+    // Clear existing logins
+    while (this.customerLogins.length > 0) {
+      this.customerLogins.removeAt(0);
+    }
+
+    // Ensure branches cache is populated
+    if (this.availableBranchesCache.length === 0 && this.branchFormArray && this.branchFormArray.length > 0) {
+      this.updateAvailableBranchesCache();
+    }
+
+    // Add logins from all branches
+    this.customerData.CustomerLogin.forEach((login: any) => {
+      const loginForm = this.fb.group({
+        CustomerLoginSid: [login.CustomerLoginSid || null],
+        CustomerBranchSid: [login.customerBranch?.CustomerBranchSid || '', [Validators.required]],
+        LoginName: [login.LoginName || '', [Validators.required]],
+        LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
+        LoginPassword: [login.LoginPassword || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+        status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
+      });
+
+      this.customerLogins.push(loginForm);
+    });
+
+    this.cdRef.markForCheck();
   }
 
 
@@ -2001,11 +2404,20 @@ export class OrganizationEntryComponent implements OnInit {
   // Add this method to your OrganizationEntryComponent class
   // Replace your existing onSubmit method with this comprehensive version
   async onSubmit() {
+    // Set loading state
+    this.btnDisable = true;
+
+    // Debug: Log email tab status
+    console.log('=== Save operation started ===');
+    console.log('Email tab entries:', this.customerEmails.length);
+    console.log('Email tab data:', this.customerEmails.value);
+
     // Validate main customer form
     if (this.customerForm.invalid) {
       this.appSettingService.showWarning('Please fill all required fields in the Party section.');
       this.customerForm.markAllAsTouched();
       this.selectedTab = 'Party';
+      this.btnDisable = false;
       return;
     }
 
@@ -2015,6 +2427,7 @@ export class OrganizationEntryComponent implements OnInit {
       if (!branchValidation.isValid) {
         this.appSettingService.showWarning(branchValidation.message);
         this.selectedTab = 'Branch';
+        this.btnDisable = false;
         return;
       }
     }
@@ -2025,6 +2438,7 @@ export class OrganizationEntryComponent implements OnInit {
       if (!salesTeamValidation.isValid) {
         this.appSettingService.showWarning(salesTeamValidation.message);
         this.selectedTab = 'Salesman';
+        this.btnDisable = false;
         return;
       }
     }
@@ -2035,6 +2449,7 @@ export class OrganizationEntryComponent implements OnInit {
       if (!milestoneValidation.isValid) {
         this.appSettingService.showWarning(milestoneValidation.message);
         this.selectedTab = 'Milestone';
+        this.btnDisable = false;
         return;
       }
     }
@@ -2052,6 +2467,8 @@ export class OrganizationEntryComponent implements OnInit {
     } catch (error) {
       console.error('Error saving customer:', error);
       this.appSettingService.showError('Error saving customer data');
+    } finally {
+      this.btnDisable = false;
     }
   }
 
@@ -2146,7 +2563,7 @@ export class OrganizationEntryComponent implements OnInit {
   // For CREATE mode - only customer and branches
   private prepareCreatePayload(): any {
     const formValue = this.customerForm.value;
-    const currentUserEmail = this.userData?.userEmail;
+    const currentUserEmail = this.getUserEmail();
     const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
     const statusValue = formValue.status === 'A' ? 'A' : 'S';
@@ -2172,7 +2589,6 @@ export class OrganizationEntryComponent implements OnInit {
         RegistrationNo: formValue.RegistrationNo,
         CompanyType: formValue.CompanyType,
         status: statusValue,
-        createdBy: currentUserEmail,
         AirlineNumber: formValue.AirlineNumber,
         AirlineCode: formValue.AirlineCode
       },
@@ -2201,9 +2617,8 @@ export class OrganizationEntryComponent implements OnInit {
         Address: branchData.CustBranchAddress,
         Registered: branchData.CustBranchRegistered,
         CustomerGstType: branchData.CustBranchGSTtype,
-        GSTNo: branchData.CustBranchGSTIN,
+        ...(branchData.CustBranchGSTIN && { GSTNo: branchData.CustBranchGSTIN }), // Only include if GST number exists
         status: branchData.status === 'Active' ? 'A' : 'S',
-        createdBy: this.userData?.userEmail,
 
         // Include nested entities for create
         customerBranchContacts: this.prepareCreateContactsPayload(branchIndex),
@@ -2228,8 +2643,7 @@ export class OrganizationEntryComponent implements OnInit {
         ContactName: contactData.ContactName?.trim(),
         MobileNo: String(contactData.MobileNo),
         Email: contactData.Email,
-        status: contactData.status === 'A' ? 'A' : 'S',
-        createdBy: this.userData?.userEmail
+        status: contactData.status === 'A' ? 'A' : 'S'
       });
     }
 
@@ -2238,26 +2652,13 @@ export class OrganizationEntryComponent implements OnInit {
 
   private prepareCreateEmailsPayload(branchIndex: number): any[] {
     const emailsPayload = [];
-    const emails = this.getEmails(branchIndex);
 
-    for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
-      const emailForm = emails.at(emailIndex);
-      const emailData = emailForm.value;
+    // Note: For creating new customers, branch SIDs won't exist yet
+    // So we need to match by branch index instead of CustomerBranchSid
+    // This assumes emails are added after branches are created in the UI
 
-      let departmentValue = emailData.DepartmentMasterSid;
-      if (Array.isArray(departmentValue)) {
-        departmentValue = departmentValue.join(',');
-      }
-
-      emailsPayload.push({
-        MenuMasterSid: Number(emailData.MenuMasterSid),
-        DepartmentMasterSid: departmentValue,
-        Toemail: emailData.Toemail,
-        CCemail: emailData.CCemail,
-        status: emailData.status === 'Active' ? 'A' : 'S',
-        createdBy: this.userData?.userEmail
-      });
-    }
+    // For now, return empty array for new customer creation
+    // Emails will need to be added after the customer and branches are created
 
     return emailsPayload;
   }
@@ -2274,8 +2675,7 @@ export class OrganizationEntryComponent implements OnInit {
         LoginName: loginData.LoginName?.trim(),
         LoginEmail: loginData.LoginEmail,
         LoginPassword: loginData.LoginPassword,
-        status: loginData.status === 'Active' ? 'A' : 'S',
-        createdBy: this.userData?.userEmail
+        status: loginData.status === 'Active' ? 'A' : 'S'
       });
     }
 
@@ -2283,86 +2683,91 @@ export class OrganizationEntryComponent implements OnInit {
   }
   // For UPDATE mode - send all data including sales teams and milestones
   private prepareUpdatePayload(): any {
-    const formValue = this.customerForm.value;
-    const currentUserEmail = this.userData?.userEmail;
-    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+  const formValue = this.customerForm.value;
+  const currentUserEmail = this.getUserEmail();
+  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
-    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
-    console.log(statusValue, 'statusValue')
-    return {
-      customer: {
-        CompanyMasterSid: activeCompanyId,
-        CustomerName: formValue.CustomerName?.trim(),
-        CustomerShortCode: formValue.CustomerShortCode?.trim(),
-        CustomerAliasName: formValue.CustomerAliasName,
-        CustomerAddress1: formValue.CustomerAddress1,
-        CustomerAddress2: formValue.CustomerAddress2,
-        CountryMasterSid: Number(formValue.CountryMasterSid),
-        CustomerType: formValue.CustomerType,
-        PanName: formValue.PanName,
-        PanType: formValue.PanType,
-        GroupName: formValue.GroupName,
-        Website: formValue.Website,
-        CashCredit: formValue.paymentType,
-        Network: formValue.Network,
-        Remarks: formValue.Remarks,
-        IsMSME: formValue.IsMSME ? 'A' : 'I',
-        RegistrationNo: formValue.RegistrationNo,
-        CompanyType: formValue.CompanyType,
-        status: statusValue,
-        createdBy: currentUserEmail,
-        updatedBy: currentUserEmail,
-        AirlineNumber: formValue.AirlineNumber,
-        AirlineCode: formValue.AirlineCode
-      },
-      customerBranches: this.prepareUpdateBranchesPayload(),
 
-    };
-  }
+  const statusValue = formValue.status === 'Active' ? 'A' : 'S';
+  console.log(statusValue, 'statusValue')
+
+  const payload = {
+    customer: {
+      CompanyMasterSid: activeCompanyId,
+      CustomerName: formValue.CustomerName?.trim(),
+      CustomerShortCode: formValue.CustomerShortCode?.trim(),
+      CustomerAliasName: formValue.CustomerAliasName,
+      CustomerAddress1: formValue.CustomerAddress1,
+      CustomerAddress2: formValue.CustomerAddress2,
+      CountryMasterSid:formValue.CountryMasterSid,
+      CustomerType: formValue.CustomerType,
+      PanName: formValue.PanName,
+      PanType: formValue.PanType,
+      GroupName: formValue.GroupName,
+      Website: formValue.Website,
+      CashCredit: formValue.paymentType,
+      Network: formValue.Network,
+      Remarks: formValue.Remarks,
+      IsMSME: formValue.IsMSME ? 'A' : 'I',
+      RegistrationNo: formValue.RegistrationNo,
+      CompanyType: formValue.CompanyType,
+      status: statusValue,
+      AirlineNumber: formValue.AirlineNumber,
+      AirlineCode: formValue.AirlineCode
+    },
+    customerBranches: this.prepareUpdateBranchesPayload(),
+  };
+
+  // Debug: Log the complete payload
+  console.log('Complete update payload:', JSON.stringify(payload, null, 2));
+
+  return payload;
+}
 
   private prepareUpdateBranchesPayload(): any[] {
-    const branchesPayload = [];
+  const branchesPayload = [];
 
-    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
-      const branchForm = this.branches.at(branchIndex);
-      const branchData = branchForm.value;
+  for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+    const branchForm = this.branches.at(branchIndex);
+    const branchData = branchForm.value;
 
-      const branchPayload: any = {
-        CustomerBranchSid: branchData.CustomerBranchSid,
-        BranchName: branchData.CustBranchName?.trim(),
-        StateMasterSid: branchData.CustBranchState,
-        CityMasterSid: branchData.CustBranchCity,
-        Branch_Type: branchData.CustBranchType,
-        Branch_Code: branchData.CustBranchCode,
-        Contact_Person: branchData.Contact_Person,
-        Zip_PostBox: String(branchData.CustBranchZipPostCode),
-        ContactNo: String(branchData.CustBranchPhone),
-        Email: branchData.CustBranchEmail,
-        Address: branchData.CustBranchAddress,
-        Registered: branchData.CustBranchRegistered,
-        CustomerGstType: branchData.CustBranchGSTtype,
-        GSTNo: branchData.CustBranchGSTIN,
-        status: branchData.status === 'Active' ? 'A' : 'S',
-        updatedBy: this.userData?.userEmail,
-        createdBy: this.userData?.userEmail,
+    const branchPayload: any = {
+      CustomerBranchSid: branchData.CustomerBranchSid,
+      BranchName: branchData.CustBranchName?.trim(),
+      StateMasterSid: branchData.CustBranchState,
+      CityMasterSid: branchData.CustBranchCity,
+      Branch_Type: branchData.CustBranchType,
+      Branch_Code: branchData.CustBranchCode,
+      Contact_Person: branchData.Contact_Person,
+      Zip_PostBox: String(branchData.CustBranchZipPostCode),
+      ContactNo: String(branchData.CustBranchPhone),
+      Email: branchData.CustBranchEmail,
+      Address: branchData.CustBranchAddress,
+      Registered: branchData.CustBranchRegistered,
+      CustomerGstType: branchData.CustBranchGSTtype,
+      ...(branchData.CustBranchGSTIN && { GSTNo: branchData.CustBranchGSTIN }), // Only include if GST number exists
+      status: branchData.status === 'Active' ? 'A' : 'S',
 
-        customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
-        customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
-        customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
-        customerSalesTeams: this.prepareUpdateSalesTeamsPayload(),
-        customerMilestones: this.prepareUpdateMilestonesPayload()
-      };
+      customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
+      customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
+      customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
+      customerSalesTeams: this.prepareUpdateSalesTeamsPayload(branchData.CustomerBranchSid),
+      customerMilestones: this.prepareUpdateMilestonesPayload(branchData.CustomerBranchSid)
+    };
 
-      branchesPayload.push(branchPayload);
-    }
-
-    return branchesPayload;
+    branchesPayload.push(branchPayload);
   }
+
+  return branchesPayload;
+}
 
   // ✅ ADD THESE METHODS FOR UPDATE OPERATION
   private prepareUpdateContactsPayload(branchIndex: number): any[] {
     const contactsPayload = [];
     const contacts = this.getContacts(branchIndex);
+    const userEmail = this.getUserEmail();
+
+    console.log(`Preparing contacts for branch ${branchIndex}, user email:`, userEmail);
 
     for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
       const contactForm = contacts.at(contactIndex);
@@ -2373,50 +2778,112 @@ export class OrganizationEntryComponent implements OnInit {
         ContactName: contactData.ContactName?.trim(),
         MobileNo: String(contactData.MobileNo),
         Email: contactData.Email,
-        status: contactData.status === 'Active' ? 'A' : 'S',
-        createdBy: this.userData?.userEmail,
+        status: contactData.status === 'Active' ? 'A' : 'S'
       };
 
+      // createdBy/updatedBy now handled automatically by backend via JWT token
       if (contactData.CusBranchContactSid) {
         contactPayload.CusBranchContactSid = contactData.CusBranchContactSid;
-        contactPayload.updatedBy = this.userData?.userEmail;
       }
 
       contactsPayload.push(contactPayload);
     }
 
+    console.log(`Branch ${branchIndex} contacts payload:`, contactsPayload);
     return contactsPayload;
   }
 
   private prepareUpdateEmailsPayload(branchIndex: number): any[] {
     const emailsPayload = [];
-    const emails = this.getEmails(branchIndex);
+    const processedEmailSids = new Set<number>(); // Track processed email SIDs to avoid duplicates
 
-    for (let emailIndex = 0; emailIndex < emails.length; emailIndex++) {
-      const emailForm = emails.at(emailIndex);
+    // Get the branch SID for the current branch
+    const branch = this.branches.at(branchIndex);
+    const branchSid = branch.get('CustomerBranchSid')?.value;
+
+    // Debug: Log current state
+    console.log(`Preparing emails for branch ${branchIndex} (SID: ${branchSid})`);
+    console.log('Total customerEmails:', this.customerEmails.length);
+
+    // Process emails from the Email tab (customerEmails FormArray) for this specific branch
+    // We'll prioritize Email tab data over branch tab data
+    for (let i = 0; i < this.customerEmails.length; i++) {
+      const emailForm = this.customerEmails.at(i);
       const emailData = emailForm.value;
 
+      // Only include emails that belong to this branch
+      if (emailData.CustomerBranchSid !== branchSid) {
+        continue;
+      }
+
+      // Track this email SID if it exists
+      if (emailData.CustomerBrEmailSid) {
+        processedEmailSids.add(emailData.CustomerBrEmailSid);
+      }
+
+      // Ensure DepartmentMasterSid is always an array as expected by API
       let departmentValue = emailData.DepartmentMasterSid;
-      if (Array.isArray(departmentValue)) {
-        departmentValue = departmentValue.join(',');
+      if (!Array.isArray(departmentValue)) {
+        // If it's a string (from old data), convert to array
+        departmentValue = departmentValue ? [departmentValue] : [];
       }
 
       const emailPayload: any = {
         MenuMasterSid: Number(emailData.MenuMasterSid),
-        DepartmentMasterSid: departmentValue,
+        DepartmentMasterSid: departmentValue, // Keep as array
         Toemail: emailData.Toemail,
         CCemail: emailData.CCemail,
         status: emailData.status === 'Active' ? 'A' : 'S'
       };
 
+      // createdBy/updatedBy now handled automatically by backend via JWT token
       if (emailData.CustomerBrEmailSid) {
         emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
-        emailPayload.updatedBy = this.userData?.userEmail;
-      } else {
-        emailPayload.createdBy = this.userData?.userEmail;
       }
 
       emailsPayload.push(emailPayload);
+      console.log('Added email from Email tab:', emailPayload);
+    }
+
+    // Then, get emails from the branch's own emails FormArray (from Branch tab)
+    // Only add those that haven't been processed from the Email tab
+    const branchEmails = this.getEmails(branchIndex);
+    for (let emailIndex = 0; emailIndex < branchEmails.length; emailIndex++) {
+      const emailForm = branchEmails.at(emailIndex);
+      const emailData = emailForm.value;
+
+      // Skip if we already processed this email from the Email tab
+      if (emailData.CustomerBrEmailSid && processedEmailSids.has(emailData.CustomerBrEmailSid)) {
+        continue;
+      }
+
+      // Ensure DepartmentMasterSid is always an array as expected by API
+      let departmentValue = emailData.DepartmentMasterSid;
+      if (!Array.isArray(departmentValue)) {
+        // If it's a string (from old data), convert to array
+        departmentValue = departmentValue ? [departmentValue] : [];
+      }
+
+      const emailPayload: any = {
+        MenuMasterSid: Number(emailData.MenuMasterSid),
+        DepartmentMasterSid: departmentValue, // Keep as array
+        Toemail: emailData.Toemail,
+        CCemail: emailData.CCemail,
+        status: emailData.status === 'Active' ? 'A' : 'S'
+      };
+
+      // createdBy/updatedBy now handled automatically by backend via JWT token
+      if (emailData.CustomerBrEmailSid) {
+        emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
+      }
+
+      emailsPayload.push(emailPayload);
+      console.log('Added email from Branch tab:', emailPayload);
+    }
+
+    // Debug: Log the emails being sent
+    if (emailsPayload.length > 0) {
+      console.log(`Branch ${branchIndex} emails payload:`, emailsPayload);
     }
 
     return emailsPayload;
@@ -2424,11 +2891,31 @@ export class OrganizationEntryComponent implements OnInit {
 
   private prepareUpdateLoginsPayload(branchIndex: number): any[] {
     const loginsPayload = [];
-    const logins = this.getLogins(branchIndex);
+    const processedLoginSids = new Set<number>(); // Track processed login SIDs to avoid duplicates
 
-    for (let loginIndex = 0; loginIndex < logins.length; loginIndex++) {
-      const loginForm = logins.at(loginIndex);
+    // Get the branch SID for the current branch
+    const branch = this.branches.at(branchIndex);
+    const branchSid = branch.get('CustomerBranchSid')?.value;
+
+    // Debug: Log current state
+    console.log(`Preparing logins for branch ${branchIndex} (SID: ${branchSid})`);
+    console.log('Total customerLogins:', this.customerLogins.length);
+
+    // Process logins from the eLogin tab (customerLogins FormArray) for this specific branch
+    // We'll prioritize eLogin tab data over branch tab data
+    for (let i = 0; i < this.customerLogins.length; i++) {
+      const loginForm = this.customerLogins.at(i);
       const loginData = loginForm.value;
+
+      // Only include logins that belong to this branch
+      if (loginData.CustomerBranchSid !== branchSid) {
+        continue;
+      }
+
+      // Track this login SID if it exists
+      if (loginData.CustomerLoginSid) {
+        processedLoginSids.add(loginData.CustomerLoginSid);
+      }
 
       const loginPayload: any = {
         LoginName: loginData.LoginName?.trim(),
@@ -2437,20 +2924,52 @@ export class OrganizationEntryComponent implements OnInit {
         status: loginData.status === 'Active' ? 'A' : 'S'
       };
 
+      // createdBy/updatedBy now handled automatically by backend via JWT token
       if (loginData.CustomerLoginSid) {
         loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
-        loginPayload.updatedBy = this.userData?.userEmail;
-      } else {
-        loginPayload.createdBy = this.userData?.userEmail;
       }
 
       loginsPayload.push(loginPayload);
+      console.log('Added login from eLogin tab:', loginPayload);
+    }
+
+    // Then, get logins from the branch's own logins FormArray (from Branch tab)
+    // Only add those that haven't been processed from the eLogin tab
+    const branchLogins = this.getLogins(branchIndex);
+    for (let loginIndex = 0; loginIndex < branchLogins.length; loginIndex++) {
+      const loginForm = branchLogins.at(loginIndex);
+      const loginData = loginForm.value;
+
+      // Skip if we already processed this login from the eLogin tab
+      if (loginData.CustomerLoginSid && processedLoginSids.has(loginData.CustomerLoginSid)) {
+        continue;
+      }
+
+      const loginPayload: any = {
+        LoginName: loginData.LoginName?.trim(),
+        LoginEmail: loginData.LoginEmail,
+        LoginPassword: loginData.LoginPassword,
+        status: loginData.status === 'Active' ? 'A' : 'S'
+      };
+
+      // createdBy/updatedBy now handled automatically by backend via JWT token
+      if (loginData.CustomerLoginSid) {
+        loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
+      }
+
+      loginsPayload.push(loginPayload);
+      console.log('Added login from Branch tab:', loginPayload);
+    }
+
+    // Debug: Log the logins being sent
+    if (loginsPayload.length > 0) {
+      console.log(`Branch ${branchIndex} logins payload:`, loginsPayload);
     }
 
     return loginsPayload;
   }
 
-  private prepareUpdateSalesTeamsPayload(): any[] {
+  private prepareUpdateSalesTeamsPayload(branchSid?: number): any[] {
     if (this.cusSalesteam.length === 0) return [];
 const activeCompanyId = this.currentCompany?.CompanyMasterSid;
     const salesTeamsPayload = [];
@@ -2461,6 +2980,11 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
     for (let teamIndex = 0; teamIndex < salesTeams.length; teamIndex++) {
       const teamForm = salesTeams.at(teamIndex);
       const teamData = teamForm.value;
+
+      // Filter by branch if branchSid is provided
+      if (branchSid && teamData.branchSid !== branchSid) {
+        continue;
+      }
 
       const salesTeamPayload: any = {
         DepartmentMasterSid: Array.isArray(teamData.DepartmentMasterSid)
@@ -2473,18 +2997,14 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
         DocPerson: teamData.DocPerson,
         EffectiveFrom: teamData.EffectiveFrom,
         status: teamData.status === 'Active' ? 'A' : 'S',
-        createdBy: this.userData.userEmail,
-        updatedBy: this.userData.userEmail,
         CompanyMasterSid: Number(activeCompanyId),
         CustomerSalesBranchSid: teamData.branchId ? Number(teamData.branchId) : null
       };
 
 
+      // createdBy/updatedBy now handled automatically by backend via JWT token
       if (teamData.CustomerSalesSid) {
         salesTeamPayload.CustomerSalesSid = teamData.CustomerSalesSid;
-        salesTeamPayload.updatedBy = this.userData?.userEmail;
-      } else {
-        salesTeamPayload.createdBy = this.userData?.userEmail;
       }
 
       salesTeamsPayload.push(salesTeamPayload);
@@ -2493,7 +3013,7 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
     return salesTeamsPayload;
   }
 
-  private prepareUpdateMilestonesPayload(): any[] {
+  private prepareUpdateMilestonesPayload(branchSid?: number): any[] {
     if (this.cusMilestone.length === 0) return [];
 
     const milestonesPayload = [];
@@ -2503,6 +3023,11 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
       const mileForm = milestones.at(mileIndex);
       const mileData = mileForm.value;
 
+      // Filter by branch if branchSid is provided
+      if (branchSid && mileData.CustomerBranchSid !== branchSid) {
+        continue;
+      }
+
       const milestonePayload: any = {
         MilestoneMasterSid: mileData.MilestoneMasterSid,
         UpdateType: mileData.UpdateType,
@@ -2511,11 +3036,9 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
         Status: mileData.Status === 'Active' ? 'A' : 'S'
       };
 
+      // createdBy/updatedBy now handled automatically by backend via JWT token
       if (mileData.CustomerMilestoneSid) {
         milestonePayload.CustomerMilestoneSid = mileData.CustomerMilestoneSid;
-        milestonePayload.updatedBy = this.userData?.userEmail;
-      } else {
-        milestonePayload.createdBy = this.userData?.userEmail;
       }
 
       milestonesPayload.push(milestonePayload);
@@ -2550,26 +3073,49 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
   // Update customer with all data
   private async updateCustomerWithAllData(payload: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess('Customer updated successfully with all data!');
-            // Reload the data to reflect changes
-            this.loadCustomerData(this.CustomerMasterSid);
-            resolve();
-          } else {
-            this.appSettingService.showError(resp.message);
-            reject(resp.message);
-          }
-        },
-        error: (error) => {
-          this.errorMessage = error.message;
-          console.error('Error updating customer:', error);
-          this.appSettingService.showError('Error updating customer');
-          reject(error);
+    return new Promise(async (resolve, reject) => {
+      try {
+        // First update the customer and branches
+        await new Promise<void>((res, rej) => {
+          this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
+            next: (resp: any) => {
+              if (resp.status) {
+                res();
+              } else {
+                rej(resp.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error updating customer:', error);
+              rej(error);
+            }
+          });
+        });
+
+        // Then save sales team data if any
+        if (this.cusSalesteam.length > 0) {
+          await this.saveSalesTeamData();
         }
-      });
+
+        // Save milestones if any
+        if (this.cusMilestone.length > 0) {
+          await this.saveCustomerMilestones();
+        }
+
+        this.appSettingService.showSuccess('Customer updated successfully with all data!');
+
+        // Reload the data to reflect changes
+        this.loadCustomerData(this.CustomerMasterSid);
+        this.loadCustomerSalesTeamData();
+        this.loadCustomerMilestones();
+
+        resolve();
+      } catch (error) {
+        this.errorMessage = error?.message || 'Error updating customer';
+        console.error('Error updating customer:', error);
+        this.appSettingService.showError('Error updating customer');
+        reject(error);
+      }
     });
   }
 
@@ -2604,10 +3150,13 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
       KYCSpecified: false,
       RegistrationNo: { value: '', disabled: true },
       Remarks: '',
-      status: { value: 'Active', disabled: !this.isEditMode },
+      status: { value: 'Active', disabled: true },
       CustomerType: {},
       Network: ''
     });
+     if (!this.isEditMode) {
+    this.customerForm.get('status')?.disable();
+  }
 
     // Reset selected statuses and customer types
     this.selectedStatus = [];
@@ -2781,4 +3330,9 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
   //     )?.departmentName || ''
   //   );
   // }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

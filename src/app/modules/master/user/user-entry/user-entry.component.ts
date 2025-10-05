@@ -458,10 +458,10 @@ openAuditLogs(modal: TemplateRef<any>) {
 			this.masterService.updateFfUserById(this.UserMasterSid, payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
-						this.appSettingService.showSuccess('User Updated Successfully');
+						this.appSettingService.showSuccess(resp.message);
 						this.router.navigate(['master/user/list']);
 					} else {
-						this.appSettingService.showError('Error Updating User');
+						this.appSettingService.showError(resp.message);
 					}
 				},
 				(error) => {
@@ -473,10 +473,10 @@ openAuditLogs(modal: TemplateRef<any>) {
 			this.masterService.createNewFfUser(payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
-						this.appSettingService.showSuccess('New User Successfully Created');
+						this.appSettingService.showSuccess(resp.message);
 						this.router.navigate(['master/user/list']);
 					} else {
-						this.appSettingService.showError('Error Creating User');
+						this.appSettingService.showError(resp.message);
 					}
 				},
 				(error) => {
