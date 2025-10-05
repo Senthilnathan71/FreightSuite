@@ -107,6 +107,9 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   extraCustomerTypesCount = 0;
   currentTaxIdLabel: string = 'PAN/VAT Number';
   duplicateMessage: string = '';
+  activeBranchIds: string[] = [];
+
+
 
 
   selectedTab = 'Party';
@@ -536,17 +539,20 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   // Toggle branch accordion
-  toggleBranch(index: number) {
-    if (this.expandedBranches.has(index)) {
-      this.expandedBranches.delete(index);
-    } else {
-      this.expandedBranches.add(index);
-    }
+ toggleBranch(branchIndex: number) {
+  const branchId = 'branch-' + branchIndex;
+  const index = this.activeBranchIds.indexOf(branchId);
+  
+  if (index > -1) {
+    this.activeBranchIds.splice(index, 1);
+  } else {
+    this.activeBranchIds.push(branchId);
   }
+}
 
-  isBranchExpanded(index: number): boolean {
-    return this.expandedBranches.has(index);
-  }
+  isBranchExpanded(branchIndex: number): boolean {
+  return this.activeBranchIds.includes('branch-' + branchIndex);
+}
 
   // Getter for branch form array
   get branches(): FormArray {
@@ -701,15 +707,16 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
 
   // Add new branch
   addNewBranch() {
-    const newBranch = this.addBranchFormGroup();
-    this.branches.push(newBranch);
-    this.expandedBranches.add(this.branches.length - 1);
+  const newBranch = this.addBranchFormGroup();
+  this.branches.push(newBranch);
+  
+  // Auto-expand the newly added branch
+  const newBranchIndex = this.branches.length - 1;
+  this.activeBranchIds.push('branch-' + newBranchIndex);
 
-    // Update the available branches cache
-    this.updateAvailableBranchesCache();
-
-    this.cdRef.markForCheck();
-  }
+  this.updateAvailableBranchesCache();
+  this.cdRef.markForCheck();
+}
   // Add contact to branch
   addContact(branchIndex: number) {
     const contactForm = this.fb.group({
@@ -759,48 +766,63 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
 
   // Remove branch
   removeBranch(branchIndex: number) {
-    const branch = this.branches.at(branchIndex);
-    const branchSid = branch.get('CustomerBranchSid')?.value;
+  const branch = this.branches.at(branchIndex);
+  const branchSid = branch.get('CustomerBranchSid')?.value;
+  const branchId = 'branch-' + branchIndex;
 
-    if (branchSid) {
-      if (confirm('Are you sure you want to delete this branch?')) {
-        this.masterService.deleteCustomerBranchById(branchSid).subscribe({
-          next: (resp: any) => {
-            this.appSettingService.showSuccess('Branch deleted successfully');
-            this.branches.removeAt(branchIndex);
-            this.expandedBranches.delete(branchIndex);
-            this.updateExpandedBranchesAfterRemoval(branchIndex);
-            // Update the available branches cache
-            this.updateAvailableBranchesCache();
-            this.cdRef.markForCheck();
-          },
-          error: (error) => {
-            this.appSettingService.showError('Error deleting branch');
+  if (branchSid) {
+    if (confirm('Are you sure you want to delete this branch?')) {
+      this.masterService.deleteCustomerBranchById(branchSid).subscribe({
+        next: (resp: any) => {
+          this.appSettingService.showSuccess('Branch deleted successfully');
+          this.branches.removeAt(branchIndex);
+          
+          // Remove from activeBranchIds
+          const index = this.activeBranchIds.indexOf(branchId);
+          if (index > -1) {
+            this.activeBranchIds.splice(index, 1);
           }
-        });
-      }
-    } else {
-      this.branches.removeAt(branchIndex);
-      this.expandedBranches.delete(branchIndex);
-      this.updateExpandedBranchesAfterRemoval(branchIndex);
-      // Update the available branches cache
-      this.updateAvailableBranchesCache();
-      this.cdRef.markForCheck();
+          
+          this.updateExpandedBranchesAfterRemoval(branchIndex);
+          this.updateAvailableBranchesCache();
+          this.cdRef.markForCheck();
+        },
+        error: (error) => {
+          this.appSettingService.showError('Error deleting branch');
+        }
+      });
     }
+  } else {
+    this.branches.removeAt(branchIndex);
+    
+    // Remove from activeBranchIds
+    const index = this.activeBranchIds.indexOf(branchId);
+    if (index > -1) {
+      this.activeBranchIds.splice(index, 1);
+    }
+    
+    this.updateExpandedBranchesAfterRemoval(branchIndex);
+    this.updateAvailableBranchesCache();
+    this.cdRef.markForCheck();
   }
+}
+
 
   // Update expanded branches indices after removal
   private updateExpandedBranchesAfterRemoval(removedIndex: number) {
-    const newExpandedBranches = new Set<number>();
-    this.expandedBranches.forEach(index => {
-      if (index < removedIndex) {
-        newExpandedBranches.add(index);
-      } else if (index > removedIndex) {
-        newExpandedBranches.add(index - 1);
-      }
-    });
-    this.expandedBranches = newExpandedBranches;
-  }
+  const newActiveBranchIds: string[] = [];
+  
+  this.activeBranchIds.forEach(branchId => {
+    const index = parseInt(branchId.split('-')[1]);
+    if (index < removedIndex) {
+      newActiveBranchIds.push(branchId);
+    } else if (index > removedIndex) {
+      newActiveBranchIds.push('branch-' + (index - 1));
+    }
+  });
+  
+  this.activeBranchIds = newActiveBranchIds;
+}
 
   // Remove contact
   removeContact(branchIndex: number, contactIndex: number) {
@@ -2566,7 +2588,7 @@ loadCustomerData(customerId: number) {
     const currentUserEmail = this.getUserEmail();
     const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
-    const statusValue = formValue.status === 'A' ? 'A' : 'S';
+    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
 
     return {
       customer: {
@@ -2643,7 +2665,7 @@ loadCustomerData(customerId: number) {
         ContactName: contactData.ContactName?.trim(),
         MobileNo: String(contactData.MobileNo),
         Email: contactData.Email,
-        status: contactData.status === 'A' ? 'A' : 'S'
+        status: contactData.status === 'Active' ? 'A' : 'S'
       });
     }
 
