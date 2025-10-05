@@ -40,7 +40,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry/loading-plan-entry.component';
 import { MasterDocumentUploadComponent } from '../../master-document-upload/master-document-upload.component';
 import { ManifestDocumentUploadComponent } from '../../manifest-document-upload/manifest-document-upload.component';
-
+import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -68,7 +69,8 @@ import { ManifestDocumentUploadComponent } from '../../manifest-document-upload/
     TextWithNumbersDirective,
     RouterModule,
     NgbPaginationModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+     NgxSpinnerModule
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -248,7 +250,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     private toastr: ToastrService,
     private appSettingsService: AppSettingsService,
     private cdr: ChangeDetectorRef,
-    private datepipe : CustomDatePipe
+    private datepipe : CustomDatePipe,
+    private spinner: NgxSpinnerService
   ) {
     this.initForm();
     this.initContainerForm();
@@ -615,7 +618,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   loadMasterJobData(masterJobSid: number): void {
-    this.isLoading = true;
+      this.spinner.show();
     this.operationService.getMasterJobById(masterJobSid).subscribe({
       next: (response: any) => {
         if (response.status && response.data) {
@@ -623,6 +626,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
           this.patchFormValues(data);
         }
         this.isLoading = false;
+        this.spinner.hide();
       },
       error: (error) => {
         this.toastr.error('Failed to load master job data');
@@ -1707,6 +1711,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.router.navigate(['/operation/master-job/list']);
   }
 
+   toggleMinimizeMaximize(){
+      toggleFullScreen();
+    }
+  
   
 
   addContainerActivity(activity?: any): void {
@@ -1813,7 +1821,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       size : 'xl',
       backdrop: 'static',
       centered: true,
-      
+      windowClass: 'custom-modal-size'
     });
     modalRef.componentInstance.screenName = 'Master Job';
     modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
