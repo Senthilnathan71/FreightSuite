@@ -398,7 +398,7 @@
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('reason')?.value">
                   <ng-select [items]="reasonList" bindLabel="name" bindValue="name"
-                    formControlName="reason">
+                    formControlName="remarks">
                   </ng-select>
                   <label class="input-label">Reason <span class="text-danger"></span></label>
                   <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">

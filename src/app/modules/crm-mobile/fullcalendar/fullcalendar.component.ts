@@ -42,7 +42,7 @@ const colors: any = {
 @Component({
   selector: 'app-fullcalendar',
   standalone: true,
-  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective,NgSelectModule,NgbDatepickerModule,DateTimePickerComponent],
+  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective, NgSelectModule, NgbDatepickerModule, DateTimePickerComponent],
 
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './fullcalendar.component.html',
@@ -61,16 +61,16 @@ export class FullcalendarComponent implements OnInit {
   // Declare modalRef with type NgbModalRef
   modalRef!: NgbModalRef;
   modalAddFormRef!: NgbModalRef;
-  calendarEventData : any;
+  calendarEventData: any;
 
   meetingDurations = [
-  { label: '10 min', value: '10 min' },
-  { label: '20 min', value: '20 min' },
-  { label: '30 min', value: '30 min' },
-  { label: '40 min', value: '40 min' },
-  { label: '50 min', value: '50 min' },
-  { label: '1 hr', value: '1 hr' }
-];
+    { label: '10 min', value: '10 min' },
+    { label: '20 min', value: '20 min' },
+    { label: '30 min', value: '30 min' },
+    { label: '40 min', value: '40 min' },
+    { label: '50 min', value: '50 min' },
+    { label: '1 hr', value: '1 hr' }
+  ];
 
   viewDate: Date = new Date();
   customers: any
@@ -158,12 +158,12 @@ export class FullcalendarComponent implements OnInit {
   TandCList: any;
   currentCompany: any;
   currentBranch: any;
-  leadList : any[] = [];
+  leadList: any[] = [];
 
-  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService,private ngbModal: NgbModal) { }
+  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService, private ngbModal: NgbModal) { }
 
   ngOnInit(): void {
-   const storedCompany = localStorage.getItem('selected-company');
+    const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
@@ -245,10 +245,10 @@ export class FullcalendarComponent implements OnInit {
       });
   }
 
-  loadLeads(){
-    const filterOption = { 
-      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid
+  loadLeads() {
+    const filterOption = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid
     }
     this.leadService.fetchAllLeads(filterOption).subscribe(
       (resp: any) => {
@@ -267,12 +267,12 @@ export class FullcalendarComponent implements OnInit {
   Add Event
   ////////////////////////////////////*/
   addEvent(): void {
-    
+
     // Reset the form completely for new meeting entry
     this.meetingForm.reset({
       LeadOrCustomer: 'L',
       followUp: false,
-      meetingStatus: 'Scheduled' 
+      meetingStatus: 'Scheduled'
     });
 
     // Ensure the followUp checkbox has a default false value to prevent undefined state
@@ -317,29 +317,29 @@ export class FullcalendarComponent implements OnInit {
     this.meetingForm = this.fb.group({
       LeadOrCustomer: ["L", Validators.required],
       customerName: ['', Validators.required],
-      CustomerMasterSid : [null],
-      PreCustomerMasterSid : ['',Validators.required],
-      meetingDate: ['',Validators.required],
-      followUpDate: ['',Validators.required],
-      followUp: ['',Validators.required],
+      CustomerMasterSid: [null],
+      PreCustomerMasterSid: ['', Validators.required],
+      meetingDate: ['', Validators.required],
+      followUpDate: ['', Validators.required],
+      followUp: ['', Validators.required],
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
       meetingStatus: ['Scheduled', Validators.required],
-      followUpNote: ['',Validators.required],
-      meetingDuration:['10 min',Validators.required]
+      followUpNote: ['', Validators.required],
+      meetingDuration: ['10 min', Validators.required]
     });
-     this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
-    this.meetingForm.get('meetingNote').updateValueAndValidity();
-  });
-}
-private meetingNoteValidator(control: AbstractControl) {
-  const status = this.meetingForm?.get('meetingStatus')?.value;
-  if (status === 'on hold' && !control.value) {
-    return { required: true };
+    this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
+      this.meetingForm.get('meetingNote').updateValueAndValidity();
+    });
   }
-  return null;
-}
+  private meetingNoteValidator(control: AbstractControl) {
+    const status = this.meetingForm?.get('meetingStatus')?.value;
+    if (status === 'on hold' && !control.value) {
+      return { required: true };
+    }
+    return null;
+  }
 
 
   toggleFollowUp(event: Event): void {
@@ -380,89 +380,90 @@ private meetingNoteValidator(control: AbstractControl) {
   }
 
   private formatDateTime(date: string | Date): string | null {
-  if (!date) return null;
-  const dt = new Date(date);
+    if (!date) return null;
+    const dt = new Date(date);
 
-  const day = dt.getDate();
-  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const month = monthNames[dt.getMonth()];
-  const year = dt.getFullYear();
+    const day = dt.getDate();
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[dt.getMonth()];
+    const year = dt.getFullYear();
 
-  let hours = dt.getHours();
-  const minutes = dt.getMinutes().toString().padStart(2,'0');
-  const seconds = dt.getSeconds().toString().padStart(2,'0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12; // Convert 0 to 12-hour format
+    let hours = dt.getHours();
+    const minutes = dt.getMinutes().toString().padStart(2, '0');
+    const seconds = dt.getSeconds().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // Convert 0 to 12-hour format
 
-  return `${day}/${month}/${year} ${hours.toString().padStart(2,'0')}:${minutes}:${seconds} ${ampm}`;
-}
+    return `${day}/${month}/${year} ${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+  }
 
- getMeetingDates() {
-  // first clear events
-  this.events = [];
+  getMeetingDates() {
+    // first clear events
+    this.events = [];
 
-  this.leadService.getMeetings().subscribe((meetingRes: any) => {
-    let meetingEvents: any[] = [];
+    this.leadService.getMeetings().subscribe((meetingRes: any) => {
+      let meetingEvents: any[] = [];
 
-    if (meetingRes.status && meetingRes.data.length) {
-      meetingEvents = meetingRes.data
-        .filter((meeting) => meeting.meetingStatus !== "confirmed")
-        .map((meeting: any) => {
-          const hasFollowUp = !!meeting.followUpDate;
-          const isLead = meeting.LeadOrCustomer === "L";
-          const name = isLead
-            ? meeting?.preCustomerMaster?.preCustomerName
-            : meeting?.customerMaster?.CustomerName || "Unknown";
+      if (meetingRes.status && meetingRes.data.length) {
+        meetingEvents = meetingRes.data
+          .filter((meeting) => meeting.meetingStatus !== "confirmed")
+          .map((meeting: any) => {
+            const hasFollowUp = !!meeting.followUpDate;
+            const isLead = meeting.LeadOrCustomer === "L";
+            const name = isLead
+              ? meeting?.preCustomerMaster?.preCustomerName
+              : meeting?.customerMaster?.CustomerName || "Unknown";
+            const durationMin = this.parseDuration(meeting.meetingDuration);
+            return {
+              start: this.convertUTCToLocal(meeting.meetingDate),
+              end: new Date(this.convertUTCToLocal(meeting.meetingDate).getTime() + durationMin * 60000),// add minutes
+              title: `Meeting with - ${name}`,
+              id: meeting.PreCustomerMeetingSid,
+              color: { primary: "#33cc33", secondary: "#ccffcc" }
+            };
+          });
+      }
 
-          return {
-            start: this.convertUTCToLocal(meeting.meetingDate),
-            title:`Meeting with - ${name}`,
-            id: meeting.PreCustomerMeetingSid,
-            color:  { primary: "#33cc33", secondary: "#ccffcc" }
-          };
+      this.leadService
+        .getFollowUp(
+          this.currentCompany?.CompanyMasterSid,
+          this.currentBranch?.BranchMasterSid
+        )
+        .subscribe((followRes: any) => {
+          let followUpEvents: any[] = [];
+
+          if (followRes.status && followRes.data.length) {
+            followUpEvents = followRes.data
+              .filter((meeting) => meeting.meetingStatus !== "confirmed")
+              .map((meeting: any) => {
+                const meetingData = meeting.preCustomerMeeting;
+                const isCustomer = meetingData.LeadOrCustomer === "C";
+
+                const person = isCustomer
+                  ? meetingData.customerMaster?.CustomerName
+                  : meetingData.preCustomerMaster?.preCustomerName;
+
+                return {
+                  start: this.convertUTCToLocal(meeting.FollowupDate),
+                  title: `Follow up meeting with - ${person}`,
+                  id: meeting.PreCustomerMeetingSid,
+                  color: { primary: "#ff5733", secondary: "#ffcccb" }
+                };
+              });
+          }
+
+          // ✅ Merge both meetings + followups
+          this.events = [...meetingEvents, ...followUpEvents];
+
+          this.refresh.next(); // refresh UI
+          console.log("Combined Events:", this.events);
+
+          // 👉 if you need to send to backend
+
+
         });
-    }
-
-    this.leadService
-      .getFollowUp(
-        this.currentCompany?.CompanyMasterSid,
-        this.currentBranch?.BranchMasterSid
-      )
-      .subscribe((followRes: any) => {
-        let followUpEvents: any[] = [];
-
-        if (followRes.status && followRes.data.length) {
-          followUpEvents = followRes.data
-            .filter((meeting) => meeting.meetingStatus !== "confirmed")
-            .map((meeting: any) => {
-              const meetingData = meeting.preCustomerMeeting;
-              const isCustomer = meetingData.LeadOrCustomer === "C";
-
-              const person = isCustomer
-                ? meetingData.customerMaster?.CustomerName
-                : meetingData.preCustomerMaster?.preCustomerName;
-
-              return {
-                start: this.convertUTCToLocal(meeting.FollowupDate),
-                title: `Follow up meeting with - ${person}`,
-                id: meeting.PreCustomerMeetingSid,
-                color: { primary: "#ff5733", secondary: "#ffcccb" }
-              };
-            });
-        }
-
-        // ✅ Merge both meetings + followups
-        this.events = [...meetingEvents, ...followUpEvents];
-
-        this.refresh.next(); // refresh UI
-        console.log("Combined Events:", this.events);
-
-        // 👉 if you need to send to backend
-   
-
-      });
-  });
-}
+    });
+  }
 
 
   selectedCustomerName: any;
@@ -495,131 +496,131 @@ private meetingNoteValidator(control: AbstractControl) {
   //   }
   // }
 
- 
+
 
   onAddMeeting() {
-  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-  
-  console.log('Current Company:', this.currentCompany);
-  console.log('Current Branch:', this.currentBranch);
-  console.log('Form Values:', this.meetingForm.value);
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+
+    console.log('Current Company:', this.currentCompany);
+    console.log('Current Branch:', this.currentBranch);
+    console.log('Form Values:', this.meetingForm.value);
     const meetingDateStr = this.meetingForm.value.meetingDate;
     // const meetingDate = new Date(meetingDateStr);
     const meetingDuration = this.meetingForm.value.meetingDuration;
-  // Convert followUpDate in same format as meetingDate
+    // Convert followUpDate in same format as meetingDate
 
-  const payload = {
-    ...this.meetingForm.value,
-    meetingDate : meetingDateStr,
-    followUpDate: this.meetingForm.value.followUpDate,
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-    BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    userEmail: userEmail,
-    meetingDuration: meetingDuration,
-  };
-  
-  console.log('Final Payload:', payload);
-  
-  
-  this.leadService.createPreCustomerMeeting(payload).subscribe(
-    resp => {
-      if (resp.data && resp.status) {
-        this.modalService.openSuccessModal(resp.message);
+    const payload = {
+      ...this.meetingForm.value,
+      meetingDate: meetingDateStr,
+      followUpDate: this.meetingForm.value.followUpDate,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      userEmail: userEmail,
+      meetingDuration: meetingDuration,
+    };
+
+    console.log('Final Payload:', payload);
+
+
+    this.leadService.createPreCustomerMeeting(payload).subscribe(
+      resp => {
+        if (resp.data && resp.status) {
+          this.modalService.openSuccessModal(resp.message);
+          this.btnDisable = false;
+          this.meetingForm.patchValue(resp.data);
+          this.modalAddFormRef.close();
+          this.refreshComponent();
+        } else {
+          this.btnDisable = false;
+          this.modalService.openErrorModal(resp.message);
+        }
+      },
+      error => {
         this.btnDisable = false;
-        this.meetingForm.patchValue(resp.data);
-        this.modalAddFormRef.close();
-        this.refreshComponent();
-      } else {
-        this.btnDisable = false;
-        this.modalService.openErrorModal(resp.message);
+        this.modalService.openErrorModal('Error creating meeting: ' + error.message);
       }
-    },
-    error => {
-      this.btnDisable = false;
-      this.modalService.openErrorModal('Error creating meeting: ' + error.message);
-    }
-  );
-  this.btnDisable = false;
-}
+    );
+    this.btnDisable = false;
+  }
   // Handle Form Submission
   onEditMeeting() {
-  // Check if meeting status is "on hold" and note is empty
-  if (this.meetingForm.get('meetingStatus')?.value === 'on hold' && 
+    // Check if meeting status is "on hold" and note is empty
+    if (this.meetingForm.get('meetingStatus')?.value === 'on hold' &&
       !this.meetingForm.get('meetingNote')?.value) {
-    this.meetingForm.get('meetingNote')?.markAsTouched();
-    this.appSettingService.showError("Meeting Note is mandatory when status is 'On Hold'");
-    return;
-  }
+      this.meetingForm.get('meetingNote')?.markAsTouched();
+      this.appSettingService.showError("Meeting Note is mandatory when status is 'On Hold'");
+      return;
+    }
 
-  if (!this.meetingForm.get('meetingStatus')?.value) {
-    this.meetingForm.get('meetingStatus')?.markAsTouched();
-    this.appSettingService.showError("Meeting status is required.");
-    return;
-  }
+    if (!this.meetingForm.get('meetingStatus')?.value) {
+      this.meetingForm.get('meetingStatus')?.markAsTouched();
+      this.appSettingService.showError("Meeting status is required.");
+      return;
+    }
 
 
-  
-   const meetingDateStr = this.formatDateTime(this.meetingForm.value.meetingDate);
-  // Rest of your existing code...
-  this.btnDisable = true;
-  if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
-    this.appSettingService.showError("Meeting status is already confirmed and cannot be edited.");
-    return;
-  }
+
+    const meetingDateStr = this.formatDateTime(this.meetingForm.value.meetingDate);
+    // Rest of your existing code...
+    this.btnDisable = true;
+    if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
+      this.appSettingService.showError("Meeting status is already confirmed and cannot be edited.");
+      return;
+    }
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
 
     // Convert followUpDate in same format as meetingDate
-let followUpDate: string = null;
-if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
-  const dt = new Date(this.meetingForm.value.followUpDate);
-  const hours = dt.getHours().toString().padStart(2, '0');
-  const minutes = dt.getMinutes().toString().padStart(2, '0');
-  const year = dt.getFullYear();
-  const month = (dt.getMonth() + 1).toString().padStart(2, '0');
-  const day = dt.getDate().toString().padStart(2, '0');
+    let followUpDate: string = null;
+    if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
+      const dt = new Date(this.meetingForm.value.followUpDate);
+      const hours = dt.getHours().toString().padStart(2, '0');
+      const minutes = dt.getMinutes().toString().padStart(2, '0');
+      const year = dt.getFullYear();
+      const month = (dt.getMonth() + 1).toString().padStart(2, '0');
+      const day = dt.getDate().toString().padStart(2, '0');
 
-  followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-   const payload = {
-    PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
-    PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid,
-    ...this.meetingForm.getRawValue(),
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-    BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    userEmail: userEmail,
-    followUpDate:followUpDate,
-    meetingDateStr:meetingDateStr
-  };
-
-  // If followUp is false, remove followUpNote and followUpDate from the payload
-  if (!this.meetingForm.get('followUp')?.value) {
-    delete payload.followUpNote;
-    delete payload.followUpDate;
-  }
-  
-
-  this.leadService.createPreCustomerMeeting(payload).subscribe(
-    resp => {
-      if (resp.data && resp.status) {
-        this.modalService.openSuccessModal(resp.message);
-        this.btnDisable = false;
-        this.meetingForm.patchValue(resp.data);
-        this.modalRef.close();
-        this.refreshComponent();
-      } else {
-        this.btnDisable = false;
-        this.modalService.openErrorModal(resp.message);
-      }
-    },
-    error => {
-      this.btnDisable = false;
-      this.modalService.openErrorModal('Error updating meeting: ' + error.message);
+      followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
-  );
-  this.btnDisable = false;
-}
+    const payload = {
+      PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
+      PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid,
+      ...this.meetingForm.getRawValue(),
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      userEmail: userEmail,
+      followUpDate: followUpDate,
+      meetingDateStr: meetingDateStr
+    };
+
+    // If followUp is false, remove followUpNote and followUpDate from the payload
+    if (!this.meetingForm.get('followUp')?.value) {
+      delete payload.followUpNote;
+      delete payload.followUpDate;
+    }
+
+
+    this.leadService.createPreCustomerMeeting(payload).subscribe(
+      resp => {
+        if (resp.data && resp.status) {
+          this.modalService.openSuccessModal(resp.message);
+          this.btnDisable = false;
+          this.meetingForm.patchValue(resp.data);
+          this.modalRef.close();
+          this.refreshComponent();
+        } else {
+          this.btnDisable = false;
+          this.modalService.openErrorModal(resp.message);
+        }
+      },
+      error => {
+        this.btnDisable = false;
+        this.modalService.openErrorModal('Error updating meeting: ' + error.message);
+      }
+    );
+    this.btnDisable = false;
+  }
   refreshComponent() {
     this.getMeetingDates()
   }
@@ -667,7 +668,7 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
           followUp: followUp,  // Automatically set followUp based on API response
           followUpDate: followUp ? followUpDate : '',
           followUpNote: followUp ? this.preCustomerMeetingData.followUpNote || '' : '',
-          meetingDuration:this.preCustomerMeetingData.meetingDuration || '10 min',
+          meetingDuration: this.preCustomerMeetingData.meetingDuration || '10 min',
         });
 
         this.meetingForm.controls['meetingStatus'].enable();
@@ -699,19 +700,26 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
     return date.toISOString().slice(0, 16); // Extracts 'YYYY-MM-DDTHH:MM'
   }
 
-  // ✅ Convert UTC timestamp to local date without shifting time
-  convertUTCToLocal(utcDate: string): Date {
-    const date = new Date(utcDate);
+  parseDuration(duration: string): number {
+    if (!duration) return 30; // default 30 minutes
+    const match = duration.match(/(\d+)\s*min/);
+    return match ? parseInt(match[1], 10) : 30;
+  }
 
+  // Treat UTC string as "local" without converting
+  convertUTCToLocal(utcDate: string): Date {
+    const parts = utcDate.match(/\d+/g); // extract [YYYY, MM, DD, HH, MM, SS]
     return new Date(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      date.getUTCHours(),
-      date.getUTCMinutes(),
-      date.getUTCSeconds()
+      Number(parts[0]),       // year
+      Number(parts[1]) - 1,   // month (0-indexed)
+      Number(parts[2]),       // day
+      Number(parts[3]),       // hour
+      Number(parts[4]),       // minute
+      Number(parts[5])        // second
     );
   }
+
+
 
 
   resetForm() {
@@ -752,33 +760,33 @@ if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
     );
   }
   openEmail() {
-		if (!this.calendarEventData) return;
-		const modalRef = this.ngbModal.open(EmailEntryComponent, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-	}
+    if (!this.calendarEventData) return;
+    const modalRef = this.ngbModal.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
-	openAuthority() {
-		// if (!this.tariffData) return;
-		// const modalRef = this.modalService.open(AuthorityEntryComponent, {
-		// 	size: 'lg',
-		// 	centered: true,
-		// 	backdrop: 'static'
-		// });
-	}
+  openAuthority() {
+    // if (!this.tariffData) return;
+    // const modalRef = this.modalService.open(AuthorityEntryComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
 
-	openEDoc() {
-		// if (!this.tariffData) return;
-		// const modalRef = this.modalService.open(EdocComponent, {
-		// 	size: 'lg',
-		// 	centered: true,
-		// 	backdrop: 'static'
-		// });
-	}
+  openEDoc() {
+    // if (!this.tariffData) return;
+    // const modalRef = this.modalService.open(EdocComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
 
 
-  
+
 
 }

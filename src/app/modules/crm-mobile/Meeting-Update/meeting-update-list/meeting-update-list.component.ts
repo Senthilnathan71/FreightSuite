@@ -78,9 +78,8 @@ reasonList=[
     private modalService: NgbModal,
     private fb: FormBuilder,
     private commonModalService: ModalService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
   ) { }
-
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -103,7 +102,7 @@ reasonList=[
       meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
       meetingDuration:[''],
-      reason:[''],
+      remarks:[''],
       preCustomerMasterSid: [''],
       createdBy:[''],
       updatedBy:['']
