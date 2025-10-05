@@ -190,6 +190,20 @@ reasonList=[
     );
   }
 
+
+    // Treat UTC string as "local" without converting
+  convertUTCToLocal(utcDate: string): Date {
+    const parts = utcDate.match(/\d+/g); // extract [YYYY, MM, DD, HH, MM, SS]
+    return new Date(
+      Number(parts[0]),       // year
+      Number(parts[1]) - 1,   // month (0-indexed)
+      Number(parts[2]),       // day
+      Number(parts[3]),       // hour
+      Number(parts[4]),       // minute
+      Number(parts[5])        // second
+    );
+  }
+
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;

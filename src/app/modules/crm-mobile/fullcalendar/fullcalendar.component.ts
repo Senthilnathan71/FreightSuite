@@ -379,23 +379,23 @@ export class FullcalendarComponent implements OnInit {
     this.modal.dismissAll();
   }
 
-  private formatDateTime(date: string | Date): string | null {
-    if (!date) return null;
-    const dt = new Date(date);
+  // private formatDateTime(date: string | Date): string | null {
+  //   if (!date) return null;
+  //   const dt = new Date(date);
 
-    const day = dt.getDate();
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const month = monthNames[dt.getMonth()];
-    const year = dt.getFullYear();
+  //   const day = dt.getDate();
+  //   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  //   const month = monthNames[dt.getMonth()];
+  //   const year = dt.getFullYear();
 
-    let hours = dt.getHours();
-    const minutes = dt.getMinutes().toString().padStart(2, '0');
-    const seconds = dt.getSeconds().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // Convert 0 to 12-hour format
+  //   let hours = dt.getHours();
+  //   const minutes = dt.getMinutes().toString().padStart(2, '0');
+  //   const seconds = dt.getSeconds().toString().padStart(2, '0');
+  //   const ampm = hours >= 12 ? 'PM' : 'AM';
+  //   hours = hours % 12 || 12; // Convert 0 to 12-hour format
 
-    return `${day}/${month}/${year} ${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-  }
+  //   return `${day}/${month}/${year} ${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+  // }
 
   getMeetingDates() {
     // first clear events
@@ -562,7 +562,7 @@ export class FullcalendarComponent implements OnInit {
 
 
 
-    const meetingDateStr = this.formatDateTime(this.meetingForm.value.meetingDate);
+    const meetingDateStr = this.meetingForm.value.meetingDate ;
     // Rest of your existing code...
     this.btnDisable = true;
     if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
@@ -628,6 +628,7 @@ export class FullcalendarComponent implements OnInit {
 
 
 
+
   loadPreCustomerMeetingData(Id: any) {
     forkJoin({
       preCustomerMeeting: this.leadService.getPreCustomerMeeting(Id),
@@ -640,12 +641,20 @@ export class FullcalendarComponent implements OnInit {
       this.salesPersons = salesPersons;
 
       if (this.preCustomerMeetingData) {
+        // const meetingDate = this.preCustomerMeetingData.meetingDate
+        //   ? this.formatDateTime(this.preCustomerMeetingData.meetingDate)
+        //   : '';
+
+        // const followUpDate = this.preCustomerMeetingData.followUpDate
+        //   ? this.formatDateTime(this.preCustomerMeetingData.followUpDate)
+        //   : '';
+
         const meetingDate = this.preCustomerMeetingData.meetingDate
-          ? this.formatDateTime(this.preCustomerMeetingData.meetingDate)
+          ? this.formatDateForInput(this.preCustomerMeetingData.meetingDate)
           : '';
 
         const followUpDate = this.preCustomerMeetingData.followUpDate
-          ? this.formatDateTime(this.preCustomerMeetingData.followUpDate)
+          ? this.formatDateForInput(this.preCustomerMeetingData.followUpDate)
           : '';
 
         // Determine if followUp should be true based on followUpDate or followUpNote
