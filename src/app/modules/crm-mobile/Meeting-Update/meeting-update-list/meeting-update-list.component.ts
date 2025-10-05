@@ -106,7 +106,7 @@ reasonList=[
       meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
       meetingDuration:[''],
-      reason:[''],
+      remarks:[''],
       preCustomerMasterSid: [''],
       createdBy:[''],
       updatedBy:['']
