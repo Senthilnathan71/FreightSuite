@@ -1,3 +1,12 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
 <div class="col-12">
   <div class="row  bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
     <div class="col-md-4  pb-1">
@@ -17,6 +26,10 @@
         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
           (click)="openAuditLogs(auditLogModal)">
           <i class="fas fa-history me-1"></i>Logs
+        </button>
+
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="quotationApproved" (click)="reportAndEmailModel(reportModel)">
+          <i class="fas fa-print"></i> Print
         </button>
 
         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
@@ -39,13 +52,13 @@
         
           <div ngbDropdownMenu aria-labelledby="actionDropdown" class="py-1">
             <button class="dropdown-item d-flex align-items-center text-success" type="button"
-              (click)="onApprovalStatusChange('Approved')" [disabled]="actionsDisabled">
+              (click)="onInternalApprovalStatusChange('Approved')" [disabled]="actionsDisabled">
               <i class="fas fa-check me-2" aria-hidden="true"></i>
               Approve
             </button>
         
             <button class="dropdown-item d-flex align-items-center text-danger" type="button"
-              (click)="onApprovalStatusChange('Rejected')" [disabled]="actionsDisabled">
+              (click)="onInternalApprovalStatusChange('Rejected')" [disabled]="actionsDisabled">
               <i class="fas fa-times me-2" aria-hidden="true"></i>
               Reject
             </button>
@@ -173,7 +186,7 @@
                     </div>
                   </ng-template>
                 </ng-select> -->
-                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder=""
+                <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="customers" formControlName="CustomerMasterSid" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
                   [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
                   (itemSelected)="onSelectionChange($event)">
@@ -187,13 +200,25 @@
                 </small>
               </div>
             </aside>
-            <aside class="col-md-4" *ngIf="!quotationForm.get('LeadOrCustomer')?.value">
+            <aside class="col-md-4" *ngIf="!isEditMode && !quotationForm.get('LeadOrCustomer')?.value">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('PreCustomerMasterSid')?.value">
                 <ng-select class="ng-select" [items]="leadList" bindLabel="preCustomerName"
                   bindValue="PreCustomerMasterSid" formControlName="PreCustomerMasterSid" appendTo="body"
                   (change)="onSelectionChange($event)"></ng-select>
                 <label for="customerName" class="input-label">Lead <span class="text-danger">*</span></label>
+                <small
+                  *ngIf="quotationForm.get('PreCustomerMasterSid').touched && quotationForm.get('PreCustomerMasterSid').invalid"
+                  class="error-message">
+                  Required
+                </small>
+              </div>
+            </aside>
+            <aside class="col-md-4" *ngIf="isEditMode">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="CustomerName" style="background-color: white;cursor: not-allowed;" readonly>
+                <label for="customerName" class="input-label">{{quotationForm.get('LeadOrCustomer')?.value ?  'Customer Name' :'Lead Name'}} <span class="text-danger">*</span></label>
                 <small
                   *ngIf="quotationForm.get('PreCustomerMasterSid').touched && quotationForm.get('PreCustomerMasterSid').invalid"
                   class="error-message">
@@ -830,8 +855,22 @@
                               <h2 ngbAccordionHeader>
                                 <button ngbAccordionButton
                                   class="d-flex justify-content-between align-items-center w-100 position-relative p-1">
-                                  <h5 class="font-bold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
-                                    Details'}}</h5>
+                                  <span class="font-bold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
+                                    Details'}}</span>
+                                  <span class="fw-bold my-1 text-warning ps-2" *ngIf="isEditMode">
+                                    @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex)){
+                                      @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Approved"){
+                                        <span class="badge bg-success">Approved</span>
+                                      } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Rejected"){
+                                        <span class="badge bg-danger">Rejected</span>
+                                      } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Counter"){
+                                        <span class="badge bg-secondary">Counter</span>
+                                      }  @else {
+                                        <span class="badge bg-warning">Waiting for Approval</span>
+                                      }
+                                    }
+                                  </span>
+
                                   @if(quoteCarriers(routeIndex).length > 1){
                                   <button class="btn btn-sm waves-effect waves-light text-light"
                                     (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)">
@@ -856,10 +895,10 @@
                                               class="text-danger"></span></label>
                                         </div>
                                       </aside>
-                                      <aside class="col-md-3">
+                                      <aside class="col-md-1">
                                         <div class="custom-form-group">
                                           <input type="text" id="text-input" formControlName="TransitTime"
-                                            placeholder="" class="custom-input-field sm" [onlyNumbers]>
+                                            placeholder="" class="custom-input-field sm text-end" [onlyNumbers]>
                                           <label for="text-input" class="input-label">Transit Time <span
                                               class="text-danger"></span></label>
                                           @if(carrier.get("TransitTime")?.touched &&
@@ -872,16 +911,58 @@
                                           }
                                         </div>
                                       </aside>
-                                      @if(isEditMode && authorizerDetails.canAuthorize){
-                                      <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
-                                          [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
-                                          <ng-select formControlName="authorizerStatus" [items]="approvalStatus" bindLabel="name" bindValue="value">
-                                      
-                                          </ng-select>
-                                          <label for="" class="input-label">Authorization Status <span class="text-danger"></span></label>
-                                        </div>
-                                      </aside>
+                                      @if(isEditMode){
+                                        @if(authorizerDetails.isAuthorizer){
+                                        <aside class="col-md-3">
+                                          <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
+                                            <ng-select formControlName="authorizerStatus" [items]="allApprovalStatus" bindLabel="name" bindValue="value"
+                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)">
+                                            </ng-select>
+                                            <label for="" class="input-label">Authorization Status <span class="text-danger"></span></label>
+                                          </div>
+                                        </aside>
+                                        } @else if(!authorizerDetails.isAuthorizer){
+                                          <aside class="col-md-3">
+                                            <div class="custom-form-group custom-form-group-select"
+                                              [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
+                                              <ng-select formControlName="authorizerStatus" [items]="approvalStatus" bindLabel="name" bindValue="value"
+                                                (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)">
+                                              </ng-select>
+                                              <label for="" class="input-label">Authorization Status <span class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerStatus') ? '*' : '' }}</span></label>
+                                            </div>
+                                          </aside>
+                                          <aside class="col-md-3">
+                                            <div class="custom-form-group">
+                                              <input type="text" id="text-input" formControlName="authorizerRemarks" placeholder="" class="custom-input-field sm"
+                                                [onlyNumbers]>
+                                              <label for="text-input" class="input-label">Authorizer Remarks <span class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerRemarks') ? '*' : '' }}</span></label>
+                                              @if(carrier.get("AuthorizerRemarks")?.touched &&
+                                              carrier.get("AuthorizerRemarks")?.invalid){
+                                              <div class="error-message">
+                                                @if(carrier.get("AuthorizerRemarks")?.hasError('required')){
+                                                <span>required</span>
+                                                }
+                                              </div>
+                                              }
+                                            </div>
+                                          </aside>
+                                          <aside class="col-md-2">
+                                            <div class="custom-form-group">
+                                              <input type="text" id="text-input" formControlName="ApprovedBy" placeholder="" class="custom-input-field sm"
+                                               >
+                                              <label for="text-input" class="input-label">Approved By <span class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'ApprovedBy') ? '*' : '' }}</span></label>
+                                              @if(carrier.get("ApprovedBy")?.touched &&
+                                              carrier.get("ApprovedBy")?.invalid){
+                                              <div class="error-message">
+                                                @if(carrier.get("ApprovedBy")?.hasError('required')){
+                                                <span>required</span>
+                                                }
+                                              </div>
+                                              }
+                                            </div>
+                                          </aside>
+                                        }
                                       }
                                     </div>
                                   </div>
@@ -2424,4 +2505,190 @@
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
   </div>
+</ng-template>
+<!--
+  ng-template for the Customer Creation Success Modal
+  - `let-modal` gives us access to the modal instance for closing/dismissing.
+-->
+<ng-template #customerCreatedModal let-modal>
+  <!-- Modal Header with bg-info -->
+  <div class="modal-header bg-info text-white">
+    <h4 class="modal-title" id="modal-title">Success!</h4>
+    <button 
+      type="button" 
+      class="btn-close btn-close-white" 
+      aria-label="Close" 
+      (click)="onClosingCustomerModal()">
+    </button>
+  </div>
+  
+  <!-- Modal Body -->
+  <div class="modal-body text-center py-4">
+    <p class="h5">Customer created successfully.</p>
+  </div>
+
+  <!-- Modal Footer with Action Buttons -->
+  <div class="modal-footer">
+    <button 
+      type="button" 
+      class="btn btn-light" 
+      (click)="onClosingCustomerModal()">
+      Close
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      (click)="navigateToCustomers()">
+      Go to Customer Page
+    </button>
+  </div>
+</ng-template>
+<ng-template #reportModel let-modal>
+
+    <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info">
+        <h5 class="modal-title text-white mb-0" >Quotation Preview</h5>
+        <div class="d-flex gap-2 align-items-center">
+           
+            <div *ngIf="isLoading" class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-light-secondary btn-sm" (click)="downloadPDF()">
+                 <i class="fas fa-download me-1"></i> Download
+            </button>
+            <button type="button" class="btn btn-light-secondary btn-sm email-btn" (click)="sendEmail()">
+                  <i class="fas fa-envelope me-1"></i> Email
+            </button>
+            <div class="ms-3">
+                <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-body">
+        <section class="container-fluid py-3" id="pdfContent">
+            <div class="px-3 border border-2 border-dark printTable py-3" style="font-size: 14px;">
+                <div class="d-flex px-3 px-md-5 align-items-center">
+                    <div class="col-md-6 d-flex align-items-center gap-4 mb-3 mb-md-0">
+                            <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+                            <h4> {{currentCompany.companyName}} </h4>
+                    </div>
+                    <div class="col-md-6 text-md-end text-center">
+                         <p class="h5 fw-bold mb-0">{{currentCompany.companyName}}</p>
+                        <p class="text-muted mb-0">{{currentCompany.addressLine1}}</p>
+                    </div>
+                </div>
+
+                <div class="text-center h5 fw-bold">QUOTATION</div>
+                <div class="row mx-auto my-3">
+                    <div class="col-md-6 px-md-5">
+                        <section class="d-flex flex-column">
+                            <aside class="d-flex">
+                                <p class="mb-0 col-12 h6 fw-bold">{{this.selectedItem.CustomerName}}</p>
+                            </aside>
+                            <aside class="d-flex">
+                                <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
+                            </aside>
+                        </section>
+                    </div>
+                    <div class="col-md-6">
+                        <section class="d-flex flex-column gap-1">
+                            <aside class="d-flex gap-3 justify-content-end">
+                                <p class="mb-0 col-3 fw-bold">Quotation No</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
+                            </aside>
+                            <aside class="d-flex gap-3 justify-content-end">
+                                <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
+                            </aside>
+                            <aside class="d-flex gap-3 justify-content-end">
+                                <p class="mb-0 col-3 fw-bold">Reference</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
+                            </aside>
+                        </section>
+                    </div>
+                </div>
+
+                @for(route of selectedItem.quoteRoute; track route){
+                <aside class="table-responsive  px-3 px-md-5">
+                    <table class="table">
+
+
+                        <tr>
+                            <td colspan="8" style="border:2px solid black">
+                                <aside class="d-flex gap-3 justify-content-between">
+                                    <div>
+                                        <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : ''}}.</p>
+                                    </div>
+                                </aside>
+                            </td>
+                        </tr>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" class="p-0" style="border:2px solid black">
+                                    <aside class="d-flex flex-wrap">
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.quoteCarrier[0]?.CarrierName}}
+                                        </p>
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
+                                            {{route.quoteCargo[0]?.CargoType}}</p>
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
+                                            {{route.effDate | formatDate }}</p>
+                                        <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
+                                        </p>
+                                    </aside>
+                                </td>
+                            </tr>
+
+                            <tr style="border:2px solid black">
+                                <td class="fw-bold table-secondary border border-dark">Charge</td>
+                                <td class="fw-bold table-secondary border border-dark">Unit</td>
+                                <td class="fw-bold table-secondary border border-dark">Qty</td>
+                                <td class="fw-bold table-secondary border border-dark">Curr</td>
+                                <td class="fw-bold table-secondary border border-dark">Rate</td>
+                                <td class="fw-bold table-secondary border border-dark">Amt</td>
+                                @if(selectedItem.AgreedRate === "Y"){
+                                <td class="fw-bold table-secondary border border-dark">Ex Rate</td>
+                                <td class="fw-bold table-secondary border border-dark">Local Amount</td>
+                                }
+                            </tr>
+                            @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
+                            <tr style="border:2px solid black">
+                                <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
+                                <td class="border border-dark">{{ getChargeUOMCodeById(charge.CostChargeUomSid)}}</td>
+                                <td class="border border-dark">{{charge.Qty}}</td>
+                                <td class="border border-dark">{{getCurrencyCodeById(charge.CostCurrencyMasterSid)}}</td>
+                                <td class="border border-dark">{{charge.CostRate}}</td>
+                                <td class="border border-dark">{{charge.CostAmount}}</td>
+                                @if(selectedItem.AgreedRate === "Y"){
+                                  <td class="border border-dark">{{charge.CostExchangeRate}}</td>
+                                  <td class="border border-dark">{{charge.CostLocalAmount}}</td>
+                                }
+
+                            </tr>
+                            }
+
+
+                        </tbody>
+                    </table>
+
+                    <div class="mt-3">
+                      <h6 class="fw-bold">Terms and Conditions:</h6>
+                      <ul>
+                        @for(term of TandCList; track term){
+                        <li>{{ term.TandC }}</li>
+                        }
+                      </ul>
+                    </div>
+
+                </aside>
+                }
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
+                <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
+                <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+        </section>
+    </div>
 </ng-template>

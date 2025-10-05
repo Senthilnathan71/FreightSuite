@@ -18,7 +18,7 @@ import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, ReactiveForms
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, distinctUntilChanged, forkJoin, from, of, Subject, Subscription, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, firstValueFrom, forkJoin, from, map, Observable, of, Subject, Subscription, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
@@ -33,8 +33,11 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
-import { de } from 'date-fns/locale';
-// import { ComboBoxColumn, MultiColumnComboboxComponent } from 'src/app/component/multicolumn-combobox/multicolumn-combobox.component';
+import { de, ro } from 'date-fns/locale';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ToastrService } from 'ngx-toastr';
+import * as html2pdf from 'html2pdf.js';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -53,6 +56,8 @@ import { de } from 'date-fns/locale';
     DecimalPrecisionDirective,
     FavoriteStarComponent,
     SearchableDropdown,
+    CustomDatePipe,
+    NgxSpinnerModule
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -68,16 +73,23 @@ export class QuotationEntryComponent implements OnInit {
 
   // SECTION1 - VARIABLE DECLARATION
   @ViewChildren('revenueLocalAmountInput') revenueLocalInputs!: QueryList<ElementRef<HTMLInputElement>>;
+  @ViewChild('customerCreatedModal') customerCreatedModal!: TemplateRef<any>
+  currentDate = new Date()
   selectedCurrency : any;
 
   actionsDisabled = false;
   approvalDropdownValue = ""
+  createdCustomerId : number;
+  isLoading : boolean;
+  selectedItem : any;
+  quotationApproved : boolean;
   authorizerDetails = {
     isAuthorizer: false,
     isAlreadyApproved: false,
     canAuthorize: false,
     AuthorityLevel: null,
-    AuthorityDetailSid: null
+    AuthorityDetailSid: null,
+    ApprovedBy : ''
   }
 
   
@@ -158,13 +170,20 @@ export class QuotationEntryComponent implements OnInit {
     { id: 2, name: 'Suspended' },
   ];
 
-  approvalStatus = [
+  allApprovalStatus = [
     { value : "Pending" , name :"Waiting for Approval"},
     { value : "WaitingForFinalApproval" , name :"Waiting for Final Approval"},
     { value : "WaitingForCustomerApproval" , name :"Waiting for Customer Approval"},
     { value : "Approved" , name :"Approved"},
     { value : "Counter" , name :"Counter"},
     { value : "Rejected" , name : "Rejected"}
+  ]
+
+  approvalStatus = [
+    { value : "Pending" , name :"Waiting for Approval"},
+    { value : "Approved" , name :"Approved"},
+    { value : "Rejected" , name : "Rejected"},
+    {value : "Counter", name : "Counter"}
   ]
 
   
@@ -174,6 +193,7 @@ export class QuotationEntryComponent implements OnInit {
   selectedTab = 'Quotation';
 dataFromEnqPage:any;
   imcoList: any[] = [];
+  quotationDataApprovedByCustomer: any;
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
@@ -234,7 +254,9 @@ dataFromEnqPage:any;
     private leadService: LeadService,
     private calendar: NgbCalendar,
     private modalService: ModalService,
-    private ngbModal: NgbModal
+    private ngbModal: NgbModal,
+    private toastr: ToastrService,
+    private spinner: NgxSpinnerService,
   ) { }
 
   // SECTION3 - NGONIT
@@ -249,6 +271,7 @@ dataFromEnqPage:any;
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
 
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
@@ -263,8 +286,11 @@ dataFromEnqPage:any;
           this.QuoteHeaderSid = +params.get('id');
           if (this.QuoteHeaderSid) {
             this.isEditMode = true;
-            this.loadEnquiry(this.QuoteHeaderSid);
+            this.loadQuotation(this.QuoteHeaderSid);
             this.checkAuthorisedPerson(this.userData?.UserMasterSid, this.QuoteHeaderSid);
+            this.loadTandC({MenuMasterSid : this.currentMenuId}).subscribe((res)=>{
+              this.TandCList = res;
+            })
           } else {
             this.minEffDate = this.todayDate;
             this.f['status']?.disable();
@@ -431,34 +457,40 @@ private extractCargoData(enquiryCargo: any[]): any {
       DocumentSid: QuoteHeaderSid
     }
 
-    const atleastOneApprovedCarrier = (this.quotationData?.quoteRoutes || []).some(route => {
-      return (route?.quoteCarriers || []).some(carrier => carrier.ApprovalStatus === "Approved")
-    })
+    
 
-    if(atleastOneApprovedCarrier){
+    if(this.quotationApproved){
       return;
     }
 
-    if (UserMasterSid === this.quotationData?.CustomerMasterSid) {
-      this.authorizerDetails = {
-        isAuthorizer: true,
-        isAlreadyApproved: false,
-        canAuthorize: true,
-        AuthorityLevel: "C",
-        AuthorityDetailSid: null
-      }
-    }
 
     this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
         const data = resp.data;
         this.isAuthorizedUser = data?.canAuthorize;
+        const currentUserId = this.userData?.UserMasterSid || 'NA';
         this.authorizerDetails = {
           isAuthorizer : data?.canAuthorize,
           isAlreadyApproved : data?.alreadyApproved,
           canAuthorize : data?.canAuthorize && !data?.alreadyApproved,
           AuthorityLevel : data?.AuthorityLevel,
-          AuthorityDetailSid : data?.AuthorityDetailSid
+          AuthorityDetailSid : data?.AuthorityDetailSid,
+          ApprovedBy : currentUserId
+        }
+        if(!this.isAuthorizedUser){
+          this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+            const carrierArr = this.quoteCarriers(routeIndex);
+            carrierArr.controls.forEach((carrier: FormGroup) => {
+              carrier.get('authorizerStatus')?.enable();
+            })
+          })
+        } else {
+          this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+            const carrierArr = this.quoteCarriers(routeIndex);
+            carrierArr.controls.forEach((carrier: FormGroup) => {
+              carrier.get('authorizerStatus')?.disable();
+            })
+          })
         }
       }
     )
@@ -550,7 +582,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       });
     } else {
       this.quotationForm.patchValue({
-        customerName: selectedItem.preCustomerName,
+        CustomerName: selectedItem.preCustomerName,
         CustomerAddress: selectedItem.preCustomerAddress1,
         Email: selectedItem.email,
         CustomerBranchSid: null,
@@ -687,8 +719,9 @@ private extractCargoData(enquiryCargo: any[]): any {
       CarrierMasterSid : [data?.CarrierMasterSid || null],
       CarrierName : [data?.CarrierName || ''],
       TransitTime : [data?.TransitTime || null],
-      authorizerStatus : [{value : data?.ApprovalStatus || 'Pending' , disabled: true}],
+      authorizerStatus : [data?.ApprovalStatus || 'Pending'],
       authorizerRemarks : [data?.authorizerRemarks || ''],
+      ApprovedBy : [data?.ApprovedBy || ''],
 
       quoteCharges : this.fb.array([])
     })
@@ -697,6 +730,22 @@ private extractCargoData(enquiryCargo: any[]): any {
     if(!data || data === undefined){
       this.addQuoteCharge(routeIndex,this.quoteCarriers(routeIndex).length - 1);
     }
+
+    this.subscription.add(
+      carrierForm.get('authorizerStatus')?.valueChanges.subscribe(value => {
+        if(value === 'Approved' || value === 'Rejected'){
+          carrierForm.get('ApprovedBy').setValidators(Validators.required);
+        } else {
+          carrierForm.get('ApprovedBy').clearValidators();
+        }
+        if(value === 'Counter'){
+          carrierForm.get('authorizerRemarks').setValidators(Validators.required);
+        } else {
+          carrierForm.get('authorizerRemarks').clearValidators();
+        }
+      })
+    )
+    carrierForm.updateValueAndValidity();
   }
 
   handleCarrierChange(carrier: any, routeIndex: number, carrierIndex: number) {
@@ -1093,13 +1142,17 @@ private extractCargoData(enquiryCargo: any[]): any {
     );
   }
 
-  loadEnquiry(id): void {
+  loadQuotation(id): void {
+    this.spinner.show();
     this.leadService.getQuoteById(id).subscribe(
       (resp: any) => {
         if (resp.status) {
+          this.spinner.hide();
           this.patchValues(resp.data)
           this.quotationData = resp.data;
+          this.selectedItem = resp.data;
         } else {
+          this.spinner.hide();
           this.appSettingService.showError("Error loading Quotation")
           console.error(resp.message);
         }
@@ -1120,6 +1173,9 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.f['SegmentType']?.setValue(selectedDept?.departmentType?.toUpperCase());
     }
     this.f['DepartmentMasterSid']?.disable();
+    this.f['LeadOrCustomer']?.disable();
+    this.f['CustomerMasterSid']?.disable();
+    this.f['PreCustomerMasterSid']?.disable();
     this.getEnquiryName(response.EnquirySid);
     this.quotationForm.patchValue({
       ...response,
@@ -1169,6 +1225,34 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.quotationForm.disable();
       this.disableAllModification = true;
     }
+
+    
+    this.quotationApproved = (response.quoteRoute || []).some(route => {
+      return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
+    })
+
+    const {quoteRoute,...header} = response;
+    const approvedRoute = (quoteRoute || []).find(route => {
+      return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
+    });
+    const {quoteCarrier,quoteCargo,...routeDetails} = approvedRoute;
+    routeDetails['quoteCarrier'] = quoteCarrier.find(carrier => carrier.ApprovalStatus === "Approved");
+
+    console.log(approvedRoute);
+
+    let approvedData = {
+      ...header,
+      quoteRoute: routeDetails
+    }
+    
+    console.log(approvedData);
+
+    // Approved Data for Quotation
+    this.selectedItem = approvedData;
+
+    console.log("Is it approved Quotation",this.quotationApproved);
+    console.log("Only Approved Data",this.selectedItem);
+
   }
 
   onSubmit() {
@@ -1180,12 +1264,21 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
 
     if (this.quoteRoutes.invalid) {
-      this.appSettingService.showWarning("Please fill all the required fields correctly");
+      this.appSettingService.showWarning("Please fill all the Route details correctly");
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
       this.selectedTab1 = 'Route Details';
       return;
     }
+
+    this.quoteRoutes.controls.forEach((route:FormGroup,routeIndex:number)=>{
+      const carrierArr = this.quoteCarriers(routeIndex);
+      carrierArr.controls.forEach((carrier:FormGroup,carrierIndex:number) => {
+        carrier.updateValueAndValidity();
+        carrier.markAllAsTouched();
+      })
+    })
+
     if (this.quotationForm.invalid) {
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.quotationForm.markAllAsTouched();
@@ -1221,7 +1314,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       authDetails : {
           canAuthorize : this.authorizerDetails?.canAuthorize,
           AuthorityDetailSid :  this.authorizerDetails?.AuthorityDetailSid || null,
-          ApprovalStatus : this.approvalDropdownValue
+          ApprovalStatus : this.approvalDropdownValue,
+          ApprovedBy : this.authorizerDetails?.ApprovedBy
       },
 
       quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => ({
@@ -1270,10 +1364,6 @@ private extractCargoData(enquiryCargo: any[]): any {
         quoteCarriers : (route.quoteCarriers || []).map((carrier) => {
           const canLoginUserAuthorize = this.authorizerDetails?.canAuthorize;
           let approvalLevel = this.authorizerDetails?.AuthorityLevel;
-          console.log(this.approvalDropdownValue);
-          console.log(approvalLevel);
-
-
 
           let finalValue;
           if(this.approvalDropdownValue === "Approved"){
@@ -1301,7 +1391,15 @@ private extractCargoData(enquiryCargo: any[]): any {
 
           if (resp.status) {
             this.appSettingService.showSuccess('Quotation is successfully updated');
-            this.router.navigate(['crm/quotation/list'])
+            const customerId = resp.data?.createdCustomer?.CustomerMasterSid;
+            if(customerId){
+              this.createdCustomerId = customerId;
+              this.ngbModal.open(this.customerCreatedModal, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+            }
           } else {
             this.appSettingService.showError(resp.message);
 
@@ -1313,8 +1411,11 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.leadService.createQuotation(payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.modalService.openSuccessModal("Quotation Created Successfully");
-            this.router.navigate(['crm/quotation/list'])
+            this.appSettingService.showSuccess("Quotation Created Successfully");
+            const id = resp.data?.quoteHeader?.QuoteHeaderSid;
+            if(id){
+              this.router.navigate(['crm/quotation/entry',id])
+            }
           } else {
             this.modalService.openErrorModal("Quotation Creation Failed");
           }
@@ -1884,29 +1985,48 @@ private extractCargoData(enquiryCargo: any[]): any {
   modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
 
-  openTandC() {
+ openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.leadService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
+    if (!this.currentMenuId) {
+        this.appSettingService.showError('Error: Menu ID not found.');
+        return;
+    }
 
-        } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
+    const payload = { MenuMasterSid: this.currentMenuId };
+
+    const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
+      if (termsData && termsData.length > 0) {
+        this.TandCList = termsData;
+        const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+        
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
+      } else {
+        console.warn('No Terms and Conditions data found to display.');
       }
+    });
+
+    this.subscription.add(sub);
+  }
+
+  loadTandC(payload: { MenuMasterSid: number }): Observable<any[]> {
+    return this.leadService.getTandCByCondition(payload).pipe(
+      map((resp: any) => {
+        if (resp && resp.status) {
+          return resp.data;
+        }
+        this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
+        return [];
+      }),
+      catchError((error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions');
+        return of([]);
+      })
     );
   }
 
@@ -1944,7 +2064,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   resetForm() {
   // If editing an existing quotation, reload it from the server to restore original values
   if (this.isEditMode && this.QuoteHeaderSid) {
-    this.loadEnquiry(this.QuoteHeaderSid);
+    this.loadQuotation(this.QuoteHeaderSid);
     return;
   }
 
@@ -2184,7 +2304,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     ['Rejected', 'Rejected']
   ]);
 
-  onApprovalStatusChange(status: any) {
+  onInternalApprovalStatusChange(status: any) {
     this.approvalDropdownValue = status;
     this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
       const carrierArr = this.quoteCarriers(routeIndex);
@@ -2194,8 +2314,319 @@ private extractCargoData(enquiryCargo: any[]): any {
     })
   }
 
+  onCustomerApprovalStatusChange(routeIndex:number,carrierIndex:number,status: any) {
+    console.log(status);
+    this.quoteRoutes.controls.forEach((route: FormGroup, rIndex: number) => {
+      const carrierArr = this.quoteCarriers(routeIndex);
+      carrierArr.controls.forEach((carrier: FormGroup,cIndex:number) => {
+        if (status.value === "Approved") {
+          if (routeIndex === rIndex && carrierIndex === cIndex) {
+            carrier.get('authorizerStatus')?.setValue(status.value);
+          } else {
+            carrier.get('authorizerStatus')?.setValue("Rejected");
+          }
+        } else if (status?.value === "Counter") {
+          if (routeIndex === rIndex && carrierIndex === cIndex) {
+            carrier.get('authorizerStatus')?.setValue(status.value);
+          } else {
+            carrier.get('authorizerStatus')?.setValue("Pending");
+          }
+        } else {
+          carrier.get('authorizerStatus')?.setValue(status.value);
+        }
+      });
+    })
+  }
+
+  getStatusName(statusValue) {
+    const statusObject = this.approvalStatus.find(status => status.value === statusValue);
+    return statusObject ? statusObject.name : null;
+  }
+
+  getAuthorityStatusForCarrier(routeIndex:number,carrierIndex:number){
+    const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const currentStatus = carrier.get('authorizerStatus')?.value
+    const currentStatusName = this.getStatusName(currentStatus);
+    return  currentStatusName || '';
+  }
+
+  isRequiredInQuoteCarrier(routeIndex:number,carrierIndex:number,ctrl:string){
+    const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const control = carrier.get(ctrl);
+    return control ? control.hasValidator(Validators.required) : false;
+  }
+
+  navigateToCustomers(){
+    this.router.navigate(['master/organization/entry', this.createdCustomerId]);
+    this.ngbModal.dismissAll();
+  }
+
+  onClosingCustomerModal(){
+    this.createdCustomerId = null;
+    this.loadQuotation(this.QuoteHeaderSid);
+    this.ngbModal.dismissAll();
+  }
+
+  getFormattedPort(PortMasterSid) {
+    if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
+      return '';
+    }
+    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
+    return ourPort ? ourPort.PortCode : '';
+  }
+
+  reportAndEmailModel(content: TemplateRef<any>) {
+    this.ngbModal.open(content, {
+      size: 'xl', // or omit this to avoid interference
+      scrollable: false,
+      windowClass: 'custom-wide-modal'
+    });
+  }
+
+
+  async sendEmail() {
+    try {
+      this.isLoading = true;
+
+      const pdfBlob = await this.generatePDFBlob();
+
+      const formData = new FormData();
+      const toEmailSet = new Set<string>();
+
+      if (this.selectedItem?.Email) {
+        // toEmailSet.add(this.selectedItem.Email);
+        toEmailSet.add('jdhineshjaisankar@gmail.com');
+      }
+
+      if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
+        const resp: any = await firstValueFrom(
+          this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
+        );
+
+        if (resp?.status && resp.data?.Email) {
+          toEmailSet.add(resp.data.Email);
+        }
+      }
+
+      if (toEmailSet.size === 0) {
+        this.appSettingService.showError('To Email is missing.')
+        this.isLoading = false;
+        return;
+      }
+
+      const toEmail = Array.from(toEmailSet);
+      toEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailTo[]", email);
+        }
+      });
+
+      const ccEmailSet = new Set<string>([this.userData['userEmail']]);
+      const ccEmail = Array.from(ccEmailSet);
+
+      ccEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailCC[]", email);
+        }
+      });
+      formData.append('Subject', `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`);
+      formData.append('Mailbody', `
+        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+          <p>Dear Sir/Madam,</p>
+          <p>Please find enclosed the quotation as requested.</p>
+          <p>Kindly review the details at your convenience.</p>
+          <p>Looking forward to your feedback and the opportunity to work together.</p>
+          <p>
+            Approval Hyperlink: 
+            <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+          </p>
+          <p>Best Regards,</p>
+          <p>${this.userData['userEmail']}</p>
+        </div>
+      `);
+      formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
+
+      console.log(formData)
+      this.leadService.quotationReport(formData).subscribe((resp: any) => {
+        this.isLoading = false;
+        if (resp?.data) {
+          this.toastr.success('Report Email Sent successfully!');
+        }
+      }, error => {
+        this.isLoading = false;
+        this.toastr.error('Failed to send email.');
+      });
+
+    } catch (err) {
+      this.isLoading = false;
+      console.error('PDF generation error:', err);
+      this.toastr.error('Error generating PDF.');
+    }
+  }
+
+  downloadPDF() {
+    const element = document.getElementById('pdfContent');
+  
+    if (!element) {
+      console.error('No element found');
+      return;
+    }
+  
+    const opt = {
+      margin: 0.5,
+      filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+  
+    html2pdf().from(element).set(opt).save(); // ✅ this triggers download
+  }
+
+  generatePDFBlob(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const element = document.getElementById('pdfContent');
+
+      const opt = {
+        margin: 0.5,
+        filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (!element) return reject('No element found');
+
+      html2pdf().from(element).set(opt).outputPdf('blob')
+        .then((blob: Blob) => resolve(blob))
+        .catch((err: any) => reject(err));
+    });
+  }
+
+  getChargeUOMCodeById(UOMMasterSid) {
+    if(!UOMMasterSid || this.chargeUnitMaster.length === 0){
+      return '';
+    } else {
+      return (this.chargeUnitMaster.find(uom => uom.UOMMasterSid === UOMMasterSid))?.UOMCode || 'N/A';
+    }
+  }
+
+  getCurrencyCodeById(CurrencyMasterSid) {
+    if(!CurrencyMasterSid || this.currencyMaster.length === 0){
+      return '';
+    } else {
+      return (this.currencyMaster.find(curr => curr.CurrencyMasterSid === CurrencyMasterSid))?.currencyCode || 'N/A';
+    }
+  }
+
+  //  goForBookingCreation() {
+  //   console.log(this.selectedItem, 'this.selectedItem');
+
+  //   // TODO : need to fix this after completion of Authorization
+  //   // const approvedRoute = (QuoteData.quoteRoute || []).find(route =>
+  //   //   route.quoteCarrier.some(carrier => carrier.ApprovalStatus === "A")
+  //   // ) || {};
+  //   const approvedRoute = selectedItem.quoteRoute[0] || [];
+  //   const POO = this.ports.find(port => port.PortMasterSid === approvedRoute.PORSid);
+  //   const POL = this.ports.find(port => port.PortMasterSid === approvedRoute.POLSid);
+  //   const POD = this.ports.find(port => port.PortMasterSid === approvedRoute.PODSid);
+  //   const FPD = this.ports.find(port => port.PortMasterSid === approvedRoute.FDPSid);
+
+
+  //   // TODO : need to fix this after completion of Authorization
+  //   // const approvedCarrier = (approvedRoute?.quoteCarrier || []).find(
+  //   //   carrier => carrier.ApprovalStatus === "A"
+  //   // ) || {};
+  //   const approvedCarrier = approvedRoute?.quoteCarrier?.[0] || {};
+
+  //   const cargo = approvedRoute?.quoteCargo?.[0] || {};
+
+  //   const data = {
+  //     quotation: true,
+  //     DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
+  //     CustomerMasterSid: QuoteData.CustomerMasterSid || null,
+  //     CustomerBranchSid: QuoteData.CustomerBranchSid || null,
+  //     CustomerName: QuoteData.CustomerName || "",
+  //     CustomerAddress: QuoteData.CustomerAddress || "",
+  //     SalesmanSid: QuoteData.SalesmanSid || null,
+  //     FreightTerms: QuoteData.FreightPPCC || "",
+  //     QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
+  //     CarrierName: approvedCarrier?.CarrierName || "",
+
+  //     POO: POO?.PortCode || null,
+  //     POL: POL?.PortCode || null,
+  //     POD: POD?.PortCode || null,
+  //     FPD: FPD?.PortCode || null,
+
+  //     bookingCargo: cargo ? [
+  //       {
+  //         CargoType: cargo.CargoType,
+  //         GrossWeight: cargo.GrossWeight,
+  //         NetWeight: cargo.NetWeight,
+  //         Volume: cargo.Volume,
+  //         ChargeableWeight: cargo.ChargeableWeight,
+  //         ContainerType: cargo.ContainerType,
+  //         NoofContainers: cargo.Qty,
+  //       }
+  //     ] : [],
+
+  //     bookingProduct: (cargo?.quoteProduct || []).map(product => ({
+  //       ProductName: product.ProductName,
+  //       ExternaPkg: product.ExternalPkg,
+  //       ExternlQty: product.ExternalQty,
+  //       GrossWeight: product.GrossWeight,
+  //       NetWeight: product.NetWeight,
+  //       Volume: product.Volume,
+  //       IsHaz: product.IsHaz,
+  //       ImcoClass: product.ImcoClass,
+  //       UnNo: product.UnNo,
+  //       PkgGroup: product.PkgGroup,
+  //       Length: product.Length,
+  //       Width: product.Width,
+  //       Height: product.Height,
+  //       UomMasterSid: product.UomMasterSid,
+  //     })),
+
+  //     bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
+  //       CompanyMasterSid: charge.CompanyMasterSid,
+  //       BranchMasterSid: charge.BranchMasterSid,
+  //       SerialNumber: index + 1,
+  //       ChargeMasterSid: charge.ChargeUomSid, 
+  //       ChargeDescription: charge.ChargeDisplayName,
+  //       NoOfUnit: charge.Qty,
+
+  //       CostChargeUomSid: charge.CostChargeUomSid,
+  //       CostPrepaidCollect: charge.CostPrepaidCollect,
+  //       CostDrCr: charge.CostDrCr,
+  //       CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
+  //       CostExchangeRate: charge.CostExchangeRate,
+  //       CostRate: charge.CostRate,
+  //       CostAmount: charge.CostAmount,
+  //       CostLocalAmount: charge.CostLocalAmount,
+
+  //       RevenueChargeUomSid: charge.RevenueChargeUomSid,
+  //       RevenuePrepaidCollect: charge.RevenuePrepaidCollect,
+  //       RevenueDrCr: charge.RevenueDrCr,
+  //       RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
+  //       RevenueExchangeRate: charge.RevenueExchangeRate,
+  //       RevenueRate: charge.RevenueRate,
+  //       RevenueAmount: charge.RevenueAmount,
+  //       RevenueLocalAmount: charge.RevenueLocalAmount,
+  //     }))
+  //   };
+
+  //   this.route.navigate(['operation/booking/entry'], {
+  //     state: {
+  //       dataFromQuotation: data
+  //     }
+  //   });
+  // }
+
+
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
+
+
 
 }
