@@ -37,6 +37,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { TaxCalculationService, BookingRateDetails } from '../../services/tax-calculation.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -61,7 +62,8 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
     CostEntryComponent,
     ArApComponent,
     BookingUploadComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    SearchableDropdown
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -155,6 +157,7 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   TandCList: any[]=[];
   bookingHeader: any;
   selectedCustomerBranch : any;
+  isShipperOther :boolean
   
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -289,6 +292,28 @@ auditLogs: any[] = []; // Stores audit logs
   ];
 dataFromQuotation:any
   // Mail content
+  customerLookupConfig = {
+    displayFields : ['CustomerName','BranchName', 'Address'],
+    displayLabels : ['Customer','Branch', 'Address'],
+    labelFields :['CustomerName']
+  };
+
+  portLookupConfig = {
+    displayFields: ['PortCode', 'PortName','Country'],
+    displayLabels: ['Code', 'Name','Country'],
+    labelFields: ['PortName']
+  };
+
+  incoLookupConfig = {
+    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
+    displayLabels: ['Code', 'Name', 'P/C'],
+    labelFields: ['IncoCode']
+  }
+  containerTypeLookupConfig = {
+    displayFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
+    displayLabels: ['Code', 'Name', 'Size'],
+    labelFields: ['ContainerName']
+  }
 
 
   /**
@@ -452,14 +477,18 @@ dataFromQuotation:any
       CustomerName: [''],
       CustomerAddress: [null, [Validators.required]],
       SalesmanSid: [null],
+      isShipperFreeText : [false],
       ShipperName: [null, [Validators.required]],
       ShipperAddress: ['', [Validators.required]],
+      isConsigneeFreeText : [false],
       ConsigneeName: [null, [Validators.required]],
       ConsigneeAddress: ['', [Validators.required]],
+      isNotifyFreeText : [false],
       Notify: [null],
       NotifyAddress: [''],
       DestinationAgent : [null, [Validators.required]],
       AgentAddress: [''],
+      isCarrierFreeText : [false],
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
@@ -494,6 +523,19 @@ dataFromQuotation:any
       this.syncFormValueWithRateComponent();
     })
   }
+
+ toggleInputType(mainCtrl:string ,flagCtrl, event: MouseEvent): void {
+    event.stopPropagation(); // Prevents click from opening ng-select dropdown
+    // this.isShipperOther = !this.isShipperOther;
+    const value = this.b[flagCtrl]?.value;
+    this.b[flagCtrl]?.setValue(!value);
+    this.bookingForm.get(mainCtrl)?.reset();
+  }
+
+  onShipperSelected(selected: any): void {
+    this.bookingForm.get('ShipperName')?.setValue(selected);
+  }
+
 
   // Cargo Form Initiation
   initCargoForm() {
@@ -669,6 +711,7 @@ dataFromQuotation:any
       this.salesmanList = customerMaster.salesmans;
       this.shipperList = customerMaster.shippers;
       this.filteredShipperList = customerMaster.shippers;
+      // this.filteredShipperList.push({CustomerName: 'Other', CustomerAddress1: ''});
       this.consigneeList = customerMaster.consignees;
       this.filteredConsigneeList = customerMaster.consignees;
       this.agentList = customerMaster.agents;
@@ -676,7 +719,8 @@ dataFromQuotation:any
       this.forwarderList = customerMaster.forwarder;
       this.notifyList = customerMaster.notify;
       this.vesselList = allMasters.vessels;
-      this.portList = allMasters.ports;
+      this.portList = (allMasters.ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
+      console.log(this.portList);
       this.incoList = allMasters.incos;
       this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
     }))
@@ -730,6 +774,18 @@ dataFromQuotation:any
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
+    if (response.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
+      this.bookingForm.patchValue({ isShipperFreeText: true });
+    }
+    if (response.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName)) {
+      this.bookingForm.patchValue({ isConsigneeFreeText: true });
+    }
+    if (response.Notify && !this.existsInList(this.notifyList, response.Notify)) {
+      this.bookingForm.patchValue({ isNotifyFreeText: true });
+    }
+    if (response.CarrierName && !this.existsInList(this.carrierList, response.CarrierName)) {
+      this.bookingForm.patchValue({ isCarrierFreeText: true });
+    }
     this.bookingForm.patchValue({
       BookingNo: response.BookingNo,
       BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
@@ -781,6 +837,8 @@ dataFromQuotation:any
     this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
     this.PODandFPODsame = response.POD === response.FPD;
     this.minStartDate = response.ETA;
+
+
 
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
@@ -1248,13 +1306,15 @@ patchBookingFromQuotation(data: any) {
     if (!customer) {
       this.b['CustomerName']?.setValue('');
       this.b['CustomerAddress']?.setValue(null);
+      this.b['CustomerBranchSid']?.setValue(null);
       this.customerBranchList = [];
       this.handleImportExport();
       return;
     }
     this.b['CustomerName']?.setValue(customer.CustomerName);
-    this.b['CustomerAddress']?.setValue(null);
-    this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
+    this.b['CustomerAddress']?.setValue(customer.Address);
+    this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
+    // this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
     this.handleImportExport();
   }
 
@@ -2609,5 +2669,16 @@ onShipmentTypeChange() {
         this.bookingForm.get('NominatedBy')?.setValue('Self');
     }
 }
+
+  existsInList(list: any[], value: any) {
+    return list.some(item => item.CustomerName === value);
+  }
+
+  getBookingStatus(){
+    console.log(this.modeOfStatus);
+    console.log("Response",this.bookingHeader);
+    console.log("FormControl value",this.bookingForm.get('status')?.value)
+    return this.bookingForm.get('status')?.value;
+  }
 
 }
