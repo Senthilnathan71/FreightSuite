@@ -32,7 +32,8 @@
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
             [disabled]="btnDisable || customerForm.invalid">
-            <i class="fas me-1" [class.fa-save]="!btnDisable" [class.fa-spinner]="btnDisable" [class.fa-spin]="btnDisable"></i>
+            <i class="fas me-1" [class.fa-save]="!btnDisable" [class.fa-spinner]="btnDisable"
+              [class.fa-spin]="btnDisable"></i>
             {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
           </button>
           <div ngbDropdown class="d-inline-block">
@@ -168,12 +169,11 @@
             <div class="custom-form-group">
               <input type="text" id="CustomerAliasName" placeholder="" class="custom-input-field sm"
                 formControlName="CustomerAliasName" [textWithNumbers]="100">
-              <label for="CustomerAliasName" class="input-label">Alias <span class="text-danger">*</span></label>
+              <label for="CustomerAliasName" class="input-label">Alias </label>
               @if (customerForm.get('CustomerAliasName')?.touched && customerForm.get('CustomerAliasName')?.invalid)
               {
               <div class="error-message">
-                @if (customerForm.get('CustomerAliasName')?.hasError('required')) { <span>Required</span> }
-                @else if (customerForm.get('CustomerAliasName')?.hasError('maxlength')) { <span>Max 100 chars</span>
+                @if (customerForm.get('CustomerAliasName')?.hasError('maxlength')) { <span>Max 100 chars</span>
                 }
               </div>
               }
@@ -280,94 +280,122 @@
             </div>
           </aside>
 
+          <ng-container *ngIf="isAirlineSelected">
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <input type="text" id="AirlineNumber" formControlName="AirlineNumber" placeholder=""
+        class="custom-input-field sm" [textWithNumbers]="20" />
+      <label for="AirlineNumber" class="input-label">Airline Number</label>
+      @if (customerForm.get('AirlineNumber')?.touched && customerForm.get('AirlineNumber')?.invalid) {
+      <div class="error-message">
+        @if (customerForm.get('AirlineNumber')?.hasError('maxlength')) { <span>Max 20 chars</span> }
+      </div>
+      }
+    </div>
+  </aside>
 
-         <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select"
-       [class.filled]="customerForm.get('status')?.getRawValue()">
-    <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect"
-              style="background-color: white;">
-      <ng-option value="Active">Active</ng-option>
-      <ng-option value="Suspended">Suspended</ng-option>
-    </ng-select>
-    <label class="input-label">Status <span class="text-danger">*</span></label>
-  </div>
-</aside>
-          <div class="mx-0">
-            <div class="row border mx-0 rounded">
-              <div class="d-flex align-items-center gap-2 ps-md-0 mt-1">
-                <h5 class="card-titlename mb-0 text-info fw-bold">KYC Section</h5>
-              </div>
-
-              <aside class="col-md-4 d-flex align-items-center ps-md-0">
-                <div class="form-check form-check-inline p-0">
-                  <div class="form-check d-flex align-items-center">
-                    <input type="checkbox" formControlName="KYCSpecified" id="KYCSpecified" class="form-check-input sm">
-                    <label for="KYCSpecified" class="form-check-label sm">Specified / Not Specified</label>
-                  </div>
-                </div>
-              </aside>
-
-              <aside class="col-md-4">
-                <div class="custom-form-group">
-                  <input type="text" id="RegistrationNo" placeholder="" class="custom-input-field sm"
-                    formControlName="RegistrationNo" [textWithNumbers]="20">
-                  <label for="RegistrationNo" class="input-label">Registration No</label>
-                </div>
-              </aside>
-
-              <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="customerForm.get('CompanyType')?.value">
-                  <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
-                    placeholder="Select Company Type" [searchable]="false" [clearable]="false">
-                  </ng-select>
-                  <label class="input-label">Company Type <span class="text-danger">*</span></label>
-                </div>
-              </aside>
-
-              <aside class="col-md-4 d-flex align-items-center ps-md-0">
-                <div class="form-check form-check-inline p-0">
-                  <div class="form-check d-flex align-items-center">
-                    <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
-                      class="form-check-input sm" />
-                    <label for="PanAvailable" class="form-check-label sm">
-                      {{ isIndianCountry() ? 'PAN/VAT Available' : isUaeCountry() ? 'VAT Available' : 'PAN
-                      Available'
-                      }}
-                    </label>
-                  </div>
-                </div>
-              </aside>
-
-              <div class="col-md-4" *ngIf="customerForm.get('PanAvailable')?.value">
-                <div class="custom-form-group ">
-                  <input type="text" formControlName="PanType" class="custom-input-field sm"
-                    [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
-                    [placeholder]="">
-                  <label for="PanType" class="input-label sm">
-                    {{ currentTaxIdLabel }}
-                  </label>
-                  <div class="error-message"
-                    *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
-                    {{ getTaxIdErrorMessage() }}
-                  </div>
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <input type="text" id="AirlineCode" formControlName="AirlineCode" placeholder=""
+        class="custom-input-field sm" [textWithNumbers]="10" />
+      <label for="AirlineCode" class="input-label">Airline Code</label>
+      @if (customerForm.get('AirlineCode')?.touched && customerForm.get('AirlineCode')?.invalid) {
+      <div class="error-message">
+        @if (customerForm.get('AirlineCode')?.hasError('maxlength')) { <span>Max 10 chars</span> }
+      </div>
+      }
+    </div>
+  </aside>
+</ng-container>
 
 
-                </div>
 
-              </div>
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="customerForm.get('status')?.getRawValue()">
+              <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect"
+                style="background-color: white;">
+                <ng-option value="Active">Active</ng-option>
+                <ng-option value="Suspended">Suspended</ng-option>
+              </ng-select>
+              <label class="input-label">Status <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+          <!-- KYC Section -->
+<div class="mx-0">
+  <div class="row border mx-0 rounded">
+    <div class="d-flex align-items-center gap-2 ps-md-0 mt-1">
+      <h5 class="card-titlename mb-0 text-info fw-bold">KYC Section</h5>
+    </div>
 
-              <aside class="col-md-4">
-                <div class="custom-form-group">
-                  <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
-                    formControlName="PanName" />
-                  <label for="PanName" class="input-label">Name as per PAN / VAT</label>
-                  @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched ||
-                  customerForm.get('PanName')?.dirty)) {
-                  <div class="error-message"><span>Required</span></div>
-                  }
-                </div>
-              </aside>
+    <aside class="col-md-4 d-flex align-items-center ps-md-0">
+      <div class="form-check form-check-inline p-0">
+        <div class="form-check d-flex align-items-center">
+          <input type="checkbox" formControlName="KYCSpecified" id="KYCSpecified" class="form-check-input sm">
+          <label for="KYCSpecified" class="form-check-label sm">Specified / Not Specified</label>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="col-md-4">
+      <div class="custom-form-group">
+        <input type="text" id="RegistrationNo" placeholder="" class="custom-input-field sm"
+          formControlName="RegistrationNo" [textWithNumbers]="20">
+        <label for="RegistrationNo" class="input-label">Registration No.</label>
+      </div>
+    </aside>
+
+    <aside class="col-md-4">
+      <div class="custom-form-group custom-form-group-select"
+        [class.filled]="customerForm.get('CompanyType')?.value">
+        <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
+          placeholder="Select Company Type" [searchable]="false" [clearable]="false"
+          (change)="onCompanyTypeChange()">
+        </ng-select>
+        <label class="input-label">Company Type</label>
+      </div>
+    </aside>
+
+    <!-- PAN Available - Show for ALL countries -->
+    <aside class="col-md-4 d-flex align-items-center ps-md-0">
+      <div class="form-check form-check-inline p-0">
+        <div class="form-check d-flex align-items-center">
+          <input type="checkbox" formControlName="PanAvailable" id="PanAvailable" class="form-check-input sm" />
+          <label for="PanAvailable" class="form-check-label sm">
+            {{ currentTaxIdLabel === 'PAN Number' ? 'PAN Available' : 
+               currentTaxIdLabel === 'VAT Number' ? 'VAT Available' : 'Tax ID Available' }}
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- PAN Type - Show when PAN Available is checked (for ALL countries) -->
+    <aside class="col-md-4" *ngIf="customerForm.get('PanAvailable')?.value">
+      <div class="custom-form-group">
+        <input type="text" formControlName="PanType" class="custom-input-field sm"
+          [class.is-invalid]="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched"
+          [placeholder]="">
+        <label for="PanType" class="input-label sm">{{ currentTaxIdLabel }}</label>
+        <div class="error-message"
+          *ngIf="customerForm.get('PanType')?.invalid && customerForm.get('PanType')?.touched">
+          {{ getTaxIdErrorMessage() }}
+        </div>
+      </div>
+    </aside>
+
+    <!-- PAN Name - Show when PAN Available is checked (for ALL countries) -->
+    <aside class="col-md-4" *ngIf="customerForm.get('PanAvailable')?.value">
+      <div class="custom-form-group">
+        <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
+          formControlName="PanName" />
+        <label for="PanName" class="input-label">Name as per {{ currentTaxIdLabel }}</label>
+        @if (customerForm.get('PanName')?.invalid && (customerForm.get('PanName')?.touched ||
+        customerForm.get('PanName')?.dirty)) {
+        <div class="error-message"><span>Required</span></div>
+        }
+      </div>
+    </aside>
+ 
             </div>
             <!-- /KYC Section -->
           </div>
@@ -394,35 +422,31 @@
   <div class="col-12">
     <!-- Branch Accordion -->
     <div class="custom-accordion-organization">
-      <div *ngFor="let branch of (branches?.controls || []); let branchIndex = index" 
-           class="accordion-item">
+      <div *ngFor="let branch of (branches?.controls || []); let branchIndex = index" class="accordion-item">
         <h2 class="accordion-header">
-          <button 
-            class="accordion-button" 
-            [class.collapsed]="!isBranchExpanded(branchIndex)" 
-            type="button"
+          <button class="accordion-button p-1" [class.collapsed]="!isBranchExpanded(branchIndex)" type="button"
             (click)="toggleBranch(branchIndex)">
             <div class="d-flex justify-content-between align-items-center w-100">
               <div>
                 <strong>{{ getBranchFormGroup(branch).get('CustBranchName')?.value || 'New Branch' }}</strong>
-                <span class="badge bg-secondary ms-2">{{ getBranchFormGroup(branch).get('CustBranchType')?.value }}</span>
+                <span class="badge bg-secondary ms-2">{{ getBranchFormGroup(branch).get('CustBranchType')?.value
+                  }}</span>
                 <span class="badge ms-2"
                   [class.bg-success]="getBranchFormGroup(branch).get('status')?.value === 'Active'"
                   [class.bg-danger]="getBranchFormGroup(branch).get('status')?.value === 'Suspended'">
                   {{ getBranchFormGroup(branch).get('status')?.value }}
                 </span>
-              </div>
                 <button type="button" class="btn btn-sm" (click)="removeBranch(branchIndex); $event.stopPropagation()">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
+              </div>
             </div>
+            <i class="fas fa-chevron-down arrow-icon me-2" [class.rotate]="isBranchExpanded(branchIndex)"></i>
           </button>
         </h2>
 
-        <div [class.show]="isBranchExpanded(branchIndex)" 
-             [class.collapse]="true"
-             [id]="'branchCollapse' + branchIndex">
-         <div class="accordion-body p-1" *ngIf="isBranchExpanded(branchIndex)">
+        <div [class.show]="isBranchExpanded(branchIndex)" [class.collapse]="true" [id]="'branchCollapse' + branchIndex">
+          <div class="accordion-body p-1" *ngIf="isBranchExpanded(branchIndex)">
             <!-- Branch Main Details -->
             <div class="row compact-form" [formGroup]="getBranchFormGroup(branch)">
               <!-- <h5 class="text-info pb-2">Branch Details</h5> -->
@@ -524,7 +548,7 @@
               <aside class="col-md-4">
                 <div class="custom-form-group">
                   <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchCode"
-                    [textWithNumbers]="10" readonly>
+                    [textWithNumbers]="10" >
                   <label class="input-label">Branch Code</label>
                 </div>
               </aside>
@@ -631,66 +655,61 @@
                 </div>
               </aside>
               <!-- After Phone field -->
-              <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!getBranchFormGroup(branch).get('CustBranchGSTtype')?.value">
-                  <ng-select [items]="gstTypeList" bindLabel="name" bindValue="name" formControlName="CustBranchGSTtype"
-                    placeholder="Select GST Type" appendTo="body">
-                  </ng-select>
-                  <label class="input-label">GST Type <span class="text-danger">*</span></label>
-                  @if (getBranchFormGroup(branch).get('CustBranchGSTtype')?.touched &&
-                  getBranchFormGroup(branch).get('CustBranchGSTtype')?.invalid) {
-                  <div class="error-message">
-                    @if (getBranchFormGroup(branch).get('CustBranchGSTtype')?.hasError('required')) {
-                    <span>Required</span>
-                    }
-                  </div>
-                  }
-                </div>
-              </aside>
+             <!-- GST Type - ONLY show for India when PAN Available is checked -->
+<aside class="col-md-4" *ngIf="shouldShowGSTFields(branchIndex)">
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!getBranchFormGroup(branch).get('CustBranchGSTtype')?.value">
+    <ng-select [items]="gstTypeList" bindLabel="name" bindValue="name" formControlName="CustBranchGSTtype"
+      placeholder="Select GST Type" appendTo="body">
+    </ng-select>
+    <label class="input-label">GST Type</label>
+  </div>
+</aside>
 
-              <!-- GSTIN Section -->
-              <aside class="col-md-4">
-                <div class="custom-form-group gstin-group">
-                  <!-- State Code - Make sure it displays even if empty -->
-                  <input type="text" class="custom-input-field sm gstin-fixed"
-                    [value]="getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value) || ''"
-                    tabindex="-1" aria-label="State Code" style="width: 5em;" disabled
-                    [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)" />
+<!-- GSTIN Section - ONLY show for India when PAN Available is checked -->
+<aside class="col-md-4" *ngIf="shouldShowGSTFields(branchIndex)">
+  <div class="custom-form-group gstin-group">
+    <!-- State Code -->
+    <input type="text" class="custom-input-field sm gstin-fixed"
+      [value]="getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value) || ''"
+      tabindex="-1" aria-label="State Code" style="width: 5em;" disabled
+      [class.border-danger]="!getStateGSTCode(getBranchFormGroup(branch).get('CustBranchState')?.value)" />
 
-                  <input type="text" class="custom-input-field sm gstin-fixed"
-                    [value]="customerForm.get('PanType')?.value || ''" disabled tabindex="-1" aria-label="PAN"
-                    style="width: 10em;" />
+    <input type="text" class="custom-input-field sm gstin-fixed"
+      [value]="customerForm.get('PanType')?.value || ''" disabled tabindex="-1" aria-label="PAN"
+      style="width: 10em;" />
 
-                  <!-- Rest of your GSTIN inputs remain the same -->
-                  <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
-                    class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
-                    [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)"
-                    aria-label="13th Digit" style="width: 4em;" />
+    <!-- 13th Digit -->
+    <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
+      class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
+      [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)"
+      aria-label="13th Digit" style="width: 4em;" />
 
-                  <input type="text" class="custom-input-field sm gstin-fixed" value="Z" disabled tabindex="-1"
-                    aria-label="14th Digit" style="width: 3em;" />
+    <!-- 14th Digit (Fixed) -->
+    <input type="text" class="custom-input-field sm gstin-fixed" value="Z" disabled tabindex="-1"
+      aria-label="14th Digit" style="width: 3em;" />
 
-                  <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
-                    class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
-                    aria-label="15th Digit" style="width: 4em;"
-                    [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" />
+    <!-- 15th Digit -->
+    <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
+      class="custom-input-field sm gstin-editable" (input)="generateGST(branchIndex)"
+      aria-label="15th Digit" style="width: 4em;"
+      [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" />
 
-                  <label class="input-label d-block mt-1">GSTIN</label>
+    <label class="input-label d-block mt-1">GSTIN</label>
 
-                  @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.touched &&
-                  getBranchFormGroup(branch).get('CustBranchGSTIN')?.invalid) {
-                  <div class="error-message">
-                    @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('invalidGST')) {
-                    <span>Provided GSTIN is invalid</span>
-                    }
-                    @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('maxlength')) {
-                    <span>Max 15 Chars</span>
-                    }
-                  </div>
-                  }
-                </div>
-              </aside>
+    @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.touched &&
+    getBranchFormGroup(branch).get('CustBranchGSTIN')?.invalid) {
+    <div class="error-message">
+      @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('invalidGST')) {
+      <span>Provided GSTIN is invalid</span>
+      }
+      @if (getBranchFormGroup(branch).get('CustBranchGSTIN')?.hasError('maxlength')) {
+      <span>Max 15 Chars</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
               <!-- Status -->
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
@@ -1023,13 +1042,15 @@
       <div class="col-12">
         <!-- Add Login Button -->
         <div class="d-flex justify-content-end align-items-center mb-1">
-          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerLogin()" [disabled]="!isEditMode">
+          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerLogin()"
+            [disabled]="!isEditMode">
             <i class="fas fa-plus me-1"></i> Add Login
           </button>
         </div>
 
         <!-- Table -->
-        <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;" *ngIf="customerLogins.length > 0">
+        <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;"
+          *ngIf="customerLogins.length > 0">
           <table class="table align-middle no-wrap table-sm mb-1 table-hover">
             <thead>
               <tr class="bg-info">
@@ -1054,14 +1075,14 @@
 
                 <!-- Branch Name -->
                 <td class="px-1">
-                  <ng-select formControlName="CustomerBranchSid" appendTo="body"
-                    placeholder="Select Branch" [disabled]="!isEditMode">
+                  <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder="Select Branch"
+                    [disabled]="!isEditMode">
                     <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
                       {{ branch.BranchName }}
                     </ng-option>
                   </ng-select>
                   @if (login.get('CustomerBranchSid')?.touched && login.get('CustomerBranchSid')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
@@ -1069,29 +1090,30 @@
                 <td class="px-1">
                   <input type="text" class="custom-input-field sm" formControlName="LoginName" placeholder="Login Name">
                   @if (login.get('LoginName')?.touched && login.get('LoginName')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
                 <!-- Email -->
                 <td class="px-1">
-                  <input type="text" class="custom-input-field sm" formControlName="LoginEmail" placeholder="Login Email">
+                  <input type="text" class="custom-input-field sm" formControlName="LoginEmail"
+                    placeholder="Login Email">
                   @if (login.get('LoginEmail')?.touched && login.get('LoginEmail')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
                 <!-- Password -->
                 <td class="px-1">
                   <div class="d-flex align-items-center">
-                    <input [type]="'password'" [id]="'loginPassword' + i"
-                      class="custom-input-field sm" formControlName="LoginPassword" placeholder="Password">
+                    <input [type]="'password'" [id]="'loginPassword' + i" class="custom-input-field sm"
+                      formControlName="LoginPassword" placeholder="Password">
                     <button class="btn btn-sm" type="button" (click)="togglePasswordVisibility(i)">
                       <i [id]="'eyeIcon' + i" class="fas fa-eye"></i>
                     </button>
                   </div>
                   @if (login.get('LoginPassword')?.touched && login.get('LoginPassword')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
@@ -1123,13 +1145,15 @@
       <div class="col-12">
         <!-- Add Email Button -->
         <div class="d-flex justify-content-end align-items-center mb-1">
-          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerEmail()" [disabled]="!isEditMode">
+          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerEmail()"
+            [disabled]="!isEditMode">
             <i class="fas fa-plus me-1"></i> Add Email
           </button>
         </div>
 
         <!-- Table -->
-        <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;" *ngIf="customerEmails.length > 0">
+        <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;"
+          *ngIf="customerEmails.length > 0">
           <table class="table align-middle no-wrap table-sm mb-1 table-hover">
             <thead>
               <tr class="bg-info">
@@ -1155,14 +1179,14 @@
 
                 <!-- Branch Name -->
                 <td class="px-1">
-                  <ng-select formControlName="CustomerBranchSid" appendTo="body"
-                    placeholder="Select Branch" [disabled]="!isEditMode">
+                  <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder="Select Branch"
+                    [disabled]="!isEditMode">
                     <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
                       {{ branch.BranchName }}
                     </ng-option>
                   </ng-select>
                   @if (email.get('CustomerBranchSid')?.touched && email.get('CustomerBranchSid')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
@@ -1174,32 +1198,34 @@
                     </ng-option>
                   </ng-select>
                   @if (email.get('MenuMasterSid')?.touched && email.get('MenuMasterSid')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
                 <!-- Department -->
                 <td class="px-1">
                   <multi-select [control]="email.get('DepartmentMasterSid')" appendTo="body"
-                    [items]="departmentListForSelect" bindLabel="departmentName"
-                    bindValue="DepartmentMasterSid" placeholder="Select Departments" multiple=true>
+                    [items]="departmentListForSelect" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+                    placeholder="Select Departments" multiple=true>
                   </multi-select>
                   @if (email.get('DepartmentMasterSid')?.touched && email.get('DepartmentMasterSid')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
                 <!-- To Email -->
                 <td class="px-1">
-                  <input type="text" class="custom-input-field sm" formControlName="Toemail" placeholder="Email addresses">
+                  <input type="text" class="custom-input-field sm" formControlName="Toemail"
+                    placeholder="Email addresses">
                   @if (email.get('Toemail')?.touched && email.get('Toemail')?.invalid) {
-                    <div class="error-message">Required</div>
+                  <div class="error-message">Required</div>
                   }
                 </td>
 
                 <!-- CC Email -->
                 <td class="px-1">
-                  <input type="text" class="custom-input-field sm" formControlName="CCemail" placeholder="CC emails (optional)">
+                  <input type="text" class="custom-input-field sm" formControlName="CCemail"
+                    placeholder="CC emails (optional)">
                 </td>
 
                 <!-- Status -->
