@@ -1367,21 +1367,28 @@
 
   .modal-body {
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
-    display: flex;
-    flex-direction: column;
+    max-height: calc(90vh - 140px); // Account for header and footer
   }
 }
 
 // Charge selection table styling
 .charge-selection-table {
-  max-height: 40vh;
+  max-height: 400px;
+  min-height: 200px;
   overflow-y: auto;
   overflow-x: auto;
+  margin-bottom: 1rem;
 
   thead {
     position: sticky;
     top: 0;
     z-index: 10;
+    background: white;
+  }
+
+  table {
+    margin-bottom: 0;
   }
 }

@@ -1,4 +1,7 @@
-<div class="modern-booking-workspace">
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+<div class="modern-booking-workspace masterJob">
     <div class="smart-header">
         <div class="header-brand">
             <div class="brand-icon">
@@ -10,12 +13,26 @@
         </div>
         <div class="header-actions">
             <div class="action-group" *ngIf="isEditMode">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-          (click)="openAuditLogs(auditLogModal)">
-          <i class="fas fa-history  me-1"></i>
-          <span>Logs</span>
-        </button>
-      </div>
+                <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                    (click)="openAuditLogs(auditLogModal)">
+                    <i class="fas fa-history  me-1"></i>
+                    <span>Logs</span>
+                </button>
+            </div>
+            <div class="action-group">
+                <div ngbDropdown container="body" class="d-inline-block">
+                    <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
+                         <i class="fas fa-upload me-1"></i>
+                        Upload
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+                        <button class="text-dark" ngbDropdownItem (click)="uploadPDF()"
+                            [disabled]="isLoading">HBL</button>
+                        <button class="text-dark" ngbDropdownItem (click)="uploadManifest()"
+                            [disabled]="isLoading">Manifest</button>
+                    </div>
+                </div>
+            </div>
             <div class="action-group">
                 <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
                     <i class="fas fa-chevron-left me-1"></i>
@@ -23,24 +40,15 @@
                 </button>
             </div>
             <div class="action-group">
-                <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()" [disabled]="isLoading">
+                <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()"
+                    [disabled]="isLoading">
                     <i class="fas fa-sync-alt me-1"></i>
                     <span>Reset</span>
                 </button>
             </div>
-            
-            <div class="action-group">
-                <div ngbDropdown container="body" class="d-inline-block">
-                    <button type="button" class="btn btn-outline-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
-                        Upload
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
-                        <button class="text-dark" ngbDropdownItem (click)="uploadPDF()" [disabled]="isLoading">HBL</button>
-                        <button class="text-dark" ngbDropdownItem (click)="uploadManifest()" [disabled]="isLoading">Manifest</button>
-                    </div>
-                </div>
-            </div>
-        
+
+
+
             <div class="action-group">
                 <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                     <i class="fas fa-save me-1"></i>
@@ -48,9 +56,9 @@
                 </button>
             </div>
 
-            
 
-            
+
+
         </div>
     </div>
 
@@ -68,12 +76,12 @@
         </div>
 
         <div class="nav-actions">
-            <button class="nav-action-btn">
+            <button class="nav-action-btn" (click)="toggleMinimizeMaximize()">
                 <i class="fas fa-expand"></i>
             </button>
-            <button class="nav-action-btn">
+            <!-- <button class="nav-action-btn" >
                 <i class="fas fa-cog"></i>
-            </button>
+            </button> -->
         </div>
     </div>
 
@@ -81,13 +89,13 @@
     <div class="content-workspace">
         <div class="workspace-content" [hidden]="selectedTab !== 'Master'">
             <!-- master forms-->
-            <div class="content-layout mt-2">
-                <div class="row two-column-layout gap-3">
-                    <div class="info-card col-md-4 px-0">
+            <div class="content-layout px-1">
+                <div class="row two-column-layout gap-1">
+                    <div class="info-card col-md-4 px-0 border border-top-0">
                         <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
-                                    <i class="fas fa-database fs-4"></i>
+                                    <i class="fas fa-database "></i>
                                     Master Job
                                 </h4>
                             </div>
@@ -97,7 +105,8 @@
                                 <div class="row compact-form" [formGroup]="masterJobForm">
 
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('DepartmentMasterSid')?.value">
                                             <ng-select [items]="departments" bindLabel="departmentName"
                                                 bindValue="DepartmentMasterSid" formControlName="DepartmentMasterSid"
                                                 (change)="onDeptChange($event)" appendTo="body">
@@ -108,7 +117,7 @@
                                             masterJobForm.get('DepartmentMasterSid')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('DepartmentMasterSid')?.hasError('required')){
-                                                <span>Department name is required</span>
+                                                <span>Required</span>
                                                 }
                                             </div>
                                             }
@@ -126,7 +135,7 @@
                                             masterJobForm.get('MasterJobNumber')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('MasterJobNumber')?.hasError('required')){
-                                                <span>MasterJobNo is required</span>
+                                                <span>Required</span>
                                                 }
                                                 @else if(masterJobForm.get('MasterJobNumber')?.hasError('maxlength')){
                                                 <span>Max 15 chars</span>
@@ -137,7 +146,7 @@
                                         </div>
                                     </aside>
                                     <div class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="MasterJobDate" ngbDatepicker
@@ -154,7 +163,7 @@
                                             masterJobForm.get('MasterJobDate')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('MasterJobDate')?.hasError('required')){
-                                                <span>MasterJobDate is required</span>
+                                                <span>Required</span>
                                                 }
                                             </div>
                                             }
@@ -162,7 +171,8 @@
                                         </div>
                                     </div>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('FreightPPCC')?.value">
                                             <ng-select [items]="modeOfFreightTerms" bindLabel="name" bindValue="id"
                                                 formControlName="FreightPPCC"
                                                 [class.is-invalid]="masterJobForm.get('FreightPPCC')?.invalid && masterJobForm.get('FreightPPCC')?.touched">
@@ -173,7 +183,7 @@
                                             masterJobForm.get('FreightPPCC')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('FreightPPCC')?.hasError('required')){
-                                                <span>FreightPPCC is required</span>
+                                                <span>Required</span>
                                                 }
                                             </div>
                                             }
@@ -182,11 +192,12 @@
                                     </aside>
                                     <!-- Destination Agent Field -->
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('DestinationAgent')?.value">
                                             <ng-select [items]="filteredDestinationAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="DestinationAgent"
-                                                placeholder="Select Destination Agent"
-                                                (change)="onDestinationAgentChange($event)" appendTo="body">
+                                                placeholder="" (change)="onDestinationAgentChange($event)"
+                                                appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     <div>
                                                         <strong>{{ item.CustomerName }}</strong><br>
@@ -215,7 +226,7 @@
                                             masterJobForm.get('MBLNo')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('MBLNo')?.hasError('required')){
-                                                <span>MBLNo is required</span>
+                                                <span>Required</span>
                                                 }
                                                 @else if(masterJobForm.get('MBLNo')?.hasError('maxlength')){
                                                 <span>Max 20 chars</span>
@@ -225,7 +236,7 @@
                                         </div>
                                     </aside>
                                     <div class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="MBLDate" ngbDatepicker
@@ -240,9 +251,10 @@
                                         </div>
                                     </div>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('BLReleaseType')?.value">
                                             <ng-select [items]="modeOfBLReleaseType" bindLabel="name" bindValue="id"
-                                                formControlName="BLReleaseType">
+                                                formControlName="BLReleaseType" appendTo="body">
                                             </ng-select>
                                             <label class="input-label">BL Release Type <span
                                                     class="text-danger">*</span></label>
@@ -250,7 +262,7 @@
                                             masterJobForm.get('BLReleaseType')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('BLReleaseType')?.hasError('required')){
-                                                <span>BLReleaseType is required</span>
+                                                <span>Required</span>
                                                 }
 
                                             </div>
@@ -267,7 +279,7 @@
                                             masterJobForm.get('NoofOriginal')?.invalid){
                                             <div class="error-message">
                                                 @if(masterJobForm.get('NoofOriginal')?.hasError('required')){
-                                                <span>NoofOriginal is required</span>
+                                                <span>Required</span>
                                                 }
 
                                             </div>
@@ -276,11 +288,11 @@
                                     </aside>
                                     <!-- Origin Agent Field -->
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('OriginAgent')?.value">
                                             <ng-select [items]="filteredOriginAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="OriginAgent"
-                                                placeholder="Select Origin Agent" (change)="onOriginAgentChange($event)"
-                                                appendTo="body">
+                                                placeholder="" (change)="onOriginAgentChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     <div>
                                                         <strong>{{ item.CustomerName }}</strong><br>
@@ -299,11 +311,11 @@
                     </div>
 
 
-                    <div class="info-card col-md px-0">
+                    <div class="info-card col-md px-0 border border-top-0">
                         <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
-                                    <i class="fas fa-ship fs-4"></i>
+                                    <i class="fas fa-ship "></i>
                                     Vessel & Voyage
                                 </h4>
                             </div>
@@ -314,9 +326,10 @@
 
                                     <!-- POO Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('POO')?.value">
                                             <ng-select formControlName="POO" [items]="filteredPorts"
-                                                bindLabel="PortCode" bindValue="PortMasterSid" placeholder="Select Port"
+                                                bindLabel="PortCode" bindValue="PortMasterSid" placeholder=""
                                                 appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
@@ -328,9 +341,10 @@
 
                                     <!-- POL Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('POL')?.value">
                                             <ng-select [items]="filteredPOL" bindLabel="PortCode"
-                                                bindValue="PortMasterSid" formControlName="POL" placeholder="Select POL"
+                                                bindValue="PortMasterSid" formControlName="POL" placeholder=""
                                                 (change)="handlePOLChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
@@ -339,8 +353,8 @@
                                             <label class="input-label">POL <span class="text-danger">*</span></label>
                                             <div class="error-message"
                                                 *ngIf="masterJobForm.get('POL')?.touched && masterJobForm.get('POL')?.invalid">
-                                                <span *ngIf="masterJobForm.get('POL')?.hasError('required')">POL is
-                                                    required</span>
+                                                <span *ngIf="masterJobForm.get('POL')?.hasError('required')">
+                                                    Required</span>
                                                 <span *ngIf="masterJobForm.get('POL')?.hasError('samePort')">POL and POD
                                                     cannot be the same</span>
                                             </div>
@@ -349,9 +363,10 @@
 
                                     <!-- POD Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('POD')?.value">
                                             <ng-select [items]="filteredPOD" bindLabel="PortCode"
-                                                bindValue="PortMasterSid" formControlName="POD" placeholder="Select POD"
+                                                bindValue="PortMasterSid" formControlName="POD" placeholder=""
                                                 (change)="handlePODChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
@@ -360,8 +375,8 @@
                                             <label class="input-label">POD <span class="text-danger">*</span></label>
                                             <div class="error-message"
                                                 *ngIf="masterJobForm.get('POD')?.touched && masterJobForm.get('POD')?.invalid">
-                                                <span *ngIf="masterJobForm.get('POD')?.hasError('required')">POD is
-                                                    required</span>
+                                                <span *ngIf="masterJobForm.get('POD')?.hasError('required')">
+                                                    Required</span>
                                                 <span *ngIf="masterJobForm.get('POD')?.hasError('samePort')">POL and POD
                                                     cannot be the same</span>
                                             </div>
@@ -370,9 +385,10 @@
 
                                     <!-- FDC Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('FPD')?.value">
                                             <ng-select [items]="filteredPorts" bindLabel="PortCode"
-                                                bindValue="PortMasterSid" formControlName="FPD" placeholder="Select FDC"
+                                                bindValue="PortMasterSid" formControlName="FPD" placeholder=""
                                                 (change)="onRouteChange()" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
@@ -384,11 +400,11 @@
 
                                     <!-- Vessel Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('VesselName')?.value">
                                             <ng-select [items]="headerVesselList" bindLabel="VesselName"
-                                                bindValue="VesselName" formControlName="VesselName"
-                                                placeholder="Select Vessel" (change)="onVesselChange($event)"
-                                                appendTo="body">
+                                                bindValue="VesselName" formControlName="VesselName" placeholder=""
+                                                (change)="onVesselChange($event)" appendTo="body">
                                             </ng-select>
                                             <label class="input-label">Vessel <span class="text-danger"></span></label>
                                         </div>
@@ -396,9 +412,10 @@
 
                                     <!-- Voyage Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('VoyageNo')?.value">
                                             <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
-                                                formControlName="VoyageNo" placeholder="Select Voyage"
+                                                formControlName="VoyageNo" placeholder=""
                                                 (change)="onVoyageChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     <div
@@ -424,10 +441,11 @@
 
                                     <!-- Carrier Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('CarrierName')?.value">
                                             <ng-select [items]="carrierList" bindLabel="CustomerName"
-                                                bindValue="CustomerName" formControlName="CarrierName"
-                                                placeholder="Select Carrier" appendTo="body">
+                                                bindValue="CustomerName" formControlName="CarrierName" placeholder=""
+                                                appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     <div>
                                                         <strong>{{ item.CustomerName }}</strong><br>
@@ -441,7 +459,7 @@
 
                                     <!-- ETD Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ETD" ngbDatepicker #etdPicker="ngbDatepicker"
@@ -457,7 +475,7 @@
 
                                     <!-- ETA Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ETA" ngbDatepicker #etaPicker="ngbDatepicker"
@@ -473,7 +491,7 @@
 
                                     <!-- SOB Date Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="SOBDate" ngbDatepicker
@@ -491,7 +509,7 @@
 
                                     <!-- Cut Off Date Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="CutOffDate" ngbDatepicker
@@ -518,7 +536,7 @@
 
                                     <!-- ATA Field - Updated to Date Picker -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ATA" ngbDatepicker #ataPicker="ngbDatepicker"
@@ -534,7 +552,7 @@
 
                                     <!-- ATD Field - Updated to Date Picker -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ATD" ngbDatepicker #atdPicker="ngbDatepicker"
@@ -550,10 +568,10 @@
 
                                     <!-- Movement Type Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('MovementType')?.value">
                                             <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="id"
-                                                formControlName="MovementType" placeholder="Select Movement Type"
-                                                appendTo="body">
+                                                formControlName="MovementType" placeholder="" appendTo="body">
                                             </ng-select>
                                             <label class="input-label">Movement Type<span
                                                     class="text-danger"></span></label>
@@ -562,15 +580,49 @@
 
                                     <!-- Shipment Terms Field - Updated to Dropdown -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('ShipmentTerms')?.value">
                                             <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="id"
-                                                formControlName="ShipmentTerms" placeholder="Select Shipment Terms"
-                                                appendTo="body">
+                                                formControlName="ShipmentTerms" placeholder="" appendTo="body">
                                             </ng-select>
                                             <label class="input-label">Shipment Terms<span
                                                     class="text-danger"></span></label>
                                         </div>
                                     </aside>
+                                    <!-- Show DG fields only if Haz = true -->
+                                    <div class="col-md-4" *ngIf="masterJobForm.get('Haz')?.value">
+                                        <!-- Changed to cargoForm -->
+                                        <div class="custom-form-group custom-form-group-select-date">
+                                            <div class="input-group">
+                                                <input class="form-control" placeholder="dd-mm-yyyy"
+                                                    formControlName="DGBookingDate" ngbDatepicker
+                                                    #dgBookingDatePicker="ngbDatepicker"
+                                                    (click)="dgBookingDatePicker.toggle()" container="body" />
+                                                <button class="btn bi bi-calendar3"
+                                                    (click)="dgBookingDatePicker.toggle()" type="button">
+                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                                </button>
+                                            </div>
+                                            <label class="input-label">DG Booking Date</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4" *ngIf="masterJobForm.get('Haz')?.value">
+                                        <!-- Changed to cargoForm -->
+                                        <div class="custom-form-group custom-form-group-select-date">
+                                            <div class="input-group">
+                                                <input class="form-control" placeholder="dd-mm-yyyy"
+                                                    formControlName="DGApprovedDate" ngbDatepicker
+                                                    #dgApprovedDatePicker="ngbDatepicker"
+                                                    (click)="dgApprovedDatePicker.toggle()" container="body" />
+                                                <button class="btn bi bi-calendar3"
+                                                    (click)="dgApprovedDatePicker.toggle()" type="button">
+                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                                </button>
+                                            </div>
+                                            <label class="input-label">DG Approval Date</label>
+                                        </div>
+                                    </div>
 
                                 </div>
                             </div>
@@ -578,11 +630,11 @@
                     </div>
 
 
-                    <div class="info-card col-md-3 px-0">
+                    <div class="info-card1 col-md-3 px-0 border border-top-0">
                         <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
-                                    <i class="fas fa-boxes fs-4"></i>
+                                    <i class="fas fa-boxes "></i>
                                     Cargo & Package
                                 </h4>
                             </div>
@@ -598,7 +650,8 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('WeightIn')?.value">
                                             <ng-select [items]="modeOfWeightIn" bindLabel="name" bindValue="id"
                                                 formControlName="WeightIn">
                                             </ng-select>
@@ -633,42 +686,8 @@
                                             <label class="input-label">Volume (CBM)</label>
                                         </div>
                                     </aside>
-                                    
 
-                                    <!-- Show DG fields only if Haz = true -->
-                                    <div class="col-md-12" *ngIf="masterJobForm.get('Haz')?.value">
-                                        <!-- Changed to cargoForm -->
-                                        <div class="custom-form-group custom-form-group-select">
-                                            <div class="input-group">
-                                                <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="DGBookingDate" ngbDatepicker
-                                                    #dgBookingDatePicker="ngbDatepicker"
-                                                    (click)="dgBookingDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3"
-                                                    (click)="dgBookingDatePicker.toggle()" type="button">
-                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                                </button>
-                                            </div>
-                                            <label class="input-label">DG Booking Date</label>
-                                        </div>
-                                    </div>
 
-                                    <div class="col-md-12" *ngIf="masterJobForm.get('Haz')?.value">
-                                        <!-- Changed to cargoForm -->
-                                        <div class="custom-form-group custom-form-group-select">
-                                            <div class="input-group">
-                                                <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="DGApprovedDate" ngbDatepicker
-                                                    #dgApprovedDatePicker="ngbDatepicker"
-                                                    (click)="dgApprovedDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3"
-                                                    (click)="dgApprovedDatePicker.toggle()" type="button">
-                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                                </button>
-                                            </div>
-                                            <label class="input-label">DG Approval Date</label>
-                                        </div>
-                                    </div>
 
 
                                     <aside class="col-md-12">
@@ -681,8 +700,8 @@
                                             <div class="error-message"
                                                 *ngIf="masterJobForm.get('CommodityDescription')?.touched && masterJobForm.get('CommodityDescription')?.invalid">
                                                 <span
-                                                    *ngIf="masterJobForm.get('CommodityDescription')?.hasError('required')">Commodity
-                                                    Description is required</span>
+                                                    *ngIf="masterJobForm.get('CommodityDescription')?.hasError('required')">
+                                                    Required</span>
                                             </div>
                                         </div>
                                     </aside>
@@ -694,9 +713,8 @@
                                                     class="text-danger">*</span></label>
                                             <div class="error-message"
                                                 *ngIf="masterJobForm.get('MarksandNumber')?.touched && masterJobForm.get('MarksandNumber')?.invalid">
-                                                <span
-                                                    *ngIf="masterJobForm.get('MarksandNumber')?.hasError('required')">Marks
-                                                    and Number is required</span>
+                                                <span *ngIf="masterJobForm.get('MarksandNumber')?.hasError('required')">
+                                                    Required</span>
                                             </div>
                                         </div>
                                     </aside>
@@ -718,9 +736,9 @@
 
                 </div>
                 <!-- Sidebar Information -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="button">
+                <div class="row mt-1">
+                    <div class="col-12 px-0">
+                        <div class="d-flex justify-content-end">
                             <button class="btn btn-sm btn-info ms-auto" (click)="openAttachModal()"><i
                                     class="fas fa-paperclip"></i> Attach Booking</button>
                         </div>
@@ -730,84 +748,88 @@
 
                 @if(totalLengthOfAttachedBookings > 0){
                 <div>
-                <div class="modern-table-wrapper my-2">
-                    <table class="modern-table my-2">
-                        <thead>
-                            <tr>
-                                <th width="10%">Actions</th>
-                                <th>Booking No</th>
-                                <!-- <th>Booking Date</th> -->
-                                <th>Dept</th>
-                                <th>HBL No</th>
-                                <th>Customer</th>
-                                <th>Customer Address</th>
-                                <th>Shipper</th>
-                                <th>Shipper Address</th>
-                                <th>Consignee</th>
-                                <th>Consignee Address</th>
-                                <th>Destination Agent</th>
-                                <th>MBL Date</th>
-                                <th>POL</th>
-                                <th>POD</th>
-                                <th>Freight PP/CC</th>
-                            </tr>
-                        </thead>
+                    <div class="modern-table-wrapper my-2">
+                        <table class="modern-table my-2">
+                            <thead>
+                                <tr>
+                                    <th width="10%">Actions</th>
+                                    <th>Booking No</th>
+                                    <!-- <th>Booking Date</th> -->
+                                    <th>Dept</th>
+                                    <th>HBL No</th>
+                                    <th>Customer</th>
+                                    <th>Customer Address</th>
+                                    <th>Shipper</th>
+                                    <th>Shipper Address</th>
+                                    <th>Consignee</th>
+                                    <th>Consignee Address</th>
+                                    <th>Destination Agent</th>
+                                    <th>MBL Date</th>
+                                    <th>POL</th>
+                                    <th>POD</th>
+                                    <th>Freight PP/CC</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            <!-- Row 1 -->
-                            @for(shipment of slicedAttachedBookings ;let shipmentIndex = $index ; track shipmentIndex){
-                            <tr class="table-row">
-                                <td class="actions-cell">
-                                    <div class="action-buttons">
+                            <tbody>
+                                <!-- Row 1 -->
+                                @for(shipment of slicedAttachedBookings ;let shipmentIndex = $index ; track
+                                shipmentIndex){
+                                <tr class="table-row">
+                                    <td class="actions-cell">
+                                        <div class="action-buttons">
 
-                                        <a class="action-icon edit" target="_blank" [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
-                                        <button class="action-icon delete"
-                                            (click)="detachBooking(shipmentIndex,shipment)"><i
-                                                class="fas fa-unlink"></i></button>
-                                    </div>
-                                </td>
-                                <td><a class="fw-bold" [routerLink]="['/operation/booking/entry',shipment.BookingHeaderSid]">{{shipment.BookingNo}}</a></td>
-                                <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
-                                <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
-                                <td>{{shipment.HBLNo || 'N/A'}}</td>
-                                <td>{{shipment.CustomerName}}</td>
-                                <td>{{shipment.CustomerAddress}}</td>
-                                <td>{{shipment.ShipperName}}</td>
-                                <td>{{shipment.ShipperAddress}}</td>
-                                <td>{{shipment.ConsigneeName}}</td>
-                                <td>{{shipment.ConsigneeAddress}}</td>
-                                <td>{{getAgentName(shipment.DestinationAgent)}}</td>
-                                <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td>
-                                <td>{{shipment.POL}}</td>
-                                <td>{{shipment.POD}}</td>
-                                <td>
-                                    @if(shipment.FreightTerms === 'Prepaid'){
-                                    <span class="type-badge type-prepaid">PREPAID</span>
-                                    } @else if(shipment.FreightTerms === 'Collect'){
-                                    <span class="type-badge type-collect">COLLECT</span>
-                                    } @else {
-                                    <span>N/A</span>
-                                    }
-                                </td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-2">
-                    <ngb-pagination class="d-flex justify-content-end"
-                        [collectionSize]="totalLengthOfAttachedBookings" [pageSize]="pageSize" [(page)]="page"
-                        (pageChange)="  updateAttachedBookingsPagination()" [rotate]="true" [ellipses]="false"
-                        [maxSize]="10">
-                    </ngb-pagination>
-                </div>
+                                            <a class="action-icon edit" target="_blank"
+                                                [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
+                                            <button class="action-icon delete"
+                                                (click)="detachBooking(shipmentIndex,shipment)"><i
+                                                    class="fas fa-unlink"></i></button>
+                                        </div>
+                                    </td>
+                                    <td><a class="fw-bold"
+                                            [routerLink]="['/operation/booking/entry',shipment.BookingHeaderSid]">{{shipment.BookingNo}}</a>
+                                    </td>
+                                    <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
+                                    <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
+                                    <td>{{shipment.HBLNo || 'N/A'}}</td>
+                                    <td>{{shipment.CustomerName}}</td>
+                                    <td>{{shipment.CustomerAddress}}</td>
+                                    <td>{{shipment.ShipperName}}</td>
+                                    <td>{{shipment.ShipperAddress}}</td>
+                                    <td>{{shipment.ConsigneeName}}</td>
+                                    <td>{{shipment.ConsigneeAddress}}</td>
+                                    <td>{{getAgentName(shipment.DestinationAgent)}}</td>
+                                    <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td>
+                                    <td>{{shipment.POL}}</td>
+                                    <td>{{shipment.POD}}</td>
+                                    <td>
+                                        @if(shipment.FreightTerms === 'Prepaid'){
+                                        <span class="type-badge type-prepaid">PREPAID</span>
+                                        } @else if(shipment.FreightTerms === 'Collect'){
+                                        <span class="type-badge type-collect">COLLECT</span>
+                                        } @else {
+                                        <span>N/A</span>
+                                        }
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-2">
+                        <ngb-pagination class="d-flex justify-content-end"
+                            [collectionSize]="totalLengthOfAttachedBookings" [pageSize]="pageSize" [(page)]="page"
+                            (pageChange)="  updateAttachedBookingsPagination()" [rotate]="true" [ellipses]="false"
+                            [maxSize]="10">
+                        </ngb-pagination>
+                    </div>
                 </div>
                 } @else {
-                <div class="col-12 mt-2">
-                    <div class="alert alert-info text-center">Click 'Attach Booking' to add booking details.</div>
+                <div class="col-12 mt-1">
+                    <div class="text-center">Click 'Attach Booking' to add booking details.</div>
                 </div>
                 }
             </div>
@@ -820,11 +842,12 @@
                 <div>
                     <div class="table-toolbar">
                         <div class="toolbar-left">
-                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)">
-                                <i class="fas fa-plus"></i> Add Container
-                            </button>
+
                         </div>
                         <div class="toolbar-right">
+                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
                             <button class="table-action-btn export">
                                 <i class="fas fa-download"></i> Export
                             </button>
@@ -883,7 +906,7 @@
                                 </tr>
                                 <tr *ngIf="masterJobContainers.length === 0">
                                     <td colspan="14" class="text-center py-4 text-muted">
-                                        No containers added yet. Click "Add Container" to get started.
+                                        No Record Found
                                     </td>
                                 </tr>
                             </tbody>
@@ -951,7 +974,7 @@
                         </div>
                     </aside>
                     <div class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d1="ngbDatepicker" (click)="d1.toggle()" container="body" />
@@ -964,7 +987,7 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d2="ngbDatepicker" (click)="d2.toggle()" container="body" />
@@ -1004,7 +1027,7 @@
                         </div>
                     </aside>
                     <div class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d3="ngbDatepicker" (click)="d3.toggle()" container="body" />
@@ -1148,49 +1171,50 @@
         </div>
     </ng-template> -->
     <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-    <div class="table-responsive">
-      <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-        <thead>
-          <tr>
-            <th>Changed At</th>
-            <th>Changed By</th>
-            <th>Operation</th>
-            <th class="text-center">Old Value</th>
-            <th class="text-center">New Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let log of auditLogs">
-            <td>{{ log.changedAt | date:'medium' }}</td>
-            <td>{{ log.changedBy || '-' }}</td>
-            <td>{{ log.operation }}</td>
-            <td class="bg-light-danger">
-              <ul>
-                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-              </ul>
-            </td>
-            <td class="bg-light-success">
-              <ul>
-                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-              </ul>
-            </td>
-          </tr>
-          <tr *ngIf="auditLogs.length === 0">
-            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
-</ng-template>
+        <div class="modal-header bg-info text-white p-2">
+            <h5 class="modal-title mb-0">Audit Logs</h5>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body p-3">
+            <div class="table-responsive">
+                <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Changed At</th>
+                            <th>Changed By</th>
+                            <th>Operation</th>
+                            <th class="text-center">Old Value</th>
+                            <th class="text-center">New Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let log of auditLogs">
+                            <td>{{ log.changedAt | date:'medium' }}</td>
+                            <td>{{ log.changedBy || '-' }}</td>
+                            <td>{{ log.operation }}</td>
+                            <td class="bg-light-danger">
+                                <ul>
+                                    <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                                </ul>
+                            </td>
+                            <td class="bg-light-success">
+                                <ul>
+                                    <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr *ngIf="auditLogs.length === 0">
+                            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+        </div>
+    </ng-template>
     <!-- shipment  -->
 
     <!-- <div class=" mt-2">
@@ -2110,32 +2134,32 @@
         <div class="modal-body">
             <form [formGroup]="containerFormGroup">
                 <div class="row compact-form">
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!containerFormGroup.get('ContainerType')?.value">
                             <ng-select [items]="containerTypeList" bindLabel="ContainerName"
-                                bindValue="ContainerTypeMasterSid" formControlName="ContainerType"
-                                placeholder="Select Container Type">
+                                bindValue="ContainerTypeMasterSid" formControlName="ContainerType" placeholder="">
                             </ng-select>
                             <label class="input-label">Container Type <span class="text-danger">*</span></label>
 
                             <div *ngIf="containerFormGroup.get('ContainerType')?.touched && containerFormGroup.get('ContainerType')?.invalid"
                                 class="error-message">
-                                <span>Container Type is required</span>
+                                <span>Required</span>
                             </div>
 
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
-                                maxlength="11" [textWithNumbers]="11">
+                                maxlength="11" [textWithNumbers]="11" placeholder="">
                             <label class="input-label">Container No <span class="text-danger">*</span></label>
 
                             <div *ngIf="containerFormGroup.get('ContainerNumber')?.touched && containerFormGroup.get('ContainerNumber')?.invalid"
                                 class="error-message">
-                                <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('required')">Container
-                                    Number is required</span>
+                                <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('required')">
+                                    Required</span>
                                 <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('maxlength')">Container
                                     Number cannot exceed 11 characters</span>
                             </div>
@@ -2143,87 +2167,89 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="LineSeal" class="custom-input-field sm" maxlength="10"
-                                [textWithNumbers]="10">
+                                [textWithNumbers]="10" placeholder="">
                             <label class="input-label">Line Seal</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="CustomsSeal" class="custom-input-field sm"
-                                maxlength="10" [textWithNumbers]="10">
+                                maxlength="10" [textWithNumbers]="10" placeholder="">
                             <label class="input-label">Customs Seal</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="HsCode" class="custom-input-field sm" maxlength="10"
-                                [textWithNumbers]="10">
+                                [textWithNumbers]="10" placeholder="">
                             <label class="input-label">HS Code</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <textarea formControlName="CommodityDescription" class="custom-input-field sm" rows="2"
-                                maxlength="500" [textWithNumbers]="500"></textarea>
+                            <textarea formControlName="CommodityDescription" class="custom-input-field sm" rows="1"
+                                maxlength="500" [textWithNumbers]="500" placeholder=""></textarea>
                             <label class="input-label">Commodity Description</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!containerFormGroup.get('PkgType')?.value">
                             <ng-select [items]="packageTypeList" bindLabel="UOMName" bindValue="UOMMasterSid"
-                                formControlName="PkgType" placeholder="Select Package Type">
+                                formControlName="PkgType" placeholder="">
                             </ng-select>
                             <label class="input-label">Package Type</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm" min="0">
+                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm" min="0"
+                                placeholder="">
                             <label class="input-label">No of Pkg</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" formControlName="GrossWeight" class="custom-input-field sm"
-                                step="0.001" min="0">
+                                step="0.001" min="0" placeholder="">
                             <label class="input-label">Gross Weight</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" formControlName="NetWeight" class="custom-input-field sm" step="0.001"
-                                min="0">
+                                min="0" placeholder="">
                             <label class="input-label">Net Weight</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" formControlName="ChargeableWeight" class="custom-input-field sm"
-                                step="0.001" min="0">
+                                step="0.001" min="0" placeholder="">
                             <label class="input-label">Chargeable Weight</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" formControlName="Volume" class="custom-input-field sm" step="0.001"
-                                min="0">
+                                min="0" placeholder="">
                             <label class="input-label">Volume (CBM)</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-6 d-flex align-items-center">
+                    <aside class="col-md-4 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
                                 <input type="checkbox" id="IsSoc" formControlName="IsSoc"
@@ -2266,7 +2292,7 @@
                     </div>
                 </aside>
                 <div class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select">
+                    <div class=" custom-form-group custom-form-group-select-date">
                         <div class="input-group">
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                 #d17="ngbDatepicker" (click)="d17.toggle()" />
@@ -2321,5 +2347,5 @@
 </div>
 
 <ng-template #pdfContent let-modal>
-    
+
 </ng-template>

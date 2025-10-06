@@ -636,7 +636,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         this.masterService.deleteSector(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
+          this.appSettingService.showSuccess("Sector deleted successfully!");
           this.loadSectors();
           this.searchSector();
         });

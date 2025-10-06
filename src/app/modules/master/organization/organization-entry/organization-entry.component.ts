@@ -107,6 +107,9 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   extraCustomerTypesCount = 0;
   currentTaxIdLabel: string = 'PAN/VAT Number';
   duplicateMessage: string = '';
+  activeBranchIds: string[] = [];
+
+
 
 
   selectedTab = 'Party';
@@ -232,8 +235,24 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
       .slice(0, 3);
     this.extraDepartmentsCount = Math.max(0, this.selectedDepartments.length - 3);
   }
-
-
+  
+shouldShowGSTFields(branchIndex: number): boolean {
+  const isIndia = this.isIndianCountry();
+  const panAvailable = this.customerForm.get('PanAvailable')?.value;
+  return isIndia && panAvailable;
+}
+onCountryChange(): void {
+  const isIndia = this.isIndianCountry();
+  
+  if (!isIndia) {
+    // Reset PAN Available if not India
+    this.customerForm.get('PanAvailable')?.setValue(false);
+  }
+  
+  // Update tax field validation
+  this.updateTaxIdFieldValidation();
+  this.updateTaxIdFieldState();
+}
 
   // Sales team properties
   salesTeamList: any[];
@@ -435,6 +454,15 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
         this.loadCustomerSalesTeamData();
       }
     });
+     this.customerForm.get('CompanyType')?.valueChanges
+    .pipe(
+      debounceTime(100),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    )
+    .subscribe(() => {
+      this.onCompanyTypeChange();
+    });
 
     // ✅ Auto-generate short code when name changes with debounce
     this.customerForm.get('CustomerName')?.valueChanges
@@ -444,7 +472,12 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        this.generateCustomerShortCode();
+      this.onCountryChange();
+      this.updateShortCodeFieldState();
+      this.generateCustomerShortCode();
+      this.updateTaxIdFieldValidation();
+      this.updateTaxIdFieldState();
+      this.getStatesByCountryId();
       });
 
     // ✅ React to country changes with debounce
@@ -455,6 +488,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
+         this.onCountryChange();
         this.updateShortCodeFieldState();
       this.generateCustomerShortCode();
       this.updateTaxIdFieldValidation();
@@ -536,17 +570,20 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   // Toggle branch accordion
-  toggleBranch(index: number) {
-    if (this.expandedBranches.has(index)) {
-      this.expandedBranches.delete(index);
-    } else {
-      this.expandedBranches.add(index);
-    }
+ toggleBranch(branchIndex: number) {
+  const branchId = 'branch-' + branchIndex;
+  const index = this.activeBranchIds.indexOf(branchId);
+  
+  if (index > -1) {
+    this.activeBranchIds.splice(index, 1);
+  } else {
+    this.activeBranchIds.push(branchId);
   }
+}
 
-  isBranchExpanded(index: number): boolean {
-    return this.expandedBranches.has(index);
-  }
+  isBranchExpanded(branchIndex: number): boolean {
+  return this.activeBranchIds.includes('branch-' + branchIndex);
+}
 
   // Getter for branch form array
   get branches(): FormArray {
@@ -583,14 +620,14 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
       CustBranchState: [data?.StateMasterSid || '', [Validators.required]],
       CustBranchName: [data?.BranchName || '', [Validators.required]],
       CustBranchType: [data?.Branch_Type || '', [Validators.required]],
-      CustBranchCode: [{ value: data?.Branch_Code || '', disabled: true }],
+       CustBranchCode: [data?.Branch_Code || ''],
       Contact_Person: [data?.Contact_Person || ''],
       CustBranchZipPostCode: [data?.Zip_PostBox || '', [Validators.maxLength(10)]],
       CustBranchPhone: [data?.ContactNo || '', [Validators.maxLength(15), this.phoneNumberValidator]],
       CustBranchEmail: [data?.Email || '', [Validators.required, EmailValidators.multipleEmails()]],
       CustBranchAddress: [data?.Address || '', [Validators.required]],
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
-      CustBranchGSTtype: [data?.CustomerGstType || '', [Validators.required]],
+      CustBranchGSTtype: [data?.CustomerGstType || ''],
       CustBranchGSTIN: [data?.GSTNo || '', this.gstValidator],
       status: [{ value: data?.status === 'A' ? 'Active' : data?.status === 'S' ? 'Suspended' : 'Active', disabled: false }, Validators.required],
 
@@ -699,17 +736,22 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     }));
   }
 
-  // Add new branch
   addNewBranch() {
-    const newBranch = this.addBranchFormGroup();
-    this.branches.push(newBranch);
-    this.expandedBranches.add(this.branches.length - 1);
-
-    // Update the available branches cache
-    this.updateAvailableBranchesCache();
-
-    this.cdRef.markForCheck();
+  const newBranch = this.addBranchFormGroup();
+  this.branches.push(newBranch);
+  
+  // Auto-expand the newly added branch without affecting others
+  const newBranchIndex = this.branches.length - 1;
+  const newBranchId = 'branch-' + newBranchIndex;
+  
+  // Only add the new branch to activeBranchIds, don't clear others
+  if (!this.activeBranchIds.includes(newBranchId)) {
+    this.activeBranchIds.push(newBranchId);
   }
+
+  this.updateAvailableBranchesCache();
+  this.cdRef.markForCheck();
+}
   // Add contact to branch
   addContact(branchIndex: number) {
     const contactForm = this.fb.group({
@@ -759,48 +801,63 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
 
   // Remove branch
   removeBranch(branchIndex: number) {
-    const branch = this.branches.at(branchIndex);
-    const branchSid = branch.get('CustomerBranchSid')?.value;
+  const branch = this.branches.at(branchIndex);
+  const branchSid = branch.get('CustomerBranchSid')?.value;
+  const branchId = 'branch-' + branchIndex;
 
-    if (branchSid) {
-      if (confirm('Are you sure you want to delete this branch?')) {
-        this.masterService.deleteCustomerBranchById(branchSid).subscribe({
-          next: (resp: any) => {
-            this.appSettingService.showSuccess('Branch deleted successfully');
-            this.branches.removeAt(branchIndex);
-            this.expandedBranches.delete(branchIndex);
-            this.updateExpandedBranchesAfterRemoval(branchIndex);
-            // Update the available branches cache
-            this.updateAvailableBranchesCache();
-            this.cdRef.markForCheck();
-          },
-          error: (error) => {
-            this.appSettingService.showError('Error deleting branch');
+  if (branchSid) {
+    if (confirm('Are you sure you want to delete this branch?')) {
+      this.masterService.deleteCustomerBranchById(branchSid).subscribe({
+        next: (resp: any) => {
+          this.appSettingService.showSuccess('Branch deleted successfully');
+          this.branches.removeAt(branchIndex);
+          
+          // Remove from activeBranchIds
+          const index = this.activeBranchIds.indexOf(branchId);
+          if (index > -1) {
+            this.activeBranchIds.splice(index, 1);
           }
-        });
-      }
-    } else {
-      this.branches.removeAt(branchIndex);
-      this.expandedBranches.delete(branchIndex);
-      this.updateExpandedBranchesAfterRemoval(branchIndex);
-      // Update the available branches cache
-      this.updateAvailableBranchesCache();
-      this.cdRef.markForCheck();
+          
+          this.updateExpandedBranchesAfterRemoval(branchIndex);
+          this.updateAvailableBranchesCache();
+          this.cdRef.markForCheck();
+        },
+        error: (error) => {
+          this.appSettingService.showError('Error deleting branch');
+        }
+      });
     }
+  } else {
+    this.branches.removeAt(branchIndex);
+    
+    // Remove from activeBranchIds
+    const index = this.activeBranchIds.indexOf(branchId);
+    if (index > -1) {
+      this.activeBranchIds.splice(index, 1);
+    }
+    
+    this.updateExpandedBranchesAfterRemoval(branchIndex);
+    this.updateAvailableBranchesCache();
+    this.cdRef.markForCheck();
   }
+}
+
 
   // Update expanded branches indices after removal
   private updateExpandedBranchesAfterRemoval(removedIndex: number) {
-    const newExpandedBranches = new Set<number>();
-    this.expandedBranches.forEach(index => {
-      if (index < removedIndex) {
-        newExpandedBranches.add(index);
-      } else if (index > removedIndex) {
-        newExpandedBranches.add(index - 1);
-      }
-    });
-    this.expandedBranches = newExpandedBranches;
-  }
+  const newActiveBranchIds: string[] = [];
+  
+  this.activeBranchIds.forEach(branchId => {
+    const index = parseInt(branchId.split('-')[1]);
+    if (index < removedIndex) {
+      newActiveBranchIds.push(branchId);
+    } else if (index > removedIndex) {
+      newActiveBranchIds.push('branch-' + (index - 1));
+    }
+  });
+  
+  this.activeBranchIds = newActiveBranchIds;
+}
 
   // Remove contact
   removeContact(branchIndex: number, contactIndex: number) {
@@ -911,44 +968,50 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     this.loadCustomerData(this.CustomerMasterSid);
   }
   private populateBranchFormArray(branches: any[]): void {
-    // Clear existing form array
-    this.branchFormArray = this.fb.array([]);
+  // Clear existing form array
+  this.branchFormArray = this.fb.array([]);
 
-    // Populate form array with branch data
-    branches.forEach(branch => {
-      const branchWithDetails = {
-        ...branch,
-        contacts: branch.cusBranchContact || [],
-        emails: this.getBranchEmailsFromCustomerData(branch.CustomerBranchSid),
-        logins: this.getBranchLoginsFromCustomerData(branch.CustomerBranchSid),
-        StateMasterSid: branch.stateMaster?.StateMasterSid,
-        CityMasterSid: branch.cityMaster?.CityMasterSid,
-      };
+  // Populate form array with branch data
+  branches.forEach(branch => {
+    const branchWithDetails = {
+      ...branch,
+      contacts: branch.cusBranchContact || [],
+      emails: this.getBranchEmailsFromCustomerData(branch.CustomerBranchSid),
+      logins: this.getBranchLoginsFromCustomerData(branch.CustomerBranchSid),
+      StateMasterSid: branch.stateMaster?.StateMasterSid,
+      CityMasterSid: branch.cityMaster?.CityMasterSid,
+      // Ensure these fields are properly mapped
+      CustBranchCode: branch.Branch_Code,
+      CustBranchGSTIN: branch.GSTNo,
+      status: branch.status === 'A' ? 'Active' : 'Suspended'
+    };
 
-      const branchFormGroup = this.addBranchFormGroup(branchWithDetails);
-      this.branches.push(branchFormGroup);
+    const branchFormGroup = this.addBranchFormGroup(branchWithDetails);
+    this.branches.push(branchFormGroup);
 
+    const currentBranchIndex = this.branches.length - 1;
+    
+    // Auto-expand the first branch in edit mode
+    if (currentBranchIndex === 0) {
+      this.activeBranchIds.push('branch-' + currentBranchIndex);
+    }
 
-      const currentBranchIndex = this.branches.length - 1;
-      if (branch.stateMaster?.StateMasterSid) {
-        this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
+    if (branch.stateMaster?.StateMasterSid) {
+      this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
+    }
+
+    // Initialize GST digits after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      if (branch.GSTNo) {
+        this.initializeGSTINDigits(currentBranchIndex, branch.GSTNo);
       }
+    }, 100);
+  });
 
-
-      setTimeout(() => {
-        if (branch.GSTNo) {
-          this.initializeGSTINDigits(currentBranchIndex, branch.GSTNo);
-        }
-      }, 100);
-    });
-
-    this.totalLengthOfBranch = this.branches.length || 0;
-
-    // Update the available branches cache
-    this.updateAvailableBranchesCache();
-
-    this.cdRef.markForCheck();
-  }
+  this.totalLengthOfBranch = this.branches.length || 0;
+  this.updateAvailableBranchesCache();
+  this.cdRef.markForCheck();
+}
 
   // Update the cache of available branches
   private updateAvailableBranchesCache(): void {
@@ -1003,25 +1066,28 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   getStatesByCountryId(): void {
-    const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
 
-    if (countryId) {
-      this.masterService.getStateByCountryId(countryId).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.stateList = resp.data;
-            this.cdRef.markForCheck();
-          } else {
-            console.error('Error fetching States with Country Id');
-            this.stateList = [];
-          }
+  if (countryId) {
+    this.masterService.getStateByCountryId(countryId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.stateList = resp.data;
+          // Update tax field states when country changes
+          this.updateTaxIdFieldState();
+          this.updateTaxIdFieldValidation();
+          this.cdRef.markForCheck();
+        } else {
+          console.error('Error fetching States with Country Id');
+          this.stateList = [];
         }
-      );
-    } else {
-      this.stateList = [];
-    }
+      }
+    );
+  } else {
+    this.stateList = [];
+    this.updateTaxIdFieldState();
   }
-
+}
   getCitiesByStateIdForBranch(branchIndex: number, stateId: any): void {
     const branchForm = this.branches.at(branchIndex) as FormGroup;
 
@@ -1140,30 +1206,33 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   generateBranchCode(branchIndex: number): void {
-    const branchForm = this.branches.at(branchIndex) as FormGroup;
-    const branchName = branchForm.get('CustBranchName')?.value;
-    const stateId = branchForm.get('CustBranchState')?.value;
-    const cityId = branchForm.get('CustBranchCity')?.value;
-
-    if (!branchName || !stateId || !cityId) {
-      branchForm.get('CustBranchCode')?.setValue('');
-      return;
-    }
-
-    const state = this.stateList?.find(s => s.StateMasterSid == stateId);
-    const city = branchForm['cities']?.find((c: any) => c.CityMasterSid == cityId);
-
-    if (!state || !city) {
-      branchForm.get('CustBranchCode')?.setValue('');
-      return;
-    }
-
-    const namePart = branchName.substring(0, 3).trim().toUpperCase();
-    const statePart = state.stateCode.substring(0, 3).trim().toUpperCase();
-    const cityPart = city.cityCode.substring(0, 3).trim().toUpperCase();
-
-    branchForm.get('CustBranchCode')?.setValue(`${namePart}${statePart}${cityPart}`);
+  const branchForm = this.branches.at(branchIndex) as FormGroup;
+  const branchName = branchForm.get('CustBranchName')?.value;
+  const stateId = branchForm.get('CustBranchState')?.value;
+  const cityId = branchForm.get('CustBranchCity')?.value;
+  console.log('Generating branch code with:', { branchName, stateId, cityId }); 
+  if (!branchName || !stateId || !cityId) {
+    branchForm.get('CustBranchCode')?.setValue('');
+    return;
   }
+
+  const state = this.stateList?.find(s => s.StateMasterSid == stateId);
+  const city = branchForm['cities']?.find((c: any) => c.CityMasterSid == cityId);
+   console.log('Found state/city:', { state, city });
+  if (!state || !city) {
+    branchForm.get('CustBranchCode')?.setValue('');
+    return;
+  }
+
+  // Ensure we have valid codes with fallbacks
+  const namePart = (branchName.substring(0, 3) || 'BRN').trim().toUpperCase();
+  const statePart = (state.stateCode?.substring(0, 3) || state.stateName?.substring(0, 3) || 'ST').trim().toUpperCase();
+  const cityPart = (city.cityCode?.substring(0, 3) || city.cityName?.substring(0, 3) || 'CT').trim().toUpperCase();
+
+  const branchCode = `${namePart}${statePart}${cityPart}`;
+  console.log('Generated branch code:', branchCode); 
+  branchForm.get('CustBranchCode')?.setValue(branchCode);
+}
   validateEmailForm(emailForm: FormGroup): boolean {
     if (emailForm.invalid) {
       emailForm.markAllAsTouched();
@@ -1303,12 +1372,97 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   panValidator(control: AbstractControl): ValidationErrors | null {
-    const pan = control.value;
-    if (!pan) return null;
+  const pan = control.value;
+  if (!pan) return null;
 
-    const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
+  // Basic PAN format validation
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  if (!PAN_REGEX.test(pan)) {
+    return { invalidPAN: true };
   }
+
+  // Enhanced 4th character validation for holder type
+  const fourthChar = pan[3]; // 4th character (0-based index)
+  const companyType = this.customerForm?.get('CompanyType')?.value;
+  
+  const holderTypeValidation = this.validatePanHolderType(fourthChar, companyType);
+  if (!holderTypeValidation.isValid) {
+    return { 
+      invalidPANHolderType: true,
+      holderTypeMessage: holderTypeValidation.message
+    };
+  }
+
+  return null;
+}
+private validatePanHolderType(fourthChar: string, companyType: string): { isValid: boolean; message: string } {
+  const holderTypeMap: { [key: string]: { types: string[], description: string } } = {
+    'C': { 
+      types: ['Company', 'Limited Liability Company(LLC)', 'Limited Liability Partnership(LLP)'], 
+      description: 'Company' 
+    },
+    'P': { 
+      types: ['Individual(proprietor)', 'Association Of Persons(AOP)', 'Body Of Individuals'], 
+      description: 'Individual/Person' 
+    },
+    'H': { 
+      types: ['Association Of Persons(AOP)', 'Body Of Individuals'], 
+      description: 'HUF (Hindu Undivided Family)' 
+    },
+    'F': { 
+      types: ['Firm', 'Limited Liability Partnership(LLP)'], 
+      description: 'Firm/Partnership' 
+    },
+    'A': { 
+      types: ['Association Of Persons(AOP)'], 
+      description: 'Association of Persons' 
+    },
+    'T': { 
+      types: ['Trust'], 
+      description: 'Trust' 
+    },
+    'B': { 
+      types: ['Body Of Individuals'], 
+      description: 'Body of Individuals' 
+    },
+    'L': { 
+      types: ['Local Authority'], 
+      description: 'Local Authority' 
+    },
+    'J': { 
+      types: ['Artificial Juridical Person'], 
+      description: 'Artificial Juridical Person' 
+    },
+    'G': { 
+      types: ['Government Agency'], 
+      description: 'Government' 
+    }
+  };
+
+  const holderInfo = holderTypeMap[fourthChar];
+  
+  if (!holderInfo) {
+    return { 
+      isValid: false, 
+      message: `Invalid 4th character '${fourthChar}'. Valid characters: ${Object.keys(holderTypeMap).join(', ')}` 
+    };
+  }
+
+  // If company type is selected, validate against it
+  if (companyType && !holderInfo.types.includes(companyType)) {
+    const expectedTypes = Object.entries(holderTypeMap)
+      .filter(([char, info]) => info.types.includes(companyType))
+      .map(([char, info]) => `${char} (${info.description})`)
+      .join(', ');
+    
+    return { 
+      isValid: false, 
+      message: `4th character '${fourthChar}' (${holderInfo.description}) doesn't match selected company type '${companyType}'. Expected: ${expectedTypes}` 
+    };
+  }
+
+  return { isValid: true, message: '' };
+}
   vatValidator(control: AbstractControl): ValidationErrors | null {
     const vat = control.value;
     if (!vat) return null;
@@ -1332,17 +1486,23 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   handleSelectedStatus(event: any[]) {
-    this.selectedStatus = [...event];
-    const allCustomerFields = ['Shipper', 'Consignee', 'Forwarder', 'Notify'];
-    allCustomerFields.forEach(field => {
-      if (this.selectedStatus.includes(field) && !this.selectedStatus.includes('Customer')) {
-        this.selectedStatus.push('Customer');
-      }
-    })
-    this.isAirlineSelected = this.selectedStatus.includes('Air Line');
-    this.updateCustomerType();
-  }
-
+  this.selectedStatus = [...event];
+  const allCustomerFields = ['Shipper', 'Consignee', 'Forwarder', 'Notify'];
+  allCustomerFields.forEach(field => {
+    if (this.selectedStatus.includes(field) && !this.selectedStatus.includes('Customer')) {
+      this.selectedStatus.push('Customer');
+    }
+  })
+  
+  // Fix: Properly detect if 'Air Line' is selected
+  this.isAirlineSelected = this.selectedStatus.includes('Air Line');
+  
+  // Debug log to check the status
+  console.log('Selected statuses:', this.selectedStatus);
+  console.log('Is airline selected:', this.isAirlineSelected);
+  
+  this.updateCustomerType();
+}
   toCamelCase(str: string): string {
     return str
       .replace(/[^a-zA-Z0-9 ]/g, '')
@@ -1393,11 +1553,14 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   isIndianCountry(): boolean {
-    const countryId = this.customerForm.get('CountryMasterSid')?.value;
-    if (!countryId) return false;
-    const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
-    return country?.countryName?.toLowerCase().includes('india') || false;
-  }
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  if (!countryId) return false;
+  const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+  return country?.countryName?.toLowerCase().includes('india') || false;
+}
+shouldShowPanAvailable(): boolean {
+  return this.isIndianCountry();
+}
 
   isUaeCountry(): boolean {
     const countryId = this.customerForm.get('CountryMasterSid')?.value;
@@ -1410,68 +1573,192 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   }
 
   getTaxIdErrorMessage(): string {
-    const errors = this.customerForm.get('PanType')?.errors;
-    if (!errors) return '';
-    if (errors['invalidPAN']) return 'Invalid PAN format. Format: AAAAA9999A';
-    if (errors['invalidVAT']) return 'Invalid VAT format. Should be 15 digits starting with 1-9';
-    if (errors['required']) return 'Required';
-    return 'Invalid format';
+  const errors = this.customerForm.get('PanType')?.errors;
+  if (!errors) return '';
+  
+  if (errors['invalidPAN']) return 'Invalid PAN format. Format: AAAAA9999A (5 letters + 4 digits + 1 letter)';
+  if (errors['invalidPANHolderType']) return errors['holderTypeMessage'];
+  if (errors['invalidVAT']) return 'Invalid VAT format. Should be 15 digits starting with 1-9';
+  if (errors['required']) return 'Required';
+  return 'Invalid format';
+}
+getPanFormatDescription(): string {
+  const companyType = this.customerForm.get('CompanyType')?.value;
+  
+  if (!companyType) {
+    return 'PAN Format: 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F)';
   }
+
+  const expectedChars = this.getExpectedPanFourthChars(companyType);
+  
+  if (expectedChars.length === 0) {
+    return 'PAN Format: 5 letters + 4 digits + 1 letter';
+  }
+
+  const charDescriptions = expectedChars.map(char => {
+    const holderTypeMap = {
+      'C': 'Company',
+      'P': 'Individual/Person',
+      'H': 'HUF',
+      'F': 'Firm',
+      'A': 'AOP',
+      'T': 'Trust',
+      'B': 'BOI',
+      'L': 'Local Authority',
+      'J': 'Artificial Juridical Person',
+      'G': 'Government'
+    };
+    return `${char} (${holderTypeMap[char] || char})`;
+  });
+
+  return `PAN Format: 3 letters + [${expectedChars.join('/')}] + 1 letter + 4 digits + 1 letter. Expected 4th character: ${charDescriptions.join(', ')}`;
+}
+getExpectedPanFourthChars(companyType: string): string[] {
+  const holderTypeMap: { [key: string]: string[] } = {
+    'Company': ['C'],
+    'Limited Liability Company(LLC)': ['C'],
+    'Limited Liability Partnership(LLP)': ['C', 'F'],
+    'Firm': ['F'],
+    'Individual(proprietor)': ['P'],
+    'Association Of Persons(AOP)': ['P', 'H', 'A'],
+    'Body Of Individuals': ['P', 'H', 'B'],
+    'Artificial Juridical Person': ['J'],
+    'Government Agency': ['G'],
+    'Local Authority': ['L'],
+    'Trust': ['T']
+  };
+
+  return holderTypeMap[companyType] || [];
+}
+getPanBreakdown(pan: string): any {
+  if (!pan || pan.length !== 10) return null;
+  
+  return {
+    firstThree: pan.substring(0, 3),
+    fourthChar: pan[3],
+    fifthChar: pan[4],
+    digits: pan.substring(5, 9),
+    lastChar: pan[9]
+  };
+}
+
 
   updateTaxIdFieldValidation(): void {
-    const panTypeControl = this.customerForm.get('PanType');
-    const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  const panTypeControl = this.customerForm.get('PanType');
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
 
-    if (countryId) {
-      const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
-      const countryName = country?.countryName || '';
+  if (countryId) {
+    const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const countryName = country?.countryName || '';
 
-      panTypeControl?.clearValidators();
+    panTypeControl?.clearValidators();
 
-      if (countryName.toLowerCase().includes('india')) {
-        panTypeControl?.setValidators([Validators.required, this.panValidator]);
-        this.updateTaxIdLabel('PAN Number');
-      }
-      else if (countryName.toLowerCase().includes('uae') ||
-        countryName.toLowerCase().includes('dubai') ||
-        countryName.toLowerCase().includes('united arab emirates')) {
-        panTypeControl?.setValidators([Validators.required, this.vatValidator]);
-        this.updateTaxIdLabel('VAT Number');
-      }
-      else {
-        panTypeControl?.setValidators([Validators.required]);
-        this.updateTaxIdLabel('Tax Identification Number');
-      }
-
-      panTypeControl?.updateValueAndValidity();
+    if (countryName.toLowerCase().includes('india')) {
+      panTypeControl?.setValidators([this.panValidator]);
+      this.updateTaxIdLabel();
     }
-  }
+    else if (countryName.toLowerCase().includes('uae') ||
+      countryName.toLowerCase().includes('dubai') ||
+      countryName.toLowerCase().includes('united arab emirates')) {
+      panTypeControl?.setValidators([this.vatValidator]);
+      this.updateTaxIdLabel();
+    }
+    else {
+      panTypeControl?.setValidators([]);
+      this.updateTaxIdLabel();
+    }
 
-  updateTaxIdLabel(label: string): void {
-
-    this.currentTaxIdLabel = label;
+    panTypeControl?.updateValueAndValidity();
   }
+}
+
+
+
+  updateTaxIdLabel(): void {
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  
+  if (countryId) {
+    const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const countryName = country?.countryName || '';
+
+    if (countryName.toLowerCase().includes('india')) {
+      this.currentTaxIdLabel = 'PAN Number';
+    }
+    else if (countryName.toLowerCase().includes('uae') ||
+      countryName.toLowerCase().includes('dubai') ||
+      countryName.toLowerCase().includes('united arab emirates')) {
+      this.currentTaxIdLabel = 'VAT Number';
+    }
+    else {
+      this.currentTaxIdLabel = 'Tax Identification Number';
+    }
+  } else {
+    this.currentTaxIdLabel = 'PAN/VAT Number';
+  }
+}
+
+  isPanRequiredForCompanyType(): boolean {
+  const companyType = this.customerForm.get('CompanyType')?.value;
+  const isIndia = this.isIndianCountry();
+  
+  if (!isIndia) return false;
+  
+  // List of company types that require PAN in India
+  const panRequiredTypes = [
+    'Company',
+    'Limited Liability Company(LLC)',
+    'Limited Liability Partnership(LLP)',
+    'Firm',
+    'Association Of Persons(AOP)',
+    'Body Of Individuals',
+    'Artificial Juridical Person',
+    'Government Agency',
+    'Local Authority',
+    'Individual'
+  ];
+  
+  return panRequiredTypes.includes(companyType);
+}
   updateTaxIdFieldState(): void {
-    this.customerForm.get('PanAvailable')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((panAvailable: boolean) => {
-        const panType = this.customerForm.get('PanType');
-        const panName = this.customerForm.get('PanName');
+  const panAvailableControl = this.customerForm.get('PanAvailable');
+  const panTypeControl = this.customerForm.get('PanType');
+  const panNameControl = this.customerForm.get('PanName');
 
+  // Subscribe to PAN available changes
+  panAvailableControl?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((panAvailable: boolean) => {
       if (panAvailable) {
-        panType?.enable();
-        panName?.enable();
+        panTypeControl?.enable();
+        panNameControl?.enable();
         this.updateTaxIdFieldValidation();
       } else {
-        panType?.disable();
-        panName?.disable();
-        panType?.clearValidators();
-        panType?.updateValueAndValidity();
-        panType?.setValue('');
-        panName?.setValue('');
+        panTypeControl?.disable();
+        panNameControl?.disable();
+        panTypeControl?.clearValidators();
+        panTypeControl?.updateValueAndValidity();
+        panTypeControl?.setValue('');
+        panNameControl?.setValue('');
       }
     });
+    
+  // Initialize based on current value
+  const currentPanAvailable = panAvailableControl?.value;
+  if (currentPanAvailable) {
+    panTypeControl?.enable();
+    panNameControl?.enable();
+  } else {
+    panTypeControl?.disable();
+    panNameControl?.disable();
   }
+}
+// onCountryChange(): void {
+//   this.updateTaxIdLabel();
+//   this.updateTaxIdFieldValidation();
+//   this.updateTaxIdFieldState();
+// }
+
+
   initializePanFields(): void {
     const panAvailable = this.customerForm.get('PanAvailable')?.value;
     const panTypeControl = this.customerForm.get('PanType');
@@ -1491,7 +1778,16 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
       this.countryList = res.data;
     });
   }
-
+onCompanyTypeChange(): void {
+  this.updateTaxIdFieldState();
+  this.updateTaxIdFieldValidation();
+  
+  // Also update PAN validation when company type changes
+  const panTypeControl = this.customerForm.get('PanType');
+  if (panTypeControl?.value) {
+    panTypeControl.updateValueAndValidity();
+  }
+}
   loadMenus() {
     this.settingsService.getAllMenu().subscribe(
       (menus) => {
@@ -1564,20 +1860,13 @@ loadCustomerData(customerId: number) {
       this.customerForm.patchValue({
         ...customerData,
         CountryMasterSid: customerData.countryMaster?.CountryMasterSid,
-        status: formattedStatus, // Use converted status
+        status: formattedStatus,
         paymentType: customerData.CashCredit,
         KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
         PanAvailable: customerData.PanType || customerData.PanName ? true : false,
         CustomerType: customerType,
         AirlineNumber: customerData.AirlineNumber || '',
         AirlineCode: customerData.AirlineCode || ''
-      });
-
-      // Auto-generate short code if missing
-      setTimeout(() => {
-        if (!customerData.CustomerShortCode) {
-          this.generateCustomerShortCode();
-        }
       });
 
       // Handle customer types
@@ -1588,11 +1877,18 @@ loadCustomerData(customerId: number) {
         })
         .map(type => type.name);
 
+      // FIX: Set isAirlineSelected based on loaded data
+      this.isAirlineSelected = this.selectedStatus.includes('Air Line');
+      
+      console.log('Airline fields:', {
+        AirlineNumber: customerData.AirlineNumber,
+        AirlineCode: customerData.AirlineCode,
+        isAirlineSelected: this.isAirlineSelected,
+        selectedStatus: this.selectedStatus
+      });
+
       // Load all data from the single API response
       this.loadAllCustomerDataFromResponse(customerData);
-
-      console.log('CustomerType loaded:', customerType);
-      console.log('Selected statuses:', this.selectedStatus);
     },
     (error) => {
       this.appSettingService.showError('Error loading customer data.');
@@ -2373,7 +2669,10 @@ loadCustomerData(customerId: number) {
 
     this.cdRef.markForCheck();
   }
-
+onPanAvailableChange(): void {
+  // This will trigger change detection for all branches
+  this.cdRef.markForCheck();
+}
 
 
   deleteSalesTeam(customerSalesSid: number, index: number) {
@@ -2562,11 +2861,11 @@ loadCustomerData(customerId: number) {
   // Prepare main customer payload (same as before)
   // For CREATE mode - only customer and branches
   private prepareCreatePayload(): any {
-    const formValue = this.customerForm.value;
+    const formValue = this.customerForm.getRawValue();
     const currentUserEmail = this.getUserEmail();
     const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
-    const statusValue = formValue.status === 'A' ? 'A' : 'S';
+    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
 
     return {
       customer: {
@@ -2643,7 +2942,7 @@ loadCustomerData(customerId: number) {
         ContactName: contactData.ContactName?.trim(),
         MobileNo: String(contactData.MobileNo),
         Email: contactData.Email,
-        status: contactData.status === 'A' ? 'A' : 'S'
+        status: contactData.status === 'Active' ? 'A' : 'S'
       });
     }
 
@@ -2730,6 +3029,8 @@ loadCustomerData(customerId: number) {
   for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
     const branchForm = this.branches.at(branchIndex);
     const branchData = branchForm.value;
+     console.log('Branch Data:', branchData); 
+    console.log('CustBranchCode value:', branchData.CustBranchCode); 
 
     const branchPayload: any = {
       CustomerBranchSid: branchData.CustomerBranchSid,
@@ -2745,6 +3046,7 @@ loadCustomerData(customerId: number) {
       Address: branchData.CustBranchAddress,
       Registered: branchData.CustBranchRegistered,
       CustomerGstType: branchData.CustBranchGSTtype,
+      GSTNo: branchData.CustBranchGSTIN || '', 
       ...(branchData.CustBranchGSTIN && { GSTNo: branchData.CustBranchGSTIN }), // Only include if GST number exists
       status: branchData.status === 'Active' ? 'A' : 'S',
 
@@ -2754,7 +3056,7 @@ loadCustomerData(customerId: number) {
       customerSalesTeams: this.prepareUpdateSalesTeamsPayload(branchData.CustomerBranchSid),
       customerMilestones: this.prepareUpdateMilestonesPayload(branchData.CustomerBranchSid)
     };
-
+    console.log('Final Branch Payload:', branchPayload);
     branchesPayload.push(branchPayload);
   }
 
@@ -2970,48 +3272,44 @@ loadCustomerData(customerId: number) {
   }
 
   private prepareUpdateSalesTeamsPayload(branchSid?: number): any[] {
-    if (this.cusSalesteam.length === 0) return [];
-const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-    const salesTeamsPayload = [];
-    const salesTeams = this.cusSalesteam;
+  if (this.cusSalesteam.length === 0) return [];
+  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+  const salesTeamsPayload = [];
+  const salesTeams = this.cusSalesteam;
 
-    console.log(this.cusSalesteam, 'this.cusSalesteam')
+  for (let teamIndex = 0; teamIndex < salesTeams.length; teamIndex++) {
+    const teamForm = salesTeams.at(teamIndex);
+    const teamData = teamForm.value;
 
-    for (let teamIndex = 0; teamIndex < salesTeams.length; teamIndex++) {
-      const teamForm = salesTeams.at(teamIndex);
-      const teamData = teamForm.value;
-
-      // Filter by branch if branchSid is provided
-      if (branchSid && teamData.branchSid !== branchSid) {
-        continue;
-      }
-
-      const salesTeamPayload: any = {
-        DepartmentMasterSid: Array.isArray(teamData.DepartmentMasterSid)
-          ? teamData.DepartmentMasterSid.map((id: any) => String(id)) // ✅ ensure numeric array
-          : teamData.DepartmentMasterSid
-            ? [String(teamData.DepartmentMasterSid)]
-            : [],
-        Salesman: teamData.Salesman,
-        CSPerson: teamData.CSPerson,
-        DocPerson: teamData.DocPerson,
-        EffectiveFrom: teamData.EffectiveFrom,
-        status: teamData.status === 'Active' ? 'A' : 'S',
-        CompanyMasterSid: Number(activeCompanyId),
-        CustomerSalesBranchSid: teamData.branchId ? Number(teamData.branchId) : null
-      };
-
-
-      // createdBy/updatedBy now handled automatically by backend via JWT token
-      if (teamData.CustomerSalesSid) {
-        salesTeamPayload.CustomerSalesSid = teamData.CustomerSalesSid;
-      }
-
-      salesTeamsPayload.push(salesTeamPayload);
+    // Filter by branch if branchSid is provided
+    if (branchSid && teamData.branchSid !== branchSid) {
+      continue;
     }
 
-    return salesTeamsPayload;
+    const salesTeamPayload: any = {
+      DepartmentMasterSid: Array.isArray(teamData.DepartmentMasterSid)
+        ? teamData.DepartmentMasterSid.map((id: any) => String(id))
+        : teamData.DepartmentMasterSid
+          ? [String(teamData.DepartmentMasterSid)]
+          : [],
+      Salesman: teamData.Salesman,
+      CSPerson: teamData.CSPerson,
+      DocPerson: teamData.DocPerson,
+      EffectiveFrom: teamData.EffectiveFrom,
+      status: teamData.status === 'Active' ? 'A' : 'S',
+      CompanyMasterSid: Number(activeCompanyId),
+      CustomerBranchSid: teamData.branchSid ? Number(teamData.branchSid) : null // ✅ Fixed: use branchSid
+    };
+
+    if (teamData.CustomerSalesSid) {
+      salesTeamPayload.CustomerSalesSid = teamData.CustomerSalesSid;
+    }
+
+    salesTeamsPayload.push(salesTeamPayload);
   }
+
+  return salesTeamsPayload;
+}
 
   private prepareUpdateMilestonesPayload(branchSid?: number): any[] {
     if (this.cusMilestone.length === 0) return [];
@@ -3053,7 +3351,7 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
         next: (resp: any) => {
           if (resp.status) {
             this.CustomerMasterSid = resp.data.CustomerMasterSid;
-            this.appSettingService.showSuccess('Customer created successfully with all data!');
+            this.appSettingService.showSuccess('Customer created successfully');
             this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
             resolve();
           } else {
@@ -3102,7 +3400,7 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
           await this.saveCustomerMilestones();
         }
 
-        this.appSettingService.showSuccess('Customer updated successfully with all data!');
+        this.appSettingService.showSuccess('Customer updated successfully');
 
         // Reload the data to reflect changes
         this.loadCustomerData(this.CustomerMasterSid);
@@ -3181,7 +3479,7 @@ const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
 
   goBack() {
-    history.back();
+    this.router.navigate([`master/organization/list`]);
   }
 
   openAuditLogs(modal: TemplateRef<any>) {

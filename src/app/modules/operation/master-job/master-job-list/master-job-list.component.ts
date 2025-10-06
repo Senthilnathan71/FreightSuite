@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -12,7 +12,14 @@ import { FormsModule } from '@angular/forms';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-master-job-list',
   standalone: true,
@@ -23,46 +30,94 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FormsModule,
     CustomDatePipe,
     NgbPaginationModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
+  providers: [CustomDatePipe],
   templateUrl: './master-job-list.component.html',
   styleUrl: './master-job-list.component.scss',
 })
-export class MasterJobListComponent {
-
-  filterValue = '';
+export class MasterJobListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('masterTable') masterTable!: ReusableTableComponent;
+  // filterValue = '';
   allMasterJob: any[] = [];
-  searchPerformed: boolean;
+  // searchPerformed: boolean;
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-  page = 1;
-  pageSize = 10;
-  totalLengthOfCollection: number;
-  sortColumn: string = 'departmentName';
-  sortDirection: string = 'desc';
-  currentCompany : any;
-  currentBranch : any;
+  // page = 1;
+  // pageSize = 10;
+  // totalLengthOfCollection: number;
+  // sortColumn: string = 'departmentName';
+  // sortDirection: string = 'desc';
+  currentCompany: any;
+  currentBranch: any;
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View',
+        condition: (row: any) => this.hasPermission('View')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: '',
+    emptyMessage: 'No master job found',
+    dragAndDrop: true
+  };
 
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'master-job-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'departmentName',
+    defaultSortDirection: 'asc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allMaster() { return this.allItems; }
   constructor(
     private operationService: OperationService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-     private spinner: NgxSpinnerService
-  ) {}
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService,
+    private datePipe: CustomDatePipe,
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     this.currentCompany = localStorage.getItem('selected-company');
     this.currentBranch = localStorage.getItem('selected-branch');
     this.appSettingService.getUser().subscribe((user) => {
-      if(user) {
+      if (user) {
         this.userData = user;
         this.checkPermissions();
       }
     });
-    this.searchMasterJob();
+    // this.searchMasterJob();
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
+    // this.initializeModalDropdownItems();
+    // Initialize base component
+    super.ngOnInit();
   }
 
   checkPermissions() {
@@ -77,6 +132,8 @@ export class MasterJobListComponent {
             this.permissions = Object.keys(this.currentMenuPermissions).filter(
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
+            this.initializeHeaderActions();
+            // this.initializeModalDropdownItems();
           },
         });
     }
@@ -86,45 +143,371 @@ export class MasterJobListComponent {
     return this.permissions.includes(permission);
   }
 
-  searchMasterJob() {
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
     this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId: CompanyMasterSid,
+    return this.operationService.searchMasterJobs(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        Status: item.Status === 'A' ? 'Active' : 'Suspended',
+        MasterJobDate: this.datePipe.transform(item?.MasterJobDate),
+        MBLDate: this.datePipe.transform(item?.MBLDate),
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingService.showError('Error searching company.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
     }
-    this.operationService.searchMasterJobs(params).subscribe({
-      next: (response:any) => {
-        if(response.status){
-          this.allMasterJob = response?.data?.items || [];
-          this.totalLengthOfCollection = this.allMasterJob.length;
-          this.searchPerformed = true;
-          this.applySorting();
-        } else {
-          this.allMasterJob = [];
-          this.totalLengthOfCollection = 0;
-          this.searchPerformed = true;
-          this.appSettingService.showError('Error fetching Master Job data');
-        }
-        this.spinner.hide();
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchMasterjob();
+  }
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
       },
-      error: (error) => {
-        console.error('Error fetching Master Job data:', error);
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
       }
+    ];
+  }
+
+  // initializeModalDropdownItems(): void {
+  //   this.modalDropdownItems = [
+  //     {
+  //       label: 'Edoc',
+  //       icon: 'fas fa-file-alt',
+  //       action: 'edoc',
+  //       condition: this.hasPermission('Edoc')
+  //     },
+  //     {
+  //       label: 'Terms & Condition',
+  //       icon: 'fas fa-clipboard',
+  //       action: 'terms',
+  //       condition: this.hasPermission('Terms and Condition')
+  //     },
+  //     {
+  //       label: 'Authorize',
+  //       icon: 'fas fa-shield-alt',
+  //       action: 'authority',
+  //       condition: this.hasPermission('Authority')
+  //     },
+  //     {
+  //       label: 'Email',
+  //       icon: 'fas fa-envelope',
+  //       action: 'email',
+  //       condition: this.hasPermission('Email')
+  //     }
+  //   ];
+  // }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToMasterJob()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  // onModalDropdownItemClick(action: string): void {
+  //   switch (action) {
+  //     case 'edoc':
+  //       this.openEDoc();
+  //       break;
+  //     case 'terms':
+  //       this.openTandC();
+  //       break;
+  //     case 'authority':
+  //       this.openAuthority();
+  //       break;
+  //     case 'email':
+  //       this.openEmail();
+  //       break;
+  //     default:
+  //       console.warn(`Unknown dropdown action: ${action}`);
+  //   }
+  // }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
     });
   }
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching company.');
+    console.error('Error searching company', error);
+    super.handleSearchError(error);
+  }
+
+  // Legacy methods for template compatibility
+  searchMasterjob() {
+    this.search();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.MasterJobSid || index;
+  }
+
+
+ viewMasterJob(masterJobSid: number): void {
+  this.navigateToEdit(masterJobSid);
+}
+
+
+    navigateToEdit(masterJobSid: number) {
+    this.router.navigate(['operation/master-job/entry', masterJobSid]);
+  }
+
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      // {
+      //   key: 'BookingNo',
+      //   label: 'Booking No',
+      //   sortable: true,
+      //   filterable: true,
+      //   visible: true,
+      //   template: 'link',
+      //   width: '180px',
+      //   dataType: 'string'
+      // },
+      {
+        key: 'departmentName',
+        label: 'Department',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'MasterJobNumber',
+        label: 'Master Job No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        template: "link"
+      },
+      {
+        key: 'MasterJobDate',
+        label: 'Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'MBLNo',
+        label: 'MBL No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+
+      {
+        key: 'MBLDate',
+        label: 'MBL Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        cellClass: 'vessel-column'
+      },
+      {
+        key: 'POL',
+        label: 'POL',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'POD',
+        label: 'POD',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'FDC',
+        label: 'FDC',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'NoOfHouses',
+        label: '	No of House',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+      },
+      {
+        key: 'NoOfContainers',
+        label: 'No of Container ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+ onTableActionClick(event: TableEventData): void {
+  if (event.action === 'view') {
+    this.viewMasterJob(event.row.MasterJobSid); // ✅ only the ID
+  }
+}
+
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allMaster;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.masterTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Master-Job-Report',
+      title: companyName
+    });
+  }
+  // searchMasterJob() {
+  //   this.spinner.show();
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     activeCompanyId: CompanyMasterSid,
+  //   }
+  //   this.operationService.searchMasterJobs(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.allMasterJob = response?.data?.items || [];
+  //         this.totalLengthOfCollection = this.allMasterJob.length;
+  //         this.searchPerformed = true;
+  //         this.applySorting();
+  //       } else {
+  //         this.allMasterJob = [];
+  //         this.totalLengthOfCollection = 0;
+  //         this.searchPerformed = true;
+  //         this.appSettingService.showError('Error fetching Master Job data');
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (error) => {
+  //       console.error('Error fetching Master Job data:', error);
+  //     }
+  //   });
+  // }
 
   deleteMasterJob(MasterJobSid: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         this.operationService.deleteMasterJob(MasterJobSid).subscribe({
-          next: (response:any) => {
-            if(response.status){
+          next: (response: any) => {
+            if (response.status) {
               this.appSettingService.showSuccess('Master Job deleted successfully');
-              this.searchMasterJob();
+              this.searchMasterjob();
             } else {
               this.appSettingService.showError('Error deleting Master Job');
             }
@@ -139,92 +522,90 @@ export class MasterJobListComponent {
   }
 
   // Sorting related Function
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.applySorting();
-  }
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.applySorting();
+  // }
 
-  applySorting() {
-    this.allMasterJob.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
-      if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
-        valueA = valueA.toString().toLowerCase();
-        valueB = valueB.toString().toLowerCase();
-      }
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    })
-  }
+  // applySorting() {
+  //   this.allMasterJob.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
+  //     if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
+  //       valueA = valueA.toString().toLowerCase();
+  //       valueB = valueB.toString().toLowerCase();
+  //     }
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   })
+  // }
 
   updatePaginationData(): void {
-    this.searchMasterJob();
+    this.searchMasterjob();
   }
 
-  trackBy(index: number, item: any): number {
-    return item.MasterJobSid || index;
-  }
+  // trackBy(index: number, item: any): number {
+  //   return item.MasterJobSid || index;
+  // }
 
-  clearFilterValue() {
-    this.filterValue = '';
-    this.searchMasterJob();
-  }
-  
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  //   this.searchMasterJob();
+  // }
+
   navigateToMasterJob() {
     this.router.navigate(['operation/master-job/entry']);
   }
-  navigateToEdit(masterJobSid: number) {
-    this.router.navigate(['operation/master-job/entry', masterJobSid]);
-}
 
-  resetPage() {
-    this.page = 1;
-    this.filterValue = '';
-    this.allMasterJob = [];
-    this.searchPerformed = false;
-    this.totalLengthOfCollection = 0;
-    this.sortColumn = 'departmentName';
-    this.sortDirection = 'desc';
-  }
 
-  report(): void {
-    const formattedData = this.allMasterJob.map(item =>{
-      return {
-        ...item,
-        status : item.Status === "A" ? "Active" : "Suspended"
-      }
-    })
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'departmentName', label: 'Department' },
-        { key: 'MasterJobNumber', label: 'Master Job No.' },
-        { key: 'MasterJobDate', label: 'Master Job Date' },
-        { key: 'MBLNo', label: 'MBL No' },
-        { key: 'MBLDate', label: 'MBL Date' },
-        { key: 'POL', label: 'POL' },
-        { key: 'POD', label: 'POD' },
-        { key: 'FDC', label: 'FDC' },
-        { key: 'NoOfHouses', label: 'No of Houses' },
-        { key: 'NoOfContainers', label: 'No of Containers' },
-        { key: 'status', label: 'Status' },
-      ],
-      fileName: 'Master-Job-Report',
-      title: companyName
-    });
-  }
- 
+  // resetPage() {
+  //   this.page = 1;
+  //   this.filterValue = '';
+  //   this.allMasterJob = [];
+  //   this.searchPerformed = false;
+  //   this.totalLengthOfCollection = 0;
+  //   this.sortColumn = 'departmentName';
+  //   this.sortDirection = 'desc';
+  // }
+
+  // report(): void {
+  //   const formattedData = this.allMasterJob.map(item => {
+  //     return {
+  //       ...item,
+  //       status: item.Status === "A" ? "Active" : "Suspended"
+  //     }
+  //   })
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'departmentName', label: 'Department' },
+  //       { key: 'MasterJobNumber', label: 'Master Job No.' },
+  //       { key: 'MasterJobDate', label: 'Master Job Date' },
+  //       { key: 'MBLNo', label: 'MBL No' },
+  //       { key: 'MBLDate', label: 'MBL Date' },
+  //       { key: 'POL', label: 'POL' },
+  //       { key: 'POD', label: 'POD' },
+  //       { key: 'FDC', label: 'FDC' },
+  //       { key: 'NoOfHouses', label: 'No of Houses' },
+  //       { key: 'NoOfContainers', label: 'No of Containers' },
+  //       { key: 'status', label: 'Status' },
+  //     ],
+  //     fileName: 'Master-Job-Report',
+  //     title: companyName
+  //   });
+  // }
+
 }

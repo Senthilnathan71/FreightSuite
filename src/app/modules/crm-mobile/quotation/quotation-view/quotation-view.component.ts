@@ -92,20 +92,20 @@ export class QuotationViewComponent extends BaseListComponent implements OnInit 
         tooltip: 'View Quotation',
         // condition: (row: any) => this.hasPermission('View')
       },
-       {
-        icon: 'fas fa-file',
-        label: 'File',
-        action: 'File',
-        tooltip: 'File Quotation',
-        // condition: (row: any) => this.hasPermission('View')
-      },
-       {
-        icon: 'fas fa-book',
-        label: 'Booking',
-        action: 'booking',
-        tooltip: 'Create Booking',
-        // condition: (row: any) => this.hasPermission('View')
-      },
+      //  {
+      //   icon: 'fas fa-file',
+      //   label: 'File',
+      //   action: 'File',
+      //   tooltip: 'File Quotation',
+      //   // condition: (row: any) => this.hasPermission('View')
+      // },
+      //  {
+      //   icon: 'fas fa-book',
+      //   label: 'Booking',
+      //   action: 'booking',
+      //   tooltip: 'Create Booking',
+      //   // condition: (row: any) => this.hasPermission('View')
+      // },
     ],
     selectable: false,
     multiSelect: false,
@@ -316,11 +316,12 @@ export class QuotationViewComponent extends BaseListComponent implements OnInit 
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
       this.viewQuotation(event.row);
-    } else if (event.action === "File") {
-      this.fileBy(event.row,this.content)
-    } else if (event.action === "booking") {
-      this.goForBookingCreation(event.row)
-    }
+    } 
+    // else if (event.action === "File") {
+    //   this.fileBy(event.row,this.content)
+    // } else if (event.action === "booking") {
+    //   this.goForBookingCreation(event.row)
+    // }
   }
  
 fileBy(row: any, content: TemplateRef<any>) {

@@ -548,8 +548,8 @@
         </div>
       </div> -->
       <li>
-        <a class="dropdown-item" href="javascript:void(0)">
-          <i class="ti-user me-1 ms-1"></i> My Profile</a></li>
+        <a class="dropdown-item" href="javascript:void(0)"  title="{{ userData?.userName }}">
+          <i class="ti-user me-1 ms-1"></i> My Profile - {{ userData?.userName }}</a></li>
           <li>
   <a class="dropdown-item d-flex align-items-center" (click)="openBranchSwitchModal(branchSwitchModal)" style="cursor: pointer;">
     <i class="ti-exchange-vertical me-1 ms-1"></i> Switch Branch

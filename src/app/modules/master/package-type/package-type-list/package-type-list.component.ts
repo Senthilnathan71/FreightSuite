@@ -595,7 +595,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         this.masterService.deletePackageById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
+          this.appSettingService.showSuccess("Zone deleted successfully!");
           this.loadPackageTypes();
           this.searchPackageType();
         });

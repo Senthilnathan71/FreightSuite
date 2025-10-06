@@ -445,7 +445,7 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
 
   getLedgerList(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    this.masterService.getAllCoa(CompanyMasterSid).subscribe({
+    this.masterService.getCoaWithSubledger(CompanyMasterSid).subscribe({
       next: (data) => {
         this.ledgerList = data;
       },

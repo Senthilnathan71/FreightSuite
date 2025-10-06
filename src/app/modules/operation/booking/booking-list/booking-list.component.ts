@@ -14,7 +14,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
-
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
     selector: 'app-booking-list',
     standalone: true,
@@ -25,14 +26,16 @@ import { Observable } from 'rxjs';
         RouterModule,
         FavoriteStarComponent,
         NgxSpinnerModule,
-        ReusableTableComponent
+        ReusableTableComponent,
+         PageHeaderComponent,
+         ToolsDropdownComponent
     ],
     templateUrl: './booking-list.component.html',
     styleUrl: './booking-list.component.scss'
 })
 export class BookingListComponent extends BaseListComponent implements OnInit {
     @ViewChild('bookingTable') bookingTable!: ReusableTableComponent;
-
+    headerActions: HeaderAction[] = [];
     userData: any;
     permissions: string[] = [];
     currentMenuPermissions: any = {};
@@ -97,7 +100,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
 
         // Initialize table configuration
         this.initializeTableConfig();
-
+        this.initializeHeaderActions();
         // Initialize base component
         super.ngOnInit();
     }
@@ -112,6 +115,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                     this.permissions = Object.keys(this.currentMenuPermissions).filter(
                         key => this.currentMenuPermissions[key] === 'isTrue'
                     );
+                      this.initializeHeaderActions();
                 }
             });
         }
@@ -154,6 +158,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;
             this.applySorting();
+            this.updateHeaderActionState();
         } else {
             this.appSettingService.showError('Error searching bookings.');
             this.allItems = [];
@@ -169,6 +174,58 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         super.handleSearchError(error);
     }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchBookings();
+  }
+   onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+    onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreate()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
     // Legacy methods for template compatibility
     searchBookings() {
         this.search();

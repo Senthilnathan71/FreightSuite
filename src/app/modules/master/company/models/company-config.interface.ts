@@ -29,6 +29,11 @@ export interface CompanyConfiguration {
       position: 'before' | 'after';
       decimalPlaces: number;
     };
+    numberFormat?: {
+      decimalSeparator: string;
+      thousandSeparator: string;
+      decimalPlaces: number;
+    };
     company: {
       logo?: string;
       name: string;

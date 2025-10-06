@@ -528,7 +528,7 @@ export class MasterService {
   updateUomById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`uom/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -926,7 +926,7 @@ export class MasterService {
   updateZoneById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`zone/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -983,7 +983,7 @@ export class MasterService {
   createNewPackageType(newData: any) {
     return this.http.post<{ data: any }>('package-type/create', newData).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -994,7 +994,7 @@ export class MasterService {
       .patch<{ data: any }>(`package-type/update/${id}`, newData)
       .pipe(
         map((resp) => {
-          let response = resp.data;
+          let response = resp;
           return response;
         })
       );
@@ -2605,7 +2605,7 @@ getFieldConfiguration() {
   createMilestone(payload: any) {
     return this.http.post<{ data: any }>('milestone/create', payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -2614,7 +2614,7 @@ getFieldConfiguration() {
   updateMilestoneById(MilestoneMasterSid: number, payload: any) {
     return this.http.patch<{ data: any }>(`milestone/update/${MilestoneMasterSid}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -3294,7 +3294,14 @@ getFieldConfiguration() {
     );
   }
 
-
+getCoaWithSubledger(CompanyMasterSid: number) {
+  return this.http.post<{ data: any[] }>('coa/with-subledger', { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
       map((resp) => {
