@@ -22,7 +22,7 @@
 
         
  <div class="content-workspace">
-   <div class="workspace-content" *ngIf="selectedTab === 'Pending Rate Request'">
+   <div class="workspace-content" *ngIf="selectedTab === 'Pending Enquiry'">
      <div class="content-layout">
           <div class="col-md pb-2">
                             <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
@@ -126,114 +126,6 @@
                 </div>
    </div>
  </div>
-<!-- <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
-    <li [ngbNavItem]="1">
-        <button ngbNavLink>Pending Rate Request</button>
-        <ng-template ngbNavContent>
-            <div class="col-md pb-2">
-                            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                                <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
-                                    <div class="form-outline flex-grow-1 position-relative">
-                                        <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterValue"  aria-label="Search input">
-                                        <button 
-                                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                            tabindex="0" aria-label="Clear search"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                            onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                <div class="mt-md-0 mt-1">
-                                    <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchQuotation()">
-                                        <i class="fas fa-search me-1"></i> Search
-                                    </button>
-                                </div>
-
-                                    </div>
-                                </form>
-                            </div>
-                <div class="col-12">
-
-            <div *ngIf="isMobile; else rrdesktopTemplate">
-                <ng-container *ngTemplateOutlet="rrmobileTemplate"></ng-container>
-            </div>
-            </div>
-        </ng-template>
-    </li>
-    <li [ngbNavItem]="2">
-        <button ngbNavLink>Quotation</button>
-        <ng-template ngbNavContent>
-
-            <div class="row compact-form">
-              
-                             <div class="col-12">
-                                    <div class="row  bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between mx-1" data-bs-theme="light">
-                                        <div class="col pb-2">
-                                <h4 class="page-title mb-0">Quotation</h4>
-                            </div>
-
-                        
-                         
-                             <div class="col-md pb-2">
-                            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                                <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
-                                    <div class="form-outline flex-grow-1 position-relative">
-                                        <input name="filterEnqValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterEnqValue"  aria-label="Search input">
-                                        <button 
-                                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                            tabindex="0" aria-label="Clear search"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                            onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterEnqValue()">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                <div class="mt-md-0 mt-1">
-                                    <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchEnquiry()">
-                                        <i class="fas fa-search me-1"></i> Search
-                                    </button>
-                                </div>
-
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="col-md-auto pb-2">
-                                <form  class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                            <button type="button" class="btn btn-info btn-sm " (click)="createNew()">
-                                  <i class="fas fa-plus me-1 "[class.me-1]="!isMobile"></i>
-                                @if (!isMobile) {
-                                Create
-                                }
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  (click)="report()">
-                                    <i class="fas fa-file-alt me-1"></i> Report
-                                </button>
-
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetFilters()" >
-                                    <i class="fas fa-sync-alt me-1"></i> Reset
-                                </button>
-                                </form>
-                            </div>
-                         
-                    </div>
-                     
-                <div class="col-12">
-                    <div *ngIf="isMobile; else desktopTemplate">
-                        <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
-                    </div>
-                </div>
-                </div>
-              
-            </div>
-        </ng-template>
-    </li>
-</ul> -->
-<!-- <div [ngbNavOutlet]="nav"></div> -->
 
 <!-- MOBILE CODE -->
 <ng-template #mobileTemplate>
@@ -301,127 +193,7 @@
             (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
         </app-reusable-table>
     </div>
-    <!-- <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="">
-
-            <div class="col-12 p-0">
-           
-                <div class="">
-           
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Quote Number</th>
-                                    <th class="bg-transparent text-light" scope="col">Quote Date</th>
-                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                                    <th class="bg-transparent text-light" scope="col">Department</th>
-                                    <th class="bg-transparent text-light" scope="col">POL</th>
-                                    <th class="bg-transparent text-light" scope="col">POD</th>
-                                  
-                                    <th class="bg-transparent text-light" scope="col">Booking No.</th>
-                                    <th class="bg-transparent text-light" scope="col" >Status</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let enq of quoteItems">
-                                    <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <section class="ms-auto d-flex align-items-center gap-1 justify-content-center" >
-                                            <a class="text-info cursor-pointer" (click)="editEnquiry(enq.QuoteHeaderSid)" style="cursor: pointer;">
-                                                <i-feather name="eye" class="feather-sm"></i-feather>
-                                            </a>
-                                            <a class="mx-2 border-start ps-3 " (click)="reportAndEmailModel(enq,reportModel)" style="cursor: pointer;">
-                                                <i-feather name="file-text" class="feather-sm cursor-pointer"></i-feather>
-                                            </a>
-                                            @if(enq.authorizerStatus === 'Approved'){
-                                            <a class="mx-2 border-start ps-3" (click)="goForBookingCreation(enq)" style="cursor: pointer;"
-                                                title="Create booking">
-                                                <i class="fas fa-book cursor-pointer"></i>
-                                            </a>
-                                            }
-
-                                        </section>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.QuoteNumber }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.QuoteDate | formatDate }}
-                                        </div>
-                                    </td>
-                              
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.CustomerName }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.quoteRoute[0]?.departmentMaster?.departmentName }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.quoteRoute[0]?.PortPOL?.PortName }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.quoteRoute[0]?.PortPOD?.PortName }}
-                                        </div>
-                                    </td>
-                     
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            NA
-                                        </div>
-                                    </td>
-                            
-                                    <td >
-                                        @if(enq.authorizerStatus === "Approved"){
-                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1" >
-                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                            Approved
-                                        </div>
-                                        }@else if(enq.authorizerStatus === "Rejected"){
-                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1" >
-                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                            Rejected
-                                        </div>
-                                        }@else if(enq.authorizerStatus === "Pending"){
-                                        <div class="bg-light-info px-2 rounded-pill d-inline-flex align-items-center gap-1 " style="width: 200px;">
-                                            <span class="dofi-w-4 dofi-h-4 bg-info d-inline-block rounded"></span>
-                                            Waiting for approval
-                                        </div>
-                                        }
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-
-                    <div class="">
-                     
-                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
-                        </ngb-pagination>
-                       
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div> -->
 </ng-template>
-
 
 <!-- NO DATA TEMPLATE -->
 <ng-template #noDataTemplate>
@@ -501,11 +273,12 @@
                                 <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Rate Request No</th>
+                                    <th class="bg-transparent text-light">Date</th>
                                     <th class="bg-transparent text-light" scope="col">Customer</th>
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
-                                    <th class="bg-transparent text-light">Date</th>
+                                    
 
                                 </tr>
                             </thead>
@@ -514,13 +287,18 @@
                                     <td data-label="Action"  class="text-center"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <section class="action-items">
                                             <a class="mx-2 cursor-pointer" (click)="navigateQuotation(enq)">
-                                                <i-feather name="eye" class="feather-sm"></i-feather>
+                                                <i-feather name="file" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.EnquiryNumber }}
+                                        </div>
+                                    </td>
+                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            {{enq.EnquiryDate}}
                                         </div>
                                     </td>
                                     <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -544,11 +322,7 @@
                                         </div>
                                     </td>
 
-                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{enq.EnquiryDate}}
-                                        </div>
-                                    </td>
+                                    
 
                                 </tr>
                             </tbody>

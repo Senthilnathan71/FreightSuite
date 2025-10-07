@@ -73,9 +73,9 @@ export class QuotationViewComponent extends BaseListComponent implements OnInit 
   departments: any[] = [];
   containerTypes: any[] = [];
   slicedEnquiryItems: any[] = []
-  selectedTab = 'Pending Rate Request';
+  selectedTab = 'Pending Enquiry';
   tabs = [
-    { name: 'Pending Rate Request', icon: 'fas fa-file-signature' },
+    { name: 'Pending Enquiry', icon: 'fas fa-file-signature' },
     { name: 'Quotation', icon: 'fas fa-layer-group' }
   ];
   selectTab(tab: string) {
@@ -468,12 +468,14 @@ fileBy(row: any, content: TemplateRef<any>) {
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     this.leadService.getAllEnquiries(CompanyMasterSid, BranchMasterSid).subscribe(
       (resp: any[]) => {
+        console.log(resp,'enquiryData')
         this.enquiryItems = resp['data'] || [];
         this.enquiryData = (resp['data'] || []).map((enq) => {
           return {
             EnquiryHeaderSid: enq.EnquiryHeaderSid,
             EnquiryNumber: enq.EnquiryNumber,
             CustomerName: enq.CustomerName,
+            CustomerMasterSid: enq.CustomerMasterSid,
             departmentName: this.getDepartmentName(enq.DepartmentMasterSid),
             POLCode: this.getFormattedPort(enq.enquiryRoute[0]?.POLSid),
             PODCode: this.getFormattedPort(enq.enquiryRoute[0]?.PODSid),
@@ -570,44 +572,6 @@ fileBy(row: any, content: TemplateRef<any>) {
     this.route.navigate(['crm/quotation/entry', id])
   }
 
-  // createQuotation(enq: any) {
-  //   console.log(enq);
-
-  //   const polList = enq.enquiryRoute.map(route => route.POLSid);
-  //   const podList = enq.enquiryRoute.map(route => route.PODSid);
-
-  //   // Extract cargo types from both root-level enquiryCargo and nested enquiryCargo inside enquiryRoute
-  //   let cargoTypeList: string[] = [];
-
-  //   // Extract from root-level enquiryCargo
-  //   if (Array.isArray(enq.enquiryCargo)) {
-  //     cargoTypeList.push(...enq.enquiryCargo.map(cargo => cargo.CargoType));
-  //   }
-
-  //   // Extract from nested enquiryCargo inside enquiryRoute
-  //   enq.enquiryRoute.forEach(route => {
-  //     if (Array.isArray(route.enquiryCargo)) {
-  //       cargoTypeList.push(...route.enquiryCargo.map(cargo => cargo.CargoType));
-  //     }
-  //   });
-
-  //   // Remove duplicates (optional)
-  //   cargoTypeList = [...new Set(cargoTypeList)];
-  //   this.leadService.clearQuotationData();  // <-- Add this line to clear previous data
-
-  //   this.leadService.setQuotationData({
-  //     customerId: enq.CustomerMasterSid,
-  //     departmentId: enq.DepartmentMasterSid,
-  //     polList: polList,  // Sending as an array
-  //     podList: podList,  // Sending as an array
-  //     cargoTypeList: cargoTypeList,  // Merging from both possible sources
-  //     rateRequest: true,
-  //     active: 2
-  //   });
-
-  //   this.route.navigate(['crm/quotation/entry']);
-  // }
-
   navigateQuotation(data: any) {
     console.log(data);
     const dataId = data.EnquiryHeaderSid;
@@ -657,6 +621,8 @@ fileBy(row: any, content: TemplateRef<any>) {
         };
       });
     });
+
+    console.log(response,'responseData')
 
     const enqData = {
 

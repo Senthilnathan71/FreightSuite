@@ -249,6 +249,11 @@ export class EnquiryEntryComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
+
   checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     if (!UserMasterSid || !this.currentMenuId) {
