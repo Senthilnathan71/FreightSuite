@@ -3,68 +3,13 @@
 </ngx-spinner>
 
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
-            <div class="col pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <h5 class="page-title mb-0 text-info">Organization</h5>
-                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
-                </div>
-            </div>
-
-            <div class="col-md pb-1">
-                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-                        <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="filterValue" aria-label="Search input" (keyup.enter)="searchOrganization()">
-                            <button *ngIf="filterValue"
-                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
-                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="searchOrganization()"
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-search me-1"></i> Search
-                            </button>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-
-            <div class="col-md-auto pb-1">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-
-                    @if(hasPermission('Add')) {
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="navigateToCreateOrganization()">
-                        <i class="fas fa-plus me-1"></i> Create
-                    </button>
-                    }
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                        [disabled]="!searchPerformed">
-                        <i class="fas fa-file-alt me-1"></i> Report
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()"
-                        [disabled]="!searchPerformed">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </button>
-                </form>
-            </div>
-
-
-        </div>
-    </div>
-
+    <app-page-header 
+    [title]="'Organization'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
     <div class="col-12 px-0">
         <app-reusable-table #organizationTable [config]="tableConfig" [data]="allOrganization" [loading]="tableLoading"
             [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"

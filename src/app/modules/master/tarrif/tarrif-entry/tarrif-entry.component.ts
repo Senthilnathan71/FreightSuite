@@ -51,7 +51,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     CustomDatePipe,
     SearchableDropdown,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './tarrif-entry.component.html',
   styleUrl: './tarrif-entry.component.scss',
@@ -105,9 +106,9 @@ export class TarrifEntryComponent implements OnInit {
   auditLogModalRef!: NgbModalRef;
 
   portLookupConfig = {
-    displayFields : ['PortCode', 'PortName','Country'],
+    displayFields : ['PortCode', 'PortName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['PortName']
+    labelFields :['PortCode', 'PortName','countryName']
   };
 
   selectedTab = 'Tariff Details';
@@ -130,6 +131,11 @@ export class TarrifEntryComponent implements OnInit {
 
   cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
   serviceLevel = ['BreakBulk', 'OOG', 'Tanker']
+  CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode', 'currencyName','countryName'],
+  };
 
   constructor(
     private masterServ: MasterService,
@@ -398,45 +404,69 @@ export class TarrifEntryComponent implements OnInit {
   }
 
   loadAllFields() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    forkJoin({
-      ports: this.masterServ.getAllPorts(),
-      agents: this.masterServ.getAllAgents(CompanyMasterSid),
-      carriers: this.masterServ.getAllCarriers(CompanyMasterSid),
-      departments: this.masterServ.getAllDepartments(this.currentCompany?.CompanyMasterSid),
-      companies: this.masterServ.getAllCompanies(),
-      currencies: this.masterServ.getAllCurrencies(),
-      incos: this.masterServ.getAllInco(),
-      chargeTax: this.masterServ.getAllChargeTax(CompanyMasterSid)
-    }).subscribe(({ ports, agents, carriers, departments, companies, currencies, incos, chargeTax }) => {
-      this.departments = departments || [];
-      this.portList = (ports.data || []).map(p => ({
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  forkJoin({
+    ports: this.masterServ.getAllPorts(),
+    agents: this.masterServ.getAllAgents(CompanyMasterSid),
+    carriers: this.masterServ.getAllCarriers(CompanyMasterSid),
+    departments: this.masterServ.getAllDepartments(this.currentCompany?.CompanyMasterSid),
+    companies: this.masterServ.getAllCompanies(),
+    currencies: this.masterServ.getAllCurrencies(),
+    incos: this.masterServ.getAllInco(),
+    chargeTax: this.masterServ.getAllChargeTax(CompanyMasterSid)
+  }).subscribe(({ ports, agents, carriers, departments, companies, currencies, incos, chargeTax }) => {
+    this.departments = departments || [];
+    
+    // FIX: Properly handle port data structure
+    const rawPorts = ports.data || ports || [];
+    this.portList = rawPorts.map((p: any) => {
+      // Try different possible paths for country name
+      const countryName = 
+        p.countryName || 
+        p.countryMaster?.countryName ||
+        p.country?.countryName ||
+        p.CountryName || 
+        '';
+
+      return {
         ...p,
-        CountryName: p.countryMaster?.countryName
-      }));
+        PortCode: p.PortCode || p.portCode,
+        PortName: p.PortName || p.portName,
+        PortMasterSid: p.PortMasterSid || p.portMasterSid,
+        PortType: p.PortType || p.portType,
+        countryName: countryName
+      };
+    });
 
-      this.filteredPorts = [...this.portList];
-      this.filteredPOL = [...this.filteredPorts];
-      this.filteredPOD = [...this.filteredPorts];
+    this.filteredPorts = [...this.portList];
+    this.filteredPOL = [...this.filteredPorts];
+    this.filteredPOD = [...this.filteredPorts];
 
-      this.polList = [...this.filteredPOL];
-      this.podList = [...this.filteredPOD];
-      this.agentList = agents;
-      this.carrierList = carriers;
-      this.departmentList = departments;
-      this.companyList = companies;
-      this.currencyList = currencies;
-      this.incoList = incos;
-      this.chargeTaxes = chargeTax.data;
-      this.isDataLoading = false;
+    this.polList = [...this.filteredPOL];
+    this.podList = [...this.filteredPOD];
+    this.agentList = agents;
+    this.carrierList = carriers;
+    this.departmentList = departments;
+    this.companyList = companies;
+    
+    // FIX: Also update currency mapping for consistency
+    const rawCurrencies = currencies.data || currencies || [];
+    this.currencyList = rawCurrencies.map((c: any) => ({
+      ...c,
+      countryName: c.countryName || c?.countryMaster?.countryName || ''
+    }));
 
-      if (this.isEditMode && this.tariffData?.DepartmentMasterSid) {
-        const deptSid = Number(this.tariffData.DepartmentMasterSid);
-        const deptObj = this.departments.find(d => Number(d.DepartmentMasterSid) === deptSid) || null;
-        this.onDeptChange(deptObj ?? deptSid);
-      }
-    }, err => console.error('loadAllFields error', err));
-  }
+    this.incoList = incos;
+    this.chargeTaxes = chargeTax.data;
+    this.isDataLoading = false;
+
+    if (this.isEditMode && this.tariffData?.DepartmentMasterSid) {
+      const deptSid = Number(this.tariffData.DepartmentMasterSid);
+      const deptObj = this.departments.find(d => Number(d.DepartmentMasterSid) === deptSid) || null;
+      this.onDeptChange(deptObj ?? deptSid);
+    }
+  }, err => console.error('loadAllFields error', err));
+}
 
    openAuditLogs(modal: TemplateRef<any>) {
   if (!this.TariffHeaderSid) return;
@@ -831,14 +861,20 @@ export class TarrifEntryComponent implements OnInit {
   }
 
   handlePODChange(selectedPort: any): void {
-    if (!selectedPort) {
-      this.filteredPOL = [...this.filteredPorts];
-      return;
-    }
-    const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
-    this.tariffHeaderForm.get('PODSid')?.setValue(selectedPortSid, { emitEvent: false });
+  if (!selectedPort) {
+    this.filteredPOL = [...this.filteredPorts];
+    this.tariffHeaderForm.get('FDCSid')?.setValue(null); // Clear FDC when POD is cleared
+    return;
   }
+  
+  const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
+  this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
+  this.tariffHeaderForm.get('PODSid')?.setValue(selectedPortSid, { emitEvent: false });
+  
+  // ✅ Set FDC to the same value as POD
+  this.tariffHeaderForm.get('FDCSid')?.setValue(selectedPortSid);
+}
+
 
   updatePaginationData() {
     const start = (this.page - 1) * this.pageSize;
@@ -958,16 +994,21 @@ export class TarrifEntryComponent implements OnInit {
     this.tariffHeaderForm.get('POLTerminal')?.setValue(port.PortCode);
     this.podList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
   }
-
+  
   filterPolList(port: any) {
-    if (!port) {
-      this.tariffHeaderForm.get('PODTerminal')?.setValue('');
-      this.polList = [...(this.filteredPorts || this.portList || [])];
-      return;
-    }
-    this.tariffHeaderForm.get('PODTerminal')?.setValue(port.PortCode);
-    this.polList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
+  if (!port) {
+    this.tariffHeaderForm.get('PODTerminal')?.setValue('');
+    this.tariffHeaderForm.get('FDCSid')?.setValue(null); // Clear FDC when POD is cleared
+    this.polList = [...(this.filteredPorts || this.portList || [])];
+    return;
   }
+  
+  this.tariffHeaderForm.get('PODTerminal')?.setValue(port.PortCode);
+  this.polList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
+  
+  // ✅ Set FDC to the same value as POD
+  this.tariffHeaderForm.get('FDCSid')?.setValue(port.PortMasterSid);
+}
 
   showHeaderInfo() {
     if (!this.tariffData) return;
