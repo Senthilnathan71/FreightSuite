@@ -21,6 +21,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-tarrif-list',
   standalone: true,
@@ -34,7 +36,9 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './tarrif-list.component.html',
   styleUrl: './tarrif-list.component.scss',
@@ -60,6 +64,8 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   isFavorite: boolean = false;
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -140,10 +146,12 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadTariffs();
+    // this.loadTariffs();
 
     // Initialize table configuration
     this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
 
     // Initialize base component
     super.ngOnInit();
@@ -164,6 +172,8 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
             console.log(this.permissions);
+           this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
           },
         });
     }
@@ -194,26 +204,31 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
   }
 
   protected processSearchResults(response: any): void {
-    this.tableLoading = false;
-    this.spinner.hide();
-    if (response.status) {
+  this.tableLoading = false;
+  this.spinner.hide();
+  if (response.status) {
 
-      this.allItems = response.data.items.map(item => ({
-        ...item,
-        Dept: item.departmentMaster?.departmentName,
-        carrier: item.customerCarrier?.CustomerName,
-        agent: item.customerAgent?.CustomerName,
-        status: item.status === 'A' ? 'Active' : 'Suspended',
-        EffectiveDate: this.datePipe.transform(item?.EffectiveDate)
-      }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
-    } else {
-      this.appSettingService.showError('Error searching bookings.');
-      this.allItems = [];
-      this.totalLengthOfCollection = 0;
-    }
+    this.allItems = response.data.items.map(item => ({
+      ...item,
+      Dept: item.departmentMaster?.departmentName,
+      carrier: item.customerCarrier?.CustomerName,
+      agent: item.customerAgent?.CustomerName,
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      // EffectiveDate: this.datePipe.transform(item?.EffectiveDate),
+      // add these two so table can show POL / POD names
+      POL: item.POLTerminal || item.POL || item.PolTerminal || '',
+      POD: item.PODTerminal || item.POD || item.PodTerminal || ''
+    }));
+    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.applySorting();
+     this.updateHeaderActionState();
+  } else {
+    this.appSettingService.showError('Error searching bookings.');
+    this.allItems = [];
+    this.totalLengthOfCollection = 0;
   }
+}
+
 
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
@@ -227,7 +242,90 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
   searchTarrif() {
     this.search();
   }
+   onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.search();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
 
+   initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateTariff();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+ 
+private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }
@@ -250,7 +348,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
           (resp: any) => {
             this.appSettingServ.showSuccess("Tariff deleted successfully!");
             // this.router.navigate([`master/tarrif/list`]);
-            this.loadTariffs()
+            // this.loadTariffs()
             this.searchTarrif();
           });
       }
@@ -259,69 +357,70 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
 
   // Table configuration
   private initializeTableConfig(): void {
-    this.tableConfig.columns = [
-      {
-        key: 'Dept',
-        label: 'Department',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'p',
-        label: 'POL',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'POD',
-        label: 'POD',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'carrier',
-        label: 'Carrier',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'agent',
-        label: 'Agent',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        cellClass: 'vessel-column'
-      },
-      {
-        key: 'EffectiveDate',
-        label: 'Effective From',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'status',
-        label: 'Status',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        template: 'status',
-        width: '100px',
-        dataType: 'string',
-        cellClass: 'status-column'
-      }
-    ];
-  }
+  this.tableConfig.columns = [
+    {
+      key: 'Dept',
+      label: 'Department',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'POL',
+      label: 'POL',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'POD',
+      label: 'POD',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'carrier',
+      label: 'Carrier',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
+    {
+      key: 'agent',
+      label: 'Agent',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string',
+      cellClass: 'vessel-column'
+    },
+    // {
+    //   key: 'EffectiveDate',
+    //   label: 'Effective From',
+    //   sortable: true,
+    //   filterable: true,
+    //   visible: true,
+    //   dataType: 'string'
+    // },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      template: 'status',
+      width: '100px',
+      dataType: 'string',
+      cellClass: 'status-column'
+    }
+  ];
+}
+
 
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
@@ -369,37 +468,42 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  loadTariffs(): void {
-    this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId: CompanyMasterSid,
-    };
+//   loadTariffs(): void {
+//     this.spinner.show();
+//     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+//     const params = {
+//       search: this.filterValue ? this.filterValue.trim() : '',
+//       page: this.page,
+//       pageSize: this.pageSize,
+//       activeCompanyId: CompanyMasterSid,
+//     };
 
-    this.masterServ.searchTariffList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.tariffList = response.data.items;
-          this.results = [...this.tariffList];
-          // this.totalNumberOfCollection = response.data.totalCount;
-          // this.applySorting();
-          this.searched = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching tariffs:', err);
-        this.tariffList = [];
-        this.results = [];
-        // this.totalNumberOfCollection = 0;
-      },
-    });
-  }
+//     this.masterServ.searchTariffList(params).subscribe({
+//       next: (response) => {
+//         if (response.status) {
+//           this.tariffList = response.data.items.map(item => ({
+//   ...item,
+//   POL: item.POLTerminal || '',
+//   POD: item.PODTerminal || ''
+// }));
+// this.results = [...this.tariffList];
+
+//           // this.totalNumberOfCollection = response.data.totalCount;
+//           // this.applySorting();
+//           this.searched = true;
+//         } else {
+//           this.appSettingService.showError(response.message);
+//         }
+//         this.spinner.hide();
+//       },
+//       error: (err) => {
+//         console.error('Error fetching tariffs:', err);
+//         this.tariffList = [];
+//         this.results = [];
+//         // this.totalNumberOfCollection = 0;
+//       },
+//     });
+//   }
 
   onSearch(event: { type: string, value: string }) {
     this.searchType = event.type;
@@ -429,7 +533,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
   updatePaginationData() {
     let start = (this.page - 1) * this.pageSize;
     let end = start + this.pageSize;
-    this.loadTariffs();
+    // this.loadTariffs();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -451,7 +555,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
     // this.totalNumberOfCollection = 0;
     this.sortColumn = 'POLTerminal';
     this.sortDirection = 'asc';
-    this.loadTariffs();
+    // this.loadTariffs();
   }
 
 

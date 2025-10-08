@@ -199,34 +199,32 @@
                         </div>
                     </aside>
                     <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('FDCSid')?.value">
-                            <!-- <dofi-searchable-dropdown 
-  [items]="filteredPorts" 
+  <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('FDCSid')?.value">
+    <!-- <ng-select 
+      class="ng-select" 
+      formControlName="FDCSid"
+      [disabled]="!!tariffHeaderForm.get('PODSid')?.value" 
+      [items]="portList" 
+      bindLabel="PortCode" 
+      bindValue="PortMasterSid">
+      
+     
+    </ng-select> -->
+    <dofi-searchable-dropdown 
+  [items]="portList" 
   formControlName="FDCSid"
-  
-[displayFields]="['PortCode', 'PortName','CountryName']" 
-  [displayLabels]="['Code', 'Name','Name']" 
-  [labelFields]="['PortCode','PortName','CountryName']"
+  [placeholder]="''"
+  [disabled]="!!tariffHeaderForm.get('PODSid')?.value" 
+  [displayFields]="portLookupConfig.displayFields" 
+  [displayLabels]="portLookupConfig.displayLabels" 
+  [labelFields]="portLookupConfig.labelFields"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading">
-</dofi-searchable-dropdown> -->
-                            <ng-select class="ng-select" formControlName="FDCSid">
-                                <!-- <ng-option value="">Select FDC</ng-option> -->
-                                @for (port of portList; track port) {
-                                <ng-option [value]="port.PortMasterSid"> {{port.PortCode}}-{{ port.PortName }} 
-                                   </ng-option>
-                                }
-                            </ng-select>
-                            <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
-                            @if(tariffHeaderForm.get('FDCSid')?.touched && tariffHeaderForm.get('FDCSid')?.errors){
-                            <div class="error-message">
-                                @if(tariffHeaderForm.get('FDCSid')?.hasError('required')){
-                                <span>Required</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
+</dofi-searchable-dropdown>
+
+    <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
+  </div>
+</aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('ViaPortSid')?.value">
                             <dofi-searchable-dropdown 
@@ -822,7 +820,7 @@
                                     <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="">
                                         <!-- <ng-option value="">Select UOM</ng-option> -->
                                         @for(uom of UOMList; track uom){
-                                        <ng-option [value]="uom.UOMMasterSid">{{uom.UOMName}}</ng-option>
+                                        <ng-option [value]="uom.UOMMasterSid">{{uom.UOMCode}}</ng-option>
                                         }
                                     </ng-select>
                                     <label for="uom" class="input-label">UOM <span
@@ -840,13 +838,17 @@
                             
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailSaleCurrency')?.value">
-                                    <ng-select class="ng-select" formControlName="detailSaleCurrency"placeholder="">
-                                        <!-- <ng-option value="">Select Sale Currency</ng-option> -->
+                                    <!-- <ng-select class="ng-select" formControlName="detailSaleCurrency"placeholder="">
+                                        
                                         @for (currency of currencyList; track currency) {
                                         <ng-option [value]="currency.CurrencyMasterSid">{{ currency.currencyName
                                             }}</ng-option>
                                         }
-                                    </ng-select>
+                                    </ng-select> -->
+                                    <dofi-searchable-dropdown [items]="currencyList"   formControlName="detailSaleCurrency" [placeholder]="''"
+                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
+                                        </dofi-searchable-dropdown>
                                     <label for="text-input" class="input-label">Sale Currency <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailSaleCurrency')?.touched &&
@@ -879,14 +881,18 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailBuyCurrency')?.value">
-                                    <ng-select class="ng-select" formControlName="detailBuyCurrency"
-                                    placeholder="">
-                                        <ng-option value="">Select Buy Currency</ng-option>
+                                    <!-- <ng-select class="ng-select" formControlName="detailBuyCurrency"
+                                    placeholder=""> -->
+                                    <dofi-searchable-dropdown [items]="currencyList"   formControlName="detailBuyCurrency" [placeholder]="''"
+                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
+                                        </dofi-searchable-dropdown>
+                                        <!-- <ng-option value="">Select Buy Currency</ng-option>
                                         @for (currency of currencyList; track currency) {
                                         <ng-option [value]="currency.CurrencyMasterSid">{{ currency.currencyName
                                             }}</ng-option>
                                         }
-                                    </ng-select>
+                                    </ng-select> -->
                                     <label for="text-input" class="input-label">Buy Currency <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailBuyCurrency')?.touched &&

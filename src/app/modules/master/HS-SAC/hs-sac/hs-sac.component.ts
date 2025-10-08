@@ -106,7 +106,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         label: 'View',
         action: 'view',
         tooltip: 'View Ha-sac',
-        condition: (row: any) => this.hasPermission('View')
+        // condition: (row: any) => this.hasPermission('View')
       },
         {
         icon: 'fas fa-trash',

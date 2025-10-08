@@ -43,7 +43,7 @@ import { MasterService } from '../../master.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { combineLatest, forkJoin, Subject } from 'rxjs';
+import {  forkJoin, Subject } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -60,7 +60,7 @@ import { PasswordValidators } from 'src/app/core/ValidationFn/password.validator
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
-import { debounceTime, distinctUntilChanged, switchMap, finalize, startWith, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, startWith, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-organization-entry',
@@ -100,18 +100,15 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   page = 1;
   pageSize = 5;
   totalLengthOfBranch: number = 0;
-  // totalLengthOfBranchContact: number = 0;
-  // totalLengthOfBranchEmail: number = 0;
-  // totalLengthOfBranchLogin: number = 0;
-  displayedCustomerTypes: any[] = [];
+    displayedCustomerTypes: any[] = [];
   extraCustomerTypesCount = 0;
   currentTaxIdLabel: string = 'PAN/VAT Number';
-  duplicateMessage: string = '';
-  activeBranchIds: string[] = [];
+   activeBranchIds: string[] = [];
 
 
 
-
+  isCustomerSaved = false;
+  showAdditionalTabs = false;
   selectedTab = 'Party';
   tabs = [
     { name: 'Party', icon: 'fas fa-user-tie' },
@@ -147,7 +144,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     const hasAny = Object.keys(cur).length > 0;
     ctrl.setErrors(hasAny ? cur : null);
   }
-  isCheckingDuplicates = false;
+  
 
 
   // Mode arrays
@@ -183,6 +180,11 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   airlineNumber: string = '';
   airlineCode: string = '';
   isAirlineSelected: boolean = false;
+  customerSearchResults: any[] = [];
+isSearchingCustomers = false;
+showCustomerDropdown = false;
+selectedCustomerIds: number[] = [];
+  
 
   selectedStatus: string[] = [];
 
@@ -417,8 +419,26 @@ onCountryChange(): void {
       console.error('No user profile found in localStorage');
     }
     if (!this.isEditMode) {
-      this.selectedTab = 'Party';
-    }
+    // For new customer, only show Party and Branch tabs initially
+    this.tabs = [
+      { name: 'Party', icon: 'fas fa-address-card' },
+      { name: 'Branch', icon: 'fas fa-code-branch' }
+    ];
+    this.showAdditionalTabs = false;
+    this.selectedTab = 'Party';
+  } else {
+    // For edit mode, show all tabs immediately
+    this.tabs = [
+      { name: 'Party', icon: 'fas fa-address-card' },
+      { name: 'Branch', icon: 'fas fa-code-branch' },
+      { name: 'Salesman', icon: 'fas fa-flag-checkered' },
+      { name: 'Email', icon: 'fas fa-envelope' },
+      { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+      { name: 'Milestone', icon: 'fas fa-rupee-sign' },
+    ];
+    this.showAdditionalTabs = true;
+    this.selectedTab = 'Party';
+  }
 
 
     // ✅ Initial data loads
@@ -430,14 +450,7 @@ onCountryChange(): void {
     this.loadMenus();
 
     // ✅ Initialize tabs for both new and edit modes
-    this.tabs = [
-      { name: 'Party', icon: 'fas fa-address-card' },
-      { name: 'Branch', icon: 'fas fa-code-branch' },
-      { name: 'Salesman', icon: 'fas fa-flag-checkered' },
-      { name: 'Email', icon: 'fas fa-envelope' },
-      { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
-      { name: 'Milestone', icon: 'fas fa-rupee-sign' },
-    ];
+   
 
     // this.loadCustomerBranch();
 
@@ -447,6 +460,17 @@ onCountryChange(): void {
       if (this.CustomerMasterSid) {
         this.isEditMode = true;
         this.customerForm.get('status')?.enable();
+        this.showAdditionalTabs = true;
+      
+      // Update tabs to show all sections in edit mode
+      this.tabs = [
+        { name: 'Party', icon: 'fas fa-address-card' },
+        { name: 'Branch', icon: 'fas fa-code-branch' },
+        { name: 'Salesman', icon: 'fas fa-flag-checkered' },
+        { name: 'Email', icon: 'fas fa-envelope' },
+        { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+        { name: 'Milestone', icon: 'fas fa-rupee-sign' },
+      ];
         this.loadCustomerData(this.CustomerMasterSid);
         this.loadCustomerMilestones();
         this.getAllSpCustomerBranch();
@@ -497,48 +521,9 @@ onCountryChange(): void {
     });
 
 
-    const nameCtrl = this.customerForm.get('CustomerName');
-    const codeCtrl = this.customerForm.get('CustomerShortCode');
+   
 
-    combineLatest([
-      nameCtrl!.valueChanges.pipe(startWith(nameCtrl!.value)),
-      codeCtrl!.valueChanges.pipe(startWith(codeCtrl!.value)),
-    ])
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        switchMap(([name, code]) => {
-          // Skip API when both empty
-          if ((!name || String(name).trim() === '') && (!code || String(code).trim() === '')) {
-            this.setFieldErrorFlag(nameCtrl, 'customerNameTaken', false);
-            this.setFieldErrorFlag(codeCtrl, 'customerCodeTaken', false);
-            return [];
-          }
-
-          const payload = {
-            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-            customerName: name ? String(name).trim() : undefined,
-            customerShortCode: code ? String(code).trim() : undefined,
-            excludeCustomerMasterSid: this.isEditMode ? this.CustomerMasterSid : undefined,
-          };
-
-          this.isCheckingDuplicates = true;
-          return this.masterService.checkCustomerUnique(payload).pipe(
-            finalize(() => (this.isCheckingDuplicates = false))
-          );
-        })
-      )
-      .subscribe((res: any) => {
-        if (!res) return;
-
-        this.setFieldErrorFlag(nameCtrl, 'customerNameTaken', !!res.nameTaken);
-        this.setFieldErrorFlag(codeCtrl, 'customerCodeTaken', !!res.codeTaken);
-        if (res.nameTaken || res.codeTaken) {
-          this.duplicateMessage = res.message;  // from backend
-        } else {
-          this.duplicateMessage = '';
-        }
-      });
+    
   }
 
   // initializeBranchFormArray(): void {
@@ -566,8 +551,12 @@ onCountryChange(): void {
   }
 
   selectTab(tabName: string) {
-    this.selectedTab = tabName;
+  if (!this.shouldShowTab(tabName)) {
+    this.appSettingService.showWarning('Please save customer and branch details first to access this section.');
+    return;
   }
+  this.selectedTab = tabName;
+}
 
   // Toggle branch accordion
  toggleBranch(branchIndex: number) {
@@ -605,6 +594,76 @@ onCountryChange(): void {
     const emailForm = this.getEmails(branchIndex).at(emailIndex);
     emailForm.get('DepartmentMasterSid')?.setValue(selectedDepartments);
   }
+  onCustomerNameInput(event: any): void {
+  const searchTerm = event.target?.value || '';
+  
+  if (!searchTerm || searchTerm.length < 10) {
+    this.customerSearchResults = [];
+    this.showCustomerDropdown = false;
+    return;
+  }
+
+  this.isSearchingCustomers = true;
+  this.showCustomerDropdown = true;
+  
+  const payload = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    searchTerm: searchTerm,
+    excludeCustomerMasterSids: this.selectedCustomerIds
+  };
+
+  console.log('Searching customers with:', payload);
+
+  this.masterService.searchCustomersByName(payload)
+    .pipe(
+      debounceTime(300),
+      takeUntil(this.destroy$)
+    )
+    .subscribe({
+      next: (resp: any) => {
+        this.isSearchingCustomers = false;
+        console.log('Search response:', resp);
+        
+        if (resp && resp.status !== false) {
+          this.customerSearchResults = resp.data || [];
+        } else {
+          this.customerSearchResults = [];
+          console.error('Search API returned error:', resp?.message);
+        }
+      },
+      error: (error) => {
+        this.isSearchingCustomers = false;
+        this.customerSearchResults = [];
+        console.error('Error searching customers:', error);
+        this.appSettingService.showError('Error searching customers');
+      }
+    });
+}
+// Method to select a customer from dropdown
+selectCustomer(customer: any): void {
+  if (customer) {
+    this.customerForm.get('CustomerName')?.setValue(customer.CustomerName);
+    this.selectedCustomerIds.push(customer.CustomerMasterSid);
+    this.showCustomerDropdown = false;
+    this.customerSearchResults = [];
+    
+    // Generate short code when customer is selected
+    this.generateCustomerShortCode();
+  }
+}
+
+// Method to hide dropdown
+hideCustomerDropdown(): void {
+  setTimeout(() => {
+    this.showCustomerDropdown = false;
+  }, 200);
+}
+
+// Method to clear search
+clearCustomerSearch(): void {
+  this.customerSearchResults = [];
+  this.showCustomerDropdown = false;
+}
 
   // Get logins for a specific branch
   getLogins(branchIndex: number): FormArray {
@@ -764,17 +823,7 @@ onCountryChange(): void {
     });
     this.getContacts(branchIndex).push(contactForm);
   }
-  //   initCustomerBranchEmailForm() {
-  //   this.customerBranchEmailForm = this.fb.group({
-  //     CustomerBranchSid: [''],
-  //     MenuMasterSid: ['', [Validators.required]],
-  //     DepartmentMasterSid: [[], [Validators.required]],
-  //     BranchName: [{ value: this.customerBranchName || '', disabled: true }],
-  //     Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
-  //     CCemail: ['', [EmailValidators.multipleEmails()]],
-  //   });
-  // }
-
+ 
   // Add email to branch
   addEmail(branchIndex: number) {
     const emailForm = this.fb.group({
@@ -1960,24 +2009,7 @@ loadCustomerData(customerId: number) {
     this.cdRef.markForCheck();
   }
 
-  //  loadCustomerSalesTeam() {
-  //   this.masterService.getCustomerSalesTeam(this.CustomerMasterSid).subscribe((resp: any) => {
-  //     if (resp.status) {
-  //       const salesTeamData = resp.data || [];
-  //       this.selectedCustomerBranch = salesTeamData.flatMap(st => st.branches || []);
-  //       console.log(this.selectedCustomerBranch);
-  //       this.cusSalesteam.clear();
-  //       salesTeamData.forEach(salesteam => {
-  //         this.cusSalesteam.push(this.createSalesTeamFormGroup(salesteam));
-  //       });
-  //       this.updateSalesTeamPagination();
-  //     } else {
-  //       this.appSettingService.showError('Error loading Customer Sales Team');
-  //     }
-  //   });
-  // }
-
-
+ 
   // Customer Milestone Related Codes
   loadCustomerMilestones() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -2008,45 +2040,7 @@ loadCustomerData(customerId: number) {
       }
     );
   }
-  // loadCustomerMilestoneData() {
-  //   if (!this.CustomerMasterSid) {
-  //     console.log('No CustomerMasterSid available for loading customer milestones');
-  //     return;
-  //   }
-
-  //   console.log('Loading customer milestones for CustomerMasterSid:', this.CustomerMasterSid);
-
-  //   this.masterService.getAllCustomerMilestone(this.CustomerMasterSid).subscribe(
-  //     (resp: any) => {
-  //       console.log('Customer milestones API response:', resp);
-  //       if (resp.status) {
-  //         this.cusMilestoneList = resp.data || [];
-  //         console.log('Customer milestones loaded:', this.cusMilestoneList.length, 'items');
-
-  //         // Clear and rebuild the form array
-  //         this.cusMilestone.clear();
-
-  //         this.cusMilestoneList.forEach(milestone => {
-  //           const formWithData = this.createCusMilestoneFormGrp(milestone);
-  //           this.cusMilestone.push(formWithData);
-  //         });
-
-  //         this.updateCustomerMilestonePagination();
-  //         this.cdRef.markForCheck();
-
-  //         console.log('Form array after loading:', this.cusMilestone.length, 'items');
-  //       } else {
-  //         console.error('Error loading customer milestones:', resp.message);
-  //         this.appSettingService.showError('Error loading Customer Milestones: ' + (resp.message || 'Unknown error'));
-  //       }
-  //     },
-  //     (error) => {
-  //       console.error('Error in customer milestones API call:', error);
-  //       this.appSettingService.showError('Error loading Customer Milestones');
-  //     }
-  //   );
-  // }
-
+ 
   loadAllSpfields() {
     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     forkJoin({
@@ -2123,54 +2117,6 @@ loadCustomerData(customerId: number) {
       );
   }
 
-
-  //    saveAllCusMilestones() {
-  //   if (this.cusMilestone.invalid) {
-  //     this.appSettingService.showWarning('Please fill all the required fields correctly');
-  //     this.cusMilestone.controls.forEach((group: FormGroup) => {
-  //       group.markAllAsTouched();
-  //       group.updateValueAndValidity();
-  //     });
-  //     return;
-  //   }
-
-  //   const formValue = this.cusMilestone.value;
-  //   const currentUserEmail = this.userData?.userEmail;
-
-  //   const payload = formValue.map(form => {
-  //     return {
-  //       CustomerMilestoneSid: form.CustomerMilestoneSid,
-  //       CustomerMasterSid: this.CustomerMasterSid,
-  //       MilestoneMasterSid: form.MilestoneMasterSid,
-  //       UpdateType: form.UpdateType,
-  //       ContactInfo: form.ContactInfo,
-  //       EffectiveFrom: form.EffectiveFrom,
-  //       Status: form.Status === "Active" ? "A" : "S",
-  //       createdBy: form.CustomerMilestoneSid ? undefined : currentUserEmail,
-  //       updatedBy: form.CustomerMilestoneSid ? currentUserEmail : undefined
-  //     };
-  //   });
-
-  //   console.log('Saving milestones payload:', payload);
-
-  //   this.masterService.saveAllCustomerMilestones(payload).subscribe(
-  //     (resp: any) => {
-  //       if (resp.status) {
-  //         this.appSettingService.showSuccess('Milestones saved successfully');
-  //         this.loadCustomerMilestones(); // Reload to get updated data
-  //       } else {
-  //         this.appSettingService.showError('Error saving Milestones: ' + (resp.message || 'Unknown error'));
-  //       }
-  //     },
-  //     (error) => {
-  //       console.error('Error saving Milestones', error);
-  //       this.appSettingService.showError('Error saving Milestones');
-  //     }
-  //   );
-  // }
-
-
-
   // Add the remaining methods that are referenced in the template
   get cusMilestone(): FormArray {
     return this.customerForm.get('cusMilestone') as FormArray;
@@ -2230,65 +2176,7 @@ loadCustomerData(customerId: number) {
 
     this.cdRef.markForCheck();
   }
-  //   saveAllCustomerSalesTeam() {
-  //   if (this.cusSalesteam.invalid) {
-  //     this.appSettingService.showWarning('Please fill all required fields in the sales team section.');
-  //     this.cusSalesteam.markAllAsTouched();
-  //     return;
-  //   }
-
-  //   const currentUserEmail = this.userData?.userEmail;
-  //   const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-
-  //   const payload = this.cusSalesteam.value.map(salesteam => {
-  //     const branches = (salesteam.branches || []).map(branch => {
-  //       const branchSid = branch.customerBranchSid ?? branch;
-
-  //       const saleBranchFromResp = this.selectedCustomerBranch.find(
-  //         b => b.customerBranchSid === branchSid
-  //       );
-
-  //       return {
-  //         id: saleBranchFromResp ? saleBranchFromResp.id : null,
-  //         customerBranchSid: branchSid
-  //       };
-  //     });
-
-  //     return {
-  //       CustomerSalesSid: salesteam.CustomerSalesSid,
-  //       CompanyMasterSid: companyMasterSid,
-  //       CustomerMasterSid: this.CustomerMasterSid,
-  //       DepartmentMasterSid : salesteam.DepartmentMasterSid,
-  //       Salesman: salesteam.Salesman,
-  //       CSPerson: salesteam.CSPerson,
-  //       DocPerson: salesteam.DocPerson,
-  //       EffectiveFrom: salesteam.EffectiveFrom,
-  //       status: salesteam.status === 'Active' ? 'A' : 'S',
-  //       createdBy: salesteam.CustomerSalesSid ? undefined : currentUserEmail,
-  //       updatedBy: salesteam.CustomerSalesSid ? currentUserEmail : undefined,
-  //       branches: branches
-  //     };
-  //   });
-
-  //   console.log('Payload to save:', payload);
-
-  //   this.masterService.saveCustomerSalesTeam(payload).subscribe(
-  //     (resp: any) => {
-  //       if (resp.status) {
-  //         this.appSettingService.showSuccess('Sales team saved successfully');
-  //         // this.loadCustomerSalesTeam();
-  //       } else {
-  //         this.appSettingService.showError('Error saving sales team');
-  //       }
-  //     },
-  //     (error) => {
-  //       console.error('Error saving sales team', error);
-  //       this.appSettingService.showError('An unexpected error occurred.');
-  //     }
-  //   );
-  // }
-
-
+  
   findSalesmanName(id: number) {
     if (!this.salesPersonList) {
       return;
@@ -3351,6 +3239,18 @@ onPanAvailableChange(): void {
         next: (resp: any) => {
           if (resp.status) {
             this.CustomerMasterSid = resp.data.CustomerMasterSid;
+            this.isCustomerSaved = true;
+            this.showAdditionalTabs = true;
+          
+          // Update tabs to show additional sections
+          this.tabs = [
+            { name: 'Party', icon: 'fas fa-address-card' },
+            { name: 'Branch', icon: 'fas fa-code-branch' },
+            { name: 'Salesman', icon: 'fas fa-flag-checkered' },
+            { name: 'Email', icon: 'fas fa-envelope' },
+            { name: 'eLogin', icon: 'fas fa-sign-in-alt' },
+            { name: 'Milestone', icon: 'fas fa-rupee-sign' },
+          ];
             this.appSettingService.showSuccess('Customer created successfully');
             this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
             resolve();
@@ -3368,7 +3268,14 @@ onPanAvailableChange(): void {
       });
     });
   }
-
+  shouldShowTab(tabName: string): boolean {
+  if (tabName === 'Party' || tabName === 'Branch') {
+    return true; // Always show Party and Branch tabs
+  }
+  
+  // For other tabs, only show if customer is saved (either new customer saved or editing existing)
+  return this.isEditMode || this.showAdditionalTabs;
+}
   // Update customer with all data
   private async updateCustomerWithAllData(payload: any): Promise<void> {
     return new Promise(async (resolve, reject) => {
@@ -3592,43 +3499,13 @@ onPanAvailableChange(): void {
   }
 
 
-  // Add other utility methods
-  // getStateName(stateSid: number): string {
-  //   if (!this.stateList) return '';
-  //   const state = this.stateList.find((s) => s.StateMasterSid === stateSid);
-  //   return state ? state.stateName : '';
-  // }
-
   getCityName(citySid: number): string {
     if (!this.cityList) return '';
     const city = this.cityList.find((c) => c.CityMasterSid === citySid);
     return city ? city.cityName : '';
   }
 
-  // getBranchName(CustomerBranchSid: number): string {
-  //   if (!this.customerBranchData) return '';
-  //   return (
-  //     this.customerBranchData.find(
-  //       (c) => c.CustomerBranchSid === CustomerBranchSid
-  //     )?.BranchName || ''
-  //   );
-  // }
-
-  // getMenuName(menuSid: number): string {
-  //   if (!this.menuList) return '';
-  //   const menu = this.menuList.find(m => m.MenuMasterSid === menuSid);
-  //   return menu ? menu.MenuName : '';
-  // }
-
-  // getDepartmentName(DepartmentMasterSid: number): string {
-  //   if (!this.departmentList) return '';
-  //   return (
-  //     this.departmentList.find(
-  //       (c) => c.DepartmentMasterSid === DepartmentMasterSid
-  //     )?.departmentName || ''
-  //   );
-  // }
-
+ 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

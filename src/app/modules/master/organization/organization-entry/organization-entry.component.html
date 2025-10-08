@@ -30,12 +30,12 @@
             <i class="fas fa-sync-alt me-1"></i>
             Reset
           </button>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-            [disabled]="btnDisable || customerForm.invalid">
-            <i class="fas me-1" [class.fa-save]="!btnDisable" [class.fa-spinner]="btnDisable"
-              [class.fa-spin]="btnDisable"></i>
-            {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
-          </button>
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+        [disabled]="btnDisable || customerForm.invalid || branches.invalid">
+  <i class="fas me-1" [class.fa-save]="!btnDisable" [class.fa-spinner]="btnDisable"
+    [class.fa-spin]="btnDisable"></i>
+  {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+</button>
           <div ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
@@ -59,39 +59,48 @@
 
   <!-- Tabs -->
   <div class="nav-pills-container pt-1">
-    <div class="nav-pills">
-      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-        (click)="selectTab(tab.name)">
-        <div class="pill-icon">
-          <i [class]="tab.icon"></i>
-        </div>
-        <span class="pill-label">{{ tab.name }}</span>
-        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+  <div class="nav-pills">
+    <div class="nav-pill" *ngFor="let tab of tabs" 
+         [class.active]="selectedTab === tab.name"
+         [class.disabled]="!shouldShowTab(tab.name)"
+         (click)="selectTab(tab.name)">
+      <div class="pill-icon">
+        <i [class]="tab.icon"></i>
       </div>
+      <span class="pill-label">{{ tab.name }}</span>
+      <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
     </div>
   </div>
+</div>
 
   <!-- Tab Content -->
-  <div class="content-workspace">
-    <div class="workspace-content" [hidden]="selectedTab !== 'Party'">
-      <ng-template *ngTemplateOutlet="partyEntry"></ng-template>
-    </div>
-    <div class="workspace-content" [hidden]="selectedTab !== 'Branch'">
-      <ng-template *ngTemplateOutlet="branchList"></ng-template>
-    </div>
+<!-- Tab Content -->
+<div class="content-workspace">
+  <!-- Party Tab - Always Visible -->
+  <div class="workspace-content" [hidden]="selectedTab !== 'Party'">
+    <ng-template *ngTemplateOutlet="partyEntry"></ng-template>
+  </div>
+  
+  <!-- Branch Tab - Always Visible -->
+  <div class="workspace-content" [hidden]="selectedTab !== 'Branch'">
+    <ng-template *ngTemplateOutlet="branchList"></ng-template>
+  </div>
 
-    <div class="workspace-content" [hidden]="selectedTab !== 'Email'">
-      <ng-template *ngTemplateOutlet="emailList"></ng-template>
-    </div>
-    <div class="workspace-content" [hidden]="selectedTab !== 'eLogin'">
-      <ng-template *ngTemplateOutlet="eLoginList"></ng-template>
-    </div>
-    <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
-      <ng-template *ngTemplateOutlet="milestoneList"></ng-template>
-    </div>
-    <div class="workspace-content" [hidden]="selectedTab !== 'Salesman'">
-      <ng-template *ngTemplateOutlet="salesmanList"></ng-template>
-    </div>
+  <!-- Additional Tabs - Show in edit mode or after save -->
+  <div class="workspace-content" [hidden]="selectedTab !== 'Salesman'" *ngIf="shouldShowTab('Salesman')">
+    <ng-template *ngTemplateOutlet="salesmanList"></ng-template>
+  </div>
+  
+  <div class="workspace-content" [hidden]="selectedTab !== 'Email'" *ngIf="shouldShowTab('Email')">
+    <ng-template *ngTemplateOutlet="emailList"></ng-template>
+  </div>
+  
+  <div class="workspace-content" [hidden]="selectedTab !== 'eLogin'" *ngIf="shouldShowTab('eLogin')">
+    <ng-template *ngTemplateOutlet="eLoginList"></ng-template>
+  </div>
+  
+  <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'" *ngIf="shouldShowTab('Milestone')">
+    <ng-template *ngTemplateOutlet="milestoneList"></ng-template>
   </div>
 </div>
 
@@ -123,18 +132,48 @@
           </aside>
 
           <aside class="col-md-4">
-            <div class="custom-form-group">
-              <input type="text" id="CustomerName" formControlName="CustomerName" placeholder=""
-                class="custom-input-field sm" [onlyText]="100" />
-              <label for="CustomerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
+  <div class="custom-form-group" style="position: relative;">
+    <input 
+      type="text" 
+      id="CustomerName" 
+      formControlName="CustomerName" 
+      placeholder=""
+      class="custom-input-field sm" 
+      [onlyText]="100"
+      (input)="onCustomerNameInput($event)"
+      (blur)="hideCustomerDropdown()"
+      (focus)="onCustomerNameInput($event)" />
+    <label for="CustomerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
 
-              <div class="error-message">
-                @if (customerForm.get('CustomerName')?.hasError('customerNameTaken')) {
-                <span>Customer name already exists</span>
-                }
-              </div>
-            </div>
-          </aside>
+    <!-- Customer Search Dropdown -->
+    <div *ngIf="showCustomerDropdown && customerSearchResults.length > 0" 
+         class="customer-search-dropdown">
+      <div *ngIf="isSearchingCustomers" class="dropdown-item text-center">
+        <div class="spinner-border spinner-border-sm" role="status">
+         
+        </div>
+        
+      </div>
+      
+      <div *ngFor="let customer of customerSearchResults" 
+           class="dropdown-item cursor-pointer"
+           (mousedown)="selectCustomer(customer)">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="customer-name">{{ customer.CustomerName }}</span>
+          <small class="text-muted">{{ customer.CustomerShortCode }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- No results message -->
+    <div *ngIf="showCustomerDropdown && !isSearchingCustomers && customerSearchResults.length === 0" 
+         class="customer-search-dropdown">
+      <div class="dropdown-item text-muted text-center">
+        No customers found
+      </div>
+    </div>
+  </div>
+</aside>
 
           <aside class="col-md-4">
             <div class="custom-form-group">
@@ -142,18 +181,11 @@
                 class="custom-input-field sm" [textWithNumbers]="50" />
               <label for="CustomerShortCode" class="input-label">Code <span class="text-danger">*</span></label>
 
-              <div class="error-message">
-                @if (customerForm.get('CustomerShortCode')?.hasError('customerCodeTaken')) {
-                <span>Customer code already exists</span>
-                }
-              </div>
+             
             </div>
           </aside>
 
-          <!-- 🔴 Shared API message -->
-          <div *ngIf="duplicateMessage" class="text-danger">
-            {{ duplicateMessage }}
-          </div>
+         
 
 
           <aside class="col-md-4">

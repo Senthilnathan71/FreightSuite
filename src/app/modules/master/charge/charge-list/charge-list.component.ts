@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
+import { forkJoin, Observable } from 'rxjs';
 
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
@@ -17,7 +18,8 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableConfig, TableEventData, TableSortConfig, TableFilter, TableColumn } from 'src/app/shared/interfaces/table.interface';
-import { Observable } from 'rxjs';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 
 @Component({
   selector: 'app-charge-list',
@@ -30,7 +32,9 @@ import { Observable } from 'rxjs';
     NgbPaginationModule,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent,
   ],
   templateUrl: './charge-list.component.html',
   styleUrls: ['./charge-list.component.scss']
@@ -52,6 +56,8 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   hssacList: any[] = [];
 
   tableLoading = false;
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
 
   tableConfig: TableConfig = {
     columns: [],
@@ -104,19 +110,50 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   }
 
   override ngOnInit(): void {
+    // decrypt company/branch and get user
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;
 
-    // lookups
-    this.masterService.getAllUom().subscribe(res => this.uoms = res.data || []);
-    this.masterService.getAllHssac().subscribe(res => this.hssacList = (res && res.data) ? res.data : res || []);
-    this.masterService.getAllTds(this.currentCompany?.CompanyMasterSid).subscribe(res => this.tdsSets = res.data || []);
-
+    // initialize table columns (independent)
     this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
 
-    super.ngOnInit();
+    // Load lookups first using forkJoin to avoid race where charges load before lookups
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const uom$ = this.masterService.getAllUom();
+    const hssac$ = this.masterService.getAllHssac();
+    const tds$ = this.masterService.getAllTds(companyId);
+
+    // show spinner until lookups are ready
+    this.spinner.show();
+    forkJoin([uom$, hssac$, tds$]).subscribe({
+      next: ([uomRes, hssacRes, tdsRes]: any) => {
+        // normalize results (some APIs return { data: [...] } others direct array)
+        this.uoms = (uomRes && uomRes.data) ? uomRes.data : (uomRes || []);
+        this.hssacList = (hssacRes && hssacRes.data) ? hssacRes.data : (hssacRes || []);
+        this.tdsSets = (tdsRes && tdsRes.data) ? tdsRes.data : (tdsRes || []);
+
+        // Now start BaseListComponent lifecycle (will call search)
+        super.ngOnInit();
+
+        // hide spinner (search will re-show if needed)
+        this.spinner.hide();
+      },
+      error: (err) => {
+        console.error('Failed to load lookups', err);
+        // fallback: try to load individually but continue initialization so user isn't blocked
+        this.masterService.getAllUom().subscribe(res => this.uoms = res?.data || res || []);
+        this.masterService.getAllHssac().subscribe(res => this.hssacList = res?.data || res || []);
+        this.masterService.getAllTds(companyId).subscribe(res => this.tdsSets = res?.data || res || []);
+        super.ngOnInit();
+        this.spinner.hide();
+      }
+    });
+
+    // Finally, permissions
     this.checkPermissions();
   }
 
@@ -129,7 +166,13 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
           this.currentMenuPermissions = response.data?.MenuPermissions || {};
           this.permissions = Object.keys(this.currentMenuPermissions).filter(
             key => this.currentMenuPermissions[key] === 'isTrue'
+            
           );
+          this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
+        },
+        error: (err) => {
+          console.error('Error fetching permissions', err);
         }
       });
     }
@@ -173,18 +216,103 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     if (response?.status) {
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
-        UOM: item.UOM,
+        // Use the UOMMasterSid field from the API and map to the readable code
+        UOM: this.getUomCode(item.UOMMasterSid ?? item.UOM),
         HSNSAC: item.chargeTaxMaster?.[0]?.HSNCode || '',
         TDSSet: item.chargeTds?.[0]?.tdsSetHeader?.TDSSetName || '',
         StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching charges.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
+  }
+   onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.search();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+   initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateCharge();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   protected override handleSearchError(error: any): void {
@@ -243,9 +371,13 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     });
   }
 
+  /**
+   * Returns UOM code for a given UOMMasterSid (or fallback input).
+   * Uses Number conversion for safer comparison.
+   */
   getUomCode(UOMMasterSid: any) {
     if (!UOMMasterSid || !this.uoms?.length) return '';
-    const found = this.uoms.find(uom => uom.UOMMasterSid === UOMMasterSid);
+    const found = this.uoms.find(uom => Number(uom.UOMMasterSid) === Number(UOMMasterSid));
     return found ? found.UOMCode : '';
   }
 
@@ -345,22 +477,22 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   }
 
   // Report generation using visible columns
- report(): void {
-        const formattedData = this.allItems;
-        const companyName = this.currentCompany?.companyName ?? 'Company';
+  report(): void {
+    const formattedData = this.allItems;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
 
-        // Get visible columns in their current order from the table component
-        const visibleColumns = this.chargeTable.getVisibleColumns();
-        const dynamicHeaders = visibleColumns.map(column => ({
-            key: column.key,
-            label: column.label
-        }));
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.chargeTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+        key: column.key,
+        label: column.label
+    }));
 
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: dynamicHeaders,
-            fileName: 'Charge-Report',
-            title: companyName
-        });
-    }
+    this.excelReportService.exportAsExcel({
+        data: formattedData,
+        headers: dynamicHeaders,
+        fileName: 'Charge-Report',
+        title: companyName
+    });
+  }
 }

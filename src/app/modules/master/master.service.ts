@@ -96,6 +96,17 @@ export class MasterService {
       })
     )
   }
+  searchCustomersByName(payload: {
+  CompanyMasterSid: number;
+  searchTerm: string;
+  excludeCustomerMasterSids?: number[];
+}) {
+  return this.http.post("customer/search-by-name", payload).pipe(
+    map((res: any) => {
+      return res;
+    })
+  );
+}
 
   getAuditLogsCustomer(tableName: string, recordId?: string) {
     let url = `customer/audit-logs?tableName=${tableName}`;
@@ -175,18 +186,7 @@ export class MasterService {
       })
     );
   }
-  checkCustomerUnique(payload: {
-  CompanyMasterSid: number;
-  customerName?: string;
-  customerShortCode?: string;
-  excludeCustomerMasterSid?: number;
-}) {
-  return this.http.post('customer/check-unique', payload).pipe(
-    map((resp: any) => {
-      let response = resp.data;       return response;
-    })
-  );
-}
+  
 
   //customer-branch
 
