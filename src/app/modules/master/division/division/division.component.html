@@ -21,7 +21,14 @@
 </ngx-spinner>
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+        <app-page-header 
+    [title]="'Division'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Division</h4>
             </div>
@@ -75,7 +82,7 @@
             </div>
 
 
-        </div>
+        </div> -->
     </div>
     <div class="col-12 px-0">
         <app-reusable-table #divisionTable [config]="tableConfig" [data]="alldivision" [loading]="tableLoading"
@@ -169,7 +176,7 @@
         <div>No records found</div>
     </div> -->
     <ng-template #content let-modal>
-        <div class="modal-header p-2 bg-info text-white">
+        <div class="modal-header modalHeaderpart">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Division</h4>
             <!-- @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">

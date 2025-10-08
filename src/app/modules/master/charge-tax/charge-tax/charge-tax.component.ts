@@ -28,6 +28,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-charge-tax',
   standalone: true,
@@ -46,7 +48,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',
@@ -65,7 +69,8 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: NgbModalRef;
   searchType = 'description';
-
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   isLoading = false;
   userData: any;
   companyList: any[] = [];
@@ -84,14 +89,14 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View ChargeTax',
+        tooltip: 'View',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete charge-tax',
+        tooltip: 'Delete',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -101,7 +106,7 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: '',
+    trackByKey: 'ChargeTaxMasterSid',
     emptyMessage: 'No charge-tax found',
     dragAndDrop: true
   };
@@ -159,7 +164,7 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
     }
     this.loadCompanies();
     this.initForm();
-    this.loadChargeTaxes();
+    // this.loadChargeTaxes();
     this.route.paramMap.subscribe(params => {
       this.ChargeTaxMasterSid = +params.get('id');
       if (this.ChargeTaxMasterSid) {
@@ -169,6 +174,8 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
     });
     this.checkPermissions();
     this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
     super.ngOnInit();
   }
 
@@ -184,6 +191,8 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
         }
       });
     }
@@ -222,8 +231,9 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
-      this.appSettingService.showError('Error searching bookings.');
+      this.appSettingService.showError('Error searching charge-tax.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
@@ -232,11 +242,115 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
-    this.appSettingService.showError('Error searching bookings.');
-    console.error('Error searching bookings', error);
+    this.appSettingService.showError('Error searching charge-tax.');
+    console.error('Error searching charge-tax', error);
     super.handleSearchError(error);
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchChargeTax();
+  }
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   searchChargeTax() {
     this.search();
   }
@@ -248,8 +362,6 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
   override trackBy(index: number, item: any): number {
     return item.ChargeTaxMasterSid || index;
   }
-
-
 
 
   private initializeTableConfig(): void {
@@ -346,47 +458,47 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: dynamicHeaders,
-      fileName: 'Booking-Report',
+      fileName: 'Charge-Tax-Report',
       title: companyName
     });
   }
 
-  loadChargeTaxes(): void {
-    this.spinner.show();
-    this.isLoading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId: CompanyMasterSid,
-    };
+  // loadChargeTaxes(): void {
+  //   this.spinner.show();
+  //   this.isLoading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     activeCompanyId: CompanyMasterSid,
+  //   };
 
-    this.masterService.searchChargeTax(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.results = response.data.items || [];
-          this.applySorting();
-          this.updatePaginationData();
-          this.chargeTaxList = [...this.results];
-          this.totalLengthOfCollection = response.data.totalCount || 0;
+  //   this.masterService.searchChargeTax(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.results = response.data.items || [];
+  //         this.applySorting();
+  //         this.updatePaginationData();
+  //         this.chargeTaxList = [...this.results];
+  //         this.totalLengthOfCollection = response.data.totalCount || 0;
 
-        } else {
-          this.results = [];
-          this.chargeTaxList = [];
-          this.totalLengthOfCollection = 0;
-          this.appSettingService.showError(response.message);
-        }
-        this.searchPerformed = true;
-        this.isLoading = false;
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error loading charge taxes:', err);
-        this.isLoading = false;
-      }
-    });
-  }
+  //       } else {
+  //         this.results = [];
+  //         this.chargeTaxList = [];
+  //         this.totalLengthOfCollection = 0;
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.searchPerformed = true;
+  //       this.isLoading = false;
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading charge taxes:', err);
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
 
   loadCompanies(): void {
     this.masterService.getAllCompanies().subscribe({
@@ -599,7 +711,8 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
             this.closeModal();
-            this.loadChargeTaxes();
+            // this.loadChargeTaxes();
+            this.searchChargeTax();
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -616,7 +729,8 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
             this.closeModal();
-            this.loadChargeTaxes();
+            // this.loadChargeTaxes();
+            this.searchChargeTax();
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -651,7 +765,7 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
       if (result === true) {
         this.masterService.deleteChargeTaxById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
-          this.loadChargeTaxes();
+          // this.loadChargeTaxes();
           this.searchChargeTax();
         });
       }

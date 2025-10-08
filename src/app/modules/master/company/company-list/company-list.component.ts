@@ -47,7 +47,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View company',
+        tooltip: 'View',
         condition: (row: any) => this.hasPermission('View')
       }
     ],
@@ -93,7 +93,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     super(paginationService);
   }
   override ngOnInit() {
-    this.loadCompanies();
+    // this.loadCompanies();
     // this.appSettingService.getUser().subscribe(
     //   user => {
     //     if (user) {
@@ -432,38 +432,38 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadCompanies(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection.toUpperCase()
-    };
+  // loadCompanies(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection.toUpperCase()
+  //   };
 
 
-    this.masterService.searchCompanyList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.companyList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
+  //   this.masterService.searchCompanyList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.companyList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
 
-      },
-      error: (err) => {
-        console.error('Error fetching companies:', err);
-        this.companyList = [];
-        this.totalLengthOfCollection = 0;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching companies:', err);
+  //       this.companyList = [];
+  //       this.totalLengthOfCollection = 0;
 
-      }
-    });
-  }
+  //     }
+  //   });
+  // }
 
 
 
@@ -522,7 +522,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadCompanies();
+    // this.loadCompanies();
   }
 
   trackByIndex(index: number, item: any): number {

@@ -27,6 +27,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-role',
   standalone: true,
@@ -44,7 +46,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './role.component.html',
   styleUrl: './role.component.scss',
@@ -77,7 +81,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Role',
+        tooltip: 'View',
         // condition: (row: any) => this.hasPermission('View')
       }
     ],
@@ -90,7 +94,8 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No role found',
     dragAndDrop: true
   };
-
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   tableLoading = false;
 
   protected config: ListComponentConfig = {
@@ -151,10 +156,11 @@ export class RoleComponent extends BaseListComponent implements OnInit {
         this.loadRoleData(this.RoleMasterSid);
       }
     });
-    this.loadRoles();
+    // this.loadRoles();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    // this.initializeModalDropdownItems();
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -187,6 +193,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching role.');
       this.allItems = [];
@@ -204,9 +211,114 @@ export class RoleComponent extends BaseListComponent implements OnInit {
 
   // Legacy methods for template compatibility
   searchRole() {
+    this.page=1;
     this.search();
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchRole();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+  //  initializeModalDropdownItems(): void {
+  //   this.modalDropdownItems = [
+  //     {
+  //       label: 'Edoc',
+  //       icon: 'fas fa-file-alt',
+  //       action: 'edoc',
+  //       condition: this.hasPermission('Edoc')
+  //     },
+  //     {
+  //       label: 'Terms & Condition',
+  //       icon: 'fas fa-clipboard',
+  //       action: 'terms',
+  //       condition: this.hasPermission('Terms and Condition')
+  //     },
+  //     {
+  //       label: 'Authorize',
+  //       icon: 'fas fa-shield-alt',
+  //       action: 'authority',
+  //       condition: this.hasPermission('Authority')
+  //     },
+  //     {
+  //       label: 'Email',
+  //       icon: 'fas fa-envelope',
+  //       action: 'email',
+  //       condition: this.hasPermission('Email')
+  //     }
+  //   ];
+  // }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }
@@ -303,40 +415,40 @@ export class RoleComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadRoles(): void {
-    this.spinner.show();
-    this.isLoading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid
-    };
+  // loadRoles(): void {
+  //   this.spinner.show();
+  //   this.isLoading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid
+  //   };
 
-    this.settingsService.searchRole(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.roleList = response.data.items || response.data;
-          this.totalLengthOfCollection = response.data.totalCount || response.length;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching roles:', err);
-        this.roleList = [];
-        this.totalLengthOfCollection = 0;
-        this.isLoading = false;
-      }
-    });
-  }
+  //   this.settingsService.searchRole(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.roleList = response.data.items || response.data;
+  //         this.totalLengthOfCollection = response.data.totalCount || response.length;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.isLoading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching roles:', err);
+  //       this.roleList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
 
   initForm() {
     this.roleForm = this.fb.group({
@@ -541,7 +653,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadRoles();
+    // this.loadRoles();
   }
 
   trackByIndex(index: number, item: any): number {

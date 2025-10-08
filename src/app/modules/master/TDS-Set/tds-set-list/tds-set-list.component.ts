@@ -69,14 +69,14 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
                 icon: 'fas fa-eye',
                 label: 'View',
                 action: 'view',
-                tooltip: 'View tds-set',
+                tooltip: 'View',
                 condition: (row: any) => this.hasPermission('View')
             },
             {
                 icon: 'fas fa-trash',
                 label: 'Delete',
                 action: 'delete',
-                tooltip: 'Delete tds-set',
+                tooltip: 'Delete',
                 class: "text-danger",
                 condition: (row: any) => this.hasPermission('Delete')
             }
@@ -132,7 +132,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
             this.userData = userProfile;
             this.checkPermissions();
         }
-        this.loadTds();
+        // this.loadTds();
         this.initializeTableConfig();
         this.initializeHeaderActions();
 
@@ -400,31 +400,31 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
         }
     }
 
-    loadTds() {
-        this.spinner.show();
-        let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-        const payload = {
-            search: this.filterValue,
-            page: this.page,
-            pageSize: this.pageSize,
-            activeCompanyId: CompanyMasterSid
-        }
-        this.masterService.searchTds(payload).subscribe(
-            (resp: any) => {
-                if (resp.status) {
-                    const response = resp.data.items;
-                    this.tdsList = response;
-                    this.results = [...this.tdsList];
-                    this.totalLengthOfCollection = this.tdsList.length;
-                    this.applySorting();
-                    this.searchPerformed = true;
-                } else {
-                    this.appSettingService.showError(resp.message);
-                }
-                this.spinner.hide();
-            }
-        )
-    }
+    // loadTds() {
+    //     this.spinner.show();
+    //     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    //     const payload = {
+    //         search: this.filterValue,
+    //         page: this.page,
+    //         pageSize: this.pageSize,
+    //         activeCompanyId: CompanyMasterSid
+    //     }
+    //     this.masterService.searchTds(payload).subscribe(
+    //         (resp: any) => {
+    //             if (resp.status) {
+    //                 const response = resp.data.items;
+    //                 this.tdsList = response;
+    //                 this.results = [...this.tdsList];
+    //                 this.totalLengthOfCollection = this.tdsList.length;
+    //                 this.applySorting();
+    //                 this.searchPerformed = true;
+    //             } else {
+    //                 this.appSettingService.showError(resp.message);
+    //             }
+    //             this.spinner.hide();
+    //         }
+    //     )
+    // }
 
 
 
@@ -435,7 +435,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
                 this.masterService.deleteTds(TDSSetHeaderSid).subscribe(
                     (resp: any) => {
                         this.appSettingService.showSuccess("Deleted!");
-                        this.loadTds();
+                        // this.loadTds();
                         this.searchTds();
                     });
             }
@@ -445,7 +445,8 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
     updatePaginatedData() {
         let start = (this.page - 1) * this.pageSize;
         let end = start + this.pageSize;
-        this.loadTds();
+        // this.loadTds();
+        this.searchTds();
     }
 
     navigateTocreatetdsSet() {
@@ -468,7 +469,7 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
         this.totalLengthOfCollection = 0;
         this.sortColumn = 'TDSSetName';
         this.sortDirection = 'asc';
-        this.loadTds()
+        // this.loadTds()
     }
 
 }

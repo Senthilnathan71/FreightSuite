@@ -103,13 +103,13 @@
 .nav-pills-container {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: 4px;
+  padding: 0px;
   margin-bottom: 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+  // box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
@@ -118,7 +118,6 @@
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
-
   &::-webkit-scrollbar {
     display: none;
   }
@@ -128,8 +127,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 20px;
-  border-radius: 3px;
+  padding: 4px 18px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
@@ -191,13 +190,13 @@
   backdrop-filter: blur(20px);
   border-radius: 8px;
 
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+  // box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  overflow: hidden;
+
 }
 
 .workspace-content {
-  padding: 4px 10px;
+  padding: 2px 10px;
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;
@@ -210,8 +209,14 @@
   animation: fadeInUp 0.50s ease;
 }
 
+.workspace-content2 {
+  padding: 0px 2px;
+  height: 100%;
+  overflow-y: auto;
+  animation: fadeInUp 0.50s ease;
+    overflow: visible !important;
+}
 .table-toolbar {
-
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -242,7 +247,7 @@
 // Custom-accordian
 
 .custom-accordion .accordion-button {
-  background-color: #05608d;
+  background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
   color: #fff;
   padding: 8px;
 }
@@ -264,7 +269,7 @@
 
   /* Accordion Button */
   .accordion-button {
-    background-color: #05608d;
+    background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
     color: #ffffff;
     border-radius: 6px 0px 0px 0px;
     width: 100%;
@@ -300,6 +305,36 @@
     font-size: 14px;
   }
 
+  .table-custom-input-field {
+    border: 2px solid #D3D9E4;
+    border-radius: 0;
+    padding: 0px 4px 0px;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    box-shadow: none;
+  }
+
+    .ng-select-table {
+    .ng-select-container {
+      border-radius: 0;
+      border-top: 0;
+      border-left: 0;
+      padding: 0x 4px 0px ;
+      border-right: 0;
+      max-height: 10px;
+    }
+  }
+
+
+  .form-control {
+    border-radius: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 0px 4px 0px;
+    max-height: 29px;
+  }
 }
 
 
@@ -416,6 +451,7 @@
   padding: 5px;
 }
 
+// =========================
 
 
 // .tab-wrapper {
@@ -1517,7 +1553,7 @@
   .custom-accordion .accordion-button {
     width: 100%;
     padding: 8px;
-    background-color: #05608d;
+    background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
     text-align: left;
   }
 
@@ -1611,7 +1647,7 @@
     backdrop-filter: blur(20px);
     border-radius: 8px;
     padding: 4px 12px;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2904,3 +2940,15 @@
   color: #1a202c;
   font-weight: 600;
 }
+
+
+
+
+// =======Quotation===========
+.quotationStyle{
+  .custom-form-group{
+    margin-top: 8px;
+  }
+}
+
+

@@ -320,7 +320,7 @@ $ng-select-input-text: #000000 !default;
 	}
 	.ng-dropdown-header {
 		border-bottom: 1px solid $ng-select-border;
-		padding: 5px 7px;
+		padding: 0px 7px;
 	}
 	.ng-dropdown-footer {
 		border-top: 1px solid $ng-select-border;
@@ -349,7 +349,7 @@ $ng-select-input-text: #000000 !default;
 		.ng-option {
 			background-color: $ng-select-dropdown-option-bg;
 			color: $ng-select-dropdown-option-text;
-			padding: 8px 10px;
+			padding: 2px 10px;
 			&.ng-option-selected,
 			&.ng-option-selected.ng-option-marked {
 				color: $ng-select-selected-text;

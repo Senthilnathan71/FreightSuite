@@ -1,22 +1,24 @@
 <form [formGroup]="edocform">
 
-    <div class="row py-3 compact-form">
+    <div class="row compact-form">
+        @if(screenName !== 'Edoc'){
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 pb-2">
                     <h4 class="page-title mb-0">Edoc</h4>
-                     <!-- <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button> -->
+                    <!-- <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button> -->
                 </div>
                 <div class="col-md-8 pb-2">
-                    
+
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" (click)="closeModal()" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                   
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"   (click)="resetForm()">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-chevron-left me-1"></i>
+                            Back
+                        </button>
+
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="resetForm()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -29,8 +31,18 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
+        }@else {
+        <div class="ml-2">
+            <div class="modal-header modalHeaderpart">
+                <h5 class="modal-title text-white">Edoc</h5>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="closeTemplate()"></button>
+            </div>
+        </div>
+
+        }
+        <div class="row m-1">
+            <div class="col-md-6 pe-md-1 ps-0">
                 <div class="card h-100 mb-0">
                     <div class="card-body">
                         <div class="row">
@@ -44,30 +56,44 @@
                                             class="text-danger"></span></label>
                                     <div class="error-message"
                                         *ngIf="edocform.get('DocuNo')?.touched && edocform.get('DocuNo')?.hasError('required')">
-                                       Required
+                                        Required
                                     </div>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
+                                <div class=" custom-form-group custom-form-group-select-date">
+                                    <div class="input-group ">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="Date"
+                                            [minDate]="minDate" (keydown.arrowDown)="d1.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label for="" class="input-label"> Date <span class="text-danger"></span>
+                                    </label>
+                                </div>
+                            </aside>
+
+                            <!-- <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Date">
                                     <label for="text-input" class="input-label">Date <span
                                             class="text-danger"></span></label>
-                                         <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('Date')?.touched && edocform.get('Date')?.hasError('required')">
-                                       Required
+                                        Required
                                     </div>
                                 </div>
-                            </aside>
+                            </aside> -->
                             <aside class="col-md-12">
-                                <div class="custom-form-group">
+                                <div class="custom-form-group mt-0">
                                     <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="file">
-                                      <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('file')?.touched && edocform.get('file')?.hasError('required')">
-                                      Required
-                                    </div>  
+                                        Required
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-8">
@@ -76,66 +102,91 @@
                                         formControlName="Filename">
                                     <label for="text-input" class="input-label">Flle Name <span
                                             class="text-danger"></span></label>
-                                         <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('Filename')?.touched && edocform.get('Filename')?.hasError('required')">
                                         Required
-                                    </div> 
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
-                                <div class="custom-form-group custom-form-group-select">
+                                <div class="custom-form-group custom-form-group-select"
+                                    [class.filled]="!!edocform.get('Type')?.value">
                                     <ng-select formControlName="Type" [items]="modeOfType" bindLabel="name"
                                         bindValue="name">
 
                                     </ng-select>
                                     <label for="" class="input-label">Type <span class="text-danger"></span></label>
-                                     <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('Type')?.touched && edocform.get('Type')?.hasError('required')">
                                         Required
-                                    </div> 
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select-date">
+                                    <div class="input-group ">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="ReceivedDate"
+                                            [minDate]="minDate" (keydown.arrowDown)="d2.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label for="" class="input-label"> Received Date <span class="text-danger"></span>
+                                    </label>
+                                </div>
+                            </aside>
+                            <!-- <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="ReceivedDate">
                                     <label for="text-input" class="input-label">Received Date <span
                                             class="text-danger"></span></label>
-                                         <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('ReceivedDate')?.touched && edocform.get('ReceivedDate')?.hasError('required')">
-                                       Required
-                                    </div> 
+                                        Required
+                                    </div>
+                                </div>
+                            </aside> -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select-date">
+                                    <div class="input-group ">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d3="ngbDatepicker" (click)="d3.toggle()" formControlName="SentDate"
+                                            [minDate]="minDate" (keydown.arrowDown)="d3.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d3.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label for="" class="input-label"> Sent Date <span class="text-danger"></span>
+                                    </label>
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <!-- <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="SentDate">
                                     <label for="text-input" class="input-label">Sent Date <span
                                             class="text-danger"></span></label>
-                                         <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('SentDate')?.touched && edocform.get('SentDate')?.hasError('required')">
                                         Required
-                                    </div> 
+                                    </div>
                                 </div>
-                            </aside>
+                            </aside> -->
 
 
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 mt-md-0 mt-2">
+            <div class="col-md-6 mt-md-0 mt-1 ps-md-1">
                 <div class="card h-100 mb-0">
                     <div class="card-body">
                         <div class="row">
-
-
                             <aside class="col-md-6">
-                                <div class="custom-form-group mt-3">
-
+                                <div class="custom-form-group">
                                     <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" formControlName="">
+                                        <input type="checkbox" class="form-check-input"
+                                            formControlName="FollowupRequired">
                                         <label class="form-check-label">
                                             Followup Required
                                         </label>
@@ -143,39 +194,67 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select-date"
+                                    *ngIf="edocform.get('FollowupRequired')?.value">
+                                    <div class="input-group ">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d3="ngbDatepicker" (click)="d3.toggle()" formControlName="SentDate"
+                                            [minDate]="minDate" (keydown.arrowDown)="d3.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d3.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label for="" class="input-label"> Sent Date <span class="text-danger"></span>
+                                    </label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select-date"
+                                    *ngIf="edocform.get('FollowupRequired')?.value">
+                                    <div class="input-group ">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d4="ngbDatepicker" (click)="d4.toggle()" formControlName="FollowupDate"
+                                            [minDate]="minDate" (keydown.arrowDown)="d4.open()" container="body" />
+                                        <button class="btn bi bi-calendar3 " (click)="d4.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                    </div>
+                                    <label for="" class="input-label">Followup Date <span class="text-danger"></span>
+                                    </label>
+                                </div>
+                            </aside>
+                            <!-- <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
                                 <div class="custom-form-group">
                                     <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="FollowupDate">
                                     <label for="text-input" class="input-label">Followup Date <span
                                             class="text-danger"></span></label>
-                                            <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('FollowupDate')?.touched && edocform.get('FollowupDate')?.hasError('required')">
-                                       Required
-                                    </div> 
+                                        Required
+                                    </div>
                                 </div>
-                            </aside>
+                            </aside> -->
 
-                            <aside class="col-md-12">
+                            <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="FollowupAction">
                                     <label for="text-input" class="input-label">Followup Action <span
                                             class="text-danger"></span></label>
-                                          <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('FollowupAction')?.touched && edocform.get('FollowupAction')?.hasError('required')">
                                         Required
-                                    </div> 
+                                    </div>
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
-                                <div class="custom-form-group">
+                            <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
+                                <div class="custom-form-group mt-md-1">
                                     <textarea id="textarea-input" class="custom-input-field sm" placeholder="" rows="1"
                                         formControlName="Remarks"></textarea>
                                     <label for="text-input" class="input-label">Remarks</label>
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
-                                <div class="custom-form-group mt-3">
+                            <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
+                                <div class="custom-form-group mt-md-3">
 
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" formControlName="">
@@ -185,8 +264,8 @@
                                     </div>
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
-                                <div class="custom-form-group mt-3">
+                            <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
+                                <div class="custom-form-group mt-md-2">
 
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" formControlName="">
@@ -196,16 +275,17 @@
                                     </div>
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
-                                <div class="custom-form-group custom-form-group-select">
+                            <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
+                                <div class="custom-form-group custom-form-group-select mt-md-1"
+                                    [class.filled]="!!edocform.get('Status')?.value">
                                     <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
                                         bindValue="name">
                                     </ng-select>
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
-                                     <div class="error-message"
+                                    <div class="error-message"
                                         *ngIf="edocform.get('Status')?.touched && edocform.get('Status')?.hasError('required')">
                                         Required
-                                    </div> 
+                                    </div>
                                 </div>
                             </aside>
 
