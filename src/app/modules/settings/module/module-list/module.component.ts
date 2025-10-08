@@ -26,6 +26,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-module',
   standalone: true,
@@ -43,7 +45,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './module.component.html',
   styleUrls: ['./module.component.scss']
@@ -69,14 +73,14 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Booking',
+        tooltip: 'View ',
         // condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete module',
+        tooltip: 'Delete ',
         class: "text-danger",
         // condition: (row: any) => this.hasPermission('Delete')
       }
@@ -92,7 +96,8 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
   };
 
   tableLoading = false;
-
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   protected config: ListComponentConfig = {
     storageKey: 'module-list-state',
     defaultPageSize: 10,
@@ -158,10 +163,11 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
     if (userProfile) {
       this.userData = userProfile;
     }
-    this.loadModule();
+    // this.loadModule();
     // Initialize table configuration
+    this.initializeHeaderActions();
     this.initializeTableConfig();
-
+    // this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
@@ -195,6 +201,7 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching module.');
       this.allItems = [];
@@ -212,11 +219,115 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
 
   // Legacy methods for template compatibility
   searchModule() {
+    this.page=1;
     this.search();
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchModule();
+  }
   clearFilterValue() {
     this.clearFilter();
+  }
+
+   onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+   onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  //   initializeModalDropdownItems(): void {
+  //   this.modalDropdownItems = [
+  //     {
+  //       label: 'Edoc',
+  //       icon: 'fas fa-file-alt',
+  //       action: 'edoc',
+  //       condition: this.hasPermission('Edoc')
+  //     },
+  //     {
+  //       label: 'Terms & Condition',
+  //       icon: 'fas fa-clipboard',
+  //       action: 'terms',
+  //       condition: this.hasPermission('Terms and Condition')
+  //     },
+  //     {
+  //       label: 'Authorize',
+  //       icon: 'fas fa-shield-alt',
+  //       action: 'authority',
+  //       condition: this.hasPermission('Authority')
+  //     },
+  //     {
+  //       label: 'Email',
+  //       icon: 'fas fa-envelope',
+  //       action: 'email',
+  //       condition: this.hasPermission('Email')
+  //     }
+  //   ];
+  // }
+  //   onModalDropdownItemClick(action: string): void {
+  //   switch (action) {
+  //     case 'edoc':
+  //       this.openEDoc();
+  //       break;
+  //     case 'terms':
+  //       this.openTandC();
+  //       break;
+  //     case 'authority':
+  //       this.openAuthority();
+  //       break;
+  //     case 'email':
+  //       this.openEmail();
+  //       break;
+  //     default:
+  //       console.warn(`Unknown dropdown action: ${action}`);
+  //   }
+  // }
+   private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   override trackBy(index: number, item: any): number {
@@ -314,39 +425,39 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadModule() {
-    this.spinner.show();
-    this.loading = true;
+  // loadModule() {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.settingsService.searchModule(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.moduleList = response.data.items || response.data;
-          this.totalAmountOfCollection = response.data.totalCount || response.length;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.moduleList = [];
-        this.totalAmountOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.settingsService.searchModule(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.moduleList = response.data.items || response.data;
+  //         this.totalAmountOfCollection = response.data.totalCount || response.length;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Search error:', err);
+  //       this.moduleList = [];
+  //       this.totalAmountOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
   initForm() {
     this.moduleForm = this.fb.group({
@@ -445,7 +556,7 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadModule();
+    // this.loadModule();
   }
   //   clearFilterValue() {
   //   this.filterValue = '';
@@ -476,7 +587,7 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
     this.totalAmountOfCollection = 0;
     this.searchPerformed = false;
     this.filterValue = '';
-    this.loadModule();
+    // this.loadModule();
     this.searchType = 'ModuleName';
   }
 

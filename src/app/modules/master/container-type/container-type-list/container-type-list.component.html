@@ -8,7 +8,14 @@
 </ngx-spinner>
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+        <app-page-header 
+    [title]="'Container Type'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Container Type</h4>
             </div>
@@ -63,7 +70,7 @@
                     </form>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
         <!-- Reusable Table Component -->
     <div class="col-12 px-0">

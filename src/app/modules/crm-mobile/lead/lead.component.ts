@@ -25,6 +25,7 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { AppService } from 'src/app/service/app.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { LeadStatus } from 'src/app/common/helper';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 
 @Component({
@@ -582,20 +583,28 @@ export class LeadComponent implements OnInit {
   }
 
   openAuthority() {
-    if (!this.leadData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.PreCustomerMasterSid;
   }
 
   openEDoc() {
     if (!this.leadData) return;
     const modalRef = this.modalService.open(EdocComponent, {
-      size: 'lg',
+      size: 'xl',
       centered: true,
-      backdrop: 'static'
+      backdrop: 'static',
+    });
+    modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
+      if(data){
+        this.modalService.dismissAll();
+      }
     });
   }
 

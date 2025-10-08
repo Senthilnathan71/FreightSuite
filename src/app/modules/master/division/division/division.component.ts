@@ -42,6 +42,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-division',
   standalone: true,
@@ -62,7 +64,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss',
@@ -102,7 +106,8 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   currentBranch: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -113,14 +118,14 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View division',
+        tooltip: 'View',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete division',
+        tooltip: 'Delete',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -179,7 +184,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     }
     this.getAllCompanies();
     this.loadCompanies();
-    this.loadDivisions();
+    // this.loadDivisions();
     this.initForm();
     this.route.paramMap.subscribe((params) => {
       this.DivisionMasterSid = +params.get('DivisionMasterSid');
@@ -189,6 +194,8 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
       }
     });
     this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
@@ -208,6 +215,8 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
             console.log(this.permissions);
+            this.initializeHeaderActions();
+            this.initializeModalDropdownItems();
           },
         });
     }
@@ -246,6 +255,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching division.');
       this.allItems = [];
@@ -264,6 +274,112 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   // Legacy methods for template compatibility
   searchDivision() {
     this.search();
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchDivision();
+  }
+
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   // clearFilterValue() {
@@ -371,42 +487,43 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadDivisions(): void {
-    this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid
+  // loadDivisions(): void {
+  //   this.spinner.show();
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
-    };
+  //   const params = {
+  //     search: this.filterValue ? this.filterValue.trim() : '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid
 
-    this.masterService.searchDivisionList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.divisionList = response.data.items;
-          this.results = [...this.divisionList];
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
+  //   };
 
-      },
-      error: (err) => {
-        console.error('Error fetching divisions:', err);
-        this.divisionList = [];
-        this.results = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchDivisionList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.divisionList = response.data.items;
+  //         this.results = [...this.divisionList];
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching divisions:', err);
+  //       this.divisionList = [];
+  //       this.results = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   initForm() {
     this.divisionForm = this.fb.group({
@@ -642,7 +759,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
                 this.appSettingService.showSuccess(resp.message);
                 this.closeModal();
                 this.router.navigate(['master/division']);
-                this.loadDivisions();
+                // this.loadDivisions();
                 this.searchDivision();
               } else {
                 this.appSettingService.showError(resp.message);
@@ -662,7 +779,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/division']);
-              this.loadDivisions();
+              // this.loadDivisions();
               this.searchDivision();
             } else {
               this.appSettingService.showError(resp.message);
@@ -744,7 +861,8 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadDivisions();
+    // this.loadDivisions();
+    this.searchDivision();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -760,7 +878,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
           .subscribe((resp: any) => {
             this.appSettingService.showSuccess('Deleted!');
             this.router.navigate(['master/division/list']);
-            this.loadDivisions();
+            // this.loadDivisions();
             this.searchDivision();
           });
       }

@@ -40,7 +40,7 @@
     top: 50%;
     left: 8px;
     transform: translateY(-50%);
-    font-size: 14px;
+    font-size: 13px;
     color: var(--bs-body-color);
     transition: 0.3s ease;
     background: white;
@@ -57,9 +57,9 @@
   textarea:not(:placeholder-shown) + .input-label,
   .custom-form-group-select .input-label ,.custom-form-group-select-date .input-label {
     top: 0;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--bs-blue);
-    padding: 0 5px;
+    padding: 0 3px;
     font-weight:600;
     left:0;
   }

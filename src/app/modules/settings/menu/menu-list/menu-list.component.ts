@@ -26,6 +26,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-menu-list',
   standalone: true,
@@ -41,7 +43,8 @@ import { Observable } from 'rxjs';
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './menu-list.component.html',
   styleUrl: './menu-list.component.scss',
@@ -74,7 +77,7 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Menu',
+        tooltip: 'View',
         // condition: (row: any) => this.hasPermission('View')
       }
     ],
@@ -89,11 +92,11 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
   };
 
   tableLoading = false;
-
+  headerActions: HeaderAction[] = [];
   protected config: ListComponentConfig = {
     storageKey: 'menu-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'ModuleName',
+    defaultSortColumn: 'MenuName',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -159,11 +162,12 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
     if (userProfile) {
       this.userData = userProfile;
     }
-    this.loadMenus();
+    // this.loadMenus();
     this.initForm();
     this.loadModules();
     this.initializeTableConfig();
     super.ngOnInit();
+    this.initializeHeaderActions();
   }
 
 
@@ -196,6 +200,7 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');
       this.allItems = [];
@@ -213,6 +218,7 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
 
   // Legacy methods for template compatibility
   searchMenu() {
+    this.page = 1;
     this.search();
   }
 
@@ -224,15 +230,69 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
     return item.BookingHeaderSid || index;
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchMenu();
+  }
 
- 
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreate()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
 
 
 
   // Table configuration
   private initializeTableConfig(): void {
     this.tableConfig.columns = [
-      
+
       {
         key: 'MenuName',
         label: 'Menu Name',
@@ -270,7 +330,7 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
     }
   }
 
-   viewMenu(item): void {
+  viewMenu(item): void {
     this.router.navigate(['/settings/menu/entry/', item.MenuMasterSid]);
   }
   onTableRowClick(row: any): void {
@@ -501,48 +561,48 @@ export class MenuListComponent extends BaseListComponent implements OnInit {
       }
     }
   }
-  loadMenus(): void {
-    this.spinner.show();
-    this.loading = true;
+  // loadMenus(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.settingsService.searchMenuList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.menuList = response.data.items || response.data;
-          this.totalLengthOfCollection = response.data.totalCount || response.length;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
+  //   this.settingsService.searchMenuList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.menuList = response.data.items || response.data;
+  //         this.totalLengthOfCollection = response.data.totalCount || response.length;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
 
-        this.spinner.hide();
+  //       this.spinner.hide();
 
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching menus:', err);
-        this.menuList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching menus:', err);
+  //       this.menuList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
 
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadMenus();
+    // this.loadMenus();
   }
 
   trackByIndex(index: number, item: any): number {
