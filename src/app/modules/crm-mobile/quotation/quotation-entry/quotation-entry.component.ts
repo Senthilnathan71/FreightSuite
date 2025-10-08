@@ -308,6 +308,8 @@ patchEnqPageValues(enqData: any) {
 
   const headerFields = [
     'EnquirySid',
+    'LeadOrCustomer',
+    'PreCustomerMasterSid',
     'CustomerMasterSid',
     'CustomerName',
     'CustomerAddress',

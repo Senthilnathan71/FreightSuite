@@ -1,482 +1,219 @@
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
- <div class="nav-pills-container">
-            <div class="nav-pills">
-                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-                    (click)="selectTab(tab.name)">
-                    <div class="pill-icon">
-                        <i [class]="tab.icon"></i>
-                    </div>
-                    <span class="pill-label">{{ tab.name }}</span>
-                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
-                </div>
+<div class="nav-pills-container">
+    <div class="nav-pills">
+        <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+            (click)="selectTab(tab.name)">
+            <div class="pill-icon">
+                <i [class]="tab.icon"></i>
             </div>
-        </div>
-
-        
- <div class="content-workspace">
-   <div class="workspace-content" *ngIf="selectedTab === 'Pending Enquiry'">
-     <div class="content-layout">
-          <div class="col-md pb-2">
-                            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                                <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
-                                    <div class="form-outline flex-grow-1 position-relative">
-                                        <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterEnqValue"  aria-label="Search input">
-                                        <button 
-                                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                            tabindex="0" aria-label="Clear search"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                            onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterEnqValue()">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                <div class="mt-md-0 mt-1">
-                                    <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchEnquiry()">
-                                        <i class="fas fa-search me-1"></i> Search
-                                    </button>
-                                </div>
-
-                                    </div>
-                                </form>
-                            </div>
-                <div class="col-12">
-
-            <div *ngIf="isMobile; else rrdesktopTemplate">
-                <ng-container *ngTemplateOutlet="rrmobileTemplate"></ng-container>
-            </div>
-            </div>
-     </div>
-   </div>
-   <div class="workspace-content" *ngIf="selectedTab === 'Quotation'">
-      <div class="row compact-form">
-                <!-- #region Search Panel -->
-                             <div class="col-12">
-                                    <div class="row   align-items-center pt-2  justify-content-between mx-1" data-bs-theme="light">
-                                        <div class="col pb-2">
-                                <h5 class="page-title mb-0 text-info">Quotation</h5>
-                            </div>
-
-                        
-                            <!-- <div class="form-outline col search-wrapper">
-                                 <i class="fas fa-search ms-3 search-icon "></i>
-                                <input type="search" class="form-control ps-5 search-input " [(ngModel)]="searchText" name="search"
-                                    (input)="searchEnquiry()" autocomplete="off" placeholder="Search">
-                               
-                            </div> -->
-                             <div class="col-md pb-2">
-                            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                                <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
-                                    <div class="form-outline flex-grow-1 position-relative">
-                                        <input name="filterEnqValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="filterValue"  aria-label="Search input">
-                                        <button 
-                                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                            tabindex="0" aria-label="Clear search"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                            onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                <div class="mt-md-0 mt-1">
-                                    <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchQuotation()">
-                                        <i class="fas fa-search me-1"></i> Search
-                                    </button>
-                                </div>
-
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="col-md-auto pb-2">
-                                <form  class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                            <button type="button" class="btn btn-info btn-sm " (click)="createNew()">
-                                  <i class="fas fa-plus me-1 "[class.me-1]="!isMobile"></i>
-                                @if (!isMobile) {
-                                Create
-                                }
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  (click)="report()">
-                                    <i class="fas fa-file-alt me-1"></i> Report
-                                </button>
-
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetFilters()" >
-                                    <i class="fas fa-sync-alt me-1"></i> Reset
-                                </button>
-                                </form>
-                            </div>
-                         
-                    </div>
-                      <!-- #endregion -->
-                <div class="col-12">
-                    <div *ngIf="isMobile; else desktopTemplate">
-                        <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
-                    </div>
-                </div>
-                </div>
-   </div>
- </div>
-
-<!-- MOBILE CODE -->
-<ng-template #mobileTemplate>
-    <div class="mobile-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="card" *ngFor="let enq of quoteItems">
-            <div class="card-body">
-                <div class="d-flex flex-column gap-2 position-relative">
-                    <div class="d-flex align-items-start fw-bold dofi-font-16 text-uppercase">
-                        <i-feather class="feather-sm me-1" name="hash"></i-feather>
-                        <div class="text-truncate">
-                            {{ enq.QuoteNumber }}
-                        </div>
-                        <span class="ms-auto badge dofi-min-w-12 dofi-h-12 rounded-pill px-0 py-0" [ngClass]="{
-                            'bg-success': enq.status === 'A',
-                            'bg-danger': enq.status === 'S',
-                            'bg-warning': enq.status !== 'A' && enq.status !== 'S'
-                          }">&nbsp;</span>
-                    </div>
-
-
-
-                    <div class="d-flex align-items-center">
-                        <i-feather class="feather-sm me-1" name="user"></i-feather>
-                        <div class="ms-2">{{ enq.CustomerName }}</div>
-                        <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)" style="cursor: pointer;">
-                                <i-feather name="eye" class="feather-sm"></i-feather>
-                            </a>
-                            <a class="text-info" (click)="reportAndEmailModel(enq,reportModel)" style="cursor: pointer;">
-                                <i-feather name="file-text" class="feather-sm"></i-feather>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather class="feather-sm me-1" name="map-pin"></i-feather>
-                        <div class="ms-2">{{ enq.CustomerAddress }}</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather class="feather-sm me-1" name="calendar"></i-feather>
-                        <div class="ms-2">{{ enq.QuoteDate | formatDate }}</div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="">
-            <!-- #region Pagination -->
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
-            </ngb-pagination>
-            <!-- #endregion -->
+            <span class="pill-label">{{ tab.name }}</span>
+            <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
         </div>
     </div>
-</ng-template>
-
-<!-- DESKTOP CODE -->
-<ng-template #desktopTemplate>
-      <!-- Reusable Table Component -->
-    <div class="col-12 px-0">
-        <app-reusable-table #quotationTable [config]="tableConfig" [data]="allQuotation" [loading]="tableLoading"
-            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
-            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
-            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
-            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
-        </app-reusable-table>
-    </div>
-</ng-template>
-
-<!-- NO DATA TEMPLATE -->
-<ng-template #noDataTemplate>
-    <div class="text-center py-5">
-        <p class="text-muted">No data available.</p>
-    </div>
-</ng-template>
+</div>
 
 
-<!-- MOBILE CODE -->
-<ng-template #rrmobileTemplate>
-    <div class="mobile-view" *ngIf="totalLengthOfCollection1 > 0; else noDataTemplate">
-        <div class="card" *ngFor="let enq of slicedEnquiryItems">
-            <div class="card-body mt-2">
-                <div class="d-flex flex-column gap-2 position-relative">
-                    <div class="d-flex align-items-start fw-bold dofi-font-16 text-uppercase">
-                        <i-feather class="feather-sm me-1" name="hash"></i-feather>
-                        <div class="text-truncate">
-                            {{ enq.EnquiryNumber }}
-                        </div>
-                        <span class="ms-auto badge dofi-min-w-12 dofi-h-12 rounded-pill px-0 py-0" [ngClass]="{
-                            'bg-success': enq.status === 'A',
-                            'bg-danger': enq.status === 'C',
-                            'bg-warning': enq.status !== 'A' && enq.status !== 'C'
-                          }">&nbsp;</span>
-                    </div>
-
-
-
-                    <div class="d-flex align-items-center">
-                        <i-feather class="feather-sm me-1" name="user"></i-feather>
-                        <div class="ms-2">{{ enq.CustomerName }}</div>
-                        <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="navigateQuotation(enq)" >
-                                <i-feather name="eye" class="feather-sm"></i-feather>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather class="feather-sm me-1" name="Department"></i-feather>
-                        <div class="ms-2">{{ enq.departmentName }}</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather class="feather-sm me-1" name="Port"></i-feather>
-                        <div class="ms-2">{{ enq.POLCode }}</div>
-                    </div>
+<div class="content-workspace">
+    <div class="workspace-content" [hidden]="selectedTab !== 'Pending Enquiry'">
+        <div class="row compact-form">
+            <div class="col-12">
+                <app-page-header [title]="'Pending Enquiry'" [showFavorite]="false" [showSearch]="true" [searchPlaceholder]="'Search'"
+                    [searchButtonText]="'Search'" [(searchValue)]="enquiryManager.filterValue" [actions]="enquiryHeaderActions"
+                    (searchTriggered)="onEnquirySearchTriggered($event)" (searchCleared)="enquiryResetPage()"
+                    (actionTriggered)="onEnquiryActionTriggered($event)">
+                </app-page-header>
+            </div>
+            <div class="col-12">
+                <div>
+                    <app-reusable-table #enquiryTable [config]="enquiryTableConfig" [data]="enquiryManager.items"
+                        [loading]="enquiryManager.loading" 
+                        [totalRecords]="enquiryManager.totalRecords" 
+                        [paginationConfig]="enquiryManager.enquiryPaginationConfig"
+                        (actionClick)="onEnquiryTableActionClick($event)"
+                        (rowClick)="onEnquiryTableRowClick($event)" (sortChange)="enquiryManager.onSortChange($event)"
+                        (pageChange)="enquiryManager.onPageChange($event)" (pageSizeChange)="enquiryManager.onPageSizeChange($event)">
+                    </app-reusable-table>
                 </div>
             </div>
         </div>
-        <div class="">
-            <!-- #region Pagination -->
-
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"
-                [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
-            </ngb-pagination>
-            <!-- #endregion -->
-        </div>
     </div>
-</ng-template>
-
-<!-- DESKTOP CODE -->
-<ng-template #rrdesktopTemplate>
-    <div class="desktop-view" *ngIf="totalLengthOfCollection1 > 0; else noDataTemplate">
-        <div class="">
-
-            <div class="col-12 p-0">
-                <!-- #region filter and add new -->
-
+    <div class="workspace-content" [hidden]="selectedTab !== 'Quotation'">
+        <div class="row compact-form">
+            <!-- #region Search Panel -->
+            <div class="col-12">
+                <app-page-header [title]="'Quotation'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
+                    [searchButtonText]="'Search'" [(searchValue)]="quotationManager.filterValue" [actions]="quotationHeaderActions"
+                    (searchTriggered)="onQuotationSearchTriggered($event)" (searchCleared)="quoteResetPage()"
+                    (actionTriggered)="onQuotationActionTriggered($event)">
+                </app-page-header>
                 <!-- #endregion -->
-
-                <div class="">
-                    <!-- #region lead view -->
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Rate Request No</th>
-                                    <th class="bg-transparent text-light">Date</th>
-                                    <th class="bg-transparent text-light" scope="col">Customer</th>
-                                    <th class="bg-transparent text-light" scope="col">Department</th>
-                                    <th class="bg-transparent text-light" scope="col">POL</th>
-                                    <th class="bg-transparent text-light" scope="col">POD</th>
-                                    
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let enq of slicedEnquiryItems">
-                                    <td data-label="Action"  class="text-center"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <section class="action-items">
-                                            <a class="mx-2 cursor-pointer" (click)="navigateQuotation(enq)">
-                                                <i-feather name="file" class="feather-sm"></i-feather>
-                                            </a>
-                                        </section>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.EnquiryNumber }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{enq.EnquiryDate}}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.CustomerName }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.departmentName }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.POLCode || '' }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ enq.PODCode || '' }}
-                                        </div>
-                                    </td>
-
-                                    
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- #endregion -->
-
-                    <div class="">
-                        <!-- #region Pagination -->
-
-                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"
-                            [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
-                        </ngb-pagination>
-                        <!-- #endregion -->
+                <div class="col-12">
+                    <div>
+                        <app-reusable-table 
+                            #quotationTable 
+                            [config]="quotationTableConfig" 
+                            [data]="quotationManager.items" 
+                            [loading]="quotationManager.loading"
+                            [paginationConfig]="quotationManager.quotationPaginationConfig"
+                            [totalRecords]="quotationManager.totalRecords"
+                            (actionClick)="onQuotationTableActionClick($event)" (rowClick)="onQuotationTableRowClick($event)"
+                            (sortChange)="quotationManager.onSortChange($event)" (filterChange)="onQuotationTableFilterChange($event)"
+                            (pageChange)="quotationManager.onPageChange($event)" (pageSizeChange)="quotationManager.onPageSizeChange($event)">
+                        </app-reusable-table>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
-</ng-template>
 
 
-<ng-template #reportModel let-modal>
 
-    <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info">
-        <h5 class="modal-title text-white mb-0" >Quotation Preview</h5>
-        <div class="d-flex gap-2 align-items-center">
-           
-            <div *ngIf="isLoading" class="spinner-overlay">
-                <div class="spinner"></div>
-            </div>
-            <button type="button" class="btn btn-light-secondary btn-sm" (click)="downloadPDF()">
-                 <i class="fas fa-download me-1"></i> Download
-            </button>
-            <button type="button" class="btn btn-light-secondary btn-sm email-btn" (click)="sendEmail()">
-                  <i class="fas fa-envelope me-1"></i> Email
-            </button>
-            <div class="ms-3">
-                <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    <!-- NO DATA TEMPLATE -->
+    <ng-template #noDataTemplate>
+        <div class="text-center py-5">
+            <p class="text-muted">No data available.</p>
+        </div>
+    </ng-template>
+
+
+
+    <!-- <ng-template #reportModel let-modal>
+
+        <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info">
+            <h5 class="modal-title text-white mb-0">Quotation Preview</h5>
+            <div class="d-flex gap-2 align-items-center">
+
+                <div *ngIf="isLoading" class="spinner-overlay">
+                    <div class="spinner"></div>
+                </div>
+                <button type="button" class="btn btn-light-secondary btn-sm" (click)="downloadPDF()">
+                    <i class="fas fa-download me-1"></i> Download
+                </button>
+                <button type="button" class="btn btn-light-secondary btn-sm email-btn" (click)="sendEmail()">
+                    <i class="fas fa-envelope me-1"></i> Email
+                </button>
+                <div class="ms-3">
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                        (click)="modal.dismiss()"></button>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="modal-body">
-        <section class="container-fluid py-3" id="pdfContent">
-            <div class="px-3 border border-2 border-dark printTable py-3" style="font-size: 14px;">
-                <div class="d-flex px-3 px-md-5 align-items-center">
-                    <div class="col-md-6 d-flex align-items-center gap-4 mb-3 mb-md-0">
+        <div class="modal-body">
+            <section class="container-fluid py-3" id="pdfContent">
+                <div class="px-3 border border-2 border-dark printTable py-3" style="font-size: 14px;">
+                    <div class="d-flex px-3 px-md-5 align-items-center">
+                        <div class="col-md-6 d-flex align-items-center gap-4 mb-3 mb-md-0">
                             <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
                             <h4> {{currentCompany.companyName}} </h4>
+                        </div>
+                        <div class="col-md-6 text-md-end text-center">
+                            <p class="h5 fw-bold mb-0">{{currentCompany.companyName}}</p>
+                            <p class="text-muted mb-0">{{currentCompany.addressLine1}}</p>
+                        </div>
                     </div>
-                    <div class="col-md-6 text-md-end text-center">
-                         <p class="h5 fw-bold mb-0">{{currentCompany.companyName}}</p>
-                        <p class="text-muted mb-0">{{currentCompany.addressLine1}}</p>
-                    </div>
-                </div>
 
-                <div class="text-center h5 fw-bold">QUOTATION</div>
-                <div class="row mx-auto my-3">
-                    <div class="col-md-6 px-3 px-md-5">
-                        <section class="d-flex flex-column">
-                            <aside class="d-flex">
-                                <p class="mb-0 col-12 h6 fw-bold">{{this.selectedItem.CustomerName}}</p>
-                            </aside>
-                            <aside class="d-flex">
-                                <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
-                            </aside>
-                        </section>
-                    </div>
-                    <div class="col-md-6">
-                        <section class="d-flex flex-column gap-1">
-                            <aside class="d-flex gap-3 justify-content-end">
-                                <p class="mb-0 col-3 fw-bold">Quotation No</p>
-                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
-                            </aside>
-                            <aside class="d-flex gap-3 justify-content-end">
-                                <p class="mb-0 col-3 fw-bold">Quotation Date</p>
-                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate }}</p>
-                            </aside>
-                            <aside class="d-flex gap-3 justify-content-end">
-                                <p class="mb-0 col-3 fw-bold">Reference</p>
-                                <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
-                            </aside>
-                        </section>
-                    </div>
-                </div>
-
-                @for(route of selectedItem.quoteRoute; track route){
-                <aside class="table-responsive  px-3 px-md-5">
-                    <table class="table">
-
-
-                        <tr>
-                            <td colspan="6" style="border:2px solid black">
-                                <aside class="d-flex gap-3 justify-content-between">
-                                    <div>
-                                        <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
-                                    </div>
-                                    <div>
-                                        <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : ''}}.</p>
-                                    </div>
+                    <div class="text-center h5 fw-bold">QUOTATION</div>
+                    <div class="row mx-auto my-3">
+                        <div class="col-md-6 px-3 px-md-5">
+                            <section class="d-flex flex-column">
+                                <aside class="d-flex">
+                                    <p class="mb-0 col-12 h6 fw-bold">{{this.selectedItem.CustomerName}}</p>
                                 </aside>
-                            </td>
-                        </tr>
-                        <tbody>
+                                <aside class="d-flex">
+                                    <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
+                                </aside>
+                            </section>
+                        </div>
+                        <div class="col-md-6">
+                            <section class="d-flex flex-column gap-1">
+                                <aside class="d-flex gap-3 justify-content-end">
+                                    <p class="mb-0 col-3 fw-bold">Quotation No</p>
+                                    <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
+                                </aside>
+                                <aside class="d-flex gap-3 justify-content-end">
+                                    <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+                                    <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate }}</p>
+                                </aside>
+                                <aside class="d-flex gap-3 justify-content-end">
+                                    <p class="mb-0 col-3 fw-bold">Reference</p>
+                                    <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
+                                </aside>
+                            </section>
+                        </div>
+                    </div>
+
+                    @for(route of selectedItem.quoteRoute; track route){
+                    <aside class="table-responsive  px-3 px-md-5">
+                        <table class="table">
+
+
                             <tr>
-                                <td colspan="6" class="p-0" style="border:2px solid black">
-                                    <aside class="d-flex flex-wrap">
-                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.quoteCarrier[0]?.CarrierName}}
-                                        </p>
-                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
-                                            {{route.quoteCargo[0]?.CargoType}}</p>
-                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
-                                            {{route.effDate | formatDate }}</p>
-                                        <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
-                                        </p>
+                                <td colspan="6" style="border:2px solid black">
+                                    <aside class="d-flex gap-3 justify-content-between">
+                                        <div>
+                                            <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
+                                        </div>
+                                        <div>
+                                            <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} -
+                                                {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '-
+                                                ' + getFormattedPort(route.FDPSid) : ''}}.</p>
+                                        </div>
                                     </aside>
                                 </td>
                             </tr>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="p-0" style="border:2px solid black">
+                                        <aside class="d-flex flex-wrap">
+                                            <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span>
+                                                {{route.quoteCarrier[0]?.CarrierName}}
+                                            </p>
+                                            <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type
+                                                    :</span>
+                                                {{route.quoteCargo[0]?.CargoType}}</p>
+                                            <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From :
+                                                </span>
+                                                {{route.effDate | formatDate }}</p>
+                                            <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span>
+                                                {{route.expdate | formatDate }}
+                                            </p>
+                                        </aside>
+                                    </td>
+                                </tr>
 
-                            <tr style="border:2px solid black">
-                                <td class="fw-bold table-secondary border border-dark">Charge</td>
-                                <td class="fw-bold table-secondary border border-dark">Unit</td>
-                                <td class="fw-bold table-secondary border border-dark">Qty</td>
-                                <td class="fw-bold table-secondary border border-dark">Curr</td>
-                                <td class="fw-bold table-secondary border border-dark">Rate</td>
-                                <td class="fw-bold table-secondary border border-dark">Total Amt</td>
-                            </tr>
-                            @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
-                            <tr style="border:2px solid black">
-                                <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
-                                <td class="border border-dark">{{charge.uomMaster?.UOMCode}}</td>
-                                <td class="border border-dark">{{charge.Qty}}</td>
-                                <td class="border border-dark">{{charge.currencyMaster?.currencyCode}}</td>
-                                <td class="border border-dark">{{charge.CostRate}}</td>
-                                <td class="border border-dark">{{charge.Qty * charge.CostRate}}</td>
-                            </tr>
-                            }
+                                <tr style="border:2px solid black">
+                                    <td class="fw-bold table-secondary border border-dark">Charge</td>
+                                    <td class="fw-bold table-secondary border border-dark">Unit</td>
+                                    <td class="fw-bold table-secondary border border-dark">Qty</td>
+                                    <td class="fw-bold table-secondary border border-dark">Curr</td>
+                                    <td class="fw-bold table-secondary border border-dark">Rate</td>
+                                    <td class="fw-bold table-secondary border border-dark">Total Amt</td>
+                                </tr>
+                                @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
+                                <tr style="border:2px solid black">
+                                    <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
+                                    <td class="border border-dark">{{charge.uomMaster?.UOMCode}}</td>
+                                    <td class="border border-dark">{{charge.Qty}}</td>
+                                    <td class="border border-dark">{{charge.currencyMaster?.currencyCode}}</td>
+                                    <td class="border border-dark">{{charge.CostRate}}</td>
+                                    <td class="border border-dark">{{charge.Qty * charge.CostRate}}</td>
+                                </tr>
+                                }
 
 
-                        </tbody>
-                    </table>
-                </aside>
-                }
-            </div>
+                            </tbody>
+                        </table>
+                    </aside>
+                    }
+                </div>
 
-            <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
-                <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
-                <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
-            </div>
-        </section>
-    </div>
-</ng-template>
-
-
-
+                <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
+                    <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
+                    <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+                </div>
+            </section>
+        </div>
+    </ng-template> -->

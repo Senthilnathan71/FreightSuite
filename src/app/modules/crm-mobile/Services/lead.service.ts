@@ -427,6 +427,15 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
+  searchPendingEnquiry(param) {
+    return this.http.post<{ data: any }>("ff-enquiry/pending-enquiries/search-list", param).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return resp;
+      })
+    )
+  }
+
   getAllShippers(CompanyMasterSid: number) {
     return this.http.post('customer/shipper',{CompanyMasterSid}).pipe(
       map((resp: any) => {
