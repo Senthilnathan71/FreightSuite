@@ -204,7 +204,8 @@ export class LeadComponent implements OnInit {
       preCustomerType: [],
       preCustomerAddress1: ['', [
         Validators.required,
-        Validators.pattern(/^[a-zA-Z0-9\s]+$/) // only letters, numbers, space
+        Validators.pattern(/^[a-zA-Z0-9#\s,.\-]+$/)
+                       // only letters, numbers, space
       ]],
 
       preCustomerAddress2: [''],
@@ -216,7 +217,8 @@ export class LeadComponent implements OnInit {
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
       phone: ['', [
         Validators.required,
-        Validators.pattern(/^[0-9]{10,15}$/) // only digits, length 10-15 (edit as needed)
+        Validators.pattern(/^[0-9+\s]+$/)
+ // only digits, length 10-15 (edit as needed)
       ]],
       leadStatus: [LeadStatus.Discovery],
       PreferredContactMode: ['Email'],
