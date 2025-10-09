@@ -291,7 +291,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   }
 
   navigateToQuotation(response: any) {
-    console.log(response);
     const dataId = response.EnquiryHeaderSid;
     if (!dataId) {
       return;
@@ -322,9 +321,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
     let routeDetails = (response.enquiryRoute || []).flatMap(route => {
       return (route.enquiryCargo || []).map(cargo => {
-        const containerTypeId = this.containerTypes.find(
+        const containerTypeCode = this.containerTypes.find(
           con => con.ContainerName === cargo.ContainerType
-        )?.ContainerTypeMasterSid || null;
+        )?.ContainerCode || null;
         return {
           PORSid: route.PORSid,
           POLSid: route.POLSid,
@@ -332,23 +331,20 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           FPODSid: route.FDPSid,
           CargoType: cargo.CargoType,
           CBM: cargo.Volume,
-          ContainerType: containerTypeId,
+          ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           ContainerQty: cargo.Qty
         };
       });
     });
 
-    console.log(response, 'responseData')
-
     const enqData = {
-
       EnquirySid: response?.EnquiryHeaderSid,
       EnquiryNumber: response.EnquiryNumber,
       CustomerAddress: response.CustomerAddress,
       CustomerName: response.CustomerName,
       Email: response.Email,
-      LeadOrCustomer : response.LeadOrCustomer,
+      LeadOrCustomer : response.LeadOrCustomer === "C",
       CustomerMasterSid: response.CustomerMasterSid,
       PreCustomerMasterSid : response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
