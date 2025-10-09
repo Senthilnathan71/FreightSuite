@@ -60,6 +60,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   currentCompany: any;
   currentBranch: any;
   userData: any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   // Table Configurations
   enquiryTableConfig: TableConfig;
@@ -86,7 +88,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     this.currentBranch = storedBranch ? this.appSettings.decrypt(storedBranch) : null;
 
     this.isMobile = this.appService.getDevice();
-    this.appSettings.getUser().subscribe(res => this.userData = res);
+    this.userData = this.appSettings.getDecryptedUserProfile()
+    this.checkPermissions();
 
     // Initialize Managers
     this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
@@ -98,6 +101,23 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     // Initial load
     this.selectTab(this.selectedTab);
 
+  }
+
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+      this.leadService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+        }
+      });
+    }
   }
 
   loadAllFields(){
@@ -130,7 +150,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   private initializeTableConfigs() {
     this.enquiryTableConfig = {
       columns: [
-        { key: 'EnquiryNumber', label: 'Rate Request No', sortable: true, visible: true },
+        { key: 'EnquiryNumber', label: 'Enquiry No', sortable: true, visible: true },
         { key: 'EnquiryDate', label: 'Enquiry Date', sortable: true, visible: true },
         { key: 'CustomerName', label: 'Customer', sortable: true, visible: true },
         { key: 'departmentName', label: 'Department', sortable: true, visible: true },
@@ -251,7 +271,12 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   get quotationHeaderActions(): HeaderAction[] {
     return [
-      { label: 'Create', icon: 'fas fa-plus', action: 'create' },
+      { 
+        label: 'Create', 
+        icon: 'fas fa-plus', 
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -260,6 +285,10 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
       },
       { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' }
     ];
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
   }
 
   // --- Enquiry Methods ---

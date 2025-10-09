@@ -51,13 +51,13 @@ export class ChargeEntryComponent implements OnInit {
   { name: "TDS Details", icon: "fas fa-percent" }
 ];
 unitQtyOptions = [
-  { value: '20ft (FCL)', name: '20ft ' },
-  { value: '40ft (FCL)', name: '40ft ' },
-  { value: 'CBM (LCL)', name: 'CBM ' },
-  { value: 'BL (Common)', name: 'BL ' },
-  { value: 'ChargeableWeight (AIR)', name: 'ChargeableWeight ' },
-  { value: 'Shipment (Common)', name: 'Shipment ' },
-  { value: 'Gross Weight (LCL)', name: 'Gross Weight ' }
+  { value: '20ft', name: '20ft' },
+  { value: '40ft', name: '40ft' },
+  { value: 'CBM', name: 'CBM' },
+  { value: 'BL', name: 'BL' },
+  { value: 'ChargeableWeight', name: 'Chargeable Weight ' },
+  { value: 'Shipment', name: 'Shipment' },
+  { value: 'GrossWeight', name: 'Gross Weight ' }
 ];
 CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],

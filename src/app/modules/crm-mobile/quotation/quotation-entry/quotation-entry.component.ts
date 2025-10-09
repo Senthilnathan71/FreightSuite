@@ -14,11 +14,11 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgbAccordionDirective } from '@ng-bootstrap/ng-bootstrap';
-import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, distinctUntilChanged, firstValueFrom, forkJoin, from, map, Observable, of, Subject, Subscription, tap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, from, map, merge, Observable, of, Subject, Subscription, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
@@ -57,7 +57,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FavoriteStarComponent,
     SearchableDropdown,
     CustomDatePipe,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    FormsModule
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -65,6 +66,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe
   ],
 })
 export class QuotationEntryComponent implements OnInit {
@@ -118,6 +120,7 @@ export class QuotationEntryComponent implements OnInit {
   filteredPOLPorts: any[][] = [];
   filteredPODPorts: any[][] = [];
   chargeMaster: any[] = [];
+  filteredCharges : any[] = [];
   currencyMaster: any[] = [];
   chargeUnitMaster: any[] = [];
   packageUnitMaster: any[] = [];
@@ -221,13 +224,13 @@ dataFromEnqPage:any;
   };
  
   chargeLookupConfig = {
-    displayFields : ['chargeCode'],
-    displayLabels : ['Code'],
+    displayFields : ['chargeCode','chargeName'],
+    displayLabels : ['Code','Name'],
     labelFields :['chargeCode']
   };
   unitLookupConfig = {
-    displayFields : ['UOMCode'],
-    displayLabels : ['Code'],
+    displayFields : ['UOMCode','UOMName'],
+    displayLabels : ['Code','Name'],
     labelFields :['UOMCode']
   };
   currencyLookupConfig = {
@@ -235,6 +238,11 @@ dataFromEnqPage:any;
     displayLabels : ['Code','Name','Country'],
     labelFields :['currencyCode']
   };
+  incoLookupConfig = {
+    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
+    displayLabels: ['Code', 'Name', 'P/C'],
+    labelFields: ['IncoCode']
+  }
 
   // currencyColumns : ComboBoxColumn[] = [
   //   { field: 'currencyCode', header: 'Code', width: '30%' },
@@ -259,6 +267,7 @@ dataFromEnqPage:any;
     private ngbModal: NgbModal,
     private toastr: ToastrService,
     private spinner: NgxSpinnerService,
+    private datePipe : CustomDatePipe
   ) { }
 
   // SECTION3 - NGONIT
@@ -274,7 +283,6 @@ dataFromEnqPage:any;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
@@ -368,7 +376,7 @@ patchEnqPageValues(enqData: any) {
       Volume: route?.Volume || 1,
       ContainerQty: Number(route?.ContainerQty) || 1,
       CBM: route?.CBM || 1,
-      ChargeableWeight: route?.ChargeableWeight || cargoData?.GrossWeight || 0,
+      ChargeableWeight: route?.ChargeableWeight || 0,
       effDate: new Date(),
       expDate: '', 
       TransitDays: route?.TransitDays || '',
@@ -449,6 +457,12 @@ private extractCargoData(enquiryCargo: any[]): any {
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
   }
+
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+  }
+  
   checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     if (!UserMasterSid || !currentMenuId) {
@@ -565,7 +579,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   onSelectionChange(selectedItem: any) {
-    this.handleCustomerChangeOnCharges(selectedItem);
+
     if (!selectedItem) {
       this.quotationForm.patchValue({
         CustomerName: '',
@@ -585,6 +599,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         Email: selectedItem.Email,
         CustomerBranchSid: selectedItem.CustomerBranchSid,
       });
+      this.handleCustomerChangeOnCharges(selectedItem);
     } else {
       this.quotationForm.patchValue({
         CustomerName: selectedItem.preCustomerName,
@@ -655,8 +670,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     routeForm.get('NetWeight')?.valueChanges.subscribe(() => {
       this.setOrResetWeightError(routeForm);
     });
-
-
+    this.setupDynamicQtyUpdates(routeIndex);
   }
 
   setOrResetWeightError(formGroup: FormGroup) {
@@ -796,6 +810,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ChargeUomSid : [data?.ChargeUomSid || null, [Validators.required]],
       ChargeDisplayName : [data?.ChargeDisplayName, [Validators.required]],
       Qty : [data?.Qty || 1],
+      unitQtyBasis: [data?.UnitQty || null],  // This is to track Charge Based on Unit Qty
 
       RevenueChargeUomSid: [data?.RevenueChargeUomSid || null, [Validators.required]],
       RevenuePrepaidCollect: [data?.RevenuePrepaidCollect || "Prepaid"],
@@ -845,6 +860,62 @@ private extractCargoData(enquiryCargo: any[]): any {
       costPerUnitCtrl.updateValueAndValidity();
     }
     this.quoteCharges(routeIndex,carrierIndex).push(chargeForm)
+  }
+
+  setupDynamicQtyUpdates(routeIndex: number): void {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    if (!routeForm) return;
+
+    const fieldsToWatch = ['GrossWeight', 'Volume', 'ChargeableWeight', 'Qty'];
+
+    this.subscription.add(
+      merge(
+        ...fieldsToWatch
+          .filter(field => routeForm.get(field)) 
+          .map(field => routeForm.get(field)!.valueChanges)
+      ).pipe(
+        debounceTime(150),
+        distinctUntilChanged()
+      ).subscribe(() => {
+        this.updateAllChargeQuantitiesForRoute(routeIndex);
+      })
+    );
+  }
+
+  private updateAllChargeQuantitiesForRoute(routeIndex: number): void {
+    const routeForm = this.quoteRoutes.at(routeIndex);
+    if (!routeForm) return;
+
+    const carriers = routeForm.get('quoteCarriers') as FormArray;
+    carriers.controls.forEach((carrier, carrierIndex) => {
+      const charges = (carrier as FormGroup).get('quoteCharges') as FormArray;
+      charges.controls.forEach((charge, chargeIndex) => {
+        this.updateSingleChargeQty(routeIndex, carrierIndex, chargeIndex);
+      });
+    });
+  }
+
+  updateSingleChargeQty(routeIndex: number, carrierIndex: number, chargeIndex: number): void {
+    const chargeGroup = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
+    const routeGroup = this.quoteRoutes.at(routeIndex) as FormGroup;
+
+    const unitQtyBasis = chargeGroup.get('unitQtyBasis')?.value;
+    if (!unitQtyBasis) {
+      return; 
+    }
+
+    const qtySourceField = this.findFieldForQty(unitQtyBasis);
+    let newQty = 1;
+
+    if (typeof qtySourceField === 'string' && routeGroup.get(qtySourceField)) {
+      newQty = routeGroup.get(qtySourceField)?.value || 1;
+    } else if (typeof qtySourceField === 'number') {
+      newQty = qtySourceField;
+    }
+
+    chargeGroup.get('Qty')?.setValue(newQty);
+    this.calculateRevenueTotalAmount(routeIndex, carrierIndex, chargeIndex);
+    this.calculateCostTotalAmount(routeIndex, carrierIndex, chargeIndex);
   }
 
   isRequiredInQuoteRoute(routeIndex:number ,ctrl : string) : boolean {
@@ -1236,21 +1307,41 @@ private extractCargoData(enquiryCargo: any[]): any {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
     })
 
-    const {quoteRoute,...header} = response;
+    const { quoteRoute, ...header } = response;
     const approvedRoute = (quoteRoute || []).find(route => {
-      return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
+      return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved");
     });
-    const {quoteCarrier,quoteCargo,...routeDetails} = approvedRoute;
-    routeDetails['quoteCarrier'] = quoteCarrier.find(carrier => carrier.ApprovalStatus === "Approved");
 
-    console.log(approvedRoute);
+    let approvedQuoteCarrier;
+    let approvedQuoteCargo;
+    let approvedQuoteRoute;
+
+    if (approvedRoute) {
+      // Extract only the approved carrier
+      const approvedCarrier = (approvedRoute.quoteCarrier || []).find(
+        carrier => carrier.ApprovalStatus === "Approved"
+      );
+
+      // Prepare copies
+      approvedQuoteCarrier = approvedCarrier;
+      approvedQuoteCargo = approvedRoute.quoteCargo;
+
+      // Copy route details except arrays
+      const { quoteCarrier, quoteCargo, ...routeDetails } = approvedRoute;
+      approvedQuoteRoute = {
+        ...routeDetails,
+        quoteCarrier: approvedQuoteCarrier
+      };
+    }
+
+    console.log("Approved Route:", approvedRoute);
 
     let approvedData = {
       ...header,
-      quoteRoute: routeDetails
-    }
-    
-    console.log(approvedData);
+      quoteRoute: approvedQuoteRoute
+    };
+
+    console.log("Approved Data:", approvedData);
 
     // Approved Data for Quotation
     this.selectedItem = approvedData;
@@ -1518,6 +1609,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.quoteRoutes.controls.forEach((route:FormGroup)=>{
       this.handleSegmentChangeOnAllProducts(routeIndex);
     })
+
+    this.filterChargesBySegment(routeIndex,selectedFCLLCL);
   }
 
   onCustomerChange(event: any): void {
@@ -1542,40 +1635,31 @@ private extractCargoData(enquiryCargo: any[]): any {
     routeForm.get('FPODSid')?.setValue(event.PortMasterSid);
   }
 
-  onChargeChange(charge: any, routeIndex: number, carrierIndex:number, chargeIndex: number) {
-    if (!charge || charge === undefined) {
-      const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-      const clearFields = ['ChargeDisplayName', 'ChargeUomSid','Qty', 'RevenueCurrencyMasterSid', 'RevenueExchangeRate', 'RevenueAmount', 'RevenueLocalAmount'];
-      const clearControls = (allCtrl:string[]) => {
-        allCtrl.forEach(ctrl => {
-          if (chargeForm.get(ctrl)) {
-            chargeForm.get(ctrl)?.setValue('');
-          }
-        })
-      }
-      clearControls(clearFields);
+  onChargeChange(charge: any, routeIndex: number, carrierIndex: number, chargeIndex: number) {
+    const chargeForm = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
+
+    if (!charge) {
+      const clearFields = ['ChargeDisplayName', 'ChargeUomSid', 'Qty', 'RevenueCurrencyMasterSid', 'RevenueExchangeRate', 'RevenueAmount', 'RevenueLocalAmount', 'unitQtyBasis'];
+      clearFields.forEach(ctrl => chargeForm.get(ctrl)?.reset());
       return;
     }
-    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-    const uomCode = (this.chargeUnitMaster.find(uom => uom.UOMMasterSid === charge.UOM))?.UOMCode;
-    const currCode = (this.currencyMaster.find(curr => curr.CurrencyMasterSid === charge.CurrencyMasterSid))?.currencyCode;
 
-    chargeForm.get('ChargeDisplayName')?.setValue(charge.chargeName);
-    const qty = this.findFieldForQty(charge.UnitQty);
-    console.log(qty);
-    if(qty){
-      const qtyValue = this.quoteRoutes.at(routeIndex).get(qty)?.value;
-      console.log(chargeForm.get('Qty')?.value);
-      chargeForm.get('Qty')?.setValue(Number(qtyValue) || '');
-      console.log(chargeForm.get('Qty')?.value);
-    }
+    chargeForm.patchValue({
+      ChargeDisplayName: charge.chargeName,
+      RevenueChargeUomSid: charge.UOM,
+      CostChargeUomSid: charge.UOM,
+      RevenueCurrencyMasterSid: charge.CurrencyMasterSid,
+      CostCurrencyMasterSid: charge.CurrencyMasterSid,
+      unitQtyBasis: charge.UnitQty
+    });
 
-    chargeForm.get('RevenueChargeUomSid')?.setValue(charge.UOM);
-    chargeForm.get('RevenueCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
-    chargeForm.get('CostChargeUomSid')?.setValue(charge.UOM);
-    chargeForm.get('CostCurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
-    // this.handleQty(routeIndex,carrierIndex,chargeIndex);
+    this.updateSingleChargeQty(routeIndex, carrierIndex, chargeIndex);
+
+    this.fetchExchangeRate(routeIndex, carrierIndex, chargeIndex, 'revenue');
+    this.fetchExchangeRate(routeIndex, carrierIndex, chargeIndex, 'cost');
+
   }
+
 
   onCarrierChange(carrier: any, routeIndex: number) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
@@ -1755,95 +1839,188 @@ private extractCargoData(enquiryCargo: any[]): any {
     return true
   }
 
-  getTariffDetails(routeIndex:number,carrierIndex:number,template:TemplateRef<any>){
+  // getTariffDetails(routeIndex:number,carrierIndex:number,template:TemplateRef<any>){
+  //   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  //   const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+  //   if(!this.hasEveryRequiredFieldsFilled(routeIndex)){
+  //     this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
+
+  //     this.requiredFieldsToGetTariff.forEach(ctrl => {
+  //       if(routeForm.get(ctrl)){
+  //         routeForm.get(ctrl).markAsTouched();
+  //       }
+  //     });
+  //     return;
+  //   }
+  //   this.tariffLoading = true;
+  //   this.currentRouteIndex = routeIndex;
+  //   this.currentCarrierIndex = carrierIndex;
+  //   const routeCtrl = this.quoteRoutes.at(this.currentRouteIndex) as FormGroup;
+
+  //   this.ngbModal.open(template,{
+  //     size : 'lg',
+  //     centered : true , 
+  //     backdrop:'static'
+  //   });
+
+  //   const payload = {
+  //     CompanyMasterSid : this.currentCompany.CompanyMasterSid,
+  //     DepartmentMasterSid : routeForm.get('DepartmentMasterSid')?.value,
+  //     PORSid : routeForm.get('PORSid')?.value,
+  //     POLSid : routeForm.get('POLSid')?.value,
+  //     PODSid : routeForm.get('PODSid')?.value,
+  //     FPODSid : routeForm.get('FPODSid')?.value,
+  //     CargoType : routeForm.get('CargoType')?.value,
+  //     EffectiveDate : routeForm.get('effDate')?.value ? new Date(routeForm.get('effDate')?.value) : null,
+  //     ExpiredDate : routeForm.get('expDate')?.value ? new Date(routeForm.get('expDate')?.value) : null,
+  //     Carrier : carrierForm.get('CarrierMasterSid')?.value,
+  //     IncoTerms : routeForm.get('ServiceLevel')?.value,
+  //   }
+
+  //   this.leadService.getTariffDetailsByQuote(payload).subscribe(
+  //     (resp:any)=>{
+  //       if(resp.status){
+  //         const response : any[] = resp.data || [];
+  //         const existingValue = routeForm.getRawValue();
+  //         const existingTariffDetailId = (existingValue?.quoteCharges || []).map((ch)=> ch.TariffDetailSid)
+  //         this.tariffDetails = response
+  //           .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
+  //           .map((td:any)=>{
+  //           const charge = this.getCharge(td.ChargeCode);
+  //           let qtySourceField = this.findFieldForQty(charge.UnitQty);
+  //           let qtyValue;
+  //           if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField) && qtySourceField !== '1') {
+  //             qtyValue = routeForm.get(qtySourceField)?.value || 1;
+  //           } else if (qtySourceField === '1') {
+  //             qtyValue = qtySourceField;
+  //           }
+  //             return {
+  //               ...td,
+  //               ChargeDisplayName: charge?.chargeName,
+  //               chargeCode: charge?.chargeCode,
+  //               ChargeUomSid: charge?.ChargeMasterSid,
+  //               Qty: Number(qtyValue) || 0,
+
+  //               RevenueChargeUomSid: td?.UOMSid,
+  //               RevenuePrepaidCollect: "Prepaid",
+  //               RevenueCurrencyMasterSid: td?.SaleCurrency,
+  //               RevenueRate: (Number(td?.SalePerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+  //               RevenueExchangeRate: (Number(td?.revenueExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+  //               RevenueDrCr: "C",
+  //               RevenueAmount: ((Number(qtyValue) || 0) * (Number(td?.SalePerUnitPrice) || 0)).toFixed(this.digitsAfterDecimal),
+  //               RevenueLocalAmount: ((Number(td?.revenueExchangeRate) || 0) * (Number(qtyValue) || 0) * (Number(td?.SalePerUnitPrice) || 0)).toFixed(this.digitsAfterDecimal),
+
+  //               CostChargeUomSid: td?.UOMSid,
+  //               CostPrepaidCollect: "Prepaid",
+  //               CostCurrencyMasterSid: td?.BuyCurrency,
+  //               CostRate: (Number(td?.BuyPerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+  //               CostExchangeRate: (Number(td?.costExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+  //               CostDrCr: "D",
+  //               CostAmount: ((Number(qtyValue) || 0) * (Number(td?.BuyPerUnitPrice) || 0)).toFixed(this.digitsAfterDecimal),
+  //               CostLocalAmount: ((Number(td?.costExchangeRate) || 0) * (Number(qtyValue) || 0) * (Number(td?.BuyPerUnitPrice) || 0)).toFixed(this.digitsAfterDecimal),
+  //             };
+  //         })
+  //         console.log(this.tariffDetails);
+  //         this.tariffLoading = false;
+  //       } else {
+  //         this.appSettingService.showError("Error loading Tariff Details");
+  //         this.tariffLoading = false;
+  //       }
+  //     }
+  //   )
+  // }
+
+  getTariffDetails(routeIndex: number, carrierIndex: number, template: TemplateRef<any>) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
-    if(!this.hasEveryRequiredFieldsFilled(routeIndex)){
-      this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
 
+    if (!this.hasEveryRequiredFieldsFilled(routeIndex)) {
+      this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
       this.requiredFieldsToGetTariff.forEach(ctrl => {
-        if(routeForm.get(ctrl)){
+        if (routeForm.get(ctrl)) {
           routeForm.get(ctrl).markAsTouched();
         }
       });
       return;
     }
+    
     this.tariffLoading = true;
     this.currentRouteIndex = routeIndex;
     this.currentCarrierIndex = carrierIndex;
-    const routeCtrl = this.quoteRoutes.at(this.currentRouteIndex) as FormGroup;
 
-    this.ngbModal.open(template,{
-      size : 'lg',
-      centered : true , 
-      backdrop:'static'
-    });
+    this.ngbModal.open(template, { size: 'lg', centered: true, backdrop: 'static' });
 
     const payload = {
-      CompanyMasterSid : this.currentCompany.CompanyMasterSid,
-      DepartmentMasterSid : routeForm.get('DepartmentMasterSid')?.value,
-      PORSid : routeForm.get('PORSid')?.value,
-      POLSid : routeForm.get('POLSid')?.value,
-      PODSid : routeForm.get('PODSid')?.value,
-      FPODSid : routeForm.get('FPODSid')?.value,
-      CargoType : routeForm.get('CargoType')?.value,
-      EffectiveDate : routeForm.get('effDate')?.value ? new Date(routeForm.get('effDate')?.value) : null,
-      ExpiredDate : routeForm.get('expDate')?.value ? new Date(routeForm.get('expDate')?.value) : null,
-      Carrier : carrierForm.get('CarrierMasterSid')?.value,
-      IncoTerms : routeForm.get('ServiceLevel')?.value,
-    }
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      DepartmentMasterSid: routeForm.get('DepartmentMasterSid')?.value,
+      PORSid: routeForm.get('PORSid')?.value,
+      POLSid: routeForm.get('POLSid')?.value,
+      PODSid: routeForm.get('PODSid')?.value,
+      FPODSid: routeForm.get('FPODSid')?.value,
+      CargoType: routeForm.get('CargoType')?.value,
+      EffectiveDate: routeForm.get('effDate')?.value ? new Date(routeForm.get('effDate')?.value) : null,
+      ExpiredDate: routeForm.get('expDate')?.value ? new Date(routeForm.get('expDate')?.value) : null,
+      Carrier: carrierForm.get('CarrierMasterSid')?.value,
+      IncoTerms: routeForm.get('ServiceLevel')?.value,
+    };
 
     this.leadService.getTariffDetailsByQuote(payload).subscribe(
-      (resp:any)=>{
-        if(resp.status){
-          const response : any[] = resp.data || [];
-          const existingValue = routeForm.getRawValue();
-          const existingTariffDetailId = (existingValue?.quoteCharges || []).map((ch)=> ch.TariffDetailSid)
+      (resp: any) => {
+        if (resp.status) {
+          const response: any[] = resp.data || [];
+          const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
+          const existingTariffDetailId = existingCharges.map((ch: any) => ch.TariffDetailSid);
+
           this.tariffDetails = response
             .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
-            .map((td:any)=>{
-            const charge = this.getCharge(td.ChargeCode);
-            let Qty = this.findFieldForQty(charge.UnitQty);
-            console.log(Qty);
-            let qtyValue;
-            if(Qty){
-              qtyValue = routeForm.get(Qty)?.value;
-            }
-            console.log(qtyValue);
-            return {
-              ...td,
-              ChargeDisplayName : charge?.chargeName,
-              chargeCode : charge?.chargeCode,
-              ChargeUomSid : charge?.ChargeMasterSid,
-              Qty : Number(qtyValue),
+            .map((td: any) => {
+              const charge = this.getCharge(td.ChargeCode);
+              let qtySourceField = this.findFieldForQty(charge.UnitQty);
+              let qtyValue = 1; // Default to 1
 
-              RevenueChargeUomSid : td?.UOMSid,
-              RevenuePrepaidCollect : "Prepaid",
-              RevenueCurrencyMasterSid : td?.SaleCurrency,
-              RevenueRate : Number(td?.SalePerUnitPrice).toFixed(this.digitsAfterDecimal),
-              RevenueExchangeRate : Number(td?.revenueExchangeRate).toFixed(this.digitsAfterDecimal),
-              RevenueDrCr : "C",
-              RevenueAmount : (Number(qtyValue) * Number(td?.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
-              RevenueLocalAmount : (Number(td?.revenueExchangeRate) * Number(qtyValue) * Number(td?.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+              if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField)) {
+                qtyValue = routeForm.get(qtySourceField)?.value || 1;
+              } else if (typeof qtySourceField === 'number') {
+                qtyValue = qtySourceField;
+              }
+              
+              const revenueAmount = (Number(qtyValue) || 1) * (Number(td?.SalePerUnitPrice) || 0);
+              const costAmount = (Number(qtyValue) || 1) * (Number(td?.BuyPerUnitPrice) || 0);
 
-              CostChargeUomSid : td?.UOMSid,
-              CostPrepaidCollect : "Prepaid",
-              CostCurrencyMasterSid : td?.BuyCurrency,
-              CostRate : Number(td?.BuyPerUnitPrice).toFixed(this.digitsAfterDecimal),
-              CostExchangeRate : Number(td?.costExchangeRate).toFixed(this.digitsAfterDecimal),
-              CostDrCr : "D",
-              CostAmount : (Number(qtyValue) * Number(td?.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
-              CostLocalAmount : (Number(td?.costExchangeRate) * Number(qtyValue) * Number(td?.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
-            }
-          })
-          console.log(this.tariffDetails);
+              return {
+                ...td,
+                selected: true, // <-- Property for checkbox binding
+                ChargeDisplayName: charge?.chargeName,
+                chargeCode: charge?.chargeCode,
+                ChargeUomSid: charge?.ChargeMasterSid,
+                Qty: Number(qtyValue) || 1,
+                
+                RevenueChargeUomSid: td?.UOMSid,
+                RevenuePrepaidCollect: "Prepaid",
+                RevenueCurrencyMasterSid: td?.SaleCurrency,
+                RevenueRate: (Number(td?.SalePerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+                RevenueExchangeRate: (Number(td?.revenueExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+                RevenueDrCr: "C",
+                RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
+                RevenueLocalAmount: (revenueAmount * (Number(td?.revenueExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
+
+                CostChargeUomSid: td?.UOMSid,
+                CostPrepaidCollect: "Prepaid",
+                CostCurrencyMasterSid: td?.BuyCurrency,
+                CostRate: (Number(td?.BuyPerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+                CostExchangeRate: (Number(td?.costExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+                CostDrCr: "D",
+                CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
+                CostLocalAmount: (costAmount * (Number(td?.costExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
+              };
+            });
           this.tariffLoading = false;
         } else {
           this.appSettingService.showError("Error loading Tariff Details");
           this.tariffLoading = false;
         }
       }
-    )
+    );
   }
 
   getCharge(chargeCode){
@@ -1873,33 +2050,78 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.ngbModal.dismissAll();
   }
 
-  applyTariff(tariffData:any){
+  // applyTariff(tariffData:any){
     
-    const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex,this.currentCarrierIndex);
-    let chargeIndex;
-    if(isEmpty){
-      chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
-      const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
-      chargeForm.patchValue({
-        ...tariffData
-      })
-      chargeForm.updateValueAndValidity();
-    } else {
-      this.addQuoteCharge(this.currentRouteIndex,this.currentCarrierIndex,tariffData);
-      chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
-    }
-    
-    // this.handleQty(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
-    // this.calculateRevenueTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
-    // this.calculateCostTotalAmount(this.currentRouteIndex,this.currentCarrierIndex,chargeIndex);
+  //   const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex,this.currentCarrierIndex);
+  //   let chargeIndex;
+  //   if(isEmpty){
+  //     chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
+  //     const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
+  //     chargeForm.patchValue({
+  //       ...tariffData
+  //     })
+  //     chargeForm.updateValueAndValidity();
+  //   } else {
+  //     this.addQuoteCharge(this.currentRouteIndex,this.currentCarrierIndex,tariffData);
+  //     chargeIndex = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).length - 1;
+  //   }
+  //   const customerId = this.quotationForm.get('CustomerMasterSid')?.value;
+  //   const customer = this.customers.find(c => c.CustomerMasterSid === customerId);
+  //   if (customer) {
+  //     this.handleCustomerChangeOnCharges(customer);
+  //   }
+  //   this.closeTariffModal();
+  // }
 
-    // const chargeForm = this.quoteCharges(this.currentRouteIndex,this.currentCarrierIndex).at(chargeIndex) as FormGroup;
-    // Object.keys(data).forEach(field => {
-    //   if(chargeForm.get(field) && field !== "Qty"){
-    //     chargeForm.get(field)?.disable();
-    //   }
-    // })
+  applySelectedTariffs(): void {
+    const selectedTariffs = this.tariffDetails.filter(tariff => tariff.selected);
+
+    if (selectedTariffs.length === 0) {
+      this.appSettingService.showWarning('Please select at least one tariff to apply.');
+      return;
+    }
+
+    selectedTariffs.forEach(tariffData => {
+      const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex, this.currentCarrierIndex);
+      let chargeIndex;
+
+      if (isEmpty) {
+        chargeIndex = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).length - 1;
+        const chargeForm = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).at(chargeIndex) as FormGroup;
+        chargeForm.patchValue({ ...tariffData });
+        chargeForm.updateValueAndValidity();
+      } else {
+        this.addQuoteCharge(this.currentRouteIndex, this.currentCarrierIndex, tariffData);
+        chargeIndex = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).length - 1;
+      }
+      
+      // After adding/patching, run necessary updates for the new charge
+      this.updateSingleChargeQty(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex);
+      this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'revenue');
+      this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'cost');
+    });
+
+    const customerId = this.quotationForm.get('CustomerMasterSid')?.value;
+    const customer = this.customers.find(c => c.CustomerMasterSid === customerId);
+    if (customer) {
+      this.handleCustomerChangeOnCharges(customer);
+    }
+
     this.closeTariffModal();
+  }
+
+  areAllTariffsSelected(): boolean {
+    if (!this.tariffDetails || this.tariffDetails.length === 0) {
+      return false;
+    }
+    return this.tariffDetails.every(td => td.selected);
+  }
+
+  toggleSelectAllTariffs(event: any): void {
+    const checked = event.target.checked;
+    if (this.tariffDetails) {
+      this.tariffDetails.forEach(td => td.selected = checked);
+    }
   }
 
   getUOMCode(UOMMasterSid:number){
@@ -2035,13 +2257,71 @@ private extractCargoData(enquiryCargo: any[]): any {
     );
   }
 
-  openEmail() {
+  async openEmail() {
     if (!this.quotationData) return;
+    if(!this.quotationApproved){
+      this.appSettingService.showWarning("Please approve the quotation before sending email");
+      return;
+    }
+
+    try {
+      this.spinner.show();
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      // Generate PDF blob automatically
+          const pdfBlob = await this.generatePDFBlob();
+    const pdfFileName = (this.quotationData?.QuotationNumber || 'quotation') + '.pdf';
+    const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
+
+    const toEmailSet = new Set<string>();
+    toEmailSet.add(this.selectedItem.Email);
+
+    const toEmail = Array.from(toEmailSet);
+    const ccEmail = [this.userData['userEmail']];
+
+    const POL = this.selectedItem?.quoteRoute[0]?.POLSid;
+    const POD =  this.selectedItem?.quoteRoute[0]?.PODSid;
+    const FPD =  this.selectedItem?.quoteRoute[0]?.FPODSid;
+    const formattedPOL = this.getFormattedPort(POL);
+    const formattedPOD = this.getFormattedPort(POD);
+    const formattedFPD = this.getFormattedPort(FPD);
+
+    const subject = `Quotation No.${this.quotationData?.QuoteNumber} Date: ${this.datePipe.transform(this.quotationData?.QuoteDate)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
+
+    const mailBody = `Dear Sir/Madam,
+Please find enclosed the quotation as requested.
+Kindly review the details at your convenience.
+Looking forward to your feedback and the opportunity to work together.
+Approval Hyper link https://xxxxxxxxx
+Best Regards,
+${this.userData.userName}`;
+    
+    this.spinner.hide();
+
+    modalRef.componentInstance.setContent = {
+      EmailTo: toEmail,
+      EmailCC: ccEmail,
+      EmailBCC: [],
+      Subject: subject,
+      Mailbody: mailBody,
+      attachments: [pdfFile]
+    };
+
+    } catch (error) {
+      this.spinner.hide();
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF for email attachment.');
+    }
+
+
+
   }
 
   openAuthority() {
@@ -2138,67 +2418,67 @@ private extractCargoData(enquiryCargo: any[]): any {
   });
 }
 
-  patchRevenueExchangeRate(routeIndex,carrierIndex, chargeIndex) {
-    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-    const revCurrencyMasterSid = chargeForm.get('RevenueCurrencyMasterSid');
-    const revenueExchangeRate = chargeForm.get('RevenueExchangeRate');
-    const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
-    const fromCurrency = revCurrencyMasterSid.value;
-    const toCurrency = userCompany.companyMaster.CurrencyMasterSid;
-    const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
-    const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
-    const payload = {
-      fromCurrencyCode: fromCurrencyCode,
-      toCurrencyCode: toCurrencyCode
-    }
-    if (fromCurrencyCode && toCurrencyCode) {
-      this.leadService.getExchangeRate(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            const exchangeRate = resp.data;
-            revenueExchangeRate.setValue(exchangeRate);
-          } else {
-            revenueExchangeRate?.setValue('');
-          }
-        }
-      )
-    } else {
-      revenueExchangeRate?.setValue('');
-    }
-    revenueExchangeRate?.updateValueAndValidity();
-  }
+  // patchRevenueExchangeRate(routeIndex,carrierIndex, chargeIndex) {
+  //   const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
+  //   const revCurrencyMasterSid = chargeForm.get('RevenueCurrencyMasterSid');
+  //   const revenueExchangeRate = chargeForm.get('RevenueExchangeRate');
+  //   const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
+  //   const fromCurrency = revCurrencyMasterSid.value;
+  //   const toCurrency = userCompany.companyMaster.CurrencyMasterSid;
+  //   const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
+  //   const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+  //   const payload = {
+  //     fromCurrencyCode: fromCurrencyCode,
+  //     toCurrencyCode: toCurrencyCode
+  //   }
+  //   if (fromCurrencyCode && toCurrencyCode) {
+  //     this.leadService.getExchangeRate(payload).subscribe(
+  //       (resp: any) => {
+  //         if (resp.status) {
+  //           const exchangeRate = resp.data;
+  //           revenueExchangeRate.setValue(exchangeRate);
+  //         } else {
+  //           revenueExchangeRate?.setValue('');
+  //         }
+  //       }
+  //     )
+  //   } else {
+  //     revenueExchangeRate?.setValue('');
+  //   }
+  //   revenueExchangeRate?.updateValueAndValidity();
+  // }
 
-  patchCostExchangeRate(routeIndex,carrierIndex, chargeIndex) {
-    const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-    const costCurrencyMasterSid = chargeForm.get('CostCurrencyMasterSid');
-    const costExchangeRate = chargeForm.get('CostExchangeRate');
-    const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
-    const fromCurrency = costCurrencyMasterSid.value;
-    const toCurrency = userCompany.companyMaster.CurrencyMasterSid;
-    console.log(fromCurrency, toCurrency);
-    const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
-    const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
-    const payload = {
-      fromCurrencyCode: fromCurrencyCode,
-      toCurrencyCode: toCurrencyCode
-    }
-    console.log(payload);
-    if (fromCurrencyCode && toCurrencyCode) {
-      this.leadService.getExchangeRate(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            const exchangeRate = resp.data;
-            costExchangeRate.setValue(exchangeRate);
-          } else {
-            costExchangeRate?.setValue('');
-          }
-        }
-      )
-    } else {
-      costExchangeRate?.setValue('');
-    }
-    costExchangeRate?.updateValueAndValidity();
-  }
+  // patchCostExchangeRate(routeIndex,carrierIndex, chargeIndex) {
+  //   const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
+  //   const costCurrencyMasterSid = chargeForm.get('CostCurrencyMasterSid');
+  //   const costExchangeRate = chargeForm.get('CostExchangeRate');
+  //   const userCompany = (this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany.CompanyMasterSid);
+  //   const fromCurrency = costCurrencyMasterSid.value;
+  //   const toCurrency = userCompany.companyMaster.CurrencyMasterSid;
+  //   console.log(fromCurrency, toCurrency);
+  //   const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
+  //   const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+  //   const payload = {
+  //     fromCurrencyCode: fromCurrencyCode,
+  //     toCurrencyCode: toCurrencyCode
+  //   }
+  //   console.log(payload);
+  //   if (fromCurrencyCode && toCurrencyCode) {
+  //     this.leadService.getExchangeRate(payload).subscribe(
+  //       (resp: any) => {
+  //         if (resp.status) {
+  //           const exchangeRate = resp.data;
+  //           costExchangeRate.setValue(exchangeRate);
+  //         } else {
+  //           costExchangeRate?.setValue('');
+  //         }
+  //       }
+  //     )
+  //   } else {
+  //     costExchangeRate?.setValue('');
+  //   }
+  //   costExchangeRate?.updateValueAndValidity();
+  // }
 
   handleCalculation(routeIndex:number){
     const routeCtrl = this.quoteRoutes.at(routeIndex) as FormGroup;
@@ -2231,6 +2511,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     routeCtrl.get('Volume')?.disable();
     routeCtrl.get('ChargeableWeight')?.disable();
 
+    this.updateAllChargeQuantitiesForRoute(routeIndex);
   }
 
   getRouteInfo(routeIndex : number){
@@ -2277,7 +2558,8 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   findFieldForQty(UnitQty:string){
-    switch(UnitQty){
+    const trimmedUnitQty = UnitQty.trim();
+    switch(trimmedUnitQty){
       case 'GrossWeight':
         return 'GrossWeight';
       case 'CBM':
@@ -2377,7 +2659,16 @@ private extractCargoData(enquiryCargo: any[]): any {
       return '';
     }
     const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
-    return ourPort ? ourPort.PortCode : '';
+    return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
+  }
+
+  getUOMCodeById(id:number){
+    if(!id){
+      return '';
+    } else {
+      const uom = this.chargeUnitMaster.find(c => c.UOMMasterSid === id);
+      return uom ? uom.UOMCode : '';
+    }
   }
 
   reportAndEmailModel(content: TemplateRef<any>) {
@@ -2626,6 +2917,80 @@ private extractCargoData(enquiryCargo: any[]): any {
   //     }
   //   });
   // }
+
+  filterChargesBySegment(routeIndex: number, segment: 'LCL' | 'FCL' | 'AIR'): void {
+    const routeDeptId = this.quoteRoutes.at(routeIndex)?.get('DepartmentMasterSid')?.value;
+
+    this.filteredCharges = (this.chargeMaster || []).filter(charge => {
+      const departmentNames = charge.DepartmentMasterSid || []; 
+
+      const fullDepartments = departmentNames
+        .map(name => this.departments.find(dept => dept.departmentName === name))
+        .filter((dept): dept is any => Boolean(dept)); 
+
+      return fullDepartments.some(dept => {
+        if (!dept) return false;
+        return dept.DepartmentMasterSid === routeDeptId
+      });
+    });
+    console.log("Filtered Charges",this.filteredCharges);
+  }
+
+
+
+  fetchExchangeRate(routeIndex : number ,carrierIndex : number , chargeIndex : number,revenueOrCost: 'cost' | 'revenue') {
+    const chargeGroup = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
+    // Take TO currency from userData
+    const currentCompanyID = this.currentCompany?.CompanyMasterSid;
+    const currentCompany = (this.userData.userCompanyMaster || []).find(ucom => ucom.CompanyMasterSid === currentCompanyID);
+    const toCurrency = currentCompany?.companyMaster.CurrencyMasterSid;
+
+    // Take FROM currency from charge
+    let fromCurrency;
+    let segment;
+    let destExRateCtrl;
+    if (revenueOrCost === 'cost') {
+      fromCurrency = chargeGroup.get('CostCurrencyMasterSid')?.value;
+      segment = 'cost'
+      destExRateCtrl = chargeGroup.get('CostExchangeRate');
+    } else {
+      fromCurrency = chargeGroup.get('RevenueCurrencyMasterSid')?.value;
+      segment = 'revenue'
+      destExRateCtrl = chargeGroup.get('RevenueExchangeRate');
+    }
+
+    const fromCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === fromCurrency)?.currencyCode;
+    const toCurrencyCode = this.currencyMaster.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
+
+    if(fromCurrency === toCurrency){
+      destExRateCtrl.setValue(1);
+      return;
+    }
+    
+    if(fromCurrencyCode && toCurrencyCode && segment){
+      const payload = {
+        fromCurrencyCode: fromCurrencyCode,
+        toCurrencyCode: toCurrencyCode,
+        segment: segment
+      }
+      this.subscription.add(
+        this.leadService.getExchangeRate(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              const exchangeRate = resp.data;
+              destExRateCtrl.setValue(exchangeRate);
+            } else {
+              destExRateCtrl?.setValue('');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error fetching exchange rate: ' + error.message);
+          }
+        )
+      )
+    }
+
+  }
 
 
   ngOnDestroy(): void {
