@@ -513,6 +513,11 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
   // loadCostCenter(): void {
   //   this.masterService.getAllCostCenter().subscribe(
   //     (resp: CostCenter[]) => {

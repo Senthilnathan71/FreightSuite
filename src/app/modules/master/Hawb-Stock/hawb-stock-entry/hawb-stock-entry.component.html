@@ -35,7 +35,7 @@
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
             [disabled]="btnDisable" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
             <i class="fas fa-save me-1"></i>
-            {{isEditMode ? 'Edit' : 'Save'}}
+            Save
           </button>
           <div ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -43,14 +43,10 @@
               <i class="fas fa-ellipsis-v"></i>
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
-                  class="fas fa-file-alt me-1"></i> Edoc</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                  class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                  class="fas fa-envelope me-1"></i> Email</button>
+               <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
             </div>
           </div>
         </div>
@@ -89,7 +85,13 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-4" *ngIf="isEditMode">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" [value]="BLNumber" readonly>
+    <label class="input-label">BL Number</label>
+  </div>
+</aside>
+            <aside class="col-md-4" *ngIf="!isEditMode">
               <div class="custom-form-group">
                 <input type="text" id="AirwayBillNumber" formControlName="AirwayBillNumber" placeholder=""
                   class="custom-input-field sm">
@@ -122,7 +124,7 @@
             </aside>
             }
 
-            <aside class="col-md-4">
+            <aside class="col-md-4" *ngIf="!isEditMode">
               <div class="custom-form-group">
                 <input type="text" id="HAWBSerial" formControlName="HAWBSerial" placeholder=""
                   class="custom-input-field sm">
@@ -136,7 +138,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-4" *ngIf="!isEditMode">
               <div class="custom-form-group">
                 <input type="number" id="NumberofHAWB" formControlName="NumberofHAWB" placeholder=""
                   class="custom-input-field sm">
@@ -247,14 +249,14 @@
               </div>
             </aside>
 
-            <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end" *ngIf="!isEditMode">
               <button type="button" class="btn btn-info btn-sm" (click)="generateAWB()">
                 Generate
               </button>
             </div>
 
             <!-- Update the AWB table to show generated numbers -->
-            <div class="">
+            <div class="" *ngIf="!isEditMode">
               <h5 class="card-title text-info mb-1">AirWay Bill</h5>
               <div class="row mx-auto">
                 <div class="col-12 p-0">

@@ -725,6 +725,11 @@ openAuditLogs(modal: TemplateRef<any>) {
         return this.permissions.includes(permission);
     }
 
+    hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
     navigateBack() {
         history.back();
     }

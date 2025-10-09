@@ -136,6 +136,11 @@ currentBranch: any;
   return this.permissions.includes(permission);
 }
 
+hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
 
 	initDocumentForm() {
 		this.documentForm = this.fb.group({

@@ -256,6 +256,11 @@ export class DepartmentEntryComponent {
   return this.permissions.includes(permission);
 }
 
+hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
   // Initialize the Form
   initForm() {
     this.departmentForm = this.fb.group({

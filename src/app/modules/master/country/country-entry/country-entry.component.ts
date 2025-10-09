@@ -118,6 +118,11 @@ export class CountryEntryComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
   initForm() {
     this.countryForm = this.fb.group({
       countryName: ['', [Validators.required, Validators.maxLength(100)]],

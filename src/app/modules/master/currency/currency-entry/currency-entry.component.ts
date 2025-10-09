@@ -118,6 +118,12 @@ export class CurrencyEntryComponent implements OnInit {
   hasPermission(permission: string): boolean {
   return this.permissions.includes(permission);
 }
+
+hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+    
   initForm() {
     this.currencyForm = this.fb.group({
       CountryMasterSid:['',[Validators.required]],

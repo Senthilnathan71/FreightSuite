@@ -121,6 +121,11 @@ export class StateEntryComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
   initForm() {
     this.stateForm = this.fb.group({
       stateName: ['', [Validators.required, Validators.maxLength(100), this.alphaSpaceValidator()]],

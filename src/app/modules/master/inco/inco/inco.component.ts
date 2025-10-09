@@ -214,6 +214,11 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
     this.tableLoading = true;

@@ -287,18 +287,19 @@ auditLogs: any[] = []; // Stores audit logs
     { id: 1, name: 'Original' },
     { id: 2, name: 'Sea Way BL' },
     { id: 3, name: 'Express' },
-    { id: 4, name: 'Drat' },
+    { id: 4, name: 'Draft' },
   ];
 
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
     // { name: 'Product', icon: 'fas fa-box' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    // { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 dataFromQuotation:any
   // Mail content
@@ -552,7 +553,7 @@ dataFromQuotation:any
   initCargoForm() {
     this.cargoForm = this.fb.group({
       BookingCargoSid: [null],
-      CargoType: [null],
+      CargoType: ['General'],
       ContainerType: [null],
       NoofContainers: [''],
       GrossWeight: [''],

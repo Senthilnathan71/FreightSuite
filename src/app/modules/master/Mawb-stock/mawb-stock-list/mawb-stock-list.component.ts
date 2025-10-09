@@ -184,6 +184,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
+        BLNumber: `${item.MasterBillNumber}-${item.MAWBSerial}-${item.NumberofMAWB}`,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
       }));
@@ -234,16 +235,8 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         dataType: 'string'
       },
       {
-        key: 'MAWBSerial',
-        label: 'Serial No',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'NumberofMAWB',
-        label: 'No of AWB',
+        key: 'BLNumber',
+        label: 'Master BL Number',
         sortable: true,
         filterable: true,
         visible: true,
@@ -258,15 +251,12 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         dataType: 'string'
       },
       {
-        key: 'status',
+        key: 'StockStatus',
         label: 'Status',
         sortable: true,
         filterable: true,
         visible: true,
-        template: 'status',
-        width: '100px',
         dataType: 'string',
-        cellClass: 'status-column'
       }
     ];
   }

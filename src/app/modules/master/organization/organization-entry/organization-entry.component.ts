@@ -1882,6 +1882,11 @@ onCompanyTypeChange(): void {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
   // Fetch customer data and patch the form
   
 loadCustomerData(customerId: number) {

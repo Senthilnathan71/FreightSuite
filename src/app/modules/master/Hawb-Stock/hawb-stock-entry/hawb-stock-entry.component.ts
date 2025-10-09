@@ -51,7 +51,7 @@ export class HawbStockEntryComponent implements OnInit {
   generatedAWBList: string[] = [];
   customerList: any[] = [];
   statusList = ["Active", "Suspended"];
-  stockStatusList = ["Free", "Used", "Cancelled"];
+  stockStatusList = ["Free", "Blocked", "Return", "Void", "Hold"];
   currentMenuId: number;
   TandCList: any[]=[];
   hawstockData: any;
@@ -117,6 +117,19 @@ export class HawbStockEntryComponent implements OnInit {
 
   hasPermission(permission: string): boolean {
   return this.permissions.includes(permission);
+}
+
+hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
+get BLNumber(): string {
+  const airwayBill = this.hawbForm.get('AirwayBillNumber')?.value || '';
+  const hawbSerial = this.hawbForm.get('HAWBSerial')?.value || '';
+  const noOfHawb = this.hawbForm.get('NumberofHAWB')?.value || '';
+  if (!airwayBill && !hawbSerial && !noOfHawb) return '';
+  return `${airwayBill}-${hawbSerial}-${noOfHawb}`;
 }
 
  
@@ -238,7 +251,7 @@ generateAWB(): void {
       status: formValue.status === "Active" ? "A" : "S",
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
-      AWBList: this.generatedAWBList.length > 0 ? JSON.stringify(this.generatedAWBList) : null,
+      AWBList: this.generatedAWBList,
       createdBy: this.isEditMode ? undefined : this.userData?.userEmail,
       updatedBy: this.isEditMode ? this.userData?.userEmail : undefined
     };

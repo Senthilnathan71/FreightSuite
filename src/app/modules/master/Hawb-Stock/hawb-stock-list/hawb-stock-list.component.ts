@@ -175,22 +175,27 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
   }
 
   protected processSearchResults(response: any): void {
-    this.tableLoading = false;
-    this.spinner.hide();
-    if (response.status) {
-      this.allItems = response.data.items.map(item => ({
-        ...item,
-        status: item.status === 'A' ? 'Active' : 'Suspended',
-        ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
-      }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
-    } else {
-      this.appSettingService.showError('Error searching hawb-stock.');
-      this.allItems = [];
-      this.totalLengthOfCollection = 0;
-    }
+  this.tableLoading = false;
+  this.spinner.hide();
+
+  if (response.status) {
+    this.allItems = response.data.items.map(item => ({
+      ...item,
+      // Display-only concatenated BL Number
+      BLNumber: `${item.AirwayBillNumber}-${item.HAWBSerial}-${item.NumberofHAWB}`,
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
+    }));
+
+    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.applySorting();
+  } else {
+    this.appSettingService.showError('Error searching hawb-stock.');
+    this.allItems = [];
+    this.totalLengthOfCollection = 0;
   }
+}
+
 
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
@@ -250,16 +255,8 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
         dataType: 'string'
       },
       {
-        key: 'HAWBSerial',
-        label: 'Serial No',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      {
-        key: 'NumberofHAWB',
-        label: 'No of AWB',
+        key: 'BLNumber',
+        label: 'Airawy BL Number',
         sortable: true,
         filterable: true,
         visible: true,
@@ -274,15 +271,12 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
         dataType: 'string'
       },
       {
-        key: 'status',
+        key: 'StockStatus',
         label: 'Status',
         sortable: true,
         filterable: true,
         visible: true,
-        template: 'status',
-        width: '100px',
         dataType: 'string',
-        cellClass: 'status-column'
       }
     ];
   }

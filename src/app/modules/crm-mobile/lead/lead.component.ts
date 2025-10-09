@@ -26,6 +26,7 @@ import { AppService } from 'src/app/service/app.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { LeadStatus } from 'src/app/common/helper';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { MasterService } from '../../master/master.service';
 
 
 @Component({
@@ -62,6 +63,8 @@ export class LeadComponent implements OnInit {
   countryList: any[];
   stateList: any[];
   cityList: any[];
+  permissions: string[] = [];
+	currentMenuPermissions: any = {};
   leadData: any;
   currentCompany: any;
   currentBranch: any;
@@ -129,6 +132,7 @@ export class LeadComponent implements OnInit {
     private fb: FormBuilder,
     private leadService: LeadService,
     private appService: AppService,
+    private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -143,6 +147,7 @@ export class LeadComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
+      this.checkPermissions();
     }
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
@@ -180,6 +185,35 @@ export class LeadComponent implements OnInit {
       }
     });
   }
+
+  checkPermissions() {
+		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+		if (currentMenuId && userRole) {
+			this.masterService
+				.getRoleMenuPermissions(currentMenuId, userRole)
+				.subscribe({
+					next: (response) => {
+						this.currentMenuPermissions = response.data.MenuPermissions || {};
+						this.permissions = Object.keys(this.currentMenuPermissions).filter(
+							(key) => this.currentMenuPermissions[key] === 'isTrue'
+						);
+					},
+				});
+		}
+	}
+
+	//  checks for menu permission
+	hasPermission(permission: string): boolean {
+		return this.permissions.includes(permission);
+	}
+
+	hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
+  
 
   // // Method to load the city data
   // loadCity(): void {
