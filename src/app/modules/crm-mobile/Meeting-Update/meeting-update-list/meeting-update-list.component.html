@@ -1,230 +1,132 @@
-
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
-    <div class="col-12 ">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm  justify-content-between">
-            <div class="col pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <h4 class="page-title mb-0 text-info">Meeting Update</h4>
-                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+    <div class="col-12">
+        <app-page-header 
+            [title]="'Meeting Update'" 
+            [showFavorite]="true" 
+            [showSearch]="true" 
+            [searchPlaceholder]="'Search'" 
+            [searchButtonText]="'Search'" 
+            [(searchValue)]="filterValue" 
+            [actions]="headerActions" 
+            (searchTriggered)="onSearchTriggered($event)" 
+            (searchCleared)="onSearchCleared()" 
+            (actionTriggered)="onActionTriggered($event)">
+        </app-page-header>
+    </div>
+
+    <div class="col-12 px-0">
+        <!-- Desktop View with Reusable Table -->
+        <div *ngIf="!isMobile" class="desktop-view">
+            <app-reusable-table
+                #meetingTable
+                [config]="tableConfig"
+                [data]="allItems"
+                [loading]="tableLoading"
+                [totalRecords]="totalLengthOfCollection"
+                [paginationConfig]="paginationConfig"
+                (actionClick)="onTableActionClick($event)"
+                (sortChange)="onTableSortChange($event)"
+                (pageChange)="onPageChange($event)"
+                (pageSizeChange)="onPageSizeChange($event)">
+            </app-reusable-table>
+        </div>
+
+        <!-- Mobile View with Card Layout -->
+        <div *ngIf="isMobile" class="mobile-view">
+            <div *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
+                <div class="card mb-2" *ngFor="let meeting of filteredMeetings; trackBy: trackBy">
+                    <div class="card-body">
+                        <div class="d-flex flex-column gap-2 position-relative">
+                            <!-- Header with customer name and status -->
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h6 class="card-title mb-0 text-truncate me-2">
+                                    {{ meeting.customerName }}
+                                </h6>
+                                <span class="badge" [ngClass]="getStatusClass(meeting.meetingStatus)">
+                                    {{ meeting.meetingStatus }}
+                                </span>
+                            </div>
+
+                            <!-- Meeting Details -->
+                            <div class="meeting-details">
+                                <div class="d-flex align-items-center mb-1">
+                                    <i-feather name="calendar" class="feather-sm text-muted me-2"></i-feather>
+                                    <small class="text-muted">{{ meeting.meetingDate }}</small>
+                                </div>
+                                
+                                <div class="d-flex align-items-center mb-1">
+                                    <i-feather name="users" class="feather-sm text-muted me-2"></i-feather>
+                                    <small class="text-muted">{{ meeting.salesPerson }}</small>
+                                </div>
+                                
+                                <div class="d-flex align-items-center mb-1">
+                                    <i-feather name="type" class="feather-sm text-muted me-2"></i-feather>
+                                    <small class="text-muted">{{ meeting.meetingType }}</small>
+                                </div>
+                                
+                                <div class="d-flex align-items-center mb-1">
+                                    <i-feather name="trending-up" class="feather-sm text-muted me-2"></i-feather>
+                                    <small class="text-muted">{{ meeting.leadStatus }}</small>
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <div class="text-end mt-2">
+                                <button class="btn btn-info btn-sm" (click)="openModal(modalContentAdd, meeting)">
+                                    <i-feather name="eye" class="feather-sm me-1"></i-feather>
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- Mobile Pagination -->
+                <div class="d-flex justify-content-center mt-3" *ngIf="totalLengthOfCollection > pageSize">
+                    <ngb-pagination 
+                        [collectionSize]="totalLengthOfCollection" 
+                        [pageSize]="pageSize" 
+                        [(page)]="page" 
+                        [maxSize]="config.maxPagesToShow"
+                        (pageChange)="onPageChange($event)"
+                        class="pagination-sm">
+                    </ngb-pagination>
+                </div>
+
+                <!-- Page Info -->
+                <div class="text-center text-muted mt-2">
+                    <small>
+                        Showing {{ (page - 1) * pageSize + 1 }} to 
+                        {{ min(page * pageSize, totalLengthOfCollection) }} of 
+                        {{ totalLengthOfCollection }} entries
+                    </small>
+                </div>
             </div>
-
-            <div class="col-md pb-1">
-                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-                        <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="searchText" aria-label="Search input" (keyup.enter)="searchMeetings()">
-                            <button 
-                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                tabindex="0" aria-label="Clear search"
-                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
-                                onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="searchMeetings()"
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-search me-1"></i> Search
-                            </button>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-
-            <div class="col-md-auto pb-1">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-
-
-                    <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                        <!-- <i class="mdi mdi-plus" ></i> -->
-                         <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i> 
-                        @if (!isMobile) {
-                        Create 
-                        }
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-file-alt me-1"></i> Report
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </button>
-                </form>
-            </div>
-
-
-        </div>
-    </div>
-    <!-- Search Panel -->
-    
-    <!-- End Search Panel -->
-    <div class="col-12 px-0">
-        <div *ngIf="isMobile; else desktopTemplate">
-            <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
         </div>
     </div>
 </div>
 
-<!-- MOBILE TEMPLATE -->
-<ng-template #mobileTemplate>
-    <div class="mobile-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="card mb-2" *ngFor="let meeting of filteredMeetings">
-            <div class="card-body">
-                <div class="d-flex flex-column gap-2 position-relative">
-                    <div class="d-flex align-items-center fw-bold dofi-font-16 text-uppercase">
-                        <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="openModal(modalContentAdd, meeting)">
-                                <i-feather name="eye" class="feather-sm"></i-feather>
-                            </a>
-                        </div>
-                        <div class="text-truncate">
-                            {{ meeting.preCustomerMaster?.preCustomerName || '' }}
-                        </div>
-                        <span class="ms-auto badge dofi-min-w-12 dofi-h-12 rounded-pill px-0 py-0" [ngClass]="{
-                                'bg-success': meeting.meetingStatus === 'Scheduled',
-                                'bg-warning': meeting.meetingStatus === 'In Progress',
-                                'bg-danger': meeting.meetingStatus === 'On Hold'
-                              }">&nbsp;</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather name="calendar" class="feather-sm"></i-feather>
-                        <div class="ms-2">{{ meeting.meetingDate | date:'medium' }}</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather name="users" class="feather-sm"></i-feather>
-                        <div class="ms-2">{{ meeting.salesPerson }}</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather name="type" class="feather-sm"></i-feather>
-                        <div class="ms-2">{{ meeting.meetingType }}</div>
-
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather name="alert-circle" class="feather-sm"></i-feather>
-                        <div class="ms-2">{{ meeting.preCustomerMaster.leadStatus }}</div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i-feather name="alert-circle" class="feather-sm"></i-feather>
-                        <div class="ms-2">{{ meeting.status }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</ng-template>
-
-<!-- DESKTOP TEMPLATE -->
-<ng-template #desktopTemplate>
-    
-         <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-            <div class="col-12">
-                <div class="card mb-0 border-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                                    <th class="bg-transparent text-light" scope="col">Meeting Type</th>
-                                    <th class="bg-transparent text-light" scope="col">Meeting Date</th>
-                                    <th class="bg-transparent text-light" scope="col">Lead Status</th>
-                                    <th class="bg-transparent text-light" scope="col">Sales Person</th>
-                                    <th class="bg-transparent text-light" scope="col">Meeting Status</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let meeting of filteredMeetings">
-                                    <td data-label="Action"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <section class="action-items text-center">
-                                            <a class="text-info mx-2" (click)="openModal(modalContentAdd, meeting)"
-                                                style="cursor: pointer;">
-                                                <i-feather name="eye" class="feather-sm"></i-feather>
-                                            </a>
-                                        </section>
-                                    </td>
-                                    <td data-label="Customer Name"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ meeting?.preCustomerMaster?.preCustomerName || 'N/A' }}
-                                        </div>
-                                    </td>
-                                    <td data-label="meetingType"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ (meeting?.meetingType | titlecase) || 'N/A' }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Meeting Date"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            <i-feather name="calendar" class="feather-sm"></i-feather>
-                                            {{ meeting?.meetingDate }}
-                                        </div>
-                                    </td>
-
-                                    <td data-label="leadStatus"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ meeting?.leadStatus  || 'N/A' }}
-                                        </div>
-                                    </td>
-
-                                    <td data-label="leadAssignTo"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ getSalesmanById(meeting?.leadAssignTo) || 'N/A' }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Status"
-                                        style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            <span class="badge" [ngClass]="{
-                                                'bg-success': meeting.meetingStatus === 'Scheduled',
-                                                'bg-warning': meeting.meetingStatus === 'In Progress',
-                                                'bg-danger': meeting.meetingStatus === 'On Hold'
-                                              }">
-                                                {{ meeting?.meetingStatus }}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="">
-                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-                        </ngb-pagination>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</ng-template>
-
 <!-- NO DATA TEMPLATE -->
 <ng-template #noDataTemplate>
     <div class="text-center py-5">
-        <p class="text-muted">No meeting data available.</p>
-        @if (errorMessage) {
-        <div class="alert alert-danger">{{ errorMessage }}</div>
-        }
+        <div class="empty-state">
+            <i-feather name="calendar" class="feather-xl text-muted mb-3"></i-feather>
+            <h5 class="text-muted">No meetings found</h5>
+            <p class="text-muted" *ngIf="searched && totalLengthOfCollection === 0">
+                No meetings match your search criteria.
+            </p>
+            <p class="text-muted" *ngIf="!searched">
+                There are no meetings scheduled at the moment.
+            </p>
+            <button class="btn btn-info btn-sm mt-2" (click)="createNew()" *ngIf="!isMobile">
+                <i-feather name="plus" class="feather-sm me-1"></i-feather>
+                Create New Meeting
+            </button>
+        </div>
     </div>
 </ng-template>
 
@@ -236,21 +138,20 @@
             <i class="fas fs-6 fa-info-circle"></i>
         </a>
         <div class="ms-auto d-flex align-items-center">
-            <div ngbDropdown class="d-inline-block me-2">
-                <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-                    ngbDropdownToggle>
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
+            <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
                 <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
-                            class="fas fa-file-alt me-1"></i> Edoc</button>
-                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                            class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                            class="fas fa-shield-alt me-1"></i> Authorize</button>
-                    <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                            class="fas fa-envelope me-1"></i> Email</button>
-                </div>
+                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        </div>
             </div>
             <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
         </div>
@@ -259,7 +160,6 @@
     <form [formGroup]="meetingForm">
         <div class="modal-body">
             <section class="">
-
                 <div class="row compact-form">
                     <!-- Customer Name -->
                     <aside class="col-md-4">
@@ -271,10 +171,10 @@
 
                     <!-- Meeting Type -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!meetingForm.get('meetingType')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!meetingForm.get('meetingType')?.value">
                             <label class="input-label">Meeting Type <span class="text-danger">*</span></label>
-                            <ng-select  formControlName="meetingType">
-                                <!-- <option value="">Select</option> -->
+                            <ng-select formControlName="meetingType">
                                 <ng-option value="Call">Call</ng-option>
                                 <ng-option value="Visit">Visit</ng-option>
                                 <ng-option value="Phone">Phone</ng-option>
@@ -284,37 +184,34 @@
                     </aside>
 
                     <!-- Meeting Date -->
-                    
-                     <div class="col-md-4">
+                    <div class="col-md-4">
+                        <div class=" custom-form-group custom-form-group-select-date w-100">
+                            <div class="input-group w-100">
+                                <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                                    formControlName="meetingDate" minDate></app-date-time-picker>
+                            </div>
+                            <label for="" class="input-label">Meeting Date <span class="text-danger">*</span>
+                            </label>
+                        </div>
+                    </div>
 
-              <div class=" custom-form-group custom-form-group-select-date w-100">
-                <div class="input-group w-100">
-                  <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                    formControlName="meetingDate" minDate></app-date-time-picker>
-                </div>
-                <label for="" class="input-label">Meeting Date <span class="text-danger">*</span>
-                </label>
-              </div>
-            </div>
-            <aside class="col-md-4">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!meetingForm.get('meetingDuration')?.value">
+                            <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
+                                formControlName="meetingDuration" placeholder="">
+                            </ng-select>
+                            <label class="input-label">
+                                Meeting Duration <span class="text-danger"></span>
+                            </label>
+                        </div>
+                    </aside>
 
-              <div class="custom-form-group custom-form-group-select"
-                [class.filled]="!!meetingForm.get('meetingDuration')?.value">
-
-                <ng-select [items]="meetingDurations" bindLabel="label" bindValue="value"
-                  formControlName="meetingDuration" placeholder="">
-                </ng-select>
-
-                <label class="input-label">
-                  Meeting Duration <span class="text-danger"></span>
-                </label>
-              </div>
-              </aside>
                     <!-- Salesperson -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
                             <ng-select formControlName="leadAssignTo" bindLabel="userName" bindValue="UserMasterSid">
-                                <!-- <ng-option value="">Select</ng-option> -->
                                 <ng-option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
                                     {{ person.userName }}
                                 </ng-option>
@@ -342,9 +239,9 @@
 
                     <!-- Meeting Status -->
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!meetingForm.get('meetingStatus')?.value">
-                            <ng-select  formControlName="meetingStatus">
-                                <!-- <ng-option value="">Select</ng-option> -->
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!meetingForm.get('meetingStatus')?.value">
+                            <ng-select formControlName="meetingStatus">
                                 <ng-option value="Scheduled">Scheduled</ng-option>
                                 <ng-option value="Confirmed">Confirmed</ng-option>
                                 <ng-option value="In Progress">In Progress</ng-option>
@@ -358,7 +255,6 @@
                     <!-- Follow Up Toggle -->
                     <div class="col-12 col-md-4">
                         <div class="">
-                            <!-- <label class="control-label col-form-label">&nbsp;</label> -->
                             <div class="form-check form-switch dofi-mt-6">
                                 <input class="form-check-input" type="checkbox" role="switch" formControlName="followUp"
                                     [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
@@ -367,23 +263,22 @@
                         </div>
                     </div>
 
-
                     <!-- Conditionally Show Follow Up Fields -->
                     <ng-container *ngIf="meetingForm.get('followUp')?.value">
-                       
-                           <aside class="col-md-4">
-                <div class=" custom-form-group custom-form-group-select-date w-100">
-                  <div class="input-group w-100">
-                    <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                      formControlName="followUpDate"></app-date-time-picker>
-                  </div>
-                  <label class="input-label me-2">Follow Up Date <span class="text-danger">*</span>
-                  </label>
-                  <div *ngIf="f['followUpDate'].touched && f['followUpDate'].invalid" class="error-message pe-4 pb-2">
-                    Required
-                  </div>
-                </div>
-              </aside>
+                        <aside class="col-md-4">
+                            <div class=" custom-form-group custom-form-group-select-date w-100">
+                                <div class="input-group w-100">
+                                    <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                                        formControlName="followUpDate"></app-date-time-picker>
+                                </div>
+                                <label class="input-label me-2">Follow Up Date <span class="text-danger">*</span>
+                                </label>
+                                <div *ngIf="f['followUpDate'].touched && f['followUpDate'].invalid"
+                                    class="error-message pe-4 pb-2">
+                                    Required
+                                </div>
+                            </div>
+                        </aside>
 
                         <!-- Follow Up Note -->
                         <aside class="col-md-4">
@@ -394,25 +289,22 @@
                             </div>
                         </aside>
                     </ng-container>
-                     <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!meetingForm.get('remarks')?.value">
-                  <ng-select [items]="reasonList" bindLabel="name" bindValue="name"
-                    formControlName="remarks">
-                  </ng-select>
-                  <label class="input-label">Reason <span class="text-danger"></span></label>
-                  <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
-                    Required.
-                  </small>
-                </div>
-              </aside>
-                </div>
 
-               
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!meetingForm.get('remarks')?.value">
+                            <ng-select [items]="reasonList" bindLabel="name" bindValue="name" formControlName="remarks">
+                            </ng-select>
+                            <label class="input-label">Reason <span class="text-danger"></span></label>
+                            <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
+                                Required.
+                            </small>
+                        </div>
+                    </aside>
+                </div>
             </section>
         </div>
         <div class="modal-footer">
-           
             <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef.dismiss()">Cancel</button>
             <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                 (click)="resetForm()">
