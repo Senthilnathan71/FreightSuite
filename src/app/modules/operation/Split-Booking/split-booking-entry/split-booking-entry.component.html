@@ -6,12 +6,12 @@
           <div class="brand-icon">
             <i class="fas fa-code-branch"></i>
           </div>
-          <h4 class="page-title mb-0">Spilt Booking</h4>
+          <h4 class="page-title mb-0">Split Booking</h4>
         </div>
       </div>
       <div class="col-md-8 pb-2">
         <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="bookingForm.reset()">
@@ -126,10 +126,10 @@
                   <thead>
                     <tr class="bg-info">
                       <th class="bg-transparent text-light">Commodity</th>
-                      <th class="bg-transparent text-light">Shipping Bill No</th>
+                      <th class="bg-transparent text-light">Shipping Bill No.</th>
                       <th class="bg-transparent text-light">Shipping Bill Date</th>
                       <th class="bg-transparent text-light">External Pkg</th>
-                      <th class="bg-transparent text-light">No of Pkg</th>
+                      <th class="bg-transparent text-light">No. of Pkg</th>
                       <th class="bg-transparent text-light">Gross Weight</th>
                       <th class="bg-transparent text-light">CBM</th>
                       <th class="bg-transparent text-light">Tick</th>
@@ -143,7 +143,7 @@
                       <tr>
                         <td>{{ product.get('ProductName')?.value }}</td>
                         <td>{{ product.get('ShippingBillNo')?.value }}</td>
-                        <td>{{ product.get('ShippingBillDate')?.value | date:'dd-MM-yyyy' }}</td>
+                        <td>{{ product.get('ShippingBillDate')?.value }}</td>
                         <td>{{ product.get('ExternaPkg')?.value }}</td>
                         <td>{{ product.get('ExternlQty')?.value }}</td>
                         <td>{{ product.get('GrossWeight')?.value }}</td>

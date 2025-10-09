@@ -147,12 +147,14 @@ export class CragoReceiptListComponent extends BaseListComponent implements OnIn
 
   protected processSearchResults(response: any): void {
     this.spinner.hide();
+    console.log(response,'response')
     if (response.status) {
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         departmentName:item.departmentMaster?.departmentName,
-        BookingDateTime:this.datePipe.transform(item?.BookingDateTime)
+        BookingDateTime:this.datePipe.transform(item?.BookingDateTime),
+        bookingStatus: item.BookingStatus
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -280,6 +282,17 @@ export class CragoReceiptListComponent extends BaseListComponent implements OnIn
         filterable: true,
         visible: true,
         dataType: 'string',
+      },
+      {
+        key: 'bookingStatus',
+        label: 'Booking Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
       },
       {
         key: 'status',

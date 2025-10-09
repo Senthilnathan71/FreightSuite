@@ -323,4 +323,8 @@ updateCheckboxDisabledStates() {
       this.bookingForm.get(key)?.enable();
     });
   }
+
+  back() {
+    history.back();
+  }
 }
