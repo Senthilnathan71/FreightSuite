@@ -199,12 +199,7 @@ export class CragoReceiptListComponent extends BaseListComponent implements OnIn
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      {
-        label: 'Create',
-        icon: 'fas fa-plus',
-        action: 'create',
-        // condition: this.hasPermission('Add')
-      },
+      
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
