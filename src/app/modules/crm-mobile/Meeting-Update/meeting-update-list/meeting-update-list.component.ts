@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, ElementRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
@@ -7,7 +7,7 @@ import { AppService } from 'src/app/service/app.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
-import { forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -18,6 +18,15 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { LeadStatus, LeadStatusLabels } from 'src/app/common/helper';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -33,21 +42,19 @@ import { DateTimePickerComponent } from 'src/app/component/datetimepicker/dateti
     NgbDropdownModule,
     FavoriteStarComponent,
     NgSelectModule,
-    DateTimePickerComponent
+    DateTimePickerComponent,
+    ReusableTableComponent,
+    PageHeaderComponent
   ],
+  providers: [CustomDatePipe],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
 })
-export class MeetingUpdateListComponent implements OnInit {
-  meetings: any[] = [];        // Array to store all meetings
-  filteredMeetings: any[] = []; // Array to store filtered meetings
-  errorMessage: string = '';  // To store any error messages
-  // pagination
-  page = 1;
-  pageSize = 5;
+export class MeetingUpdateListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('meetingTable') meetingTable!: ReusableTableComponent;
+  @ViewChild('modalContentAdd', { read: TemplateRef }) modalContentAdd!: TemplateRef<any>;
+  
   isEditMode: boolean = false;
-  totalLengthOfCollection: number = 0;
-  searchText: string = '';
   isMobile: boolean = false;
   modalRef: NgbModalRef;
   meetingForm: FormGroup;
@@ -59,21 +66,66 @@ export class MeetingUpdateListComponent implements OnInit {
   TandCList: any;
   currentCompany: any;
   currentBranch: any;
+  tableLoading = false;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  userData: any;
+
+  // For mobile view data
+  filteredMeetings: any[] = [];
+  searched: boolean = false;
+
+  // Header actions
+  headerActions: HeaderAction[] = [];
+
+  // Table configuration
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View Meeting',
+        condition: (row: any) => true
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'PreCustomerMeetingSid',
+    emptyMessage: 'No meetings found',
+    dragAndDrop: true
+  };
+
   meetingDurations = [
-  { label: '10 min', value: '10 min' },
-  { label: '20 min', value: '20 min' },
-  { label: '30 min', value: '30 min' },
-  { label: '40 min', value: '40 min' },
-  { label: '50 min', value: '50 min' },
-  { label: '1 hr', value: '1 hr' }
-];
-reasonList=[
-  {id:1,name:"Customer Postponed"},
-  {id:2,name:"Salesman on Leave"},
-  {id:3,name:"Salesman having other meeting"},
-  {id:4,name:"Natural Calamity"},
-  {id:5,name:"Assigned to New Salesman "}
-]
+    { label: '10 min', value: '10 min' },
+    { label: '20 min', value: '20 min' },
+    { label: '30 min', value: '30 min' },
+    { label: '40 min', value: '40 min' },
+    { label: '50 min', value: '50 min' },
+    { label: '1 hr', value: '1 hr' }
+  ];
+
+  reasonList = [
+    { id: 1, name: "Customer Postponed" },
+    { id: 2, name: "Salesman on Leave" },
+    { id: 3, name: "Salesman having other meeting" },
+    { id: 4, name: "Natural Calamity" },
+    { id: 5, name: "Assigned to New Salesman " }
+  ];
+
+  protected config: ListComponentConfig = {
+    storageKey: 'meeting-update-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'meetingDate',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100],
+    maxPagesToShow: 3
+  };
+
   constructor(
     private router: Router,
     private appService: AppService,
@@ -83,16 +135,350 @@ reasonList=[
     private fb: FormBuilder,
     private commonModalService: ModalService,
     private spinner: NgxSpinnerService,
-  ) { }
-  ngOnInit(): void {
+    private datePipe: CustomDatePipe,
+    private excelReportService: ExcelExportService,
+    paginationService: PaginationService
+  ) {
+    super(paginationService);
+  }
+
+  override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.isMobile = this.appService.getDevice();
-    this.loadMeetings();
+     const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
+      this.checkPermissions();
+    }
+    
     this.loadSalesPersons();
     this.initMeetingForm();
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
+    
+    super.ngOnInit();
+  }
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    if (currentMenuId && userRole) {
+      this.leadService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          
+          // Update header actions based on permissions
+          this.initializeHeaderActions();
+        },
+        error: (error) => {
+          console.error('Error loading permissions', error);
+        }
+      });
+    }
   }
 
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
+
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+  }
+  // Implement abstract methods from BaseListComponent
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.leadService.searchPreCustomerMeeting(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status && response.data?.items) {
+      this.allItems = response.data.items.map((meeting: any) => {
+        const salesPerson = this.salesPersons?.find(
+          (person: any) => person.UserMasterSid === meeting.leadAssignTo
+        );
+        
+        return {
+          PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
+          customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
+          meetingType: meeting.meetingType || 'N/A',
+          meetingDate: meeting.meetingDate ? this.datePipe.transform(meeting.meetingDate) : '',
+          salesPerson: salesPerson?.userName || 'N/A',
+          leadAssignTo: meeting.leadAssignTo,
+          status: meeting.status === "A" ? "Active" : "Suspended",
+          meetingStatus: meeting.meetingStatus || '',
+          leadStatus: LeadStatusLabels[meeting?.preCustomerMaster?.leadStatus as LeadStatus] || "-",
+          preCustomerMaster: meeting.preCustomerMaster,
+          userMaster: meeting.userMaster,
+          followUp: meeting.followUpDate || meeting.followUpNote,
+          followUpDate: meeting.followUpDate ? this.datePipe.transform(meeting.followUpDate) : '',
+          followUpNote: meeting.followUpNote,
+          meetingNote: meeting.meetingNote,
+          createdBy: meeting.createdBy,
+          createdOn: meeting.createdOn,
+          updatedBy: meeting.updatedBy,
+          updatedOn: meeting.updatedOn,
+        };
+      });
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+      this.updatePaginatedData();
+      this.searched = true;
+    } else {
+      this.appSettingService.showError('Error searching meetings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+      this.filteredMeetings = [];
+      this.searched = true;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching meetings.');
+    console.error('Error searching meetings', error);
+    super.handleSearchError(error);
+  }
+
+  // Update paginated data for mobile view
+  updatePaginatedData(): void {
+    if (this.isMobile) {
+      const startIndex = (this.page - 1) * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+      this.filteredMeetings = this.allItems.slice(startIndex, endIndex);
+    }
+  }
+
+  // Add Math.min method for template
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'customerName',
+        label: 'Customer Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'meetingType',
+        label: 'Meeting Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'meetingDate',
+        label: 'Meeting Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'date'
+      },
+      {
+        key: 'leadStatus',
+        label: 'Lead Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'salesPerson',
+        label: 'Sales Person',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'meetingStatus',
+        label: 'Meeting Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '140px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      }
+    ];
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.openModal(this.modalContentAdd, event.row);
+    }
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    console.log('Filters changed:', filters);
+  }
+
+  // Header actions
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+         condition: this.hasPermission('Create'),
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.createNew();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
+
+  // Report functionality
+  report(): void {
+    if (!this.allItems || this.allItems.length === 0) {
+      this.appSettingService.showWarning("No data available to generate report");
+      return;
+    }
+
+    const formattedData = this.allItems.map(item => ({
+      ...item,
+      meetingStatus: this.getMeetingStatusText(item.meetingStatus),
+      status: item.status === "A" ? "Active" : "Suspended"
+    }));
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns for desktop, use all columns for mobile
+    let dynamicHeaders = [];
+    
+    if (!this.isMobile && this.meetingTable) {
+      const visibleColumns = this.meetingTable.getVisibleColumns();
+      dynamicHeaders = visibleColumns.map(column => ({
+        key: column.key,
+        label: column.label
+      }));
+    } else {
+      // For mobile or when table is not available, use all columns
+      dynamicHeaders = [
+        { key: 'customerName', label: 'Customer Name' },
+        { key: 'meetingType', label: 'Meeting Type' },
+        { key: 'meetingDate', label: 'Meeting Date' },
+        { key: 'salesPerson', label: 'Sales Person' },
+        { key: 'leadStatus', label: 'Lead Status' },
+        { key: 'meetingStatus', label: 'Meeting Status' },
+        { key: 'status', label: 'Status' }
+      ];
+    }
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Meeting-Update-Report',
+      title: companyName,
+      sheetName: 'Meetings'
+    });
+  }
+
+  // Helper method to format meeting status text
+  private getMeetingStatusText(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return 'Scheduled';
+      case 'in progress':
+        return 'In Progress';
+      case 'on hold':
+        return 'On Hold';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'completed':
+        return 'Completed';
+      default:
+        return status || 'N/A';
+    }
+  }
+
+  // Legacy methods for template compatibility
+  searchMeetings(): void {
+    this.search();
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchMeetings();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  clearFilterValue(): void {
+    this.clearFilter();
+  }
+
+  // Form initialization and validation
   initMeetingForm() {
     this.meetingForm = this.fb.group({
       customerName: ['', Validators.required],
@@ -105,11 +491,11 @@ reasonList=[
       meetingNote: ['', this.meetingNoteValidator.bind(this)],
       meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
-      meetingDuration:[''],
-      remarks:[''],
+      meetingDuration: [''],
+      remarks: [''],
       preCustomerMasterSid: [''],
-      createdBy:[''],
-      updatedBy:['']
+      createdBy: [''],
+      updatedBy: ['']
     });
 
     this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
@@ -137,106 +523,11 @@ reasonList=[
     );
   }
 
-  loadMeetings(): void {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    this.leadService.getAllPreCustomerMeetings(CompanyMasterSid, BranchMasterSid).subscribe(
-      (resp: any) => {
-        if (resp.status && resp.data.length) {
-          // Filter meetings to only include specified statuses
-              console.log(resp.data, 'resp.data')
-
-          this.meetings = resp.data
-            // .filter((meeting: any) => {
-            //   const status = meeting.meetingStatus?.toLowerCase();
-            //   return status === 'Scheduled' || status === 'In Progress' || status === 'On Hold';
-            // })
-            .map((meeting: any) => {
-              const salesPerson = this.salesPersons?.find(
-                (person: any) => person.UserMasterSid === meeting.leadAssignTo
-              );
-              console.log(meeting, 'meeting')
-              return {
-                PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
-                customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
-                meetingType: meeting.meetingType || 'N/A',
-                meetingDate: meeting.meetingDate,
-                salesPerson: salesPerson?.userName || 'N/A',
-                leadAssignTo: meeting.leadAssignTo,
-                status: meeting.status === "A" ? "Active" : "InActive",
-                meetingStatus: meeting.meetingStatus || '',
-                leadStatus: LeadStatusLabels[meeting?.preCustomerMaster?.leadStatus as LeadStatus] || "-",
-                preCustomerMaster: meeting.preCustomerMaster,
-                userMaster: meeting.userMaster,
-                followUp: meeting.followUpDate || meeting.followUpNote,
-                followUpDate: meeting.followUpDate,
-                followUpNote: meeting.followUpNote,
-                meetingNote: meeting.meetingNote,
-                createdBy: meeting.createdBy,
-                createdOn: meeting.createdOn,
-                updatedBy: meeting.updatedBy,
-                updatedOn: meeting.updatedOn,
-              };
-            });
-          this.filteredMeetings = [...this.meetings];
-          this.totalLengthOfCollection = this.filteredMeetings.length;
-          this.updatePaginatedData();
-        }
-      },
-      (error) => {
-        this.errorMessage = 'Failed to load meetings';
-        this.appSettingService.showError(this.errorMessage);
-      }
-    );
-  }
-
-
-    // Treat UTC string as "local" without converting
-  convertUTCToLocal(utcDate: string): Date {
-    const parts = utcDate.match(/\d+/g); // extract [YYYY, MM, DD, HH, MM, SS]
-    return new Date(
-      Number(parts[0]),       // year
-      Number(parts[1]) - 1,   // month (0-indexed)
-      Number(parts[2]),       // day
-      Number(parts[3]),       // hour
-      Number(parts[4]),       // minute
-      Number(parts[5])        // second
-    );
-  }
-
-  updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.filteredMeetings = this.meetings.slice(startIndex, endIndex);
-  }
-
-  searchMeetings(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim();
-
-    if (!searchQuery) {
-      this.filteredMeetings = [...this.meetings];
-    } else {
-      this.filteredMeetings = this.meetings.filter((meeting) => {
-        return (
-          meeting.customerName?.toLowerCase().includes(searchQuery) ||
-          meeting.meetingType?.toLowerCase().includes(searchQuery) ||
-          meeting.salesPerson?.toLowerCase().includes(searchQuery) ||
-          String(meeting.meetingDate).toLowerCase().includes(searchQuery) ||
-          meeting.status.toLowerCase().includes(searchQuery) ||
-          meeting.preCustomerMaster.leadStatus.toLowerCase().includes(searchQuery)
-        );
-      });
-    }
-
-    this.totalLengthOfCollection = this.filteredMeetings.length;
-    this.page = 1; // Reset to first page when searching
-    this.updatePaginatedData();
-  }
-
+  // Modal and form handling methods
   openModal(content: TemplateRef<any>, meeting: any) {
     this.initMeetingForm();
     if (meeting) {
-      this.meetingData = meeting
+      this.meetingData = meeting;
       const ourSalesperson = this.salesPersons.find(person => person.UserMasterSid === meeting.leadAssignTo);
       this.meetingForm.patchValue({
         ...meeting,
@@ -275,18 +566,11 @@ reasonList=[
           followUpDate: followUp ? followUpDate : '',
           followUpNote: followUp ? meeting.followUpNote || '' : '',
           meetingDuration: meeting.meetingDuration,
-           preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null,
-           createdBy: meeting.createdBy,
-           updatedBy:meeting.updatedBy
+          preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null,
+          createdBy: meeting.createdBy,
+          updatedBy: meeting.updatedBy
         });
 
-        // Disable fields that shouldn't be edited
-        // this.meetingForm.get('customerName').disable();
-        // this.meetingForm.get('meetingDate').disable();
-        // this.meetingForm.get('meetingType').disable();
-        // this.meetingForm.get('leadAssignTo').disable();
-
-        // Enable status field unless it's confirmed
         this.meetingForm.controls['meetingStatus'].enable();
         if (meeting.meetingStatus === 'confirmed') {
           this.meetingForm.controls['meetingStatus'].disable();
@@ -298,11 +582,10 @@ reasonList=[
 
   formatDateForInput(dateString: string) {
     const date = new Date(dateString);
-    return date.toISOString().slice(0, 16); // Extracts 'YYYY-MM-DDTHH:MM'
+    return date.toISOString().slice(0, 16);
   }
 
   onUpdateMeeting() {
-    // Check if meeting status is "on hold" and note is empty
     if (this.meetingForm.get('meetingStatus')?.value === 'on hold' &&
       !this.meetingForm.get('meetingNote')?.value) {
       this.meetingForm.get('meetingNote')?.markAsTouched();
@@ -328,12 +611,11 @@ reasonList=[
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       PreCustomerMasterSid:
-    this.meetingForm.get('preCustomerMasterSid')?.value ||
-    this.selectedMeeting.preCustomerMaster?.PreCustomerMasterSid, // ✅ Corrected
-  ...this.meetingForm.getRawValue(),
-};
+        this.meetingForm.get('preCustomerMasterSid')?.value ||
+        this.selectedMeeting.preCustomerMaster?.PreCustomerMasterSid,
+      ...this.meetingForm.getRawValue(),
+    };
 
-    // If followUp is false, remove followUpNote and followUpDate from the payload
     if (!this.meetingForm.get('followUp')?.value) {
       delete payload.followUpNote;
       delete payload.followUpDate;
@@ -345,7 +627,7 @@ reasonList=[
           this.commonModalService.openSuccessModal(resp.message);
           this.btnDisable = false;
           this.modalRef.close();
-          this.loadMeetings(); // Refresh the list
+          this.searchMeetings();
         } else {
           this.btnDisable = false;
           this.commonModalService.openErrorModal(resp.message);
@@ -368,21 +650,16 @@ reasonList=[
 
   getSalesmanById(id: number) {
     if (!id || !this.salesPersons.length) return;
-
-    const user = this.salesPersons.find(person => person.UserMasterSid === id)
-
-    return user?.userName
-
+    const user = this.salesPersons.find(person => person.UserMasterSid === id);
+    return user?.userName;
   }
 
   resetForm(): void {
-    // If editing an existing meeting, reload the original data
     if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.PreCustomerMeetingSid) {
       this.loadMeetingData(this.selectedMeeting.PreCustomerMeetingSid);
       return;
     }
 
-    // Create-mode: reset only modified fields to their original values
     const originalValues = {
       customerName: this.selectedMeeting?.preCustomerMaster?.preCustomerName || '',
       PreCustomerMeetingSid: this.selectedMeeting?.PreCustomerMeetingSid || '',
@@ -396,14 +673,10 @@ reasonList=[
       followUpNote: this.selectedMeeting?.followUpNote || ''
     };
 
-    // Patch the form with original values instead of resetting completely
     this.meetingForm.patchValue(originalValues);
-
-    // Reset validation states
     this.meetingForm.markAsPristine();
     this.meetingForm.markAsUntouched();
 
-    // Reset individual control validation states
     Object.keys(this.meetingForm.controls).forEach(key => {
       const control = this.meetingForm.get(key);
       control?.markAsPristine();
@@ -411,23 +684,37 @@ reasonList=[
       control?.setErrors(null);
     });
 
-    // Reset button state
     this.btnDisable = false;
-
-    // Note: Removed the loadMeetings() call since we don't want to refresh the entire list
-    // when just resetting form modifications
   }
 
   toggleFollowUp(event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.meetingForm.patchValue({ followUp: isChecked });
 
-    // If unchecked, reset followUpDate and followUpNote
     if (!isChecked) {
       this.meetingForm.patchValue({ followUpDate: null, followUpNote: '' });
     }
   }
 
+  // Status badge class logic (same as year list pattern)
+  getStatusClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return 'badge bg-success';
+      case 'in progress':
+        return 'badge bg-warning';
+      case 'on hold':
+        return 'badge bg-danger';
+      case 'confirmed':
+        return 'badge bg-info';
+      case 'completed':
+        return 'badge bg-secondary';
+      default:
+        return 'badge bg-light text-dark';
+    }
+  }
+
+  // Other existing methods...
   showInfo() {
     if (!this.meetingData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
@@ -435,7 +722,6 @@ reasonList=[
     modalRef.componentInstance.idLabel = 'Meeting Id';
     modalRef.componentInstance.idValue = this.meetingData?.PreCustomerMeetingSid;
   }
-
 
   openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -452,7 +738,6 @@ reasonList=[
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.meetingData?.PreCustomerMeetingSid;
-
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }
@@ -462,6 +747,7 @@ reasonList=[
       }
     );
   }
+
   openEmail() {
     if (!this.meetingData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {
@@ -472,22 +758,10 @@ reasonList=[
   }
 
   openAuthority() {
-    // if (!this.tariffData) return;
-    // const modalRef = this.modalService.open(AuthorityEntryComponent, {
-    // 	size: 'lg',
-    // 	centered: true,
-    // 	backdrop: 'static'
-    // });
+    // Implementation for authority
   }
 
   openEDoc() {
-    // if (!this.tariffData) return;
-    // const modalRef = this.modalService.open(EdocComponent, {
-    // 	size: 'lg',
-    // 	centered: true,
-    // 	backdrop: 'static'
-    // });
+    // Implementation for eDoc
   }
-
-
 }

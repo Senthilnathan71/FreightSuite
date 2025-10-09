@@ -167,29 +167,33 @@ export class SailingScheduleEntryComponent implements OnInit {
     hasPermission(permission: string): boolean {
         return this.permissions.includes(permission);
     }
-
+    hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
+    
     initScheduleForm(){
         // Header-only fields (includes ports and key dates)
         this.scheduleForm = this.fb.group({
             VesselMasterSid : [null,[Validators.required]],
-            VoyageNo : ['',[Validators.required, Validators.maxLength(10)]],
+            VoyageNo : ['',[Validators.required]],
             RotationNumber : ['',[Validators.maxLength(10)]],
             ShipIRN : ['',[Validators.maxLength(10)]],
             CrewIRN : ['',[Validators.maxLength(10)]],
-            SCMETA : [null,[Validators.required]],
-            SCMETD : [null,[Validators.required]],
+            SCMETA : [null],
+            SCMETD : [null],
             SCMTCargoDescription : ['',[Validators.maxLength(200)]],
             Remarks : ['',[Validators.maxLength(200)]],
             status : ['Active'],
             CoLoad : [false],
-            VoyageType : [null,[Validators.required]],
+            VoyageType : [null],
             Carrier : [null],
 
             // NEW header port/date fields (replaces detail table)
-            POLSid: [null, [Validators.required]],
-            PODSid: [null, [Validators.required]],
-            ETA: [null, [Validators.required]],
-            ETD: [null, [Validators.required]],
+            POLSid: [null],
+            PODSid: [null],
+            ETA: [null],
+            ETD: [null],
             ATA: [null],
             ATD: [null],
             PortCutoff: [null],
@@ -434,9 +438,13 @@ export class SailingScheduleEntryComponent implements OnInit {
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const formValue = this.scheduleForm.getRawValue();
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+        const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
         const payload: any = {
             ...formValue,
+            CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			BranchMasterSid : this.currentBranch?. BranchMasterSid,
             VesselMasterSid : parseInt(formValue.VesselMasterSid),
             Carrier : formValue.Carrier ? parseInt(formValue.Carrier) : null,
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
@@ -456,7 +464,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             this.masterService.updateSailingScheduleById(this.VoyageMasterHeaderSid,payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
-                        this.appSettingService.showSuccess(resp.message);
+                        this.appSettingService.showSuccess("SailingSchedule successfully updated");
                         this.loadScheduleData();
                     } else {
                         this.appSettingService.showError(resp.message || 'Error updating sailing schedule');
@@ -470,7 +478,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             this.masterService.createNewSailingSchedule(payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
-                        this.appSettingService.showSuccess(resp.message);
+                        this.appSettingService.showSuccess('New SailingSchedule is successfully created');
                         const sailId = resp.data?.VoyageMasterHeaderSid;
                         if(sailId){
                             this.route.navigate(['master/sailing-schedule/entry',sailId]);
