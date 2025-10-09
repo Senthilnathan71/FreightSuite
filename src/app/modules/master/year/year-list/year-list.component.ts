@@ -19,6 +19,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 
 @Component({
   selector: 'app-year-list',
@@ -33,7 +35,8 @@ import { Observable } from 'rxjs';
     CustomDatePipe,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './year-list.component.html',
@@ -55,7 +58,7 @@ export class YearListComponent extends BaseListComponent implements OnInit {
   companyMap: { [id: number]: string } = {};
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-
+   headerActions: HeaderAction[] = [];
   // page = 1;
   // pageSize = 15;
   // totalLengthOfCollection: number = 0;
@@ -74,14 +77,14 @@ export class YearListComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Booking',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
        {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
+        tooltip: 'Delete ',
         class:"text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -91,7 +94,7 @@ export class YearListComponent extends BaseListComponent implements OnInit {
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: 'BookingHeaderSid',
+    trackByKey: 'YearMasterSid',
     emptyMessage: 'No Year found',
     dragAndDrop: true
   };
@@ -137,11 +140,11 @@ export class YearListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadYears();
+    // this.loadYears();
     // Initialize table configuration
     this.initializeTableConfig();
-
-    // Initialize base component
+    this.initializeHeaderActions();
+    // Initiaize base component
     super.ngOnInit();
   }
   checkPermissions() {
@@ -156,6 +159,7 @@ export class YearListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+            this.initializeHeaderActions();
         }
       });
     }
@@ -196,8 +200,9 @@ export class YearListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
-      this.appSettingService.showError('Error searching bookings.');
+      this.appSettingService.showError('Error searching Years.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
@@ -206,8 +211,8 @@ export class YearListComponent extends BaseListComponent implements OnInit {
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
-    this.appSettingService.showError('Error searching bookings.');
-    console.error('Error searching bookings', error);
+    this.appSettingService.showError('Error searching Years.');
+    console.error('Error searching Years', error);
     super.handleSearchError(error);
   }
 
@@ -216,6 +221,62 @@ export class YearListComponent extends BaseListComponent implements OnInit {
     this.search();
   }
 
+   onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchYears();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+ 
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.nagivateTocreateYear()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }
@@ -351,36 +412,36 @@ export class YearListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadYears(): void {
-    this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId: CompanyMasterSid,
-    };
+  // loadYears(): void {
+  //   this.spinner.show();
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     activeCompanyId: CompanyMasterSid,
+  //   };
 
-    this.masterService.searchYearList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.yearList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching years:', err);
-        this.yearList = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchYearList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.yearList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching years:', err);
+  //       this.yearList = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
@@ -396,7 +457,8 @@ export class YearListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadYears();
+    // this.loadYears();
+    this.searchYears();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -411,7 +473,7 @@ export class YearListComponent extends BaseListComponent implements OnInit {
         this.masterService.deleteYearById(YearMasterSid).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
-            this.loadYears();
+            // this.loadYears();
             this.searchYears();
           },
           error: (err) => {

@@ -5,7 +5,7 @@
 
   .custom-input-field {
     border-radius: 0;
-    padding: 6px 4px 0px ;
+    padding: 6px 4px 0px;
     border-left: 0;
     border-right: 0;
     border-top: 0;
@@ -16,7 +16,7 @@
     left: 0px;
     padding-left: 0;
     padding-right: 0;
-    color:#333;
+    color: #05608d;
   }
 
   .error-message {
@@ -29,96 +29,104 @@
       border-radius: 0;
       border-top: 0;
       border-left: 0;
-      padding: 6px 4px 0px ;
+      padding: 6px 4px 0px;
       border-right: 0;
       max-height: 10px;
     }
   }
 
   .form-control {
-      border-radius: 0;
-      border-top: 0;
-      border-left: 0;
-      border-right: 0;
-      padding: 6px 4px 0px ;
-      max-height: 29px;
-    }
-  
+    border-radius: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 6px 4px 0px;
+    max-height: 29px;
+  }
+
 
   .card {
     --bs-card-spacer-y: 8px;
     --bs-card-spacer-x: 8px;
   }
 
-.custom-form-group-select {
-  position: relative;
+  .custom-form-group-select {
+    position: relative;
 
-  ng-select {
-    display: block;
+    ng-select {
+      display: block;
 
-    .ng-value-container {
-      padding-left: 0 !important;
-      padding-top: 0; 
+      .ng-value-container {
+        padding-left: 0 !important;
+        padding-top: 0;
+      }
+
+      .ng-input input {
+        padding-left: 0 !important;
+        padding-top: 0;
+
+      }
+
     }
 
-    .ng-input input {
-      padding-left: 0 !important;
-      padding-top: 0;
+    multi-select {
+      display: block;
+
+      .ng-value-container {
+        padding-left: 0 !important;
+        padding-top: 0;
+      }
+
+      .ng-input input {
+        padding-left: 0 !important;
+        padding-top: 0;
+      }
+    }
+
+    .input-label {
+      position: absolute;
+      left: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      pointer-events: none;
+      background-color: #fff;
+      padding: 0 5px;
+      padding-top: 3px;
+      // color: #333;
+      transition: 0.2s ease all;
+      z-index: 1;
+    }
+
+    &:focus-within .input-label,
+    &.filled .input-label {
+      top: -8px;
+      font-size: 11px;
+      color: #05608D;
+      transform: none;
+      left: 0px;
     }
   }
 
-  multi-select{
-    display: block;
 
-    .ng-value-container {
-      padding-left: 0 !important;
-      padding-top: 0; 
-    }
+  .custom-form-group-select-date {
+    position: relative;
+    margin-bottom: 0px;
 
-    .ng-input input {
-      padding-left: 0 !important;
-      padding-top: 0;
+    .input-label {
+      left: 0px;
+      padding-left: 0;
+      padding-right: 0;
+      color: #05567F;
     }
   }
-  .input-label {
+
+  .custom-form-group-select-date .input-label {
     position: absolute;
-    left: -4px;  
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 14px;
-    pointer-events: none;
-    background-color: #fff;
-    padding: 0 5px;
-    padding-top: 3px;
-    color: #333;
-    transition: 0.2s ease all;
-    z-index: 1;
+    left: 3px;
   }
 
-  &:focus-within .input-label,
-  &.filled .input-label {
-    top: -8px;
-    font-size: 11px;
-    color: #05608D;
-    transform: none;
-    left: 0px; 
+  .form-check-label{
+    color: #05608d;
   }
-}
-
-
-.custom-form-group-select-date {
-  position: relative;
-  margin-bottom: 0px;
-   .input-label {
-    left: 0px;
-    padding-left: 0;
-    padding-right: 0;
-    color:#05567F;
-  }
-}
-
-.custom-form-group-select-date .input-label {
-  position: absolute;
-  left: 3px;       
-}
 }

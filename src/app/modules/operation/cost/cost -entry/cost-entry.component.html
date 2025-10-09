@@ -274,8 +274,8 @@
 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" class="custom-input-field sm text-end"
-                      formControlName="RevenueLocalAmount"
+                    <input type="text" id="text-input" class="custom-input-field sm text-end"
+                      [value]="row.get('RevenueLocalAmount')?.value | numberFormat"
                       readonly>
                   </div>
                 </td>
@@ -305,8 +305,17 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <input type="text" [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''"
-                      class="custom-input-field sm" readonly>
+                    <input *ngIf="!row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid"
+                      type="text"
+                      [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''"
+                      class="custom-input-field sm"
+                      readonly>
+                    <a *ngIf="row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid"
+                       [routerLink]="['/operation/invoice/entry', row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid]"
+                       class="voucher-number-link"
+                       title="View Invoice">
+                      {{ row.get('RevenueVoucherHeader')?.value?.VoucherNumber }}
+                    </a>
                   </div>
                 </td>
 
@@ -357,8 +366,8 @@
 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" formControlName="CostLocalAmount"
-                      class="custom-input-field sm text-end"
+                    <input type="text" id="text-input" class="custom-input-field sm text-end"
+                      [value]="row.get('CostLocalAmount')?.value | numberFormat"
                       readonly>
                   </div>
                 </td>
@@ -388,8 +397,17 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <input type="text" [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''"
-                      class="custom-input-field sm" readonly>
+                    <input *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
+                      type="text"
+                      [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''"
+                      class="custom-input-field sm"
+                      readonly>
+                    <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
+                       [routerLink]="['/operation/invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
+                       class="voucher-number-link"
+                       title="View Vendor Invoice">
+                      {{ row.get('CostVoucherHeader')?.value?.VoucherNumber }}
+                    </a>
                   </div>
                 </td>
               </tr>

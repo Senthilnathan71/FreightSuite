@@ -121,7 +121,7 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadDocTypes();
+    // this.loadDocTypes();
     // Initialize table configuration
     this.initializeTableConfig();
 
@@ -365,43 +365,43 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadDocTypes(): void {
-    this.spinner.show();
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  // loadDocTypes(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid,
-      activeBranchId: BranchMasterSid,
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid,
+  //     activeBranchId: BranchMasterSid,
+  //   };
 
-    this.masterService.searchDocTypes(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.docTypeList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching document types:', err);
-        this.docTypeList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchDocTypes(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.docTypeList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching document types:', err);
+  //       this.docTypeList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
 
   // sort(column: string) {
@@ -452,7 +452,8 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadDocTypes();
+    // this.loadDocTypes();
+    this.searchDoctType()
   }
   // clearFilterValue() {
   //   this.filterValue = '';
@@ -470,7 +471,8 @@ export class DoctypeListComponent extends BaseListComponent implements OnInit {
         this.masterService.deleteDocTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/doctype/list'])
-          this.loadDocTypes();
+          // this.loadDocTypes();
+          this.searchDoctType()
         });
       }
     });

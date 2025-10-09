@@ -19,6 +19,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-currency-list',
   standalone: true,
@@ -31,7 +32,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './currency-list.component.html',
   styleUrl: './currency-list.component.scss'
@@ -60,6 +62,7 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  headerActions: HeaderAction[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -71,14 +74,14 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View currency',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete currency',
+        tooltip: 'Delete ',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -131,8 +134,9 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadCurrencies();
+    // this.loadCurrencies();
     this.initializeTableConfig();
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -149,6 +153,7 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -189,6 +194,7 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching currency.');
       this.allItems = [];
@@ -196,6 +202,63 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
     }
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchcurrency();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateCurrency();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
@@ -344,41 +407,41 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadCurrencies(): void {
-    this.spinner.show();
-    this.loading = true;
+  // loadCurrencies(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.masterService.searchCurrencyList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.currencyList = response.data.items;
-          this.allCurrencies = response.data.items; // Maintain both lists if needed
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching currencies:', err);
-        this.currencyList = [];
-        this.allCurrencies = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchCurrencyList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.currencyList = response.data.items;
+  //         this.allCurrencies = response.data.items; // Maintain both lists if needed
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching currencies:', err);
+  //       this.currencyList = [];
+  //       this.allCurrencies = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
 
   // sort(column: string) {
@@ -421,7 +484,8 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadCurrencies();
+    // this.loadCurrencies();
+    this.searchcurrency();
   }
   // clearFilterValue() {
   //   this.filterValue = '';

@@ -303,12 +303,15 @@ dataFromEnqPage:any;
   }
 
 patchEnqPageValues(enqData: any) { 
+  console.log(enqData,'enqData')
   // --- Header form setup ---------------------------------
   this.enquiryNumber = enqData?.EnquiryNumber;
   this.quoteRoutes.clear();
 
   const headerFields = [
     'EnquirySid',
+    'LeadOrCustomer',
+    'PreCustomerMasterSid',
     'CustomerMasterSid',
     'CustomerName',
     'CustomerAddress',
@@ -370,8 +373,8 @@ patchEnqPageValues(enqData: any) {
       expDate: '', 
       TransitDays: route?.TransitDays || '',
       ServiceLevel: route?.ServiceLevel || null,
-      POLFreeDays: route?.POLFreeDays || '',
-      PODFreeDays: route?.PODFreeDays || '',
+      POLFreeDays: route?.POLFreeDays || 0,
+      PODFreeDays: route?.PODFreeDays || 0,
       authorizerStatus: route?.authorizerStatus || 'Pending',
       segmentType: segment
     };
@@ -607,8 +610,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       // Route Related Controls
       QuoteRouteSid: [data?.QuoteRouteSid || null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null, [Validators.required]],
-      POLFreeDays: [data?.POLFreeDays || ''],
-      PODFreeDays: [data?.PODFreeDays || ''],
+      POLFreeDays: [data?.POLFreeDays || 0],
+      PODFreeDays: [data?.PODFreeDays || 0],
       PORSid: [data?.PORSid ?? null],
       POLSid: [data?.POLSid ?? null, [Validators.required]],
       PODSid: [data?.PODSid ?? null, [Validators.required]],
@@ -1324,8 +1327,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         // Route Part
         QuoteRouteSid: route.QuoteRouteSid,
         DepartmentMasterSid: route.DepartmentMasterSid,
-        POLFreeDays: route.POLFreeDays,
-        PODFreeDays: route.PODFreeDays,
+        POLFreeDays: route.POLFreeDays ? route.POLFreeDays : 0,
+        PODFreeDays: route.PODFreeDays ? route.PODFreeDays : 0,
         PORSid: route.PORSid,
         POLSid: route.POLSid,
         PODSid: route.PODSid,

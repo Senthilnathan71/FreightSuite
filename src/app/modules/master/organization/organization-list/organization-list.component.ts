@@ -20,10 +20,12 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-organization-list',
   standalone: true,
-  imports: [FeatherModule, NgSelectModule, NgbPaginationModule, CommonModule, RouterModule, FormsModule, ReactiveFormsModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent],
+  imports: [FeatherModule, NgSelectModule, NgbPaginationModule, CommonModule, RouterModule, FormsModule, ReactiveFormsModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent, PageHeaderComponent, ToolsDropdownComponent],
   templateUrl: './organization-list.component.html',
   styleUrl: './organization-list.component.scss'
 })
@@ -42,6 +44,8 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
   // searchPerformed = false;
   userData: any;
   loading = false;
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
 
   isFavorite: boolean = false;
   allOrganizations: any[] = [];
@@ -126,9 +130,11 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
       this.checkPermissions();
     }
     this.loadCountryList();
-    this.loadOrganizations();
+    // this.loadOrganizations();
 
     this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
 
     // Initialize base component
     super.ngOnInit();
@@ -161,15 +167,99 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         countryName: this.getCountryName(item.CountryMasterSid),
-        type : this.getFirstTrueKey(item.CustomerType) || "N/A"
+        type: this.getFirstTrueKey(item.CustomerType) || "N/A"
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
+  }
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.search();
+  }
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateOrganization();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   protected override handleSearchError(error: any): void {
@@ -229,7 +319,7 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
       },
       {
         key: 'PanType',
-        label: 'PAN/Vat',
+        label: 'PAN/VAT',
         sortable: true,
         filterable: true,
         visible: true,
@@ -329,6 +419,8 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
         }
       });
     }
@@ -346,44 +438,44 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
       }
     });
   }
-  loadOrganizations(): void {
-    this.spinner.show();
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid
-    };
+  // loadOrganizations(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid
+  //   };
 
-    this.masterService.searchOrganizationList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.organizationList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching organizations:', err);
-        this.organizationList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchOrganizationList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.organizationList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching organizations:', err);
+  //       this.organizationList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadOrganizations();
+    // this.loadOrganizations();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -403,19 +495,21 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
     this.sortDirection = 'asc';
     this.searchPerformed = false;
     this.filterValue = '';
-    this.loadOrganizations();
+    // this.loadOrganizations();
   }
 
-  getFirstTrueKey(jsonStr) {
-    // const obj = JSON.parse(jsonStr);
- 
-    for (const [key, value] of Object.entries(jsonStr)) {
-      if (value === "isTrue") {
-        return String(key).toUpperCase()+ "...";
-      }
-    }
- 
+  getFirstTrueKey(jsonStr: any): string {
+  // Check if jsonStr is null, undefined, or not an object
+  if (!jsonStr || typeof jsonStr !== 'object') {
     return "N/A";
-}
+  }
 
+  for (const [key, value] of Object.entries(jsonStr)) {
+    if (value === "isTrue") {
+      return String(key).toUpperCase() + "...";
+    }
+  }
+
+  return "N/A";
+}
 }

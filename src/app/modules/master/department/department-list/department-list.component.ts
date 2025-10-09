@@ -19,10 +19,11 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-department-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent],
+  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent, PageHeaderComponent,],
   templateUrl: './department-list.component.html',
   styleUrl: './department-list.component.scss'
 })
@@ -34,7 +35,7 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
   departmentList: any[] = []
 
   allDepartments: any[] = [];
-
+  headerActions: HeaderAction[] = [];
   loading = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -46,14 +47,14 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Department',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Department',
+        tooltip: 'Delete ',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -108,9 +109,10 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadDepartments();
+    // this.loadDepartments();
     // Initialize table configuration
     this.initializeTableConfig();
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -127,6 +129,7 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -165,6 +168,7 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching departments.');
       this.allItems = [];
@@ -178,6 +182,62 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
     this.appSettingService.showError('Error searching departments.');
     console.error('Error searching departments', error);
     super.handleSearchError(error);
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchDepartment();
+  }
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateDepartment();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   searchDepartment() {
@@ -315,7 +375,8 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadDepartments();
+    // this.loadDepartments();
+    this.searchDepartment();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -329,47 +390,47 @@ export class DepartmentListComponent extends BaseListComponent implements OnInit
         this.masterService.deleteDepartmentById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/department/list'])
-          this.loadDepartments();
+          // this.loadDepartments();
           this.searchDepartment();
         });
       }
     });
   }
-  loadDepartments(): void {
-    this.spinner.show();
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid
-    };
+  // loadDepartments(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid
+  //   };
 
-    this.masterService.searchDepartmentList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.departmentList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching departments:', err);
-        this.departmentList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchDepartmentList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.departmentList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching departments:', err);
+  //       this.departmentList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
   navigateToCreateDepartment() {
     this.router.navigate(['master/department/entry'])

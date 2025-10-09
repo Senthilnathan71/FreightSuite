@@ -30,6 +30,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-chargegroup',
   standalone: true,
@@ -49,15 +51,17 @@ import { Observable } from 'rxjs';
     NgxSpinnerModule,
     NgbDropdownModule,
     TextWithNumbersDirective,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './chargegroup.component.html',
   styleUrl: './chargegroup.component.scss',
   providers: [DatePipe]
 })
 export class ChargegroupComponent extends BaseListComponent implements OnInit {
-   @ViewChild('chargeGroupTable') chargeGroupTable!: ReusableTableComponent;
-    @ViewChild('content') content: TemplateRef<any>;
+  @ViewChild('chargeGroupTable') chargeGroupTable!: ReusableTableComponent;
+  @ViewChild('content') content: TemplateRef<any>;
   chargeGroupForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -84,11 +88,12 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
   // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-
-   // Company
-  currentCompany : any;
-  currentBranch : any;
-   auditLogs: any[] = []; // Stores audit logs
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
+  // Company
+  currentCompany: any;
+  currentBranch: any;
+  auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
   toggleFavorite() {
@@ -124,10 +129,10 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
 
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -138,27 +143,29 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
       }
     });
     this.loadCompanies();
-    this.loadChargeGroups();
+    // this.loadChargeGroups();
     this.initializeTableConfig();
     super.ngOnInit();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
   }
 
-    tableConfig: TableConfig = {
+  tableConfig: TableConfig = {
     columns: [],
     actions: [
       {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Zone',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
-        class:"text-danger",
+        tooltip: 'Delete ',
+        class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
     ],
@@ -167,16 +174,16 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: 'ZoneMasterSid',
-    emptyMessage: 'No Zone found',
+    trackByKey: 'ChargeGroupSid',
+    emptyMessage: 'No Charge-Group found',
     dragAndDrop: true
   };
   tableLoading = false;
 
   protected config: ListComponentConfig = {
-    storageKey: 'zone-list-state',
+    storageKey: 'charge-group-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'zoneNo',
+    defaultSortColumn: 'GroupName',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -204,24 +211,25 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     };
   }
 
- protected processSearchResults(response: any): void {
-  this.tableLoading = false;
-  this.spinner.hide();
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
 
-  if (response.status) {
-    this.allItems = (response.data.items || []).map((item: any) => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
+    if (response.status) {
+      this.allItems = (response.data.items || []).map((item: any) => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
 
-    this.totalLengthOfCollection = response.data.totalCount || 0;
-    this.applySorting();
-  } else {
-    this.appSettingService.showError('Error searching bookings.');
-    this.allItems = [];
-    this.totalLengthOfCollection = 0;
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingService.showError('Error searching bookings.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
   }
-}
 
 
   protected override handleSearchError(error: any): void {
@@ -234,7 +242,7 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
 
   // Legacy methods for template compatibility
   searchChargeGroup() {
-     this.page = 1;
+    this.page = 1;
     this.search();
   }
 
@@ -242,6 +250,110 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     this.clearFilter();
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchChargeGroup()
+  }
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   override trackBy(index: number, item: any): number {
     return item.BookingHeaderSid || index;
   }
@@ -249,14 +361,14 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
   // Table configuration
   private initializeTableConfig(): void {
     this.tableConfig.columns = [
-       {
+      {
         key: 'GroupName',
         label: 'Group Name',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"150px"
+        width: "150px"
       },
       {
         key: 'Remarks',
@@ -280,42 +392,42 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
   }
 
   // Table event handlers
- onTableActionClick(event: TableEventData): void {
-  if (event.action === 'view') {
-    this.viewZone(event.row.ChargeGroupSid,this.content);
-  } else if (event.action === 'delete') {
-    this.deleteChargeGroupById(event.row.ChargeGroupSid); 
-  }
-}
-
-deleteChargeByRow(row: any) {
-  this.deleteChargeGroupById(row.ChargeGroupSid); 
-}
-
-deleteChargeGroupById(id: number) {
-  const dialogRef = this.dialog.open(DeleteWarningComponent);
-  dialogRef.afterClosed().subscribe(result => {
-    if (result === true) {
-      this.masterService.deleteChargeGroupById(id).subscribe({
-        next: () => {
-          this.appSettingService.showSuccess('Deleted successfully!');
-          this.loadChargeGroups(); 
-          this.searchChargeGroup();
-        },
-        error: () => {
-          this.appSettingService.showError('Failed to delete');
-        }
-      });
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.viewZone(event.row.ChargeGroupSid, this.content);
+    } else if (event.action === 'delete') {
+      this.deleteChargeGroupById(event.row.ChargeGroupSid);
     }
-  });
-}
+  }
+
+  deleteChargeByRow(row: any) {
+    this.deleteChargeGroupById(row.ChargeGroupSid);
+  }
+
+  deleteChargeGroupById(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.deleteChargeGroupById(id).subscribe({
+          next: () => {
+            this.appSettingService.showSuccess('Deleted successfully!');
+            // this.loadChargeGroups();
+            this.searchChargeGroup();
+          },
+          error: () => {
+            this.appSettingService.showError('Failed to delete');
+          }
+        });
+      }
+    });
+  }
 
   viewZone(row: any, content?: TemplateRef<any>) {
-    this.editChargeGroup(row,content)
+    this.editChargeGroup(row, content)
   }
 
   onTableRowClick(row: any): void {
-    
+
   }
 
   onTableSortChange(sort: TableSortConfig): void {
@@ -348,61 +460,63 @@ deleteChargeGroupById(id: number) {
       title: companyName
     });
   }
-   checkPermissions() {
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+          console.log(this.permissions)
+          this.initializeHeaderActions();
+          this.initializeModalDropdownItems()
+        }
+      });
     }
   }
 
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
+    return this.permissions.includes(permission);
+  }
 
-  loadChargeGroups(): void {
-    this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  const params = {
-    search: this.filterValue?.trim() || '',
-    page: this.page,
-    pageSize: this.pageSize,
-    activeCompanyId : CompanyMasterSid
-  };
+  //   loadChargeGroups(): void {
+  //     this.spinner.show();
+  //     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     activeCompanyId : CompanyMasterSid
+  //   };
 
-  this.masterService.searchChargeGroups(params).subscribe({
-    next: (response: any) => {
-      if (response?.status) {
-        this.results = response.data.items || [];
-        this.applySorting();
-        this.updatePaginationData();
-        this.chargeGroupList = [...this.results];
-        this.totalLengthOfCollection = response.data.totalCount || 0;
-        
-      } else {
-        this.results = [];
-        this.chargeGroupList = [];
-        this.totalLengthOfCollection = 0;
-        this.appSettingService.showError(response.message);
+  //   this.masterService.searchChargeGroups(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response?.status) {
+  //         this.results = response.data.items || [];
+  //         this.applySorting();
+  //         this.updatePaginationData();
+  //         this.chargeGroupList = [...this.results];
+  //         this.totalLengthOfCollection = response.data.totalCount || 0;
 
-      }
-      this.searchPerformed = true;
-      this.spinner.hide();
-    },
-    error: (err) => {
-      console.error('Error loading charge groups:', err);
-    }
-  });
-}
+  //       } else {
+  //         this.results = [];
+  //         this.chargeGroupList = [];
+  //         this.totalLengthOfCollection = 0;
+  //         this.appSettingService.showError(response.message);
+
+  //       }
+  //       this.searchPerformed = true;
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading charge groups:', err);
+  //     }
+  //   });
+  // }
 
   loadCompanies(): void {
     this.masterService.getAllCompanies().subscribe({
@@ -418,9 +532,9 @@ deleteChargeGroupById(id: number) {
 
   initForm() {
     this.chargeGroupForm = this.fb.group({
-     
+
       GroupName: ['', [Validators.required]],
-      Remarks: ['', ],
+      Remarks: ['',],
       status: [{ value: 'Active', disabled: false }, Validators.required]
     });
   }
@@ -433,29 +547,29 @@ deleteChargeGroupById(id: number) {
   // }
 
   resetForm(): void {
-  // If editing an existing charge group, reload it (restore original state)
-  if (this.isEditMode && this.ChargeGroupSid) {
-    this.loadChargeGroupData(this.ChargeGroupSid);
-    return;
+    // If editing an existing charge group, reload it (restore original state)
+    if (this.isEditMode && this.ChargeGroupSid) {
+      this.loadChargeGroupData(this.ChargeGroupSid);
+      return;
+    }
+
+    // Create-mode: reset form to initial state with proper default values
+    this.chargeGroupForm.reset({
+      GroupName: null,
+      Remarks: null,
+      status: 'Active'
+    });
+
+    // Re-enable the status field if it was disabled
+    this.chargeGroupForm.get('status')?.enable();
+
+    // Reset validation state
+    this.chargeGroupForm.markAsUntouched();
+    this.chargeGroupForm.markAsPristine();
+
+    // Clear any stored data
+    this.chargeGroupData = null;
   }
-
-  // Create-mode: reset form to initial state with proper default values
-  this.chargeGroupForm.reset({
-    GroupName: null,
-    Remarks: null,
-    status: 'Active'
-  });
-
-  // Re-enable the status field if it was disabled
-  this.chargeGroupForm.get('status')?.enable();
-  
-  // Reset validation state
-  this.chargeGroupForm.markAsUntouched();
-  this.chargeGroupForm.markAsPristine();
-  
-  // Clear any stored data
-  this.chargeGroupData = null;
-}
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -463,8 +577,8 @@ deleteChargeGroupById(id: number) {
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
   trackByIndex(index: number, item: any): number {
-  return index;
-}
+    return index;
+  }
 
   editChargeGroup(id: number, content: any) {
     this.isEditMode = true;
@@ -475,7 +589,7 @@ deleteChargeGroupById(id: number) {
         this.chargeGroupData = chargeGroup;
         this.chargeGroupForm.get('status')?.enable();
         this.chargeGroupForm.patchValue({
-          CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           GroupName: chargeGroup.GroupName,
           Remarks: chargeGroup.Remarks || '',
           status: chargeGroup.status === 'A' ? 'Active' : 'Suspended'
@@ -489,42 +603,42 @@ deleteChargeGroupById(id: number) {
     });
   }
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.ChargeGroupSid) return;
- 
-  this.masterService.getAuditLogsChargeGroups(
-    'ChargeGroup',
-    this.ChargeGroupSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy'];
- 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) 
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
- 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
- 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.ChargeGroupSid) return;
+
+    this.masterService.getAuditLogsChargeGroups(
+      'ChargeGroup',
+      this.ChargeGroupSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy'];
+
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key))
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
+
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
   closeModal(): void {
     if (this.modalRef) {
@@ -572,7 +686,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     const payload = {
       ...formValue,
       status: formValue.status === "Active" ? "A" : "S",
-    CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
     };
 
@@ -586,7 +700,7 @@ openAuditLogs(modal: TemplateRef<any>) {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
-          this.loadChargeGroups();
+          // this.loadChargeGroups();
           this.searchChargeGroup();
         } else {
           this.appSettingService.showError(resp.message);
@@ -601,7 +715,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     });
   }
 
- 
+
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -614,7 +728,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   //   this.updatePaginationData();
   // }
 
- 
+
 
   // resetPage(): void {
   //   this.filterValue = '';
@@ -636,9 +750,9 @@ openAuditLogs(modal: TemplateRef<any>) {
   //     status: item.status === 'A' ? 'Active' : 'Suspended'
   //   }));
 
-   
+
   //     const companyName = this.currentCompany?.companyName ?? 'Company';
- 
+
   //   this.excelReportService.exportAsExcel({
   //     data: formattedData,
   //     headers: [
@@ -705,18 +819,18 @@ openAuditLogs(modal: TemplateRef<any>) {
   //   modalRef.componentInstance.idLabel = 'Charge Group Id';
   //   modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
   // }
- openAuthority() {
+  openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.ChargeGroupSid;
   }
- 
+
   openEDoc() {
     if (!this.chargeGroupData) return;
     const modalRef = this.modalService.open(EdocComponent, {

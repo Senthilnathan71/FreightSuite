@@ -1,14 +1,14 @@
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
-  <div class="col-12">
+  <app-page-header [title]="'Charge'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
+    [searchButtonText]="'Search'" [(searchValue)]="filterValue" [actions]="headerActions"
+    (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
+    (actionTriggered)="onActionTriggered($event)">
+  </app-page-header>
+  <!-- <div class="col-12">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
       <div class="col-md pb-1">
         <div class="d-flex align-items-center gap-2">
@@ -18,17 +18,17 @@
       </div>
 
       <div class="col-md pb-1">
-        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0" (submit)="$event.preventDefault()">
+        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
+          (submit)="$event.preventDefault()">
           <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
             <div class="form-outline flex-grow-1 position-relative">
               <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                     aria-label="Search input" [(ngModel)]="filterValue">
+                aria-label="Search input" [(ngModel)]="filterValue">
               <button *ngIf="filterValue"
-                      class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                      tabindex="0" aria-label="Clear search"
-                      (click)="clearFilterValue()"
-                      onfocus="this.classList.replace('text-secondary','text-danger')"
-                      onblur="this.classList.replace('text-danger','text-secondary')">
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                tabindex="0" aria-label="Clear search" (click)="clearFilterValue()"
+                onfocus="this.classList.replace('text-secondary','text-danger')"
+                onblur="this.classList.replace('text-danger','text-secondary')">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -43,41 +43,36 @@
       </div>
 
       <div class="col-md-auto pb-1">
-        <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          
+        <form
+          class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+
 
           <button *ngIf="hasPermission('Add')" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                  (click)="navigateToCreateCharge()">
+            (click)="navigateToCreateCharge()">
             <i class="fas fa-plus me-1"></i> Create
           </button>
 
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()" [disabled]="!searchPerformed">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+            [disabled]="!searchPerformed">
             <i class="fas fa-file-alt me-1"></i> Report
           </button>
 
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()" [disabled]="!searchPerformed">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+            [disabled]="!searchPerformed">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
         </form>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Reusable Table -->
   <div class="col-12 px-0" *ngIf="totalLengthOfCollection > 0">
-    <app-reusable-table
-      #chargeTable
-      [config]="tableConfig"
-      [data]="chargeLists"
-      [loading]="tableLoading"
-      [totalRecords]="totalLengthOfCollection"
-      [paginationConfig]="paginationConfig"
-      (actionClick)="onTableActionClick($event)"
-      (rowClick)="onTableRowClick($event)"
-      (sortChange)="onTableSortChange($event)"
-      (filterChange)="onTableFilterChange($event)"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)">
+    <app-reusable-table #chargeTable [config]="tableConfig" [data]="chargeLists" [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+      (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
     </app-reusable-table>
   </div>
 

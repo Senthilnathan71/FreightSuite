@@ -369,39 +369,54 @@
                     </td>
 
                     <td>
-                      <input class="form-control form-control-sm" formControlName="Amount" readonly>
+                      <input type="text" class="form-control form-control-sm text-end"
+                        [value]="row.get('Amount')?.value | numberFormat" readonly>
                     </td>
 
                     <td>
-                      <input class="form-control form-control-sm" formControlName="TaxableAmount" readonly>
+                      <input type="text" class="form-control form-control-sm text-end"
+                        [value]="row.get('TaxableAmount')?.value | numberFormat" readonly>
                     </td>
 
                     <td>
-                      <input class="form-control form-control-sm" formControlName="TaxPercentage1"
-                        (input)="onDetailChange(i, 'TaxPercentage1')">
+                      <div class="input-group input-group-sm">
+                        <input type="number" class="form-control form-control-sm" formControlName="TaxPercentage1"
+                          (input)="onDetailChange(i, 'TaxPercentage1')">
+                        <span class="input-group-text">%</span>
+                      </div>
                     </td>
                     <td>
-                      <input class="form-control form-control-sm" formControlName="TaxAmount1" readonly>
-                    </td>
-
-                    <td>
-                      <input class="form-control form-control-sm" formControlName="TaxPercentage2"
-                        (input)="onDetailChange(i, 'TaxPercentage2')">
-                    </td>
-                    <td>
-                      <input class="form-control form-control-sm" formControlName="TaxAmount2" readonly>
+                      <input type="text" class="form-control form-control-sm text-end"
+                        [value]="row.get('TaxAmount1')?.value | numberFormat" readonly>
                     </td>
 
                     <td>
-                      <input class="form-control form-control-sm" formControlName="TaxPercentageIGST"
-                        (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                      <div class="input-group input-group-sm">
+                        <input type="number" class="form-control form-control-sm" formControlName="TaxPercentage2"
+                          (input)="onDetailChange(i, 'TaxPercentage2')">
+                        <span class="input-group-text">%</span>
+                      </div>
                     </td>
                     <td>
-                      <input class="form-control form-control-sm" formControlName="TaxAmountIGST">
+                      <input type="text" class="form-control form-control-sm text-end"
+                        [value]="row.get('TaxAmount2')?.value | numberFormat" readonly>
                     </td>
 
                     <td>
-                      <input class="form-control form-control-sm" formControlName="LocalAmount" readonly>
+                      <div class="input-group input-group-sm">
+                        <input type="number" class="form-control form-control-sm" formControlName="TaxPercentageIGST"
+                          (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                        <span class="input-group-text">%</span>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm text-end"
+                        [value]="row.get('TaxAmountIGST')?.value | numberFormat" readonly>
+                    </td>
+
+                    <td>
+                      <input type="text" class="form-control form-control-sm text-end"
+                        [value]="row.get('LocalAmount')?.value | numberFormat" readonly>
                     </td>
 
                     <!-- MasterJobSid column replaced with ng-select -->

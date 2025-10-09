@@ -38,7 +38,14 @@
 </ngx-spinner>
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+         <app-page-header 
+    [title]="'Charge Group'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col-md pb-1">
                 <div class="d-flex align-items-center gap-2">
 
@@ -96,7 +103,7 @@
             </div>
 
 
-        </div>
+        </div> -->
     </div>
     <div class="col-12 px-0">
           <app-reusable-table

@@ -7,3 +7,12 @@
     padding-top:var(--padding);
     padding-bottom:var(--padding);
 }
+
+
+
+
+@media (min-width: 1200px) {
+    .modal-xl {
+        --bs-modal-width: 1140px; // Missing bs modal class
+    }
+}

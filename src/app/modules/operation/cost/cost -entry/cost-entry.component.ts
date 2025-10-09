@@ -1,5 +1,6 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
@@ -11,6 +12,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
@@ -18,6 +20,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     NgSelectModule,
     ReactiveFormsModule,
     NgbPaginationModule,
@@ -25,7 +28,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     OnlyNumbersDirective,
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    NumberFormatPipe
   ],
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],
@@ -294,10 +298,10 @@ createRateFormGroup(data?: any): FormGroup {
     console.log(this.docTypeList,'this.docTypeList',this.vouchers,'vouchers')
 
   // Extract voucher display values from enriched data
-  const costVoucherNumber = data?.CostVoucherHeader?.VoucherNumber || '';
-  const revenueVoucherNumber = data?.RevenueVoucherHeader?.VoucherNumber || '';
-  const costDocTypeName = data?.CostVoucherType?.DocumentTypeName || '';
-  const revenueDocTypeName = data?.RevenueVoucherType?.DocumentTypeName || '';
+  const costVoucherNumber = data?.costVoucherHeader?.VoucherNumber || data?.CostVoucherHeader?.VoucherNumber || '';
+  const revenueVoucherNumber = data?.revenueVoucherHeader?.VoucherNumber || data?.RevenueVoucherHeader?.VoucherNumber || '';
+  const costDocTypeName = data?.costVoucherTypeMaster?.DocumentTypeName || data?.CostVoucherType?.DocumentTypeName || '';
+  const revenueDocTypeName = data?.revenueVoucherTypeMaster?.DocumentTypeName || data?.RevenueVoucherType?.DocumentTypeName || '';
 
   const form = this.fb.group({
     BookingRatesSid: [data?.BookingRatesSid ?? null],
@@ -327,8 +331,8 @@ createRateFormGroup(data?: any): FormGroup {
     CostDrCr: ['D'], // Cost is always Debit
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
-    CostVoucherHeader: [data?.CostVoucherHeader || null],  // Store voucher header object for display
-    CostVoucherType: [data?.CostVoucherType || null],  // Store voucher type object for display
+    CostVoucherHeader: [data?.costVoucherHeader || data?.CostVoucherHeader || null],  // Store voucher header object for display
+    CostVoucherType: [data?.costVoucherTypeMaster || data?.CostVoucherType || null],  // Store voucher type object for display
     CostNumberOfUnit: [data?.CostNumberOfUnit ?? null],
     RevenueNumberOfUnit:[data?.RevenueNumberOfUnit ?? ''],
     RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
@@ -341,8 +345,8 @@ createRateFormGroup(data?: any): FormGroup {
     RevenueDrCr: ['C'], // Revenue is always Credit
     RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
     RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
-    RevenueVoucherHeader: [data?.RevenueVoucherHeader || null],  // Store voucher header object for display
-    RevenueVoucherType: [data?.RevenueVoucherType || null],  // Store voucher type object for display
+    RevenueVoucherHeader: [data?.revenueVoucherHeader || data?.RevenueVoucherHeader || null],  // Store voucher header object for display
+    RevenueVoucherType: [data?.revenueVoucherTypeMaster || data?.RevenueVoucherType || null],  // Store voucher type object for display
 
     CustomerMasterSid: [data?.CustomerMasterSid ?? null],
     AgentSid: [data?.AgentMasterSid ?? null],
@@ -364,17 +368,18 @@ createRateFormGroup(data?: any): FormGroup {
     const formGroup = this.createRateFormGroup(data);
     this.rateFormArray.push(formGroup);
 
-    // Auto-populate ONLY Revenue Billing Party from booking customer (CustomerMasterSid & CustomerBranchSid)
+    // Auto-populate BookingHeaderSid and Revenue Billing Party from parent booking
     // Cost Billing Party (AgentSid & AgentBranchSid) should remain empty for manual selection
     // Use setTimeout to ensure ng-select dropdowns are fully initialized before setting values
-    if (!data && this.parentFormValue?.CustomerMasterSid) {
+    if (!data && this.parentFormValue) {
       setTimeout(() => {
         const index = this.rateFormArray.length - 1;
         const control = this.rateFormArray.at(index);
         if (control) {
           control.patchValue({
-            CustomerMasterSid: this.parentFormValue.CustomerMasterSid,
-            CustomerBranchSid: this.parentFormValue.CustomerBranchSid
+            BookingHeaderSid: this.parentFormValue.BookingHeaderSid || null,
+            CustomerMasterSid: this.parentFormValue.CustomerMasterSid || null,
+            CustomerBranchSid: this.parentFormValue.CustomerBranchSid || null
             // AgentSid is intentionally NOT set - user must select manually for cost billing party
           });
         }
@@ -502,6 +507,8 @@ createRateFormGroup(data?: any): FormGroup {
       if (!bookingHeaderSid) {
         errorCount++;
         console.error('BookingHeaderSid is missing for rate at index:', index);
+        console.warn('Please save the booking first before adding rates.');
+        this.appSettingService.showWarning('Please save the booking first before adding rates.');
         if (savedCount + errorCount === ratesToSave.length) {
           this.showSaveResults(savedCount, errorCount);
         }

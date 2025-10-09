@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -37,6 +37,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { TaxCalculationService, BookingRateDetails } from '../../services/tax-calculation.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -61,7 +63,9 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
     CostEntryComponent,
     ArApComponent,
     BookingUploadComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbTooltip,
+    SearchableDropdown
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -105,6 +109,14 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   currentBillingPartySid: number | null = null;
   chargeSelectionTaxResult: any = null;
   currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
+
+  // Invoice header properties
+  invoiceHeaderCurrency: any = null;
+  invoiceHeaderExchangeRate: number = 1;
+  billingPartyDetails: any = null;
+  billingPartyAddress: string = '';
+  taxGroupList: any[] = [];
+  chargeTaxGroupMap: Map<number, any> = new Map(); // Map of BookingRatesSid to selected tax group
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -155,6 +167,7 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   TandCList: any[]=[];
   bookingHeader: any;
   selectedCustomerBranch : any;
+  isShipperOther :boolean
   
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -289,6 +302,28 @@ auditLogs: any[] = []; // Stores audit logs
   ];
 dataFromQuotation:any
   // Mail content
+  customerLookupConfig = {
+    displayFields : ['CustomerName','BranchName', 'Address'],
+    displayLabels : ['Customer','Branch', 'Address'],
+    labelFields :['CustomerName']
+  };
+
+  portLookupConfig = {
+    displayFields: ['PortCode', 'PortName','Country'],
+    displayLabels: ['Code', 'Name','Country'],
+    labelFields: ['PortName']
+  };
+
+  incoLookupConfig = {
+    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
+    displayLabels: ['Code', 'Name', 'P/C'],
+    labelFields: ['IncoCode']
+  }
+  containerTypeLookupConfig = {
+    displayFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
+    displayLabels: ['Code', 'Name', 'Size'],
+    labelFields: ['ContainerName']
+  }
 
 
   /**
@@ -309,7 +344,8 @@ dataFromQuotation:any
     private datePipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
     private taxCalculationService: TaxCalculationService,
-    private leadService: LeadService
+    private leadService: LeadService,
+    private companySettings: CompanySettingsManagerService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -452,14 +488,18 @@ dataFromQuotation:any
       CustomerName: [''],
       CustomerAddress: [null, [Validators.required]],
       SalesmanSid: [null],
+      isShipperFreeText : [false],
       ShipperName: [null, [Validators.required]],
       ShipperAddress: ['', [Validators.required]],
+      isConsigneeFreeText : [false],
       ConsigneeName: [null, [Validators.required]],
       ConsigneeAddress: ['', [Validators.required]],
+      isNotifyFreeText : [false],
       Notify: [null],
       NotifyAddress: [''],
       DestinationAgent : [null, [Validators.required]],
       AgentAddress: [''],
+      isCarrierFreeText : [false],
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
@@ -494,6 +534,19 @@ dataFromQuotation:any
       this.syncFormValueWithRateComponent();
     })
   }
+
+ toggleInputType(mainCtrl:string ,flagCtrl, event: MouseEvent): void {
+    event.stopPropagation(); // Prevents click from opening ng-select dropdown
+    // this.isShipperOther = !this.isShipperOther;
+    const value = this.b[flagCtrl]?.value;
+    this.b[flagCtrl]?.setValue(!value);
+    this.bookingForm.get(mainCtrl)?.reset();
+  }
+
+  onShipperSelected(selected: any): void {
+    this.bookingForm.get('ShipperName')?.setValue(selected);
+  }
+
 
   // Cargo Form Initiation
   initCargoForm() {
@@ -669,6 +722,7 @@ dataFromQuotation:any
       this.salesmanList = customerMaster.salesmans;
       this.shipperList = customerMaster.shippers;
       this.filteredShipperList = customerMaster.shippers;
+      // this.filteredShipperList.push({CustomerName: 'Other', CustomerAddress1: ''});
       this.consigneeList = customerMaster.consignees;
       this.filteredConsigneeList = customerMaster.consignees;
       this.agentList = customerMaster.agents;
@@ -676,7 +730,8 @@ dataFromQuotation:any
       this.forwarderList = customerMaster.forwarder;
       this.notifyList = customerMaster.notify;
       this.vesselList = allMasters.vessels;
-      this.portList = allMasters.ports;
+      this.portList = (allMasters.ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
+      console.log(this.portList);
       this.incoList = allMasters.incos;
       this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
     }))
@@ -730,6 +785,18 @@ dataFromQuotation:any
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
+    if (response.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
+      this.bookingForm.patchValue({ isShipperFreeText: true });
+    }
+    if (response.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName)) {
+      this.bookingForm.patchValue({ isConsigneeFreeText: true });
+    }
+    if (response.Notify && !this.existsInList(this.notifyList, response.Notify)) {
+      this.bookingForm.patchValue({ isNotifyFreeText: true });
+    }
+    if (response.CarrierName && !this.existsInList(this.carrierList, response.CarrierName)) {
+      this.bookingForm.patchValue({ isCarrierFreeText: true });
+    }
     this.bookingForm.patchValue({
       BookingNo: response.BookingNo,
       BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
@@ -781,6 +848,8 @@ dataFromQuotation:any
     this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
     this.PODandFPODsame = response.POD === response.FPD;
     this.minStartDate = response.ETA;
+
+
 
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
@@ -1248,13 +1317,15 @@ patchBookingFromQuotation(data: any) {
     if (!customer) {
       this.b['CustomerName']?.setValue('');
       this.b['CustomerAddress']?.setValue(null);
+      this.b['CustomerBranchSid']?.setValue(null);
       this.customerBranchList = [];
       this.handleImportExport();
       return;
     }
     this.b['CustomerName']?.setValue(customer.CustomerName);
-    this.b['CustomerAddress']?.setValue(null);
-    this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
+    this.b['CustomerAddress']?.setValue(customer.Address);
+    this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
+    // this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
     this.handleImportExport();
   }
 
@@ -2410,19 +2481,254 @@ openAuditLogs(modal: TemplateRef<any>) {
       isSelected: true // Select all by default
     }));
 
+    console.log('Available charges set:', {
+      count: this.availableCharges.length,
+      charges: this.availableCharges
+    });
+
     // Select all charges by default
     this.selectedCharges = new Set(pendingCharges.map(c => c.BookingRatesSid));
+
+    // Initialize invoice header
+    this.initializeInvoiceHeader(pendingCharges);
+
+    // Load tax groups
+    this.loadTaxGroups();
 
     // Calculate initial tax
     this.calculateChargeSelectionTax();
 
     // Open charge selection modal with custom extra-wide size
     this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
-      size: 'xl',
-      windowClass: 'modal-xxl',
+      // size: 'xl',
+      // windowClass: 'test-class',
+      fullscreen: true,
       backdrop: 'static',
-      keyboard: false
+      keyboard: false,
+      scrollable: true
     });
+  }
+
+  private initializeInvoiceHeader(charges: any[]) {
+    if (!charges || charges.length === 0) {
+      console.error('No charges provided to initialize invoice header');
+      return;
+    }
+
+    const firstCharge = charges[0];
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+
+    console.log('Initializing invoice header with:', {
+      firstCharge,
+      isRevenue,
+      currencyListLength: this.currencyList?.length
+    });
+
+    // Set billing party details
+    if (isRevenue) {
+      this.billingPartyDetails = firstCharge?.customerMasterBP || {};
+      const branch = firstCharge?.customerBranch || {};
+      this.billingPartyAddress = `${branch?.BranchAddress || ''}, ${branch?.CityName || ''}, ${branch?.StateName || ''} ${branch?.ZipCode || ''}`.trim();
+    } else {
+      this.billingPartyDetails = firstCharge?.AgentMaster || {};
+      this.billingPartyAddress = `${this.billingPartyDetails?.Address1 || ''}`.trim();
+    }
+
+    // Set default currency from booking, charge, or company config
+    const defaultCurrency = isRevenue
+      ? firstCharge?.RevenueCurrencyMaster
+      : firstCharge?.CostCurrencyMaster;
+
+    // Get company's home currency from settings
+    const companyHomeCurrency = this.companySettings.getCurrencySettings();
+    const companyCurrency = this.currencyList?.find(c => c?.currencyCode === companyHomeCurrency.code);
+
+    this.invoiceHeaderCurrency = defaultCurrency || companyCurrency || null;
+
+    // Set default exchange rate
+    this.invoiceHeaderExchangeRate = isRevenue
+      ? (firstCharge?.RevenueExchangeRate || 1)
+      : (firstCharge?.CostExchangeRate || 1);
+
+    console.log('Invoice header initialized:', {
+      billingParty: this.billingPartyDetails,
+      address: this.billingPartyAddress,
+      currency: this.invoiceHeaderCurrency,
+      exchangeRate: this.invoiceHeaderExchangeRate
+    });
+  }
+
+  private loadTaxGroups() {
+    const params = {
+      search: '',
+      page: 1,
+      pageSize: 1000,
+      activeCompanyId: this.currentCompany?.CompanyMasterSid
+    };
+
+    this.masterService.searchTaxGroup(params).subscribe({
+      next: (response: any) => {
+        if (response.status) {
+          this.taxGroupList = response.data.items || [];
+          console.log('Tax groups loaded:', this.taxGroupList.length);
+
+          // Initialize tax group map from initial calculation
+          this.initializeTaxGroupsFromCalculation();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading tax groups:', error);
+      }
+    });
+  }
+
+  private initializeTaxGroupsFromCalculation() {
+    if (!this.chargeSelectionTaxResult || !this.chargeSelectionTaxResult.lineItems) {
+      console.log('No tax calculation result or line items to initialize from');
+      return;
+    }
+
+    console.log('Initializing tax groups from calculation:', {
+      resultType: this.chargeSelectionTaxResult.type,
+      lineItemsCount: this.chargeSelectionTaxResult.lineItems.length,
+      availableChargesCount: this.availableCharges.length,
+      taxGroupsCount: this.taxGroupList.length
+    });
+
+    // Map each charge to its calculated tax group
+    this.availableCharges.forEach((charge, index) => {
+      console.log(`Processing charge ${index}:`, {
+        id: charge.BookingRatesSid,
+        description: charge.ChargeDescription
+      });
+
+      const lineItem = this.chargeSelectionTaxResult.lineItems.find(
+        (item: any) => item.description === charge.ChargeDescription
+      );
+
+      console.log(`Line item for charge ${index}:`, lineItem);
+
+      if (lineItem) {
+        // Find matching tax group based on tax rate and type
+        let matchingTaxGroup = null;
+
+        if (this.chargeSelectionTaxResult.type === 'GST') {
+          const taxRate = lineItem.igstRate > 0 ? lineItem.igstRate : (lineItem.cgstRate + lineItem.sgstRate);
+          console.log(`Looking for GST tax group with rate ${taxRate}%`);
+
+          // For GST, TaxType can be 'Input', 'Output', or 'GST'
+          // Match by rate and exclude VAT types
+          matchingTaxGroup = this.taxGroupList.find(tg => {
+            const tgRate = parseFloat(tg.TaxRate);
+            const isGSTType = tg.TaxType === 'GST' || tg.TaxType === 'Input' || tg.TaxType === 'Output';
+            const match = isGSTType && tgRate === taxRate;
+            if (index === 0) {
+              console.log(`Checking tax group:`, {
+                name: tg.TaxName,
+                type: tg.TaxType,
+                rate: tgRate,
+                targetRate: taxRate,
+                isGSTType,
+                match
+              });
+            }
+            return match;
+          });
+
+          console.log(`Matching tax group for charge ${index}:`, matchingTaxGroup);
+        } else if (this.chargeSelectionTaxResult.type === 'VAT') {
+          matchingTaxGroup = this.taxGroupList.find(tg =>
+            tg.TaxType === 'VAT' && parseFloat(tg.TaxRate) === lineItem.vatRate
+          );
+        }
+
+        if (matchingTaxGroup) {
+          this.chargeTaxGroupMap.set(charge.BookingRatesSid, matchingTaxGroup);
+          console.log(`Set tax group for charge ${charge.BookingRatesSid}:`, matchingTaxGroup.TaxName);
+        } else {
+          console.log(`No matching tax group found for charge ${charge.BookingRatesSid}`);
+        }
+      } else {
+        console.log(`No line item found for charge ${charge.BookingRatesSid}`);
+      }
+    });
+
+    console.log('Initialized tax group map:', this.chargeTaxGroupMap.size, 'charges');
+    console.log('Tax group map contents:', Array.from(this.chargeTaxGroupMap.entries()));
+  }
+
+  onHeaderCurrencyChange() {
+    // Recalculate exchange rate if needed
+    if (this.invoiceHeaderCurrency) {
+      // You might want to fetch exchange rate from API here
+      // For now, keep the existing exchange rate
+      this.calculateChargeSelectionTax();
+    }
+  }
+
+  onHeaderExchangeRateChange() {
+    this.calculateChargeSelectionTax();
+  }
+
+  onChargeTaxGroupChange(charge: any, taxGroup: any) {
+    console.log('Tax group changed for charge:', {
+      chargeId: charge.BookingRatesSid,
+      chargeName: charge.ChargeDescription,
+      newTaxGroup: taxGroup
+    });
+
+    if (taxGroup) {
+      this.chargeTaxGroupMap.set(charge.BookingRatesSid, taxGroup);
+    } else {
+      this.chargeTaxGroupMap.delete(charge.BookingRatesSid);
+    }
+
+    console.log('Current tax group map size:', this.chargeTaxGroupMap.size);
+    this.calculateChargeSelectionTax();
+  }
+
+  onChargeTaxGroupChangeBySid(charge: any, taxMasterSid: any) {
+    console.log('Tax group changed by SID for charge:', {
+      chargeId: charge.BookingRatesSid,
+      chargeName: charge.ChargeDescription,
+      newTaxMasterSid: taxMasterSid
+    });
+
+    if (taxMasterSid) {
+      // Find the tax group object from the list
+      const taxGroup = this.taxGroupList.find(tg => tg.TaxMasterSid === taxMasterSid);
+      if (taxGroup) {
+        this.chargeTaxGroupMap.set(charge.BookingRatesSid, taxGroup);
+        console.log('Set tax group:', taxGroup);
+      }
+    } else {
+      this.chargeTaxGroupMap.delete(charge.BookingRatesSid);
+      console.log('Cleared tax group');
+    }
+
+    console.log('Current tax group map size:', this.chargeTaxGroupMap.size);
+    console.log('Tax group map entries:', Array.from(this.chargeTaxGroupMap.entries()).map(([k, v]) => ({
+      chargeId: k,
+      taxGroup: v.TaxName
+    })));
+    this.calculateChargeSelectionTax();
+  }
+
+  getSelectedTaxGroup(charge: any): any {
+    return this.chargeTaxGroupMap.get(charge.BookingRatesSid);
+  }
+
+  getSelectedTaxGroupSid(charge: any): any {
+    const taxGroup = this.chargeTaxGroupMap.get(charge.BookingRatesSid);
+    return taxGroup?.TaxMasterSid || null;
+  }
+
+  convertToHeaderCurrency(amount: number): number {
+    if (!this.invoiceHeaderCurrency || !this.invoiceHeaderExchangeRate) {
+      return amount;
+    }
+    // Convert amount to header currency using exchange rate
+    return amount * this.invoiceHeaderExchangeRate;
   }
 
   toggleChargeSelection(charge: any) {
@@ -2469,17 +2775,191 @@ openAuditLogs(modal: TemplateRef<any>) {
       StateName: firstCharge?.customerBranch?.StateName || ''
     };
 
-    const taxParams = {
-      companyMasterSid: this.currentCompany?.CompanyMasterSid || 0,
-      branchMasterSid: this.currentBranch?.BranchMasterSid || 0,
-      billingParty: billingParty,
-      charges: selectedChargeData
+    // Check if we have manual tax group selections
+    const hasManualTaxGroups = Array.from(this.chargeTaxGroupMap.keys()).some(key =>
+      this.selectedCharges.has(key)
+    );
+
+    console.log('Calculating tax:', {
+      selectedCharges: selectedChargeData.length,
+      hasManualTaxGroups,
+      taxGroupMapSize: this.chargeTaxGroupMap.size
+    });
+
+    if (hasManualTaxGroups) {
+      // Use manual tax calculation
+      console.log('Using manual tax calculation');
+      this.calculateManualTax(selectedChargeData, isRevenue);
+    } else {
+      // Use automatic tax calculation service
+      console.log('Using automatic tax calculation service');
+      const taxParams = {
+        companyMasterSid: this.currentCompany?.CompanyMasterSid || 0,
+        branchMasterSid: this.currentBranch?.BranchMasterSid || 0,
+        billingParty: billingParty,
+        charges: selectedChargeData
+      };
+      this.chargeSelectionTaxResult = this.taxCalculationService.calculateTax(taxParams);
+    }
+
+    console.log('Tax calculation result:', this.chargeSelectionTaxResult);
+  }
+
+  private calculateManualTax(charges: any[], isRevenue: boolean) {
+    console.log('Manual tax calculation started for', charges.length, 'charges');
+
+    let subtotal = 0;
+    let totalCGST = 0;
+    let totalSGST = 0;
+    let totalIGST = 0;
+    let totalVAT = 0;
+    const lineItems: any[] = [];
+    let taxType = 'GST'; // Default
+
+    charges.forEach(charge => {
+      const amount = isRevenue
+        ? (charge.RevenueLocalAmount || 0)
+        : (charge.CostLocalAmount || 0);
+
+      const chargeAmount = parseFloat(amount.toString());
+      subtotal += chargeAmount;
+
+      // Get manually selected tax group for this charge
+      const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.BookingRatesSid);
+
+      if (selectedTaxGroup) {
+        const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
+
+        let lineItem: any = {
+          description: charge.ChargeDescription,
+          hsn: charge.ChargeMaster?.HSNSAC || '-',
+          amount: chargeAmount
+        };
+
+        const isGSTType = selectedTaxGroup.TaxType === 'GST' || selectedTaxGroup.TaxType === 'Input' || selectedTaxGroup.TaxType === 'Output';
+
+        if (isGSTType) {
+          // For GST, check if IGST or CGST+SGST
+          // You can determine this based on state comparison
+          const isInterState = this.checkIfInterState(charge);
+
+          if (isInterState) {
+            // IGST
+            const igstAmount = (chargeAmount * taxRate) / 100;
+            lineItem.igstRate = taxRate;
+            lineItem.cgstRate = 0;
+            lineItem.sgstRate = 0;
+            lineItem.igstAmount = igstAmount;
+            lineItem.cgstAmount = 0;
+            lineItem.sgstAmount = 0;
+            lineItem.totalTaxAmount = igstAmount;
+            totalIGST += igstAmount;
+          } else {
+            // CGST + SGST
+            const halfRate = taxRate / 2;
+            const cgstAmount = (chargeAmount * halfRate) / 100;
+            const sgstAmount = (chargeAmount * halfRate) / 100;
+            lineItem.cgstRate = halfRate;
+            lineItem.sgstRate = halfRate;
+            lineItem.igstRate = 0;
+            lineItem.cgstAmount = cgstAmount;
+            lineItem.sgstAmount = sgstAmount;
+            lineItem.igstAmount = 0;
+            lineItem.totalTaxAmount = cgstAmount + sgstAmount;
+            totalCGST += cgstAmount;
+            totalSGST += sgstAmount;
+          }
+          taxType = 'GST';
+        } else if (selectedTaxGroup.TaxType === 'VAT') {
+          // VAT calculation
+          const vatAmount = (chargeAmount * taxRate) / 100;
+          lineItem.vatRate = taxRate;
+          lineItem.vatAmount = vatAmount;
+          lineItem.totalTaxAmount = vatAmount;
+          totalVAT += vatAmount;
+          taxType = 'VAT';
+        } else {
+          // No tax or unknown type
+          lineItem.totalTaxAmount = 0;
+        }
+
+        lineItems.push(lineItem);
+      } else {
+        // No tax group selected, add with 0 tax
+        lineItems.push({
+          description: charge.ChargeDescription,
+          hsn: charge.ChargeMaster?.HSNSAC || '-',
+          amount: chargeAmount,
+          totalTaxAmount: 0,
+          cgstRate: 0,
+          sgstRate: 0,
+          igstRate: 0,
+          vatRate: 0
+        });
+      }
+    });
+
+    const totalTaxAmount = totalCGST + totalSGST + totalIGST + totalVAT;
+    const grandTotal = subtotal + totalTaxAmount;
+
+    this.chargeSelectionTaxResult = {
+      type: taxType,
+      lineItems: lineItems,
+      subtotal: subtotal,
+      totalAmount: subtotal,
+      totalCGST: totalCGST,
+      totalSGST: totalSGST,
+      totalIGST: totalIGST,
+      totalVAT: totalVAT,
+      totalTaxAmount: totalTaxAmount,
+      grandTotal: grandTotal,
+      totalInvoiceAmount: grandTotal,
+      isSameState: totalCGST > 0 || totalSGST > 0,
+      isInterState: totalIGST > 0,
+      vatRate: totalVAT > 0 ? (totalVAT / subtotal * 100) : 0
     };
 
-    this.chargeSelectionTaxResult = this.taxCalculationService.calculateTax(taxParams);
+    console.log('Manual tax calculation complete:', {
+      subtotal,
+      totalCGST,
+      totalSGST,
+      totalIGST,
+      totalVAT,
+      grandTotal,
+      lineItemsCount: lineItems.length
+    });
+  }
+
+  private checkIfInterState(charge: any): boolean {
+    // Compare company state with billing party state
+    const companyState = this.currentBranch?.StateName || '';
+    const billingPartyState = charge?.customerBranch?.StateName || '';
+    return companyState !== billingPartyState;
   }
 
   getChargeTaxPercentage(charge: any): string {
+    // First check if there's a manually selected tax group
+    const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.BookingRatesSid);
+
+    if (selectedTaxGroup) {
+      const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
+      const isGSTType = selectedTaxGroup.TaxType === 'GST' || selectedTaxGroup.TaxType === 'Input' || selectedTaxGroup.TaxType === 'Output';
+
+      if (isGSTType) {
+        // For GST, determine if IGST or CGST+SGST based on state
+        const isInterState = this.checkIfInterState(charge);
+        if (isInterState) {
+          return `IGST ${taxRate}%`;
+        } else {
+          const halfRate = taxRate / 2;
+          return `CGST ${halfRate}% + SGST ${halfRate}%`;
+        }
+      } else if (selectedTaxGroup.TaxType === 'VAT') {
+        return `VAT ${taxRate}%`;
+      }
+    }
+
+    // Fall back to calculation result
     if (!this.chargeSelectionTaxResult || !this.selectedCharges.has(charge.BookingRatesSid)) {
       return '-';
     }
@@ -2542,6 +3022,24 @@ openAuditLogs(modal: TemplateRef<any>) {
       // Prepare payload for voucher generation
       // voucherTypeMasterSid will be found dynamically in backend based on voucherType + company + branch
       const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+
+      // Prepare charge tax group mappings
+      const chargeTaxGroups: any[] = [];
+      this.chargeTaxGroupMap.forEach((taxGroup, chargeId) => {
+        // Find the charge to check if it's inter-state
+        const charge = selectedChargeData.find(c => c.BookingRatesSid === chargeId);
+        const isInterState = charge ? this.checkIfInterState(charge) : false;
+
+        chargeTaxGroups.push({
+          bookingRatesSid: chargeId,
+          taxMasterSid: taxGroup.TaxMasterSid,
+          taxName: taxGroup.TaxName,
+          taxRate: taxGroup.TaxRate,
+          taxType: taxGroup.TaxType,
+          isInterState: isInterState  // Add inter-state flag
+        });
+      });
+
       const payload = {
         bookingHeaderSid: this.BookingHeaderSid,
         companyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2550,7 +3048,19 @@ openAuditLogs(modal: TemplateRef<any>) {
         selectedRateIds: Array.from(this.selectedCharges),
         billingPartySid: this.currentBillingPartySid,
         customerBranchSid: billingPartyBranchSid || null,
-        createdBy: currUserEmail || 'System'
+        createdBy: currUserEmail || 'System',
+
+        // Invoice header information
+        invoiceHeader: {
+          currencyMasterSid: this.invoiceHeaderCurrency?.CurrencyMasterSid,
+          currencyCode: this.invoiceHeaderCurrency?.currencyCode,
+          exchangeRate: this.invoiceHeaderExchangeRate,
+          billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
+          billingPartyAddress: this.billingPartyAddress
+        },
+
+        // Charge tax group mappings
+        chargeTaxGroups: chargeTaxGroups
       };
 
       // Generate voucher via API
@@ -2609,5 +3119,16 @@ onShipmentTypeChange() {
         this.bookingForm.get('NominatedBy')?.setValue('Self');
     }
 }
+
+  existsInList(list: any[], value: any) {
+    return list.some(item => item.CustomerName === value);
+  }
+
+  getBookingStatus(){
+    console.log(this.modeOfStatus);
+    console.log("Response",this.bookingHeader);
+    console.log("FormControl value",this.bookingForm.get('status')?.value)
+    return this.bookingForm.get('status')?.value;
+  }
 
 }

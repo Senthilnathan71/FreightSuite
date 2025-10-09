@@ -108,14 +108,14 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Costcenter',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Costcenter',
+        tooltip: 'Delete ',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -184,7 +184,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
         this.loadCostCenterData(this.CostCenterMasterSid);
       }
     });
-    this.loadCostCenters();
+    // this.loadCostCenters();
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
@@ -453,42 +453,42 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadCostCenters(): void {
-    this.spinner.show();
-    this.loading = true;
-    this.errorMessage = '';
+  // loadCostCenters(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   this.errorMessage = '';
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.masterService.searchCostCenter(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.costCenterList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.loading = false;
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching cost centers:', err);
-        this.costCenterList = [];
-        this.totalLengthOfCollection = 0;
-        this.errorMessage = err?.error?.message || 'Failed to load Cost Centers';
-        this.appSettingService.showError(this.errorMessage);
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchCostCenter(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.costCenterList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.loading = false;
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching cost centers:', err);
+  //       this.costCenterList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.errorMessage = err?.error?.message || 'Failed to load Cost Centers';
+  //       this.appSettingService.showError(this.errorMessage);
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -698,7 +698,8 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
             if (resp.Status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.loadCostCenters();
+              // this.loadCostCenters();
+              this.searchCostCenter();
               this.router.navigate(['master/cost-center']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -716,7 +717,8 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
             if (resp.Status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.loadCostCenters();
+              // this.loadCostCenters();
+              this.searchCostCenter();
               this.router.navigate(['master/cost-center']);
             } else {
               this.appSettingService.showSuccess(resp.message);
@@ -794,7 +796,8 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadCostCenters();
+    // this.loadCostCenters();
+    this.searchCostCenter();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -807,7 +810,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       if (result === true) {
         this.masterService.softDeleteCostCenter(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
-          this.loadCostCenters();
+          // this.loadCostCenters();
           this.router.navigate(['master/cost-center']);
           this.searchCostCenter()
         });

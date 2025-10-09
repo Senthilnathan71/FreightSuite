@@ -33,7 +33,7 @@
                         [title]="!canSaveCharge() ? 'Please add at least one GST record' : ''"
                         *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
                         <i class="fas fa-save me-1"></i>
-                        {{ isEditMode ? 'Edit' : 'Save' }}
+                        {{ isEditMode ? 'Update' : 'Save' }}
                     </button>
                     <div ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -71,9 +71,11 @@
                                 <!-- Charge Code -->
                                 <aside class="col-md-4">
                                     <div class="custom-form-group">
-                                        <input type="text" id="chargeCode" formControlName="chargeCode"
-                                            class="custom-input-field sm" placeholder="" [textWithNumbers]="5"
-                                            style="text-transform: uppercase;" />
+                                       <input type="text" id="chargeCode" formControlName="chargeCode"
+       class="custom-input-field sm" placeholder="" [textWithNumbers]="5"
+       style="text-transform: uppercase;"
+       (input)="chargeForm.get('chargeCode')?.setValue($any($event.target).value.toUpperCase(), {emitEvent: false})" />
+
                                         <label for="chargeCode" class="input-label">Charge Code <span
                                                 class="text-danger">*</span></label>
 

@@ -249,6 +249,11 @@ export class EnquiryEntryComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
+
   checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     if (!UserMasterSid || !this.currentMenuId) {
@@ -864,6 +869,7 @@ onSelectionChange(selectedItem: any) {
     this.rateRequestForm.get('EnquiryDate')?.disable();
     this.rateRequestForm.get('customerName')?.disable();
     this.rateRequestForm.get('CustomerMasterSid')?.disable();
+    this.rateRequestForm.get('PreCustomerMasterSid')?.disable();
     if (response.authorizerStatus !== "Pending") {
       this.f['authorizerStatus']?.disable();
       this.f['AuthorizerRemarks']?.disable();
@@ -888,10 +894,10 @@ onSelectionChange(selectedItem: any) {
         FDC: [route.FDPSid, ],
         cargo: this.fb.array([]),
       });
-
+      
       // Get the cargo array inside the route
       const cargoArray = routeFormGroup.get('cargo') as FormArray;
-
+      
       // Loop through enquiryCargo and add cargo rows dynamically
       route.enquiryCargo.forEach((cargo) => {
         cargoArray.push(
@@ -916,18 +922,19 @@ onSelectionChange(selectedItem: any) {
           })
         );
       });
-
+      
       // Push the route to the FormArray
       this.updateCargoValidators(routeFormGroup, this.selectedFCLLCL);
       routesArray.push(routeFormGroup);
       routeFormGroup.updateValueAndValidity();
       this.onRouteChange(index);
     });
-    if (this.authStateCache !== "Pending") {
-      this.disableAddButtons = true;
-      this.rateRequestForm.disable();
-      this.enquiryOtherForm.disable();
-    }
+    // if (this.authStateCache !== "Pending") {
+    //   this.disableAddButtons = true;
+    //   this.rateRequestForm.disable();
+    //   this.enquiryOtherForm.disable();
+    // }
+    console.log(this.rateRequestForm.getRawValue());
   }
 
   restrictDecimal(event: KeyboardEvent) {

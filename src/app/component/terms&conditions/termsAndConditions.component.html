@@ -1,24 +1,24 @@
-<div class="container">
-  <div class="modal-header">
-    <h4 class="modal-title">Terms and Conditions</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+<div>
+  <div class="modal-header modalHeaderpart">
+    <h4 class="modal-title ">Terms and Conditions</h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
   </div>
-  <div class="modal-body" style="min-height: 350px;">
+  <div class="modal-body">
     <div class="col-12 d-flex align-items-center justify-content-end">
       <button class="btn btn-info btn-sm ms-auto" type="button" (click)="toggleAddRow()">
         @if(showAddRow){
           <i-feather class="feather-sm" name="x-circle"></i-feather> Cancel
         } @else {
-          <i-feather class="feather-sm" name="plus"></i-feather> Add
+          <i class="fas fa-plus me-1"></i> Add
         }
       </button>
     </div>
-    <div class="row">
-      <div class="table-responsive mt-3">
+    <div class="row compact-form">
+      <div class="table-responsive mt-1">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col" width="10%">Default</th>
+              <th class="bg-transparent text-light" scope="col" width="8%">Default</th>
               <th class="bg-transparent text-light" scope="col" width="90%">Details</th>
             </tr>
           </thead>
@@ -27,7 +27,7 @@
             @for (item of terms; track $index) {
               <tr>
                 <td>
-                  <div class="d-flex align-items-center gap-2">
+                  <div class="d-flex align-items-center gap-2 ps-1">
                     <dofi-toggler
                       [toggleValue]="item.IsDefaut === 'A'"
                       [disabled]="true"
@@ -43,7 +43,7 @@
               <tr>
                 <td></td>
                 <td>
-                  <div class="text-truncate">No records found</div>
+                  <div class="text-truncate text-center">No records found</div>
                 </td>
               </tr>
             }
@@ -80,12 +80,12 @@
         </table>
         <div *ngIf="showAddRow">
           <button appPreventMultiClick class="btn btn-info btn-sm" type="submit" (click)="addNewTerm()">
-            <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
+            <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather>Save</button>
         </div>
       </div>
     </div>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
-  </div>
+  <!-- <div class="modal-footer p-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeModal()">Close</button>
+  </div> -->
 </div>

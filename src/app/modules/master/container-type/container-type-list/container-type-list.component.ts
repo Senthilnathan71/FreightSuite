@@ -20,6 +20,8 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-container-type-list',
   standalone: true,
@@ -33,7 +35,9 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
     NgxSpinnerModule,
     CommonPaginationComponent,
     FavoriteStarComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+      PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './container-type-list.component.html',
   styleUrl: './container-type-list.component.scss'
@@ -47,7 +51,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
   currentMenuPermissions: any = {};
   currentCompany: any;
   currentBranch: any;
-
+  headerActions: HeaderAction[] = [];
   // Alias for compatibility with existing template
   get containerList() { return this.allItems; }
   // Table configuration
@@ -58,14 +62,14 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View container-type',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete container-type',
+        tooltip: 'Delete ',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -116,7 +120,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
       this.checkPermissions();
     }
     this.initializeTableConfig();
-    // Initialize base component
+     this.initializeHeaderActions();   // Initialize base component
     super.ngOnInit();
   }
 
@@ -130,6 +134,7 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
           this.currentMenuPermissions = response.data.MenuPermissions || {};
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+             this.initializeHeaderActions();
         }
       });
     }
@@ -296,11 +301,72 @@ export class ContainerTypeListComponent extends BaseListComponent implements OnI
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching container types.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
+  }
+
+  
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.loadContainerTypes();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+   onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this. navigateToaddNewContainerType()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   protected override handleSearchError(error: any): void {

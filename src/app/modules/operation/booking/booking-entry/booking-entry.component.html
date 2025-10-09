@@ -222,10 +222,14 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
-                      <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="CustomerMasterSid" placeholder="" appendTo="body"
                         (change)="onCustomerChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerMasterSid" (itemSelected)="onCustomerChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
                       @if(bookingForm.get('CustomerMasterSid')?.touched &&
                       bookingForm.get('CustomerMasterSid')?.invalid){
@@ -238,6 +242,21 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="CustomerAddress">
+                      <label for="text-input" class="input-label">Customer Address <span
+                          class="text-danger">*</span></label>
+                      @if(bookingForm.get('CustomerAddress')?.touched && bookingForm.get('CustomerAddress')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('CustomerAddress')?.hasError('required')){
+                        <span>Required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+                  <!-- <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('CustomerAddress')?.value">
                       <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
@@ -254,8 +273,8 @@
                       </div>
                       }
                     </div>
-                  </aside>
-                  <aside class="col-md-6">
+                  </aside> -->
+                  <!-- <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('ShipperName')?.value">
                       <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
@@ -278,7 +297,49 @@
                       </div>
                       }
                     </div>
+                  </aside> -->
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select-date">
+                      <!-- ng-select mode -->
+                      <div class="input-group" *ngIf="!this.b['isShipperFreeText']?.value">
+                        <ng-select [items]="filteredShipperList" bindLabel="CustomerName" formControlName="ShipperName" appendTo="body" bindValue="CustomerName"
+                          (change)="setAddress('ShipperAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
+                          style="width: 80%;">
+                          <!-- Show only CustomerName in input box -->
+                          <ng-template ng-label-tmp let-item="item">
+                            {{ item?.CustomerName }}
+                          </ng-template>
+                  
+                          <!-- Option display -->
+                          <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                        </ng-select>
+                  
+                        <!-- Swap icon -->
+                        <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to manual entry" >
+                          </i>
+                        </button>
+                      </div>
+                  
+                      <!-- Manual text input mode -->
+                      <div class="input-group" *ngIf="this.b['isShipperFreeText']?.value">
+                        <input type="text" formControlName="ShipperName" placeholder="" class="form-control" />
+                        <button class="btn bi bi-calendar3 " type="button"  (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to dropdown">
+                          </i>
+                        </button>
+                      </div>
+                      <label for="text-input" class="input-label">Shipper Name</label>
+                    </div>
                   </aside>
+
 
 
 
@@ -298,7 +359,7 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
+                  <!-- <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
                       <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
@@ -321,7 +382,48 @@
                       </div>
                       }
                     </div>
+                  </aside> -->
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select-date">
+                      <!-- ng-select mode -->
+                      <div class="input-group" *ngIf="!this.b['isConsigneeFreeText']?.value">
+                        <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" formControlName="ConsigneeName" appendTo="body" 
+                          (change)="setAddress('ConsigneeAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
+                          style="width: 80%;">
+                          <!-- Show only CustomerName in input box -->
+                          <ng-template ng-label-tmp let-item="item">
+                            {{ item?.CustomerName }}
+                          </ng-template>
+                  
+                          <!-- Option display -->
+                          <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                        </ng-select>
+                  
+                        <!-- Swap icon -->
+                        <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to manual entry" >
+                          </i>
+                        </button>
+                      </div>
+                  
+                      <!-- Manual text input mode -->
+                      <div class="input-group" *ngIf="this.b['isConsigneeFreeText']?.value">
+                        <input type="text" formControlName="ConsigneeName" placeholder="" class="form-control" />
+                        <button class="btn bi bi-calendar3 " type="button"  (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to dropdown">
+                          </i>
+                        </button>
+                      </div>
+                      <label for="text-input" class="input-label">Consignee Name</label>
+                    </div>
                   </aside>
+
 
 
                   <aside class="col-md-6">
@@ -340,7 +442,7 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
+                  <!-- <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('Notify')?.value">
                       <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
@@ -354,6 +456,46 @@
                         </ng-template>
                       </ng-select>
                       <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
+                    </div>
+                  </aside> -->
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select-date">
+                      <!-- ng-select mode -->
+                      <div class="input-group" *ngIf="!this.b['isNotifyFreeText']?.value">
+                        <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="Notify" appendTo="body" 
+                          (change)="setAddress('NotifyAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
+                          style="width: 80%;">
+                          <!-- Show only CustomerName in input box -->
+                          <ng-template ng-label-tmp let-item="item">
+                            {{ item?.CustomerName }}
+                          </ng-template>
+                  
+                          <!-- Option display -->
+                          <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                        </ng-select>
+                  
+                        <!-- Swap icon -->
+                        <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to manual entry" >
+                          </i>
+                        </button>
+                      </div>
+                  
+                      <!-- Manual text input mode -->
+                      <div class="input-group" *ngIf="this.b['isNotifyFreeText']?.value">
+                        <input type="text" formControlName="Notify" placeholder="" class="form-control" />
+                        <button class="btn bi bi-calendar3 " type="button"  (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to dropdown">
+                          </i>
+                        </button>
+                      </div>
+                      <label for="text-input" class="input-label">Notify</label>
                     </div>
                   </aside>
 
@@ -404,13 +546,52 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
+                  <!-- <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('CarrierName')?.value">
                       <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="CarrierName" placeholder="" appendTo="body">
                       </ng-select>
                       <label for="text-input" class="input-label">Carrier Name<span class="text-danger"></span></label>
+                    </div>
+                  </aside> -->
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select-date">
+                      <!-- ng-select mode -->
+                      <div class="input-group" *ngIf="!this.b['isCarrierFreeText']?.value">
+                        <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="CarrierName" appendTo="body" [clearable]="false" placeholder="" class="ng-select"
+                          style="width: 80%;">
+                          <!-- Show only CustomerName in input box -->
+                          <ng-template ng-label-tmp let-item="item">
+                            {{ item?.CustomerName }}
+                          </ng-template>
+                  
+                          <!-- Option display -->
+                          <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                        </ng-select>
+                  
+                        <!-- Swap icon -->
+                        <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('Carrier','isCarrierFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to manual entry" >
+                          </i>
+                        </button>
+                      </div>
+                  
+                      <!-- Manual text input mode -->
+                      <div class="input-group" *ngIf="this.b['isCarrierFreeText']?.value">
+                        <input type="text" formControlName="CarrierName" placeholder="" class="form-control" />
+                        <button class="btn bi bi-calendar3 " type="button"  (click)="toggleInputType('Carrier','isCarrierFreeText',$event)">
+                          <i class="fas fa-exchange-alt" title="Switch to dropdown">
+                          </i>
+                        </button>
+                      </div>
+                      <label for="text-input" class="input-label">Carrier</label>
                     </div>
                   </aside>
 
@@ -497,9 +678,13 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('POO')?.value">
-                      <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POO" appendTo="body" placeholder="">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                        [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -507,10 +692,14 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('POL')?.value">
-                      <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POL" appendTo="body" placeholder=""
                         (change)="handlePOLChange($event) ; onVesselChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                        [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode" (itemSelected)="handlePOLChange($event) ; onVesselChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                       @if(bookingForm.get('POL')?.touched && bookingForm.get('POL')?.invalid){
                       <div class="error-message">
@@ -525,10 +714,14 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('POD')?.value">
-                      <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredPOD" formControlName="POD" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                        [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode" (itemSelected)="handlePODChange($event) ; onVesselChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                       @if(bookingForm.get('POD')?.touched && bookingForm.get('POD')?.invalid){
                       <div class="error-message">
@@ -543,9 +736,13 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('FPD')?.value">
-                      <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="FPD" appendTo="body" placeholder="" (change)="handleFPODChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                        [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode" (itemSelected)="handleFPODChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -593,7 +790,7 @@
                             <!-- POL Section -->
                             <div style="flex: 1; text-align: left;">
                               <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
-                              <div>ETA: {{ item.POL?.ETD | formatDate }}</div>
+                              <div>ETA: {{ item?.ETD | formatDate }}</div>
                               <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
                             </div>
 
@@ -601,7 +798,7 @@
                             <div style="flex: 1; text-align: right;">
                               <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
                               <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
-                              <div>ETD: {{ item.POD?.ETA | formatDate }}</div>
+                              <div>ETD: {{ item?.ETA | formatDate }}</div>
                             </div>
 
                           </div>
@@ -659,9 +856,13 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
                       [class.filled]="!!bookingForm.get('IncoTerms')?.value">
-                      <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
+                      <!-- <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
                         appendTo="body" formControlName="IncoTerms" placeholder="">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
+                        [displayFields]="incoLookupConfig.displayFields" [displayLabels]="incoLookupConfig.displayLabels"
+                        [labelFields]="incoLookupConfig.labelFields" bindLabel="IncoName" bindValue="IncoName">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
                       @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
                       <div class="error-message">
@@ -770,7 +971,7 @@
               <div class="stat-item">
                 <div class="stat-label">Status</div>
                 <div class="stat-value">
-                  <span class="status-badge status-active">{{b['status']?.value}}</span>
+                  <span class="status-badge status-active">{{getBookingStatus() || ''}}</span>
                 </div>
               </div>
             </div>
@@ -912,10 +1113,14 @@
           <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('ContainerType')?.value">
-              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
+              <dofi-searchable-dropdown [items]="containerTypeList" formControlName="ContainerType" placeholder=""
+                [displayFields]="containerTypeLookupConfig.displayFields" [displayLabels]="containerTypeLookupConfig.displayLabels"
+                [labelFields]="containerTypeLookupConfig.labelFields" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid" (itemSelected)="onContainerTypeChange($event)">
+              </dofi-searchable-dropdown>
+              <!-- <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                 class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                 (change)="onContainerTypeChange($event)">
-              </ng-select>
+              </ng-select> -->
               <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -2515,11 +2720,89 @@
   <div class="modal-header">
     <h4 class="modal-title">Select Charges for {{ selectedVoucherType }}</h4>
     <button type="button" class="btn-close" aria-label="Close" (click)="cancelChargeSelection()">
-      <span aria-hidden="true">&times;</span>
     </button>
   </div>
 
   <div class="modal-body">
+    <!-- Invoice Header Section -->
+    <div class="card border-info mb-3">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 text-info">
+          <i class="fas fa-file-invoice me-2"></i>Invoice Header Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="row">
+<!-- Billing Party -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Billing Party</label>
+            <div class="p-2 bg-light rounded">
+              <strong>{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</strong>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Address</label>
+            <div class="p-2 bg-light rounded">
+              <p class="mb-0 text-truncate" ngbTooltip="{{ billingPartyAddress || '-' }}">{{ billingPartyAddress || '-' }}</p>
+            </div>
+          </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+
+            <div class="row">
+              
+    
+              <!-- Billing Currency -->
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Billing Currency</label>
+                <ng-select
+                  [(ngModel)]="invoiceHeaderCurrency"
+                  [items]="currencyList"
+                  bindLabel="currencyCode"
+                  placeholder="Select Currency"
+                  (change)="onHeaderCurrencyChange()"
+                  [clearable]="false">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.currencyCode }} - {{ item.currencyName }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    {{ item.currencyCode }} - {{ item.currencyName }}
+                  </ng-template>
+                </ng-select>
+              </div>
+    
+              <!-- Exchange Rate -->
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Exchange Rate</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="invoiceHeaderExchangeRate"
+                  (ngModelChange)="onHeaderExchangeRateChange()"
+                  step="0.0001"
+                  min="0"
+                  placeholder="Enter exchange rate">
+              </div>
+    
+              <!-- Currency Display -->
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Invoice Currency</label>
+                <div class="p-2 bg-info text-white rounded text-center">
+                  <strong>{{ invoiceHeaderCurrency?.currencyCode || 'Not Selected' }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
       <p class="text-muted mb-0">Select charges to include in the invoice. Deselected charges will remain in booking rates.</p>
       <div class="btn-group btn-group-sm">
@@ -2543,12 +2826,14 @@
             </th>
             <th>Charge Code</th>
             <th>Description</th>
+            <th>HSN/SAC</th>
             <th class="text-center">Qty</th>
             <th class="text-center">Currency</th>
             <th class="text-end">Rate</th>
             <th class="text-end">Amount</th>
             <th class="text-end">Ex.Rate</th>
             <th class="text-end">Local Amount</th>
+            <th width="200">Tax Group</th>
             <th class="text-end">Tax %</th>
             <th class="text-end">Tax Amount</th>
           </tr>
@@ -2565,6 +2850,9 @@
             </td>
             <td>
               <small>{{ charge.ChargeDescription || charge.ChargeMaster?.chargeName || '-' }}</small>
+            </td>
+            <td>
+              <small class="text-muted">{{ charge.ChargeMaster?.HSNSAC || '-' }}</small>
             </td>
             <td class="text-center">
               {{ charge.NoOfUnit || charge.NumberOfUnit || 1 }}
@@ -2584,6 +2872,27 @@
             <td class="text-end">
               <strong>{{ (selectedVoucherType === 'Invoice' ? charge.RevenueLocalAmount : charge.CostLocalAmount) || 0 | number:'1.2-2' }}</strong>
             </td>
+            <td>
+              <ng-select
+                [items]="taxGroupList"
+                bindLabel="TaxName"
+                bindValue="TaxMasterSid"
+                [ngModel]="getSelectedTaxGroupSid(charge)"
+                (ngModelChange)="onChargeTaxGroupChangeBySid(charge, $event)"
+                placeholder="Select Tax Group"
+                [clearable]="true"
+                appendTo="body">
+                <ng-template ng-label-tmp let-item="item">
+                  {{ item.TaxName }} ({{ item.TaxRate }}%)
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.TaxName }}</strong>
+                    <small class="d-block text-muted">{{ item.TaxCode }} - {{ item.TaxRate }}% {{ item.TaxType }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+            </td>
             <td class="text-end">
               <small class="text-muted">{{ getChargeTaxPercentage(charge) }}</small>
             </td>
@@ -2592,7 +2901,7 @@
             </td>
           </tr>
           <tr *ngIf="!availableCharges?.length">
-            <td colspan="11" class="text-center text-muted">No charges available</td>
+            <td colspan="12" class="text-center text-muted">No charges available</td>
           </tr>
         </tbody>
       </table>
@@ -2662,9 +2971,18 @@
               </div>
 
               <hr class="my-2">
-              <div class="d-flex justify-content-between">
-                <strong>Grand Total:</strong>
-                <strong class="text-primary fs-5">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
+              <div class="d-flex justify-content-between mb-2">
+                <strong>Grand Total (Local):</strong>
+                <strong class="text-primary">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
+              </div>
+
+              <!-- Invoice Currency Total -->
+              <div *ngIf="invoiceHeaderCurrency" class="border-top pt-2">
+                <div class="d-flex justify-content-between">
+                  <strong>Total ({{ invoiceHeaderCurrency.currencyCode }}):</strong>
+                  <strong class="text-success fs-5">{{ convertToHeaderCurrency(chargeSelectionTaxResult.grandTotal) | number:'1.2-2' }}</strong>
+                </div>
+                <small class="text-muted">&#64; {{ invoiceHeaderExchangeRate | number:'1.4-4' }}</small>
               </div>
             </div>
           </div>

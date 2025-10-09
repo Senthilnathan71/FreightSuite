@@ -156,7 +156,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     super(paginationService);
   }
   override ngOnInit(): void {
-    this.loadProfitCenters()
+    // this.loadProfitCenters()
     this.initForm();
     //  this.appSettingService.getUser().subscribe(
     //    user => {
@@ -356,8 +356,6 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     this.editProfitCenter(item.ProfitCenterMasterSid, content)
   }
 
-
-
   // Table configuration
   private initializeTableConfig(): void {
     this.tableConfig.columns = [
@@ -471,36 +469,36 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   }
 
 
-  loadProfitCenters(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadProfitCenters(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue ? this.filterValue.trim() : '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchProfitCenterList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.profitCenterList = response.data.items;
-          this.results = [...this.profitCenterList];
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching profit-centers:', err);
-        this.profitCenterList = [];
-        this.results = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchProfitCenterList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.profitCenterList = response.data.items;
+  //         this.results = [...this.profitCenterList];
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching profit-centers:', err);
+  //       this.profitCenterList = [];
+  //       this.results = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   initForm() {
     this.profitCenterForm = this.fb.group({
@@ -675,7 +673,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
             if (resp.Status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.loadProfitCenters()
+              // this.loadProfitCenters()
               this.searchProfitCenter();
               this.router.navigate(['master/profit-center']);
             } else {
@@ -694,7 +692,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
             if (resp.Status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.loadProfitCenters()
+              // this.loadProfitCenters()
               this.searchProfitCenter();
               this.router.navigate(['master/profit-center']);
             } else {
@@ -789,7 +787,8 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadProfitCenters();
+    // this.loadProfitCenters();
+    this.searchProfitCenter()
   }
 
   trackByIndex(index: number, item: any): number {
@@ -803,7 +802,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
         this.masterService.softDeleteProfitCenter(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/profit-center']);
-          this.loadProfitCenters();
+          // this.loadProfitCenters();
           this.searchProfitCenter()
         });
       }
