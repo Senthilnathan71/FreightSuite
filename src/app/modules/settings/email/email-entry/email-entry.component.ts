@@ -139,16 +139,7 @@ private footerTemplate = `
       ]
     ],
     Mailbody: [
-      `Greetings!!!    
-
-Dear [Customer’s Name],
-
-Thank you for your LCL export enquiry for general cargo (FOB, 4.5 CBM / 2300 KGS).
-
-We have received your request and will revert shortly with our best possible quotation.
-
-Best regards,
-[Your Full Name]`,
+      ``,
       [
         Validators.required,
         Validators.maxLength(2000)

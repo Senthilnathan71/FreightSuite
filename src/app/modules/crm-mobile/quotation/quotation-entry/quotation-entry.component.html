@@ -65,26 +65,25 @@
           </div>
         </div>
         }
-
+        @if((hasPermission('Edit') && isEditMode) || !isEditMode){
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
           [disabled]="disableAllModification">
           <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : 'Save'}}
         </button>
-        <div ngbDropdown class="d-inline-block">
+        }
+        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
           <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
             <i class="fas fa-ellipsis-v"></i>
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
                 class="fas fa-file-alt me-1"></i> Edoc</button>
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                class="fas fa-shield-alt me-1"></i> Authorize</button>
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                class="fas fa-envelope me-1"></i> Email</button>
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
-                class="fas fa-paperclip me-1">Follow up</i></button>
+            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
           </div>
         </div>
       </div>
@@ -539,8 +538,12 @@
                         <aside class="col-md-3">
                           <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!quoteRoutes.at(routeIndex).get('ServiceLevel')?.value">
-                            <ng-select class="ng-select" [items]="incoList" bindLabel="IncoCode" bindValue="IncoCode" formControlName="ServiceLevel" >
-                            </ng-select>
+                            <!-- <ng-select class="ng-select" [items]="incoList" bindLabel="IncoCode" bindValue="IncoCode" formControlName="ServiceLevel" >
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="incoList" formControlName="ServiceLevel" placeholder=""
+                              [displayFields]="incoLookupConfig.displayFields" [displayLabels]="incoLookupConfig.displayLabels"
+                              [labelFields]="incoLookupConfig.labelFields" bindLabel="IncoName" bindValue="IncoName">
+                            </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">Inco Terms <span
                                 class="text-danger"></span></label>
                           </div>
@@ -1006,7 +1009,7 @@
                                           </td>
                                           <td class="bg-transparent text-light text-center"
                                             [attr.colspan]="f['AgreedRate']?.value ? 7 : 5">
-                                            <label class="form-label mb-0">Sale</label>
+                                            <label class="form-label mb-0">Revenue</label>
                                           </td>
                                           <td class="bg-transparent text-light text-center" colspan="7"
                                             [attr.colspan]="f['AgreedRate']?.value ? 7 : 5">
@@ -1100,7 +1103,7 @@
                                               (change)="onChargeChange($event,routeIndex,carrierIndex,chargeIndex)"
                                               [class.filled]="!!quoteRoutes.at(routeIndex).get('ChargeUomSid')?.value">
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="chargeMaster" formControlName="ChargeUomSid" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredCharges" formControlName="ChargeUomSid" placeholder=""
                                               [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
                                               [labelFields]="chargeLookupConfig.labelFields" bindLabel="chargeCode" bindValue="ChargeMasterSid"
                                               (itemSelected)="onChargeChange($event,routeIndex,carrierIndex,chargeIndex)">
@@ -1127,7 +1130,8 @@
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <dofi-searchable-dropdown [items]="currencyMaster" formControlName="RevenueCurrencyMasterSid" placeholder=""
                                               [displayFields]="currencyLookupConfig.displayFields" [displayLabels]="currencyLookupConfig.displayLabels"
-                                              [labelFields]="currencyLookupConfig.labelFields" bindLabel="currencyCode" bindValue="CurrencyMasterSid">
+                                              [labelFields]="currencyLookupConfig.labelFields" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
+                                              (itemSelected)="fetchExchangeRate(routeIndex,carrierIndex,chargeIndex,'revenue')">
                                             </dofi-searchable-dropdown>
                                             <!-- <ng-select [items]="currencyMaster" bindLabel="currencyName"
                                               bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid"
@@ -1210,7 +1214,7 @@
                                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                             <ng-select [items]="currencyMaster" bindLabel="currencyName"
                                               bindValue="CurrencyMasterSid" formControlName="CostCurrencyMasterSid"
-                                              (change)="patchCostExchangeRate(routeIndex,carrierIndex,chargeIndex)"
+                                              (change)="fetchExchangeRate(routeIndex,carrierIndex,chargeIndex,'cost')"
                                               appendTo="body"
                                               [class.filled]="!!quoteRoutes.at(routeIndex).get('CostCurrencyMasterSid')?.value">
                                             </ng-select>
@@ -2383,10 +2387,9 @@
         </div>
 
         <div class="modal-body d-flex justify-content-center align-items-center flex-column" style="min-height: 300px;">
-
           <div *ngIf="tariffLoading" class="text-center py-4 w-100">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading tariff...</span>
+              <span class="visually-hidden">Loading...</span>
             </div>
             <div class="mt-2">Loading tariff...</div>
           </div>
@@ -2395,10 +2398,16 @@
             <table class="table table-hover align-middle table-bordered table-sm mb-1 text-center">
               <thead>
                 <tr class="bg-info text-white">
-                  <th rowspan="2" class="bg-transparent text-light align-middle">Action</th>
+                  <th rowspan="2" class="bg-transparent text-light align-middle">
+                    <!-- "Select All" Checkbox -->
+                    <input class="form-check-input" 
+                           type="checkbox"
+                           [checked]="areAllTariffsSelected()"
+                           (change)="toggleSelectAllTariffs($event)">
+                  </th>
                   <th rowspan="2" class="bg-transparent text-light align-middle">Charge Code</th>
                   <th rowspan="2" class="bg-transparent text-light align-middle">Qty</th>
-                  <th colspan="6" class="bg-transparent text-light align-middle">Sell</th>
+                  <th colspan="6" class="bg-transparent text-light align-middle">Revenue</th>
                   <th colspan="6" class="bg-transparent text-light align-middle">Cost</th>
                 </tr>
                 <tr class="bg-info text-white">
@@ -2409,7 +2418,6 @@
                   <th class="bg-transparent text-light align-middle">Ex Rate</th>
                   <th class="bg-transparent text-light align-middle">Amount</th>
                   <th class="bg-transparent text-light align-middle">Local Amount</th>
-
                   <!-- Cost -->
                   <th class="bg-transparent text-light align-middle">Unit</th>
                   <th class="bg-transparent text-light align-middle">Currency</th>
@@ -2422,24 +2430,23 @@
               <tbody>
                 <tr *ngFor="let sc of tariffDetails; let i = index">
                   <td>
-                    <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">
-                      Apply Charge
-                    </button>
+                    <!-- Individual row checkbox -->
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           [(ngModel)]="sc.selected">
                   </td>
                   <td>{{ sc.ChargeCode }}</td>
                   <td>{{ sc.Qty || '' }}</td>
-
                   <!-- Sell -->
-                  <td>{{ sc.UOMMaster?.UOMCode }}</td>
-                  <td>{{ sc.currencyMasterSale?.currencyCode }}</td>
+                  <td>{{ getUOMCodeById(sc.UOMSid) }}</td>
+                  <td>{{ getCurrencyCodeById(sc.SaleCurrency) }}</td>
                   <td>{{ sc.SalePerUnitPrice }}</td>
                   <td>{{ sc.revenueExchangeRate }}</td>
                   <td>{{ sc.RevenueAmount || ''}}</td>
                   <td>{{ sc.RevenueLocalAmount || ''}}</td>
-
                   <!-- Cost -->
-                  <td>{{ sc.UOMMaster?.UOMCode }}</td>
-                  <td>{{ sc.currencyMasterBuy?.currencyCode }}</td>
+                  <td>{{ getUOMCodeById(sc.UOMSid) }}</td>
+                  <td>{{ getCurrencyCodeById(sc.BuyCurrency) }}</td>
                   <td>{{ sc.BuyPerUnitPrice }}</td>
                   <td>{{ sc.costExchangeRate }}</td>
                   <td>{{ sc.CostAmount || ''}}</td>
@@ -2456,11 +2463,14 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeTariffModal()">Close</button>
+          <!-- Button to apply all selected tariffs -->
+          <button type="button" class="btn btn-primary" [disabled]="!tariffDetails?.length" (click)="applySelectedTariffs()">Apply Selected</button>
         </div>
       </div>
     </div>
   </div>
 </ng-template>
+
 
 
 <ng-template #auditLogModal let-modal>
@@ -2693,3 +2703,134 @@
         </section>
     </div>
 </ng-template>
+
+<div *ngIf="quotationApproved" class="d-none">
+  <section class="container-fluid py-3" id="pdfContent">
+    <div class="px-3 border border-2 border-dark printTable py-3" style="font-size: 14px;">
+      <div class="d-flex px-3 px-md-5 align-items-center">
+        <div class="col-md-6 d-flex align-items-center gap-4 mb-3 mb-md-0">
+          <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+          <h4> {{currentCompany.companyName}} </h4>
+        </div>
+        <div class="col-md-6 text-md-end text-center">
+          <p class="h5 fw-bold mb-0">{{currentCompany.companyName}}</p>
+          <p class="text-muted mb-0">{{currentCompany.addressLine1}}</p>
+        </div>
+      </div>
+
+      <div class="text-center h5 fw-bold">QUOTATION</div>
+      <div class="row mx-auto my-3">
+        <div class="col-md-6 px-md-5">
+          <section class="d-flex flex-column">
+            <aside class="d-flex">
+              <p class="mb-0 col-12 h6 fw-bold">{{this.selectedItem.CustomerName}}</p>
+            </aside>
+            <aside class="d-flex">
+              <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
+            </aside>
+          </section>
+        </div>
+        <div class="col-md-6">
+          <section class="d-flex flex-column gap-1">
+            <aside class="d-flex gap-3 justify-content-end">
+              <p class="mb-0 col-3 fw-bold">Quotation No</p>
+              <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
+            </aside>
+            <aside class="d-flex gap-3 justify-content-end">
+              <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+              <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
+            </aside>
+            <aside class="d-flex gap-3 justify-content-end">
+              <p class="mb-0 col-3 fw-bold">Reference</p>
+              <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
+            </aside>
+          </section>
+        </div>
+      </div>
+
+      @for(route of selectedItem.quoteRoute; track route){
+      <aside class="table-responsive  px-3 px-md-5">
+        <table class="table">
+
+
+          <tr>
+            <td colspan="8" style="border:2px solid black">
+              <aside class="d-flex gap-3 justify-content-between">
+                <div>
+                  <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
+                </div>
+                <div>
+                  <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}}
+                    {{route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : ''}}.</p>
+                </div>
+              </aside>
+            </td>
+          </tr>
+          <tbody>
+            <tr>
+              <td colspan="8" class="p-0" style="border:2px solid black">
+                <aside class="d-flex flex-wrap">
+                  <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span>
+                    {{route.quoteCarrier[0]?.CarrierName}}
+                  </p>
+                  <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
+                    {{route.quoteCargo[0]?.CargoType}}</p>
+                  <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
+                    {{route.effDate | formatDate }}</p>
+                  <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
+                  </p>
+                </aside>
+              </td>
+            </tr>
+
+            <tr style="border:2px solid black">
+              <td class="fw-bold table-secondary border border-dark">Charge</td>
+              <td class="fw-bold table-secondary border border-dark">Unit</td>
+              <td class="fw-bold table-secondary border border-dark">Qty</td>
+              <td class="fw-bold table-secondary border border-dark">Curr</td>
+              <td class="fw-bold table-secondary border border-dark">Rate</td>
+              <td class="fw-bold table-secondary border border-dark">Amt</td>
+              @if(selectedItem.AgreedRate === "Y"){
+              <td class="fw-bold table-secondary border border-dark">Ex Rate</td>
+              <td class="fw-bold table-secondary border border-dark">Local Amount</td>
+              }
+            </tr>
+            @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
+            <tr style="border:2px solid black">
+              <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
+              <td class="border border-dark">{{ getChargeUOMCodeById(charge.CostChargeUomSid)}}</td>
+              <td class="border border-dark">{{charge.Qty}}</td>
+              <td class="border border-dark">{{getCurrencyCodeById(charge.CostCurrencyMasterSid)}}</td>
+              <td class="border border-dark">{{charge.CostRate}}</td>
+              <td class="border border-dark">{{charge.CostAmount}}</td>
+              @if(selectedItem.AgreedRate === "Y"){
+              <td class="border border-dark">{{charge.CostExchangeRate}}</td>
+              <td class="border border-dark">{{charge.CostLocalAmount}}</td>
+              }
+
+            </tr>
+            }
+
+
+          </tbody>
+        </table>
+
+        <div class="mt-3">
+          <h6 class="fw-bold">Terms and Conditions:</h6>
+          <ul>
+            @for(term of TandCList; track term){
+            <li>{{ term.TandC }}</li>
+            }
+          </ul>
+        </div>
+
+      </aside>
+      }
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
+      <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
+      <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+    </div>
+  </section>
+</div>
