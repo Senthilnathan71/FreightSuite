@@ -35,7 +35,7 @@
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
             [disabled]="btnDisable" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
             <i class="fas fa-save me-1"></i>
-            {{isEditMode ? 'Edit' : 'Save'}}
+            Save
           </button>
           <div ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -89,7 +89,13 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-4" *ngIf="isEditMode">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" [value]="BLNumber" readonly>
+    <label class="input-label">BL Number</label>
+  </div>
+</aside>
+            <aside class="col-md-4" *ngIf="!isEditMode">
               <div class="custom-form-group">
                 <input type="text" id="AirwayBillNumber" formControlName="AirwayBillNumber" placeholder=""
                   class="custom-input-field sm">
@@ -122,7 +128,7 @@
             </aside>
             }
 
-            <aside class="col-md-4">
+            <aside class="col-md-4" *ngIf="!isEditMode">
               <div class="custom-form-group">
                 <input type="text" id="HAWBSerial" formControlName="HAWBSerial" placeholder=""
                   class="custom-input-field sm">
@@ -136,7 +142,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-4" *ngIf="!isEditMode">
               <div class="custom-form-group">
                 <input type="number" id="NumberofHAWB" formControlName="NumberofHAWB" placeholder=""
                   class="custom-input-field sm">
@@ -247,14 +253,14 @@
               </div>
             </aside>
 
-            <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end" *ngIf="!isEditMode">
               <button type="button" class="btn btn-info btn-sm" (click)="generateAWB()">
                 Generate
               </button>
             </div>
 
             <!-- Update the AWB table to show generated numbers -->
-            <div class="">
+            <div class="" *ngIf="!isEditMode">
               <h5 class="card-title text-info mb-1">AirWay Bill</h5>
               <div class="row mx-auto">
                 <div class="col-12 p-0">
