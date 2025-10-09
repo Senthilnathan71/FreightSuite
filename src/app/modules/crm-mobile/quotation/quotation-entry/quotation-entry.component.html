@@ -106,13 +106,15 @@
         [disabled]="f['EnquirySid'].value || disableAllModification">
         <i class="fas fa-plus me-1"></i> Add Route
       </button>
-      
+
     </div>
     <div *ngIf="quotationApproved">
-      <button class="btn btn-outline-secondary btn-sm dofi-min-w-130 dofi-max-w-130" type="button" (click)="goForBookingCreation()">
+      <button class="btn btn-outline-secondary btn-sm dofi-min-w-130 dofi-max-w-130" type="button"
+        (click)="goForBookingCreation()">
         <i class="fas fa-plus me-1"></i> Create Booking
       </button>
-    </div>
+          
+    </div>
   </div>
 </div>
 
@@ -188,8 +190,8 @@
                     </div>
                   </ng-template>
                 </ng-select> -->
-                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid"
-                  placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
                   [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
                   bindValue="CustomerMasterSid" (itemSelected)="onSelectionChange($event)">
                 </dofi-searchable-dropdown>
@@ -402,20 +404,30 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
-                          <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
+                          <!-- <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
                             bindValue="PortMasterSid">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="ports" formControlName="PORSid" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid">
+                          </dofi-searchable-dropdown>
                           <label for="" class="input-label">POR<span class="text-danger"></span></label>
                         </div>
                       </aside>
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('POLSid')?.value">
-                          <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
+                          <!-- <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
                             bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]" formControlName="POLSid" placeholder=""
+                              [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                              [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                              (itemSelected)="onRouteChange(routeIndex)">
+                            </dofi-searchable-dropdown>
                           <label for="" class="input-label">POL <span class="text-danger">*</span></label>
                           @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
                           <div class="error-message">
@@ -429,11 +441,16 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PODSid')?.value">
-                          <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
+                          <!-- <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
                             bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
                             (change)="onRouteChange(routeIndex)">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]" formControlName="PODSid" placeholder=""
+                              [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                              [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                              (itemSelected)="onRouteChange(routeIndex)">
+                            </dofi-searchable-dropdown>
                           <label for="" class="input-label">POD <span class="text-danger">*</span></label>
                           @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
                           <div class="error-message">
@@ -447,10 +464,15 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('FPODSid')?.value">
-                          <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
+                          <!-- <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
                             bindValue="PortMasterSid">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="ports" formControlName="FPODSid" placeholder=""
+                              [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                              [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                              (itemSelected)="onRouteChange(routeIndex)">
+                            </dofi-searchable-dropdown>
                           <label for="" class="input-label">FPOD <span class="text-danger">*</span></label>
                           @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
                           <div class="error-message">
@@ -462,7 +484,24 @@
                         </div>
                       </aside>
 
-
+                      <aside class="col-md-2">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="POLFreeDays" DecimalPrecision [DecimalPrecisionBefore]="2"
+                            [DecimalPrecisionAfter]="0">
+                          <label for="text-input" class="input-label">POL Free Days <span
+                              class="text-danger"></span></label>
+                        </div>
+                      </aside>
+                      <aside class="col-md-2">
+                        <div class="custom-form-group">
+                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="PODFreeDays" DecimalPrecision [DecimalPrecisionBefore]="2"
+                            [DecimalPrecisionAfter]="0">
+                          <label for="text-input" class="input-label">POD Free Days <span
+                              class="text-danger"></span></label>
+                        </div>
+                      </aside>
                       <div class="col-md-2">
                         <div class="custom-form-group custom-form-group-select-date">
 
@@ -528,29 +567,12 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-2">
-                        <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="POLFreeDays" DecimalPrecision [DecimalPrecisionBefore]="2"
-                            [DecimalPrecisionAfter]="0">
-                          <label for="text-input" class="input-label">POL Free Days <span
-                              class="text-danger"></span></label>
-                        </div>
-                      </aside>
-                      <aside class="col-md-2">
-                        <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="PODFreeDays" DecimalPrecision [DecimalPrecisionBefore]="2"
-                            [DecimalPrecisionAfter]="0">
-                          <label for="text-input" class="input-label">POD Free Days <span
-                              class="text-danger"></span></label>
-                        </div>
-                      </aside>
+
                       <aside class="col-md-2 d-md-block d-none"
                         *ngIf="route.value.segmentType === 'LCL' || route.value.segmentType === 'AIR'">
                       </aside>
                       <aside class="col-md-2 d-md-block d-none"
-                        *ngIf="route.value.segmentType === 'LCL' || route.value.segmentType === 'AIR'">
+                        *ngIf="route.value.segmentType === 'LCL' || route.value.segmentType === 'AIR' || route.value.segmentType === 'FCL'">
                       </aside>
 
                       <aside class="col-md-2 ">
@@ -755,7 +777,7 @@
                                   <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision
                                     [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                     (input)="handleCalculation(routeIndex)" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="Volume" placeholder=""
@@ -900,7 +922,7 @@
                                         </aside>
                                         @if(isEditMode){
                                         @if(authorizerDetails.isAuthorizer){
-                                        <aside class="col-md-2">
+                                        <aside class="col-md-3">
                                           <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
                                             <ng-select formControlName="authorizerStatus" [items]="allApprovalStatus"
@@ -912,7 +934,7 @@
                                           </div>
                                         </aside>
                                         } @else if(!authorizerDetails.isAuthorizer){
-                                        <aside class="col-md-2">
+                                        <aside class="col-md-3">
                                           <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
                                             <ng-select formControlName="authorizerStatus" [items]="approvalStatus"
@@ -924,7 +946,7 @@
                                                 ? '*' : '' }}</span></label>
                                           </div>
                                         </aside>
-                                        <aside class="col-md-3">
+                                        <aside class="col-md-2">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="authorizerRemarks"
                                               placeholder="" class="custom-input-field sm" [onlyNumbers]>

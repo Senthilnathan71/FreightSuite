@@ -148,6 +148,7 @@ export class QuotationEntryComponent implements OnInit {
   leadList : any[] = [];
   auditLogModalRef!: NgbModalRef;
 
+   
 
   modeOfCargoType = [
     { id: 1, name: 'General' },
@@ -213,11 +214,12 @@ dataFromEnqPage:any;
     displayLabels : ['Customer','Branch', 'Address'],
     labelFields :['CustomerName']
   };
-  portLookupConfig = {
-    displayFields : ['PortCode', 'PortName'],
-    displayLabels : ['Code', 'Name'],
-    labelFields :['PortName']
+   portLookupConfig = {
+    displayFields : ['PortCode', 'PortName','Country'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['PortCode']
   };
+ 
   chargeLookupConfig = {
     displayFields : ['chargeCode'],
     displayLabels : ['Code'],
@@ -1125,7 +1127,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.leadList = leads.data;
       this.customers = customers || [];
       this.departments = departments || [];
-      this.ports = ports || [];
+      this.ports = (ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
       this.chargeMaster = masters.charges || [];
       this.currencyMaster = masters.currencies || [];
       this.chargeUnitMaster = chargeUnits.data || [];
