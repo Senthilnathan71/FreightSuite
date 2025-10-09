@@ -36,7 +36,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
-
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-hs-sac',
   standalone: true,
@@ -60,7 +61,9 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
     NgxSpinnerModule,
     NgbDropdownModule,
     CommonPaginationComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -72,7 +75,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 })
 export class HSSACComponent extends BaseListComponent implements OnInit {
   @ViewChild('hasacTable') hasacTable!: ReusableTableComponent;
-  @ViewChild('content') content : TemplateRef<any>
+  @ViewChild('content') content: TemplateRef<any>
   hssacForm!: FormGroup;
   isEditMode: boolean = false;
   hssacs: HSSAC[] = [];
@@ -85,7 +88,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   taxList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'HSSACCode';
-
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -105,15 +109,15 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Ha-sac',
+        tooltip: 'View',
         // condition: (row: any) => this.hasPermission('View')
       },
-        {
+      {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
-        class:"text-danger",
+        tooltip: 'Delete',
+        class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
     ],
@@ -161,7 +165,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     private calendar: NgbCalendar,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-     private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe
   ) {
     super(paginationService);
   }
@@ -193,7 +197,9 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       }
     });
     super.ngOnInit();
-    this.initializeTableConfig()
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
     this.loadTaxData();
   }
   loadTaxData(): void {
@@ -241,6 +247,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
         }
       });
     }
@@ -249,6 +257,11 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
   }
+
+      hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -278,6 +291,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       }))
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching HS-SAC codes.');
       this.allItems = [];
@@ -296,6 +310,112 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   loadHssacs() {
     this.page = 1;
     this.search();
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.loadHssacs();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   // Legacy method for template compatibility
@@ -337,7 +457,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"130px"
+        width: "130px"
       },
       {
         key: 'HSSACName',
@@ -362,7 +482,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"120px"
+        width: "120px"
       },
       {
         key: 'TaxType',
@@ -371,8 +491,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-      
-          width:"120px"
+
+        width: "120px"
       },
       {
         key: 'EffectiveFrom',
@@ -381,7 +501,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-          width:"150px"
+        width: "150px"
       },
       {
         key: 'Remarks',
@@ -408,17 +528,17 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   // Table event handlers
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
-      this.viewHasac(event.row,this.content);
-    }else if(event.action==='delete'){
+      this.viewHasac(event.row, this.content);
+    } else if (event.action === 'delete') {
       this.deleteBy(event.row)
     }
   }
 
-  deleteBy(row){
+  deleteBy(row) {
     this.softDeleteHssac(row.HSSACMasterSid)
   }
-  viewHasac(row: any,content:TemplateRef<any>) {
-    this.editHssac(row.HSSACMasterSid,content)
+  viewHasac(row: any, content: TemplateRef<any>) {
+    this.editHssac(row.HSSACMasterSid, content)
   }
   onTableRowClick(row: any): void {
     // Row clicking can be handled by the table component if needed

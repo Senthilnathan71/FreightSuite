@@ -18,7 +18,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
-
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 
 
 @Component({
@@ -36,7 +36,7 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
     FavoriteStarComponent,
     NgxSpinnerModule,
     ReusableTableComponent,
-
+    PageHeaderComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './sailing-schedule-lsit.component.html',
@@ -77,7 +77,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
     pageSizeOptions: [10, 15, 20, 50, 100],
     maxPagesToShow: 3
   };
-
+  headerActions: HeaderAction[] = [];
   // filter & local UI
   //   filterValue = '';
   searchType = 'VoyageNo';
@@ -104,7 +104,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
       this.userData = userProfile;
       this.checkPermissions();
     }
-
+    this.initializeHeaderActions();
     this.initializeTableConfig();
     this.loadAllPorts();
 
@@ -122,6 +122,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
           this.permissions = Object.keys(this.currentMenuPermissions).filter(
             key => this.currentMenuPermissions[key] === 'isTrue'
           );
+          this.initializeHeaderActions();
         },
         error: err => {
           console.error('Error getting menu permissions', err);
@@ -169,6 +170,7 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting(); // local fallback sort if needed
+      this.updateHeaderActionState();
       this.searched = true;
     } else {
       this.appSettingService.showError(response?.message || 'Error searching sailing schedules.');
@@ -396,6 +398,64 @@ export class SailingScheduleListComponent extends BaseListComponent implements O
     this.search();
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchSchedules();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+      this.navigateToCreate();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.filterValue = '';
   }

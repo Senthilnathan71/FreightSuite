@@ -31,6 +31,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-zone',
   standalone: true,
@@ -51,7 +53,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+       PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -87,6 +91,8 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
+    headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -123,7 +129,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadZones();
+    // this.loadZones();
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.ZoneMasterSid = +params.get('id');
@@ -140,7 +146,8 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
     // });
     // Initialize table configuration
     this.initializeTableConfig();
-
+     this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
@@ -151,14 +158,14 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Zone',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
+        tooltip: 'Delete ',
         class:"text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }
@@ -217,6 +224,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
 
     this.totalLengthOfCollection = response.data.totalCount || 0;
     this.applySorting();
+      this.updateHeaderActionState();
   } else {
     this.appSettingService.showError('Error searching bookings.');
     this.allItems = [];
@@ -239,6 +247,113 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
     this.search();
   }
 
+  
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchZone();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }
@@ -363,6 +478,8 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
             console.log(this.permissions);
+                      this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
           },
         });
     }
@@ -372,35 +489,39 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
-  loadZones(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+      hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
+  // loadZones(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue ? this.filterValue.trim() : '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchZonelList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.zoneList = response.data.items;
-          this.results = [...this.zoneList];
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching zones:', err);
-        this.zoneList = [];
-        this.results = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchZonelList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.zoneList = response.data.items;
+  //         this.results = [...this.zoneList];
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching zones:', err);
+  //       this.zoneList = [];
+  //       this.results = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   // loadZone(): void {
   //   this.masterService.getAllZone().subscribe(
@@ -548,7 +669,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.loadZones();
+              // this.loadZones();
               this.searchZone();
               this.router.navigate(['master/zone']);
             } else {
@@ -568,7 +689,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.loadZones();
+              // this.loadZones();
               this.searchZone();
               this.router.navigate(['master/zone']);
             } else {
@@ -610,7 +731,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadZones();
+    // this.loadZones();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -624,7 +745,8 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
         this.masterService.softDeleteZone(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Zone deleted successfully!");
           this.router.navigate(['master/zone'])
-          this.loadZones();
+          // this.loadZones();
+          this.searchZone();
         });
       }
     });
