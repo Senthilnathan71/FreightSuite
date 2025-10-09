@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { SettingsService } from '../../settings.service';
@@ -19,191 +19,411 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 
 @Component({
-  selector: 'app-rolemenu',
-  standalone: true,
-  imports: [
-	FeatherModule,
-	CommonModule,
-	FormsModule,
-	NgSelectModule,
-	ReactiveFormsModule,
-	TextWithNumbersDirective,
-	NgbPaginationModule,
-	TogglerComponent,
-	FavoriteStarComponent,
-	NgxSpinnerModule
-],
-  templateUrl: './rolemenu.component.html',
-  styleUrl: './rolemenu.component.scss'
+	selector: 'app-rolemenu',
+	standalone: true,
+	imports: [
+		FeatherModule,
+		CommonModule,
+		FormsModule,
+		NgSelectModule,
+		ReactiveFormsModule,
+		TextWithNumbersDirective,
+		NgbPaginationModule,
+		TogglerComponent,
+		FavoriteStarComponent,
+		NgxSpinnerModule,
+		ReusableTableComponent,
+		PageHeaderComponent,
+
+	],
+	templateUrl: './rolemenu.component.html',
+	styleUrl: './rolemenu.component.scss'
 })
-export class RolemenuComponent implements OnInit {
+export class RolemenuComponent extends BaseListComponent implements OnInit {
+	@ViewChild('rolemenuTable') rolemenuTable!: ReusableTableComponent;
+	@ViewChild('entrycontent') content: TemplateRef<any>;
+	// Table configuration
+	tableConfig: TableConfig = {
+		columns: [],
+		actions: [
+			{
+				icon: 'fas fa-eye',
+				label: 'View',
+				action: 'view',
+				tooltip: 'View ',
+				// condition: (row: any) => this.hasPermission('View')
+			},
+			{
+				icon: 'fas fa-trash',
+				label: 'Delete',
+				action: 'delete',
+				tooltip: 'Delete ',
+				class: "text-danger",
+				// condition: (row: any) => this.hasPermission('Delete')
+			}
+		],
+		selectable: false,
+		multiSelect: false,
+		showColumnToggle: true,
+		showFilters: true,
+		showPagination: true,
+		trackByKey: 'RoleMenuMasterSid',
+		emptyMessage: 'No rolemenu found',
+		dragAndDrop: true
+	};
 
-	searchType : any = "MenuMasterSid";
-	filterValue = '';
-	searchPerformed : boolean;
-	userData : any;
-	moduleName : any;
-	RoleMasterSid : number;
-	Remarks : any;
-	isEditMode : boolean;
+	tableLoading = false;
+	headerActions: HeaderAction[] = [];
 
-	moduleList : any[];
-	menuList : any[];
-	roleList : any[];
-	results : any[];
-    roleMenuList : any[];
-	menuPermissionList : any[]=[];
-	selectedPermission : any[]=[];
+	protected config: ListComponentConfig = {
+		storageKey: 'rolemenu-list-state',
+		defaultPageSize: 10,
+		defaultSortColumn: 'menuName',
+		defaultSortDirection: 'desc',
+		pageSizeOptions: [10, 20, 50, 100, 500],
+		maxPagesToShow: 3
+	};
 
-    modalRef: NgbModalRef;
-	roleMenuData : any;
-	sortColumn: string = 'menuName'; 
-    sortDirection: string = 'asc';
-	showLoading : boolean;
+	// Alias for compatibility with existing template
+	get allRolemenu() { return this.allItems; }
+	searchType: any = "MenuMasterSid";
+
+	userData: any;
+	moduleName: any;
+	RoleMasterSid: number;
+	Remarks: any;
+	isEditMode: boolean;
+
+	moduleList: any[];
+	menuList: any[];
+	roleList: any[];
+	results: any[];
+	roleMenuList: any[];
+	menuPermissionList: any[] = [];
+	selectedPermission: any[] = [];
+
+	modalRef: NgbModalRef;
+	roleMenuData: any;
+
 
 	modeOfStatus = [
-		{value : 'A',name: "Active"},
-		{value : 'S',name: "Suspended"},
+		{ value: 'A', name: "Active" },
+		{ value: 'S', name: "Suspended" },
 	]
 
-	// Pagination related Data
-	page = 1;
-	pageSize = 10;
-	totalAmountOfCollection : number;
+
+	totalAmountOfCollection: number;
 
 	// Entry Page Related Variables
-	roleMenuForm !:FormGroup;
-	searchForm !:FormGroup;
-	RoleMenuMasterSid : number;
+	roleMenuForm !: FormGroup;
+	searchForm !: FormGroup;
+	RoleMenuMasterSid: number;
 	currentMenuId: number;
 	TandCList: any;
-    isFavorite: boolean = false;
-	menuPermissionsFetched : boolean;
+	isFavorite: boolean = false;
+	menuPermissionsFetched: boolean;
 	// Company
-    currentCompany : any;
-    currentBranch : any;
+	currentCompany: any;
+	currentBranch: any;
 	toggleFavorite() {
 		this.isFavorite = !this.isFavorite;
 	}
-	
-    constructor(
-		private settingService : SettingsService,
-		private appSettingService: AppSettingsService,
-		private dialog : MatDialog,
-    	private modalService: NgbModal,
-		private excelReportService : ExcelExportService,
-		private fb:FormBuilder,
-		 private spinner: NgxSpinnerService
-    ) {}
 
-	ngOnInit(): void {
+	constructor(
+		private settingService: SettingsService,
+		private appSettingService: AppSettingsService,
+		private dialog: MatDialog,
+		private modalService: NgbModal,
+		private excelReportService: ExcelExportService,
+		private fb: FormBuilder,
+		private spinner: NgxSpinnerService,
+		paginationService: PaginationService
+	) {
+		super(paginationService);
+	}
+
+	override ngOnInit(): void {
 		this.fetchAllData();
 		this.initSearchForm();
 		this.setupValueChanges();
-		this.onRoleMenuSearch();
+		// this.onRoleMenuSearch();
 		// this.appSettingService.getUser().subscribe(
 		// 	(user)=>{
 		// 		this.userData = user;
 		// 	}
 		// )
 		this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+		this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 		const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
+		if (userProfile) {
 			this.userData = userProfile;
+		}
+		// Initialize table configuration
+		this.initializeTableConfig();
+		this.initializeHeaderActions();
+
+		// Initialize base component
+		super.ngOnInit();
+	}
+
+	// Implement abstract methods from BaseListComponent
+	protected searchItems(): Observable<any> {
+		this.tableLoading = true;
+		this.spinner.show();
+		return this.settingService.searchRoleMenu(this.getSearchParams());
+	}
+
+	protected getSearchParams(): SearchParams {
+		return {
+			search: this.filterValue.trim(),
+			page: Number(this.page),
+			pageSize: Number(this.pageSize),
+			activeCompanyId: this.currentCompany?.CompanyMasterSid,
+			activeBranchId: this.currentBranch?.BranchMasterSid,
+			sortColumn: this.sortColumn,
+			sortDirection: this.sortDirection
+		};
+	}
+
+	protected processSearchResults(response: any): void {
+		this.tableLoading = false;
+		this.spinner.hide();
+		if (response.status) {
+			this.allItems = response.data.items.map(item => ({
+				...item,
+				MenuName: item.menuMaster?.MenuName,
+				UserRoleName: item.roleMaster?.UserRoleName,
+				status: item.status === 'A' ? 'Active' : 'Suspended'
+			}));
+			this.totalLengthOfCollection = response.data.totalCount || 0;
+			this.applySorting();
+			this.updateHeaderActionState();
+		} else {
+			this.appSettingService.showError('Error searching rolemenu.');
+			this.allItems = [];
+			this.totalLengthOfCollection = 0;
 		}
 	}
 
-	sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-  this.updatePaginationData();
-}
+	protected override handleSearchError(error: any): void {
+		this.tableLoading = false;
+		this.spinner.hide();
+		this.appSettingService.showError('Error searching rolemenu.');
+		console.error('Error searching rolemenu', error);
+		super.handleSearchError(error);
+	}
 
-applySorting() {
-  if (!this.roleMenuList) return;
-  
-  this.roleMenuList.sort((a, b) => {
-    // Handle nested properties (like menuMaster.MenuName)
-    let valueA = this.sortColumn.includes('.') 
-      ? this.getNestedProperty(a, this.sortColumn)
-      : a[this.sortColumn];
-    let valueB = this.sortColumn.includes('.') 
-      ? this.getNestedProperty(b, this.sortColumn)
-      : b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
+	// Legacy methods for template compatibility
+	searchRolemenu() {
+		this.search();
+	}
 
-private getNestedProperty(obj: any, path: string): any {
-  return path.split('.').reduce((o, p) => o?.[p], obj);
-}
+	onSearchTriggered(searchValue: string): void {
+		this.filterValue = searchValue;
+		this.searchRolemenu();
+	}
 
-onRoleMenuSearch(){
-	this.spinner.show();
-	const params = {
-		search : this.filterValue?.trim() || '',
-		page : this.page,
-		pageSize : this.pageSize
-	};
-	this.settingService.searchRoleMenu(params).subscribe({
-		next : (response:any) => {
-			if(response.status){
-				this.roleMenuList = response?.data.items.map((rolemenu : any)=>{
-					return {
-						...rolemenu,
-						menuName : rolemenu?.menuMaster?.MenuName,
-						roleName : rolemenu?.roleMaster?.UserRoleName,
-						status : rolemenu.status
-					}
-				})
-				this.totalAmountOfCollection = response.data?.totalCount;
-				console.log(this.roleMenuList);
-				console.log(this.totalAmountOfCollection);
-				this.applySorting();
-			} else {
-				this.appSettingService.showError(response.message);
-				this.roleMenuList = [];
-				this.totalAmountOfCollection = 0;
+	onSearchCleared(): void {
+		this.filterValue = '';
+		this.clearFilterValue();
+	}
+
+
+	initializeHeaderActions(): void {
+		this.headerActions = [
+			{
+				label: 'Create',
+				icon: 'fas fa-plus',
+				action: 'create',
+			},
+			{
+				label: 'Report',
+				icon: 'fas fa-file-alt',
+				action: 'report',
+				disabled: this.totalLengthOfCollection === 0
+			},
+			{
+				label: 'Reset',
+				icon: 'fas fa-sync-alt',
+				action: 'reset'
 			}
-			this.spinner.hide();
-			this.searchPerformed = true;
-		},
-		error :(err)=>{
-			console.error('Error loading Role menu',err);
+		];
+	}
+	onActionTriggered(action: string): void {
+		switch (action) {
+			case 'create':
+				this.openModal(this.content);
+				break;
+			case 'report':
+				this.report();
+				break;
+			case 'reset':
+				this.resetPage();
+				break;
+			default:
+				console.warn(`Unknown action: ${action}`);
 		}
-	})
-}
+	}
 
-clearFilterValue(){
-	this.filterValue = '';
-	this.onRoleMenuSearch();
-}
+
+	private updateHeaderActionState(): void {
+		this.headerActions = this.headerActions.map(action => {
+			if (action.action === 'report') {
+				return { ...action, disabled: this.totalLengthOfCollection === 0 };
+			}
+			return action;
+		});
+	}
+	clearFilterValue() {
+		this.clearFilter();
+	}
+
+	override trackBy(index: number, item: any): number {
+		return item.RoleMenuMasterSid || index;
+	}
+
+
+	viewRolemen(item: any, content: any): void {
+		// this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
+		this.openModal(content, item)
+		console.log(this.viewRolemen, "Edit")
+	}
+
+
+	// Table configuration
+	private initializeTableConfig(): void {
+		this.tableConfig.columns = [
+			{
+				key: 'MenuName',
+				label: 'Menu Name ',
+				sortable: true,
+				filterable: true,
+				visible: true,
+				dataType: 'string'
+			},
+			{
+				key: 'UserRoleName',
+				label: 'Menu Name ',
+				sortable: true,
+				filterable: true,
+				visible: true,
+				dataType: 'string'
+			},
+			{
+				key: 'status',
+				label: 'Status',
+				sortable: true,
+				filterable: true,
+				visible: true,
+				template: 'status',
+				width: '100px',
+				dataType: 'string',
+				cellClass: 'status-column'
+			}
+		];
+	}
+
+	// Table event handlers
+	onTableActionClick(event: TableEventData): void {
+		if (event.action === 'view') {
+			this.viewRolemen(event.row, this.content);
+		} else if (event.action === 'delete') {
+			this.deleteBy(event.row)
+		}
+	}
+
+	deleteBy(row: any) {
+		this.deleteRoleMenuById(row.RoleMenuMasterSid)
+	}
+
+	onTableRowClick(row: any): void {
+		// Row clicking can be handled by the table component if needed
+	}
+
+	onTableSortChange(sort: TableSortConfig): void {
+		this.sortColumn = sort.column;
+		this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+		this.search();
+	}
+
+	onTableFilterChange(filters: TableFilter[]): void {
+		// For now, we'll handle this with the existing search functionality
+		// In a more advanced implementation, you could apply individual column filters
+		console.log('Filters changed:', filters);
+	}
+
+	report(): void {
+		const formattedData = this.allRolemenu;
+		const companyName = this.currentCompany?.companyName ?? 'Company';
+
+		// Get visible columns in their current order from the table component
+		const visibleColumns = this.rolemenuTable.getVisibleColumns();
+		const dynamicHeaders = visibleColumns.map(column => ({
+			key: column.key,
+			label: column.label
+		}));
+
+		this.excelReportService.exportAsExcel({
+			data: formattedData,
+			headers: dynamicHeaders,
+			fileName: 'Rolemenu-Report',
+			title: companyName
+		});
+	}
+
+	private getNestedProperty(obj: any, path: string): any {
+		return path.split('.').reduce((o, p) => o?.[p], obj);
+	}
+
+	// onRoleMenuSearch() {
+	// 	this.spinner.show();
+	// 	const params = {
+	// 		search: this.filterValue?.trim() || '',
+	// 		page: this.page,
+	// 		pageSize: this.pageSize
+	// 	};
+	// 	this.settingService.searchRoleMenu(params).subscribe({
+	// 		next: (response: any) => {
+	// 			if (response.status) {
+	// 				this.roleMenuList = response?.data.items.map((rolemenu: any) => {
+	// 					return {
+	// 						...rolemenu,
+	// 						menuName: rolemenu?.menuMaster?.MenuName,
+	// 						roleName: rolemenu?.roleMaster?.UserRoleName,
+	// 						status: rolemenu.status
+	// 					}
+	// 				})
+	// 				this.totalAmountOfCollection = response.data?.totalCount;
+	// 				console.log(this.roleMenuList);
+	// 				console.log(this.totalAmountOfCollection);
+	// 				this.applySorting();
+	// 			} else {
+	// 				this.appSettingService.showError(response.message);
+	// 				this.roleMenuList = [];
+	// 				this.totalAmountOfCollection = 0;
+	// 			}
+	// 			this.spinner.hide();
+	// 			this.searchPerformed = true;
+	// 		},
+	// 		error: (err) => {
+	// 			console.error('Error loading Role menu', err);
+	// 		}
+	// 	})
+	// }
+
+	// clearFilterValue() {
+	// 	this.filterValue = '';
+	// 	this.onRoleMenuSearch();
+	// }
 
 	// onSearch(){
 	// 	const payload = {
@@ -229,22 +449,23 @@ clearFilterValue(){
 	// 	)
 	// }
 
-	deleteRoleMenuById(RoleMenuMasterSid : number){
+	deleteRoleMenuById(RoleMenuMasterSid: number) {
 		const dialogRef = this.dialog.open(DeleteWarningComponent);
 		dialogRef.afterClosed().subscribe(
-			(res)=>{
-				if(res){
+			(res) => {
+				if (res) {
 					this.settingService.deleteRoleMenuById(RoleMenuMasterSid).subscribe(
-						(resp:any)=>{
-							if(resp.status){
+						(resp: any) => {
+							if (resp.status) {
 								this.appSettingService.showSuccess('Role Menu Deleted Successfully');
-								this.onRoleMenuSearch()
+								// this.onRoleMenuSearch()
+								this.searchRolemenu()
 							} else {
 								this.appSettingService.showError('Error Deleting Role Menu');
 							}
 						},
-						(error)=>{
-							console.error('Error Deleting Role Menu',error);
+						(error) => {
+							console.error('Error Deleting Role Menu', error);
 						}
 					)
 				}
@@ -252,13 +473,13 @@ clearFilterValue(){
 		)
 	}
 
-	updatePaginationData(){
+	updatePaginationData() {
 		let start = (this.page - 1) * this.pageSize;
 		let end = start + this.pageSize;
-		this.onRoleMenuSearch()
+		// this.onRoleMenuSearch()
 	}
 
-	reset(){
+	reset() {
 		this.results = [];
 		this.roleMenuList = [];
 		this.totalAmountOfCollection = 0;
@@ -267,108 +488,81 @@ clearFilterValue(){
 		this.filterValue = '';
 		this.searchForm.reset();
 		this.sortColumn = 'MenuMasterSid';
-        this.sortDirection = 'asc';
+		this.sortDirection = 'asc';
 		this.fetchAllData();
 	}
 
 	resetForm(): void {
-  // If editing an existing role menu, reload the form data without reopening modal
-  if (this.isEditMode && this.RoleMenuMasterSid && this.roleMenuData) {
-    this.loadRoleMenuData(this.roleMenuData);
-    return;
-  }
+		// If editing an existing role menu, reload the form data without reopening modal
+		if (this.isEditMode && this.RoleMenuMasterSid && this.roleMenuData) {
+			this.loadRoleMenuData(this.roleMenuData);
+			return;
+		}
 
-  // Create-mode: reset form to sensible defaults
-  this.roleMenuForm.reset({
-    Module: null,
-    MenuMasterSid: null,
-    RoleMasterSid: null,
-    Remarks: '',
-    MenuPermissions: {},
-    status: 'Active',
-    InsertRole: true,
-    ViewRole: true,
-    UpdateRole: true,
-    DeleteRole: false
-  });
-
-  // Clear related data
-  this.menuList = [];
-  this.selectedPermission = [];
-  this.menuPermissionList = [];
-  this.menuPermissionsFetched = false;
-
-  // Clear form validation states
-  this.roleMenuForm.markAsUntouched();
-  this.roleMenuForm.updateValueAndValidity();
-}
-
-// Helper method to load role menu data into the form
-private loadRoleMenuData(data: any) {
-  const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
-  this.filterMenuByModule(ourModule);
-  this.getMenuPermissions(data);
-  
-  let permissions = data.MenuPermissions;
-  if (typeof permissions === 'string') {
-    try {
-      permissions = JSON.parse(permissions);
-    } catch (e) {
-      console.error('Error parsing permissions:', e);
-      permissions = {};
-    }
-  }
-  
-  this.roleMenuForm.patchValue({
-    Module: data.Module,
-    MenuMasterSid: data.MenuMasterSid,
-    RoleMasterSid: data.RoleMasterSid,
-    Remarks: data.Remarks,
-    status: data.status === 'A' ? 'Active' : 'Suspended',
-  });
-  
-  if (permissions) {
-    this.selectedPermission = Object.entries(permissions)
-      .filter(([key, value]) => value === 'isTrue')
-      .map(([key]) => key);
-  }
-  this.updatePermissionControl();
-}
-
-	report(): void {
-		const formattedData = this.roleMenuList.map(item => ({
-			...item,
-			status: item.status === 'A' ? 'Active' : 'Suspended',
-			InsertRole : item.InsertRole === 'Y' ? 'Yes' : 'No',
-			ViewRole : item.ViewRole === 'Y' ? 'Yes' : 'No',
-			UpdateRole : item.UpdateRole === 'Y' ? 'Yes' : 'No',
-			DeleteRole : item.DeleteRole === 'Y' ? 'Yes' :'No',
-			menuName : item.menuMaster?.MenuName
-		}));
-
-		// const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-		const companyName = this.currentCompany?.companyName ?? 'Company';
-		this.excelReportService.exportAsExcel({
-			data: formattedData,
-			headers: [
-				{ key: 'menuName', label: 'Menu Name' },
-				{ key: 'InsertRole', label: 'Insert Role' },
-				{ key: 'UpdateRole', label: 'Update Role' },
-				{ key: 'ViewRole', label: 'View Role' },
-				{ key: 'DeleteRole', label: 'Delete Role' },
-				{ key: 'status', label: 'Status' }
-			],
-			fileName: 'RoleMenu-Report',
-			title: companyName
+		// Create-mode: reset form to sensible defaults
+		this.roleMenuForm.reset({
+			Module: null,
+			MenuMasterSid: null,
+			RoleMasterSid: null,
+			Remarks: '',
+			MenuPermissions: {},
+			status: 'Active',
+			InsertRole: true,
+			ViewRole: true,
+			UpdateRole: true,
+			DeleteRole: false
 		});
+
+		// Clear related data
+		this.menuList = [];
+		this.selectedPermission = [];
+		this.menuPermissionList = [];
+		this.menuPermissionsFetched = false;
+
+		// Clear form validation states
+		this.roleMenuForm.markAsUntouched();
+		this.roleMenuForm.updateValueAndValidity();
 	}
 
-	fetchAllData(){
-		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+	// Helper method to load role menu data into the form
+	private loadRoleMenuData(data: any) {
+		const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
+		this.filterMenuByModule(ourModule);
+		this.getMenuPermissions(data);
+
+		let permissions = data.MenuPermissions;
+		if (typeof permissions === 'string') {
+			try {
+				permissions = JSON.parse(permissions);
+			} catch (e) {
+				console.error('Error parsing permissions:', e);
+				permissions = {};
+			}
+		}
+
+		this.roleMenuForm.patchValue({
+			Module: data.Module,
+			MenuMasterSid: data.MenuMasterSid,
+			RoleMasterSid: data.RoleMasterSid,
+			Remarks: data.Remarks,
+			status: data.status === 'A' ? 'Active' : 'Suspended',
+		});
+
+		if (permissions) {
+			this.selectedPermission = Object.entries(permissions)
+				.filter(([key, value]) => value === 'isTrue')
+				.map(([key]) => key);
+		}
+		this.updatePermissionControl();
+	}
+
+
+	fetchAllData() {
+		const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 		forkJoin({
-			modules : this.settingService.getAllModule(),
-			roles : this.settingService.getAllRole(CompanyMasterSid)
-		}).subscribe(({modules,roles})=>{
+			modules: this.settingService.getAllModule(),
+			roles: this.settingService.getAllRole(CompanyMasterSid)
+		}).subscribe(({ modules, roles }) => {
 			this.moduleList = modules.data;
 			this.roleList = roles.data;
 		})
@@ -376,12 +570,12 @@ private loadRoleMenuData(data: any) {
 
 
 	initSearchForm() {
-    this.searchForm = this.fb.group({
-      Module: [],
-      RoleMasterSid: [],
-      Remarks: [''],
-    });
-  }
+		this.searchForm = this.fb.group({
+			Module: [],
+			RoleMasterSid: [],
+			Remarks: [''],
+		});
+	}
 
 	setupValueChanges() {
 		this.searchForm.valueChanges.pipe(
@@ -418,36 +612,36 @@ private loadRoleMenuData(data: any) {
 
 	//  ENTRY PAGE RELATED FUNCTIONS
 
-	initRoleMenuForm(){
+	initRoleMenuForm() {
 		this.roleMenuForm = this.fb.group({
-			Module : [,[Validators.required]],
-			MenuMasterSid : [,[Validators.required]],
-			RoleMasterSid : [,[Validators.required]],
-			Remarks : [''],
-			MenuPermissions : [{}],
-			status : ['Active'],
-			InsertRole : [true],
-			ViewRole : [true],
-			UpdateRole : [true],
-			DeleteRole : [false]
+			Module: [, [Validators.required]],
+			MenuMasterSid: [, [Validators.required]],
+			RoleMasterSid: [, [Validators.required]],
+			Remarks: [''],
+			MenuPermissions: [{}],
+			status: ['Active'],
+			InsertRole: [true],
+			ViewRole: [true],
+			UpdateRole: [true],
+			DeleteRole: [false]
 		})
 	}
-	
 
-    openModal(content: TemplateRef<any>,data ?:any) {
+
+	openModal(content: TemplateRef<any>, data?: any) {
 		this.initRoleMenuForm();
-		if(data){
+		if (data) {
 			this.isEditMode = true;
 			this.roleMenuData = data;
 			const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
 			this.filterMenuByModule(ourModule);
 			this.getMenuPermissions(data)
 			let permissions = data.MenuPermissions;
-			if(typeof permissions === 'string') {
+			if (typeof permissions === 'string') {
 				try {
 					permissions = JSON.parse(permissions)
-				} catch(e){
-					console.error('Error parsing permissions:',e);
+				} catch (e) {
+					console.error('Error parsing permissions:', e);
 					permissions = {};
 				}
 			}
@@ -457,50 +651,50 @@ private loadRoleMenuData(data: any) {
 				RoleMasterSid: data.RoleMasterSid,
 				Remarks: data.Remarks,
 				status: data.status === 'A' ? 'Active' : 'Suspended',
-				
+
 			})
-			if(permissions){
-			this.selectedPermission = Object.entries(permissions)
-				.filter(([key, value]) => value === 'isTrue')
-				.map(([key]) => key);
+			if (permissions) {
+				this.selectedPermission = Object.entries(permissions)
+					.filter(([key, value]) => value === 'isTrue')
+					.map(([key]) => key);
 			}
 			this.updatePermissionControl();
-			if(data.RoleMenuMasterSid){
+			if (data.RoleMenuMasterSid) {
 				this.RoleMenuMasterSid = data.RoleMenuMasterSid;
 			}
 		}
-    	this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
-  	}
+		this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+	}
 
-	filterMenuByModule(selectedModule){
-		if(!selectedModule){
+	filterMenuByModule(selectedModule) {
+		if (!selectedModule) {
 			this.roleMenuForm.get('MenuMasterSid').setValue('');
 			this.menuList = [];
 			this.selectedPermission = [];
 			return;
 		}
 		this.settingService.getMenuByModuleId(selectedModule.ModuleMasterSid).subscribe(
-			(resp:any)=>{
-				if(resp){
+			(resp: any) => {
+				if (resp) {
 					this.menuList = resp;
 				} else {
 					this.appSettingService.showError('Error Loading Menus')
 				}
 			},
-			(error)=>{
-				console.error('Error Loading Menus',error);
+			(error) => {
+				console.error('Error Loading Menus', error);
 			}
 		)
 	}
 
-	getMenuPermissions(menu){
-		this.showLoading =true;
+	getMenuPermissions(menu) {
+		// this.showLoading = true;
 		this.settingService.getMenuPermissions(menu.MenuMasterSid).subscribe(
-			(resp:any)=>{
-				if(resp){
+			(resp: any) => {
+				if (resp) {
 					this.menuPermissionList = resp;
-					this.showLoading = false;
-					if(this.menuPermissionList.length > 0){
+					// this.showLoading = false;
+					if (this.menuPermissionList.length > 0) {
 						this.menuPermissionsFetched = true;
 					}
 				} else {
@@ -511,9 +705,9 @@ private loadRoleMenuData(data: any) {
 	}
 
 
-	handlePermission(permissionName,event){
+	handlePermission(permissionName, event) {
 		const state = (event.target as HTMLInputElement).checked;
-		if(state){
+		if (state) {
 			this.selectedPermission.push(permissionName);
 		} else {
 			this.selectedPermission = this.selectedPermission.filter(p => p !== permissionName)
@@ -521,14 +715,14 @@ private loadRoleMenuData(data: any) {
 		this.updatePermissionControl()
 	}
 
-	updatePermissionControl(){
-		const result : any = {};
-		this.menuPermissionList.forEach((permission)=>{
+	updatePermissionControl() {
+		const result: any = {};
+		this.menuPermissionList.forEach((permission) => {
 			const key = permission.permissionName;
-			result[key]= this.selectedPermission.includes(permission.permissionName) ? 
-			'isTrue' : 'isFalse';
+			result[key] = this.selectedPermission.includes(permission.permissionName) ?
+				'isTrue' : 'isFalse';
 		})
-		this.roleMenuForm.get('MenuPermissions')?.setValue(result,{emitEvent:false});
+		this.roleMenuForm.get('MenuPermissions')?.setValue(result, { emitEvent: false });
 	}
 
 	onCheckboxKeydown(event: KeyboardEvent, permissionName: string) {
@@ -556,8 +750,8 @@ private loadRoleMenuData(data: any) {
 		}
 	}
 
-	onSubmit(){
-		if(this.roleMenuForm.invalid){
+	onSubmit() {
+		if (this.roleMenuForm.invalid) {
 			this.roleMenuForm.markAllAsTouched();
 			this.roleMenuForm.updateValueAndValidity();
 			this.appSettingService.showWarning('Please fill all the required fields')
@@ -567,65 +761,67 @@ private loadRoleMenuData(data: any) {
 		const formValue = this.roleMenuForm.value;
 		const payload = {
 			...formValue,
-			status : formValue.status === 'Active' ? 'A' : 'S',
+			status: formValue.status === 'Active' ? 'A' : 'S',
 			InsertRole: formValue.InsertRole ? 'Y' : 'N',
-			ViewRole: formValue.ViewRole  ? 'Y' : 'N',
+			ViewRole: formValue.ViewRole ? 'Y' : 'N',
 			UpdateRole: formValue.UpdateRole ? 'Y' : 'N',
 			DeleteRole: formValue.DeleteRole ? 'Y' : 'N',
-			...(this.isEditMode ? {updatedBy : currentUserEmail} : {createdBy : currentUserEmail})
+			...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
 		}
 
-		if(this.isEditMode){
-			this.settingService.updateRoleMenuById(this.RoleMenuMasterSid,payload).subscribe(
-				(resp:any)=>{
-					if(resp.status){
+		if (this.isEditMode) {
+			this.settingService.updateRoleMenuById(this.RoleMenuMasterSid, payload).subscribe(
+				(resp: any) => {
+					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message);
 
 						this.closeModal();
-						this.onRoleMenuSearch();
+						// this.onRoleMenuSearch();
+						this.searchRolemenu();
 					} else {
 						this.appSettingService.showError(resp.message);
 
 					}
 				},
-				(error)=>{
-					console.error('Error Updating Role Menu',error);
+				(error) => {
+					console.error('Error Updating Role Menu', error);
 				}
 			)
 		} else {
 			this.settingService.createNewRoleMenu(payload).subscribe(
-				(resp:any)=>{
-					if(resp.status){
+				(resp: any) => {
+					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message)
 						this.closeModal();
-						this.onRoleMenuSearch();
+						// this.onRoleMenuSearch();
+						this.searchRolemenu();
 					} else {
 						this.appSettingService.showError(resp.message);
 					}
 				},
-				(error)=>{
-					console.error('Error Creating Role Menu',error);
+				(error) => {
+					console.error('Error Creating Role Menu', error);
 				}
 			)
 		}
 	}
 
-	get f() : { [key:string] : AbstractControl<any,any>} {
+	get f(): { [key: string]: AbstractControl<any, any> } {
 		return this.roleMenuForm.controls;
 	}
 
-	closeModal(){
+	closeModal() {
 		this.menuList = [];
 		this.selectedPermission = [];
 		this.isEditMode = false;
 		this.roleMenuForm.reset({
-			status : 'Active'
+			status: 'Active'
 		})
 		this.menuPermissionsFetched = false;
 		this.modalRef.close()
 	}
-	
-	clearMenuPermissions(){
+
+	clearMenuPermissions() {
 		this.menuPermissionsFetched = false;
 		this.roleMenuForm.get('MenuPermissions').reset({});
 		this.menuPermissionList = [];
@@ -633,12 +829,12 @@ private loadRoleMenuData(data: any) {
 	}
 
 	showInfo() {
-    if(!this.roleMenuData) return;
-    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.item = this.roleMenuData;
-    modalRef.componentInstance.idLabel = 'Role Menu Id';
-    modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
-  }
+		if (!this.roleMenuData) return;
+		const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+		modalRef.componentInstance.item = this.roleMenuData;
+		modalRef.componentInstance.idLabel = 'Role Menu Id';
+		modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+	}
 
 	openTandC() {
 		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -667,40 +863,39 @@ private loadRoleMenuData(data: any) {
 	}
 
 	openEmail() {
-  if (!this.roleMenuData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.roleMenuData;
-  modalRef.componentInstance.idLabel = 'Role Menu Id';
-  modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
-}
+		if (!this.roleMenuData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.roleMenuData;
+		modalRef.componentInstance.idLabel = 'Role Menu Id';
+		modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+	}
 
-openAuthority() {
-  if (!this.roleMenuData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.roleMenuData;
-  modalRef.componentInstance.idLabel = 'Role Menu Id';
-  modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
-}
+	openAuthority() {
+		if (!this.roleMenuData) return;
+		const modalRef = this.modalService.open(AuthorityEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.roleMenuData;
+		modalRef.componentInstance.idLabel = 'Role Menu Id';
+		modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+	}
 
-openEDoc() {
-  if (!this.roleMenuData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.roleMenuData;
-  modalRef.componentInstance.idLabel = 'Role Menu Id';
-  modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
-}
-
+	openEDoc() {
+		if (!this.roleMenuData) return;
+		const modalRef = this.modalService.open(EdocComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.roleMenuData;
+		modalRef.componentInstance.idLabel = 'Role Menu Id';
+		modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+	}
 
 } 

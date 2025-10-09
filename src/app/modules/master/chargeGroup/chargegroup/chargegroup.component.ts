@@ -483,6 +483,10 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
     return this.permissions.includes(permission);
   }
 
+      hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
   //   loadChargeGroups(): void {
   //     this.spinner.show();
   //     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;

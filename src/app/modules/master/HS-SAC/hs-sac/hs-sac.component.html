@@ -5,7 +5,14 @@
 
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+        <app-page-header 
+    [title]="'HS-SAC'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">HS-SAC</h4>
             </div>
@@ -58,7 +65,7 @@
             </div>
 
 
-        </div>
+        </div> -->
     </div>
 
       <div class="col-12 px-0">
@@ -177,7 +184,7 @@
         <div>No records found</div>
     </div> -->
     <ng-template #content let-modal>
-        <div class="modal-header p-2 bg-info text-white">
+        <div class="modal-header modalHeaderpart">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} HS-SAC</h4>
             <!-- @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
@@ -193,22 +200,18 @@
             </a>
 
             <div class="ms-auto d-flex align-items-center">
-                <div ngbDropdown class="d-inline-block me-2">
+                <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
                     <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                         ngbDropdownToggle>
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
-                                class="fas fa-file-alt me-1"></i> Edoc</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                                class="fas fa-shield-alt me-1"></i> Authorize</button>
-                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                                class="fas fa-envelope me-1"></i> Email</button>
+                        <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
                     </div>
-                </div>
+                    </div>
 
                 <button type="button" class="btn-close btn-close-white" aria-label="Close"
                     (click)="modal.dismiss()"></button>
@@ -442,7 +445,7 @@
           </button>
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                 [disabled]="btnDisable || hssacForm.invalid">
-                {{ isEditMode ? 'Edit' : 'Save' }}
+                Save
             </button>
         </div>
     </ng-template>

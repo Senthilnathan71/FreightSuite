@@ -18,6 +18,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-milestone-list',
   standalone: true,
@@ -30,7 +31,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './milestone-list.component.html',
   styleUrl: './milestone-list.component.scss'
@@ -61,7 +63,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
-
+    headerActions: HeaderAction[] = [];
   shipmentTypeOptions = [
     { value: 'Export', label: 'Export' },
     { value: 'Import', label: 'Import' },
@@ -137,10 +139,10 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
       this.checkPermissions();
     }
     this.loadDepartments();
-    this.loadMilestones();
+    // this.loadMilestones();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -157,6 +159,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -198,6 +201,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching milestone.');
       this.allItems = [];
@@ -213,6 +217,16 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
     super.handleSearchError(error);
   }
 
+   onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchMilestone();
+  }
+
+   onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
   // Legacy methods for template compatibility
   searchMilestone() {
     this.search();
@@ -222,6 +236,55 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
   //   this.clearFilter();
   // }
 
+  
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateMilestone();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+ 
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   override trackBy(index: number, item: any): number {
     return item.MilestoneMasterSid || index;
   }
@@ -344,45 +407,45 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
       title: companyName
     });
   }
-  loadMilestones(): void {
-    this.spinner.show();
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid,
-      activeBranchId: BranchMasterSid,
-    };
+  // loadMilestones(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid,
+  //     activeBranchId: BranchMasterSid,
+  //   };
 
-    this.masterService.searchMilestoneList(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.allMilestones = response.data.items || response;
-          this.totalLengthOfCollection = response.data.totalCount || response.length;
-          this.applySorting();
-          this.milestoneList = this.allMilestones;
-          this.searchPerformed = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching milestones:', err);
-        this.allMilestones = [];
-        this.milestoneList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchMilestoneList(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.allMilestones = response.data.items || response;
+  //         this.totalLengthOfCollection = response.data.totalCount || response.length;
+  //         this.applySorting();
+  //         this.milestoneList = this.allMilestones;
+  //         this.searchPerformed = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching milestones:', err);
+  //       this.allMilestones = [];
+  //       this.milestoneList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
 
   loadDepartments() {
@@ -453,11 +516,11 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadMilestones();
+    // this.loadMilestones();
   }
   clearFilterValue() {
     this.filterValue = '';
-    this.loadMilestones();
+    // this.loadMilestones();
   }
 
   trackByMilestoneId(index: number, item: any): number {
@@ -472,7 +535,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
         this.masterService.deleteMilestoneById(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Milestone deleted successfully!");
-            this.loadMilestones();
+            // this.loadMilestones();
             this.searchMilestone()
           },
           error: (err) => {

@@ -20,6 +20,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+
 @Component({
   selector: 'app-post-master-list',
   standalone: true,
@@ -33,7 +35,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+       PageHeaderComponent,
   ],
   templateUrl: './post-master-list.component.html',
   styleUrls: ['./post-master-list.component.scss']
@@ -67,6 +70,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
   // Company
   currentCompany: any;
   currentBranch: any;
+    headerActions: HeaderAction[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -142,10 +146,10 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadPorts();
+    // this.loadPorts();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -162,6 +166,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -202,6 +207,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching port-master.');
       this.allItems = [];
@@ -220,6 +226,65 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
   // Legacy methods for template compatibility
   searchPortMaster() {
     this.search();
+  }
+
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchPortMaster();
+  }
+
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+      
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   clearFilterValue() {
@@ -347,34 +412,34 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
       title: companyName
     });
   }
-  loadPorts(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadPorts(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchPortList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.portList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching ports:', err);
-        this.portList = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchPortList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.portList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching ports:', err);
+  //       this.portList = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   /** Load all countries and sectors for lookup */
   // loadMasterData(): void {
@@ -474,7 +539,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadPorts();
+    // this.loadPorts();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -488,7 +553,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
         if (!confirmed) return;
         this.masterService.deletePortById(id).subscribe(() => {
           this.appSettingService.showSuccess("Zone deleted successfully!");
-          this.loadPorts();
+          // this.loadPorts();
           this.searchPortMaster();
         });
       });

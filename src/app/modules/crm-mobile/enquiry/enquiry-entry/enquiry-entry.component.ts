@@ -20,7 +20,7 @@ import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -38,6 +38,8 @@ import {
   distinctUntilChanged
 } from 'rxjs';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-enquiry-entry',
@@ -54,13 +56,16 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
     NgbDropdownModule,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbTooltip,
+    NgxSpinnerModule,
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe
   ],
 })
 export class EnquiryEntryComponent implements OnInit {
@@ -164,7 +169,7 @@ export class EnquiryEntryComponent implements OnInit {
  tabs = [
     { name: 'Enquiry', icon: 'fas fa-file-signature' },
     { name: 'Route Details', icon: 'fas fa-file-signature' },
-   { name: 'Other', icon: 'fas fa-layer-group' }
+  //  { name: 'Other', icon: 'fas fa-layer-group' }
   ];
   
   
@@ -172,6 +177,11 @@ export class EnquiryEntryComponent implements OnInit {
     { FreightTermsSid: 'Prepaid', FreightTerms: 'Prepaid' },
     { FreightTermsSid: 'Collect', FreightTerms: 'Collect' }
   ];
+   portLookupConfig = {
+    displayFields : ['PortCode', 'PortName','Country'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['PortCode']
+  };
 
 
   selectTab(tab: string) {
@@ -190,7 +200,9 @@ export class EnquiryEntryComponent implements OnInit {
     private fb: FormBuilder,
     private modalService: ModalService,
     private calendar: NgbCalendar,
-    private ngbModal: NgbModal
+    private ngbModal: NgbModal,
+    private spinner: NgxSpinnerService,
+    private datePipe : CustomDatePipe
   ) { }
 
   ngOnInit(): void {
@@ -494,6 +506,115 @@ export class EnquiryEntryComponent implements OnInit {
   });
   }
 
+
+    getFormattedPort(PortMasterSid) {
+    if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
+      return '';
+    }
+    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
+    return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
+  }
+
+  openEmail() {
+    if (!this.rateRequestData) return;
+ 
+    // Need to add later
+    // if(!this.enquiryApproved){
+    //   this.appSettingsService.showWarning("Please approve the quotation before sending email");
+    //   return;
+    // }
+ 
+    const selectedItem = this.rateRequestData;
+ 
+    const modalRef = this.ngbModal.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+ 
+    const toEmailSet = new Set<string>();
+    toEmailSet.add(selectedItem.Email);
+ 
+    const toEmail = Array.from(toEmailSet);
+    const ccEmail = [this.userData['userEmail']];
+ 
+    const POL = selectedItem?.enquiryRoute[0]?.POLSid;
+    const POD = selectedItem?.enquiryRoute[0]?.PODSid;
+    const FPD = selectedItem?.enquiryRoute[0]?.FDPSid;
+    const formattedPOL = this.getFormattedPort(POL);
+    const formattedPOD = this.getFormattedPort(POD);
+    const formattedFPD = this.getFormattedPort(FPD);
+ 
+    const subject = `Enquiry No.${this.rateRequestData?.EnquiryNumber} Date: ${this.datePipe.transform(this.rateRequestData?.EnquiryDate)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
+ 
+    const mailBody = `Dear Sir/Madam,
+Please find enclosed the enquiry as requested
+Kindly review the details at your convenience.
+Looking forward to your feedback and the opportunity to work together.
+Best Regards,
+${this.userData.userName}`;
+ 
+    modalRef.componentInstance.setContent = {
+      EmailTo: toEmail,
+      EmailCC: ccEmail,
+      EmailBCC: [],
+      Subject: subject,
+      Mailbody: mailBody,
+      // attachments: [pdfFile]
+    };
+  }
+ 
+ 
+  openAgentEmail() {
+    if (!this.rateRequestData) return;
+ 
+    // Need to add later
+    // if(!this.enquiryApproved){
+    //   this.appSettingsService.showWarning("Please approve the quotation before sending email");
+    //   return;
+    // }
+ 
+    const selectedItem = this.rateRequestData;
+ 
+    const modalRef = this.ngbModal.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+ 
+    const toEmailSet = new Set<string>();
+    // toEmailSet.add(selectedItem.Email);  // We dont take agent input in entry page
+ 
+    const toEmail = Array.from(toEmailSet);
+    const ccEmail = [this.userData['userEmail']];
+ 
+    const POL = selectedItem?.enquiryRoute[0]?.POLSid;
+    const POD = selectedItem?.enquiryRoute[0]?.PODSid;
+    const FPD = selectedItem?.enquiryRoute[0]?.FDPSid;
+    const formattedPOL = this.getFormattedPort(POL);
+    const formattedPOD = this.getFormattedPort(POD);
+    const formattedFPD = this.getFormattedPort(FPD);
+    const containerTypes = (selectedItem?.enquiryRoute?.[0]?.enquiryCargo || []).map(cargo => {
+      return this.containerTypes.find(type => type.ContainerName === cargo.ContainerType)?.ContainerCode;
+    }).join(', ');
+ 
+    const subject = `Rate Request for ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
+ 
+    const mailBody = `Dear Sir/Madam,
+Kindly share the rate for ${formattedPOL} - ${formattedPOD} Container: ${containerTypes}
+Looking forward to your feedback and the opportunity to work together.
+Best Regards,
+${this.userData.userName}`;
+ 
+    modalRef.componentInstance.setContent = {
+      EmailTo: toEmail,
+      EmailCC: ccEmail,
+      EmailBCC: [],
+      Subject: subject,
+      Mailbody: mailBody,
+      // attachments: [pdfFile]
+    };
+  }
 
   // Remove a Route
   removeRoute(index: number) {
@@ -1316,14 +1437,14 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
       }
     );
   }
-  openEmail() {
-    if (!this.rateRequestData) return;
-    const modalRef = this.ngbModal.open(EmailEntryComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    });
-  }
+  // openEmail() {
+  //   if (!this.rateRequestData) return;
+  //   const modalRef = this.ngbModal.open(EmailEntryComponent, {
+  //     size: 'lg',
+  //     centered: true,
+  //     backdrop: 'static'
+  //   });
+  // }
 
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');

@@ -189,28 +189,35 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 8px;
-  padding: 0px 4px;
-  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+
+  // box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  // overflow: hidden;
+
 }
 
 .workspace-content {
-  padding: 2px 10px;
+  padding: 1px 10px;
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;
 }
+.workspace-content-enquiry {
+  padding: 1px 10px;
+  height: 100%;
+  // overflow-y: auto;
+  animation: fadeInUp 0.50s ease;
+}
+
 
 .workspace-content1 {
-  padding: 4px 4px;
+  padding: 1px 4px;
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;
 }
 
 .workspace-content2 {
-  padding: 0px 2px;
+  padding: 1px 2px;
   height: 100%;
   overflow-y: auto;
   animation: fadeInUp 0.50s ease;
