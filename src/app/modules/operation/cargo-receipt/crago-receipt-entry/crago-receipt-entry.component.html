@@ -133,13 +133,13 @@
                             <th class="bg-transparent text-light" scope="col">Shipping Bill No</th>
                             <th class="bg-transparent text-light" scope="col">Date</th>
                             <th class="bg-transparent text-light" scope="col">External Pkg</th>
-                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
+                            <th class="bg-transparent text-light text-center" scope="col">No of Pkg</th>
                             <th class="bg-transparent text-light" scope="col">Gross Weight</th>
                             <th class="bg-transparent text-light" scope="col">Net Weight</th>
                             <th class="bg-transparent text-light" scope="col">Volume(CBM)</th>
                             <th class="bg-transparent text-light" scope="col">Cargo Recd. Date</th>
                             <th class="bg-transparent text-light" scope="col">CFS</th>
-                            <th class="bg-transparent text-light" scope="col">Record Pack</th>
+                            <th class="bg-transparent text-light" scope="col">Recd Pack</th>
                         </tr>
                     </thead>
                     <tbody formArrayName="bookingProducts">
@@ -154,34 +154,56 @@
       <div class="text-truncate">{{ prod.value.ShippingBillDate }}</div>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate">{{ prod.value.ExternaPkg }}</div>
+      <div class="text-truncate text-center">{{ prod.value.ExternaPkg }}</div>
     </td>
 
     <!-- Editable fields -->
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="ExternlQty"/>
+      <input type="number" class="form-control form-control-sm text-end" formControlName="ExternlQty" [onlyNumbers] />
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="GrossWeight"/>
+      <input type="number" class="form-control form-control-sm text-end" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="NetWeight"/>
+      <input type="number" class="form-control form-control-sm text-end" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="Volume"/>
+      <input type="number" class="form-control form-control-sm text-end" formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
     </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-  <input type="date" class="form-control form-control-sm" formControlName="CargoRecDate"
-    [min]="today.year + '-' + (today.month < 10 ? '0' + today.month : today.month) + '-' + (today.day < 10 ? '0' + today.day : today.day)" />
+    <td>
+  <div class="input-group" style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
+                <input
+                  class="form-control"
+                  formControlName="CargoRecDate"
+                  placeholder="DD-MMM-YYYY"
+                  (click)="d.toggle()"
+                  (keydown.arrowDown)="d.open()"
+                  ngbDatepicker
+                  container="body"
+                  #d="ngbDatepicker"
+                  [minDate]="today"
+                />
+                <button class="btn" type="button" (click)="d.toggle()">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
 </td>
 
 
 
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate">{{ prod.value.CFS }}</div>
+      <div class="custom-form-group custom-form-group-select" style="width: 150px;" [class.filled]="!!cargoForm.get('CFS')?.value">
+                <ng-select 
+                  formControlName="CFS" 
+                  [items]="cfsList" 
+                  bindLabel="CustomerName" 
+                  bindValue="CustomerName"
+                  placeholder=""
+                ></ng-select>
+              </div>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate">{{ prod.value.RecdPack }}</div>
+      <input type="number" class="form-control form-control-sm text-end" formControlName="RecdPack" [onlyNumbers]/>
     </td>
   </tr>
 </tbody>

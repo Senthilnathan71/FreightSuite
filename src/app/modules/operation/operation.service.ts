@@ -492,6 +492,15 @@ getAllPorts() {
     );
   }
 
+  getAllCFS(CompanyMasterSid: number) {
+    return this.http.post('customer/cFS',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   getPackageTypeUOM() {
   return this.http.get('uom/package-type-uom').pipe(
     map((resp: any) => {
