@@ -54,7 +54,7 @@
   </div>
 
   <!-- Tabs -->
-  <div class="nav-pills-container pt-1">
+  <div class="nav-pills-container">
   <div class="nav-pills">
     <div class="nav-pill" *ngFor="let tab of tabs" 
          [class.active]="selectedTab === tab.name"
@@ -762,22 +762,26 @@
                 </div>
 
                 <!-- Table -->
-                <div class="table-responsive table-borderless" *ngIf="(getContacts(branchIndex)?.length || 0) > 0"
+                <div class="table-responsive table-borderless" 
                   style="max-height: 250px; overflow-y: auto;">
                   <table class="table table-hover align-middle no-wrap table-sm mb-1"
                     style="max-height: 300px; overflow-y: scroll;">
                     <thead>
+                  
                       <tr class="bg-info">
                         <th class="bg-transparent text-light" width="2%"></th>
-                        <th class="bg-transparent text-light">Contact Type</th>
-                        <th class="bg-transparent text-light">Contact Name</th>
+                        <th class="bg-transparent text-light">Contact Type <span class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light">Contact Name <span class="text-danger">*</span></th>
                         <th class="bg-transparent text-light">Mobile No</th>
-                        <th class="bg-transparent text-light">Email</th>
+                        <th class="bg-transparent text-light">Email <span class="text-danger">*</span></th>
                         <th class="bg-transparent text-light" width="8%">Status</th>
                       </tr>
                     </thead>
 
                     <tbody>
+                           <tr *ngIf="(getContacts(branchIndex)?.length || 0) === 0">
+              <td [attr.colspan]="8" class="text-center text-muted py-1">No records found</td>
+            </tr>
                       <tr *ngFor="let contact of (getContacts(branchIndex)?.controls || []); let contactIndex = index"
                         [formGroup]="getContactFormGroup(contact)" class="py-0">
 
@@ -794,19 +798,19 @@
                             <!-- <ng-option value="">Select Type</ng-option> -->
                             <ng-option *ngFor="let type of contactList" [value]="type.name">{{ type.name }}</ng-option>
                           </ng-select>
-                          @if (getContactFormGroup(contact).get('ContactType')?.touched &&
+                          <!-- @if (getContactFormGroup(contact).get('ContactType')?.touched &&
                           getContactFormGroup(contact).get('ContactType')?.invalid) {
                           <div class="error-message">Required</div>
-                          }
+                          } -->
                         </td>
 
                         <!-- Contact Name -->
                         <td class="px-1">
                           <input type="text" class="custom-input-field sm" formControlName="ContactName">
-                          @if (getContactFormGroup(contact).get('ContactName')?.touched &&
+                          <!-- @if (getContactFormGroup(contact).get('ContactName')?.touched &&
                           getContactFormGroup(contact).get('ContactName')?.invalid) {
                           <div class="error-message">Required</div>
-                          }
+                          } -->
                         </td>
 
                         <!-- Mobile No -->
@@ -817,10 +821,10 @@
                         <!-- Email -->
                         <td class="px-1">
                           <input type="text" class="custom-input-field sm" formControlName="Email">
-                          @if (getContactFormGroup(contact).get('Email')?.touched &&
+                          <!-- @if (getContactFormGroup(contact).get('Email')?.touched &&
                           getContactFormGroup(contact).get('Email')?.invalid) {
                           <div class="error-message">Required</div>
-                          }
+                          } -->
                         </td>
 
                         <!-- Status -->
@@ -836,10 +840,6 @@
                   </table>
                 </div>
 
-                <!-- Empty Message -->
-                <div *ngIf="(getContacts(branchIndex)?.length || 0) === 0" class="text-center text-muted py-2">
-                  No records found
-                </div>
               </div>
             </div>
 
@@ -1053,14 +1053,14 @@
     </div>
 
     <!-- No branches message -->
-    <div class="col-12" *ngIf="(branches?.length || 0) === 0">
+    <!-- <div class="col-12" *ngIf="(branches?.length || 0) === 0">
       <div class="text-center text-muted">
         <i class="fas fa-code-branch fa-3x mb-1"></i>
 
-        <!-- <i class="fas fa-building fa-3x mb-3"></i> -->
+      
         <p>No branches added yet. Click "Add Branch" to get started.</p>
       </div>
-    </div>
+    </div> -->
   </div>
 </ng-template>
 <!-- Elogin -->
@@ -1083,10 +1083,10 @@
             <thead>
               <tr class="bg-info">
                 <th class="bg-transparent text-light" width="3%"></th>
-                <th class="bg-transparent text-light" width="20%">Branch Name</th>
-                <th class="bg-transparent text-light">Login Name</th>
-                <th class="bg-transparent text-light">Email</th>
-                <th class="bg-transparent text-light">Password</th>
+                <th class="bg-transparent text-light" width="20%">Branch Name <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light">Login Name <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light">Email <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light">Password <span class="text-danger">*</span></th>
                 <th class="bg-transparent text-light" width="8%">Status</th>
               </tr>
             </thead>
@@ -1103,46 +1103,46 @@
 
                 <!-- Branch Name -->
                 <td class="px-1">
-                  <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder="Select Branch"
+                  <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder=""
                     [disabled]="!isEditMode">
                     <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
                       {{ branch.BranchName }}
                     </ng-option>
                   </ng-select>
-                  @if (login.get('CustomerBranchSid')?.touched && login.get('CustomerBranchSid')?.invalid) {
+                  <!-- @if (login.get('CustomerBranchSid')?.touched && login.get('CustomerBranchSid')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- Login Name -->
                 <td class="px-1">
-                  <input type="text" class="custom-input-field sm" formControlName="LoginName" placeholder="Login Name">
-                  @if (login.get('LoginName')?.touched && login.get('LoginName')?.invalid) {
+                  <input type="text" class="custom-input-field sm" formControlName="LoginName" placeholder="">
+                  <!-- @if (login.get('LoginName')?.touched && login.get('LoginName')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- Email -->
                 <td class="px-1">
                   <input type="text" class="custom-input-field sm" formControlName="LoginEmail"
-                    placeholder="Login Email">
-                  @if (login.get('LoginEmail')?.touched && login.get('LoginEmail')?.invalid) {
+                    placeholder="">
+                  <!-- @if (login.get('LoginEmail')?.touched && login.get('LoginEmail')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- Password -->
                 <td class="px-1">
                   <div class="d-flex align-items-center">
                     <input [type]="'password'" [id]="'loginPassword' + i" class="custom-input-field sm"
-                      formControlName="LoginPassword" placeholder="Password">
+                      formControlName="LoginPassword" placeholder="">
                     <button class="btn btn-sm" type="button" (click)="togglePasswordVisibility(i)">
                       <i [id]="'eyeIcon' + i" class="fas fa-eye"></i>
                     </button>
                   </div>
-                  @if (login.get('LoginPassword')?.touched && login.get('LoginPassword')?.invalid) {
+                  <!-- @if (login.get('LoginPassword')?.touched && login.get('LoginPassword')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- Status -->
@@ -1158,9 +1158,9 @@
         </div>
 
         <!-- No data message -->
-        <div class="text-center py-3" *ngIf="customerLogins.length === 0">
+        <!-- <div class="text-center py-3" *ngIf="customerLogins.length === 0">
           <p class="text-muted">No logins configured. Click "Add Login" to configure login credentials.</p>
-        </div>
+        </div> -->
       </div>
     </div>
   </form>
@@ -1181,21 +1181,26 @@
 
         <!-- Table -->
         <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;"
-          *ngIf="customerEmails.length > 0">
+         >
           <table class="table align-middle no-wrap table-sm mb-1 table-hover">
             <thead>
               <tr class="bg-info">
                 <th class="bg-transparent text-light" width="3%"></th>
-                <th class="bg-transparent text-light" width="20%">Branch Name</th>
-                <th class="bg-transparent text-light" width="10%">Menu</th>
-                <th class="bg-transparent text-light" width="20%">Department</th>
-                <th class="bg-transparent text-light">To Email</th>
+                <th class="bg-transparent text-light" width="20%">Branch Name <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light" width="10%">Menu <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light" width="20%">Department <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light">To Email <span class="text-danger">*</span></th>
                 <th class="bg-transparent text-light">CC Email</th>
                 <th class="bg-transparent text-light" width="8%">Status</th>
               </tr>
             </thead>
 
             <tbody formArrayName="customerEmails">
+
+                <tr *ngIf="(customerEmails?.length || 0) === 0">
+              <td [attr.colspan]="8" class="text-center text-muted py-1">No records found</td>
+            </tr>
+
               <tr class="py-0" *ngFor="let email of customerEmails.controls; let i = index" [formGroupName]="i">
 
                 <!-- Delete -->
@@ -1207,53 +1212,53 @@
 
                 <!-- Branch Name -->
                 <td class="px-1">
-                  <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder="Select Branch"
+                  <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder=""
                     [disabled]="!isEditMode">
                     <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
                       {{ branch.BranchName }}
                     </ng-option>
                   </ng-select>
-                  @if (email.get('CustomerBranchSid')?.touched && email.get('CustomerBranchSid')?.invalid) {
+                  <!-- @if (email.get('CustomerBranchSid')?.touched && email.get('CustomerBranchSid')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- Menu -->
                 <td class="px-1">
-                  <ng-select formControlName="MenuMasterSid" appendTo="body" placeholder="Select Menu">
+                  <ng-select formControlName="MenuMasterSid" appendTo="body" placeholder="">
                     <ng-option *ngFor="let menu of menuList" [value]="menu.MenuMasterSid">
                       {{ menu.MenuName }}
                     </ng-option>
                   </ng-select>
-                  @if (email.get('MenuMasterSid')?.touched && email.get('MenuMasterSid')?.invalid) {
+                  <!-- @if (email.get('MenuMasterSid')?.touched && email.get('MenuMasterSid')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- Department -->
                 <td class="px-1">
                   <multi-select [control]="email.get('DepartmentMasterSid')" appendTo="body"
                     [items]="departmentListForSelect" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-                    placeholder="Select Departments" multiple=true>
+                    placeholder="" multiple=true>
                   </multi-select>
-                  @if (email.get('DepartmentMasterSid')?.touched && email.get('DepartmentMasterSid')?.invalid) {
+                  <!-- @if (email.get('DepartmentMasterSid')?.touched && email.get('DepartmentMasterSid')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- To Email -->
                 <td class="px-1">
                   <input type="text" class="custom-input-field sm" formControlName="Toemail"
-                    placeholder="Email addresses">
-                  @if (email.get('Toemail')?.touched && email.get('Toemail')?.invalid) {
+                    placeholder="">
+                  <!-- @if (email.get('Toemail')?.touched && email.get('Toemail')?.invalid) {
                   <div class="error-message">Required</div>
-                  }
+                  } -->
                 </td>
 
                 <!-- CC Email -->
                 <td class="px-1">
                   <input type="text" class="custom-input-field sm" formControlName="CCemail"
-                    placeholder="CC emails (optional)">
+                    placeholder="">
                 </td>
 
                 <!-- Status -->
@@ -1269,9 +1274,9 @@
         </div>
 
         <!-- No data message -->
-        <div class="text-center py-3" *ngIf="customerEmails.length === 0">
+        <!-- <div class="text-center py-3" *ngIf="customerEmails.length === 0">
           <p class="text-muted">No emails configured. Click "Add Email" to configure email settings.</p>
-        </div>
+        </div> -->
       </div>
     </div>
   </form>
@@ -1329,7 +1334,7 @@
 
               <!-- Branch -->
               <td class="px-1">
-                <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder="Select Branch"
+                <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder=""
                   [disabled]="!isEditMode">
                   <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
                     {{ branch.BranchName }}
@@ -1384,12 +1389,12 @@
         </table>
 
         <!-- Pagination -->
-        <div>
+        <!-- <div>
           <ngb-pagination [collectionSize]="cusMilestone?.length || 0" [(page)]="cusMilePage"
             [pageSize]="cusMilePageSize" [maxSize]="5" [rotate]="true" [ellipses]="false" [boundaryLinks]="true"
             (pageChange)="onPageChange($event)" size="sm" class="d-flex justify-content-end">
           </ngb-pagination>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -1461,11 +1466,11 @@
           <thead>
             <tr class="bg-info">
               <th class="bg-transparent text-light" scope="col" width="3%"></th>
-              <th class="bg-transparent text-light" scope="col" width="15%">Department</th>
-              <th class="bg-transparent text-light" scope="col">Salesperson</th>
+              <th class="bg-transparent text-light" scope="col" width="15%">Department <span class="text-danger">*</span></th>
+              <th class="bg-transparent text-light" scope="col">Salesperson  <span class="text-danger">*</span></th>
               <th class="bg-transparent text-light" scope="col">CS Person</th>
               <th class="bg-transparent text-light" scope="col">Doc Person</th>
-              <th class="bg-transparent text-light" scope="col">Branch</th>
+              <th class="bg-transparent text-light" scope="col">Branch <span class="text-danger">*</span></th>
               <th class="bg-transparent text-light" scope="col">Effective From</th>
               <th class="bg-transparent text-light" scope="col">Status</th>
             </tr>
@@ -1491,19 +1496,19 @@
               <td class="px-1">
                 <multi-select [control]="item.get('DepartmentMasterSid')" [items]="departmentListForSelect"
                   bindLabel="departmentName" bindValue="DepartmentMasterSid" placeholder=""></multi-select>
-                @if (item.get('DepartmentMasterSid')?.touched && item.get('DepartmentMasterSid')?.invalid) {
+                <!-- @if (item.get('DepartmentMasterSid')?.touched && item.get('DepartmentMasterSid')?.invalid) {
                 <div class="error-message">
                   @if (item.get('DepartmentMasterSid')?.hasError('required')) { <span>Required</span> }
                 </div>
-                }
+                } -->
               </td>
 
               <!-- Salesperson -->
               <td class="px-1">
                 <ng-select [items]="salesPersonList" bindLabel="userName" bindValue="UserMasterSid" appendTo="body"
                   formControlName="Salesman" placeholder=""></ng-select>
-                <span *ngIf="item.get('Salesman')?.invalid && item.get('Salesman')?.touched"
-                  class="error-message">Required</span>
+                <!-- <span *ngIf="item.get('Salesman')?.invalid && item.get('Salesman')?.touched"
+                  class="error-message">Required</span> -->
               </td>
 
               <!-- CS Person -->
@@ -1521,13 +1526,13 @@
               <!-- Branch -->
               <td class="px-1">
                 <ng-select [items]="spBranchList" bindLabel="BranchName" bindValue="CustomerBranchSid"
-                  formControlName="branchSid" placeholder="Select Branch" appendTo="body">
+                  formControlName="branchSid" placeholder="" appendTo="body">
                 </ng-select>
-                @if (item.get('branches')?.touched && item.get('branches')?.invalid) {
+                <!-- @if (item.get('branches')?.touched && item.get('branches')?.invalid) {
                 <div class="error-message">
                   @if (item.get('branches')?.hasError('required')) { <span>Required</span> }
                 </div>
-                }
+                } -->
               </td>
 
               <!-- Effective From -->

@@ -20,7 +20,14 @@
 <div class="row compact-form">
 
     <div class="col-12">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+        <app-page-header 
+    [title]="'UOM'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col py-1">
                 <div class="d-flex align-itens-center gap-1">
                     <h4 class="page-title mb-0">UOM</h4>
@@ -76,7 +83,7 @@
             </div>
 
 
-        </div>
+        </div> -->
     </div>
           <!-- Reusable Table Component -->
     <div class="col-12 px-0">

@@ -198,7 +198,7 @@
 .workspace-content {
   padding: 1px 10px;
   height: 100%;
-  overflow-y: auto;
+  // overflow-y: auto;
   animation: fadeInUp 0.50s ease;
 }
 .workspace-content-enquiry {
@@ -256,7 +256,7 @@
 .custom-accordion .accordion-button {
   background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
   color: #fff;
-  padding: 8px;
+  padding: 2px;
 }
 
 .custom-accordion .accordion-button::after {
@@ -264,7 +264,6 @@
   right: 45px;
   filter: brightness(0) invert(1);
 }
-
 
 .custom-accordion-organization {
 
@@ -301,8 +300,9 @@
   }
 
 }
+// ========================================================================
 
-// organization  table structure
+// borderless  table structure
 .table-borderless {
 
   .table tbody tr td,
@@ -315,12 +315,22 @@
   .table-custom-input-field {
     border: 2px solid #D3D9E4;
     border-radius: 0;
-    padding: 0px 4px 0px;
+    padding: 0px 4px 0px !important;
     border-left: 0;
     border-right: 0;
     border-top: 0;
     box-shadow: none;
   }
+
+    .custom-input-field {
+    border-radius: 0;
+    padding: 0px 4px 0px !important;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    box-shadow: none;
+  }
+
 
     .ng-select-table {
     .ng-select-container {
@@ -333,6 +343,17 @@
     }
   }
 
+   .ng-select {
+    .ng-select-container {
+      border-radius: 0;
+      border-top: 0;
+      border-left: 0;
+      padding: 6px 4px 0px !important;
+      border-right: 0;
+     	min-height: 23px !important;
+    }
+  }
+
 
   .form-control {
     border-radius: 0;
@@ -340,12 +361,12 @@
     border-left: 0;
     border-right: 0;
     padding: 0px 4px 0px;
-    max-height: 29px;
+    max-height: 26px !important;
   }
 }
 
 
-
+// ======================================
 // card style
 .card {
   border: 2px solid #d3d9e4;
@@ -371,7 +392,6 @@
     margin-bottom: 4px;
   }
 }
-
 
 .header-content {
   display: flex;

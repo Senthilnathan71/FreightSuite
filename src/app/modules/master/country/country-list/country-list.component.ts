@@ -20,6 +20,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-country-list',
   standalone: true,
@@ -34,7 +35,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './country-list.component.html',
   styleUrl: './country-list.component.scss'
@@ -54,6 +56,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+    headerActions: HeaderAction[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -128,9 +131,9 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     }
     this.loadZones();
     this.loadCurrencies();
-    this.loadCountries();
+    // this.loadCountries();
     this.initializeTableConfig();
-
+        this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -146,6 +149,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -205,6 +209,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     this.totalLengthOfCollection = response.data?.totalCount || response.totalCount || rawItems.length || 0;
 
     this.applySorting();
+    this.updateHeaderActionState();
     this.searchPerformed = true;
   } else {
     this.appSettingService.showError(response?.message || 'Error searching Country.');
@@ -222,12 +227,68 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchCountry();
+  }
+
   // Legacy methods for template compatibility
   searchCountry() {
     this.search();
     console.log(this.search, "Serach")
   }
 
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+   onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.createNew() ;
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+   private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }
@@ -354,59 +415,59 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadCountries(): void {
-    this.spinner.show();
-    this.loading = true;
+  // loadCountries(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.masterService.searchCountries(params).subscribe({
-      next: (response) => {
-        if (response) {
-          // Create lookup maps
-          const zoneMap = this.zoneOptions.reduce((acc, zone) => {
-            acc[zone.ZoneMasterSid] = zone.ZoneName;
-            return acc;
-          }, {});
+  //   this.masterService.searchCountries(params).subscribe({
+  //     next: (response) => {
+  //       if (response) {
+  //         // Create lookup maps
+  //         const zoneMap = this.zoneOptions.reduce((acc, zone) => {
+  //           acc[zone.ZoneMasterSid] = zone.ZoneName;
+  //           return acc;
+  //         }, {});
 
-          const currencyMap = this.currencyOptions.reduce((acc, currency) => {
-            acc[currency.CurrencyMasterSid] = currency.currencyName || currency.CurrencyName;
-            return acc;
-          }, {});
+  //         const currencyMap = this.currencyOptions.reduce((acc, currency) => {
+  //           acc[currency.CurrencyMasterSid] = currency.currencyName || currency.CurrencyName;
+  //           return acc;
+  //         }, {});
 
-          // Map the response data with zone and currency names
-          this.countryList = (response.items || response.data || response).map((country: any) => ({
-            ...country,
-            zoneName: zoneMap[country.ZoneMasterSid] || '-',
-            currencyName: currencyMap[country.CurrencyMasterSid] || '-'
-          }));
+  //         // Map the response data with zone and currency names
+  //         this.countryList = (response.items || response.data || response).map((country: any) => ({
+  //           ...country,
+  //           zoneName: zoneMap[country.ZoneMasterSid] || '-',
+  //           currencyName: currencyMap[country.CurrencyMasterSid] || '-'
+  //         }));
 
-          this.totalLengthOfCollection = response.totalCount || response.length || 0;
-          this.applySorting();
-          this.searchPerformed = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
+  //         this.totalLengthOfCollection = response.totalCount || response.length || 0;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
 
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
 
-        console.error('Error fetching countries:', err);
-        this.countryList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //       console.error('Error fetching countries:', err);
+  //       this.countryList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
   loadZones() {
     this.loading = true;
     this.masterService.getAllZones().subscribe({
@@ -439,7 +500,7 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData() {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadCountries();
+    // this.loadCountries();
   }
 
   createNew() {
@@ -454,6 +515,6 @@ export class CountryListComponent extends BaseListComponent implements OnInit {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'countryName';
     this.sortDirection = 'asc';
-    this.loadCountries();
+    // this.loadCountries();
   }
 }

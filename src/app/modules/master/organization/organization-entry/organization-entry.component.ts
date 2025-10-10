@@ -1372,7 +1372,7 @@ clearCustomerSearch(): void {
   initForm() {
     this.customerForm = this.fb.group({
       CustomerName: ['', [Validators.required]],
-      CustomerShortCode: [{ value: '', disabled: true }, [Validators.required]],
+      CustomerShortCode: [{ value: '', disabled: true }],
       CustomerAliasName: [''],
       CustomerAddress1: ['', [Validators.required]],
       CustomerAddress2: [''],

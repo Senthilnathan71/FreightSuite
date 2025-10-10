@@ -18,6 +18,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-uom-list',
   standalone: true,
@@ -30,7 +31,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './uom-list.component.html',
   styleUrl: './uom-list.component.scss'
@@ -88,7 +90,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
   };
 
   tableLoading = false;
-
+    headerActions: HeaderAction[] = [];
   protected config: ListComponentConfig = {
     storageKey: 'uom-list-state',
     defaultPageSize: 10,
@@ -126,10 +128,10 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadUoms();
+    // this.loadUoms();
     // Initialize table configuration
     this.initializeTableConfig();
-
+        this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -148,6 +150,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
             console.log(this.permissions);
+              this.initializeHeaderActions();
           },
         });
     }
@@ -187,6 +190,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+        this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching uom.');
       this.allItems = [];
@@ -202,6 +206,11 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchUOM();
+  }
+
   // Legacy methods for template compatibility
   searchUOM() {
     this.search();
@@ -209,6 +218,59 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
 
   clearFilterValue() {
     this.clearFilter();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateUom() ;
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   override trackBy(index: number, item: any): number {
@@ -298,37 +360,37 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: dynamicHeaders,
-      fileName: 'uom-Report',
+      fileName: 'UOM-Report',
       title: companyName
     });
   }
-  loadUoms(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadUoms(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchUomList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.uomList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching Uoms:', err);
-        this.uomList = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchUomList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.uomList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching Uoms:', err);
+  //       this.uomList = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   // sort(column: string) {
   //   if (this.sortColumn === column) {
@@ -369,7 +431,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadUoms();
+    // this.loadUoms();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -382,7 +444,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
       if (result === true) {
         this.masterService.deleteUomById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Zone deleted successfully!");
-          this.loadUoms();
+          // this.loadUoms();
           this.searchUOM();
         });
       }

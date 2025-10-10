@@ -19,10 +19,11 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-imco-list',
   standalone: true,
-  imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent],
+  imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule, ListpageComponent, FavoriteStarComponent, NgxSpinnerModule, ReusableTableComponent,PageHeaderComponent,],
   templateUrl: './imco-list.component.html',
   styleUrl: './imco-list.component.scss'
 })
@@ -44,7 +45,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
   // pageSize = 15;
   totalAmountOfCollection: number;
   isFavorite: boolean = false;
-
+  headerActions: HeaderAction[] = [];
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -123,10 +124,10 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadImcos();
+    // this.loadImcos();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -143,6 +144,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -181,6 +183,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching imco.');
       this.allItems = [];
@@ -196,6 +199,10 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchImco();
+  }
   // Legacy methods for template compatibility
   searchImco() {
     this.search();
@@ -203,6 +210,57 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
 
   clearFilterValue() {
     this.clearFilter();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+    onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreate();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   override trackBy(index: number, item: any): number {
@@ -303,39 +361,39 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  loadImcos(): void {
-    this.spinner.show();
-    this.loading = true;
+  // loadImcos(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.masterService.searchIMCO(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.imcoList = response.data.items;
-          this.totalAmountOfCollection = response.data.totalCount || response.data.length;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching IMCOs:', err);
-        this.imcoList = [];
-        this.totalAmountOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchIMCO(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.imcoList = response.data.items;
+  //         this.totalAmountOfCollection = response.data.totalCount || response.data.length;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching IMCOs:', err);
+  //       this.imcoList = [];
+  //       this.totalAmountOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
 
   // sort(column: string) {
@@ -379,7 +437,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
   updatePaginationData() {
     let start = (this.page - 1) * this.pageSize;
     let end = start + this.pageSize;
-    this.loadImcos();
+    // this.loadImcos();
   }
   // clearFilterValue() {
   //   this.filterValue = '';
@@ -395,7 +453,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
             (resp: any) => {
               if (resp.status) {
                 this.appSettingService.showSuccess('IMCO Deleted');
-                this.loadImcos();
+                // this.loadImcos();
                 this.searchImco();
               } else {
                 this.appSettingService.showError('Error Deleting IMCO');
@@ -424,7 +482,7 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
     this.page = 1;
     this.sortColumn = 'ImcoClass';
     this.sortDirection = 'asc';
-    this.loadImcos();
+    // this.loadImcos();
   }
 
   // report(): void {
