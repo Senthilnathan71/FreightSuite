@@ -19,6 +19,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-state-list',
   standalone: true,
@@ -31,7 +32,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './state-list.component.html',
   styleUrl: './state-list.component.scss'
@@ -47,7 +49,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
   countryOptions: any[] = [];
   zoneOptions: any[] = [];
   userData: any;
-
+    headerActions: HeaderAction[] = [];
   // pagination
   // page = 1;
   // pageSize = 15;
@@ -132,12 +134,12 @@ export class StateListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadStates();
+    // this.loadStates();
     this.loadCountries();
     this.loadZones();
     // Initialize table configuration
     this.initializeTableConfig();
-
+        this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -156,6 +158,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
             this.permissions = Object.keys(this.currentMenuPermissions).filter(
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
+                this.initializeHeaderActions();
             console.log(this.permissions);
           },
         });
@@ -197,6 +200,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching state.');
       this.allItems = [];
@@ -210,6 +214,64 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     this.appSettingService.showError('Error searching state.');
     console.error('Error searching state', error);
     super.handleSearchError(error);
+  }
+
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchState();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+    onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateState();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   // Legacy methods for template compatibility
@@ -339,35 +401,35 @@ export class StateListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadStates(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadStates(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue ? this.filterValue.trim() : '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchStateList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.stateList = response.data.items;
-          this.allStates = [...this.stateList];
-          this.totalLengthOfCollection = response.data.totalCount;
-          // this.applySorting();
-          this.searched = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching states:', err);
-        this.stateList = [];
-        this.allStates = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchStateList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.stateList = response.data.items;
+  //         this.allStates = [...this.stateList];
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         // this.applySorting();
+  //         this.searched = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching states:', err);
+  //       this.stateList = [];
+  //       this.allStates = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   loadCountries() {
     this.loading = true;
@@ -484,7 +546,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadStates();
+    // this.loadStates();
   }
 
   trackByStateId(index: number, item: any): number {
@@ -499,7 +561,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
         this.masterService.softDelete(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("State deleted successfully!");
-            this.loadStates(); // Refresh search results
+            // this.loadStates(); // Refresh search results
             this.searchState();
           },
           error: (err) => {

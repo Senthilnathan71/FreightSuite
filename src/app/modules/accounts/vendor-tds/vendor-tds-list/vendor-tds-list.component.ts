@@ -18,7 +18,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { Observable } from 'rxjs';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
-
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-vendor-tds-list',
   standalone: true,
@@ -31,7 +31,8 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
     NgbPaginationModule,
     NgxSpinnerModule,
     CommonPaginationComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+      PageHeaderComponent,
   ],
   templateUrl: './vendor-tds-list.component.html',
   styleUrl: './vendor-tds-list.component.scss'
@@ -57,6 +58,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
   // sortColumn: string = 'CustomerName';
   // sortDirection: string = 'desc';
 
+  headerActions: HeaderAction[] = [];
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -123,6 +125,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
     })
     // this.searchSupplierTDS();
     this.initializeTableConfig();
+    this.initializeHeaderActions();
     super.ngOnInit();
   }
 
@@ -140,6 +143,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
             this.permissions = Object.keys(this.currentMenuPermissions).filter(
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
+            this.initializeHeaderActions();
             console.log(this.permissions);
           },
         });
@@ -222,6 +226,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
 
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error fetching Supplier TDS mapping.');
       this.allItems = [];
@@ -237,6 +242,63 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchSupplierTdsMapping();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+
+   initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateVendorTDS();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   searchSupplierTdsMapping() {
     this.page = 1;
     this.search();
@@ -368,7 +430,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess('Supplier TDS deleted successfully.');
-              // this.searchSupplierTDS();
+              this.searchSupplierTdsMapping();
             } else {
               this.appSettingService.showError('Error deleting supplier TDS.')
               console.error('Error deleting supplier TDS', resp.message);

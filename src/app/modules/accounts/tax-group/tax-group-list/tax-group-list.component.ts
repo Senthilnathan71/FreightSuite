@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -47,6 +47,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { Observable } from 'rxjs';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -71,19 +72,21 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
     NgxSpinnerModule,
     NgbDropdownModule,
     CommonPaginationComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
-  
+
   templateUrl: './tax-group-list.component.html',
   styleUrl: './tax-group-list.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    {provide : CustomDatePipe}
+    { provide: CustomDatePipe }
   ],
 })
 export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   @ViewChild('taxGroupTable') taxGroupTable!: ReusableTableComponent;
+    @ViewChild('content') content: TemplateRef<any>;
   taxGroupForm!: FormGroup;
   isEditMode = false;
   modalRef!: NgbModalRef;
@@ -125,7 +128,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
         action: 'view',
         tooltip: 'View',
         // condition: (row: any) => this.hasPermission('View')
-        
+
       }
     ],
     selectable: false,
@@ -137,7 +140,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     emptyMessage: 'No tax-group found',
     dragAndDrop: true
   };
-
+  headerActions: HeaderAction[] = [];
   tableLoading = false;
   protected config: ListComponentConfig = {
     storageKey: 'Tax-group-list-state',
@@ -161,7 +164,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     private calendar: NgbCalendar,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-      private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe
   ) {
     super(paginationService);
   }
@@ -179,6 +182,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     // this.loadTaxGroups();
     super.ngOnInit();
     this.initializeTableConfig();
+    this.initializeHeaderActions();
   }
 
   // loadTaxGroups(): void {
@@ -243,6 +247,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error fetching Tax-group.');
       this.allItems = [];
@@ -258,6 +263,61 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   }
 
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchTaxGroup();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   searchTaxGroup() {
     this.page = 1;
     this.search();
@@ -275,11 +335,6 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     return item.TaxMasterSid || index;
   }
 
-
-
-  navigateToCreate() {
-    this.router.navigate(['operation/booking/entry']);
-  }
 
   // Table configuration
   private initializeTableConfig(): void {
@@ -317,7 +372,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string'
       },
-     
+
       {
         key: 'TaxRate',
         label: 'Tax Rate',
@@ -349,11 +404,28 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   }
 
   // Table event handlers
-  onTableActionClick(event: TableEventData): void {
-      // if (event.action === 'view') {
-      //     this.viewBooking(event.row);
-      // }
+onTableActionClick(event: TableEventData): void {
+  if (event.action === 'view') {
+      this.viewTax(this.content, event.row);
   }
+}
+
+viewTax(content: any, row: any) {
+  this.TaxMasterSid = row.TaxMasterSid; // store the id if needed
+  this.openModal(content);
+  // If you need to prefill form with row data:
+  this.isEditMode = true;
+  this.selectedId = row.TaxMasterSid;
+  this.taxGroupForm.patchValue({
+    TaxName: row.TaxName,
+    TaxCode: row.TaxCode,
+    TaxType: row.TaxType,
+    EffectiveFrom: new Date(row.EffectiveFrom),
+    TaxRate: row.TaxRate,
+    TaxExempt: row.TaxExempt === 'Y',
+    Remarks: row.Remarks,
+  });
+}
 
   onTableRowClick(row: any): void {
     // Row clicking can be handled by the table component if needed
@@ -477,10 +549,9 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
 
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
-    this.selectedId = id;
 
     this.masterService
-      .fetchTaxById(id)
+      .fetchTaxById(this.TaxMasterSid)
       .pipe(take(1))
       .subscribe({
         next: (taxGroup: any) => {

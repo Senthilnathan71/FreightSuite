@@ -30,6 +30,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-city',
   standalone: true,
@@ -50,7 +52,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -97,6 +101,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
+    headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   // Table configuration
   tableConfig: TableConfig = {
     columns: [],
@@ -172,7 +178,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
     }
     this.getAllCountries();
     this.getAllState();
-    this.loadCities();
+    // this.loadCities();
     this.loadCountryAndStateData();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -192,7 +198,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
     });
     // Initialize table configuration
     this.initializeTableConfig();
-
+     this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
@@ -209,6 +216,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+           this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
         }
       });
     }
@@ -254,6 +263,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching city.');
       this.allItems = [];
@@ -269,10 +279,116 @@ export class CityComponent extends BaseListComponent implements OnInit {
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchCity();
+  }
+
   // Legacy methods for template compatibility
   searchCity() {
     this.search();
   }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
+
 
   clearFilterValue() {
     this.clearFilter();
@@ -384,40 +500,40 @@ export class CityComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadCities(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize
-    };
+  // loadCities(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize
+  //   };
 
-    this.masterService.searchCityList(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.cityList = response.data.items.map((city: any) => {
-            return {
-              ...city,
-              countryName: city?.countryMaster?.countryName || 'N/A',
-              stateName: city?.stateMaster?.stateName || 'N/A'
-            };
-          });
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-        } else {
-          this.cityList = [];
-          this.totalLengthOfCollection = 0;
-          this.appSettingService.showError(response.message);
+  //   this.masterService.searchCityList(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.cityList = response.data.items.map((city: any) => {
+  //           return {
+  //             ...city,
+  //             countryName: city?.countryMaster?.countryName || 'N/A',
+  //             stateName: city?.stateMaster?.stateName || 'N/A'
+  //           };
+  //         });
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //       } else {
+  //         this.cityList = [];
+  //         this.totalLengthOfCollection = 0;
+  //         this.appSettingService.showError(response.message);
 
-        }
-        this.searchPerformed = true;
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error loading cities:', err);
-      }
-    });
-  }
+  //       }
+  //       this.searchPerformed = true;
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading cities:', err);
+  //     }
+  //   });
+  // }
 
 
 
@@ -773,7 +889,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadCities();
+    // this.loadCities();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -787,7 +903,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
         this.masterService.deleteCityById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("City deleted successfully!");
           this.router.navigate(['master/city/list'])
-          this.loadCities();
+          // this.loadCities();
           this.searchCity();
         });
       }

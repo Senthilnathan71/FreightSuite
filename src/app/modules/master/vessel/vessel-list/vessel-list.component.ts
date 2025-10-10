@@ -18,6 +18,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-vessel-list',
   standalone: true,
@@ -31,7 +32,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './vessel-list.component.html',
   styleUrl: './vessel-list.component.scss'
@@ -51,7 +53,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
   // pageSize = 15;
   // totalLengthOfCollection: number;
   isFavorite: boolean = false;
-
+  headerActions: HeaderAction[] = [];
   // sorting
   // sortColumn: string = 'VesselName';
   // sortDirection: string = 'asc'; 
@@ -125,10 +127,10 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadVessels();
+    // this.loadVessels();
     // Initialize table configuration
     this.initializeTableConfig();
-
+      this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -148,6 +150,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
             console.log(this.permissions);
+             this.initializeHeaderActions();
           },
         });
     }
@@ -185,6 +188,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');
       this.allItems = [];
@@ -192,6 +196,62 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
     }
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchVessels();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+    onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this. navigateToCreateVessel();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
@@ -289,7 +349,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
       if (result === true) {
         this.masterService.deleteVesselById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Zone deleted successfully!");
-          this.loadVessels();
+          // this.loadVessels();
           this.searchVessels();
           // this.router.navigate(['master/vessel/list'])
           // this.search();
@@ -331,34 +391,34 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadVessels(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadVessels(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue ? this.filterValue.trim() : '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchVesselList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.vesselList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching vessels:', err);
-        this.vesselList = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchVesselList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.vesselList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching vessels:', err);
+  //       this.vesselList = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
 
   // search(): void {
@@ -393,7 +453,7 @@ export class VesselListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadVessels();
+    // this.loadVessels();
     // this.vesselList = this.searchResults.slice(startIndex, endIndex);
   }
 

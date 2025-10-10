@@ -18,6 +18,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-unit-list',
   standalone: true,
@@ -31,7 +32,8 @@ import { Observable } from 'rxjs';
     ListpageComponent,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './unit-list.component.html',
   styleUrl: './unit-list.component.scss'
@@ -57,7 +59,7 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
 
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-
+    headerActions: HeaderAction[] = [];
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -134,10 +136,10 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadUnits();
+    // this.loadUnits();
     // Initialize table configuration
     this.initializeTableConfig();
-
+        this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -154,6 +156,7 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -193,6 +196,7 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching product.');
       this.allItems = [];
@@ -211,6 +215,62 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
   // Legacy methods for template compatibility
   searchProduct() {
     this.search();
+  }
+
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchProduct();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+       this.navigateToCreateUnit()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   clearFilterValue() {
@@ -340,33 +400,33 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
       title: companyName
     });
   }
-  loadUnits(): void {
-    this.spinner.show();
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  // loadUnits(): void {
+  //   this.spinner.show();
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //   };
 
-    this.masterService.searchUnitList(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.unitList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-      },
-      error: (err) => {
-        console.error('Error fetching units:', err);
-        this.unitList = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  //   this.masterService.searchUnitList(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.unitList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searched = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching units:', err);
+  //       this.unitList = [];
+  //       this.totalLengthOfCollection = 0;
+  //     },
+  //   });
+  // }
 
   onSearch(event: { type: string, value: string }) {
     this.searchType = event.type;
@@ -462,7 +522,7 @@ export class UnitListComponent extends BaseListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadUnits();
+    // this.loadUnits();
   }
 
   trackByUnitId(index: number, item: any): number {

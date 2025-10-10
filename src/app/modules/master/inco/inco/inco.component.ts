@@ -30,6 +30,8 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -49,7 +51,9 @@ import { Observable } from 'rxjs';
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbDropdownModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './inco.component.html',
   styleUrl: './inco.component.scss'
@@ -92,7 +96,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   }
 
   statusList = ["Active", "Suspended"];
-
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   incoTypeOptions = [
     { id: 'Sea', name: 'Sea' },
     { id: 'All', name: 'All' }
@@ -126,8 +131,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: '',
-    emptyMessage: 'No incofound',
+    trackByKey: 'IncoMasterSid',
+    emptyMessage: 'No inco found',
     dragAndDrop: true
   };
 
@@ -185,10 +190,11 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         this.loadIncoData(this.IncoMasterSid);
       }
     });
-    this.loadIncos();
+    // this.loadIncos();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
   }
@@ -205,6 +211,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
+          this.initializeModalDropdownItems();
         }
       });
     }
@@ -248,8 +256,9 @@ export class IncoComponent extends BaseListComponent implements OnInit {
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+        this.updateHeaderActionState();
     } else {
-      this.appSettingService.showError('Error searching profit-center.');
+      this.appSettingService.showError('Error searching inco.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
@@ -258,16 +267,121 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
-    this.appSettingService.showError('Error searching profit-center.');
-    console.error('Error searching profit-center', error);
+    this.appSettingService.showError('Error searching inco.');
+    console.error('Error searching inco', error);
     super.handleSearchError(error);
   }
 
   // Legacy methods for template compatibility
-  searchProfitCenter() {
+  searchInco() {
     this.search();
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchInco();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+   initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   // clearFilterValue() {
   //   this.clearFilter();
   // }
@@ -377,44 +491,44 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: dynamicHeaders,
-      fileName: 'Profit-Center-Report',
+      fileName: 'Inco-Report',
       title: companyName
     });
   }
 
-  loadIncos(): void {
-    this.spinner.show();
-    this.loading = true;
+  // loadIncos(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   };
 
-    this.masterService.searchInco(params).subscribe({
-      next: (response) => {
-        if (response.status) {
-          this.incoList = response.data.items;
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching incos:', err);
-        this.incoList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchInco(params).subscribe({
+  //     next: (response) => {
+  //       if (response.status) {
+  //         this.incoList = response.data.items;
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching incos:', err);
+  //       this.incoList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
   // loadInco(): void {
   //   this.masterService.getAllInco().subscribe(
@@ -476,7 +590,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     this.IncoMasterSid = null;
 
     // Reload the list if needed
-    this.loadIncos();
+    this.searchInco();
   }
   openModal(content: any): void {
     this.isEditMode = false;
@@ -578,7 +692,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
             if (resp.Status) {
               this.closeModal();
               this.router.navigate(['master/inco']);
-              this.loadIncos();
+              // this.loadIncos();
+              this.searchInco();
             } else {
               this.appSettingService.showSuccess(resp.message);
             }
@@ -595,7 +710,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
             if (resp.Status) {
               this.closeModal();
               this.router.navigate(['master/inco']);
-              this.loadIncos();
+               this.searchInco();
             } else {
               this.appSettingService.showSuccess(resp.message);
             }
@@ -665,12 +780,12 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadIncos();
+    // this.loadIncos();
   }
 
   clearFilterValue() {
     this.filterValue = '';
-    this.loadIncos();
+    // this.loadIncos();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -684,7 +799,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         this.masterService.softDeleteInco(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Inco deleted successfully!");
           this.router.navigate(['master/inco']);
-          this.loadIncos();
+          this.searchInco();
 
         });
       }

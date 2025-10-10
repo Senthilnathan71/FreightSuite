@@ -10,6 +10,7 @@ import {
   NgbDropdownModule,
   NgbModal,
   NgbModalRef,
+  NgbTooltip,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -58,7 +59,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     SearchableDropdown,
     CustomDatePipe,
     NgxSpinnerModule,
-    FormsModule
+    FormsModule,
+    NgbTooltip
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -252,7 +254,7 @@ dataFromEnqPage:any;
   // ];
 
 
-  digitsAfterDecimal = 2;
+  digitsAfterDecimal = 3;
   truncationLimit = 4;
 
   // SECTION2 - CONSTRUCTOR
@@ -308,6 +310,7 @@ dataFromEnqPage:any;
         })
       }
     })
+    
   }
 
 patchEnqPageValues(enqData: any) { 
@@ -3102,6 +3105,15 @@ ${this.userData.userName}`;
         dataFromQuotation: data
       }
     });
+  }
+
+  copyToCostUnit(routeIndex:number , carrierIndex:number , chargeIndex:number,unit){
+    const ctrl = (this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup).get('CostChargeUomSid');
+    if(!unit){
+      ctrl.setValue(null);
+    } else {
+      ctrl.setValue(unit.UOMMasterSid);
+    }
   }
 
 }

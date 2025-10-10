@@ -19,7 +19,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { Observable } from 'rxjs';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
-
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-authority-list',
   standalone: true,
@@ -32,7 +32,8 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
     FavoriteStarComponent,
     NgxSpinnerModule,
     CommonPaginationComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './authority-list.component.html',
   styleUrls: ['./authority-list.component.scss']
@@ -58,6 +59,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
+    headerActions: HeaderAction[] = [];
   // Table configuration
   tableConfig: TableConfig = {
     columns: [],
@@ -112,6 +114,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
       this.checkPermissions();
     }
     this.initializeTableConfig();
+    this.initializeHeaderActions();
     super.ngOnInit();
   }
 
@@ -129,6 +132,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
             this.permissions = Object.keys(this.currentMenuPermissions).filter(
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
+            this.initializeHeaderActions();
             console.log(this.permissions);
           },
         });
@@ -171,6 +175,7 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching authority.');
       this.allItems = [];
@@ -185,9 +190,65 @@ export class AuthorityListComponent extends BaseListComponent implements OnInit 
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchAuthority();
+  }
   searchAuthority() {
     this.page = 1;
     this.search();
+  }
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+   onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateAuthority();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+    private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   trackByAuthorityId(index: number, item: any): number {

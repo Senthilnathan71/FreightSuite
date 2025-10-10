@@ -19,6 +19,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { Observable } from 'rxjs';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-currency-exchange-list',
   standalone: true,
@@ -32,7 +33,8 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
     FavoriteStarComponent,
     NgxSpinnerModule,
     CommonPaginationComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+     PageHeaderComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './currency-exchange-list.component.html',
@@ -86,7 +88,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
   };
 
   tableLoading = false;
-
+   headerActions: HeaderAction[] = [];
   protected config: ListComponentConfig = {
     storageKey: 'currencyExchange-list-state',
     defaultPageSize: 10,
@@ -124,6 +126,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
     // this.loadCurrencyExchanges();
     this.initializeTableConfig();
     super.ngOnInit();
+    this.initializeHeaderActions();
   }
 
   // loadCurrencyExchanges(): void {
@@ -189,6 +192,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error fetching Currency-Exchange.');
       this.allItems = [];
@@ -204,11 +208,65 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
   }
 
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchCurrencyExchange();
+  }
   searchCurrencyExchange() {
     this.page = 1;
     this.search();
   }
 
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+    initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+   onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreateCurrencyExchange();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }

@@ -47,6 +47,8 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { Observable } from 'rxjs';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 @Component({
   selector: 'app-ledger-mapping',
   standalone: true,
@@ -71,7 +73,9 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
     NgxSpinnerModule,
     NgbDropdownModule,
     CommonPaginationComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent
   ],
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss',
@@ -150,6 +154,8 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
     dragAndDrop: true
   };
 
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
   tableLoading = false;
   protected config: ListComponentConfig = {
     storageKey: 'SubledgerMapping-list-state',
@@ -199,6 +205,8 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
     });
     super.ngOnInit();
       this.initializeTableConfig();
+      this.initializeHeaderActions();
+    this.initializeModalDropdownItems();
   }
 
   modeOfStatus = [
@@ -286,6 +294,7 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error fetching subledgerMapping.');
       this.allItems = [];
@@ -300,10 +309,116 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
     super.handleSearchError(error);
   }
 
+    onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchSubledgerMpping();
+  }
+
 
   searchSubledgerMpping() {
     this.page = 1;
     this.search();
+  }
+
+    onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+
+   initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        // condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        // condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        // condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        // condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.openModal(this.content);
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  onModalDropdownItemClick(action: string): void {
+    switch (action) {
+      case 'edoc':
+        this.openEDoc();
+        break;
+      case 'terms':
+        this.openTandC();
+        break;
+      case 'authority':
+        this.openAuthority();
+        break;
+      case 'email':
+        this.openEmail();
+        break;
+      default:
+        console.warn(`Unknown dropdown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   clearFilterValue() {
