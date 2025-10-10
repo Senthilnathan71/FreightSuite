@@ -381,7 +381,16 @@ openAuditLogs(modal: TemplateRef<any>) {
 					this.userData = resp.data;
 					const user = resp.data;
 					this.patchCompanies(user.userCompanyMaster);
-					const rolePatchValue = user.userRoleMaster.map(userRole => userRole.RoleMasterSid);
+					// ✅ Filter roles based on current company
+					const filteredRoles = user.userRoleMaster.filter(
+						(userRole: any) =>
+							userRole.roleMaster?.CompanyMasterSid === this.currentCompany?.CompanyMasterSid
+					);
+
+					// ✅ Map RoleMasterSid after filtering
+					const rolePatchValue = filteredRoles.map(
+						(userRole: any) => userRole.RoleMasterSid
+					);
 					this.userForm.patchValue({
 						userName: user.userName,
 						userEmail: user.userEmail,
