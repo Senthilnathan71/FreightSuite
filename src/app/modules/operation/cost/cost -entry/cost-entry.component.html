@@ -239,14 +239,16 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
-                      formControlName="RevenueCurrencyMasterSid"
-                      (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)"
-                      [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select>
-                  </div>
-                </td>
+  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+    <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid" (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" [disabled]="!canEditRate(i)" appendTo="body"> </ng-select> -->
+    <dofi-searchable-dropdown [items]="currencyList" formControlName="RevenueCurrencyMasterSid" [placeholder]="''"
+      [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
+      (itemSelected)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" appendTo="body">
+    </dofi-searchable-dropdown>
+  </div>
+  </td>
+
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
                     <input type="number" id="text-input" formControlName="RevenueExchangeRate"

@@ -388,7 +388,7 @@
                     <div class="custom-form-group custom-form-group-select-date">
                       <!-- ng-select mode -->
                       <div class="input-group" *ngIf="!this.b['isConsigneeFreeText']?.value">
-                        <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" formControlName="ConsigneeName" appendTo="body" 
+                        <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="ConsigneeName" appendTo="body" 
                           (change)="setAddress('ConsigneeAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
                           style="width: 80%;">
                           <!-- Show only CustomerName in input box -->
@@ -849,19 +849,13 @@
                       </label>
                     </div>
                   </div>
-
-
-
-
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
                       [class.filled]="!!bookingForm.get('IncoTerms')?.value">
-                      <!-- <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
-                        appendTo="body" formControlName="IncoTerms" placeholder="">
-                      </ng-select> -->
                       <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
                         [displayFields]="incoLookupConfig.displayFields" [displayLabels]="incoLookupConfig.displayLabels"
-                        [labelFields]="incoLookupConfig.labelFields" bindLabel="IncoName" bindValue="IncoName">
+                        [labelFields]="incoLookupConfig.labelFields" bindLabel="IncoName" bindValue="IncoName"
+                        (itemSelected)="onIncoTermsChange($event)">
                       </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
                       @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
@@ -893,8 +887,8 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
                       [class.filled]="!!bookingForm.get('FreightTerms')?.value">
-                      <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
-                        appendTo="body" placeholder="" formControlName="FreightTerms">
+                      <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select" appendTo="body"
+                        placeholder="" formControlName="FreightTerms" (change)="onFreightTermsManualChange()">
                       </ng-select>
                       <label for="text-input" class="input-label">Freight PP/CC<span class="text-danger"></span></label>
                     </div>
@@ -1135,10 +1129,10 @@
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
-                formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+                formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                 max="9999999.999">
               <label for="text-input" class="input-label">
-                Gr Weight
+                Gross Weight
               </label>
 
               <!-- Validation Messages -->
@@ -1159,7 +1153,7 @@
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                 max="9999999.999">
               <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
               <!-- Validation Messages -->
@@ -1178,7 +1172,7 @@
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                 max="9999999.999">
               <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
               <!-- Validation Messages -->
@@ -1199,7 +1193,7 @@
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                 formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
-                [DecimalPrecisionAfter]="3" max="9999999.999">
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
               <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
@@ -1380,21 +1374,62 @@
               }
             </div>
           </aside>
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="YardCFS"
-                [textWithNumbers]="20">
-              <label for="text-input" class="input-label">{{YardCFSLabel}}<span class="text-danger"></span></label>
-              @if((otherForm.get('YardCFS')?.touched || otherForm.get('YardCFS')?.dirty) &&
-              otherForm.get('YardCFS')?.invalid){
-              <div class="text-danger small">
-                @if(otherForm.get('YardCFS')?.hasError('maxlength')){
-                <span>Max 20 Characters allowed</span>
-                }
-              </div>
-              }
-            </div>
-          </aside>
+         
+        @if(YardCFSLabel === "Yard") {
+<aside class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!otherForm.get('YardCFS')?.value">
+        <ng-select 
+            [items]="yardlist" 
+            bindLabel="CustomerName" 
+            bindValue="CustomerName"
+            class="ng-select" 
+            formControlName="YardCFS" 
+            placeholder=""
+            appendTo="body">
+            <ng-template ng-label-tmp let-item="item">
+                {{ item?.CustomerName || 'Select Yard' }}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+                <div>
+                    <strong>{{ item.CustomerName }}</strong>
+                    <br>
+                    <small class="text-muted">{{ item.CustomerAddress1 || 'No address' }}</small>
+                </div>
+            </ng-template>
+        </ng-select>
+        <label for="text-input" class="input-label">Yard<span class="text-danger"></span></label>
+    </div>
+</aside>
+}
+
+@if(YardCFSLabel === "CFS") {
+<aside class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!otherForm.get('YardCFS')?.value">
+        <ng-select 
+            [items]="cfslist" 
+            bindLabel="CustomerName" 
+            bindValue="CustomerName"
+            class="ng-select" 
+            formControlName="YardCFS" 
+            placeholder=""
+            appendTo="body">
+            <ng-template ng-label-tmp let-item="item">
+                {{ item?.CustomerName || 'Select CFS' }}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+                <div>
+                    <strong>{{ item.CustomerName }}</strong>
+                    <br>
+                    <small class="text-muted">{{ item.CustomerAddress1 || 'No address' }}</small>
+                </div>
+            </ng-template>
+        </ng-select>
+        <label for="text-input" class="input-label">CFS<span class="text-danger"></span></label>
+    </div>
+</aside>
+}
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!otherForm.get('ReleaseType')?.value">
@@ -1554,11 +1589,14 @@
 
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!otherForm.get('CargoCurrency')?.value">
-              <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
-                placeholder="" formControlName="CargoCurrency" appendTo="body">
-              </ng-select>
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('CargoCurrency')?.value">
+              <!-- <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
+                          placeholder="" formControlName="CargoCurrency" appendTo="body">
+                        </ng-select> -->
+              <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
+                [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" appendTo="body">
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1972,7 +2010,7 @@
         <div class="form-check form-check-inline p-0">
           <div class="form-check d-flex align-items-center">
             <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
-            <label for="" class="form-check-label sm  ps-0">If Haz <span class="text-danger"></span></label>
+            <label for="" class="form-check-label sm  ps-0"> Haz ? <span class="text-danger"></span></label>
           </div>
         </div>
       </aside>

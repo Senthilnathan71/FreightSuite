@@ -130,6 +130,11 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
+  CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode', 'currencyName','countryName'],
+  };
 
   modeOfStatus = [
     { id: 1, name: 'Active' },
@@ -156,6 +161,11 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   agentList: any[] = [];
   carrierList: any[] = [];
   notifyList: any[] = [];
+  yardlist: any[] = [];
+  cfslist: any[] = [];
+  yardCFSList: any[] = [];
+  filteredYardCFSList: any[] = []; 
+  currentYardCFSType: 'yard' | 'cfs' | null = null; 
   vesselList: any[] = [];
   headerVesselList: any[] = [];
   voyageList: any[] = [];
@@ -168,6 +178,8 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   bookingHeader: any;
   selectedCustomerBranch : any;
   isShipperOther :boolean
+  private isManualFreightChange = false;
+  decimalAfterPrecision = 3;
   
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -220,7 +232,7 @@ auditLogs: any[] = []; // Stores audit logs
   countryOfCompany : string;
 
   // Variable Declaration - Other Part
-  YardCFSLabel: string = "Yard/CFS"
+  YardCFSLabel: string = "CFS"
   forwarderList: any[] = [];
   currencyList: any[] = [];
   imcoList: any[] = [];
@@ -233,6 +245,7 @@ auditLogs: any[] = []; // Stores audit logs
   resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
   connectionResult : any[] =[];
+
     
 
   // Variable Declaration - Rate Part
@@ -438,7 +451,11 @@ dataFromQuotation:any
   this.loadHeaderLookups().subscribe(() => {
     this.loadCargoLookups();
     this.loadOtherLookups();
+    this.initializeYardCFSData(); 
 
+    this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
+    this.autoSetFreightTerms(incoTerm);
+  });
     if (this.dataFromQuotation?.quotation) {
       // this.patchBookingFromQuotation(this.dataFromQuotation);
       this.patchValues(this.dataFromQuotation);
@@ -453,6 +470,7 @@ dataFromQuotation:any
           this.minDate = this.today;
         }
       });
+      
 
       // Listen for voucher generation completion
       this.currentRoute.queryParams.subscribe((queryParams) => {
@@ -716,7 +734,7 @@ dataFromQuotation:any
   loadHeaderLookups() {
     return forkJoin({
       allMasters: this.operationService.getBookingHeaderLookups(this.filterOption).pipe(catchError(err => of( {departments: [],vessels: [], ports: [], incos: [] , country : Object }))),
-      customerMaster: this.operationService.getAllCustomerRelatedLookups(this.filterOption).pipe(catchError(err => of({ customers: [], salesmans: [], shippers: [], consignees: [], agents: [], carriers: [], forwarder: [], notify: [] }))),
+      customerMaster: this.operationService.getAllCustomerRelatedLookups(this.filterOption).pipe(catchError(err => of({ customers: [], salesmans: [], shippers: [], consignees: [], agents: [], carriers: [], forwarder: [], notify: [], yard: [], cFS: []  }))),
     }).pipe(tap(({ allMasters, customerMaster}) => {
       this.departmentList = allMasters.departments;
       this.customerList = customerMaster.customers;
@@ -730,14 +748,49 @@ dataFromQuotation:any
       this.carrierList = customerMaster.carriers;
       this.forwarderList = customerMaster.forwarder;
       this.notifyList = customerMaster.notify;
+      this.yardlist = customerMaster.yards || [];
+      this.cfslist = customerMaster.cfs || [];
       this.vesselList = allMasters.vessels;
       this.portList = (allMasters.ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
       console.log(this.portList);
       this.incoList = allMasters.incos;
       this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
+      console.log('Yard/CFS data loaded:', {
+      yardCount: this.yardlist.length,
+      cfsCount: this.cfslist.length
+    });
     }))
   }
+ initializeYardCFSData() {
+  console.log('Initializing Yard/CFS Data:', {
+    yardlist: this.yardlist,
+    cfslist: this.cfslist
+  });
 
+  // Safely initialize arrays if they are undefined
+  const yardList = (this.yardlist || []).map(item => ({
+      ...item,
+      type: 'yard',
+      displayName: `${item.CustomerName || item.name || 'Unknown'} (Yard)`,
+      // Ensure we have the required properties
+      CustomerName: item.CustomerName || item.name || 'Unknown Yard',
+      CustomerAddress1: item.CustomerAddress1 || item.Address || ''
+  }));
+
+  const cfsList = (this.cfslist || []).map(item => ({
+      ...item,
+      type: 'cfs', 
+      displayName: `${item.CustomerName || item.name || 'Unknown'} (CFS)`,
+      // Ensure we have the required properties
+      CustomerName: item.CustomerName || item.name || 'Unknown CFS',
+      CustomerAddress1: item.CustomerAddress1 || item.Address || ''
+  }));
+
+  this.yardCFSList = [...yardList, ...cfsList];
+  console.log('YardCFSList after initialization:', this.yardCFSList);
+  
+   
+}
   loadCargoLookups() {
     forkJoin({
       containerTypes: this.operationService.getAllContainerTypes().pipe(catchError(err => of({ data: [] }))),
@@ -747,12 +800,23 @@ dataFromQuotation:any
   }
 
   loadOtherLookups() {
-    forkJoin({
-      currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
-    }).subscribe(({ currencies }) => {
-      this.currencyList = currencies.data;
-    })
-  }
+  forkJoin({
+    currencies: this.operationService.getAllCurrencies().pipe(
+      catchError(() => of({ data: [] }))
+    ),
+  }).subscribe(({ currencies }) => {
+      const rawCurrencies: any[] = Array.isArray(currencies)
+      ? currencies
+      : currencies?.data || [];
+       this.currencyList = rawCurrencies.map((c: any) => ({
+      ...c,
+      countryName: c?.countryMaster?.countryName || ''
+    }));
+  });
+}
+
+
+
 
   loadProductLookups() {
     forkJoin({
@@ -869,6 +933,7 @@ dataFromQuotation:any
       ModeOfTransport : cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt
     })
+    console.log("Patched Cargo",this.cargoForm.value);
     this.handleCFSOrYard();
     const otherData = response.bookingOthers?.[0];
     this.otherForm.patchValue({
@@ -908,12 +973,14 @@ dataFromQuotation:any
     this.bookingProducts.clear();
     const productsFromResponse = response.bookingProduct || [];
     this.productDataLength = productsFromResponse.length;
-    for (const productData of productsFromResponse) {
-      const formWithData = this.createBookingProductGroup(productData);
-      this.bookingProducts.push(formWithData);
+    if(this.productDataLength){
+      for (const productData of productsFromResponse) {
+        const formWithData = this.createBookingProductGroup(productData);
+        this.bookingProducts.push(formWithData);
+      }
+      this.updateProductPagination();
+      this.handleProductRelatedCalculation();
     }
-    this.updateProductPagination();
-    this.handleProductRelatedCalculation();
 
     this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
       return {
@@ -1252,7 +1319,7 @@ patchBookingFromQuotation(data: any) {
   */
 
   // Header Part Related
-
+  
   onDeptChange(department) {
     this.selectedDepartment = department;
     if (!department) {
@@ -1269,16 +1336,18 @@ patchBookingFromQuotation(data: any) {
       this.b['ETD'].setValue('');
       this.b['MovementType'].setValue(null);
       this.handleImportExport();
+      this.handleCFSOrYard()
       return;
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
-      this.cargoForm.get('StuffingAt')?.setValue('Dock');
-      this.cargoForm.get('StuffingAt')?.disable();
+        this.cargoForm.get('StuffingAt')?.setValue('Dock');
+        this.cargoForm.get('StuffingAt')?.disable();
     } else {
-      this.cargoForm.get('StuffingAt')?.enable();
+        this.cargoForm.get('StuffingAt')?.enable();
     }
+    
     this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
     this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
     this.handleCFSOrYard()
@@ -1674,14 +1743,14 @@ patchBookingFromQuotation(data: any) {
       return;
     }
 
-    let totalNoOfPkg = 0;
-    let totalGrossWeight = 0;
-    let totalNetWeight = 0;
-    let totalVolume = 0;
+    let totalNoOfPkg : any = 0;
+    let totalGrossWeight :any = 0;
+    let totalNetWeight:any = 0;
+    let totalVolume: any = 0;
 
     let productValue = this.bookingProducts.getRawValue() || [];
     productValue.forEach(product => {
-      totalNoOfPkg += Number(product.ExternlQty) || 0;
+      totalNoOfPkg += (Number(product.ExternlQty) || 0).toFixed(this.decimalAfterPrecision);
       totalGrossWeight += Number(product.GrossWeight) || 0;
       totalNetWeight += Number(product.NetWeight) || 0;
       totalVolume += Number(product.Volume) || 0;
@@ -1705,23 +1774,56 @@ patchBookingFromQuotation(data: any) {
     this.o[controlName]?.setValue(item ? item.CustomerAddress1 : '')
   }
 
-  handleCFSOrYard() {
-    const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
-    if (!this.selectedDepartment && !stuffingAt && this.selectedDepartmentType !== "SEA") {
-      this.YardCFSLabel = "Yard/CFS";
-      return;
-    }
+ handleCFSOrYard() {
+  const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
+  
+  console.log('handleCFSOrYard called:', {
+    selectedDepartment: this.selectedDepartment,
+    stuffingAt: stuffingAt,
+    selectedFCLLCL: this.selectedFCLLCL
+  });
 
-    if (this.selectedFCLLCL === "FCL" && this.selectedDepartment?.ExportImport === "Export") {
-      const map: Record<string, string> = {
-        "Dock": "CFS Name",
-        "Factory": "Container Yard"
-      };
-      this.YardCFSLabel = map[stuffingAt] || "Yard/CFS";
+  if (!this.selectedDepartment) {
+      this.YardCFSLabel = "CFS";
+      this.currentYardCFSType = null;
+     
       return;
-    }
-    this.YardCFSLabel = "Yard/CFS";
   }
+
+  const isFCL = this.selectedFCLLCL === "FCL";
+  const isExport = this.selectedDepartment?.ExportImport === "Export";
+  const isLCL = this.selectedFCLLCL === "LCL";
+  const isAIR = this.selectedFCLLCL === "AIR";
+
+  console.log('Business rules:', { isFCL, isExport, isLCL, isAIR });
+
+  // Determine Yard/CFS type based on business rules
+  this.o['YardCFS']?.reset();
+  if (isFCL && isExport) {
+      if (stuffingAt === "Factory") {
+          // FCL Export with Factory Stuffing -> Container Yard
+          this.YardCFSLabel = "Yard";
+          // this.currentYardCFSType = 'yard';
+      }  else {
+          this.YardCFSLabel = "CFS";
+          // this.currentYardCFSType = null;
+      }
+  } 
+  
+  else {
+      
+      this.YardCFSLabel = "CFS";
+      
+  }
+
+  console.log('Final Yard/CFS settings:', {
+    label: this.YardCFSLabel,
+    type: this.currentYardCFSType
+  });
+
+ 
+}
+
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 
@@ -3124,6 +3226,36 @@ onShipmentTypeChange() {
   existsInList(list: any[], value: any) {
     return list.some(item => item.CustomerName === value);
   }
+  private autoSetFreightTerms(incoTerm: string) {
+  if (!incoTerm) {
+    this.bookingForm.get('FreightTerms')?.setValue(null, { emitEvent: false });
+    return;
+  }
+
+  const inco = this.incoList.find(item => item.IncoName === incoTerm);
+  if (inco && inco.OceanFreight) {
+    this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight, { emitEvent: false });
+  }
+}
+onIncoTermsChange(selectedInco: any) {
+  if (!selectedInco || this.isManualFreightChange) {
+    return;
+  }
+
+  const inco = this.incoList.find(item => 
+    item.IncoName === selectedInco || item.IncoMasterSid === selectedInco
+  );
+
+  if (inco && inco.OceanFreight) {
+    this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight);
+  }
+}
+
+onFreightTermsManualChange() {
+  this.isManualFreightChange = true;
+}
+
+
 
   getBookingStatus(){
     console.log(this.modeOfStatus);

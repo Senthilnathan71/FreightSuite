@@ -14,6 +14,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-cost-entry',
@@ -29,7 +30,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
     TextWithNumbersDirective,
-    NumberFormatPipe
+    NumberFormatPipe,
+    SearchableDropdown
   ],
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],
@@ -60,7 +62,11 @@ export class CostEntryComponent implements OnInit {
   filterOption: any;
   currentCompany: any;
   currentBranch: any;
-
+  CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode', 'currencyName','countryName'],
+  };
 
   ppcc = [
     { id: 1, name: 'P' },
