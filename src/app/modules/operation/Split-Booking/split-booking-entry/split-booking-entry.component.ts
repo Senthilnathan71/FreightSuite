@@ -1,13 +1,16 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-split-booking-entry',
@@ -23,6 +26,11 @@ import { catchError, forkJoin, of } from 'rxjs';
   ],
   templateUrl: './split-booking-entry.component.html',
   styleUrls: ['./split-booking-entry.component.scss'],
+  providers: [
+      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+      CustomDatePipe
+    ],
 })
 export class SplitBookingEntryComponent implements OnInit {
   bookingForm!: FormGroup;
@@ -50,7 +58,7 @@ export class SplitBookingEntryComponent implements OnInit {
     private fb: FormBuilder,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
-    private router: Router
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -197,43 +205,8 @@ export class SplitBookingEntryComponent implements OnInit {
     });
   }
 
- onSelectRow(index: number) {
-  const productsArray = this.bookingForm.get('products') as FormArray;
-  const selectedCount = productsArray.controls.filter(c => c.get('selected')?.value).length;
 
-  // Example: Allow only all but one row to be selected
-  if (selectedCount >= productsArray.length - 1) {
-    productsArray.controls.forEach(c => {
-      if (!c.get('selected')?.value) {
-        c.get('selected')?.disable(); // disables only the unselected ones
-      }
-    });
-  } else {
-    productsArray.controls.forEach(c => c.get('selected')?.enable());
-  }
-}
-
-
-
-updateCheckboxDisabledStates() {
-  const total = this.products.length;
-  const selectedCount = this.products.controls.filter(p => p.get('selected')?.value).length;
-
-  this.products.controls.forEach(p => {
-    const control = p.get('selected');
-    if (!control) return;
-
-    if (selectedCount === total - 1 && !control.value) {
-      control.disable({ emitEvent: false }); // disables without triggering change detection issues
-    } else {
-      control.enable({ emitEvent: false }); // re-enable if condition no longer met
-    }
-  });
-}
-
-
-
-  onSplitModeChange(value: string, index: number) {
+  public onSplitModeChange(value: string, index: number) {
   const control = this.products.at(index);
   if (value === 'full') {
     control.patchValue({
@@ -244,22 +217,34 @@ updateCheckboxDisabledStates() {
   }
 }
 
-  onSplit() {
-  const selected = this.products.controls.filter(c => c.value.selected);
+public onSelectRow(index: number) {
+  const selectedCount = this.products.controls.filter(c => c.get('selected')?.value).length;
 
-  if (selected.length === 0) {
-    this.appSettingService.showError('Select at least one product.');
-    return;
-  }
+  // Disable the remaining unselected checkbox if all but one selected
+  this.products.controls.forEach((c, i) => {
+    const control = c.get('selected');
+    if (!control) return;
 
-  if (selected.length === this.products.length) {
-    this.appSettingService.showError('At least one product must remain unselected.');
+    if (selectedCount >= this.products.length - 1 && !control.value) {
+      control.disable({ emitEvent: false });
+    } else {
+      control.enable({ emitEvent: false });
+    }
+  });
+}
+
+
+  public onSplit() {
+  const selectedProducts = this.products.controls.filter(c => c.value.selected);
+
+  if (selectedProducts.length === 0) {
+    this.appSettingService.showError('Select at least one product to split.');
     return;
   }
 
   const payload = {
     bookingSid: this.bookingForm.value.BookingHeaderSid,
-    selectedProducts: selected.map(p => {
+    selectedProducts: selectedProducts.map(p => {
       const val = p.value;
       return {
         BookingProductSid: val.BookingProductSid,
@@ -273,33 +258,24 @@ updateCheckboxDisabledStates() {
 
   this.operationService.splitBooking(payload).subscribe({
     next: (resp: any) => {
-      this.appSettingService.showSuccess('Booking split successfully');
+      console.log('Split booking response:', resp);
 
-      // Update original booking quantities
-      selected.forEach(p => {
-        if (p.value.splitType === 'part') {
-          p.patchValue({
-            ExternaPkg: p.value.ExternaPkg - p.value.PartPackages,
-            GrossWeight: p.value.GrossWeight - p.value.PartGrossWeight,
-            Volume: p.value.Volume - p.value.PartCBM
-          });
-        } else {
-          const idx = this.products.controls.indexOf(p);
-          this.products.removeAt(idx);
-        }
-      });
-
-      this.selectedRows = [];
-
-      // Navigate to the new booking entry screen
-      this.router.navigate(['operation/booking/entry', resp.newBooking.BookingHeaderSid]);
+      const newBookingSid = resp?.data?.BookingHeaderSid;
+      if (resp.message && newBookingSid) {
+        this.appSettingService.showSuccess(resp.message);
+        this.router.navigate(['operation/booking/entry', newBookingSid]);
+      } else {
+        this.appSettingService.showError('Booking split, but navigation failed.');
+      }
     },
     error: (err) => {
-      console.error('Error while splitting booking', err);
+      console.error(err);
       this.appSettingService.showError(err?.error?.message || 'Failed to split booking');
     }
   });
 }
+
+
 
 
  updatePagination() {

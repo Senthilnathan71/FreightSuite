@@ -151,6 +151,14 @@ export class MasterService {
     );
   }
 
+  getAllCFS(CompanyMasterSid: number) {
+    return this.http.post('customer/cFS',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
 
   getCustomerById(id: number) {
     return this.http.get<{ data: any }>(`customer/fetch/${id}`).pipe(
