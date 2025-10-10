@@ -115,7 +115,7 @@
                                     </div>
                                 </ng-template>
                             </ng-select>
-                            <label class="input-label">Vessel/Voyage <span class="text-danger">*</span></label>
+                            <label class="input-label">Vessel/Voyage <span class="text-danger"></span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('vesselVoyage')?.touched && loadingPlanForm.get('vesselVoyage')?.invalid">
                                 Required
@@ -265,60 +265,59 @@
 
             <div class="widget-body row">
                 <div class="col-md-3">
-                       <div class=" stat-item">
+                    <div class="stat-item">
+                        <div class="stat-label fw-bold " style="font-size: 12px;">No of Pkg</div>
+                        <div class="stat-value">
+                            {{getParseInteger(totalPkg)}}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Gross Weight</div>
+                        <div class="stat-value">{{getParseInteger(totalGrossWeight)}}</div>
+                    </div>
+                </div>
+
+           
+            <div class="col-md-3">
+                <div class=" stat-item">
                     <div class="stat-label fw-bold" style="font-size: 12px;">Total Revenue</div>
-                    <div class="stat-value">2</div>
+                    <div class="stat-value">{{getParseInteger(totalRevenue)}}</div>
                 </div>
-                </div>
-                <div class="col-md-3">
-                       <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Volume(CBM)</div>
-                    <div class="stat-value">2</div>
-                </div>
-                </div>
-                <div class="col-md-3">
-                        <div class="stat-item">
+            </div>
+
+            <div class="col-md-3">
+                <div class=" stat-item">
                     <div class="stat-label fw-bold" style="font-size: 12px;">Total Cost</div>
-                    <div class="stat-value">2</div>
+                    <div class="stat-value">{{getParseInteger(totalCost)}}</div>
                 </div>
-                </div>
-                <div class="col-md-3">
-                     <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Gross Weight</div>
-                    <div class="stat-value">2</div>
-                </div>
-                </div>
-                 <div class="col-md-3">
-                       <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Profit</div>
-                    <div class="stat-value">2</div>
-                </div>
-                 </div>
-               
-                <div class="col-md-3">
-                     <div class="stat-item">
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
                     <div class="stat-label fw-bold" style="font-size: 12px;">Total Net Weight</div>
-                    <div class="stat-value">2</div>
+                    <div class="stat-value">{{getParseInteger(totalNetWeight)}}</div>
                 </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Volume(CBM)</div>
+                    <div class="stat-value">{{getParseInteger(totalVolume)}}</div>
                 </div>
-               
-               <div class="col-md-3">
-                  <div class="stat-item">
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Profit</div>
+                    <div class="stat-value">{{getParseInteger(totalGrossProfit)}}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
                     <div class="stat-label fw-bold" style="font-size: 12px;">GP%</div>
                     <div class="stat-value">
-                        <span class="status-badge status-active">5</span>
+                        <span class="status-badge status-active">{{getParseInteger(totalGrossProfitPercentage)}}</span>
                     </div>
                 </div>
-               </div>
-               <div class="col-md-3">
-                 <div class="stat-item">
-                    <div class="stat-label fw-bold " style="font-size: 12px;">No of Pkg</div>
-                    <div class="stat-value">
-                        2
-                    </div>
-                </div>
-               </div>
-                
             </div>
 
         </div>
@@ -331,9 +330,25 @@
         <div class="col-12 px-2 bg-white py-1 rounded shadow-sm mt-1">
               <div class="d-flex justify-content-end mb-1">
                 @if(screenName === "Loading Plan"){
-                <button class="btn btn-sm btn-info" (click)="onClickGenerateJob()"><i class="fas fa-briefcase me-1"></i>
-                    Generate Job
-                </button>
+                <aside class="col-md-3" *ngIf="selectedBookings.length > 1">
+                    <div class="custom-form-group custom-form-group-select my-0 mx-2" [class.filled]="!!selectedVoyage">
+                        <ng-select 
+                            [items]="multipleVoyageList" 
+                            bindLabel="vslVoy" 
+                            placeholder="" 
+                            [(ngModel)]="selectedVoyage"
+                            [appendTo]="'body'"
+                            (change)="handleSelectedVoyage()"
+                        >
+                        </ng-select>
+                        <label class="input-label">Carrier <span class="text-danger">*</span></label>
+                    </div>
+                </aside>
+                <div>
+                    <button class="btn btn-sm btn-info" (click)="onClickGenerateJob()"><i class="fas fa-briefcase me-1"></i>
+                        Generate Job
+                    </button>
+                </div>
                 } @else {
                 <button class="btn btn-sm btn-info" (click)="attachToMasterJob()"><i class="fas fa-briefcase me-1"></i>
                     Attach to Master Job
@@ -344,12 +359,12 @@
                 <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                             <th class="bg-transparent text-light" scope="col">Booking No</th>
                             <th class="bg-transparent text-light" scope="col">Sales Person</th>
                             <th class="bg-transparent text-light" scope="col">Customer</th>
-                            <th class="bg-transparent text-light" scope="col">Shipper</th>
-                            <th class="bg-transparent text-light" scope="col">Consignee</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Shipper</th> -->
+                            <th class="bg-transparent text-light" scope="col">Vsl/Voy</th>
                             <th class="bg-transparent text-light" scope="col">POO</th>
                             <th class="bg-transparent text-light" scope="col">POL</th>
                             <th class="bg-transparent text-light" scope="col">POD</th>
@@ -381,11 +396,11 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.CustomerName}}</div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.ShipperName}}</div>
-                            </td>
+                            </td> -->
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.ConsigneeName}}</div>
+                                <div class="text-truncate">{{getVesselVoy(item)}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.POO}}</div>
@@ -411,7 +426,7 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;padding-left: 20px;">
 
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                    <input type="checkbox" [checked]="existInSelected(item)" id="" class="focus-ring form-check-input sm p-0"
                                         (keydown.enter)="toggleBooking($event,item)"
                                         (click)="toggleBooking($event,item)">
                                 </div>
@@ -429,7 +444,7 @@
             </div>
            
            
-            <div class="mt-2" *ngIf="availableBookings.length === 1">
+            <div class="mt-2" *ngIf="availableBookings.length > 0">
                     <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfAvailableBookings"
                         [pageSize]="bPageSize" [(page)]="bPage" (pageChange)="updateBookingList()" [rotate]="true"
                         [ellipses]="false" [maxSize]="10">

@@ -69,6 +69,9 @@ export class LoadingPlanEntryComponent {
   isLoadChecked = false;
   loadingPlanForm: FormGroup;
 
+  hasMultipleVoyages : boolean = false;
+  multipleVoyageList : any[] = [];
+
   // Details Related Variables
   totalPkg: any = '';
   totalGrossWeight: any = '';
@@ -115,7 +118,7 @@ export class LoadingPlanEntryComponent {
       dept: [null, Validators.required],
       pol: [null, Validators.required],
       pod: [null, Validators.required],
-      vesselVoyage: [null, Validators.required],
+      vesselVoyage: [null],
       carrier: [null],
     });
   }
@@ -309,7 +312,7 @@ export class LoadingPlanEntryComponent {
     const podId = this.selectedPOD?.PortCode;
     const vesselName = this.selectedVoyage?.VesselName;
     const voyageNo = this.selectedVoyage?.VoyageNo;
-    if (!departmentId || !polId || !podId || !vesselName || !voyageNo) {
+    if (!departmentId || !polId || !podId) {
       this.loadingPlanForm.markAllAsTouched();
       this.loadingPlanForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all the required fields correctly.')
@@ -362,8 +365,37 @@ export class LoadingPlanEntryComponent {
     } else {
       this.selectedBookings = this.selectedBookings.filter(b => b.BookingHeaderSid !== booking.BookingHeaderSid);
     }
-    console.log(this.selectedBookings);
+    this.handleMultipleVoyages();
     this.calculateTotal();
+  }
+
+  handleMultipleVoyages(){
+    this.selectedBookings = this.selectedBookings.map(b => {
+      return {
+        ...b,
+        vslVoy : this.getVesselVoy(b),
+      }
+    })
+    const multipleVoyage = new Set(this.selectedBookings.map(b => {return `${b.VesselName}/${b.VoyageNo}`}));
+    this.hasMultipleVoyages = multipleVoyage.size > 1;
+    this.hasMultipleVoyages = this.selectedBookings.length > 1;
+    if(this.selectedBookings.length > 1){
+      this.multipleVoyageList = this.selectedBookings.map(b => {
+        return {
+          ...b,
+          vslVoy : this.getVesselVoy(b),
+        };
+      })
+    } else {
+      this.multipleVoyageList = [];
+    }
+
+  }
+    
+  handleSelectedVoyage() {
+    if (this.multipleVoyageList.find(vsl => vsl === this.selectedVoyage) === undefined) {
+      this.selectedVoyage = null;
+    }
   }
 
   calculateTotal() {
@@ -613,6 +645,11 @@ export class LoadingPlanEntryComponent {
       this.appSettingService.showWarning('Please select at least one booking.');
       return;
     }
+
+    if(this.selectedBookings.length > 1 && !this.selectedVoyage){
+      this.appSettingService.showWarning('Please select a single voyage.');
+      return;
+    }
     const formValue = this.loadingPlanForm.getRawValue();
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -710,6 +747,23 @@ export class LoadingPlanEntryComponent {
 
   closeTemplate(){
     this.closeModal.emit(true);
+  }
+
+  getParseInteger(value:any){
+    return value ? parseInt(value).toFixed(3) : '0.000';
+  }
+
+  existInSelected(item){
+    return this.selectedBookings.find(b => b.BookingHeaderSid === item.BookingHeaderSid);
+  }
+
+  getVesselVoy(booking:any){
+    const vessel = booking.VesselName;
+    const voyage = booking.VoyageNo;
+    if(vessel && voyage){
+      return `${vessel} / ${voyage}`;
+    }
+    return '';
   }
 
 }
