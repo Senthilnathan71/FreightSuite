@@ -107,12 +107,15 @@ ngOnInit(): void {
       : defaultCompany;
     this.selectedCompanyId = companyToUse.CompanyMasterSid;
 
-    this.branchList = (companyToUse.companyMaster?.userBranchMaster || []).map(ubm => ({
+    this.branchList = (companyToUse.companyMaster?.userBranchMaster || [])
+      .filter(ubm => ubm.GiveAccess === 'Y') // ✅ Only include branches with GiveAccess = 'Y'
+    .map(ubm => ({
       UserBranchMasterSid: ubm.UserBranchMasterSid,
       branchMaster: ubm.branchMaster,
       companyMaster: companyToUse.companyMaster,
-      IsDefault: ubm.IsDefault
+      IsDefault: ubm.IsDefault 
     }));
+    console.log(this.branchList,'this.branchList')
 
     const defaultBranch = this.branchList.find(b => b.IsDefault === 'Y') || this.branchList[0];
     const branchToUse = storedBranch?.UserBranchMasterSid
@@ -167,7 +170,8 @@ ngOnInit(): void {
   const selectedCompany = this.companyList.find(c => c.CompanyMasterSid === companyId);
 
   // Extract branch list from companyMaster.userBranchMaster
-  this.branchList = selectedCompany?.companyMaster?.userBranchMaster || [];
+this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
+  .filter(ubm => ubm.GiveAccess === 'Y'); // ✅ Only show GiveAccess = Y
   this.selectedBranchId = null;
 
   console.log('Selected Company:', selectedCompany);
