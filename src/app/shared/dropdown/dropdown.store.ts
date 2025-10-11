@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map, Observable, of, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DropdownStore {
@@ -68,6 +69,16 @@ export class DropdownStore {
                 }
             });
     }
+
+    // loadCustomerTypeData(payload: any) {
+    //     return this.http.post<any>('customer/customer_type/filter', payload).pipe(
+    //         tap((res: any) => {
+    //             this.customerTypeData.set(res.data || []);
+    //         }),
+    //         map((res: any) => res.data || [])
+    //     );
+    // }
+
 
     loadtdsSet(CompanyMasterSid) {
         if (this.tdsSet().length) return;

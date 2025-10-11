@@ -492,14 +492,14 @@ getAllPorts() {
     );
   }
 
-  getAllCFS(CompanyMasterSid: number) {
-    return this.http.post('customer/cfs',{CompanyMasterSid}).pipe(
-      map((resp: any) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+  // getAllCFS(CompanyMasterSid: number) {
+  //   return this.http.post('customer/cfs',{CompanyMasterSid}).pipe(
+  //     map((resp: any) => {
+  //       let response = resp.data;
+  //       return response;
+  //     })
+  //   )
+  // }
 
   getPackageTypeUOM() {
   return this.http.get('uom/package-type-uom').pipe(

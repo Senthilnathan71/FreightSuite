@@ -2,18 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { forkJoin } from 'rxjs';
-import { error } from 'jquery';
-import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
-import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 @Component({
   selector: 'app-crago-receipt-entry',
@@ -25,16 +21,13 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
     CommonModule,
     ReactiveFormsModule,
     CustomDatePipe,
-    FormsModule,
-    OnlyNumbersDirective,
-    DecimalPrecisionDirective
+    FormsModule
   ],
   templateUrl: './crago-receipt-entry.component.html',
   styleUrl: './crago-receipt-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    CustomDatePipe
   ],
 })
 export class CragoReceiptEntryComponent implements OnInit{
@@ -46,33 +39,17 @@ export class CragoReceiptEntryComponent implements OnInit{
   bookingData: any;
   isEditMode = false;
   modalRef: NgbModalRef;
-  today = this.calendar.getToday();
-  minDate = this.today;
-	todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
-  currentDate = new Date();
-  currentCompany: any;
-  cfsList:any[] = [];
   
   constructor(
-    private config: NgSelectConfig,
     private router: Router,
     private fb : FormBuilder,
     private route: ActivatedRoute,
     private operationService: OperationService,
-    private appSettingService: AppSettingsService,
-    private calendar : NgbCalendar,
-    private datePipe : CustomDatePipe,
-  ) {
-    this.config.notFoundText = 'No items found';
-    this.config.appendTo = 'body';
-    this.config.bindValue = 'CustomerName';
-    this.config.bindLabel = 'CustomerName';
-    this.initForm();
-  }
+    private appSettingService: AppSettingsService
+  ) {}
 
   ngOnInit(): void {
     this.initForm();
-    this.loadAllFields();
     this.route.paramMap.subscribe((param) => {
       this.BookingHeaderSid = +param.get('BookingHeaderSid');
       if (this.BookingHeaderSid) {
@@ -102,20 +79,6 @@ export class CragoReceiptEntryComponent implements OnInit{
   get bookingProductsArray(): FormArray {
     return this.cargoForm.get('bookingProducts') as FormArray;
   }
-
-    loadAllFields() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    this.operationService.getAllCFS(CompanyMasterSid).subscribe({
-      next: (resp: any) => {
-        this.cfsList = resp.data || resp;
-      },
-      error: (error) => {
-        console.error('Error loading cfs', error);
-        this.appSettingService.showError('Failed to load cfs');
-      }
-    })
-  }
-
 
   loadBooking(BookingHeaderSid: number) {
     this.operationService.getLCLExportBookingById(BookingHeaderSid).subscribe({
@@ -151,13 +114,13 @@ export class CragoReceiptEntryComponent implements OnInit{
             ShippingBillNo: [prod.ShippingBillNo],
             ShippingBillDate: [prod.ShippingBillDate ? this.formatDateTo_ddMMyyyy(prod.ShippingBillDate) : ''],
             ExternaPkg: [prod.ExternaPkg],
-            ExternlQty: [+prod.ExternlQty || 0, [Validators.required, Validators.pattern("^[0-9]*$")]],
-            GrossWeight: [prod.GrossWeight != null ? parseFloat(prod.GrossWeight).toFixed(3) : '0.000', Validators.required],
-            NetWeight: [prod.NetWeight != null ? parseFloat(prod.NetWeight).toFixed(3) : '0.000', Validators.required],
-            Volume: [prod.Volume != null ? parseFloat(prod.Volume).toFixed(3) : '0.000', Validators.required],
-            CargoRecDate: [(prod.CargoRecDate ? new Date(prod.CargoRecDate) : null) || null, Validators.required],
-            CFS: [prod.CFS, Validators.required],
-            RecdPack: [+prod.RecdPack || 0,[Validators.required,Validators.pattern("^[0-9]*$")]],
+            ExternlQty: [+prod.ExternlQty || 0, Validators.required],
+            GrossWeight: [+prod.GrossWeight || 0, Validators.required],
+            NetWeight: [+prod.NetWeight || 0, Validators.required],
+            Volume: [+prod.Volume || 0, Validators.required],
+            CargoRecDate: [prod.CargoRecDate ? this.formatDateForInput(prod.CargoRecDate) : null],
+            CFS: [prod.CFS],
+            RecdPack: [prod.RecdPack],
           }));
         });
       },
@@ -167,7 +130,6 @@ export class CragoReceiptEntryComponent implements OnInit{
       }
     });
   }
-
 
   save() {
   if (this.cargoForm.invalid) {
@@ -184,12 +146,12 @@ export class CragoReceiptEntryComponent implements OnInit{
       ShippingBillDate: value.ShippingBillDate,
       ExternaPkg: value.ExternaPkg,
       ExternlQty: Number(value.ExternlQty),
-      GrossWeight: value.GrossWeight,
-      NetWeight: value.NetWeight,
-      Volume: value.Volume,
+      GrossWeight: Number(value.GrossWeight),
+      NetWeight: Number(value.NetWeight),
+      Volume: Number(value.Volume),
       CargoRecDate: value.CargoRecDate,
       CFS: value.CFS,
-      RecdPack: Number(value.RecdPack),
+      RecdPack: value.RecdPack,
     };
   });
 
@@ -228,35 +190,6 @@ export class CragoReceiptEntryComponent implements OnInit{
     this.router.navigate(['operation/cargo-receipt/list']);
   }
 
-  resetForm() {
-  // If editing an existing booking, reload it (restore original state)
-  if (this.isEditMode && this.BookingHeaderSid) {
-    this.loadBooking(this.BookingHeaderSid);
-    return;
-  }
-
-  // Create-mode: reset form to initial state
-  this.cargoForm.reset({
-    BookingNo: '',
-    BookingDateTime: '',
-    departmentName: '',
-    CustomerName: '',
-    HBLNo: '',
-    VesselName: '',
-    VoyageNo: '',
-    POO: '',
-    POD: '',
-    POL: '',
-    FPD: ''
-  });
-
-  // Clear the booking products array
-  this.bookingProductsArray.clear();
-
-  // Reset any additional state variables if needed
-  this.bookingData = null;
-  this.BookingProductSid = null;
-}
   
 
  
@@ -270,16 +203,11 @@ export class CragoReceiptEntryComponent implements OnInit{
 
 formatDateTo_ddMMyyyy(date: any): string {
   if (!date) return '';
-  
   const d = new Date(date);
   const day = d.getDate().toString().padStart(2, '0');
-  const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
-                      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-  const month = monthNames[d.getMonth()];
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
   const year = d.getFullYear();
-  
-  return `${day}-${month}-${year}`; // 10-JAN-2025
+  return `${day}-${month}-${year}`; // dd-MM-yyyy
 }
-
 
 }
