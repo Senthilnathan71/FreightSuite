@@ -747,12 +747,12 @@
                                 <td>
                                   <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg"
                                     [placeholder]="''" [displayFields]="[ 'UOMCode','UOMName']"
-                                    [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMName']"
+                                    [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMCode']"
                                     [bindValue]="'UOMMasterSid'">
                                   </dofi-searchable-dropdown>
                                 </td>
                                 <td>
-                                  <input type="text" id="text-input" formControlName="ExternalQty" [onlyNumbers]
+                                  <input type="text" id="text-input" formControlName="ExternalQty" [onlyNumbers] = 5
                                     placeholder="" (input)="handleCalculation(routeIndex)"
                                     class="custom-input-field sm text-end">
                                 </td>
@@ -760,20 +760,20 @@
                                 <td>
 
                                   <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision
-                                    [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                                    [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                     placeholder="" (input)="handleCalculation(routeIndex)"
                                     class="custom-input-field sm text-end">
 
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision
-                                    [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                                    [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                     (input)="handleCalculation(routeIndex)" placeholder=""
                                     class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="Volume" placeholder=""
-                                    DecimalPrecision [DecimalPrecisionBefore]="6"
+                                    DecimalPrecision [DecimalPrecisionBefore]="8"
                                     [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleCalculation(routeIndex)"
                                     class="custom-input-field sm text-end">
                                 </td>
@@ -954,7 +954,7 @@
                                         <aside class="col-md-2">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="authorizerRemarks"
-                                              class="custom-input-field sm" [onlyNumbers] placeholder="">
+                                              class="custom-input-field sm" placeholder="">
                                             <label for="text-input" class="input-label">Authorizer Remarks <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerRemarks')
                                                 ? '*' : '' }}</span></label>
@@ -1155,7 +1155,7 @@
                                           </dofi-searchable-dropdown>
                                         </td>
                                         <td>
-                                          <input type="text" id="text-input" formControlName="Qty" placeholder=""
+                                          <input type="text" id="text-input" formControlName="Qty" placeholder="" [onlyNumbers]="3"
                                             class="custom-input-field sm text-end"
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex) ; calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)">
 
@@ -1189,7 +1189,7 @@
                                           <div>
                                             <input type="text" id="text-input" formControlName="RevenueRate"
                                               placeholder="" class="custom-input-field sm text-end" DecimalPrecision
-                                              [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                                              [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                               (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)">
                                             @if(charge.get("RevenueRate")?.touched &&
                                             charge.get("RevenueRate")?.invalid){
@@ -1208,14 +1208,14 @@
                                             id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             class="form-control custom-input-field sm  text-end" DecimalPrecision
-                                            [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                         </td>
                                         }
                                         <td>
                                           <input type="text" id="text-input" formControlName="RevenueAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
-                                            DecimalPrecision [DecimalPrecisionBefore]="12"
+                                            DecimalPrecision [DecimalPrecisionBefore]="9"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                         </td>
@@ -1223,7 +1223,7 @@
                                         <td>
                                           <input type="text" id="text-input" formControlName="RevenueLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
-                                            DecimalPrecision [DecimalPrecisionBefore]="12"
+                                            DecimalPrecision [DecimalPrecisionBefore]="9"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                         </td>
@@ -1270,10 +1270,10 @@
                                         <td>
                                           <div>
                                             <input type="text" id="text-input" formControlName="CostRate" placeholder=""
-                                              DecimalPrecision [DecimalPrecisionBefore]="12"
+                                              DecimalPrecision [DecimalPrecisionBefore]="6"
                                               [DecimalPrecisionAfter]="digitsAfterDecimal"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
-                                              class="custom-input-field sm  text-end" [onlyNumbers]>
+                                              class="custom-input-field sm  text-end">
                                             @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
                                             <div class="error-message">
                                               @if(charge.get("CostRate")?.hasError('required')){
@@ -1288,7 +1288,7 @@
                                           <input type="text" id="text-input" formControlName="CostExchangeRate"
                                             (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             placeholder="" class="form-control custom-input-field sm  text-end"
-                                            DecimalPrecision [DecimalPrecisionBefore]="12"
+                                            DecimalPrecision [DecimalPrecisionBefore]="4"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                         </td>
@@ -1296,7 +1296,7 @@
                                         <td>
                                           <input type="text" id="text-input" formControlName="CostAmount" placeholder=""
                                             class="form-control custom-input-field sm  text-end" readonly
-                                            DecimalPrecision [DecimalPrecisionBefore]="12"
+                                            DecimalPrecision [DecimalPrecisionBefore]="9"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                         </td>
@@ -1304,7 +1304,7 @@
                                         <td>
                                           <input type="text" id="text-input" formControlName="CostLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
-                                            DecimalPrecision [DecimalPrecisionBefore]="12"
+                                            DecimalPrecision [DecimalPrecisionBefore]="9"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal">
 
                                         </td>
@@ -1312,7 +1312,9 @@
                                         <td>
                                           <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
                                             bindValue="CustomerMasterSid" formControlName="CostAgentMasterSid"
-                                            appendTo="body">
+                                            appendTo="body"
+                                            (change)="setOrResetValidationForCostAmount(routeIndex,carrierIndex,chargeIndex)"
+                                            >
                                           </ng-select>
                                       </tr>
                                     </tbody>
@@ -2435,20 +2437,21 @@
                       (change)="toggleSelectAllTariffs($event)">
                   </th>
                   <th rowspan="2" class="bg-transparent text-light align-middle">Charge Code</th>
+                  <th rowspan="2" class="bg-transparent text-light align-middle">Unit</th>
                   <th rowspan="2" class="bg-transparent text-light align-middle">Qty</th>
-                  <th colspan="6" class="bg-transparent text-light align-middle">Revenue</th>
-                  <th colspan="6" class="bg-transparent text-light align-middle">Cost</th>
+                  <th colspan="5" class="bg-transparent text-light align-middle">Revenue</th>
+                  <th colspan="5" class="bg-transparent text-light align-middle">Cost</th>
                 </tr>
                 <tr class="bg-info text-white">
                   <!-- Sell -->
-                  <th class="bg-transparent text-light align-middle">Unit</th>
+                  <!-- <th class="bg-transparent text-light align-middle">Unit</th> -->
                   <th class="bg-transparent text-light align-middle">Currency</th>
                   <th class="bg-transparent text-light align-middle">Per Unit</th>
                   <th class="bg-transparent text-light align-middle">Ex Rate</th>
                   <th class="bg-transparent text-light align-middle">Amount</th>
                   <th class="bg-transparent text-light align-middle">Local Amount</th>
                   <!-- Cost -->
-                  <th class="bg-transparent text-light align-middle">Unit</th>
+                  <!-- <th class="bg-transparent text-light align-middle">Unit</th> -->
                   <th class="bg-transparent text-light align-middle">Currency</th>
                   <th class="bg-transparent text-light align-middle">Per Unit</th>
                   <th class="bg-transparent text-light align-middle">Ex Rate</th>
@@ -2463,16 +2466,17 @@
                     <input class="form-check-input" type="checkbox" [(ngModel)]="sc.selected">
                   </td>
                   <td>{{ sc.ChargeCode }}</td>
+                  <td>{{ getUOMCodeById(sc.UOMSid) }}</td>
                   <td>{{ sc.Qty || '' }}</td>
                   <!-- Sell -->
-                  <td>{{ getUOMCodeById(sc.UOMSid) }}</td>
+                  <!-- <td>{{ getUOMCodeById(sc.UOMSid) }}</td> -->
                   <td>{{ getCurrencyCodeById(sc.SaleCurrency) }}</td>
                   <td>{{ sc.SalePerUnitPrice }}</td>
                   <td>{{ sc.revenueExchangeRate }}</td>
                   <td>{{ sc.RevenueAmount || ''}}</td>
                   <td>{{ sc.RevenueLocalAmount || ''}}</td>
                   <!-- Cost -->
-                  <td>{{ getUOMCodeById(sc.UOMSid) }}</td>
+                  <!-- <td>{{ getUOMCodeById(sc.UOMSid) }}</td> -->
                   <td>{{ getCurrencyCodeById(sc.BuyCurrency) }}</td>
                   <td>{{ sc.BuyPerUnitPrice }}</td>
                   <td>{{ sc.costExchangeRate }}</td>

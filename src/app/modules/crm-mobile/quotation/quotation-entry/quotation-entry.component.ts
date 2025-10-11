@@ -644,10 +644,26 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteCargoSid : [data?.QuoteCargoSid || null],
       CargoType: [data?.CargoType || null, [Validators.required]],
       WeightUnitSid: [data?.WeightUnitSid || null],
-      GrossWeight: [data?.GrossWeight || 0],
-      NetWeight: [data?.NetWeight || 0],
-      Volume: [data?.Volume || 0],
-      ChargeableWeight: [data?.ChargeableWeight || 0],
+      GrossWeight: [
+        data?.GrossWeight ? 
+          Number(data?.GrossWeight).toFixed(this.digitsAfterDecimal) : 
+          0 || 0
+      ],
+      NetWeight: [
+        data?.NetWeight ? 
+        Number(data?.NetWeight).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
+      Volume: [
+        data?.Volume ? 
+        Number(data?.Volume).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
+      ChargeableWeight: [
+        data?.ChargeableWeight ?
+        Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
       ContainerType: [data?.ContainerType || null],
       Qty: [data?.Qty || 1],
       ShipmentTerms: [data?.ShipmentTerms || null],
@@ -818,24 +834,56 @@ private extractCargoData(enquiryCargo: any[]): any {
       RevenueChargeUomSid: [data?.RevenueChargeUomSid || null, [Validators.required]],
       RevenuePrepaidCollect: [data?.RevenuePrepaidCollect || "Prepaid"],
       RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid || null, [Validators.required]],
-      RevenueExchangeRate: [data?.RevenueExchangeRate || 0],
-      RevenueRate: [data?.RevenueRate || 0],
+      RevenueExchangeRate: [
+        data?.RevenueExchangeRate ? 
+        Number(data?.RevenueExchangeRate).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
+      RevenueRate: [
+        data?.RevenueRate ?
+        Number(data?.RevenueRate).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
       RevenueNumberOfUnit: [data?.RevenueNumberOfUnit || 0],
       RevenueDrCr: [data?.RevenueDrCr || "C"],
-      RevenueAmount: [data?.RevenueAmount || 0],
-      RevenueLocalAmount: [data?.RevenueLocalAmount || 0],
+      RevenueAmount: [
+        data?.RevenueAmount ?
+        Number(data?.RevenueAmount).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
+      RevenueLocalAmount: [
+        data?.RevenueLocalAmount ?
+        Number(data?.RevenueLocalAmount).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],
       RevenueCustomerMasterSid: [data?.RevenueCustomerMasterSid || null], // Revenue Vendor
       RevenueCustomerBranchSid: [data?.RevenueCustomerBranchSid || null],
 
       CostChargeUomSid : [data?.CostChargeUomSid || null, [Validators.required]],  // Cost Unit
       CostPrepaidCollect : [data?.CostPrepaidCollect || "Prepaid"],
       CostCurrencyMasterSid : [data?.CostCurrencyMasterSid || null, [Validators.required]], // Cost Currency
-      CostExchangeRate : [data?.CostExchangeRate || 0], // Cost Exchange
-      CostRate : [data?.CostRate || 0],    // Cost Per Unit Rate
+      CostExchangeRate : [
+        data?.CostExchangeRate ?
+        Number(data?.CostExchangeRate).toFixed(this.digitsAfterDecimal) :
+        0 || 0
+      ], // Cost Exchange
+      CostRate : [
+        data?.CostRate ?
+        Number(data?.CostRate).toFixed :
+        0 || 0
+      ],    // Cost Per Unit Rate
       CostNumberOfUnit : [data?.CostNumberOfUnit || 0],  // Count
       CostDrCr : [data?.CostDrCr || "D"],
-      CostAmount : [data?.CostAmount || 0],   // Cost Amount
-      CostLocalAmount : [data?.CostLocalAmount || 0], // Cost Local Amount
+      CostAmount : [
+        data?.CostAmount ? 
+        Number(data?.CostAmount).toFixed(this.digitsAfterDecimal) : 
+        0 || 0
+      ],   // Cost Amount
+      CostLocalAmount : [
+        data?.CostLocalAmount ?
+        Number(data?.CostLocalAmount).toFixed(this.digitsAfterDecimal) :
+        0 || 0
+      ], // Cost Local Amount
       CostAgentMasterSid : [data?.CostAgentMasterSid || null],  // Cost Party
       CostAgentBranchSid : [data?.CostAgentBranchSid || null],
 
@@ -973,14 +1021,30 @@ private extractCargoData(enquiryCargo: any[]): any {
       CargoDescription : [data?.CargoDescription || ''],
       ExternalPkg : [data?.ExternalPkg || null ],
       ExternalQty : [data?.ExternalQty || '' ],
-      GrossWeight : [data?.GrossWeight || '' ],
-      NetWeight : [data?.NetWeight || '' ],
-      Volume : [data?.Volume || ''],
+      GrossWeight : [
+        data?.GrossWeight ? 
+        Number(data?.GrossWeight).toFixed(this.digitsAfterDecimal) : 
+        0
+       ],
+      NetWeight : [
+        data?.NetWeight ?
+        Number(data?.NetWeight).toFixed(this.digitsAfterDecimal) : 
+        0
+      ],
+      Volume : [
+        data?.Volume ?
+        Number(data?.Volume).toFixed(this.digitsAfterDecimal) : 
+        0
+      ],
       Length : [data?.Length || ''],
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
       ProductUnit : [data?.ProductUnit || null],
-      ChargeableWeight : [data?.ChargeableWeight || ''],
+      ChargeableWeight : [
+        data?.ChargeableWeight ? 
+        Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 
+        0
+      ],
       IsHaz : [data?.IsHaz === "Y" || false],
       ImcoClass : [{ value : data?.ImcoClass || null, disabled : data?.IsHaz !=="Y" || true }],
       UnNo : [data?.UnNo || ''],
@@ -3114,6 +3178,17 @@ ${this.userData.userName}`;
     } else {
       ctrl.setValue(unit.UOMMasterSid);
     }
+  }
+
+  setOrResetValidationForCostAmount(routeIndex:number , carrierIndex:number , chargeIndex:number){
+    const costAgent = (this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup).get('CostAgentMasterSid').value;
+    const costRateCtrl = (this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup).get('CostRate');
+    if(!costAgent){
+      costRateCtrl.clearValidators();
+    } else {
+      costRateCtrl.setValidators([Validators.required]);
+    }
+    costRateCtrl.updateValueAndValidity();
   }
 
 }
