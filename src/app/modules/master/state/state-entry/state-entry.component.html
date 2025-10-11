@@ -206,7 +206,7 @@
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!stateForm.get('CountryMasterSid')?.value">
-                  <ng-select [items]="countries" bindLabel="countryName" bindValue="CountryMasterSid"
+                  <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
                     formControlName="CountryMasterSid" id="CountryMasterSid"
                     [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
                     placeholder=""></ng-select>
@@ -228,7 +228,7 @@
                   [class.filled]="!!stateForm.get('ZoneMasterSid')?.value">
                   <ng-select formControlName="ZoneMasterSid" class="ng-select">
                     <!-- <ng-option value="">Select Zone</ng-option> -->
-                    <ng-option *ngFor="let option of zones" [value]="option.ZoneMasterSid" placeholder="">
+                    <ng-option *ngFor="let option of dropdownStore.zone()" [value]="option.ZoneMasterSid" placeholder="">
                       {{ option.ZoneName }}
                     </ng-option>
                   </ng-select>

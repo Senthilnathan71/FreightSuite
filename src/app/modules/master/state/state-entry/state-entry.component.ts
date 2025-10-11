@@ -17,6 +17,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-state-entry',
@@ -34,6 +36,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
   styleUrls: ['./state-entry.component.scss']
 })
 export class StateEntryComponent implements OnInit {
+    private destroy$ = new Subject<void>();
+
   stateForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
@@ -67,14 +71,16 @@ export class StateEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private modalService : NgbModal
+    private modalService : NgbModal,
+        public dropdownStore:DropdownStore
+    
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-    this.loadCountries();
-    this.loadZones(); 
+    this.dropdownStore.loadCountries();
+    this.dropdownStore.loadZones();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.stateId = +params['id'];
@@ -198,29 +204,29 @@ export class StateEntryComponent implements OnInit {
     }
   }
 
-  loadCountries() {
-    this.masterService.getAllCountry().subscribe({
-      next: (resp: any) => {
-        this.countries = resp.data || resp;
-      },
-      error: (err) => {
-        console.error('Error loading countries:', err);
-        this.appSettingService.showError('Failed to load countries');
-      }
-    });
-  }
+  // loadCountries() {
+  //   this.masterService.getAllCountry().subscribe({
+  //     next: (resp: any) => {
+  //       this.countries = resp.data || resp;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading countries:', err);
+  //       this.appSettingService.showError('Failed to load countries');
+  //     }
+  //   });
+  // }
 
-  loadZones() {
-    this.masterService.getAllZones().subscribe({
-      next: (resp: any) => {
-        this.zones = resp.data || resp;
-      },
-      error: (err) => {
-        console.error('Error loading zones:', err);
-        this.appSettingService.showError('Failed to load zones');
-      }
-    });
-  }
+  // loadZones() {
+  //   this.masterService.getAllZones().subscribe({
+  //     next: (resp: any) => {
+  //       this.zones = resp.data || resp;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading zones:', err);
+  //       this.appSettingService.showError('Failed to load zones');
+  //     }
+  //   });
+  // }
 
   getStateById(id: number) {
     this.stateForm.reset();
@@ -428,5 +434,11 @@ openEDoc() {
   modalRef.componentInstance.idLabel = 'State Id';
   modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
 }
+
+ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
 }

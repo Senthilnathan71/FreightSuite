@@ -20,6 +20,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 @Component({
   selector: 'app-state-list',
   standalone: true,
@@ -114,7 +115,8 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public dropdownStore:DropdownStore
   ) {
     super(paginationService);
   }
@@ -135,8 +137,8 @@ export class StateListComponent extends BaseListComponent implements OnInit {
       this.checkPermissions();
     }
     // this.loadStates();
-    this.loadCountries();
-    this.loadZones();
+    this.dropdownStore.loadCountries()
+    this.dropdownStore.loadZones()
     // Initialize table configuration
     this.initializeTableConfig();
         this.initializeHeaderActions();
@@ -431,33 +433,7 @@ export class StateListComponent extends BaseListComponent implements OnInit {
   //   });
   // }
 
-  loadCountries() {
-    this.loading = true;
-    this.masterService.getAllCountry().subscribe({
-      next: (res: any) => {
-        this.countryOptions = res.data || res;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading countries:', err);
-        this.loading = false;
-      }
-    });
-  }
 
-  loadZones() {
-    this.loading = true;
-    this.masterService.getAllZones().subscribe({
-      next: (res: any) => {
-        this.zoneOptions = res.data || res;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading zones:', err);
-        this.loading = false;
-      }
-    });
-  }
 
   onSearch(event: { type: string, value: string }) {
     this.searchType = event.type;
@@ -466,82 +442,6 @@ export class StateListComponent extends BaseListComponent implements OnInit {
     this.search();
   }
 
-  // search() {
-  //   this.loading = true;
-  //   const payload = {
-  //     searchType: this.searchType,
-  //     filterValue: this.searchType === 'status'
-  //       ? this.filterValue === 'Active' ? 'A' : 'S'
-  //       : this.filterValue
-  //   };
-
-  //   this.masterService.searchStateList(payload).subscribe({
-  //     next: (res: any) => {
-  //       this.allStates = (res.data || res).map(state => {
-  //         const country = this.countryOptions.find(c => c.CountryMasterSid === state.CountryMasterSid);
-  //         const zone = this.zoneOptions.find(z => z.ZoneMasterSid === state.ZoneMasterSid);
-  //         return {
-  //           ...state,
-  //           countryName: country ? country.countryName : 'N/A',
-  //           zoneName: zone ? zone.ZoneName : 'N/A'
-  //         };
-  //       });
-
-  //       // Apply sorting after loading new data
-  //       this.applySorting();
-
-  //       this.stateList = [...this.allStates];
-  //       this.totalLengthOfCollection = this.stateList.length;
-  //       this.searched = true;
-  //       this.page = 1;
-  //       this.updatePaginatedData();
-  //       this.loading = false;
-  //     },
-  //     error: (err) => {
-  //       console.error('Search error:', err);
-  //       this.loading = false;
-  //     }
-  //   });
-  // }
-
-  // sort(column: string) {
-  //   if (this.sortColumn === column) {
-  //     // Reverse the sort direction if clicking the same column
-  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  //   } else {
-  //     // Set new sort column and default to ascending
-  //     this.sortColumn = column;
-  //     this.sortDirection = 'asc';
-  //   }
-
-  //   this.applySorting();
-  //   this.updatePaginatedData();
-  // }
-
-  // applySorting() {
-  //   this.allStates.sort((a, b) => {
-  //     let valueA = a[this.sortColumn];
-  //     let valueB = b[this.sortColumn];
-
-  //     // Handle null/undefined values
-  //     if (valueA == null) valueA = '';
-  //     if (valueB == null) valueB = '';
-
-  //     // Convert to string for case-insensitive comparison
-  //     valueA = valueA.toString().toLowerCase();
-  //     valueB = valueB.toString().toLowerCase();
-
-
-  //     if (valueA < valueB) {
-  //       return this.sortDirection === 'asc' ? -1 : 1;
-  //     }
-  //     if (valueA > valueB) {
-  //       return this.sortDirection === 'asc' ? 1 : -1;
-  //     }
-  //     return 0;
-  //   });
-  //   this.stateList = [...this.allStates];
-  // }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -623,4 +523,5 @@ export class StateListComponent extends BaseListComponent implements OnInit {
   // clearFilterValue() {
   //   this.filterValue = '';
   // }
+
 }
