@@ -13,7 +13,7 @@ import { MasterService } from '../../master.service';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { NgbDropdownModule, NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -23,6 +23,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 
 
@@ -47,6 +48,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
   styleUrl: './post-master-view.component.scss'
 })
 export class PostMasterViewComponent {
+  private destroy$ = new Subject<void>();
   portForm!: FormGroup;
   isEditMode = false;
   btnDisable: boolean = true;
@@ -76,7 +78,7 @@ export class PostMasterViewComponent {
   auditLogModalRef!: NgbModalRef;
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal) {
+    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal, public dropdownStore:DropdownStore ) {
     this.config.notFoundText = 'Custom not found';
     this.config.appendTo = 'body';
     this.config.bindValue = 'value';
@@ -214,12 +216,13 @@ hasAnyDropdownPermission(): boolean {
 
   loadAllFields() {
     forkJoin({
-      countries: this.masterService.getAllCountry(),
+      // countries: this.masterService.getAllCountry(),
       regions: this.masterService.getAllZones()
-    }).subscribe(({ countries, regions }) => {
-      this.countryList = countries.data,
+    }).subscribe(({  regions }) => {
+      // this.countryList = countries.data,
         this.regionList = regions
-    })
+    });
+    this.dropdownStore.loadCountries();
   }
 
   filterStateByCountry(country) {
@@ -378,7 +381,7 @@ hasAnyDropdownPermission(): boolean {
 
   handlePortCodeSubmit(port:Port){
     if(port.PortType=== 'Sea'){
-      const countryCode = (this.countryList.find(c => c.CountryMasterSid === port.CountryMasterSid)).countryCode;
+      const countryCode = (this.dropdownStore.countries().find(c => c.CountryMasterSid === port.CountryMasterSid)).countryCode;
       return countryCode+port.PortCode;
     } else {
       return port.PortCode;
@@ -515,4 +518,10 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+
+ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

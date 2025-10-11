@@ -12,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -27,6 +27,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { LeadStatus } from 'src/app/common/helper';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { MasterService } from '../../master/master.service';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 
 @Component({
@@ -53,6 +54,7 @@ import { MasterService } from '../../master/master.service';
   styleUrl: './lead.component.scss'
 })
 export class LeadComponent implements OnInit {
+  private destroy$ = new Subject<void>();
   leadForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
   citys: City[] = [];        // Array to store the leads
@@ -136,7 +138,8 @@ export class LeadComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    public dropdownStore:DropdownStore
   ) { }
 
   ngOnInit(): void {
@@ -419,12 +422,13 @@ export class LeadComponent implements OnInit {
   loadAllFields() {
     forkJoin({
       companies: this.leadService.getAllCompanies(),
-      countries: this.leadService.fetchAllCountries(),
-    }).subscribe(({ companies, countries }) => {
+      // countries: this.leadService.fetchAllCountries(),
+    }).subscribe(({ companies}) => {
       this.companyList = companies.data;
-      this.countryList = countries
+      // this.countryList = countries
       console.log(this.countryList);
     })
+    this.dropdownStore.loadCountries()
   }
 
   filterStateByCountryId(country) {
@@ -644,5 +648,10 @@ export class LeadComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  } 
 
 }
