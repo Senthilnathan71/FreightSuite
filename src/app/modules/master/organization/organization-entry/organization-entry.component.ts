@@ -108,7 +108,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     private cdRef: ChangeDetectorRef,
     private calendar: NgbCalendar,
     private leadService: LeadService,
-public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
   }
