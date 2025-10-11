@@ -37,7 +37,7 @@
     "file-saver": "^2.0.5",
     "flatpickr": "^4.6.13",
     "FreightForwarding": "file:",
-    "html2pdf.js": "^0.10.3",
+    "html2pdf.js": "^0.12.1",
     "jquery": "^3.7.1",
     "ngx-device-detector": "^7.0.0",
     "ngx-scrollbar": "^11.0.0",
