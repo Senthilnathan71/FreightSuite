@@ -448,7 +448,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             VesselMasterSid : parseInt(formValue.VesselMasterSid),
             Carrier : formValue.Carrier ? parseInt(formValue.Carrier) : null,
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
-            status : formValue.status === 'Active' ? 'A' : 'S',
+            status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             POLSid: formValue.POLSid ? parseInt(formValue.POLSid) : null,
             PODSid: formValue.PODSid ? parseInt(formValue.PODSid) : null,
             ETA: formValue.ETA,

@@ -461,7 +461,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 			userTypeId: formValue.userTypeId,
 			contactNumber: formValue.contactNumber,
 			CountryMasterSid: formValue.CountryMasterSid,
-			status: formValue.status === 'Active' ? 'A' : 'S',
+			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			roles : formValue.roles,
 			userCode: this.getUserCode(formValue.userName),
 			companies : companyPayload,

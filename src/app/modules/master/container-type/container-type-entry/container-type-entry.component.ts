@@ -328,12 +328,12 @@ resetForm(): void {
         ...formValue,
         // CompanyMasterSid: Number(formValue.CompanyMasterSid),
         ...updatedBy,
-        status: formValue.status 
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         // CompanyMasterSid: Number(formValue.CompanyMasterSid),
         ...createdBy,
-        status: formValue.status 
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S', 
       };
 
       console.log('payload', payload);

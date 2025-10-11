@@ -269,7 +269,7 @@ export class VendorTdsEntryComponent {
       CertificateAmt: detailFormValue.CertificateAmt,
       EffectiveFrom: detailFormValue.EffectiveFrom,
       EffectiveTo: detailFormValue.EffectiveTo,
-      Status: formValue.Status === 'Active' ? 'A' : 'S',
+      Status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       ...(this.isEditMode ? { UpdatedBy: currUserEmail } : { CreatedBy: currUserEmail }),
     };
 

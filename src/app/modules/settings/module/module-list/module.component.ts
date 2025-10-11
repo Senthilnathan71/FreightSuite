@@ -522,7 +522,7 @@ export class ModuleComponent extends BaseListComponent implements OnInit {
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const payload = {
       ...formValue,
-      status: formValue.status === "Active" ? "A" : "S",
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
     };
 

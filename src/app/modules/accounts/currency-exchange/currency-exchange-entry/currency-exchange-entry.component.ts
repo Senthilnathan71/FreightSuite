@@ -212,7 +212,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       RateFrom: formValue.RateFrom,
       SellRate: parseFloat(formValue.SellRate),
       BuyRate: parseFloat(formValue.BuyRate),
-      status: formValue.status === "Active" ? "A" : "S",
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       createdBy: this.appSettingService.userSettingSource.value['userEmail']
     };
 

@@ -781,7 +781,7 @@ export class CompanyEntryComponent implements OnInit {
 			CountryMasterSid: parseInt(formValue.CountryMasterSid),
 			CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
 			isHo: formValue.isHo ? 'Y' : 'N',
-			status: formValue.status === 'Active' ? 'A' : 'S',
+			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			branches: branchesPayload,
 			...(this.isEditMode ?
 				{ updatedBy: updatedBy } :

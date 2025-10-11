@@ -228,7 +228,7 @@ export class TdsSetEntryComponent implements OnInit {
         const payload = {
             ...formValue,
             CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-            status: formValue.status === 'Active' ? 'A' : 'S',
+            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
         if (this.isEditMode) {
@@ -413,7 +413,7 @@ openAuditLogs(modal: TemplateRef<any>) {
             TDSAmount: parseFloat(formValue.TDSAmount),
             TDSRate: parseFloat(formValue.TDSRate),
             EffectiveFrom: formValue.EffectiveFrom,
-            status: formValue.detailStatus === 'Active' ? 'A' : 'S',
+            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             ...(this.detailModalEdit ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
 
@@ -527,7 +527,7 @@ openAuditLogs(modal: TemplateRef<any>) {
             Transporter: formValue.Transporter,
             EffectiveFrom: formValue.EffectiveFrom,
             EffectiveTo: formValue.EffectiveTo,
-            status: formValue.exemptionStatus === 'Active' ? 'A' : 'S',
+            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             ...(this.exemptionModalEdit ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
 

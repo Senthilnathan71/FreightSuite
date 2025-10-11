@@ -316,7 +316,7 @@ hasAnyDropdownPermission(): boolean {
         {
           ...formValue,
           PortCode : this.handlePortCodeSubmit(formValue),
-          status: formValue.status === 'Active' ? 'A' : 'S',
+          status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
           CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
           updatedBy: updatedBy
         }

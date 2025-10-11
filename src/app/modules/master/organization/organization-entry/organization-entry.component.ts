@@ -2758,7 +2758,7 @@ onPanAvailableChange(): void {
     const currentUserEmail = this.getUserEmail();
     const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
-    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
+    const statusValue = formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S';
 
     return {
       customer: {

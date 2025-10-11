@@ -743,13 +743,13 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
           ...formValue,
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           ...updatedBy,
-          status: formValue.status === 'Active' ? 'A' : 'I',
+          status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'I',
         }
         : {
           ...formValue,
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           ...createdBy,
-          status: formValue.status === 'Active' ? 'A' : 'I',
+          status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'I',
         };
 
       console.log('payload', payload);

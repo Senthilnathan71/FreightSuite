@@ -760,13 +760,13 @@ export class CityComponent extends BaseListComponent implements OnInit {
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "S"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...createdBy,
-        status: "A" // Always Active for create mode
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       };
 
       console.log('payload', payload);
