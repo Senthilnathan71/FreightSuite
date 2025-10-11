@@ -609,7 +609,10 @@ export class RoleComponent extends BaseListComponent implements OnInit {
       const payload = {
         ...formValue,
         ...(this.isEditMode ? updatedBy : createdBy),
-        status: formValue.status === "Active" ? "A" : "S",
+        status:
+          formValue.status === 'Active' || formValue.status === 'A'
+            ? 'A'
+            : 'S',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       };
 

@@ -761,7 +761,10 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 		const formValue = this.roleMenuForm.value;
 		const payload = {
 			...formValue,
-			status: formValue.status === 'Active' ? 'A' : 'S',
+			status:
+				formValue.status === 'Active' || formValue.status === 'A'
+					? 'A'
+					: 'S',
 			InsertRole: formValue.InsertRole ? 'Y' : 'N',
 			ViewRole: formValue.ViewRole ? 'Y' : 'N',
 			UpdateRole: formValue.UpdateRole ? 'Y' : 'N',
