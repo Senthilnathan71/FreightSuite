@@ -103,7 +103,7 @@
                                         </aside>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('CountryMasterSid')?.value">
-                                                <ng-select class="ng-select" [items]="countryList"
+                                                <ng-select class="ng-select" [items]="dropdownStore.countries()"
                                                     bindLabel="countryName" bindValue="CountryMasterSid"
                                                     formControlName="CountryMasterSid" placeholder=""
                                                     (change)="filterStateByCountry($event)">

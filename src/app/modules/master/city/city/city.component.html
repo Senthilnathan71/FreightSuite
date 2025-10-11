@@ -296,7 +296,7 @@
                             <div class="custom-form-group  custom-form-group-select" [class.filled]="!!cityForm.get('CountryMasterSid')?.value">
                                 <ng-select 
                                 formControlName="CountryMasterSid"
-                                [items]="countryList"
+                                [items]="dropdownStore.countries()"
                                 bindLabel="countryName"
                                 bindValue="CountryMasterSid"
                                 placeholder=""

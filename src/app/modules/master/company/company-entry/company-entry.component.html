@@ -136,7 +136,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!companyForm.get('CountryMasterSid')?.value">
-                <ng-select class="ng-select" [items]="countryResults" bindLabel="countryName"
+                <ng-select class="ng-select" [items]="dropdownStore.countries()" bindLabel="countryName"
                   bindValue="CountryMasterSid" (change)="handlePanControl($event)" (clear)="handlePanControl(-1)"
                   formControlName="CountryMasterSid" placeholder=""></ng-select>
                 <!-- <ng-select id="text-input" class="ng-select" placeholder="Select Country"

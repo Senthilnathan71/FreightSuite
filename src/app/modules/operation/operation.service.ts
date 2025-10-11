@@ -493,7 +493,7 @@ getAllPorts() {
   }
 
   getAllCFS(CompanyMasterSid: number) {
-    return this.http.post('customer/cFS',{CompanyMasterSid}).pipe(
+    return this.http.post('customer/cfs',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
