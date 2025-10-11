@@ -232,9 +232,9 @@ export class LeadComponent implements OnInit {
   // Initialize the Form
   initForm() {
     this.leadForm = this.fb.group({
-      preCustomerName: [, [Validators.required]],
-      leadReferredBy: [, [Validators.required]],
-      leadFrom: [],
+      preCustomerName: ['', [Validators.required]],
+      leadReferredBy: ['', [Validators.required]],
+      leadFrom: ['', [Validators.required]],
       preCustomerType: [],
       preCustomerAddress1: ['', [
         Validators.required,
