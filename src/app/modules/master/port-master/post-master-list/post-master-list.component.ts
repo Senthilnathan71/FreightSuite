@@ -265,7 +265,7 @@ export class PostMasterListComponent extends BaseListComponent implements OnInit
   onActionTriggered(action: string): void {
     switch (action) {
       case 'create':
-      
+        this. navigateToCreatePort()
         break;
       case 'report':
         this.report();

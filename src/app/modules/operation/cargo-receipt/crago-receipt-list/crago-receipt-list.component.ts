@@ -290,7 +290,7 @@ export class CragoReceiptListComponent extends BaseListComponent implements OnIn
         filterable: true,
         visible: true,
         template: 'status',
-        width: '100px',
+        width: '140px',
         dataType: 'string',
         cellClass: 'status-column'
       },

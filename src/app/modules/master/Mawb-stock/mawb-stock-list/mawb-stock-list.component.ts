@@ -20,6 +20,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-mawb-stock-list',
   standalone: true,
@@ -33,7 +34,8 @@ import { Observable } from 'rxjs';
     CustomDatePipe,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './mawb-stock-list.component.html',
@@ -50,7 +52,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-   // Table configuration
+  // Table configuration
   tableConfig: TableConfig = {
     columns: [],
     actions: [
@@ -81,7 +83,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   };
 
   tableLoading = false;
-
+  headerActions: HeaderAction[] = [];
   protected config: ListComponentConfig = {
     storageKey: 'mawb-list-state',
     defaultPageSize: 10,
@@ -130,10 +132,10 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadMawbStocks();
+    // this.loadMawbStocks();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -148,7 +150,8 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
           this.currentMenuPermissions = response.data.MenuPermissions || {};
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-          console.log(this.permissions,"Permission")
+          console.log(this.permissions, "Permission")
+          this.initializeHeaderActions();
         }
       });
     }
@@ -157,7 +160,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
   }
- 
+
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -190,6 +193,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+      this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching mawb-stock.');
       this.allItems = [];
@@ -210,6 +214,63 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     this.search();
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchMawbs();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this. navigateToCreateGeneration();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   clearFilterValue() {
     this.clearFilter();
   }
@@ -308,49 +369,49 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     });
   }
 
-  loadMawbStocks(): void {
-    this.spinner.show();
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  // loadMawbStocks(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid,
-      activeBranchId: BranchMasterSid,
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid,
+  //     activeBranchId: BranchMasterSid,
+  //   };
 
-    this.masterService.searchMawbStock(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.mawbList = response.data.items || [];
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching MAWB stocks:', err);
-        this.mawbList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchMawbStock(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.mawbList = response.data.items || [];
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching MAWB stocks:', err);
+  //       this.mawbList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadMawbStocks();
+    // this.loadMawbStocks();
   }
   // clearFilterValue() {
   //   this.filterValue = '';
@@ -369,7 +430,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
         this.masterService.deleteMawbStock(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("MAWB-Stock deleted successfully!");
-            this.loadMawbStocks();
+            // this.loadMawbStocks();
             this.searchMawbs();
           },
           error: (err) => {

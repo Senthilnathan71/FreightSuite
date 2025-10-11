@@ -306,7 +306,7 @@ export class EnquiryEntryComponent implements OnInit {
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
       leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
-      weightUnits: this.leadService.getAllWeightUnits().pipe(catchError(() => of([]))),
+      weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
       products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),

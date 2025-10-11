@@ -17,6 +17,8 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { LeadStatusLabels } from 'src/app/common/helper';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 @Component({
   selector: 'app-view',
   standalone: true,
@@ -27,13 +29,14 @@ import { LeadStatusLabels } from 'src/app/common/helper';
     FormsModule,
     NgxSpinnerModule,
     FavoriteStarComponent,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './view.component.html',
   styleUrl: './view.component.scss'
 })
 export class ViewComponent extends BaseListComponent implements OnInit {
-  @ViewChild('leadTable') bookingTable!: ReusableTableComponent;
+  @ViewChild('leadTable') leadTable!: ReusableTableComponent;
   leads: any[] = [];
   errorMessage: string = '';
   // searchPerformed: boolean = false;
@@ -49,7 +52,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   // Sorting
   // sortColumn = "preCustomerName";
   // sortDirection = "asc";
-
+  headerActions: HeaderAction[] = [];
   // Company context
   currentCompany: any;
   currentBranch: any;
@@ -93,7 +96,8 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     private appService: AppService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private excelReportService: ExcelExportService,
   ) {
     super(paginationService);
   }
@@ -101,10 +105,10 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.searchLeads();
+    // this.searchLeads();
     this.isMobile = this.appService.getDevice();
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -131,14 +135,15 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      console.log(response.data.items,'response.data.items')
-       this.allItems = (response.data.items || []).map((item: any) => ({
-      ...item,
-      meetingStatus: LeadStatusLabels[item.leadStatus],
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
+      console.log(response.data.items, 'response.data.items')
+      this.allItems = (response.data.items || []).map((item: any) => ({
+        ...item,
+        meetingStatus: LeadStatusLabels[item.leadStatus],
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
+        this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');
       this.allItems = [];
@@ -154,9 +159,66 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     super.handleSearchError(error);
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchlead();
+  }
   // Legacy methods for template compatibility
   searchlead() {
     this.search();
+  }
+
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.createNew();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
   }
 
   clearFilterValue() {
@@ -168,11 +230,28 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   }
 
 
-  viewleads(lead : any): void {
-     this.route.navigate(['crm/lead', lead.PreCustomerMasterSid])
+  viewleads(lead: any): void {
+    this.route.navigate(['crm/lead', lead.PreCustomerMasterSid])
   }
 
+  report(): void {
+    const formattedData = this.allleads;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
 
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.leadTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Lead-Report',
+      title: companyName
+    });
+  }
 
   // Table configuration
   private initializeTableConfig(): void {
@@ -247,46 +326,46 @@ export class ViewComponent extends BaseListComponent implements OnInit {
 
 
   // Server-side search implementation
-  searchLeads(): void {
-    this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  // searchLeads(): void {
+  //   this.spinner.show();
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
-    const params = {
-      search: this.searchText.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId: CompanyMasterSid,
-      activeBranchId: BranchMasterSid,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
-    }
+  //   const params = {
+  //     search: this.searchText.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     activeCompanyId: CompanyMasterSid,
+  //     activeBranchId: BranchMasterSid,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection
+  //   }
 
-    this.leadService.searchLead(params).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.leads = resp.data?.items || [];
-          this.totalLengthOfCollection = resp.data?.totalCount || 0;
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(resp.message)
-          console.error('Error searching leads', resp.message);
-          this.leads = [];
-          this.totalLengthOfCollection = 0;
-        }
-        this.spinner.hide();
-      },
-      error: (error: any) => {
-        console.error(error);
-        this.appSettingService.showError('Error searching leads.');
-      }
-    });
-  }
+  //   this.leadService.searchLead(params).subscribe({
+  //     next: (resp: any) => {
+  //       if (resp.status) {
+  //         this.leads = resp.data?.items || [];
+  //         this.totalLengthOfCollection = resp.data?.totalCount || 0;
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(resp.message)
+  //         console.error('Error searching leads', resp.message);
+  //         this.leads = [];
+  //         this.totalLengthOfCollection = 0;
+  //       }
+  //       this.spinner.hide();
+  //     },
+  //     error: (error: any) => {
+  //       console.error(error);
+  //       this.appSettingService.showError('Error searching leads.');
+  //     }
+  //   });
+  // }
 
   clearSearchText() {
     this.searchText = "";
     this.page = 1;
-    this.searchLeads();
+    // this.searchLeads();
   }
 
   // sort(column: string) {
@@ -300,7 +379,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
   // }
 
   updatePaginatedData(): void {
-    this.searchLeads();
+    // this.searchLeads();
   }
 
   createNew() {
@@ -332,7 +411,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.totalLengthOfCollection = 0;
     this.page = 1;
     this.searchPerformed = false;
-    this.searchLeads();
+    // this.searchLeads();
   }
 
 }

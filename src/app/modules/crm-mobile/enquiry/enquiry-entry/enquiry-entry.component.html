@@ -374,7 +374,7 @@
                         Close
                     </button>
                 </ng-template>
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
                         <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
@@ -383,7 +383,7 @@
                         <label for="" class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
                         <ng-select formControlName="FreightPPCC" [items]="freightTermsList" bindLabel="FreightTerms"
@@ -393,7 +393,7 @@
                     </div>
                 </aside>
 
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
                         <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindLabel="IncoName"
@@ -401,7 +401,7 @@
                         <label for="text-input" class="input-label">Inco </label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
                         <ng-select class="ng-select" formControlName="ClearanceBy" placeholder="" appendTo="body">
@@ -412,7 +412,7 @@
                         <label for="text-input" class="input-label">Clearance By </label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('TransportBy')?.value">
                         <ng-select class="ng-select" formControlName="TransportBy" placeholder="" appendTo="body">
@@ -423,7 +423,7 @@
                         <label for="text-input" class="input-label">Transport By </label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group">
                         <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
                             formControlName="Remarks"></textarea>
@@ -431,7 +431,7 @@
                     </div>
                 </aside>
                 @if(EnquiryHeaderSid){
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('status')?.value" appendTo="body">
                         <ng-select formControlName="status" class="ng-select">
@@ -445,7 +445,7 @@
                 </div>
                 }
                 @if(isEditMode && isAuthorizedUser && !isApproved){
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group">
                         <textarea id="" placeholder="" rows="0" class="form-control input-field sm"
                             formControlName="AuthorizerRemarks"></textarea>
@@ -455,7 +455,7 @@
                               }">Authorizer Remarks </label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('authorizerStatus')?.value">
                         <ng-select formControlName="authorizerStatus" class="ng-select" appendTo="body">
@@ -476,7 +476,7 @@
                 </aside>
                 }
 
-                <aside class="col-md-4" [formGroup]="enquiryOtherForm">
+                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('ShipperName')?.value">
                         <ng-select class="ng-select" [items]="finalShipperList" bindValue="CustomerName"
@@ -494,7 +494,7 @@
                         }
                     </div>
                 </aside>
-                <aside class="col-md-4" [formGroup]="enquiryOtherForm">
+                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group">
                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                             formControlName="ShipperAddress">
@@ -502,7 +502,7 @@
                                 class="text-danger"></span></label>
                     </div>
                 </aside>
-                <aside class="col-md-4" [formGroup]="enquiryOtherForm">
+                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
                         <ng-select class="ng-select" [items]="finalConsigneeList" bindLabel="CustomerName"
@@ -520,7 +520,7 @@
                         }
                     </div>
                 </aside>
-                <aside class="col-md-4" [formGroup]="enquiryOtherForm">
+                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group">
                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                             formControlName="ConsigneeAddress">
@@ -540,7 +540,7 @@
                                 class="text-danger"></span></label>
                     </div>
                 </aside> -->
-                <aside class="col-md-4" [formGroup]="enquiryOtherForm">
+                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
                         <ng-select [items]="modeOfAddtionalService" bindLabel="name" bindValue="name"
@@ -549,7 +549,7 @@
                         <label for="" class="input-label">Additional Service <span class="text-danger"></span></label>
                     </div>
                 </aside>
-                <aside class="col-md-4" [formGroup]="enquiryOtherForm">
+                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group">
                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                             formControlName="PickupAddress">

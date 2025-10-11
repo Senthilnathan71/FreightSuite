@@ -17,8 +17,8 @@
                         Back
                     </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                    (click)="resetForm()">
-                        <i class="fas fa-sync-alt me-1" ></i>
+                        (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="save()">
@@ -38,7 +38,7 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="BookingNo" readonly/>
+                                formControlName="BookingNo" readonly />
                             <label for="text-input" class="input-label">Booking No <span
                                     class="text-danger"></span></label>
                         </div>
@@ -46,7 +46,7 @@
                     <aside class="col-md-4">
                         <div class=" custom-form-group custom-form-group-select-date">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="BookingDateTime" readonly/>
+                                formControlName="BookingDateTime" readonly />
                             <label class="input-label">Booking Date <span class="text-danger"></span>
                             </label>
 
@@ -55,7 +55,7 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="departmentName" readonly/>
+                                formControlName="departmentName" readonly />
                             <label for="text-input" class="input-label">Department<span
                                     class="text-danger"></span></label>
                         </div>
@@ -63,58 +63,58 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="CustomerName" readonly/>
+                                formControlName="CustomerName" readonly />
                             <label for="text-input" class="input-label">Customer Name <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    
+
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="VesselName" readonly/>
+                                formControlName="VesselName" readonly />
                             <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="VoyageNo" readonly/>
+                                formControlName="VoyageNo" readonly />
                             <label for="text-input" class="input-label">Voyage <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="POO" readonly/>
+                                formControlName="POO" readonly />
                             <label for="text-input" class="input-label">POO <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="POD" readonly/>
+                                formControlName="POD" readonly />
                             <label for="text-input" class="input-label">POD <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="POL" readonly/>
+                                formControlName="POL" readonly />
                             <label for="text-input" class="input-label">POL <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                       <div class="custom-form-group">
+                        <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="FPD" readonly/>
+                                formControlName="FPD" readonly />
                             <label for="text-input" class="input-label">FPD <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="HBLNo" readonly/>
+                                formControlName="HBLNo" readonly />
                             <label for="text-input" class="input-label">HBL No <span class="text-danger"></span></label>
                         </div>
                     </aside>
@@ -129,8 +129,8 @@
                 <table class="table table-hover align-middle no-wrap table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Commodity</th>
-                            <th class="bg-transparent text-light" scope="col">Shipping Bill No</th>
+                            <th class="bg-transparent text-light  dofi-min-w-140" scope="col">Commodity</th>
+                            <th class="bg-transparent text-light dofi-min-w-120" scope="col">Shipping Bill No</th>
                             <th class="bg-transparent text-light" scope="col">Date</th>
                             <th class="bg-transparent text-light" scope="col">External Pkg</th>
                             <th class="bg-transparent text-light text-center" scope="col">No of Pkg</th>
@@ -143,70 +143,77 @@
                         </tr>
                     </thead>
                     <tbody formArrayName="bookingProducts">
-  <tr *ngFor="let prod of bookingProductsArray.controls; let i = index" [formGroupName]="i">
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate">{{ prod.value.ProductName }}</div>
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate">{{ prod.value.ShippingBillNo }}</div>
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate">{{ prod.value.ShippingBillDate }}</div>
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate text-center">{{ prod.value.ExternaPkg }}</div>
-    </td>
+                        <tr *ngFor="let prod of bookingProductsArray.controls; let i = index" [formGroupName]="i" class="py-0">
+                            <td class="py-0">
+                                <div class="text-truncate">{{ prod.value.ProductName }}</div>
+                            </td>
+                            <td >
+                                <div class="text-truncate">{{ prod.value.ShippingBillNo }}</div>
+                            </td>
+                            <td >
+                                <div class="text-truncate">{{ prod.value.ShippingBillDate }}</div>
+                            </td>
+                            <td >
+                                <div class="text-truncate text-center">{{ prod.value.ExternaPkg }}</div>
+                            </td>
 
-    <!-- Editable fields -->
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="ExternlQty" [onlyNumbers] />
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
-    </td>
-    <td>
-  <div class="input-group" style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-                <input
-                  class="form-control"
-                  formControlName="CargoRecDate"
-                  placeholder="DD-MMM-YYYY"
-                  (click)="d.toggle()"
-                  (keydown.arrowDown)="d.open()"
-                  ngbDatepicker
-                  container="body"
-                  #d="ngbDatepicker"
-                  [minDate]="today"
-                />
-                <button class="btn" type="button" (click)="d.toggle()">
-                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                </button>
+                            <!-- Editable fields -->
+                            <td>
+                                <input type="number" class="custom-input-field sm  text-end mt-0"
+                                    formControlName="ExternlQty" [onlyNumbers] />
+                            </td>
+                            <td >
+                                <input type="number" class="custom-input-field sm  text-end mt-0"
+                                    formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
+                                    [DecimalPrecisionAfter]="3" />
+                            </td>
+                            <td >
+                                <input type="number" class="custom-input-field sm  text-end mt-0"
+                                    formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
+                                    [DecimalPrecisionAfter]="3" />
+                            </td>
+                            <td >
+                                <input type="number" class="custom-input-field sm  text-end mt-0"
+                                    formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7"
+                                    [DecimalPrecisionAfter]="3" />
+                            </td>
+                            <td>
+                                            <div class="custom-form-group custom-form-group-select-date">
+
+              <div class="input-group">
+                <input class="form-control" placeholder="DD-MMM-YYYY" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                  (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()" [minDate]="today"   container="body"/>
+                <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
               </div>
-</td>
+
+            </div>
+
+                                <!-- <div class="input-group" >
+                                    <input class="form-control" formControlName="CargoRecDate" placeholder="DD-MMM-YYYY"
+                                        (click)="d.toggle()" (keydown.arrowDown)="d.open()" ngbDatepicker
+                                        container="body" #d="ngbDatepicker" [minDate]="today" />
+                                    <button class="btn" type="button" (click)="d.toggle()">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div> -->
+                            </td>
 
 
 
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="custom-form-group custom-form-group-select" style="width: 150px;" [class.filled]="!!cargoForm.get('CFS')?.value">
-                <ng-select 
-                  formControlName="CFS" 
-                  [items]="cfsList" 
-                  bindLabel="CustomerName" 
-                  bindValue="CustomerName"
-                  placeholder=""
-                ></ng-select>
-              </div>
-    </td>
-    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="RecdPack" [onlyNumbers]/>
-    </td>
-  </tr>
-</tbody>
+                            <td >
+                                <div class="custom-form-group custom-form-group-select mt-0" style="width: 150px;"
+                                    [class.filled]="!!cargoForm.get('CFS')?.value">
+                                    <ng-select formControlName="CFS" [items]="cfsList" bindLabel="CustomerName"
+                                        bindValue="CustomerName" placeholder=""></ng-select>
+                                </div>
+                            </td>
+                            <td class="pb-1">
+                                <input type="number" class="custom-input-field sm  text-end mt-0"
+                                    formControlName="RecdPack" [onlyNumbers] />
+                            </td>
+                        </tr>
+                    </tbody>
 
                 </table>
             </div>

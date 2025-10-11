@@ -4,19 +4,20 @@
 
 <div class="row compact-form">
     <!-- #region Search Panel -->
-    <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between  mx-1"
+    <div class="col-12">
+        <app-page-header 
+    [title]="'Enquiry'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between  mx-1"
             data-bs-theme="light">
             <div class="col pb-1">
                 <h4 class="page-title mb-0 text-info">Enquiry</h4>
             </div>
-            <!-- <form class="col-md-8">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                        (input)="searchEnquiry()" autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
-                </div>               
-            </form> -->
+        
             <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
@@ -54,7 +55,7 @@
                         }
                     </button>
                     <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                        <!-- <i class="mdi mdi-plus" ></i> -->
+                       
                         <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i>
                         @if (!isMobile) {
                         Create
@@ -72,7 +73,7 @@
                 </form>
             </div>
 
-        </div>
+        </div> -->
     </div>
     <!-- #endregion -->
     <div class="col-12">
