@@ -6,7 +6,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -24,6 +24,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -51,6 +52,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ],
 })
 export class TdsSetEntryComponent implements OnInit {
+      private destroy$ = new Subject<void>();
+
 
     tdsForm !: FormGroup;
     tdsDetailForm !: FormGroup;
@@ -134,7 +137,8 @@ export class TdsSetEntryComponent implements OnInit {
         private fb: FormBuilder,
         private calendar: NgbCalendar,
         private dialog: MatDialog,
-        private settingService: SettingsService
+        private settingService: SettingsService,
+        public dropdownStore:DropdownStore
     ) { }
 
     ngOnInit(): void {
@@ -308,7 +312,8 @@ export class TdsSetEntryComponent implements OnInit {
 
     openDetailModal(content: TemplateRef<any>, data?: any) {
         this.initDetailForm();
-        this.loadAllCountries();
+        
+        this.loadAllDropdowns();
         if (data) {
             this.detailModalEdit = true;
             this.minDetailEffectiveFrom = undefined
@@ -564,17 +569,8 @@ openAuditLogs(modal: TemplateRef<any>) {
 
     // Helper Functions
 
-    loadAllCountries() {
-        this.masterService.getAllCountry().subscribe(
-            (resp: any) => {
-                if (resp.status) {
-                    this.countryList = resp.data;
-                } else {
-                    this.appSettingService.showError('Error loading countries.');
-                    console.error('Error loading countries', resp.message);
-                }
-            }
-        )
+    loadAllDropdowns() {
+        this.dropdownStore.loadCountries()
     }
 
     loadExemptionLookups() {
@@ -733,4 +729,10 @@ openAuditLogs(modal: TemplateRef<any>) {
     navigateBack() {
         history.back();
     }
+
+    ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }
