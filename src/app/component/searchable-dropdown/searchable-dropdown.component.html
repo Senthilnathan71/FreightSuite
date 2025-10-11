@@ -1,89 +1,94 @@
-<div class="searchable-dropdown">
-  <ng-select [items]="items" [formControl]="internalControl" [searchable]="true" [clearable]="true"
-    [placeholder]="placeholder" [bindLabel]="bindLabel" [bindValue]="bindValue" [loading]="isLoading"
-    [searchFn]="searchFn" (open)="onOpen()" (change)="onSelectionChange($event)">
-    <!-- Label Template -->
-    <ng-template ng-label-tmp let-item="item">
-      {{ getLabel(item) }}
-    </ng-template>
-
-    <!-- Header Template -->
-    <ng-template ng-header-tmp>
-      <div class="dropdown-header">
-        <div *ngFor="let label of displayLabels; let i = index" [ngStyle]="getColumnStyle(i)">
-          {{ label }}
-        </div>
-      </div>
-    </ng-template>
-
-    <!-- Option Template -->
-    <ng-template ng-option-tmp let-item="item">
-      <div class="dropdown-row">
-        <div *ngFor="let field of displayFields; let i = index" [ngStyle]="getColumnStyle(i)"
-          [ngbTooltip]="item[field]">
-          {{ item[field] }}
-        </div>
-      </div>
-    </ng-template>
-
-    <!-- Loading Template -->
-    <ng-template ng-loading-tmp>
-      <div class="loading-spinner">Loading...</div>
-    </ng-template>
-  </ng-select>
+<div class="searchable-dropdown-wrapper">
+  <!-- Input Field (Trigger) -->
+  <div class="dropdown-trigger" [class.disabled]="disabled || internalControl.disabled">
+    <input 
+      type="text" 
+      class="form-control" 
+      [value]="getDisplayText()"
+      [placeholder]="placeholder"
+      [disabled]="disabled || internalControl.disabled"
+      readonly
+      (click)="openModal(searchModal)"
+    />
+    <div class="dropdown-actions">
+      <button 
+        *ngIf="selectedItem && !disabled && !internalControl.disabled" 
+        type="button" 
+        class="btn-clear"
+        (click)="clearSelection(); $event.stopPropagation()">
+        ×
+      </button>
+      <button 
+        type="button" 
+        class="btn-dropdown"
+        [disabled]="disabled || internalControl.disabled"
+        (click)="openModal(searchModal)">
+        ▼
+      </button>
+    </div>
+  </div>
 </div>
 
+<!-- Modal Template -->
+<ng-template #searchModal let-modal>
+  <div class="modal-header">
+    <h6 class="modal-title mb-0">{{ placeholder || 'Select an option' }}</h6>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  
+  <div class="modal-body">
+    <!-- Search Input -->
+    <div class="search-box mb-2">
+      <input 
+        type="text" 
+        class="form-control form-control-sm" 
+        [formControl]="searchControl"
+        placeholder="Search..."
+        autofocus
+      />
+    </div>
 
-<!-- <div class="searchable-dropdown">
-  <ng-select 
-    [items]="items"
-    [formControl]="internalControl"
-    [searchable]="true"
-    [clearable]="true"
-    [placeholder]="placeholder"
-    [bindLabel]="bindLabel"
-    [bindValue]="bindValue"
-    [loading]="isLoading"
-    [searchFn]="searchFn"
-    (open)="onOpen()"
-    (change)="onSelectionChange($event)"
-    container="body"
-    appendTo="body"
-  >
-   
-    <ng-template ng-label-tmp let-item="item">
-      {{ getLabel(item) }}
-    </ng-template>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-3">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
 
- 
-<ng-template ng-header-tmp>
-  <div class="table-wrapper">
-    <table class="dropdown-table">
-      <thead>
-        <tr>
-          <th *ngFor="let label of displayLabels" class=" ng-selecatable-item fw-bold">{{ label }}</th>
-        </tr>
-      </thead>
-    </table>
+    <!-- Table -->
+    <div *ngIf="!isLoading" class="table-container">
+      <table class="table table-sm table-hover table-bordered mb-0">
+        <thead class="table-light sticky-header">
+          <tr>
+            <th *ngFor="let label of displayLabels; let i = index" [ngStyle]="getColumnStyle(i)">
+              {{ label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let item of filteredItems"
+            [class.table-active]="selectedItem && item[bindValue] === selectedItem[bindValue]"
+            (click)="selectItem(item)"
+            class="selectable-row">
+            <td 
+              *ngFor="let field of displayFields; let i = index" 
+              [ngStyle]="getColumnStyle(i)"
+              [title]="item[field]">
+              {{ item[field] }}
+            </td>
+          </tr>
+          <tr *ngIf="filteredItems.length === 0">
+            <td [attr.colspan]="displayFields.length" class="text-center text-muted py-3">
+              No items found
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="modal-footer py-2">
+    <button type="button" class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
   </div>
 </ng-template>
-
-
-<ng-template ng-option-tmp let-item="item">
-  <div class="table-wrapper">
-    <table class="dropdown-table">
-      <tbody>
-        <tr>
-          <td *ngFor="let field of displayFields" class="ng-selecatable-item" ngbTooltip="{{item[field]}}">{{ item[field] }} </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</ng-template>
-
-
-    <ng-template ng-loading-tmp>
-      <div class="loading-spinner">Loading...</div>
-    </ng-template>
-  </ng-select>
-</div> -->
