@@ -42,6 +42,7 @@ import { MasterDocumentUploadComponent } from '../../master-document-upload/mast
 import { ManifestDocumentUploadComponent } from '../../manifest-document-upload/manifest-document-upload.component';
 import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -70,7 +71,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     RouterModule,
     NgbPaginationModule,
     NgbDropdownModule,
-     NgxSpinnerModule
+     NgxSpinnerModule,
+     SearchableDropdown
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -109,6 +111,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   editingContainerIndex: number | null = null;
   containerFormGroup!: FormGroup;
   currentContainerModal: any;
+  CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','countryName'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode', 'currencyName','countryName'],
+  };
   
   // Lookup data
   departments: any[] = [];
@@ -123,6 +130,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   headerVesselList: any[] = [];
   carrierList: any[] = [];
   agentList: any[] = [];
+  forwarderList: any[] = [];
+  cfsList: any[] = [];
+  yardList: any[] = [];
+  
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
   packageTypeList: any[] = [];
@@ -131,8 +142,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   selectedDepartment: any;
   selectedDepartmentType: string = '';
   selectedFCLLCL: string = '';
-
-  
   connectionResult : any[] =[];
   connectionResetTrigger = false;
   masterjobConnectionArr:any[]=[];
@@ -168,6 +177,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Container', icon: 'fas fa-boxes' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
@@ -451,7 +461,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [''],
       DestinationAgentAddress: [''],
-      MBLNo: ['', Validators.required],
+      MBLNo: [''],
       MBLDate: [null],
       BLReleaseType: ['Original'],
       NoofOriginal: [3, Validators.required],
@@ -474,15 +484,16 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       Haz: [false],
       DGBookingDate: [null],
       DGApprovedDate: [null],
-      CommodityDescription: ['', Validators.required],
-      MarksandNumber: ['', Validators.required],
+      CommodityDescription: [''],
+      MarksandNumber: [''],
+      Status: ['Active', Validators.required],
       
       // Voyage fields
       VoyageMasterSid: [null],
-      VesselName: ['', Validators.required],
-      VoyageNo: ['', Validators.required],
-      ETA: [null, Validators.required],
-      ETD: [null, Validators.required],
+      VesselName: [''],
+      VoyageNo: [''],
+      ETA: [null],
+      ETD: [null],
       ATA: [null],
       ATD: [null],
       DestinationATA: [null],
@@ -490,6 +501,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       CarrierName: [''],
       
       // Others fields
+      MasterJobOthersSid: [null],
       Yard: [null],
       YardAddress: [''],
       Transporter: [''],
@@ -502,8 +514,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       CurrencyCode: [''],
       SellExchangeRate: [null],
       AgentExchangeRate: [null],
-      Coload: [''],
-      CoLoader: [''],
+      Coload: [false],
+      CoLoader: [{value: '', disabled: true}],
       ExportDoNo: [''],
       ExportDoDate: [null],
       SOBDate: [null],
@@ -578,44 +590,63 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   loadInitialData() {
-    return forkJoin({
-      departments: this.operationService.getAllDepartments(this.currentCompany?.CompanyMasterSid)
-        .pipe(catchError(err => of({ data: [] }))),
-      ports: this.operationService.getAllPorts()
-        .pipe(catchError(err => of({ data: [] }))),
-      vessels: this.operationService.getAllVessels()
-        .pipe(catchError(err => of({ data: [] }))),
-      agents: this.operationService.getAllAgents(this.currentCompany?.CompanyMasterSid)
-        .pipe(catchError(err => of([]))),
-      carriers: this.operationService.getAllCarriers(this.currentCompany?.CompanyMasterSid)
-        .pipe(catchError(err => of([]))),
-      containerTypes: this.operationService.getAllContainerTypes()
-        .pipe(catchError(err => of({ data: [] }))),
-      currencies: this.operationService.getAllCurrencies()
-        .pipe(catchError(err => of({ data: [] }))),
-      packageTypes: this.operationService.getPackageTypeUOM() 
-        .pipe(catchError(err => of([]))),
-        customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
+  const companySid = this.currentCompany?.CompanyMasterSid;
+  
+  return forkJoin({
+    departments: this.operationService.getAllDepartments(companySid)
+      .pipe(catchError(err => of({ data: [] }))),
+    ports: this.operationService.getAllPorts()
+      .pipe(catchError(err => of({ data: [] }))),
+    vessels: this.operationService.getAllVessels()
+      .pipe(catchError(err => of({ data: [] }))),
+    // Replace individual API calls with getCustomerByItsType
+    agents: this.operationService.getAllAgents(companySid)
       .pipe(catchError(err => of([]))),
-    }).pipe(tap(({ departments, ports, vessels, agents, carriers, containerTypes, currencies, packageTypes,customers }) => {
-      this.departments = departments.data || [];
-      this.portList = ports.data || [];
-      this.vesselList = vessels.data || [];
-      this.agentList = agents || [];
-      this.carrierList = carriers || [];
-      this.containerTypeList = containerTypes.data || [];
-      this.currencyList = currencies.data || [];
-      this.packageTypeList = packageTypes.data || [];
-      this.filteredDestinationAgents = [...this.agentList];
-      this.filteredOriginAgents = [...this.agentList];
-       this.customerList = customers || [];
+    carriers: this.operationService.getAllCarriers(companySid)
+        .pipe(catchError(err => of([]))),
+    forwarders: this.operationService.getCustomerByItsType({ companySid , type : ['forwarder']})
+      .pipe(catchError(err => of({ data: [] }))),
+    cfsList: this.operationService.getCustomerByItsType({ companySid , type : ['cFS']})
+      .pipe(catchError(err => of({ data: [] }))),
+    yards: this.operationService.getCustomerByItsType({ companySid , type : ['yard']}) 
+         .pipe(catchError(err => of({ data: [] }))),
+    containerTypes: this.operationService.getAllContainerTypes()
+      .pipe(catchError(err => of({ data: [] }))),
+    currencies: this.operationService.getAllCurrencies()
+      .pipe(catchError(err => of({ data: [] }))),
+    packageTypes: this.operationService.getUOMsByType('P') 
+      .pipe(catchError(err => of([]))),
+    customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
+      .pipe(catchError(err => of([]))),
+  }).pipe(tap(({ 
+    departments, ports, vessels, agents, carriers, forwarders, cfsList, yards,
+    containerTypes, currencies, packageTypes, customers 
+  }) => {
+    this.departments = departments.data || [];
+    this.portList = ports.data || [];
+    this.vesselList = vessels.data || [];
+    
+    // Update all customer type lists with data from the new API
+    this.agentList = agents || [];
+    this.carrierList = carriers || [];
+    this.forwarderList = forwarders.data || [];
+    this.cfsList = cfsList.data || [];
+    this.yardList = yards.data || []; 
+    
+    this.containerTypeList = containerTypes.data || [];
+    this.currencyList = currencies.data || [];
+    this.packageTypeList = packageTypes.data || [];
+    this.filteredDestinationAgents = [...this.agentList];
+    this.filteredOriginAgents = [...this.agentList];
+    this.customerList = customers || [];
 
-      // default filtered ports
-      this.filteredPorts = [...this.portList];
-      this.filteredPOL = [...this.filteredPorts];
-      this.filteredPOD = [...this.filteredPorts];
-    }));
-  }
+    // default filtered ports
+    this.filteredPorts = [...this.portList];
+    this.filteredPOL = [...this.filteredPorts];
+    this.filteredPOD = [...this.filteredPorts];
+  }));
+}
+
 
   loadMasterJobData(masterJobSid: number): void {
       this.spinner.show();
@@ -623,6 +654,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status && response.data) {
           const data = response.data;
+          console.log('API Response Data:', data); 
+        console.log('Others Data:', data.others); 
+        console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
           this.patchFormValues(data);
         }
         this.isLoading = false;
@@ -646,6 +680,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     const p = this.portList.find(p => p.PortCode === portCodeOrSid);
     return p ? p.PortMasterSid : null;
   };
+  
 
   // Patch master job fields
   this.masterJobForm.patchValue({
@@ -666,7 +701,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     FPD: findPortSidByCode(data.FPD),
     POLTerminal: data.POLTerminal,
     PODTerminal: data.PODTerminal,
-    MovementType: data.MovementType, // ✅ Fixed: Ensure MovementType is properly set
+    MovementType: data.MovementType,
     ShipmentTerms: data.ShipmentTerms,
     PkgType: data.PkgType,
     NoOfPkg: data.NoOfPkg,
@@ -680,41 +715,77 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     DGApprovedDate: data.DGApprovedDate ? new Date(data.DGApprovedDate) : null,
     CommodityDescription: data.CommodityDescription,
     MarksandNumber: data.MarksandNumber,
+    Status: data.Status === 'A' ? 'Active' : 'Suspended',
     
-    // ✅ Fixed: Properly handle vessel and voyage data
+    // Voyage data
     VoyageMasterSid: data.VoyageMasterSid || null,
-    VesselName: data.VesselName || '', // Ensure VesselName is properly set
-    VoyageNo: data.VoyageNo || '', // Ensure VoyageNo is properly set
+    VesselName: data.VesselName || '',
+    VoyageNo: data.VoyageNo || '',
     ETA: data.ETA ? new Date(data.ETA) : null,
     ETD: data.ETD ? new Date(data.ETD) : null,
-    ATA: data.ATA ? new Date(data.ATA) : null, // ✅ Fixed: Ensure ATA is properly set
-    ATD: data.ATD ? new Date(data.ATD) : null, // ✅ Fixed: Ensure ATD is properly set
+    ATA: data.ATA ? new Date(data.ATA) : null,
+    ATD: data.ATD ? new Date(data.ATD) : null,
     DestinationATA: data.DestinationATA ? new Date(data.DestinationATA) : null,
-    
-    // ✅ Fixed: Properly handle carrier data
-    CarrierMasterSid: data.CarrierMasterSid || null, // Ensure CarrierMasterSid is set
-    CarrierName: data.CarrierName || '', // Ensure CarrierName is properly displayed
-    
-    Yard: data.Yard || null,
-    YardAddress: data.YardAddress || '',
-    Transporter: data.Transporter || '',
-    HandlingInformation: data.HandlingInformation || '',
-    InternalNote: data.InternalNote || '',
-    CFS: data.CFS || null,
-    CFSAddress: data.CFSAddress || '',
-    StuffingStartDate: data.StuffingStartDate ? new Date(data.StuffingStartDate) : null,
-    StuffingEndDate: data.StuffingEndDate ? new Date(data.StuffingEndDate) : null,
-    CurrencyCode: data.CurrencyCode || '',
-    SellExchangeRate: data.SellExchangeRate || null,
-    AgentExchangeRate: data.AgentExchangeRate || null,
-    Coload: data.Coload || '',
-    CoLoader: data.CoLoader || '',
-    ExportDoNo: data.ExportDoNo || '',
-    ExportDoDate: data.ExportDoDate ? new Date(data.ExportDoDate) : null,
-    SOBDate: data.SOBDate ? new Date(data.SOBDate) : null,
-    CutOffDate: data.CutOffDate ? new Date(data.CutOffDate) : null,
-    SICutOff: data.SICutOff || ''
+    CarrierMasterSid: data.CarrierMasterSid || null,
+    CarrierName: data.CarrierName || '',
   });
+  if (data.others && data.others.length > 0) {
+    const othersData = data.others[0];
+    
+    // Find the CFS object if CFS value exists
+    let cfsValue = othersData.CFS;
+    if (cfsValue && this.cfsList.length > 0) {
+      const foundCFS = this.cfsList.find(cfs => 
+        cfs.CustomerMasterSid === cfsValue || cfs.CustomerName === cfsValue
+      );
+      if (foundCFS) {
+        cfsValue = foundCFS.CustomerMasterSid;
+      }
+    }
+
+    // Find the Yard object if Yard value exists
+    let yardValue = othersData.Yard;
+    if (yardValue && this.yardList.length > 0) {
+      const foundYard = this.yardList.find(yard => 
+        yard.CustomerMasterSid === yardValue || yard.CustomerName === yardValue
+      );
+      if (foundYard) {
+        yardValue = foundYard.CustomerMasterSid;
+      }
+    }
+
+
+  // ✅ PATCH OTHERS DATA WITH MasterJobOthersSid
+  if (data.others && data.others.length > 0) {
+    const othersData = data.others[0]; // Assuming others is an array with one object
+    this.masterJobForm.patchValue({
+      MasterJobOthersSid: othersData.MasterJobOthersSid || null, // ✅ ADD THIS
+      Yard: othersData.Yard || null,
+      YardAddress: othersData.YardAddress || '',
+      Transporter: othersData.Transporter || '',
+      HandlingInformation: othersData.HandlingInformation || '',
+      InternalNote: othersData.InternalNote || '',
+      CFS: othersData.CFS || null,
+      CFSAddress: othersData.CFSAddress || '',
+      StuffingStartDate: othersData.StuffingStartDate ? new Date(othersData.StuffingStartDate) : null,
+      StuffingEndDate: othersData.StuffingEndDate ? new Date(othersData.StuffingEndDate) : null,
+      CurrencyCode: othersData.CurrencyCode || '',
+      SellExchangeRate: othersData.SellExchangeRate || null,
+      AgentExchangeRate: othersData.AgentExchangeRate || null,
+      Coload: othersData.Coload === 'Y',
+      CoLoader: othersData.CoLoader || '',
+      ExportDoNo: othersData.ExportDoNo || '',
+      ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
+      SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
+    });
+    if (othersData.Coload === 'Y') {
+      this.masterJobForm.get('CoLoader')?.enable();
+    } else {
+      this.masterJobForm.get('CoLoader')?.disable();
+    }
+  
+  }
+}
 
   // Set department info
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
@@ -1162,145 +1233,136 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.masterJobForm.invalid) {
-      this.toastr.error('Please fill all required fields');
-      this.masterJobForm.markAllAsTouched();
-      return;
+        this.toastr.error('Please fill all required fields');
+        this.masterJobForm.markAllAsTouched();
+        return;
     }
 
     this.isLoading = true;
     
-    // Get the actual port codes instead of SIDs
     const getPortCode = (portSid: any): string => {
-      if (!portSid && portSid !== 0) return '';
-      const port = this.portList.find(p => p.PortMasterSid === portSid);
-      return port ? port.PortCode : portSid?.toString().substring(0, 100);
+        if (!portSid && portSid !== 0) return '';
+        const port = this.portList.find(p => p.PortMasterSid === portSid);
+        return port ? port.PortCode : portSid?.toString().substring(0, 100);
     };
 
     const formValue = this.masterJobForm.value;
 
-    const formData: any = {
-      ...formValue,
-      // Use port codes instead of SIDs
-      POO: getPortCode(formValue.POO),
-      POL: getPortCode(formValue.POL),
-      POD: getPortCode(formValue.POD),
-      FPD: getPortCode(formValue.FPD),
-      
-      // Ensure other string fields don't exceed limits
-      DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
-      POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
-      PODTerminal: formValue.PODTerminal?.substring(0, 200) || '',
-      CommodityDescription: formValue.CommodityDescription?.substring(0, 500) || '',
-      MarksandNumber: formValue.MarksandNumber?.substring(0, 200) || '',
-      masterJobConnection: this.connectionResult,
-      costRevenueCharges: this.rateResult,
-      followUps: this.followUpData.map(followUp => ({
-        ...followUp,
-        status: followUp.status === "Active" ? "A" : "S"
-      })),
-      edocs: this.edocData.map(edoc => ({ 
-        ...edoc,
-        status: edoc.status === "Active" ? "A" : "S"
-      })),
-      emails: this.emailData.map(email => ({ 
-        ...email,
-        status: email.status === "Active" ? "A" : "S"
-      })),
-      
-      // Map container activities with correct field name and format
-      containerActivities: this.containerActivityData.map(activity => ({
-        ContainerActivitySid: activity.ContainerActivitySid || null,
-        JobMasterSid: this.masterJobSid || null,
-        ContainerNumber: activity.ContainerNumber?.substring(0, 11) || '',
-        ContainerType: activity.ContainerType,
-        ActivityCode: activity.ActivityCode?.substring(0, 5) || '',
-        ActivityName: activity.ActivityName?.substring(0, 100) || '',
-        ActivityDate: this.formatDate(activity.ActivityDate),
-        ActivityFrom: activity.ActivityFrom?.substring(0, 50) || '',
-        ActivityTo: activity.ActivityTo?.substring(0, 50) || '',
-        Remarks: activity.Remarks?.substring(0, 200) || '',
-        Status: activity.Status || "A",
-        CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
-        UpdatedBy: this.isEditMode ? this.appSettingsService.userSettingSource.value['userEmail'] : null
-      })),
-      
-      masterJobContainers: this.formatContainerData(),
-      MasterJobDate: this.formatDate(formValue.MasterJobDate),
-      MBLDate: this.formatDate(formValue.MBLDate),
-      DGBookingDate: this.formatDate(formValue.DGBookingDate),
-      DGApprovedDate: this.formatDate(formValue.DGApprovedDate),
-      StuffingStartDate: this.formatDate(formValue.StuffingStartDate),
-      StuffingEndDate: this.formatDate(formValue.StuffingEndDate),
-      ExportDoDate: this.formatDate(formValue.ExportDoDate),
-      SOBDate: this.formatDate(formValue.SOBDate),
-      ETA: this.formatDate(formValue.ETA),
-      ETD: this.formatDate(formValue.ETD),
-      ATA: this.formatDate(formValue.ATA),
-      ATD: this.formatDate(formValue.ATD),
-      DestinationATA: this.formatDate(formValue.DestinationATA),
-      Haz: formValue.Haz ? 'Y' : 'N',
-      CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
-      CutOffDate: this.formatDate(formValue.CutOffDate),
-      SICutOff: formValue.SICutOff || ''
+    // Create the others object from form values
+    const othersData = {
+        MasterJobOthersSid: formValue.MasterJobOthersSid || null,
+        Yard: formValue.Yard,
+        YardAddress: formValue.YardAddress,
+        Transporter: formValue.Transporter,
+        HandlingInformation: formValue.HandlingInformation,
+        InternalNote: formValue.InternalNote,
+        CFS: formValue.CFS,
+        CFSAddress: formValue.CFSAddress,
+        StuffingStartDate: formValue.StuffingStartDate,
+        StuffingEndDate: formValue.StuffingEndDate,
+        CurrencyCode: formValue.CurrencyCode || '',
+        SellExchangeRate: formValue.SellExchangeRate,
+        AgentExchangeRate: formValue.AgentExchangeRate,
+        Coload: formValue.Coload ? 'Y' : 'N',
+        CoLoader: formValue.CoLoader,
+        ExportDoNo: formValue.ExportDoNo,
+        ExportDoDate: formValue.ExportDoDate,
+        SOBDate: formValue.SOBDate,
     };
 
-    // Format dates in form arrays
-    this.formatArrayDates(formData.masterJobConnection, ['ETD', 'ETA', 'ATD', 'ATA']);
-    this.formatArrayDates(formData.containerActivities, ['ActivityDate']);
+    const formData: any = {
+        ...formValue,
+        // Use port codes instead of SIDs
+        POO: getPortCode(formValue.POO),
+        POL: getPortCode(formValue.POL),
+        POD: getPortCode(formValue.POD),
+        FPD: getPortCode(formValue.FPD),
+        
+        // Add the others data as a separate object
+        others: othersData,
+        
+        // Ensure other string fields don't exceed limits
+        DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
+        POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
+        PODTerminal: formValue.PODTerminal?.substring(0, 200) || '',
+        CommodityDescription: formValue.CommodityDescription?.substring(0, 500) || '',
+        MarksandNumber: formValue.MarksandNumber?.substring(0, 200) || '',
+        Status: formValue.Status === 'Active' ? 'A' : 'S',
+        
+        // Your existing arrays
+        masterJobConnection: this.connectionResult,
+        costRevenueCharges: this.rateResult,
+        masterJobContainers: this.formatContainerData(),
+        
+        // Format dates
+        MasterJobDate: this.formatDate(formValue.MasterJobDate),
+        MBLDate: this.formatDate(formValue.MBLDate),
+        DGBookingDate: this.formatDate(formValue.DGBookingDate),
+        DGApprovedDate: this.formatDate(formValue.DGApprovedDate),
+        ETA: this.formatDate(formValue.ETA),
+        ETD: this.formatDate(formValue.ETD),
+        ATA: this.formatDate(formValue.ATA),
+        ATD: this.formatDate(formValue.ATD),
+        DestinationATA: this.formatDate(formValue.DestinationATA),
+        Haz: formValue.Haz ? 'Y' : 'N',
+        
+        CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+    };
 
+    // Add shipment list if needed
     const allShipments = (this.attachedBookings.getRawValue() || [])
       .filter(ship => !ship.MasterJobSid)
       .map(shipment => {
         return {
-          BookingHeaderSid : shipment.BookingHeaderSid,
-          HBLNo : shipment.HBLNo,
+          BookingHeaderSid: shipment.BookingHeaderSid,
+          HBLNo: shipment.HBLNo,
         }
     });
     formData['shipmentList'] = [...allShipments];
 
-    // Debug logs
-    console.log('Container activity data to be saved:', formData.containerActivities);
-    console.log('All form data:', formData);
+    // Debug to check the payload
+    console.log('Form Data to be saved:', formData);
+    console.log('Others data:', othersData);
 
     if (this.isEditMode && this.masterJobSid) {
-      formData.MasterJobSid = this.masterJobSid;
-      this.operationService.updateMasterJob(formData).subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-          if (response.status) {
-            this.toastr.success('Master Job updated successfully');
-          } else {
-            this.toastr.error(response.message || 'Failed to update Master Job');
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.toastr.error('Failed to update Master Job');
-          console.error('Error updating master job:', error);
-        }
-      });
+        formData.MasterJobSid = this.masterJobSid;
+        this.operationService.updateMasterJob(formData).subscribe({
+            next: (response: any) => {
+                this.isLoading = false;
+                if (response.status) {
+                    this.toastr.success('Master Job updated successfully');
+                } else {
+                    this.toastr.error(response.message || 'Failed to update Master Job');
+                }
+            },
+            error: (error) => {
+                this.isLoading = false;
+                this.toastr.error('Failed to update Master Job');
+                console.error('Error updating master job:', error);
+            }
+        });
     } else {
-      this.operationService.createMasterJob(formData).subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-          if (response.status) {
-            this.toastr.success('Master Job created successfully');
-            this.router.navigate(['/operation/master-job/list']);
-          } else {
-            this.toastr.error(response.message || 'Failed to create Master Job');
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.toastr.error('Failed to create Master Job');
-          console.error('Error creating master job:', error);
-        }
-      });
+        this.operationService.createMasterJob(formData).subscribe({
+            next: (response: any) => {
+                this.isLoading = false;
+                if (response.status) {
+                    this.toastr.success('Master Job created successfully');
+                    this.router.navigate(['/operation/master-job/list']);
+                } else {
+                    this.toastr.error(response.message || 'Failed to create Master Job');
+                }
+            },
+            error: (error) => {
+                this.isLoading = false;
+                this.toastr.error('Failed to create Master Job');
+                console.error('Error creating master job:', error);
+            }
+        });
     }
-  }
+}
 
 
   onContainerSubmit(): void {
@@ -1844,5 +1906,37 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     const date = this.masterJobForm.get('MBLDate')?.value;
     return date ? this.datepipe.transform(date) : 'N/A'
   }
-
+  onColoadChange(): void {
+  const coloadValue = this.masterJobForm.get('Coload')?.value;
+  
+  // Show/hide CoLoader field based on Coload value
+  if (coloadValue) {
+    this.masterJobForm.get('CoLoader')?.enable();
+  } else {
+    this.masterJobForm.get('CoLoader')?.setValue('');
+    this.masterJobForm.get('CoLoader')?.disable();
+  }
+}
+onCFSChange(selectedCFS: any): void {
+  if (!selectedCFS) {
+    this.masterJobForm.get('CFSAddress')?.setValue('');
+    return;
+  }
+  
+  // Auto-set the CFSAddress from the selected CFS's CustomerAddress1
+  this.masterJobForm.get('CFSAddress')?.setValue(
+    selectedCFS.CustomerAddress1 || ''
+  );
+}
+onYardChange(selectedYard: any): void {
+  if (!selectedYard) {
+    this.masterJobForm.get('YardAddress')?.setValue('');
+    return;
+  }
+  
+  // Auto-set the YardAddress from the selected Yard's CustomerAddress1
+  this.masterJobForm.get('YardAddress')?.setValue(
+    selectedYard.CustomerAddress1 || ''
+  );
+}
 }
