@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -114,7 +114,14 @@ export class SailingScheduleEntryComponent implements OnInit {
         private calendar: NgbCalendar,  
         private cdr: ChangeDetectorRef,
         public dropdownStore: DropdownStore
-    ){}
+    ){
+        effect(()=>{
+            const vesselData= this.dropdownStore.vesselData();
+            const carrierData = this.dropdownStore.customerTypeData();
+            this.vesselList = vesselData;
+            this.carrierList  = carrierData
+        })
+    }
 
     ngOnInit(): void {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -227,36 +234,35 @@ export class SailingScheduleEntryComponent implements OnInit {
 
     loadAllFields(){
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    forkJoin({
-        vessels : this.masterService.getAllVessels(),
-        carriers : this.masterService.getAllCarriers(CompanyMasterSid),
-        // ports : this.masterService.getAllPorts()
-    }).subscribe(({vessels,carriers})=>{
-        this.vesselList = vessels.data || [];
-        this.carrierList = carriers || [];
-        // this.portList = ports.data || [];
+
+    const payload = {
+        CompanyMasterSid: CompanyMasterSid,
+        types:['carrier']
+    }
+    this.dropdownStore.loadPorts();
+    this.dropdownStore.loadVessels()
+    this.dropdownStore.loadCustomerTypeData(payload)
+
+    if(this.dropdownStore.ports()){
 
         // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
-        const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
-        this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
-        this.applyPolPodExclusion();
-
-        // <<< NEW: if schedule data already loaded (edit mode), re-patch POL/POD so dropdowns can match items
-        if (this.sailHeadData) {
-            // Ensure numeric types (match PortMasterSid type)
-            const pol = this.sailHeadData.POLSid ? Number(this.sailHeadData.POLSid) : null;
-            const pod = this.sailHeadData.PODSid ? Number(this.sailHeadData.PODSid) : null;
-            // Patch only POLSid and PODSid (avoid overwriting other fields)
-            this.scheduleForm.patchValue({ POLSid: pol, PODSid: pod });
-            // Re-run exclusion to ensure lists are consistent
+            const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+            this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
             this.applyPolPodExclusion();
-            // Force change detection so dropdown visual updates
-            this.cdr.detectChanges();
-        }
-    }, (err) => {
-        console.error('Error loading lookup fields', err);
-    });
-    this.dropdownStore.loadPorts();
+    
+            // <<< NEW: if schedule data already loaded (edit mode), re-patch POL/POD so dropdowns can match items
+            if (this.sailHeadData) {
+                // Ensure numeric types (match PortMasterSid type)
+                const pol = this.sailHeadData.POLSid ? Number(this.sailHeadData.POLSid) : null;
+                const pod = this.sailHeadData.PODSid ? Number(this.sailHeadData.PODSid) : null;
+                // Patch only POLSid and PODSid (avoid overwriting other fields)
+                this.scheduleForm.patchValue({ POLSid: pol, PODSid: pod });
+                // Re-run exclusion to ensure lists are consistent
+                this.applyPolPodExclusion();
+                // Force change detection so dropdown visual updates
+                this.cdr.detectChanges();
+            }
+    }
 }
 
     applyPolPodExclusion() {
@@ -658,4 +664,11 @@ export class SailingScheduleEntryComponent implements OnInit {
             error: err => console.error('Error fetching audit logs:', err)
         });
     }
+
+    ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
 }
