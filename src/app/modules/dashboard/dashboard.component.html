@@ -50,11 +50,11 @@
             <div class="row g-4 align-items-end">
               <div class="col-md-4">
                 <div class="filter-group">
-                  <label class="filter-label">
+                  <label class="filter-label" for="sales">
                     <i class="fas fa-user me-1"></i>Sales Person
                   </label>
                   <div class="custom-select-wrapper">
-                    <select class="custom-select" [(ngModel)]="filters.salesperson" (change)="applyFilters()">
+                    <select class="custom-select" [(ngModel)]="filters.salesperson" (change)="applyFilters()" id="sales">
                       <option value="">🌟 All Sales People</option>
                       <option *ngFor="let person of dashboardData?.salespeople" [value]="person.name">
                         👤 {{person.name}}
@@ -65,18 +65,18 @@
               </div>
               <div class="col-md-3">
                 <div class="filter-group">
-                  <label class="filter-label">
+                  <label class="filter-label" for="date">
                     <i class="fas fa-calendar-check me-1"></i>Date From
                   </label>
-                  <input type="date" class="custom-input" [(ngModel)]="dateFromString" (change)="onDateFromChange($event)">
+                  <input type="date" class="custom-input" [(ngModel)]="dateFromString" (change)="onDateFromChange($event)" id="date">
                 </div>
               </div>
               <div class="col-md-3">
                 <div class="filter-group">
-                  <label class="filter-label">
+                  <label class="filter-label" for="Todate">
                     <i class="fas fa-calendar-check me-1"></i>Date To
                   </label>
-                  <input type="date" class="custom-input" [(ngModel)]="dateToString" (change)="onDateToChange($event)">
+                  <input type="date" class="custom-input" [(ngModel)]="dateToString" (change)="onDateToChange($event)" id="Todate">
                 </div>
               </div>
               <div class="col-md-2">
@@ -244,7 +244,7 @@
                     class="form-control dofi-ps-44"
                     placeholder="Search meetings, clients, or agenda..."
                     [(ngModel)]="meetingSearchTerm"
-                    (input)="filterMeetings()">
+                    (input)="filterMeetings()" id="search">
                 </div>
                 <button class="btn btn-info">
                   <i class="fas fa-plus-square me-1"></i>New Meeting
@@ -331,7 +331,7 @@
                     class="form-control dofi-ps-44"
                     placeholder="Search follow-ups..."
                     [(ngModel)]="followupSearchTerm"
-                    (input)="filterFollowups()">
+                    (input)="filterFollowups()" id="searchmeeting">
                 </div>
               </div>
             </div>
@@ -399,7 +399,7 @@
                     class="form-control dofi-ps-44"
                     placeholder="Search rate requests..."
                     [(ngModel)]="rateRequestSearchTerm"
-                    (input)="filterRateRequests()">
+                    (input)="filterRateRequests()" id="searchrate">
                 </div>
               </div>
             </div>
