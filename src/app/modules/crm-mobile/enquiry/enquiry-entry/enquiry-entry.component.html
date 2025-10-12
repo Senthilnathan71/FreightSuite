@@ -199,7 +199,7 @@
 
                         <ng-select formControlName="Segment" class="ng-select" (change)="onSegmentChange($event)"
                             placeholder="" appendTo="body">
-                            <ng-option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
+                            <ng-option *ngFor="let item of dropdownStore.department()" [value]="item.DepartmentMasterSid">
                                 {{ item.departmentName }}
                             </ng-option>
                         </ng-select>

@@ -163,20 +163,14 @@
                 }
               </div>
             </aside>
-            <aside class="col-md-4" *ngIf="companyForm.get('companyCode')?.enabled">
+            <!-- <aside class="col-md-4" *ngIf="companyForm.get('companyCode')?.enabled">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!companyForm.get('CurrencyMasterSid')?.value">
                 <ng-select id="text-input" class="ng-select" placeholder="" formControlName="CurrencyMasterSid">
-                  <ng-option *ngFor="let currency of currencyResults" [value]="currency.CurrencyMasterSid">
+                  <ng-option *ngFor="let currency of dropdownStore.currencies()" [value]="currency.CurrencyMasterSid">
                     {{currency.currencyName}}
                   </ng-option>
                 </ng-select>
-                <!-- <select formControlName="CurrencyMasterSid" class="form-select">
-                                    <option value="">Select Currency</option>
-                                    <option *ngFor="let currency of currencyResults"
-                                        [value]="currency.CurrencyMasterSid">
-                                        {{currency.currencyName}}</option>
-                                </select> -->
                 <label for="text-input" class="input-label">Currency <span class="text-danger">*</span></label>
 
 
@@ -189,7 +183,22 @@
                 </div>
                 }
               </div>
-            </aside>
+            </aside> -->
+
+            <aside class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!companyForm.get('CurrencyMasterSid')?.value">
+                                        <dofi-searchable-dropdown  [items]="currencyResults" formControlName="CurrencyMasterSid" [placeholder]="''"
+                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
+                                        </dofi-searchable-dropdown>
+                                        <label class="input-label">Currency <span class="text-danger">*</span></label>
+                                        <div *ngIf="companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid"
+                                            class="error-message">
+                                            <span *ngIf="companyForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
+                                        </div>
+                                    </div>
+                                </aside>
 
             <!-- ADDRESS LINE 1 -->
 

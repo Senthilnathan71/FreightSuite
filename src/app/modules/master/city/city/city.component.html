@@ -343,7 +343,7 @@
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!cityForm.get('StateMasterSid')?.value">
                             <ng-select
                             formControlName="StateMasterSid"
-                            [items]="stateList"
+                            [items]="dropdownStore.states()"
                             bindLabel="stateName"
                             bindValue="StateMasterSid"
                             placeholder=""
