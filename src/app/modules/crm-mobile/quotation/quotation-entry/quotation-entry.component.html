@@ -100,7 +100,12 @@
       </div>
     </div>
 
-    <div *ngIf="selectedTab1 === 'Route Details'">
+    <div class="ms-auto" *ngIf="isEditMode && quotationApproved">
+      <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" (click)="goForBookingCreation()">
+        <i class="fas fa-plus me-1"></i> Create Booking
+      </button>
+    </div>
+    <div *ngIf="selectedTab1 === 'Route Details'" class="d-flex align-items-center gap-1">
       <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button" (click)="addQuoteRoute()"
         [disabled]="f['EnquirySid'].value || disableAllModification">
         <i class="fas fa-plus me-1"></i> Add Route
@@ -157,7 +162,7 @@
                   <span class="text-danger"></span></label>
               </div>
             </aside>
-            <aside class="col-md-4 mt-md-1 mt-0">
+            <aside class="col-md-4 mt-md-1 mt-md-1">
               <div class="custom-form-group">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
@@ -168,7 +173,7 @@
                 </div>
               </div>
             </aside>
-            <aside class="col-md-4" *ngIf="quotationForm.get('LeadOrCustomer')?.value">
+            <aside class="col-md-4" *ngIf="!isEditMode && quotationForm.get('LeadOrCustomer')?.value">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
                 <!-- <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
@@ -181,7 +186,7 @@
                     </div>
                   </ng-template>
                 </ng-select> -->
-                <dofi-searchable-dropdown *ngIf="!isEditMode" [items]="customers" formControlName="CustomerMasterSid"
+                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid"
                   placeholder="" [displayFields]="customerLookupConfig.displayFields"
                   [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
                   bindValue="CustomerMasterSid" (itemSelected)="onSelectionChange($event)">
@@ -282,7 +287,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
+                  <input class="form-check-input" type="checkbox" value="" id="rateAgreed"
                     formControlName="AgreedRate">
                   <label class="form-check-label" for="flexCheckChecked">
                     Rate Agreed
@@ -378,7 +383,7 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('DepartmentMasterSid')?.value">
-                          <ng-select formControlName="DepartmentMasterSid" [items]="departments"
+                          <ng-select formControlName="DepartmentMasterSid" [items]="dropdownStore.department()"
                             bindLabel="departmentName" bindValue="DepartmentMasterSid"
                             (change)="onDeptChange($event,routeIndex)">
 
@@ -554,7 +559,7 @@
                         *ngIf="route.value.segmentType === 'LCL'|| route.value.segmentType === 'AIR'"></aside>
                       <aside class="col-md-2 d-md-block d-none"></aside>
                       <aside class="col-md-2">
-                        <div class="custom-form-group custom-form-group-select"
+                        <div class="custom-form-group custom-form-group-select mt-md-1"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">
                           <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
                             bindValue="name" placeholder="">
@@ -573,7 +578,7 @@
                       </aside>
                       <aside class="col-md-2"
                         *ngIf="route.value.segmentType === 'LCL' || route.value.segmentType === 'AIR'">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder="" DecimalPrecision
                             [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
                             class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
@@ -587,7 +592,7 @@
                         </div>
                       </aside>
                       <aside class="col-md-2" *ngIf="route.value.segmentType === 'LCL'">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
@@ -597,7 +602,7 @@
                       </aside>
 
                       <aside class="col-md-2" *ngIf="route.value.segmentType === 'LCL'">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
@@ -614,7 +619,7 @@
                       </aside>
 
                       <aside class="col-md-2" *ngIf="route.value.segmentType === 'AIR'">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="ChargeableWeight"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
@@ -631,7 +636,7 @@
                       </aside>
 
                       <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL'">
-                        <div class="custom-form-group custom-form-group-select"
+                        <div class="custom-form-group custom-form-group-select mt-md-1"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('ContainerType')?.value">
                           <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerCode"
                             formControlName="ContainerType" appendTo="body" placeholder="">
@@ -649,7 +654,7 @@
                       </aside>
 
                       <aside class="col-md-2" *ngIf="route.value.segmentType === 'FCL'">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group mt-md-1">
                           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                             formControlName="Qty" [onlyNumbers]>
                           <label for="text-input" class="input-label">No of Container <span class="text-danger">{{
@@ -806,7 +811,7 @@
                                 <!-- Haz Part  -->
                                 <td>
                                   <div class="form-check ms-5">
-                                    <input class="form-check-input" type="checkbox" id="leadOrCustomer"
+                                    <input class="form-check-input" type="checkbox" id="IsHaz"
                                       formControlName="IsHaz" (change)="onHazChange(routeIndex,productIndex,$event)"
                                       (keydown.enter)="onHazChange(routeIndex,productIndex,$event)">
                                   </div>

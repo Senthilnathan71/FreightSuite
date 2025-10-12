@@ -17,6 +17,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
   selector: 'app-country-entry',
@@ -66,14 +67,17 @@ export class CountryEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    public dropdownStore: DropdownStore
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-    this.loadZones();
-    this.loadCurrencies();
+    this.dropdownStore.loadZones();
+    this.dropdownStore.loadCurrencies();
+    // this.loadZones();
+    // this.loadCurrencies();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.countryId = +params['id'];
@@ -139,30 +143,30 @@ export class CountryEntryComponent implements OnInit {
     });
   }
 
-  loadZones() {
-    this.masterService.getAllZones().subscribe({
-      next: (resp: any) => {
-        this.zones = resp.data || resp;
-      },
-      error: (err) => {
-        console.error('Error loading zones:', err);
-        this.appSettingService.showError('Failed to load zones');
-      }
-    });
-  }
+  // loadZones() {
+  //   this.masterService.getAllZones().subscribe({
+  //     next: (resp: any) => {
+  //       this.zones = resp.data || resp;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading zones:', err);
+  //       this.appSettingService.showError('Failed to load zones');
+  //     }
+  //   });
+  // }
 
-  loadCurrencies() {
-    this.masterService.getAllCurrencies().subscribe({
-      next: (resp: any) => {
-        console.log('Currencies loaded:', resp); // Add this line
-        this.currencies = resp.data || resp;
-      },
-      error: (err) => {
-        console.error('Error loading currencies:', err);
-        this.appSettingService.showError('Failed to load currencies');
-      }
-    });
-  }
+  // loadCurrencies() {
+  //   this.masterService.getAllCurrencies().subscribe({
+  //     next: (resp: any) => {
+  //       console.log('Currencies loaded:', resp); // Add this line
+  //       this.currencies = resp.data || resp;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading currencies:', err);
+  //       this.appSettingService.showError('Failed to load currencies');
+  //     }
+  //   });
+  // }
 
   loadCountry(id: number) {
     this.countryForm.reset();

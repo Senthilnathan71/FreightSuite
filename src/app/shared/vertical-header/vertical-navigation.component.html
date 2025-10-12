@@ -112,7 +112,7 @@
               <input type="text" class="form-control" id="exampleInputname1" placeholder="Enter Name" />
             </div>
             <div class="mb-2">
-              <input type="email" class="form-control" placeholder="Enter email" />
+              <input type="email" class="form-control" placeholder="Enter email" name="email" autocomplete="email"/>
             </div>
             <div class="mb-2">
               <textarea class="form-control" id="exampleTextarea" rows="3" placeholder="Message"></textarea>
@@ -199,7 +199,7 @@
   <li class="nav-item">
   <div class="d-flex gap-3">
     <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
-      <input type="text"  #searchMenuInput class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
+      <input type="text"  #searchMenuInput class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu" name="search"
         style="border-radius: 20px;" (click)="onSearchClick()" (input)="searchMenu($event)" (blur)="onInputBlur($event)" (keydown)="onKeyDown($event)"
         ngbDropdownToggle />
       <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
@@ -230,7 +230,7 @@
       <div class="position-relative" ngbDropdown #docSearchDropdown="ngbDropdown" [autoClose]="outside">
         <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Document"
           style="border-radius: 20px;" (click)="$event.stopPropagation(); docSearchDropdown.open()"
-          (input)="searchDocuments($event)" ngbDropdownToggle>
+          (input)="searchDocuments($event)" name="search" ngbDropdownToggle>
         <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
         <div class="dropdown-menu w-100" style="max-height: 230px;" ngbDropdownMenu>

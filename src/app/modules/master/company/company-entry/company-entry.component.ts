@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NgbAccordionModule, NgbAlertModule, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -28,6 +28,7 @@ import { ConfigComponent } from '../config/config.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -48,7 +49,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 		NgbPaginationModule,
 		ConfigComponent,
 		NgbAccordionModule,
-		NgbDropdownModule
+		NgbDropdownModule,
+		SearchableDropdown
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
@@ -128,6 +130,11 @@ export class CompanyEntryComponent implements OnInit {
 	configModalRef: NgbModalRef;
 	auditLogs: any[] = []; // Stores audit logs
 	  auditLogModalRef!: NgbModalRef;
+	  CurrencyLookupConfig = {
+    displayFields : ['currencyCode', 'currencyName','Country'],
+    displayLabels : ['Code', 'Name','Country'],
+    labelFields :['currencyCode', 'currencyName','Country'],
+  };
 	
 
 	// CONSTRUCTOR
@@ -143,7 +150,19 @@ export class CompanyEntryComponent implements OnInit {
 		private cdRef: ChangeDetectorRef,
 		private leadService: LeadService,
 		public dropdownStore:DropdownStore
-	) { }
+	) {
+		effect(() => {
+			const currencies = this.dropdownStore.currencies();
+
+			this.currencyResults = currencies.map(c => {
+				return {
+					...c,
+					Country : c.countryMaster?.countryName
+				}
+			})
+			console.log(this.currencyResults);
+		})
+	 }
 
 	// LIFECYCLE HOOK
 
@@ -838,16 +857,14 @@ export class CompanyEntryComponent implements OnInit {
 
 	loadAllFields() {
 		forkJoin({
-			// countries: this.masterService.getAllCountry(),
-			currencies: this.masterService.getAllCurrencies(),
 			cities: this.masterService.getAllCity()
-		}).subscribe(({ currencies, cities }) => {
-			// this.countryResults = countries.data;
-			this.currencyResults = currencies;
+		}).subscribe(({  cities }) => {
 			this.cityResults = cities
-
 		});
-		this.dropdownStore.loadCountries()
+		this.dropdownStore.loadCountries();
+		this.dropdownStore.loadCurrencies();
+
+		// this.currencyResults = (this.dropdownStore.currencies() || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
 	}
 
 	loadBranches() {

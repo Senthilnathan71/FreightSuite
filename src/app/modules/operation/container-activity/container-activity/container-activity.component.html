@@ -78,12 +78,12 @@
     <div class="modal-body">
         <div class="row compact-form" [formGroup]="activityForm">
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!activityForm.get('ContainerNumber')?.value">
                     <ng-select formControlName="ContainerNumber"
                            [items]="filteredContainerList"
                            bindLabel="ContainerNumber"
                            bindValue="ContainerNumber"
-                           placeholder="Select Container"
+                           placeholder=""
                            (change)="onContainerChange($event)"
                            (search)="filterContainers($event.term)">
                         <ng-template ng-option-tmp let-item="item">
@@ -101,12 +101,12 @@
             </aside>
 
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!activityForm.get('ContainerType')?.value">
                     <ng-select formControlName="ContainerType"
                            [items]="containerTypeList"
                            bindLabel="ContainerName"
                            bindValue="ContainerTypeMasterSid"
-                           placeholder="Select Container Type"
+                           placeholder=""
                            [readonly]="!!activityForm.get('ContainerNumber')?.value">
                     </ng-select>
                     <label class="input-label">Container Type</label>
@@ -119,7 +119,7 @@
                               [items]="activityMasterList" 
                               bindLabel="ActivityName" 
                               bindValue="ActivityCode"
-                              placeholder="Select Activity"
+                              placeholder=""
                               (change)="onActivityChange($event)">
                     </ng-select>
                     <label class="input-label">Activity Name <span class="text-danger">*</span></label>
@@ -130,7 +130,7 @@
             </aside>
 
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
+                <div class="custom-form-group custom-form-group-select-date">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker"
                             formControlName="ActivityDate" (click)="d.toggle()" />

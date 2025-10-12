@@ -492,6 +492,15 @@ getAllPorts() {
       })
     );
   }
+  
+  getCustomerByItsType(payload: any) {
+    return this.http.post<{ data: any[] }>('customer/customer_type/filter', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
   getAllAgents(CompanyMasterSid: number) {
     return this.http.post('customer/agent',{CompanyMasterSid}).pipe(
       map((resp: any) => {
