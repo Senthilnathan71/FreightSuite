@@ -1,0 +1,210 @@
+<!-- Print Modal Template -->
+<ng-template #printModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Invoice Print Preview</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+    <div id="printContent">
+      <!-- Invoice Print Template -->
+      <div style="max-width: 960px; margin: auto; border: 2px solid black; padding: 20px;">
+        <div class="row px-3 pt-3">
+          <div class="col-md-6">
+            <div class="d-flex align-items-center gap-4">
+              <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="100" height="100"
+                class="img-fluid" alt="">
+              <h4> {{currentCompany?.CompanyName || 'Company Name'}} </h4>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="text-start">
+              <h5 class="mb-1">{{currentCompany?.CompanyName || 'Company Name'}}</h5>
+              <p class="mb-1">{{currentCompany?.Address || 'Address'}}</p>
+              <p class="mb-1">{{currentCompany?.City || 'City'}}, {{currentCompany?.ZipCode || 'Zipcode'}}</p>
+              <p class="mb-3">TEL: {{currentCompany?.Phone || 'Phone'}}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <h5 class="fw-bold mb-2">TAX INVOICE</h5>
+          <p style="font-size: 12px;">
+            PAN : {{currentCompany?.PAN || '-'}} | GST Code : {{currentCompany?.GSTNo || '-'}}
+          </p>
+        </div>
+
+        <div class="row mt-4 px-3">
+          <div class="col-md-6">
+            <strong>BILLED TO</strong><br />
+            {{getCustomerBranchName()}}<br />
+            {{invoiceForm.get('PartyAddress')?.value || '-'}}
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex">
+              <div style="width: 140px;"><strong>Invoice No</strong></div>
+              <div>: {{invoiceForm.get('VoucherNumber')?.value || '-'}}</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 140px;"><strong>Invoice Date</strong></div>
+              <div>: {{formatDate(invoiceForm.get('VoucherDate')?.value)}}</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 140px;"><strong>GST No</strong></div>
+              <div>: {{invoiceForm.get('GSTNo')?.value || '-'}}</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 140px;"><strong>IRN No</strong></div>
+              <div>: {{invoiceForm.get('IRNNumber')?.value || '-'}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+        <div class="mx-3 table-responsive">
+          <table class="table table-bordered table-sm align-middle my-2" style="border: 2px solid black;">
+            <thead>
+              <tr>
+                <th style="border: 2px solid black;">Particulars</th>
+                <th style="border: 2px solid black;">HSN/SAC</th>
+                <th style="border: 2px solid black;">Curr</th>
+                <th style="border: 2px solid black;">Qty</th>
+                <th style="border: 2px solid black;">Rate</th>
+                <th style="border: 2px solid black;">ROE</th>
+                <th style="border: 2px solid black;">Taxable Value</th>
+                <ng-container *ngIf="isIndiaGST">
+                  <th style="border: 2px solid black;">CGST %</th>
+                  <th style="border: 2px solid black;">CGST Amt</th>
+                  <th style="border: 2px solid black;">SGST %</th>
+                  <th style="border: 2px solid black;">SGST Amt</th>
+                </ng-container>
+                <ng-container *ngIf="isVATMode">
+                  <th style="border: 2px solid black;">VAT %</th>
+                  <th style="border: 2px solid black;">VAT Amt</th>
+                </ng-container>
+                <th style="border: 2px solid black;">Total ({{invoiceForm.get('CurrencyCode')?.value}})</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detail of details.controls">
+                <td style="border: 2px solid black;">{{detail.get('ChargeDescription')?.value}}</td>
+                <td style="border: 2px solid black;">{{getHSSACCode(detail.get('HSSACMasterSid')?.value)}}</td>
+                <td style="border: 2px solid black;">{{detail.get('CurrencyCode')?.value}}</td>
+                <td style="border: 2px solid black;">{{detail.get('NumberOfUnit')?.value | number:'1.3-3'}}</td>
+                <td style="border: 2px solid black;">{{detail.get('Rate')?.value | number:'1.2-2'}}</td>
+                <td style="border: 2px solid black;">{{detail.get('ExchangeRate')?.value | number:'1.2-4'}}</td>
+                <td style="border: 2px solid black;">{{detail.get('TaxableAmount')?.value | number:'1.2-2'}}</td>
+                <ng-container *ngIf="isIndiaGST">
+                  <td style="border: 2px solid black;">{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
+                  <td style="border: 2px solid black;">{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                  <td style="border: 2px solid black;">{{detail.get('TaxPercentage2')?.value | number:'1.2-2'}}</td>
+                  <td style="border: 2px solid black;">{{detail.get('TaxAmount2')?.value | number:'1.2-2'}}</td>
+                </ng-container>
+                <ng-container *ngIf="isVATMode">
+                  <td style="border: 2px solid black;">{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
+                  <td style="border: 2px solid black;">{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                </ng-container>
+                <td style="border: 2px solid black;">{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+              </tr>
+              <tr>
+                <td style="border: 2px solid black;" [attr.colspan]="isIndiaGST ? 11 : 9" class="text-end"><strong>Total</strong></td>
+                <td style="border: 2px solid black;"><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex px-3">
+          <p class="fw-bold mb-0">Amount In Words</p>
+          <p class="mb-0 ms-2">: {{getAmountInWords()}}</p>
+        </div>
+
+        <div class="d-flex  px-3 mt-3">
+          <p style="width: 140px; margin-bottom: 5px; font-weight: 700;">Remarks</p>
+          <p style="margin-bottom: 0;">: {{invoiceForm.get('Remarks')?.value || '-'}}</p>
+        </div>
+
+        <div class="text-end mt-4 px-3 mb-3">
+          <p class="mb-0"><strong>For {{currentCompany?.CompanyName || 'Company Name'}}</strong></p>
+          <div style="height: 60px;"></div>
+          <p class="mb-0">Authorised Signatory</p>
+        </div>
+
+        <p class="text-center mb-0">Copyright © 2025 <span class="fw-bold">{{currentCompany?.CompanyName}}</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+      <i class="fas fa-times me-1"></i> Close
+    </button>
+    <button type="button" class="btn btn-success" (click)="downloadPDF()">
+      <i class="fas fa-download me-1"></i> Download PDF
+    </button>
+    <button type="button" class="btn btn-primary" (click)="openEmailModal(); modal.dismiss()">
+      <i class="fas fa-envelope me-1"></i> Send Email
+    </button>
+  </div>
+</ng-template>
+
+<!-- Email Modal Template -->
+<ng-template #emailModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Send Invoice via Email</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="emailForm">
+      <div class="mb-3">
+        <label class="form-label">From <span class="text-danger">*</span></label>
+        <input type="email" class="form-control" formControlName="from" placeholder="sender@example.com">
+        <div class="text-danger" *ngIf="emailForm.get('from')?.invalid && emailForm.get('from')?.touched">
+          Please enter a valid email address
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">To <span class="text-danger">*</span></label>
+        <input type="email" class="form-control" formControlName="to" placeholder="recipient@example.com">
+        <div class="text-danger" *ngIf="emailForm.get('to')?.invalid && emailForm.get('to')?.touched">
+          Please enter a valid email address
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">CC</label>
+        <input type="email" class="form-control" formControlName="cc" placeholder="cc@example.com (optional)">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Subject <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" formControlName="subject" placeholder="Invoice subject">
+        <div class="text-danger" *ngIf="emailForm.get('subject')?.invalid && emailForm.get('subject')?.touched">
+          Please enter a subject
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Message</label>
+        <textarea class="form-control" formControlName="message" rows="4" placeholder="Email message"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Attachment</label>
+        <div class="form-control bg-light">
+          <i class="fas fa-file-pdf text-danger me-2"></i>
+          Invoice_{{invoiceForm.get('VoucherNumber')?.value}}.pdf
+        </div>
+        <small class="text-muted">Invoice will be attached as PDF</small>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+      <i class="fas fa-times me-1"></i> Cancel
+    </button>
+    <button type="button" class="btn btn-primary" (click)="sendInvoiceEmail()" [disabled]="emailForm.invalid">
+      <i class="fas fa-paper-plane me-1"></i> Send Email
+    </button>
+  </div>
+</ng-template>

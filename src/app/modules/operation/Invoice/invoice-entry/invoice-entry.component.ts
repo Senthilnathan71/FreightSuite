@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
@@ -16,6 +16,8 @@ import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -42,6 +44,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
 })
 export class InvoiceEntryComponent implements OnInit {
   invoiceForm!: FormGroup;
+  emailForm!: FormGroup;
   headerId: number | null = null;
   currentCompany: any;
   currentBranch: any;
@@ -49,6 +52,10 @@ export class InvoiceEntryComponent implements OnInit {
   // current user email to send CreatedBy / UpdatedBy
   currUserEmail: string | null = null;
   get isEditMode() { return !!this.headerId; }
+
+  // ViewChild references for modals
+  @ViewChild('printModal') printModalRef: any;
+  @ViewChild('emailModal') emailModalRef: any;
 
   // lookups
   customerList: any[] = [];
@@ -93,6 +100,14 @@ export class InvoiceEntryComponent implements OnInit {
   bookingModeCountry: string = '';
 
   private pendingBranchToSelect: number | null = null;
+
+  // Tax display mode based on country
+  get isIndiaGST(): boolean {
+    return this.bookingModeCountry === 'india';
+  }
+  get isVATMode(): boolean {
+    return !this.isIndiaGST; // VAT for non-India countries
+  }
 
   get f(): { [key: string]: AbstractControl } {
     return this.invoiceForm.controls;
@@ -203,8 +218,49 @@ export class InvoiceEntryComponent implements OnInit {
       const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
       const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
 
-      const countryName = company?.countryName || company?.country?.countryName;
+      // Try to get country from multiple sources
+      // Priority: 1. Branch country, 2. Company country, 3. Fetch from backend
+      let countryName = null;
+
+      // Check currentBranch (set in ngOnInit)
+      if (this.currentBranch) {
+        countryName = this.currentBranch.countryName
+          || this.currentBranch.country?.countryName
+          || this.currentBranch.countryMaster?.countryName;
+      }
+
+      // Fallback to company
+      if (!countryName && company) {
+        countryName = company.countryName
+          || company.country?.countryName
+          || company.countryMaster?.countryName;
+      }
+
+      // Set bookingModeCountry - default to empty string if not found
       this.bookingModeCountry = countryName ? String(countryName).trim().toLowerCase() : '';
+
+      // If still no country, try to fetch it from backend based on CountryMasterSid
+      if (!this.bookingModeCountry) {
+        const countryMasterSid = this.currentBranch?.CountryMasterSid || company?.CountryMasterSid;
+        if (countryMasterSid) {
+          try {
+            await this.fetchCountryName(countryMasterSid);
+          } catch (e) {
+            console.warn('Could not fetch country information', e);
+          }
+        }
+      }
+
+      console.log('DEBUG - bookingModeCountry:', this.bookingModeCountry);
+      console.log('DEBUG - isIndiaGST:', this.isIndiaGST);
+      console.log('DEBUG - isVATMode:', this.isVATMode);
+
+      // If country is still not determined, log a warning
+      if (!this.bookingModeCountry) {
+        console.warn('WARNING: Country could not be determined. Defaulting to VAT mode.');
+        console.warn('Company data:', company);
+        console.warn('Branch data:', this.currentBranch);
+      }
 
       try {
         const custResp: any = await firstValueFrom(this.operationService.getAllCustomerRelatedLookups(filterOption));
@@ -262,6 +318,23 @@ export class InvoiceEntryComponent implements OnInit {
       this.spinner.hide();
       console.error('Error loading lookups', error);
       this.appSettingService.showError('Error loading lookups.');
+    }
+  }
+
+  async fetchCountryName(countryMasterSid: number) {
+    try {
+      const resp: any = await firstValueFrom(this.operationService.getCountryById(countryMasterSid));
+      if (resp?.status && resp.data) {
+        const country = resp.data;
+        const countryName = country.countryName || country.CountryName;
+        if (countryName) {
+          this.bookingModeCountry = String(countryName).trim().toLowerCase();
+          console.log('DEBUG - Fetched country from backend:', this.bookingModeCountry);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching country:', error);
+      throw error;
     }
   }
 
@@ -1040,5 +1113,303 @@ export class InvoiceEntryComponent implements OnInit {
     const houseJobs = this.houseJobListByMasterJob[masterJobSid] || [];
     const job = houseJobs.find(j => j.HouseJobSid === jobSid);
     return job?.HouseJobNumber || job?.displayLabel || '-';
+  }
+
+  // Print Modal Methods
+  openPrintModal() {
+    if (!this.headerId) {
+      this.appSettingService.showWarning('Please save the invoice first.');
+      return;
+    }
+    this.modalService.open(this.printModalRef, { size: 'xl', scrollable: true });
+  }
+
+  async downloadPDF() {
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      this.appSettingService.showError('Print content not found.');
+      return;
+    }
+
+    try {
+      this.spinner.show();
+
+      // Generate PDF using html2canvas and jsPDF
+      const canvas = await html2canvas(printContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages if content exceeds one page
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Generate filename with invoice number
+      const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || 'Invoice';
+      const filename = `Invoice_${voucherNumber}.pdf`;
+
+      // Download the PDF
+      pdf.save(filename);
+
+      this.spinner.hide();
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      this.spinner.hide();
+      console.error('Error generating PDF:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    }
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    const printContent = document.getElementById('printContent');
+    if (!printContent) {
+      return null;
+    }
+
+    try {
+      const canvas = await html2canvas(printContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output('blob');
+    } catch (error) {
+      console.error('Error generating PDF blob:', error);
+      return null;
+    }
+  }
+
+  openEmailModal() {
+    this.initializeEmailForm();
+    this.modalService.open(this.emailModalRef, { size: 'lg' });
+  }
+
+  initializeEmailForm() {
+    const customerBranchSid = this.invoiceForm.get('PartyName')?.value;
+    const customerBranch = this.customerBranchList.find(b => b.CustomerBranchSid === customerBranchSid);
+    const customerEmail = customerBranch?.Email || customerBranch?.email || '';
+
+    this.emailForm = this.fb.group({
+      from: [this.currUserEmail || '', [Validators.required, Validators.email]],
+      to: [customerEmail, [Validators.required, Validators.email]],
+      cc: ['', Validators.email],
+      subject: [`Invoice ${this.invoiceForm.get('VoucherNumber')?.value}`, Validators.required],
+      message: ['Please find attached invoice for your reference.\n\nThank you for your business.']
+    });
+  }
+
+  async sendInvoiceEmail() {
+    if (this.emailForm.invalid) {
+      this.emailForm.markAllAsTouched();
+      this.appSettingService.showWarning('Please fill all required email fields correctly.');
+      return;
+    }
+
+    try {
+      this.spinner.show();
+
+      // Generate PDF blob
+      const pdfBlob = await this.generatePDFBlob();
+      if (!pdfBlob) {
+        this.appSettingService.showError('Failed to generate PDF. Please try again.');
+        this.spinner.hide();
+        return;
+      }
+
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(pdfBlob);
+      reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        const pdfBase64 = base64data.split(',')[1]; // Remove data:application/pdf;base64, prefix
+
+        const emailData = this.emailForm.value;
+        const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || 'Invoice';
+        const filename = `Invoice_${voucherNumber}.pdf`;
+
+        // Prepare payload for API
+        const payload = {
+          from: emailData.from,
+          to: emailData.to,
+          cc: emailData.cc || '',
+          subject: emailData.subject,
+          message: emailData.message,
+          pdfBase64: pdfBase64,
+          filename: filename,
+          invoiceDetails: {
+            companyName: this.currentCompany?.CompanyName || 'Company Name',
+            invoiceNumber: voucherNumber,
+            invoiceDate: this.formatDate(this.invoiceForm.get('VoucherDate')?.value),
+            totalAmount: this.getGrandTotal().toFixed(2),
+            currency: this.invoiceForm.get('CurrencyCode')?.value || ''
+          }
+        };
+
+        // Call API to send email
+        this.operationService.sendInvoiceEmail(payload).subscribe({
+          next: (resp: any) => {
+            this.spinner.hide();
+            if (resp?.status) {
+              this.appSettingService.showSuccess('Invoice email sent successfully!');
+              this.modalService.dismissAll();
+            } else {
+              this.appSettingService.showError(resp?.message || 'Failed to send email.');
+            }
+          },
+          error: (err) => {
+            this.spinner.hide();
+            console.error('Error sending email:', err);
+            this.appSettingService.showError('Failed to send invoice email. Please try again.');
+          }
+        });
+      };
+
+      reader.onerror = () => {
+        this.spinner.hide();
+        this.appSettingService.showError('Failed to process PDF. Please try again.');
+      };
+    } catch (error) {
+      this.spinner.hide();
+      console.error('Error in sendInvoiceEmail:', error);
+      this.appSettingService.showError('An error occurred while sending email.');
+    }
+  }
+
+  getCustomerBranchName(): string {
+    const branchSid = this.invoiceForm.get('PartyName')?.value;
+    if (!branchSid) return '-';
+    const branch = this.customerBranchList.find(b => b.CustomerBranchSid === branchSid);
+    return branch?.CustomerBranchName || branch?.CustomerName || '-';
+  }
+
+  formatDate(date: any): string {
+    if (!date) return '-';
+    // Handle NgbDateStruct
+    if (date.year && date.month && date.day) {
+      return `${date.day.toString().padStart(2, '0')}/${date.month.toString().padStart(2, '0')}/${date.year}`;
+    }
+    // Handle Date object or string
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+  }
+
+  getAmountInWords(): string {
+    const total = this.getGrandTotal();
+    const currency = this.invoiceForm.get('CurrencyCode')?.value || '';
+
+    // Use Indian numbering system for India, international for others
+    const isIndian = this.bookingModeCountry === 'india';
+
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
+    const convertLessThanThousand = (n: number): string => {
+      if (n === 0) return '';
+      if (n < 10) return ones[n];
+      if (n < 20) return teens[n - 10];
+      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+      return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' and ' + convertLessThanThousand(n % 100) : '');
+    };
+
+    const convertLessThanHundred = (n: number): string => {
+      if (n === 0) return '';
+      if (n < 10) return ones[n];
+      if (n < 20) return teens[n - 10];
+      return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+    };
+
+    // Indian numbering system (Lakhs and Crores)
+    const convertIndianNumber = (num: number): string => {
+      if (num === 0) return 'Zero';
+
+      const crore = Math.floor(num / 10000000);
+      const lakh = Math.floor((num % 10000000) / 100000);
+      const thousand = Math.floor((num % 100000) / 1000);
+      const remainder = Math.floor(num % 1000);
+
+      let result = '';
+
+      if (crore > 0) result += convertLessThanHundred(crore) + ' Crore ';
+      if (lakh > 0) result += convertLessThanHundred(lakh) + ' Lakh ';
+      if (thousand > 0) result += convertLessThanHundred(thousand) + ' Thousand ';
+      if (remainder > 0) result += convertLessThanThousand(remainder);
+
+      return result.trim();
+    };
+
+    // International numbering system (Billions and Millions)
+    const convertInternationalNumber = (num: number): string => {
+      if (num === 0) return 'Zero';
+
+      const billion = Math.floor(num / 1000000000);
+      const million = Math.floor((num % 1000000000) / 1000000);
+      const thousand = Math.floor((num % 1000000) / 1000);
+      const remainder = Math.floor(num % 1000);
+
+      let result = '';
+
+      if (billion > 0) result += convertLessThanThousand(billion) + ' Billion ';
+      if (million > 0) result += convertLessThanThousand(million) + ' Million ';
+      if (thousand > 0) result += convertLessThanThousand(thousand) + ' Thousand ';
+      if (remainder > 0) result += convertLessThanThousand(remainder);
+
+      return result.trim();
+    };
+
+    const integerPart = Math.floor(total);
+    const decimalPart = Math.round((total - integerPart) * 100);
+
+    let words = isIndian ? convertIndianNumber(integerPart) : convertInternationalNumber(integerPart);
+
+    if (decimalPart > 0) {
+      const decimalWords = isIndian
+        ? convertLessThanHundred(decimalPart) + ' Paise'
+        : convertLessThanHundred(decimalPart) + ' Cents';
+      words += ' and ' + decimalWords;
+    }
+
+    return `${currency} ${words} Only`;
   }
 }
