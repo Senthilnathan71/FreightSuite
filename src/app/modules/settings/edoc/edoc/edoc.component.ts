@@ -9,6 +9,7 @@ import {
 import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
+import { CommonService } from 'src/app/common/common.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -34,8 +35,9 @@ export class EdocComponent {
   @Output() dataEmitter = new EventEmitter<any>();
   edocform: FormGroup;
   minDate : NgbDateStruct;
+  selectedFiles: File[] | null = null;
 
-  constructor(private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
+  constructor(private commonService:CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.initEdocForm();
     this.minDate = this.toNgbDateStruct(new Date())
   }
@@ -87,19 +89,80 @@ export class EdocComponent {
     });
   }
 
-  onSubmit() {
-    // if (this.edocform.invalid) {
-    //   this.edocform.markAllAsTouched();
-    //   this.appSettingService.showWarning('Please fill all the required fields');
-    //   return;
-    // }
-    const formData = this.edocform.value;
 
-    this.dataEmitter.emit({
-      dataItems: [formData],
-      formData: this.formData
+  onSubmit() {
+    // Validate files
+    if (!this.selectedFiles || this.selectedFiles.length === 0) {
+      this.appSettingService.showError('Please select at least one file');
+      return;
+    }
+
+    const formValue = this.edocform.value;
+
+    // Create FormData for file upload
+    const formData = new FormData();
+
+    // Required fields
+    formData.append('componentName', 'Lead');
+    formData.append('DocumentSid', "74"); // or from your dynamic value
+
+    // Append files
+    this.selectedFiles.forEach((file) => {
+      formData.append('files', file, file.name);
     });
-    console.log(this.edocform.value);
+
+    // Append other form fields only if they have values
+    Object.keys(formValue).forEach(key => {
+      const value = formValue[key];
+      if (value !== null && value !== undefined && value !== '') {
+        formData.append(key, value);
+      }
+    });
+
+    // Emit data to parent if needed
+    this.dataEmitter.emit({
+      dataItems: [formValue],
+      formData: this.selectedFiles
+    });
+
+    console.log('Uploading files...');
+
+    // Upload
+    this.commonService.createEdoc(formData).subscribe(
+      (res) => {
+        if (res && res.success) {
+          this.appSettingService.showSuccess(
+            res.message || 'Edoc created successfully'
+          );
+          this.resetForm();
+        } else {
+          this.appSettingService.showError(
+            res.message || 'Edoc creation failed'
+          );
+        }
+      },
+      (error) => {
+        console.error('Upload error:', error);
+        this.appSettingService.showError(
+          error?.error?.message || 'Upload failed'
+        );
+      }
+    );
+  }
+
+
+
+ 
+
+
+onFileSelect(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      this.selectedFiles = Array.from(files);
+      console.log('Files selected:', this.selectedFiles);
+    } else {
+      this.selectedFiles = null;
+    }
   }
 
   resetForm() {

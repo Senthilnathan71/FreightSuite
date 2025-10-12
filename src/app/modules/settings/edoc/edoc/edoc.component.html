@@ -87,11 +87,14 @@
                             </aside> -->
                             <aside class="col-md-12">
                                 <div class="custom-form-group mt-0">
-                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="file">
-                                    <div class="error-message"
-                                        *ngIf="edocform.get('file')?.touched && edocform.get('file')?.hasError('required')">
-                                        Required
+                                    <input type="file" id="file-input" multiple class="custom-input-field sm"
+                                        (change)="onFileSelect($event)"
+                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png">
+                                    <div class="error-message" *ngIf="!selectedFiles && edocform.touched">
+                                        File is required
+                                    </div>
+                                    <div class="file-info" *ngIf="selectedFiles && selectedFiles.length > 0">
+                                        <small>{{ selectedFiles.length }} file(s) selected</small>
                                     </div>
                                 </div>
                             </aside>
