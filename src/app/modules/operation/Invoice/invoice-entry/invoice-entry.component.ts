@@ -1014,4 +1014,31 @@ export class InvoiceEntryComponent implements OnInit {
   goBack() {
     this.router.navigate(['operation/invoice/list']);
   }
+
+  // Helper methods to get display values
+  getChargeCode(chargeSid: number): string {
+    const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
+    return charge?.chargeCode || charge?.ChargeCode || '-';
+  }
+
+  getHSSACCode(hssacSid: number): string {
+    const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
+    return hssac?.HSSACCode || hssac?.HSNCode || '-';
+  }
+
+  getUOMCode(uomSid: number): string {
+    const uom = this.uomList.find(u => u.UOMMasterSid === uomSid);
+    return uom?.UOMCode || uom?.UOMName || '-';
+  }
+
+  getMasterJobNumber(jobSid: number): string {
+    const job = this.masterJobList.find(j => j.MasterJobSid === jobSid);
+    return job?.MasterJobNumber || job?.displayLabel || '-';
+  }
+
+  getHouseJobNumber(jobSid: number, masterJobSid: number): string {
+    const houseJobs = this.houseJobListByMasterJob[masterJobSid] || [];
+    const job = houseJobs.find(j => j.HouseJobSid === jobSid);
+    return job?.HouseJobNumber || job?.displayLabel || '-';
+  }
 }

@@ -281,7 +281,7 @@
     <div class="card">
       <div class="card-body py-1">
         <form [formGroup]="invoiceForm" novalidate>
-          <div class="d-flex justify-content-end mb-1">
+          <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
             <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
               <i class="fas fa-plus me-1"></i> Add Charge
             </button>
@@ -327,142 +327,164 @@
               <tbody formArrayName="voucherDetails">
                 <ng-container *ngFor="let row of details.controls; let i = index">
                   <tr [formGroupName]="i">
+                    <!-- Delete Button - Only show for new invoices -->
                     <td>
-                      <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
+                      <button *ngIf="!isEditMode" type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
                         <i class="fas fa-trash text-danger"></i>
                       </button>
                     </td>
                     <td>{{ i + 1 }}</td>
 
+                    <!-- Charge -->
                     <td>
-                      <ng-select [items]="chargeList" bindLabel="chargeCode" bindValue="ChargeMasterSid"
+                      <ng-select *ngIf="!isEditMode" [items]="chargeList" bindLabel="chargeCode" bindValue="ChargeMasterSid"
                         formControlName="ChargeMasterSid" (change)="onDetailChange(i, 'ChargeMasterSid')" placeholder=""
                         appendTo="body">
                       </ng-select>
+                      <span *ngIf="isEditMode">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span>
                     </td>
 
+                    <!-- Description -->
                     <td>
-                      <input class="custom-input-field sm" formControlName="ChargeDescription" readonly>
+                      <input *ngIf="!isEditMode" class="custom-input-field sm" formControlName="ChargeDescription" readonly>
+                      <span *ngIf="isEditMode">{{ row.get('ChargeDescription')?.value || '-' }}</span>
                     </td>
 
+                    <!-- HSN/SAC -->
                     <td>
-                      <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
+                      <ng-select *ngIf="!isEditMode" [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
                         formControlName="HSSACMasterSid" placeholder="" appendTo="body">
                       </ng-select>
+                      <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value) }}</span>
                     </td>
 
+                    <!-- Unit -->
                     <td>
-                      <ng-select [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid" placeholder=""
+                      <ng-select *ngIf="!isEditMode" [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid" placeholder=""
                         formControlName="ChargeUOMSid" appendTo="body">
                       </ng-select>
+                      <span *ngIf="isEditMode">{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span>
                     </td>
 
+                    <!-- No of Unit -->
                     <td>
-                      <input type="number" min="0" class="custom-input-field sm" formControlName="NumberOfUnit"
+                      <input *ngIf="!isEditMode" type="number" min="0" class="custom-input-field sm" formControlName="NumberOfUnit"
                         (input)="onDetailChange(i, 'NumberOfUnit')">
+                      <span *ngIf="isEditMode">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- Dr/Cr -->
                     <td>
-                      <ng-select [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]" bindLabel="name" bindValue="id"
+                      <ng-select *ngIf="!isEditMode" [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]" bindLabel="name" bindValue="id"
                         formControlName="DrCr" appendTo="body"></ng-select>
+                      <span *ngIf="isEditMode">{{ row.get('DrCr')?.value || '-' }}</span>
                     </td>
 
+                    <!-- Currency -->
                     <td>
-                      <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
+                      <ng-select *ngIf="!isEditMode" [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
                         formControlName="CurrencyCode" (change)="onDetailChange(i,'CurrencyCode')"
                         appendTo="body"></ng-select>
+                      <span *ngIf="isEditMode">{{ row.get('CurrencyCode')?.value || '-' }}</span>
                     </td>
 
+                    <!-- Rate -->
                     <td>
-                      <input type="number" step="0.01" class="custom-input-field sm" formControlName="Rate"
+                      <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm" formControlName="Rate"
                         (input)="onDetailChange(i, 'Rate')">
+                      <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- Exchange Rate -->
                     <td>
-                      <input type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate"
+                      <input *ngIf="!isEditMode" type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate"
                         (input)="onDetailChange(i, 'ExchangeRate')">
+                      <span *ngIf="isEditMode">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
                     </td>
 
+                    <!-- Amount -->
                     <td>
-                      <input type="text" class="custom-input-field sm text-end"
-                        [value]="row.get('Amount')?.value | numberFormat" readonly>
+                      <span>{{ row.get('Amount')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- Taxable Amount -->
                     <td>
-                      <input type="text" class="custom-input-field sm text-end"
-                        [value]="row.get('TaxableAmount')?.value | numberFormat" readonly>
+                      <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- CGST % -->
                     <td>
-                      <div class="input-group input-group-sm">
+                      <div *ngIf="!isEditMode" class="input-group input-group-sm">
                         <div class="d-flex">
                           <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1"
                             (input)="onDetailChange(i, 'TaxPercentage1')">
                           <span class=" ">%</span>
                         </div>
-
                       </div>
+                      <span *ngIf="isEditMode">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
                     </td>
+                    <!-- CGST Amount -->
                     <td>
-                      <input type="text" class="custom-input-field sm text-end"
-                        [value]="row.get('TaxAmount1')?.value | numberFormat" readonly>
+                      <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- SGST % -->
                     <td>
-                      <div class="input-group input-group-sm">
+                      <div *ngIf="!isEditMode" class="input-group input-group-sm">
                         <div class="d-flex gap-1">
                           <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
                             (input)="onDetailChange(i, 'TaxPercentage2')">
                           <span class="">%</span>
                         </div>
-
                       </div>
+                      <span *ngIf="isEditMode">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
                     </td>
+                    <!-- SGST Amount -->
                     <td>
-                      <input type="text" class="custom-input-field sm text-end"
-                        [value]="row.get('TaxAmount2')?.value | numberFormat" readonly>
+                      <span>{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- IGST % -->
                     <td>
-                      <div class="input-group input-group-sm">
+                      <div *ngIf="!isEditMode" class="input-group input-group-sm">
                         <div class="d-flex gap-1">
                           <input type="number" class="custom-input-field sm" formControlName="TaxPercentageIGST"
                             (input)="onDetailChange(i, 'TaxPercentageIGST')">
                           <span class="">%</span>
                         </div>
-
                       </div>
+                      <span *ngIf="isEditMode">{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
                     </td>
+                    <!-- IGST Amount -->
                     <td>
-                      <input type="text" class="custom-input-field sm text-end"
-                        [value]="row.get('TaxAmountIGST')?.value | numberFormat" readonly>
+                      <span>{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
                     </td>
 
+                    <!-- Local Amount -->
                     <td>
-                      <input type="text" class="custom-input-field sm text-end"
-                        [value]="row.get('LocalAmount')?.value | numberFormat" readonly>
+                      <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                     </td>
 
-                    <!-- MasterJobSid column replaced with ng-select -->
+                    <!-- MasterJobSid column -->
                     <td style="min-width:200px;">
-                      <ng-select [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid"
+                      <ng-select *ngIf="!isEditMode" [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid"
                         formControlName="MasterJobSid" placeholder="" [clearable]="true" [searchable]="true"
                         appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.MasterJobNumber }}</strong><br>
-                            <!-- <small>MBL: {{ item.MBLNo || '-' }} &nbsp; HBL: {{ item.HBLNo || '-' }}</small> -->
                           </div>
                         </ng-template>
                         <ng-template ng-label-tmp let-item="item">
                           {{ item.MasterJobNumber }}
                         </ng-template>
                       </ng-select>
+                      <span *ngIf="isEditMode">{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span>
                     </td>
 
-                    <!-- HouseJobSid column replaced with ng-select -->
+                    <!-- HouseJobSid column -->
                     <td style="min-width:200px;">
-                      <ng-select [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []"
+                      <ng-select *ngIf="!isEditMode" [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []"
                         bindLabel="displayLabel" bindValue="HouseJobSid" formControlName="HouseJobSid" placeholder=""
                         [clearable]="true" [searchable]="true" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
@@ -474,6 +496,7 @@
                           {{ item.HouseJobNumber }}
                         </ng-template>
                       </ng-select>
+                      <span *ngIf="isEditMode">{{ getHouseJobNumber(row.get('HouseJobSid')?.value, row.get('MasterJobSid')?.value) }}</span>
                     </td>
 
 
