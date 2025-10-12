@@ -43,10 +43,15 @@ export class EdocComponent {
     if (changes['resetTrigger'] && this.resetTrigger) {
       this.resetForm();
     }
+    if (changes['screenName'] && this.screenName) {
+      console.log(this.screenName, 'screenName')
+    }
 
     if (changes['dataItems'] && this.dataItems && this.dataItems.length > 0) {
-      // If you need to handle pre-loaded data
+      console.log(this.dataItems, 'dataItems')
     }
+
+    console.log(this.screenName, 'screenName')
   }
   initEdocForm() {
     this.edocform = this.fb.group({
@@ -83,11 +88,11 @@ export class EdocComponent {
   }
 
   onSubmit() {
-    if (this.edocform.invalid) {
-      this.edocform.markAllAsTouched();
-      this.appSettingService.showWarning('Please fill all the required fields');
-      return;
-    }
+    // if (this.edocform.invalid) {
+    //   this.edocform.markAllAsTouched();
+    //   this.appSettingService.showWarning('Please fill all the required fields');
+    //   return;
+    // }
     const formData = this.edocform.value;
 
     this.dataEmitter.emit({
@@ -102,8 +107,11 @@ export class EdocComponent {
   }
 
   modeOfType = [
-    { id: '1', name: 'Type 1' },
-    { id: '2', name: 'Type 2' },
+    { id: '1', name: 'pdf' },
+    { id: '2', name: 'xlsx' },
+    { id: '3', name: 'json' },
+    { id: '4', name: 'text' },
+    { id: '5', name: 'docx' },
   ];
 
   modeOfStatus = [

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { Component, effect, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -11,12 +11,13 @@ import {
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, of, Subject } from 'rxjs';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { Router, RouterModule } from '@angular/router';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
   selector: 'app-loading-plan-entry',
@@ -36,6 +37,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
   styleUrl: './loading-plan-entry.component.scss',
 })
 export class LoadingPlanEntryComponent {
+
+  private destroy$ = new Subject<void>();
 
   @Input() screenName: string = "Loading Plan";
   @Output() closeModal = new EventEmitter<boolean>();
@@ -101,9 +104,30 @@ export class LoadingPlanEntryComponent {
     private modalService: NgbModal,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
-    private router : Router
+    private router : Router,
+    public dropdownStore: DropdownStore
   ) {
     this.masterJobContainers = this.fb.array([]);
+    effect(()=>{
+      const departments = this.dropdownStore.department();
+      const ports = this.dropdownStore.ports();
+      const carriers = this.dropdownStore.customerTypeData();
+      const containerType = this.dropdownStore.containerTypes();
+      const packageType = this.dropdownStore.uomsByType()
+      
+
+      this.departmentList = departments;
+      this.portList = ports;
+      this.carrierList = carriers;
+      this.containerTypeList = containerType
+      this.packageTypeList = packageType
+
+
+      // Run setup only when all lists are loaded and not empty
+      if (departments?.length && ports?.length) {
+        this.setInitialConfig();
+      }
+    })
   }
 
   ngOnInit() {
@@ -130,17 +154,17 @@ export class LoadingPlanEntryComponent {
       CompanyMasterSid: activeCompanyId,
       BranchMasterSid: activeBranchId,
     }
-    forkJoin({
-      departments: this.operationService.getAllDepartments(activeCompanyId).pipe(catchError(err => of({ data: [] }))),
-      ports: this.operationService.getAllPorts().pipe(catchError(err => of({ data: [] }))),
-      carriers: this.operationService.getAllCarriers(activeCompanyId).pipe(catchError(err => of({ data: [] }))),
-    }).subscribe(({ departments, ports, carriers }) => {
-      this.departmentList = departments.data;
-      this.portList = ports.data;
-      this.carrierList = carriers;
-      this.loadContainerLookups();
-      this.setInitialConfig();
-    })
+
+    const payload={
+      CompanyMasterSid: activeCompanyId,
+      types:['carrier']
+    }
+
+    this.dropdownStore.loadDepartments(activeCompanyId)
+    this.dropdownStore.loadPorts()
+    this.dropdownStore.loadCustomerTypeData(payload)
+    this.dropdownStore.loadContainerTypes()
+    this.dropdownStore.loadUOMsByType('P')
   }
 
   setInitialConfig(){
@@ -490,15 +514,15 @@ export class LoadingPlanEntryComponent {
     return containerForm;
   }
 
-  loadContainerLookups() {
-    forkJoin({
-      containerTypes: this.operationService.getAllContainerTypes().pipe(catchError(err => of({ data: [] }))),
-      pkgTypes : this.operationService.getUOMsByType('P').pipe(catchError(err => of({ data: [] })))
-    }).subscribe(({ containerTypes , pkgTypes }) => {
-      this.containerTypeList = containerTypes.data;
-      this.packageTypeList = pkgTypes.data;
-    })
-  }
+  // loadContainerLookups() {
+  //   forkJoin({
+  //     containerTypes: this.operationService.getAllContainerTypes().pipe(catchError(err => of({ data: [] }))),
+  //     pkgTypes : this.operationService.getUOMsByType('P').pipe(catchError(err => of({ data: [] })))
+  //   }).subscribe(({ containerTypes , pkgTypes }) => {
+  //     this.containerTypeList = containerTypes.data;
+  //     this.packageTypeList = pkgTypes.data;
+  //   })
+  // }
 
   openContainerModal(content: TemplateRef<any>, data?: any, index?: number) {
     this.initContainerForm();
@@ -772,4 +796,11 @@ export class LoadingPlanEntryComponent {
     return '';
   }
 
+
+  ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
 }
