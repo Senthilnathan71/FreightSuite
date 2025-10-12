@@ -12,6 +12,7 @@ export class CommonService {
           return this.http.get<{ data: any }>(`attach-document/fetch/${id}`).pipe(
             map((resp) => {
               let response = resp.data;
+              return response;
             })
           );
         }
