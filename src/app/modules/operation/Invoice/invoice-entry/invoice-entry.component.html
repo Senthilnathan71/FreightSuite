@@ -607,15 +607,15 @@
             <div class="d-flex align-items-center gap-4">
               <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="100" height="100"
                 class="img-fluid" alt="">
-              <h4> {{currentCompany?.CompanyName || 'Company Name'}} </h4>
+              <h4> {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company Name'}} </h4>
             </div>
           </div>
           <div class="col-6">
             <div class="text-start">
-              <h5 class="mb-1">{{currentCompany?.CompanyName || 'Company Name'}}</h5>
-              <p class="mb-1">{{currentCompany?.Address || 'Address'}}</p>
-              <p class="mb-1">{{currentCompany?.City || 'City'}}, {{currentCompany?.ZipCode || 'Zipcode'}}</p>
-              <p class="mb-3">TEL: {{currentCompany?.Phone || 'Phone'}}</p>
+              <h5 class="mb-1">{{currentCompany?.companyName || currentCompany?.CompanyName || 'Company Name'}}</h5>
+              <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
+              <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}}, {{currentCompany?.postal_code || currentCompany?.ZipCode || 'Zipcode'}}</p>
+              <p class="mb-3">TEL: {{currentCompany?.phoneNumber || currentCompany?.Phone || 'Phone'}}</p>
             </div>
           </div>
         </div>
@@ -623,7 +623,7 @@
         <div class="text-center">
           <h5 class="fw-bold mb-2">TAX INVOICE</h5>
           <p style="font-size: 12px;">
-            PAN : {{currentCompany?.PAN || '-'}} | GST Code : {{currentCompany?.GSTNo || '-'}}
+            PAN : {{currentCompany?.Pan || currentCompany?.PAN || '-'}} | GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GSTNo || '-'}}
           </p>
         </div>
 
@@ -671,6 +671,8 @@
                   <th style="border: 2px solid black;">CGST Amt</th>
                   <th style="border: 2px solid black;">SGST %</th>
                   <th style="border: 2px solid black;">SGST Amt</th>
+                  <th style="border: 2px solid black;">IGST %</th>
+                  <th style="border: 2px solid black;">IGST Amt</th>
                 </ng-container>
                 <ng-container *ngIf="isVATMode">
                   <th style="border: 2px solid black;">VAT %</th>
@@ -693,6 +695,8 @@
                   <td style="border: 2px solid black;">{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
                   <td style="border: 2px solid black;">{{detail.get('TaxPercentage2')?.value | number:'1.2-2'}}</td>
                   <td style="border: 2px solid black;">{{detail.get('TaxAmount2')?.value | number:'1.2-2'}}</td>
+                  <td style="border: 2px solid black;">{{detail.get('TaxPercentageIGST')?.value | number:'1.2-2'}}</td>
+                  <td style="border: 2px solid black;">{{detail.get('TaxAmountIGST')?.value | number:'1.2-2'}}</td>
                 </ng-container>
                 <ng-container *ngIf="isVATMode">
                   <td style="border: 2px solid black;">{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
@@ -701,7 +705,7 @@
                 <td style="border: 2px solid black;">{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
               </tr>
               <tr>
-                <td style="border: 2px solid black;" [attr.colspan]="isIndiaGST ? 11 : 9" class="text-end"><strong>Total</strong></td>
+                <td style="border: 2px solid black;" [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
                 <td style="border: 2px solid black;"><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
               </tr>
             </tbody>
@@ -719,12 +723,12 @@
         </div>
 
         <div class="text-end mt-4 px-3 mb-3">
-          <p class="mb-0"><strong>For {{currentCompany?.CompanyName || 'Company Name'}}</strong></p>
+          <p class="mb-0"><strong>For {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company Name'}}</strong></p>
           <div style="height: 60px;"></div>
           <p class="mb-0">Authorised Signatory</p>
         </div>
 
-        <p class="text-center mb-0">Copyright © 2025 <span class="fw-bold">{{currentCompany?.CompanyName}}</span></p>
+        <p class="text-center mb-0">Copyright © 2025 <span class="fw-bold">{{currentCompany?.companyName || currentCompany?.CompanyName}}</span></p>
       </div>
     </div>
   </div>

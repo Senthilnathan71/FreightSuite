@@ -220,24 +220,24 @@ export class InvoiceEntryComponent implements OnInit {
 
       // Try to get country from multiple sources
       // Priority: 1. Branch country, 2. Company country, 3. Fetch from backend
-      let countryName = null;
+      let CountryName = null;
 
       // Check currentBranch (set in ngOnInit)
       if (this.currentBranch) {
-        countryName = this.currentBranch.countryName
+        CountryName = this.currentBranch.countryName
           || this.currentBranch.country?.countryName
-          || this.currentBranch.countryMaster?.countryName;
+          || this.currentBranch.countryMaster?.CountryName;
       }
 
       // Fallback to company
-      if (!countryName && company) {
-        countryName = company.countryName
+      if (!CountryName && company) {
+        CountryName = company.CountryName
           || company.country?.countryName
           || company.countryMaster?.countryName;
       }
 
       // Set bookingModeCountry - default to empty string if not found
-      this.bookingModeCountry = countryName ? String(countryName).trim().toLowerCase() : '';
+      this.bookingModeCountry = CountryName ? String(CountryName).trim().toLowerCase() : '';
 
       // If still no country, try to fetch it from backend based on CountryMasterSid
       if (!this.bookingModeCountry) {
