@@ -32,13 +32,33 @@ import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
 import { BookingData } from '../excel-parser.service';
 import { BookingUploadComponent } from '../booking-upload/booking-upload.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
-import * as html2pdf from 'html2pdf.js';
+import html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { TaxCalculationService, BookingRateDetails } from '../../services/tax-calculation.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+type Html2PdfOptions = {
+  margin?: number | [number, number, number, number];
+  filename?: string;
+  image?: {
+    type?: 'jpeg' | 'png' | 'webp';
+    quality?: number;
+  };
+  html2canvas?: {
+    scale?: number;
+    logging?: boolean;
+    dpi?: number;
+    letterRendering?: boolean;
+    useCORS?: boolean;
+  };
+  jsPDF?: {
+    unit?: string;
+    format?: string | [number, number];
+    orientation?: 'portrait' | 'landscape';
+  };
+};
 
 @Component({
   selector: 'app-booking-entry',
@@ -2285,13 +2305,13 @@ openAuditLogs(modal: TemplateRef<any>) {
     return new Promise((resolve, reject) => {
       const element = document.getElementById('pdfContent');
 
-      const opt = {
-        margin: 0.5,
-        filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
+      const opt: Html2PdfOptions = {
+    margin: 0.5,
+      filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
 
       if (!element) return reject('No element found');
 
@@ -2308,7 +2328,9 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.spinner.show();
     const element = document.getElementById('pdfContent');
 
-    const opt = {
+
+
+    const opt: Html2PdfOptions = {
       margin: 0.5,
       filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
       image: { type: 'jpeg', quality: 0.98 },
@@ -2702,57 +2724,93 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.availableCharges.forEach((charge, index) => {
       console.log(`Processing charge ${index}:`, {
         id: charge.BookingRatesSid,
-        description: charge.ChargeDescription
+        description: charge.ChargeDescription,
+        chargeTaxMaster: charge.ChargeMaster?.chargeTaxMaster
       });
 
-      const lineItem = this.chargeSelectionTaxResult.lineItems.find(
-        (item: any) => item.description === charge.ChargeDescription
-      );
+      let matchingTaxGroup = null;
 
-      console.log(`Line item for charge ${index}:`, lineItem);
+      // First, try to match using ChargeTaxMaster if available
+      if (charge.ChargeMaster?.chargeTaxMaster && charge.ChargeMaster.chargeTaxMaster.length > 0) {
+        const chargeTaxMaster = charge.ChargeMaster.chargeTaxMaster[0];
+        const taxRate = parseFloat(chargeTaxMaster.TaxRate);
+        const taxGroup = chargeTaxMaster.TaxGroup;
 
-      if (lineItem) {
-        // Find matching tax group based on tax rate and type
-        let matchingTaxGroup = null;
+        console.log(`Using ChargeTaxMaster for charge ${index}:`, {
+          HSNCode: chargeTaxMaster.HSNCode,
+          TaxRate: taxRate,
+          TaxGroup: taxGroup
+        });
 
-        if (this.chargeSelectionTaxResult.type === 'GST') {
-          const taxRate = lineItem.igstRate > 0 ? lineItem.igstRate : (lineItem.cgstRate + lineItem.sgstRate);
-          console.log(`Looking for GST tax group with rate ${taxRate}%`);
+        // Match tax group by rate and type
+        matchingTaxGroup = this.taxGroupList.find(tg => {
+          const tgRate = parseFloat(tg.TaxRate);
+          const rateMatch = Math.abs(tgRate - taxRate) < 0.01; // Allow small floating point difference
 
-          // For GST, TaxType can be 'Input', 'Output', or 'GST'
-          // Match by rate and exclude VAT types
-          matchingTaxGroup = this.taxGroupList.find(tg => {
-            const tgRate = parseFloat(tg.TaxRate);
-            const isGSTType = tg.TaxType === 'GST' || tg.TaxType === 'Input' || tg.TaxType === 'Output';
-            const match = isGSTType && tgRate === taxRate;
-            if (index === 0) {
-              console.log(`Checking tax group:`, {
-                name: tg.TaxName,
-                type: tg.TaxType,
-                rate: tgRate,
-                targetRate: taxRate,
-                isGSTType,
-                match
-              });
-            }
-            return match;
-          });
+          // If TaxGroup is specified, try to match it as well
+          if (taxGroup) {
+            const typeMatch = tg.TaxType === taxGroup ||
+                            (taxGroup === 'GST' && (tg.TaxType === 'Input' || tg.TaxType === 'Output' || tg.TaxType === 'GST'));
+            return rateMatch && typeMatch;
+          }
 
-          console.log(`Matching tax group for charge ${index}:`, matchingTaxGroup);
-        } else if (this.chargeSelectionTaxResult.type === 'VAT') {
-          matchingTaxGroup = this.taxGroupList.find(tg =>
-            tg.TaxType === 'VAT' && parseFloat(tg.TaxRate) === lineItem.vatRate
-          );
-        }
+          return rateMatch;
+        });
 
         if (matchingTaxGroup) {
-          this.chargeTaxGroupMap.set(charge.BookingRatesSid, matchingTaxGroup);
-          console.log(`Set tax group for charge ${charge.BookingRatesSid}:`, matchingTaxGroup.TaxName);
-        } else {
-          console.log(`No matching tax group found for charge ${charge.BookingRatesSid}`);
+          console.log(`Matched tax group from ChargeTaxMaster:`, matchingTaxGroup.TaxName);
         }
+      }
+
+      // Fallback to line item calculation if no ChargeTaxMaster match
+      if (!matchingTaxGroup) {
+        const lineItem = this.chargeSelectionTaxResult.lineItems.find(
+          (item: any) => item.description === charge.ChargeDescription
+        );
+
+        console.log(`Line item for charge ${index}:`, lineItem);
+
+        if (lineItem) {
+          // Find matching tax group based on tax rate and type
+          if (this.chargeSelectionTaxResult.type === 'GST') {
+            const taxRate = lineItem.igstRate > 0 ? lineItem.igstRate : (lineItem.cgstRate + lineItem.sgstRate);
+            console.log(`Looking for GST tax group with rate ${taxRate}%`);
+
+            // For GST, TaxType can be 'Input', 'Output', or 'GST'
+            // Match by rate and exclude VAT types
+            matchingTaxGroup = this.taxGroupList.find(tg => {
+              const tgRate = parseFloat(tg.TaxRate);
+              const isGSTType = tg.TaxType === 'GST' || tg.TaxType === 'Input' || tg.TaxType === 'Output';
+              const match = isGSTType && tgRate === taxRate;
+              if (index === 0) {
+                console.log(`Checking tax group:`, {
+                  name: tg.TaxName,
+                  type: tg.TaxType,
+                  rate: tgRate,
+                  targetRate: taxRate,
+                  isGSTType,
+                  match
+                });
+              }
+              return match;
+            });
+
+            console.log(`Matching tax group for charge ${index}:`, matchingTaxGroup);
+          } else if (this.chargeSelectionTaxResult.type === 'VAT') {
+            matchingTaxGroup = this.taxGroupList.find(tg =>
+              tg.TaxType === 'VAT' && parseFloat(tg.TaxRate) === lineItem.vatRate
+            );
+          }
+        } else {
+          console.log(`No line item found for charge ${charge.BookingRatesSid}`);
+        }
+      }
+
+      if (matchingTaxGroup) {
+        this.chargeTaxGroupMap.set(charge.BookingRatesSid, matchingTaxGroup);
+        console.log(`Set tax group for charge ${charge.BookingRatesSid}:`, matchingTaxGroup.TaxName);
       } else {
-        console.log(`No line item found for charge ${charge.BookingRatesSid}`);
+        console.log(`No matching tax group found for charge ${charge.BookingRatesSid}`);
       }
     });
 
@@ -2935,7 +2993,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 
         let lineItem: any = {
           description: charge.ChargeDescription,
-          hsn: charge.ChargeMaster?.HSNSAC || '-',
+          hsn: charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-',
           amount: chargeAmount
         };
 
@@ -2991,7 +3049,7 @@ openAuditLogs(modal: TemplateRef<any>) {
         // No tax group selected, add with 0 tax
         lineItems.push({
           description: charge.ChargeDescription,
-          hsn: charge.ChargeMaster?.HSNSAC || '-',
+          hsn: charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-',
           amount: chargeAmount,
           totalTaxAmount: 0,
           cgstRate: 0,

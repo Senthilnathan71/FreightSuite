@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -7,7 +7,7 @@ import { MasterService } from '../../master.service';
 import { NgbCalendar, NgbDate, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { CommonModule, DatePipe, UpperCasePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -23,6 +23,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -54,7 +55,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     ],
 })
 export class SailingScheduleEntryComponent implements OnInit {
-
+    private destroy$ = new Subject<void>();
     // Header-only form and state
     scheduleForm !: FormGroup;
 
@@ -111,8 +112,16 @@ export class SailingScheduleEntryComponent implements OnInit {
         private dialog : MatDialog,
         private fb : FormBuilder,
         private calendar: NgbCalendar,  
-        private cdr: ChangeDetectorRef 
-    ){}
+        private cdr: ChangeDetectorRef,
+        public dropdownStore: DropdownStore
+    ){
+        effect(()=>{
+            const vesselData= this.dropdownStore.vesselData();
+            const carrierData = this.dropdownStore.customerTypeData();
+            this.vesselList = vesselData;
+            this.carrierList  = carrierData
+        })
+    }
 
     ngOnInit(): void {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -225,41 +234,41 @@ export class SailingScheduleEntryComponent implements OnInit {
 
     loadAllFields(){
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    forkJoin({
-        vessels : this.masterService.getAllVessels(),
-        carriers : this.masterService.getAllCarriers(CompanyMasterSid),
-        ports : this.masterService.getAllPorts()
-    }).subscribe(({vessels,carriers,ports})=>{
-        this.vesselList = vessels.data || [];
-        this.carrierList = carriers || [];
-        this.portList = ports.data || [];
+
+    const payload = {
+        CompanyMasterSid: CompanyMasterSid,
+        types:['carrier']
+    }
+    this.dropdownStore.loadPorts();
+    this.dropdownStore.loadVessels()
+    this.dropdownStore.loadCustomerTypeData(payload)
+
+    if(this.dropdownStore.ports()){
 
         // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
-        const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
-        this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
-        this.applyPolPodExclusion();
-
-        // <<< NEW: if schedule data already loaded (edit mode), re-patch POL/POD so dropdowns can match items
-        if (this.sailHeadData) {
-            // Ensure numeric types (match PortMasterSid type)
-            const pol = this.sailHeadData.POLSid ? Number(this.sailHeadData.POLSid) : null;
-            const pod = this.sailHeadData.PODSid ? Number(this.sailHeadData.PODSid) : null;
-            // Patch only POLSid and PODSid (avoid overwriting other fields)
-            this.scheduleForm.patchValue({ POLSid: pol, PODSid: pod });
-            // Re-run exclusion to ensure lists are consistent
+            const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+            this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
             this.applyPolPodExclusion();
-            // Force change detection so dropdown visual updates
-            this.cdr.detectChanges();
-        }
-    }, (err) => {
-        console.error('Error loading lookup fields', err);
-    });
+    
+            // <<< NEW: if schedule data already loaded (edit mode), re-patch POL/POD so dropdowns can match items
+            if (this.sailHeadData) {
+                // Ensure numeric types (match PortMasterSid type)
+                const pol = this.sailHeadData.POLSid ? Number(this.sailHeadData.POLSid) : null;
+                const pod = this.sailHeadData.PODSid ? Number(this.sailHeadData.PODSid) : null;
+                // Patch only POLSid and PODSid (avoid overwriting other fields)
+                this.scheduleForm.patchValue({ POLSid: pol, PODSid: pod });
+                // Re-run exclusion to ensure lists are consistent
+                this.applyPolPodExclusion();
+                // Force change detection so dropdown visual updates
+                this.cdr.detectChanges();
+            }
+    }
 }
 
     applyPolPodExclusion() {
         // Always start from the base filtered lists (which may be full lists or already voyage-filtered lists)
-        const basePOL = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.portList];
-        const basePOD = this.filteredPODList.length ? [...this.filteredPODList] : [...this.portList];
+        const basePOL = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.dropdownStore.ports()];
+        const basePOD = this.filteredPODList.length ? [...this.filteredPODList] : [...this.dropdownStore.ports()];
 
         const selectedPOL = this.scheduleForm.get('POLSid')?.value;
         const selectedPOD = this.scheduleForm.get('PODSid')?.value;
@@ -288,7 +297,7 @@ export class SailingScheduleEntryComponent implements OnInit {
      */
     applyPortTypeFilter(voyageType: string | null | undefined, init = false) {
         // If no ports loaded yet, keep empty arrays until loadAllFields sets them.
-        if (!this.portList || this.portList.length === 0) {
+        if (!this.dropdownStore.ports() || this.dropdownStore.ports().length === 0) {
             this.filteredPOLList = [];
             this.filteredPODList = [];
             return;
@@ -296,8 +305,8 @@ export class SailingScheduleEntryComponent implements OnInit {
 
         // When voyageType is falsy, restore full list
         if (!voyageType) {
-            this.filteredPOLList = [...this.portList];
-            this.filteredPODList = [...this.portList];
+            this.filteredPOLList = [...this.dropdownStore.ports()];
+            this.filteredPODList = [...this.dropdownStore.ports()];
             // If init, do not clear existing selection
             if (!init) {
                 this.clearPolPodIfNotInList();
@@ -339,12 +348,12 @@ export class SailingScheduleEntryComponent implements OnInit {
         };
 
         // Apply filter
-        const polFiltered = this.portList.filter(p => portMatchesVoyageType(p));
-        const podFiltered = this.portList.filter(p => portMatchesVoyageType(p));
+        const polFiltered = this.dropdownStore.ports().filter(p => portMatchesVoyageType(p));
+        const podFiltered = this.dropdownStore.ports().filter(p => portMatchesVoyageType(p));
 
         // If filter results are empty, fallback to full list (prevents blank selects)
-        this.filteredPOLList = polFiltered.length ? polFiltered : [...this.portList];
-        this.filteredPODList = podFiltered.length ? podFiltered : [...this.portList];
+        this.filteredPOLList = polFiltered.length ? polFiltered : [...this.dropdownStore.ports()];
+        this.filteredPODList = podFiltered.length ? podFiltered : [...this.dropdownStore.ports()];
 
         // If currently selected POL/POD not in filtered list, clear them (unless during init)
         if (!init) {
@@ -448,7 +457,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             VesselMasterSid : parseInt(formValue.VesselMasterSid),
             Carrier : formValue.Carrier ? parseInt(formValue.Carrier) : null,
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
-            status : formValue.status === 'Active' ? 'A' : 'S',
+            status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             POLSid: formValue.POLSid ? parseInt(formValue.POLSid) : null,
             PODSid: formValue.PODSid ? parseInt(formValue.PODSid) : null,
             ETA: formValue.ETA,
@@ -525,8 +534,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         });
 
         // restore full lists
-        this.filteredPOLList = [...this.portList];
-        this.filteredPODList = [...this.portList];
+        this.filteredPOLList = [...this.dropdownStore.ports()];
+        this.filteredPODList = [...this.dropdownStore.ports()];
 
         this.scheduleForm.markAsUntouched();
         this.scheduleForm.markAsPristine();
@@ -622,10 +631,10 @@ export class SailingScheduleEntryComponent implements OnInit {
     }
 
     getFormattedPort(PortMasterSid:any) {
-        if (!PortMasterSid || this.portList.length === 0) {
+        if (!PortMasterSid || this.dropdownStore.ports().length === 0) {
             return '';
         }
-        const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
+        const port = this.dropdownStore.ports().find(p => p.PortMasterSid === PortMasterSid)
         return port ? `${port.PortName} (${port.PortCode})` : '';
     }
 
@@ -655,4 +664,11 @@ export class SailingScheduleEntryComponent implements OnInit {
             error: err => console.error('Error fetching audit logs:', err)
         });
     }
+
+    ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
 }

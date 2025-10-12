@@ -551,7 +551,7 @@
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsDetailForm.get('CountryMasterSid')?.value">
                                     <ng-select class="ng-select" formControlName="CountryMasterSid"
-                                        [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid"
+                                        [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
                                         placeholder="">
                                     </ng-select>
                                     <label for="charge" class="input-label">Country <span

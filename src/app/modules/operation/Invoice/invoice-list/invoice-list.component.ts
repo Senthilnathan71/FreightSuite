@@ -1,6 +1,6 @@
 // invoice-list.component.ts
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -15,7 +15,16 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { OperationService } from '../../operation.service';
-
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { Observable } from 'rxjs';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-invoice-list',
@@ -29,33 +38,39 @@ import { OperationService } from '../../operation.service';
     ListpageComponent,
     FavoriteStarComponent,
     MatDialogModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ReusableTableComponent,
+    PageHeaderComponent,
+    ToolsDropdownComponent,
+    CustomDatePipe
   ],
+   providers: [CustomDatePipe],
   templateUrl: './invoice-list.component.html',
   styleUrl: './invoice-list.component.scss'
 })
-export class InvoiceListComponent {
+export class InvoiceListComponent extends BaseListComponent implements OnInit {
+  @ViewChild('invoiceTable') invoiceTable!: ReusableTableComponent;
   searchType = 'InvoiceNo';
-  filterValue = '';
+  // filterValue = '';
   results: any[] = [];
   invoiceList: any[] = [];
-  searchPerformed = false;
+  // searchPerformed = false;
   companyMap: { [id: number]: string } = {};
   userData: any;
-  sortColumn: string = 'InvoiceNo';
-  sortDirection: string = 'asc';
+  // sortColumn: string = 'InvoiceNo';
+  // sortDirection: string = 'asc';
   loading = false;
 
   // Pagination 
-  page = 1;
-  pageSize = 15;
-  totalLengthOfCollection = 0;
+  // page = 1;
+  // pageSize = 15;
+  // totalLengthOfCollection = 0;
   isFavorite: boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-   masterJobMap: { [id: number]: string } = {};
+  masterJobMap: { [id: number]: string } = {};
   houseJobMap: { [id: number]: string } = {};
-  
+
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -64,6 +79,51 @@ export class InvoiceListComponent {
     this.isFavorite = !this.isFavorite;
   }
 
+  tableConfig: TableConfig = {
+    columns: [],
+    actions: [
+      {
+        icon: 'fas fa-eye',
+        label: 'View',
+        action: 'view',
+        tooltip: 'View ',
+        // condition: (row: any) => this.hasPermission('View')
+      },
+      {
+        icon: 'fas fa-trash',
+        label: 'Delete',
+        action: 'delete',
+        tooltip: 'Delete ',
+        class: "text-danger",
+        // condition: (row: any) => this.hasPermission('Delete')
+      }
+    ],
+    selectable: false,
+    multiSelect: false,
+    showColumnToggle: true,
+    showFilters: true,
+    showPagination: true,
+    trackByKey: 'VoucherHeaderSid',
+    emptyMessage: 'No Invoice found',
+    dragAndDrop: true
+  };
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
+
+  tableLoading = false;
+
+  protected config: ListComponentConfig = {
+    storageKey: 'invoice-type-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'InvoiceNo',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
+  // Alias for compatibility with existing template
+  get allInvoice() { return this.allItems; }
+
   constructor(
     private operationService: OperationService,
     private router: Router,
@@ -71,29 +131,36 @@ export class InvoiceListComponent {
     private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    paginationService: PaginationService,
+     private datePipe: CustomDatePipe,
+  ) {
+    super(paginationService);
+  }
 
-  ngOnInit() {
+  override ngOnInit() {
     this.getAllCompanies();
-    this.loadJobMappings(); 
-    
+    this.loadJobMappings();
+
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-    
+
     if (userProfile) {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    
+    this.initializeHeaderActions();
+    this.initializeTableConfig();
+    this.initializeModalDropdownItems();
+    super.ngOnInit();
     this.loadInvoices();
   }
 
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    
+
     if (currentMenuId && userRole) {
       // Assuming you have a similar permission service for operations
       // this.operationService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
@@ -105,11 +172,335 @@ export class InvoiceListComponent {
       // });
     }
   }
- 
+
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
   }
-loadJobMappings() {
+
+
+  protected searchItems(): Observable<any> {
+    this.spinner.show();
+    return this.operationService.searchInvoices(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = (response.data.items || []).map((item: any) => ({
+        ...item,
+        VoucherDate:this.datePipe.transform(item?.VoucherDate),
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingService.showError('Error searching Invoice.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching Invoice.');
+    console.error('Error searching Invoice', error);
+    super.handleSearchError(error);
+  }
+
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.loadInvoice();
+  }
+
+
+  // Legacy method for template compatibility
+  loadInvoice() {
+    this.page = 1;
+    this.search();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  // Legacy method for template compatibility
+  clearFilterValue() {
+    this.clearFilter();
+  }
+
+  override trackBy(index: number, item: any): number {
+    return item.VoucherHeaderSid || index;
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  // Table configuration
+  private initializeTableConfig(): void {
+    this.tableConfig.columns = [
+      {
+        key: 'VoucherNumber',
+        label: 'Invoice No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width:"150px"
+      },
+      {
+        key: 'VoucherDate',
+        label: 'Invoice Date ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: 'PartyName',
+        label: 'Customer Name',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '180px',
+      },
+       {
+        key: 'CurrencyCode',
+        label: 'Curr Code ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+       {
+        key: 'LocalAmount',
+        label: 'Local Amount ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+       {
+        key: 'IRNNumber',
+        label: 'Job No ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+        {
+        key: 'MasterJobNumber',
+        label: 'INR No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+        {
+        key: 'HouseJobNumber',
+        label: 'House No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
+        width: '100px',
+        dataType: 'string',
+        cellClass: 'status-column'
+      },
+       {
+        key: 'HouseJobSid',
+        label: 'Create On ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+       {
+        key: 'HouseJobSid',
+        label: 'Credit Note No',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        condition: this.hasPermission('Edoc')
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        condition: this.hasPermission('Terms and Condition')
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        condition: this.hasPermission('Authority')
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        condition: this.hasPermission('Email')
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToAddNewInvoice();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  // onModalDropdownItemClick(action: string): void {
+  //   switch (action) {
+  //     case 'edoc':
+  //       this.openEDoc();
+  //       break;
+  //     case 'terms':
+  //       this.openTandC();
+  //       break;
+  //     case 'authority':
+  //       this.openAuthority();
+  //       break;
+  //     case 'email':
+  //       this.openEmail();
+  //       break;
+  //     default:
+  //       console.warn(`Unknown dropdown action: ${action}`);
+  //   }
+  // }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
+
+  // Table event handlers
+  onTableActionClick(event: TableEventData): void {
+    if (event.action === 'view') {
+      this.editbyrow(event.row);
+    } else if (event.action === 'delete') {
+      this.deleteInvoiceByRow(event.row);
+    }
+  }
+
+  // viewInvoice(item.VoucherHeaderSid)
+  editbyrow(row:any) {
+     this.router.navigate(['operation/invoice/entry/', row.VoucherHeaderSid]);
+  }
+
+
+  deleteInvoiceByRow(row: any) {
+    this.deleteInvoice(row.VoucherHeaderSid);
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  report(): void {
+    const formattedData = this.allInvoice;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns in their current order from the table component
+    const visibleColumns = this.invoiceTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
+    }));
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Invoice-Report',
+      title: companyName
+    });
+  }
+  loadJobMappings() {
     // Load master jobs mapping
     this.operationService.getAllMasterJobs({}).subscribe({
       next: (response: any) => {
@@ -200,38 +591,38 @@ loadJobMappings() {
     // });
   }
 
-  sort(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    this.loadInvoices();
-    this.applySorting();
-    this.updatePaginatedData();
-  }
+  // sort(column: string) {
+  //   if (this.sortColumn === column) {
+  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  //   } else {
+  //     this.sortColumn = column;
+  //     this.sortDirection = 'asc';
+  //   }
+  //   this.loadInvoices();
+  //   this.applySorting();
+  //   this.updatePaginatedData();
+  // }
 
-  applySorting() {
-    this.results.sort((a, b) => {
-      let valueA = a[this.sortColumn];
-      let valueB = b[this.sortColumn];
+  // applySorting() {
+  //   this.results.sort((a, b) => {
+  //     let valueA = a[this.sortColumn];
+  //     let valueB = b[this.sortColumn];
 
-      if (valueA == null) valueA = '';
-      if (valueB == null) valueB = '';
+  //     if (valueA == null) valueA = '';
+  //     if (valueB == null) valueB = '';
 
-      valueA = valueA.toString().toLowerCase();
-      valueB = valueB.toString().toLowerCase();
+  //     valueA = valueA.toString().toLowerCase();
+  //     valueB = valueB.toString().toLowerCase();
 
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
+  //     if (valueA < valueB) {
+  //       return this.sortDirection === 'asc' ? -1 : 1;
+  //     }
+  //     if (valueA > valueB) {
+  //       return this.sortDirection === 'asc' ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  // }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -259,59 +650,59 @@ loadJobMappings() {
     this.router.navigate(['operation/invoice/entry']);
   }
 
-  clearFilterValue() {
-    this.filterValue = '';
-  }
+  // clearFilterValue() {
+  //   this.filterValue = '';
+  // }
 
-  resetPage(): void {
-    this.invoiceList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
-    this.filterValue = '';
-    this.searchType = 'InvoiceNo';
-    this.page = 1;
-    this.sortColumn = 'InvoiceNo';
-    this.sortDirection = 'asc';
-    this.loadInvoices();
-  }
+  // resetPage(): void {
+  //   this.invoiceList = [];
+  //   this.totalLengthOfCollection = 0;
+  //   this.searchPerformed = false;
+  //   this.filterValue = '';
+  //   this.searchType = 'InvoiceNo';
+  //   this.page = 1;
+  //   this.sortColumn = 'InvoiceNo';
+  //   this.sortDirection = 'asc';
+  //   this.loadInvoices();
+  // }
 
-  report(): void {
-    const formattedData = this.invoiceList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      InvoiceDate: this.formatDate(item.InvoiceDate),
-      CreateOn: this.formatDate(item.CreateOn)
-    }));
+  // report(): void {
+  //   const formattedData = this.invoiceList.map(item => ({
+  //     ...item,
+  //     status: item.status === 'A' ? 'Active' : 'Suspended',
+  //     InvoiceDate: this.formatDate(item.InvoiceDate),
+  //     CreateOn: this.formatDate(item.CreateOn)
+  //   }));
 
-    const companyName = this.currentCompany?.companyName ?? 'Company';
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'VoucherNumber', label: 'VoucherNumber' },
-        { key: 'VoucherDate', label: 'VoucherDate ' },
-        { key: 'PartyName', label: 'PartyName ' },
-        { key: 'CurrencyCode', label: 'CurrencyCode' },
-        { key: 'LocalAmount', label: 'Local Amount' },
-        { key: 'IRNNumber', label: 'INR No' },
-        { key: 'MasterJobSid', label: 'Job No' },
-        { key: 'HouseJobSid', label: 'House No' },
-        { key: 'status', label: 'Status' },
-        { key: 'CreateOn', label: 'Created On' },
-        { key: 'CreditNoteNo', label: 'Credit Note No' },
-      ],
-      fileName: 'Invoice-Report',
-      title: companyName
-    });
-  }
+  //   const companyName = this.currentCompany?.companyName ?? 'Company';
+  //   this.excelReportService.exportAsExcel({
+  //     data: formattedData,
+  //     headers: [
+  //       { key: 'VoucherNumber', label: 'VoucherNumber' },
+  //       { key: 'VoucherDate', label: 'VoucherDate ' },
+  //       { key: 'PartyName', label: 'PartyName ' },
+  //       { key: 'CurrencyCode', label: 'CurrencyCode' },
+  //       { key: 'LocalAmount', label: 'Local Amount' },
+  //       { key: 'IRNNumber', label: 'INR No' },
+  //       { key: 'MasterJobSid', label: 'Job No' },
+  //       { key: 'HouseJobSid', label: 'House No' },
+  //       { key: 'status', label: 'Status' },
+  //       { key: 'CreateOn', label: 'Created On' },
+  //       { key: 'CreditNoteNo', label: 'Credit Note No' },
+  //     ],
+  //     fileName: 'Invoice-Report',
+  //     title: companyName
+  //   });
+  // }
 
   formatDate(date: any): string {
     if (!date) return 'N/A';
-    
+
     // Handle string dates, timestamps, and Date objects
-    const dateObj = typeof date === 'string' || typeof date === 'number' 
-      ? new Date(date) 
+    const dateObj = typeof date === 'string' || typeof date === 'number'
+      ? new Date(date)
       : date;
-    
+
     return isNaN(dateObj.getTime()) ? 'N/A' : dateObj.toLocaleDateString();
   }
 

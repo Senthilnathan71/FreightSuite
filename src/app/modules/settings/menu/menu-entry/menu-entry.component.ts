@@ -331,7 +331,7 @@ export class MenuEntryComponent implements OnInit {
       createdBy: this.appSettingService.userSettingSource.value['userEmail'],
       updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
       ModuleName: selectedModule?.ModuleName || '',
-      status: formValue.status === "Active" ? "A" : "S",
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       parentId: parentId, // Use the processed parentId
       permissions: this.preparePermissionsPayload()
     };

@@ -166,6 +166,11 @@ auditLogs: any[] = []; // Stores audit logs
     return this.permissions.includes(permission);
   }
 
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
     return {
@@ -252,7 +257,7 @@ onSubmit(): void {
   }
 
   const formValue = this.chartForm.getRawValue();
-  const mappedStatus = formValue.Status === 'Active' ? 'A' : 'S';
+  const mappedStatus = formValue.Status === 'Active' || formValue.Status === 'A' ? 'A' : 'S';
   const currentuseremail = this.appSettingService.userSettingSource.value['userEmail'];
   
   const payload = this.isEditMode ? {

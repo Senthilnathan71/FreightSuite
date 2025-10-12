@@ -187,13 +187,13 @@ hasAnyDropdownPermission(): boolean {
         YearCode: Number(formValue.YearCode),
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "C"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         YearCode: Number(formValue.YearCode),
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         ...createdBy,
-        status: formValue.status === "Active" ? "A" : "C"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       };
 
       console.log('payload', payload);

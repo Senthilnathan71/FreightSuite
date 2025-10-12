@@ -113,6 +113,8 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   searched = false;
   loading = true;
+  permissions: string[] = [];
+	currentMenuPermissions: any = {};
 
   // Company
   currentCompany: any;
@@ -183,7 +185,36 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     super.ngOnInit();
     this.initializeTableConfig();
     this.initializeHeaderActions();
+    this.checkPermissions();
   }
+
+    checkPermissions() {
+		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+		if (currentMenuId && userRole) {
+			this.masterService
+				.getRoleMenuPermissions(currentMenuId, userRole)
+				.subscribe({
+					next: (response) => {
+						this.currentMenuPermissions = response.data.MenuPermissions || {};
+						this.permissions = Object.keys(this.currentMenuPermissions).filter(
+							(key) => this.currentMenuPermissions[key] === 'isTrue'
+						);
+					},
+				});
+		}
+	}
+
+	//  checks for menu permission
+	hasPermission(permission: string): boolean {
+		return this.permissions.includes(permission);
+	}
+
+	hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
+
 
   // loadTaxGroups(): void {
   //   this.spinner.show();

@@ -7,10 +7,17 @@
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
-<div class="row">
+<div class="row compact-form">
     <!-- #region Search Panel -->
        <div class="col-12">
-        <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm justify-content-between">
+          <app-page-header 
+    [title]="'Lead'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+        <!-- <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col-md-4 pb-1">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="page-title mb-0">Lead</h4>
@@ -66,7 +73,7 @@
             </div>
 
 
-        </div>
+        </div> -->
     </div>
     <div class="col-12 d-none">
         <div class="bg-white rounded-3 p-2  shadow mb-2 " data-bs-theme="light">

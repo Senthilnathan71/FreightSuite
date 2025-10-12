@@ -209,7 +209,7 @@ export class VesselEntryComponent implements OnInit {
             NRT: Number(formValue.NRT),
             LengthinMtr: Number(formValue.LengthinMtr),
             BreadthinMtr: Number(formValue.BreadthinMtr),
-            status: formValue.status === 'Active' ? 'A' : 'S',
+            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             updatedBy: updatedBy
         } : {
             ...formValue,
@@ -219,7 +219,7 @@ export class VesselEntryComponent implements OnInit {
             NRT: Number(formValue.NRT),
             LengthinMtr: Number(formValue.LengthinMtr),
             BreadthinMtr: Number(formValue.BreadthinMtr),
-            status: formValue.status === 'Active' ? 'A' : 'S',
+            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             createdBy: createdBy
         }
     }

@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
 import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
@@ -27,6 +27,7 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { ConfigComponent } from '../config/config.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -53,6 +54,7 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 	styleUrl: './company-entry.component.scss'
 })
 export class CompanyEntryComponent implements OnInit {
+	private destroy$ = new Subject<void>();
 	active = 1;
 	active2 = 1;
 	modeOfStatus = [
@@ -139,7 +141,8 @@ export class CompanyEntryComponent implements OnInit {
 		private modalService: NgbModal,
 		private matdial: MatDialog,
 		private cdRef: ChangeDetectorRef,
-		private leadService: LeadService
+		private leadService: LeadService,
+		public dropdownStore:DropdownStore
 	) { }
 
 	// LIFECYCLE HOOK
@@ -234,7 +237,7 @@ export class CompanyEntryComponent implements OnInit {
 			branches: this.fb.array([])
 		});
 		this.companyForm.get('CountryMasterSid')?.valueChanges.subscribe((countryId) => {
-			const country = this.countryResults?.find(c => c.CountryMasterSid === countryId);
+			const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
 			this.handlePanControl(country);
 		});
 	}
@@ -642,12 +645,12 @@ export class CompanyEntryComponent implements OnInit {
 		}
 	}
 
-	// Don't forget to clean up in ngOnDestroy
-	ngOnDestroy() {
-		if (this.modalDismissSubscription) {
-			this.modalDismissSubscription.unsubscribe();
-		}
-	}
+	// // Don't forget to clean up in ngOnDestroy
+	// ngOnDestroy() {
+	// 	if (this.modalDismissSubscription) {
+	// 		this.modalDismissSubscription.unsubscribe();
+	// 	}
+	// }
 
 	openBranchBankModal(content: TemplateRef<any>, branchIndex: number, bankIndex?: number) {
 		// Initialize the bank form
@@ -781,7 +784,7 @@ export class CompanyEntryComponent implements OnInit {
 			CountryMasterSid: parseInt(formValue.CountryMasterSid),
 			CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
 			isHo: formValue.isHo ? 'Y' : 'N',
-			status: formValue.status === 'Active' ? 'A' : 'S',
+			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			branches: branchesPayload,
 			...(this.isEditMode ?
 				{ updatedBy: updatedBy } :
@@ -835,15 +838,16 @@ export class CompanyEntryComponent implements OnInit {
 
 	loadAllFields() {
 		forkJoin({
-			countries: this.masterService.getAllCountry(),
+			// countries: this.masterService.getAllCountry(),
 			currencies: this.masterService.getAllCurrencies(),
 			cities: this.masterService.getAllCity()
-		}).subscribe(({ countries, currencies, cities }) => {
-			this.countryResults = countries.data;
+		}).subscribe(({ currencies, cities }) => {
+			// this.countryResults = countries.data;
 			this.currencyResults = currencies;
 			this.cityResults = cities
 
-		})
+		});
+		this.dropdownStore.loadCountries()
 	}
 
 	loadBranches() {
@@ -1392,22 +1396,22 @@ openAuditLogs(modal: TemplateRef<any>) {
 
 	isPanRequired(): boolean {
 		const countryControl = this.companyForm.get('CountryMasterSid');
-		if (!countryControl || !this.countryResults) return false;
+		if (!countryControl || !this.dropdownStore.countries()) return false;
 
 		const countryId = countryControl.value;
-		const country = this.countryResults.find(c => c.CountryMasterSid === countryId);
+		const country = this.dropdownStore.countries().find(c => c.CountryMasterSid === countryId);
 
 		return country?.countryName?.toLowerCase() === 'india';
 	}
 
 	handlePanControl(country: any): void {
-		if (!country || !this.countryResults) return;
+		if (!country || !this.dropdownStore.countries()) return;
 
 		const panControl = this.companyForm.get('Pan');
 		if (!panControl) return;
 
 		const countryName = country.countryName ||
-			this.countryResults.find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
+			this.dropdownStore.countries().find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
 
 		const isIndia = countryName?.toLowerCase() === 'india';
 		this.isPanRequiredFlag = isIndia;
@@ -1435,6 +1439,12 @@ openAuditLogs(modal: TemplateRef<any>) {
 		if (!pan) return null;
 		return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
 	}
+
+	ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
 
 }

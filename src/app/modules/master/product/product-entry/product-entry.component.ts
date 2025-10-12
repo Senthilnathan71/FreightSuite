@@ -189,12 +189,12 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
             const payload = this.isEditMode ? {
                 ...formValue,
                 UNNo : parseInt(formValue.UNNo),
-                status : formValue.status === 'Active' ? 'A' : 'S',
+                status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
                 updatedBy:updatedBy
             } : {
                 ...formValue,
                 UNNo : parseInt(formValue.UNNo),
-                status : formValue.status === 'Active' ? 'A' : 'S',
+                status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
                 createdBy:createdBy,
                 CompanyMasterSid:this.currentCompany?.CompanyMasterSid
             }

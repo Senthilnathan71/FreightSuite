@@ -248,7 +248,7 @@ generateAWB(): void {
     const formValue = this.hawbForm.value;
     return {
       ...formValue,
-      status: formValue.status === "Active" ? "A" : "S",
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
       AWBList: this.generatedAWBList,

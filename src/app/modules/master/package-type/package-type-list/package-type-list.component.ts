@@ -593,7 +593,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
       const payload = {
         PackageName: formValue.PackageName,
         PackageCode: formValue.PackageCode,
-        status: formValue.status === "Active" ? "A" : "S",
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
         createdBy: this.appSettingService.userSettingSource.value['userEmail'],
         updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid
@@ -608,7 +608,6 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
               this.closeModal();
               this.search();
               // this.loadPackageTypes();
-              this.searchPackageType();
             } else {
               this.appSettingService.showError(resp.message);
             }

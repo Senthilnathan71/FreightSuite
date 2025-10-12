@@ -1,6 +1,6 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 
@@ -28,7 +28,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { LeadService } from '../../Services/lead.service';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
-import { catchError, forkJoin, of, tap } from 'rxjs';
+import { catchError, forkJoin, of, Subject, tap } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
@@ -40,6 +40,7 @@ import {
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
   selector: 'app-enquiry-entry',
@@ -69,6 +70,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
   ],
 })
 export class EnquiryEntryComponent implements OnInit {
+      private destroy$ = new Subject<void>();
+
   selectedDepartment: any = '';
   isMobile: boolean = false;
   rateRequestForm!: FormGroup;
@@ -202,8 +205,17 @@ export class EnquiryEntryComponent implements OnInit {
     private calendar: NgbCalendar,
     private ngbModal: NgbModal,
     private spinner: NgxSpinnerService,
-    private datePipe : CustomDatePipe
-  ) { }
+    private datePipe : CustomDatePipe,
+    public dropdownStore: DropdownStore
+  ) { 
+    effect(() => {
+      const customerTypeOutput = this.dropdownStore.customerTypeData()
+      this.shipperList = customerTypeOutput.filter(c => c.CustomerType?.shipper === 'isTrue');
+      this.consigneeList = customerTypeOutput.filter(c => c.CustomerType?.consignee === 'isTrue');
+      this.finalShipperList = [...this.shipperList]
+      this.finalConsigneeList = [...this.consigneeList]
+    })
+  }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
@@ -218,7 +230,6 @@ export class EnquiryEntryComponent implements OnInit {
 
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
-
       // Check for voice enquiry data first
       this.activatedRoute.queryParams.subscribe(queryParams => {
         if (queryParams['voice'] === 'true') {
@@ -306,7 +317,7 @@ export class EnquiryEntryComponent implements OnInit {
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
       leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
-      weightUnits: this.leadService.getAllWeightUnits().pipe(catchError(() => of([]))),
+      weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
       products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
@@ -447,16 +458,13 @@ export class EnquiryEntryComponent implements OnInit {
 
   loadOtherFormLookups() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    forkJoin({
-      shippers: this.leadService.getAllShippers(CompanyMasterSid),
-      consignees: this.leadService.getAllConsignees(CompanyMasterSid)
-    }).subscribe(({ shippers, consignees }) => {
-      this.shipperList = shippers.data;
-      this.finalShipperList = [...this.shipperList];
-      this.consigneeList = consignees.data;
-      this.finalConsigneeList = [...this.consigneeList];
-    })
+    const payload = {
+      CompanyMasterSid,
+      types: ['shipper', 'consignee']
+    };
+    this.dropdownStore.loadCustomerTypeData(payload)
   }
+
 
   get routes(): FormArray {
     return this.rateRequestForm.get('routes') as FormArray;
@@ -1600,5 +1608,10 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
   }
 
 
-
+ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
 }

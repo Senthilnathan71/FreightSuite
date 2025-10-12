@@ -7,7 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -19,6 +19,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -42,6 +43,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
   ],
 })
 export class VendorTdsEntryComponent {
+    private destroy$ = new Subject<void>();
+  
 
   SupplierTdsMappingSid: number;
   isEditMode: boolean;
@@ -52,8 +55,8 @@ export class VendorTdsEntryComponent {
   currentMenuPermissions: any = {};
 
   supplierTDSForm!: FormGroup;
-  supplierList: any[] = [];
-  tdsList: any[] = [];
+  // supplierList: any[] = [];
+  // tdsList: any[] = [];
   cusBranchList: any[] = [];
 
   // Datepicker related variable
@@ -76,7 +79,8 @@ export class VendorTdsEntryComponent {
     private appSettingService: AppSettingsService,
     private calendar: NgbCalendar,
     private accountService: AccountsService,
-    private modalService : NgbModal
+    private modalService : NgbModal,
+    public dropdownStore: DropdownStore
   ) { }
 
   ngOnInit(): void {
@@ -180,15 +184,13 @@ export class VendorTdsEntryComponent {
     this.tdsDetailArray.push(tdsDetailGroup);
   }
 
-  loadLookUps() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    forkJoin({
-      suppliers: this.accountService.getAllSuppliers(CompanyMasterSid),
-      tdsSet: this.accountService.getAllTDSSet(CompanyMasterSid),
-    }).subscribe(({ suppliers, tdsSet }) => {
-      this.supplierList = suppliers.data;
-      this.tdsList = tdsSet.data;
-    });
+  loadLookUps() {    
+    const payload={
+      CompanyMasterSid:this.currentCompany?.CompanyMasterSid,
+      types: ['vendor', 'transporter', 'agent']
+    }
+    this.dropdownStore.loadCustomerTypeData(payload)
+    this.dropdownStore.loadtdsSet(Number(this.currentCompany?.CompanyMasterSid))
   }
 
   loadSupplierTDS() {
@@ -269,7 +271,7 @@ export class VendorTdsEntryComponent {
       CertificateAmt: detailFormValue.CertificateAmt,
       EffectiveFrom: detailFormValue.EffectiveFrom,
       EffectiveTo: detailFormValue.EffectiveTo,
-      Status: formValue.Status === 'Active' ? 'A' : 'S',
+      Status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       ...(this.isEditMode ? { UpdatedBy: currUserEmail } : { CreatedBy: currUserEmail }),
     };
 
@@ -545,5 +547,12 @@ openAuditLogs(modal: TemplateRef<any>) {
   // Reset delete toggler if active
   this.deleteToggler = false;
 }
+
+
+ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   
 }

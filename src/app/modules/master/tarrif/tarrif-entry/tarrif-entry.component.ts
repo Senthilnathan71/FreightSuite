@@ -710,7 +710,7 @@ export class TarrifEntryComponent implements OnInit {
         BuyCurrency: parseInt(formValue.detailBuyCurrency, 10),
         BuyPerUnitPrice: parseFloat(formValue.detailBuyPerUnitPrice),
         MinSale: formValue.detailMinSale,
-        status: formValue.detailstatus === 'Active' ? 'A' : 'S',
+        status: formValue.detailstatus === 'Active' || formValue.status === 'A' ? 'A' : 'S',
         Remarks: formValue.detailRemarks,
         ...(this.isModalEditMode ? { updatedBy } : { createdBy })
       };
@@ -765,7 +765,7 @@ export class TarrifEntryComponent implements OnInit {
       AgentSid: formValue.AgentSid,
       Carrier: formValue.Carrier,
       updatedBy,
-      status: formValue.status === 'Active' ? 'A' : 'S'
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
     } : {
       ...formValue,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -777,7 +777,7 @@ export class TarrifEntryComponent implements OnInit {
       AgentSid: formValue.AgentSid,
       Carrier: formValue.Carrier,
       createdBy,
-      status: formValue.status === 'Active' ? 'A' : 'S'
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
     };
   }
 

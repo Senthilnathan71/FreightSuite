@@ -19,6 +19,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-hawb-stock-list',
   standalone: true,
@@ -32,7 +33,8 @@ import { Observable } from 'rxjs';
     CustomDatePipe,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './hawb-stock-list.component.html',
@@ -51,7 +53,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
   currentMenuPermissions: any = {};
 
   isFavorite: boolean = false;
-
+  headerActions: HeaderAction[] = [];
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -127,10 +129,10 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadHawbStocks();
+    // this.loadHawbStocks();
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -146,6 +148,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
           this.permissions = Object.keys(this.currentMenuPermissions)
             .filter(key => this.currentMenuPermissions[key] === 'isTrue');
           console.log(this.permissions)
+          this.initializeHeaderActions();
         }
       });
     }
@@ -153,6 +156,11 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
 
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
+  }
+
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
   }
 
   // Implement abstract methods from BaseListComponent
@@ -175,26 +183,27 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
   }
 
   protected processSearchResults(response: any): void {
-  this.tableLoading = false;
-  this.spinner.hide();
+    this.tableLoading = false;
+    this.spinner.hide();
 
-  if (response.status) {
-    this.allItems = response.data.items.map(item => ({
-      ...item,
-      // Display-only concatenated BL Number
-      BLNumber: `${item.AirwayBillNumber}-${item.HAWBSerial}-${item.NumberofHAWB}`,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
-    }));
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        // Display-only concatenated BL Number
+        BLNumber: `${item.AirwayBillNumber}-${item.HAWBSerial}-${item.NumberofHAWB}`,
+        status: item.status === 'A' ? 'Active' : 'Suspended',
+        ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
+      }));
 
-    this.totalLengthOfCollection = response.data.totalCount || 0;
-    this.applySorting();
-  } else {
-    this.appSettingService.showError('Error searching hawb-stock.');
-    this.allItems = [];
-    this.totalLengthOfCollection = 0;
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingService.showError('Error searching hawb-stock.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
   }
-}
 
 
   protected override handleSearchError(error: any): void {
@@ -205,6 +214,62 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
     super.handleSearchError(error);
   }
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchHawb();
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.  navigateToCreateGeneration();
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
   // Legacy methods for template compatibility
   searchHawb() {
     this.search();
@@ -231,7 +296,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
         this.masterService.deleteHawbStock(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("HAWB-Stock Deleted successfully!");
-            this.loadHawbStocks();
+            // this.loadHawbStocks();
             this.searchHawb()
           },
           error: (err) => {
@@ -328,51 +393,51 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
       title: companyName
     });
   }
-  loadHawbStocks(): void {
-    this.spinner.show();
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  // loadHawbStocks(): void {
+  //   this.spinner.show();
+  //   this.loading = true;
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
-    const params = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection,
-      activeCompanyId: CompanyMasterSid,
-      activeBranchId: BranchMasterSid,
-    };
+  //   const params = {
+  //     search: this.filterValue?.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     sortColumn: this.sortColumn,
+  //     sortDirection: this.sortDirection,
+  //     activeCompanyId: CompanyMasterSid,
+  //     activeBranchId: BranchMasterSid,
+  //   };
 
-    this.masterService.searchHawbStock(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.hawbList = response.data.items || [];
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searchPerformed = true;
-        }
-        else {
-          this.appSettingService.showError(response.message);
-        }
-        this.spinner.hide();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching HAWB stocks:', err);
-        this.hawbList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
-      }
-    });
-  }
+  //   this.masterService.searchHawbStock(params).subscribe({
+  //     next: (response: any) => {
+  //       if (response.status) {
+  //         this.hawbList = response.data.items || [];
+  //         this.totalLengthOfCollection = response.data.totalCount;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       }
+  //       else {
+  //         this.appSettingService.showError(response.message);
+  //       }
+  //       this.spinner.hide();
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error fetching HAWB stocks:', err);
+  //       this.hawbList = [];
+  //       this.totalLengthOfCollection = 0;
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
 
 
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.loadHawbStocks();
+    // this.loadHawbStocks();
   }
 
   trackByIndex(index: number, item: any): number {

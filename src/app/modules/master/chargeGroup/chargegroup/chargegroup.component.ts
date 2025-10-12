@@ -689,7 +689,7 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
 
     const payload = {
       ...formValue,
-      status: formValue.status === "Active" ? "A" : "S",
+      status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
     };

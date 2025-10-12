@@ -312,7 +312,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			DocumentFlag: formValue.DocumentFlag ? 'Y' : 'N',
 			MonthFlag: formValue.MonthFlag ? 'Y' : 'N',
 			YearFlag: formValue.YearFlag ? 'Y' : 'N',
-			status: formValue.status === 'Active' ? 'A' : 'S',
+			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
 		}
 

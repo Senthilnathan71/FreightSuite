@@ -695,12 +695,12 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         ...formValue,
         ...updatedBy,
         EffectiveFrom: new Date(formValue.EffectiveFrom),
-        status: formValue.status === "Active" ? "A" : "S"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         ...createdBy,
         EffectiveFrom: new Date(formValue.EffectiveFrom),
-        status: formValue.status === "Active" ? "A" : "S"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       };
 
       console.log('payload', payload);

@@ -12,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -27,6 +27,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { LeadStatus } from 'src/app/common/helper';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { MasterService } from '../../master/master.service';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 
 @Component({
@@ -53,6 +54,7 @@ import { MasterService } from '../../master/master.service';
   styleUrl: './lead.component.scss'
 })
 export class LeadComponent implements OnInit {
+  private destroy$ = new Subject<void>();
   leadForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
   citys: City[] = [];        // Array to store the leads
@@ -136,7 +138,8 @@ export class LeadComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    public dropdownStore:DropdownStore
   ) { }
 
   ngOnInit(): void {
@@ -232,9 +235,9 @@ export class LeadComponent implements OnInit {
   // Initialize the Form
   initForm() {
     this.leadForm = this.fb.group({
-      preCustomerName: [, [Validators.required]],
-      leadReferredBy: [, [Validators.required]],
-      leadFrom: [],
+      preCustomerName: ['', [Validators.required]],
+      leadReferredBy: ['', [Validators.required]],
+      leadFrom: ['', [Validators.required]],
       preCustomerType: [],
       preCustomerAddress1: ['', [
         Validators.required,
@@ -305,28 +308,28 @@ export class LeadComponent implements OnInit {
       this.leadService.updateLeadById(this.PreCustomerMasterSid, payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Lead Updated Successfully');
+            this.appSettingService.showSuccess(resp.message || 'Lead Updated Successfully');
             this.router.navigate(['crm/lead/list']);
           } else {
-            this.appSettingService.showError('Error Updating Lead');
+            this.appSettingService.showError(resp.message || 'Internal Server Error');
           }
         },
         (error) => {
-          console.error('Error Updating Lead', error)
+          console.error('leadUpdate', error)
         }
       )
     } else {
       this.leadService.createNewLead(payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Lead Created Successfully');
+            this.appSettingService.showSuccess(resp.message || 'Lead Created Successfully');
             this.router.navigate(['crm/lead/list']);
           } else {
-            this.appSettingService.showError('Error Creating Lead');
+            this.appSettingService.showError(resp.message || "Internal Server Error");
           }
         },
         (error) => {
-          console.error('Error Creating Lead', error)
+          console.error('leadCreate', error)
         }
       )
     }
@@ -419,12 +422,12 @@ export class LeadComponent implements OnInit {
   loadAllFields() {
     forkJoin({
       companies: this.leadService.getAllCompanies(),
-      countries: this.leadService.fetchAllCountries(),
-    }).subscribe(({ companies, countries }) => {
+      // countries: this.leadService.fetchAllCountries(),
+    }).subscribe(({ companies}) => {
       this.companyList = companies.data;
-      this.countryList = countries
-      console.log(this.countryList);
+      // this.countryList = countries
     })
+    this.dropdownStore.loadCountries()
   }
 
   filterStateByCountryId(country) {
@@ -631,18 +634,39 @@ export class LeadComponent implements OnInit {
   }
 
   openEDoc() {
-    if (!this.leadData) return;
-    const modalRef = this.modalService.open(EdocComponent, {
-      size: 'xl',
-      centered: true,
-      backdrop: 'static',
-    });
-    modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
-      if(data){
-        this.modalService.dismissAll();
-      }
-    });
+      console.log('openEDoc clicked'); // 👈 check this
+
+  if (!this.leadData) return;
+
+  // Permission check before opening modal
+  if (!this.hasPermission('Edoc')) {
+    this.appSettingService.showWarning('You do not have permission to access Edoc.');
+    return;
   }
 
+  const modalRef = this.modalService.open(EdocComponent, {
+    size: 'xl',
+    centered: true,
+    backdrop: 'static',
+  });
+
+  // Pass screen name and optional data
+  modalRef.componentInstance.screenName = 'Edoc';
+  modalRef.componentInstance.dataItems = this.leadData; // if you want to pass any data
+
+  // Listen for close event
+  modalRef.componentInstance.closeModal.subscribe((data: boolean) => {
+    if (data) {
+      this.modalService.dismissAll();
+    }
+  });
+}
+
+
+  ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  } 
 
 }

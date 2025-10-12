@@ -70,6 +70,9 @@ export class InvoiceEntryComponent implements OnInit {
 
   // UI state
   selectedTab = 'Invoice';
+  selectTab(tab: string): void {
+    this.selectedTab = tab;
+  }
   tabs = [
     { name: 'Invoice', icon: 'fas fa-file-invoice' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' }
@@ -480,6 +483,15 @@ export class InvoiceEntryComponent implements OnInit {
 
     this.details.clear();
     for (const det of detailsFromResp) {
+      // Tax logic: If TaxPercentage2 is 0/null, then TaxPercentage1 is IGST
+      // Otherwise TaxPercentage1 is CGST and TaxPercentage2 is SGST
+      const taxPerc2 = det.TaxPercentage2 != null ? Number(det.TaxPercentage2) : 0;
+      const taxAmt2 = det.TaxAmount2 != null ? Number(det.TaxAmount2) : 0;
+      const taxPerc1 = det.TaxPercentage1 != null ? Number(det.TaxPercentage1) : 0;
+      const taxAmt1 = det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0;
+
+      const isIGST = taxPerc2 === 0 && taxAmt2 === 0 && (taxPerc1 > 0 || taxAmt1 > 0);
+
       this.details.push(this.createDetailGroup({
         ChargeMasterSid: det.ChargeMasterSid,
         ChargeDescription: det.ChargeDescription,
@@ -492,12 +504,13 @@ export class InvoiceEntryComponent implements OnInit {
         ExchangeRate: det.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value,
         Amount: det.Amount,
         TaxableAmount: det.TaxableAmount,
-        TaxPercentage1: det.TaxPercentage1,
-        TaxAmount1: det.TaxAmount1,
-        TaxPercentage2: det.TaxPercentage2,
-        TaxAmount2: det.TaxAmount2,
-        TaxPercentageIGST: det.TaxPercentageIGST,
-        TaxAmountIGST: det.TaxAmountIGST,
+        // If IGST (Tax2 is 0), clear CGST/SGST and populate IGST
+        TaxPercentage1: isIGST ? 0 : taxPerc1,
+        TaxAmount1: isIGST ? 0 : taxAmt1,
+        TaxPercentage2: isIGST ? 0 : taxPerc2,
+        TaxAmount2: isIGST ? 0 : taxAmt2,
+        TaxPercentageIGST: isIGST ? taxPerc1 : 0,
+        TaxAmountIGST: isIGST ? taxAmt1 : 0,
         LocalAmount: det.LocalAmount,
         MasterJobSid: det.MasterJobSid,
         HouseJobSid: det.HouseJobSid
@@ -903,6 +916,8 @@ export class InvoiceEntryComponent implements OnInit {
       TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
       TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
       TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
+      TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
+      TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
       LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
       MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
       HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
@@ -993,10 +1008,7 @@ export class InvoiceEntryComponent implements OnInit {
   }
 
   onReset() {
-    if (confirm('Reset invoice form?')) {
       this.invoiceForm.reset({ status: 'A', ExchangeRate: 1 });
-      this.details.clear();
-    }
   }
 
   goBack() {

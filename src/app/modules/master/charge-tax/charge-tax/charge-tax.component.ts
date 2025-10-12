@@ -703,7 +703,7 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
       TaxGroup: formValue.TaxGroup,
       TaxRate: parseFloat(formValue.TaxRate),
       Remarks: formValue.Remarks || '',
-      Status: formValue.status === "Active" ? "A" : "S",
+      Status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       CreatedBy: currentUserEmail,
       UpdatedBy: currentUserEmail  // ✅ Always include both

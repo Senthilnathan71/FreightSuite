@@ -48,7 +48,8 @@
                 <div class="row" [formGroup]="loadingPlanForm">
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('dept')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!loadingPlanForm.get('dept')?.value">
                             <ng-select [items]="filteredDepartments" bindLabel="departmentName"
                                 bindValue="DepartmentMasterSid" formControlName="dept" (change)="onDeptChange($event)"
                                 [appendTo]="'body'" placeholder="">
@@ -62,7 +63,8 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('pol')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!loadingPlanForm.get('pol')?.value">
                             <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode"
                                 formControlName="pol" (change)="handlePOLChange($event)" placeholder=""
                                 [appendTo]="'body'"></ng-select>
@@ -74,7 +76,8 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!loadingPlanForm.get('pod')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!loadingPlanForm.get('pod')?.value">
                             <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode"
                                 formControlName="pod" placeholder="" (change)="handlePODChange($event)"
                                 [appendTo]="'body'"></ng-select>
@@ -87,7 +90,8 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('vesselVoyage')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!loadingPlanForm.get('vesselVoyage')?.value">
                             <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
                                 bindValue="VoyageNo" (change)="onVesselVoyageChange($event)"
                                 formControlName="vesselVoyage" placeholder="Select Vessel" [appendTo]="'body'">
@@ -124,7 +128,8 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!loadingPlanForm.get('carrier')?.value">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!loadingPlanForm.get('carrier')?.value">
                             <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
                                 formControlName="carrier" placeholder="" [appendTo]="'body'">
 
@@ -155,7 +160,7 @@
         </div>
     </div>
 
-<!-- 
+    <!-- 
     <div class="col-md-12 mt-2">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
@@ -255,7 +260,7 @@
         </div>
     </div> -->
 
-      <div class="info-sidebar mt-1">
+    <div class="info-sidebar mt-1">
 
         <!-- Quick Stats -->
         <div class="stats-widget">
@@ -279,456 +284,455 @@
                     </div>
                 </div>
 
-           
-            <div class="col-md-3">
-                <div class=" stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Revenue</div>
-                    <div class="stat-value">{{getParseInteger(totalRevenue)}}</div>
-                </div>
-            </div>
 
-            <div class="col-md-3">
-                <div class=" stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Cost</div>
-                    <div class="stat-value">{{getParseInteger(totalCost)}}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Net Weight</div>
-                    <div class="stat-value">{{getParseInteger(totalNetWeight)}}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Volume(CBM)</div>
-                    <div class="stat-value">{{getParseInteger(totalVolume)}}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">Total Profit</div>
-                    <div class="stat-value">{{getParseInteger(totalGrossProfit)}}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-item">
-                    <div class="stat-label fw-bold" style="font-size: 12px;">GP%</div>
-                    <div class="stat-value">
-                        <span class="status-badge status-active">{{getParseInteger(totalGrossProfitPercentage)}}</span>
+                <div class="col-md-3">
+                    <div class=" stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Revenue</div>
+                        <div class="stat-value">{{getParseInteger(totalRevenue)}}</div>
                     </div>
                 </div>
-            </div>
 
-        </div>
-
-
-
-    </div>
-    <div class="content-layout">
-
-        <div class="col-12 px-2 bg-white py-1 rounded shadow-sm mt-1">
-              <div class="d-flex justify-content-end mb-1">
-                @if(screenName === "Loading Plan"){
-                <aside class="col-md-3" *ngIf="selectedBookings.length > 1">
-                    <div class="custom-form-group custom-form-group-select my-0 mx-2" [class.filled]="!!selectedVoyage">
-                        <ng-select 
-                            [items]="multipleVoyageList" 
-                            bindLabel="vslVoy" 
-                            placeholder="" 
-                            [(ngModel)]="selectedVoyage"
-                            [appendTo]="'body'"
-                            (change)="handleSelectedVoyage()"
-                        >
-                        </ng-select>
-                        <label class="input-label">Carrier <span class="text-danger">*</span></label>
+                <div class="col-md-3">
+                    <div class=" stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Cost</div>
+                        <div class="stat-value">{{getParseInteger(totalCost)}}</div>
                     </div>
-                </aside>
-                <div>
-                    <button class="btn btn-sm btn-info" (click)="onClickGenerateJob()"><i class="fas fa-briefcase me-1"></i>
-                        Generate Job
-                    </button>
                 </div>
-                } @else {
-                <button class="btn btn-sm btn-info" (click)="attachToMasterJob()"><i class="fas fa-briefcase me-1"></i>
-                    Attach to Master Job
-                </button>
-                }
-            </div>
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Booking No</th>
-                            <th class="bg-transparent text-light" scope="col">Sales Person</th>
-                            <th class="bg-transparent text-light" scope="col">Customer</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">Shipper</th> -->
-                            <th class="bg-transparent text-light" scope="col">Vsl/Voy</th>
-                            <th class="bg-transparent text-light" scope="col">POO</th>
-                            <th class="bg-transparent text-light" scope="col">POL</th>
-                            <th class="bg-transparent text-light" scope="col">POD</th>
-                            <th class="bg-transparent text-light" scope="col">FPD</th>
-                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
-                            <th class="bg-transparent text-light" scope="col">Gr Weight</th>
-                            <th class="bg-transparent text-light" scope="col">Volume</th>
-                            <th class="bg-transparent text-light" scope="col" width="5%">Tick</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of slicedAvailableBookings; track $index) {
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" target="_blank" class="link mx-2 "
-                                        [routerLink]="['/operation/booking/entry',item.BookingHeaderSid]">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.BookingNo}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.SalesmanName}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.CustomerName}}</div>
-                            </td>
-                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.ShipperName}}</div>
-                            </td> -->
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{getVesselVoy(item)}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.POO}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.POL}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.POD}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.FPD}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.NoOfPackage}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.GrossWeight}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.Volume}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;padding-left: 20px;">
-
-                                <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" [checked]="existInSelected(item)" id="" class="focus-ring form-check-input sm p-0"
-                                        (keydown.enter)="toggleBooking($event,item)"
-                                        (click)="toggleBooking($event,item)">
-                                </div>
-
-
-                            </td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-                     <div class="col-12" *ngIf="availableBookings.length === 0">
-                <div class=" text-center">No Record Found</div>
-            </div>
-                
-            </div>
-           
-           
-            <div class="mt-2" *ngIf="availableBookings.length > 0">
-                    <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfAvailableBookings"
-                        [pageSize]="bPageSize" [(page)]="bPage" (pageChange)="updateBookingList()" [rotate]="true"
-                        [ellipses]="false" [maxSize]="10">
-                    </ngb-pagination>
-                </div>
-            
-           
-        </div>
-      
-    </div>
-    
-
-
-    <div class="">
-        
-
-        @if(screenName === 'Loading Plan'){
-        <div class="nav-pills-container mt-1">
-            <div class="nav-pills">
-                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-                    (click)="selectTab(tab.name)">
-                    <div class="pill-icon">
-                        <i [class]="tab.icon"></i>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Net Weight</div>
+                        <div class="stat-value">{{getParseInteger(totalNetWeight)}}</div>
                     </div>
-                    <span class="pill-label">{{ tab.name }}</span>
-                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
                 </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Volume(CBM)</div>
+                        <div class="stat-value">{{getParseInteger(totalVolume)}}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Profit</div>
+                        <div class="stat-value">{{getParseInteger(totalGrossProfit)}}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-label fw-bold" style="font-size: 12px;">GP%</div>
+                        <div class="stat-value">
+                            <span
+                                class="status-badge status-active">{{getParseInteger(totalGrossProfitPercentage)}}</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+
+
+
         </div>
+        <div class="content-layout">
 
-        <div class="content-workspace">
-            <div class="workspace-content" *ngIf="selectedTab === 'Container'">
-
+            <div class="col-12 px-2 bg-white py-1 rounded shadow-sm mt-1">
                 <div class="d-flex justify-content-end mb-1">
-                    <button class="btn btn-sm btn-info " (click)="openContainerModal(containerModal)">
-                        <i class="fas fa-plus me-1"></i> Add
+                    @if(screenName === "Loading Plan"){
+                    <aside class="col-md-3" *ngIf="selectedBookings.length > 1">
+                        <div class="custom-form-group custom-form-group-select my-0 mx-2"
+                            [class.filled]="!!selectedVoyage">
+                            <ng-select [items]="multipleVoyageList" bindLabel="vslVoy" placeholder=""
+                                [(ngModel)]="selectedVoyage" [appendTo]="'body'" (change)="handleSelectedVoyage()">
+                            </ng-select>
+                            <label class="input-label">Carrier <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <div>
+                        <button class="btn btn-sm btn-info" (click)="onClickGenerateJob()"><i
+                                class="fas fa-briefcase me-1"></i>
+                            Generate Job
+                        </button>
+                    </div>
+                    } @else {
+                    <button class="btn btn-sm btn-info" (click)="attachToMasterJob()"><i
+                            class="fas fa-briefcase me-1"></i>
+                        Attach to Master Job
                     </button>
+                    }
                 </div>
-              
                 <div class="table-responsive table-borderless">
                     <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                         <thead>
                             <tr class="bg-info">
-
-                                <th class="bg-transparent text-light" scope="col">Action</th>
-                                <th class="bg-transparent text-light" scope="col">SNo</th>
-                                <th class="bg-transparent text-light" scope="col">Container Type</th>
-                                <th class="bg-transparent text-light" scope="col">Container No</th>
-                                <th class="bg-transparent text-light" scope="col">Line Seal</th>
-                                <th class="bg-transparent text-light" scope="col">Customs Seal</th>
-                                <th class="bg-transparent text-light" scope="col">HS Code</th>
-                                <th class="bg-transparent text-light" scope="col">Commodity Description</th>
-                                <th class="bg-transparent text-light" scope="col">Pkg Type</th>
+                                <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
+                                <th class="bg-transparent text-light" scope="col">Booking No</th>
+                                <th class="bg-transparent text-light" scope="col">Sales Person</th>
+                                <th class="bg-transparent text-light" scope="col">Customer</th>
+                                <!-- <th class="bg-transparent text-light" scope="col">Shipper</th> -->
+                                <th class="bg-transparent text-light" scope="col">Vsl/Voy</th>
+                                <th class="bg-transparent text-light" scope="col">POO</th>
+                                <th class="bg-transparent text-light" scope="col">POL</th>
+                                <th class="bg-transparent text-light" scope="col">POD</th>
+                                <th class="bg-transparent text-light" scope="col">FPD</th>
                                 <th class="bg-transparent text-light" scope="col">No of Pkg</th>
-                                <th class="bg-transparent text-light" scope="col">Gross Weight</th>
-                                <th class="bg-transparent text-light" scope="col">Vol(CBM)</th>
-                                <th class="bg-transparent text-light" scope="col">Net Weight</th>
-                                <th class="bg-transparent text-light" scope="col">SOC</th>
+                                <th class="bg-transparent text-light" scope="col">Gr Weight</th>
+                                <th class="bg-transparent text-light" scope="col">Volume</th>
+                                <th class="bg-transparent text-light" scope="col" width="5%">Tick</th>
 
                             </tr>
                         </thead>
                         <tbody>
-                            @for(container of slicedContainerArr ; let containerIndex = $index ; track containerIndex){
+                            @for (item of slicedAvailableBookings; track $index) {
                             <tr>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="d-flex align-items-center justify-content-center">
-                                        <a class="text-info mx-2" class="link mx-2 ps-3"
-                                            (click)="openContainerModal(containerModal,container,containerIndex)">
-                                            <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                        <a class="text-info mx-2" target="_blank" class="link mx-2 "
+                                            [routerLink]="['/operation/booking/entry',item.BookingHeaderSid]">
+                                            <i-feather class="feather-sm text-info cursor-pointer"
+                                                name="eye"></i-feather>
                                         </a>
-
-                                        <a class="text-danger mx-2 ps-3 border-start"
-                                            (click)="deleteContainer(containerIndex)">
-                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                        </a>
-
                                     </div>
                                 </td>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{((page - 1)*pageSize) + containerIndex + 1}}</div>
+                                    <div class="text-truncate">{{item.BookingNo}}</div>
                                 </td>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{getContainerTypeName(container.ContainerType)}}</div>
+                                    <div class="text-truncate">{{item.SalesmanName}}</div>
                                 </td>
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.ContainerNumber}}</div>
+                                    <div class="text-truncate">{{item.CustomerName}}</div>
                                 </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.LineSeal}}</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.CustomsSeal}}</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.HsCode}}</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.CommodityDescription}}</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{getPackageTypeName(container.PkgType)}}</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.NoOfPkg}}</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.GrossWeight}}</div>
-                                </td>
-
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.Volume}}</div>
-                                </td>
-
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.NetWeight}}</div>
-                                </td>
-
                                 <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                            <div class="text-truncate">{{container.ChargeableWeight}}</div>
-                                        </td> -->
+                                <div class="text-truncate">{{item.ShipperName}}</div>
+                            </td> -->
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">{{container.IsSoc === 'Y' ? 'Yes' : 'No'}}</div>
+                                    <div class="text-truncate">{{getVesselVoy(item)}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.POO}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.POL}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.POD}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.FPD}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.NoOfPackage}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.GrossWeight}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{item.Volume}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;padding-left: 20px;">
+
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" [checked]="existInSelected(item)" id=""
+                                            class="focus-ring form-check-input sm p-0"
+                                            (keydown.enter)="toggleBooking($event,item)"
+                                            (click)="toggleBooking($event,item)">
+                                    </div>
+
+
                                 </td>
                             </tr>
                             }
                         </tbody>
                     </table>
-                    
-                <div class="col-12"  *ngIf="totalLengthOfCollection === 0"> 
+                    <div class="col-12" *ngIf="availableBookings.length === 0">
+                        <div class=" text-center">No Record Found</div>
+                    </div>
+
+                </div>
+
+
+                <div class="mt-2" *ngIf="availableBookings.length > 0">
+                    <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfAvailableBookings"
+                        [pageSize]="bPageSize" [(page)]="bPage" (pageChange)="updateBookingList()" [rotate]="true"
+                        [ellipses]="false" [maxSize]="10">
+                    </ngb-pagination>
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <div class="">
+
+
+            @if(screenName === 'Loading Plan'){
+            <div class="d-flex justify-content-between align-items-center my-1">
+
+               <div>
+               <h4 class="page-title mb-0">Contanier</h4>
+               </div>
+                <div>
+                    <button class="btn btn-sm btn-info " (click)="openContainerModal(containerModal)">
+                        <i class="fas fa-plus me-1"></i> Add
+                    </button>
+                </div>
+
+
+            </div>
+
+
+
+
+             <div class="row bg-white  align-items-center rounded shadow-sm mx-0">
+            <div class="table-responsive table-borderless pt-1">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">SNo</th>
+                            <th class="bg-transparent text-light" scope="col">Container Type</th>
+                            <th class="bg-transparent text-light" scope="col">Container No</th>
+                            <th class="bg-transparent text-light" scope="col">Line Seal</th>
+                            <th class="bg-transparent text-light" scope="col">Customs Seal</th>
+                            <th class="bg-transparent text-light" scope="col">HS Code</th>
+                            <th class="bg-transparent text-light" scope="col">Commodity Description</th>
+                            <th class="bg-transparent text-light" scope="col">Pkg Type</th>
+                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
+                            <th class="bg-transparent text-light" scope="col">Gross Weight</th>
+                            <th class="bg-transparent text-light" scope="col">Vol(CBM)</th>
+                            <th class="bg-transparent text-light" scope="col">Net Weight</th>
+                            <th class="bg-transparent text-light" scope="col">SOC</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(container of slicedContainerArr ; let containerIndex = $index ; track
+                        containerIndex){
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                                        (click)="openContainerModal(containerModal,container,containerIndex)">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    </a>
+
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="deleteContainer(containerIndex)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{((page - 1)*pageSize) + containerIndex + 1}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{getContainerTypeName(container.ContainerType)}}
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.ContainerNumber}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.LineSeal}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.CustomsSeal}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.HsCode}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.CommodityDescription}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{getPackageTypeName(container.PkgType)}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.NoOfPkg}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.GrossWeight}}</div>
+                            </td>
+
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.Volume}}</div>
+                            </td>
+
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.NetWeight}}</div>
+                            </td>
+
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                            <div class="text-truncate">{{container.ChargeableWeight}}</div>
+                                        </td> -->
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{container.IsSoc === 'Y' ? 'Yes' : 'No'}}</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="col-12" *ngIf="totalLengthOfCollection === 0">
                     <div class="text-center">No Record Found</div>
                 </div>
-                </div>
-            
-               
-                 <div class="mt-1"  *ngIf="totalLengthOfCollection === 1">
-                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updateContainerPagination()"
-                            [rotate]="true" [ellipses]="false" [maxSize]="10">
-                        </ngb-pagination>
-                    </div>
             </div>
+            </div>
+
+            <div class="mt-1" *ngIf="totalLengthOfCollection === 1">
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updateContainerPagination()" [rotate]="true"
+                    [ellipses]="false" [maxSize]="10">
+                </ngb-pagination>
+            </div>
+
+            }
         </div>
-        }
     </div>
-</div>
 
 
-<ng-template #containerModal let-modal>
-    <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white">{{currentContainerIndex !== -1 ? 'Add' : 'Edit'}} Container</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss(); "></button>
-    </div>
-    <div class="modal-body">
-        <form [formGroup]="containerForm">
-            <div class="row compact-form">
-                <aside class="col-md-4">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!containerForm.get('ContainerType')?.value">
-                        <ng-select [items]="containerTypeList" bindLabel="ContainerName"
-                            bindValue="ContainerTypeMasterSid" formControlName="ContainerType"
-                            placeholder="">
-                        </ng-select>
-                        <label class="input-label">Container Type <span class="text-danger">*</span></label>
+    <ng-template #containerModal let-modal>
+        <div class="modal-header p-2 bg-info">
+            <h5 class="modal-title text-white">{{currentContainerIndex !== -1 ? 'Add' : 'Edit'}} Container</h5>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss(); "></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="containerForm">
+                <div class="row compact-form">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!containerForm.get('ContainerType')?.value">
+                            <ng-select [items]="containerTypeList" bindLabel="ContainerName"
+                                bindValue="ContainerTypeMasterSid" formControlName="ContainerType" placeholder="">
+                            </ng-select>
+                            <label class="input-label">Container Type <span class="text-danger">*</span></label>
 
-                        <div *ngIf="containerForm.get('ContainerType')?.touched && containerForm.get('ContainerType')?.invalid"
-                            class="error-message">
-                            <span>Required</span>
+                            <div *ngIf="containerForm.get('ContainerType')?.touched && containerForm.get('ContainerType')?.invalid"
+                                class="error-message">
+                                <span>Required</span>
+                            </div>
+
                         </div>
+                    </aside>
 
-                    </div>
-                </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
+                                placeholder="" maxlength="11" [textWithNumbers]="11">
+                            <label class="input-label">Container No <span class="text-danger">*</span></label>
 
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
-                            placeholder="" maxlength="11" [textWithNumbers]="11">
-                        <label class="input-label">Container No <span class="text-danger">*</span></label>
+                            <div *ngIf="containerForm.get('ContainerNumber')?.touched && containerForm.get('ContainerNumber')?.invalid"
+                                class="error-message">
+                                <span *ngIf="containerForm.get('ContainerNumber')?.hasError('required')">
+                                    Required</span>
+                                <span *ngIf="containerForm.get('ContainerNumber')?.hasError('maxlength')">Container
+                                    Number cannot exceed 11 characters</span>
+                            </div>
 
-                        <div *ngIf="containerForm.get('ContainerNumber')?.touched && containerForm.get('ContainerNumber')?.invalid"
-                            class="error-message">
-                            <span *ngIf="containerForm.get('ContainerNumber')?.hasError('required')">
-                               Required</span>
-                            <span *ngIf="containerForm.get('ContainerNumber')?.hasError('maxlength')">Container
-                                Number cannot exceed 11 characters</span>
                         </div>
+                    </aside>
 
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" formControlName="LineSeal" class="custom-input-field sm" placeholder=""
-                            maxlength="10" [textWithNumbers]="10">
-                        <label class="input-label">Line Seal</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" formControlName="CustomsSeal" class="custom-input-field sm" placeholder=""
-                            maxlength="10" [textWithNumbers]="10">
-                        <label class="input-label">Customs Seal</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" formControlName="HsCode" class="custom-input-field sm" placeholder=""
-                            maxlength="10" [textWithNumbers]="10">
-                        <label class="input-label">HS Code</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <textarea formControlName="CommodityDescription" class="custom-input-field sm" placeholder=""
-                            rows="1" maxlength="500" [textWithNumbers]="500"></textarea>
-                        <label class="input-label">Commodity Description</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!containerForm.get('PkgType')?.value">
-                        <ng-select [items]="packageTypeList" bindLabel="UOMName" placeholder="" bindValue="UOMMasterSid"
-                            formControlName="PkgType" placeholder="">
-                        </ng-select>
-                        <label class="input-label">Package Type</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="number" placeholder="" formControlName="NoOfPkg" class="custom-input-field sm"
-                            min="0">
-                        <label class="input-label">No of Pkg</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="number" placeholder="" formControlName="GrossWeight" class="custom-input-field sm"
-                            step="0.001" min="0">
-                        <label class="input-label">Gross Weight</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="number" placeholder="" formControlName="NetWeight" class="custom-input-field sm"
-                            step="0.001" min="0">
-                        <label class="input-label">Net Weight</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="number" placeholder="" formControlName="ChargeableWeight"
-                            class="custom-input-field sm" step="0.001" min="0">
-                        <label class="input-label">Chargeable Weight</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="number" placeholder="" formControlName="Volume" class="custom-input-field sm"
-                            step="0.001" min="0">
-                        <label class="input-label">Volume (CBM)</label>
-                    </div>
-                </aside>
-
-                <aside class="col-md-4 d-flex align-items-center">
-                    <div class="form-check form-check-inline p-0">
-                        <div class="form-check d-flex align-items-center">
-                            <input type="checkbox" id="IsSoc" formControlName="IsSoc"
-                                (keydown.enter)="toggleSOC($event)" (click)="toggleSOC($event)"
-                                class="focus-ring form-check-input sm p-0">
-                            <label for="IsSoc" class="form-check-label sm">SOC Container</label>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="LineSeal" class="custom-input-field sm" placeholder=""
+                                maxlength="10" [textWithNumbers]="10">
+                            <label class="input-label">Line Seal</label>
                         </div>
-                    </div>
-                </aside>
-            </div>
-        </form>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()">Save</button>
-    </div>
-</ng-template>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="CustomsSeal" class="custom-input-field sm"
+                                placeholder="" maxlength="10" [textWithNumbers]="10">
+                            <label class="input-label">Customs Seal</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="HsCode" class="custom-input-field sm" placeholder=""
+                                maxlength="10" [textWithNumbers]="10">
+                            <label class="input-label">HS Code</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <textarea formControlName="CommodityDescription" class="custom-input-field sm"
+                                placeholder="" rows="1" maxlength="500" [textWithNumbers]="500"></textarea>
+                            <label class="input-label">Commodity Description</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!containerForm.get('PkgType')?.value">
+                            <ng-select [items]="packageTypeList" bindLabel="UOMName" placeholder=""
+                                bindValue="UOMMasterSid" formControlName="PkgType" placeholder="">
+                            </ng-select>
+                            <label class="input-label">Package Type</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" placeholder="" formControlName="NoOfPkg" class="custom-input-field sm"
+                                min="0">
+                            <label class="input-label">No of Pkg</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" placeholder="" formControlName="GrossWeight"
+                                class="custom-input-field sm" step="0.001" min="0">
+                            <label class="input-label">Gross Weight</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" placeholder="" formControlName="NetWeight"
+                                class="custom-input-field sm" step="0.001" min="0">
+                            <label class="input-label">Net Weight</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" placeholder="" formControlName="ChargeableWeight"
+                                class="custom-input-field sm" step="0.001" min="0">
+                            <label class="input-label">Chargeable Weight</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" placeholder="" formControlName="Volume" class="custom-input-field sm"
+                                step="0.001" min="0">
+                            <label class="input-label">Volume (CBM)</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="IsSoc" formControlName="IsSoc"
+                                    (keydown.enter)="toggleSOC($event)" (click)="toggleSOC($event)"
+                                    class="focus-ring form-check-input sm p-0">
+                                <label for="IsSoc" class="form-check-label sm">SOC Container</label>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
+            <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()">Save</button>
+        </div>
+    </ng-template>

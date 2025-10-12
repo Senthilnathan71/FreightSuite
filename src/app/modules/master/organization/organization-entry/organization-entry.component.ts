@@ -61,6 +61,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { debounceTime, distinctUntilChanged, switchMap, startWith, takeUntil } from 'rxjs/operators';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
   selector: 'app-organization-entry',
@@ -95,6 +96,22 @@ import { debounceTime, distinctUntilChanged, switchMap, startWith, takeUntil } f
   ],
 })
 export class OrganizationEntryComponent implements OnInit, OnDestroy {
+  
+  constructor(
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private settingsService: SettingsService,
+    private appSettingService: AppSettingsService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private modalService: NgbModal,
+    private cdRef: ChangeDetectorRef,
+    private calendar: NgbCalendar,
+    private leadService: LeadService,
+    public dropdownStore: DropdownStore
+  ) {
+    this.cusMilestoneFormArr = this.fb.array([]);
+  }
   private destroy$ = new Subject<void>();
   // Existing properties
   page = 1;
@@ -383,27 +400,13 @@ onCountryChange(): void {
     'Suspended': 'Suspended'
   };
 
-  constructor(
-    private fb: FormBuilder,
-    private masterService: MasterService,
-    private settingsService: SettingsService,
-    private appSettingService: AppSettingsService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private modalService: NgbModal,
-    private cdRef: ChangeDetectorRef,
-    private calendar: NgbCalendar,
-    private leadService: LeadService,
-
-  ) {
-    this.cusMilestoneFormArr = this.fb.array([]);
-  }
   switchToEditMode() {
     this.isEditMode = true;
     this.selectedTab = 'Party';
   }
 
   ngOnInit(): void {
+    this.dropdownStore.loadCountries();
     // ✅ Get current company & branch
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -442,7 +445,7 @@ onCountryChange(): void {
 
 
     // ✅ Initial data loads
-    this.getAllCountries();
+    // this.getAllCountries();
     this.initForm();
     this.initializePanFields();
     this.loadAllSpfields();
@@ -1586,7 +1589,7 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
       return;
     }
 
-    const selectedCountry = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const selectedCountry = this.dropdownStore.countries()?.find(c => c.CountryMasterSid == countryId);
     if (!selectedCountry || !selectedCountry.countryCode) {
       this.customerForm.get('CustomerShortCode')?.disable();
       this.customerForm.get('CustomerShortCode')?.setValue('');
@@ -1604,7 +1607,7 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
   isIndianCountry(): boolean {
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
   if (!countryId) return false;
-  const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+  const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid == countryId);
   return country?.countryName?.toLowerCase().includes('india') || false;
 }
 shouldShowPanAvailable(): boolean {
@@ -1614,7 +1617,7 @@ shouldShowPanAvailable(): boolean {
   isUaeCountry(): boolean {
     const countryId = this.customerForm.get('CountryMasterSid')?.value;
     if (!countryId) return false;
-    const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid == countryId);
     const countryName = country?.countryName?.toLowerCase() || '';
     return countryName.includes('uae') ||
       countryName.includes('dubai') ||
@@ -1697,7 +1700,7 @@ getPanBreakdown(pan: string): any {
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
 
   if (countryId) {
-    const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid == countryId);
     const countryName = country?.countryName || '';
 
     panTypeControl?.clearValidators();
@@ -1727,7 +1730,7 @@ getPanBreakdown(pan: string): any {
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
   
   if (countryId) {
-    const country = this.countryList?.find(c => c.CountryMasterSid == countryId);
+    const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid == countryId);
     const countryName = country?.countryName || '';
 
     if (countryName.toLowerCase().includes('india')) {
@@ -1822,11 +1825,11 @@ getPanBreakdown(pan: string): any {
     }
   }
   // Add other existing methods that are referenced
-  getAllCountries() {
-    this.masterService.getAllCountry().subscribe((res) => {
-      this.countryList = res.data;
-    });
-  }
+  // getAllCountries() {
+  //   this.masterService.getAllCountry().subscribe((res) => {
+  //     this.countryList = res.data;
+  //   });
+  // }
 onCompanyTypeChange(): void {
   this.updateTaxIdFieldState();
   this.updateTaxIdFieldValidation();
@@ -2758,7 +2761,7 @@ onPanAvailableChange(): void {
     const currentUserEmail = this.getUserEmail();
     const activeCompanyId = this.currentCompany?.CompanyMasterSid;
 
-    const statusValue = formValue.status === 'Active' ? 'A' : 'S';
+    const statusValue = formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S';
 
     return {
       customer: {
@@ -3512,6 +3515,7 @@ onPanAvailableChange(): void {
 
  
   ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();
   }

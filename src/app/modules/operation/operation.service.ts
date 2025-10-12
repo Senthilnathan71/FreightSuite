@@ -248,6 +248,15 @@ export class OperationService {
     );
   }
 
+  getAllProducts(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('product', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAllMilestones(payload: any) {
   return this.http.post<{ data: any }>(`ff-booking/milestone`, payload).pipe(
     map((resp) => {
@@ -353,7 +362,7 @@ getShipmentMilestones(payload: any) {
 
 
   getVesselVoyageBasedOnPorts(payload:any){
-    return this.http.post<{ data: any[] }>('loading-plan/vesselWithVoyage',payload).pipe(
+    return this.http.post<{ data: any[] }>('voyage/vesselWithVoyage',payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -492,14 +501,14 @@ getAllPorts() {
     );
   }
 
-  getAllCFS(CompanyMasterSid: number) {
-    return this.http.post('customer/cFS',{CompanyMasterSid}).pipe(
-      map((resp: any) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+  // getAllCFS(CompanyMasterSid: number) {
+  //   return this.http.post('customer/cfs',{CompanyMasterSid}).pipe(
+  //     map((resp: any) => {
+  //       let response = resp.data;
+  //       return response;
+  //     })
+  //   )
+  // }
 
   getPackageTypeUOM() {
   return this.http.get('uom/package-type-uom').pipe(
@@ -508,6 +517,23 @@ getAllPorts() {
     })
   );
 }
+  getUOMsByType(type: string) {
+    return this.http.get<{ data: any }>(`uom/uom-type?type=${type}`).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllIMCO() {
+    return this.http.get<{ data: any[] }>('imco').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
   getAllBookingForMerging(payload: any) {
     return this.http.post<{ data: any[] }>('merge-booking/allBookings', payload).pipe(

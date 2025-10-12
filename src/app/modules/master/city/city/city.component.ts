@@ -11,7 +11,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin, take } from 'rxjs';
+import { forkJoin, Subject, take } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -32,6 +32,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 @Component({
   selector: 'app-city',
   standalone: true,
@@ -156,7 +157,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public dropdownStore: DropdownStore
   ) {
     super(paginationService);
   }
@@ -176,9 +178,10 @@ export class CityComponent extends BaseListComponent implements OnInit {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.getAllCountries();
+    // this.getAllCountries();
     this.getAllState();
     // this.loadCities();
+    this.dropdownStore.loadCountries();
     this.loadCountryAndStateData();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -539,12 +542,13 @@ export class CityComponent extends BaseListComponent implements OnInit {
 
   loadCountryAndStateData() {
     forkJoin({
-      countries: this.masterService.getAllCountry(),
+      // countries: this.masterService.getAllCountry(),
       states: this.masterService.getAllState(),
-    }).subscribe(({ countries, states }) => {
-      this.countryList = countries.data;
+    }).subscribe(({  states }) => {
+      // this.countryList = countries.data;
       this.stateList = states.data;
     });
+    this.dropdownStore.loadCountries();
   }
 
   // Method to load the city data
@@ -760,13 +764,13 @@ export class CityComponent extends BaseListComponent implements OnInit {
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "S"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...createdBy,
-        status: "A" // Always Active for create mode
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       };
 
       console.log('payload', payload);
@@ -910,11 +914,11 @@ export class CityComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  getAllCountries() {
-    this.masterService.getAllCountry().subscribe((res) => {
-      this.countryList = res.data;
-    })
-  }
+  // getAllCountries() {
+  //   this.masterService.getAllCountry().subscribe((res) => {
+  //     this.countryList = res.data;
+  //   })
+  // }
 
 
   getAllState() {
