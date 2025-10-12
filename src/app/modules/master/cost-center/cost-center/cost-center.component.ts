@@ -687,11 +687,11 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...UpdatedBy,
-        Status: formValue.Status === "Active" ? "A" : "S"
+        Status: formValue.Status === 'Active' || formValue.Status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         ...CreatedBy,
-        Status: formValue.Status === "Active" ? "A" : "S"
+        Status: formValue.Status === 'Active' || formValue.Status === 'A' ? 'A' : 'S',
       };
 
       console.log('payload', payload);

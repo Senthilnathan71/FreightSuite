@@ -1,7 +1,7 @@
 <div class="row compact-form">
-  <div class="col-12">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-      <div class="col-md-4 d-flex pb-2">
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
             <i class="fas fa-code-branch"></i>
@@ -9,12 +9,14 @@
           <h4 class="page-title mb-0">Split Booking</h4>
         </div>
       </div>
-      <div class="col-md-8 pb-2">
-        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+      <div class="col-md-8 pb-1">
+        <div
+          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="bookingForm.reset()">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="bookingForm.reset()">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSplit()">
@@ -25,7 +27,7 @@
     </div>
   </div>
 
-  <div class="col-md-12">
+  <div class="col-md-12 px-0">
     <div class="card h-100 mb-0">
       <div class="card-body pb-0">
         <!-- START: Form wrapping both booking details and products -->
@@ -34,40 +36,34 @@
           <!-- Booking Details Row -->
           <div class="row">
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
-                <ng-select class="ng-select"
-                           [items]="departments"
-                           bindLabel="departmentName"
-                           bindValue="DepartmentMasterSid"
-                           formControlName="DepartmentMasterSid"
-                           (change)="onDeptChange($event)">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
+                <ng-select class="ng-select" [items]="departments" bindLabel="departmentName"
+                  bindValue="DepartmentMasterSid" formControlName="DepartmentMasterSid" (change)="onDeptChange($event)">
                 </ng-select>
                 <label class="input-label">Department<span class="text-danger"></span></label>
               </div>
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('BookingHeaderSid')?.value">
-                <ng-select class="ng-select"
-                           [items]="bookings"
-                           bindLabel="BookingNo"
-                           bindValue="BookingHeaderSid"
-                           formControlName="BookingHeaderSid"
-                           (change)="onBookingChange($event)">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!bookingForm.get('BookingHeaderSid')?.value">
+                <ng-select class="ng-select" [items]="bookings" bindLabel="BookingNo" bindValue="BookingHeaderSid"
+                  formControlName="BookingHeaderSid" (change)="onBookingChange($event)">
                 </ng-select>
                 <label class="input-label">Booking No <span class="text-danger"></span></label>
               </div>
             </aside>
 
-           <aside class="col-md-4">
-                  <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
-                    <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
-                      bindValue="CustomerMasterSid" formControlName="CustomerMasterSid"
-                      [disabled]="true">
-                    </ng-select>
-                    <label class="input-label">Customer <span class="text-danger"></span></label>
-                  </div>
-                </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!bookingForm.get('CustomerMasterSid')?.value">
+                <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                  formControlName="CustomerMasterSid" [disabled]="true">
+                </ng-select>
+                <label class="input-label">Customer <span class="text-danger"></span></label>
+              </div>
+            </aside>
 
             <aside class="col-md-4">
               <div class="custom-form-group">
@@ -85,12 +81,8 @@
 
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POL')?.value">
-                <ng-select class="ng-select"
-                           [items]="ports"
-                           bindLabel="PortName"
-                           bindValue="PortCode"
-                           formControlName="POL"
-                           [disabled]="true">
+                <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
+                  formControlName="POL" [disabled]="true">
                 </ng-select>
                 <label class="input-label">POL <span class="text-danger"></span></label>
               </div>
@@ -98,12 +90,8 @@
 
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('POD')?.value">
-                <ng-select class="ng-select"
-                           [items]="ports"
-                           bindLabel="PortName"
-                           bindValue="PortCode"
-                           formControlName="POD"
-                           [disabled]="true">
+                <ng-select class="ng-select" [items]="ports" bindLabel="PortName" bindValue="PortCode"
+                  formControlName="POD" [disabled]="true">
                 </ng-select>
                 <label class="input-label">POD <span class="text-danger"></span></label>
               </div>
@@ -111,18 +99,16 @@
           </div>
 
           <!-- Products Section -->
-          <div class="col-12 mt-2">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+          <div class="col-12">
               <div class="col-md-4 d-flex pb-1">
-                <h5 class="page-title pt-1">Product</h5>
+                <h5 class="page-title mb-0">Product</h5>
               </div>
-            </div>
           </div>
 
           <div class="mx-0" *ngIf="products?.length > 0">
-            <div class="col-md-12 bg-white py-2 rounded shadow-sm p-2">
+            <div class="col-md-12 bg-white py-1 rounded shadow-sm table-borderless">
               <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <table class="table table-hover align-middle no-wrap table-sm mb-1">
                   <thead>
                     <tr class="bg-info">
                       <th class="bg-transparent text-light">Commodity</th>
@@ -150,19 +136,13 @@
                         <td>{{ product.get('Volume')?.value }}</td>
 
                         <td class="text-center">
-                          <input type="checkbox"
-                                 class="form-check-input"
-                                 formControlName="selected"
-                                 (change)="onSelectRow(i)">
+                          <input type="checkbox" class="form-check-input" formControlName="selected"
+                            (change)="onSelectRow(i)">
                         </td>
 
                         <td>
-                          <ng-select [items]="splitType"
-                                     bindLabel="name"
-                                     bindValue="value"
-                                     formControlName="splitType"
-                                     (change)="onSplitModeChange($event, i)"
-                                     [appendTo]="'body'">
+                          <ng-select [items]="splitType" bindLabel="name" bindValue="value" formControlName="splitType"
+                            (change)="onSplitModeChange($event, i)" [appendTo]="'body'">
                           </ng-select>
                         </td>
                       </tr>
@@ -173,24 +153,18 @@
                           <div class="row g-2">
                             <div class="col-md-4">
                               <label>No. of Pkg</label>
-                              <input type="number" class="form-control form-control-sm"
-                                     formControlName="PartPackages"
-                                     min="0"
-                                     [max]="product.get('ExternlQty')?.value">
+                              <input type="number" class="form-control form-control-sm" formControlName="PartPackages"
+                                min="0" [max]="product.get('ExternlQty')?.value">
                             </div>
                             <div class="col-md-4">
                               <label>Gross Weight</label>
                               <input type="number" class="form-control form-control-sm"
-                                     formControlName="PartGrossWeight"
-                                     min="0"
-                                     [max]="product.get('GrossWeight')?.value">
+                                formControlName="PartGrossWeight" min="0" [max]="product.get('GrossWeight')?.value">
                             </div>
                             <div class="col-md-4">
                               <label>CBM</label>
-                              <input type="number" class="form-control form-control-sm"
-                                     formControlName="PartCBM"
-                                     min="0"
-                                     [max]="product.get('Volume')?.value">
+                              <input type="number" class="form-control form-control-sm" formControlName="PartCBM"
+                                min="0" [max]="product.get('Volume')?.value">
                             </div>
                           </div>
                         </td>
@@ -200,7 +174,7 @@
                 </table>
               </div>
 
-              <div class="d-flex justify-content-end mt-2">
+              <div class="d-flex justify-content-end mt-1">
                 <button type="button" class="btn btn-info btn-sm" (click)="onSplit()">
                   <i class="fas fa-code-branch me-1"></i> Split
                 </button>
@@ -212,4 +186,4 @@
       </div>
     </div>
   </div>
-</div> 
+</div>

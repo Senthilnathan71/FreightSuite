@@ -289,12 +289,12 @@ hasAnyDropdownPermission(): boolean {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: formValue.Status === "Active" ? "A" : "S",
+        Status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       } : {
         ...formValue,
         ...createdBy,
-        Status: formValue.Status === "Active" ? "A" : "S",
+        Status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       };
 

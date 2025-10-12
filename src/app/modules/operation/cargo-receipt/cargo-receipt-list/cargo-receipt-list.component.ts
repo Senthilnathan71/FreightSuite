@@ -1,49 +1,50 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 import { NgbPagination, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { take } from 'rxjs';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { OperationService } from '../../operation.service';
-import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { ExcelExportService } from 'src/app/shared/excel-report-service';
-import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
-import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
-import { PaginationService } from 'src/app/shared/services/pagination.service';
-import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
-import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
-import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
-import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
+import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
+import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
+import { ToolsDropdownComponent, DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { OperationService } from '../../operation.service';
+
 @Component({
-  selector: 'app-crago-receipt-list',
+  selector: 'app-cargo-receipt-list',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    NgbPagination,
-    NgbModalModule,
-    NgSelectModule,
-    FeatherModule,
-    ReactiveFormsModule,
-    FormsModule,
-    FavoriteStarComponent,
-    NgxSpinnerModule,
-    ReusableTableComponent,
-    PageHeaderComponent,
-    ToolsDropdownComponent,
-    CustomDatePipe
-  ],
-  providers: [CustomDatePipe],
-  templateUrl: './crago-receipt-list.component.html',
-  styleUrl: './crago-receipt-list.component.scss'
+      CommonModule,
+      RouterModule,
+      NgbPagination,
+      NgbModalModule,
+      NgSelectModule,
+      FeatherModule,
+      ReactiveFormsModule,
+      FormsModule,
+      FavoriteStarComponent,
+      NgxSpinnerModule,
+      ReusableTableComponent,
+      PageHeaderComponent,
+      ToolsDropdownComponent,
+      CustomDatePipe
+    ],
+    providers: [CustomDatePipe],
+  templateUrl: './cargo-receipt-list.component.html',
+  styleUrl: './cargo-receipt-list.component.scss'
 })
-export class CragoReceiptListComponent extends BaseListComponent implements OnInit {
+
+export class CargoReceiptListComponent extends BaseListComponent implements OnInit {
   @ViewChild('cargoReceiptTable') cargoReceiptTable!: ReusableTableComponent;
   cargoList: any[] = [];
   results: any[] = [];
@@ -290,7 +291,7 @@ export class CragoReceiptListComponent extends BaseListComponent implements OnIn
         filterable: true,
         visible: true,
         template: 'status',
-        width: '100px',
+        width: '140px',
         dataType: 'string',
         cellClass: 'status-column'
       },

@@ -9,7 +9,7 @@
                     </div>
                     <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : ' Add'}} Tariff</h5>
                     @if(isEditMode){ 
-                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
+                        <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
                             <i class="fas fs-6 fa-info-circle"></i>
                         </a>
                     }
@@ -77,7 +77,7 @@
             <div class="row">
                      <div class="col-md-6 pe-md-1 " [formGroup]="tariffHeaderForm">
         <div class="card mb-1 h-100 " >
-             <div class="card-body  pb-0">
+             <div class="card-body  pb-0 py-0">
                         <div class="row compact-form">
                              <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
                          <i class="fas fa-balance-scale fs-4"></i>
@@ -303,7 +303,7 @@
     </div>
     <div class="col-12 col-md-6 mt-md-0 mt-1 ps-md-1" [formGroup]="tariffHeaderForm">
         <div class="card h-100" >
-              <div class="card-body  pb-0 " >
+              <div class="card-body  pb-0 py-0" >
                         <div class="row compact-form">
                            <!-- <div class="card-header-title d-flex align-items-center gap-2 ">
     <i class="fas fa-dollar-sign fs-4"></i>
@@ -461,7 +461,7 @@
         
     </div>
    
-   <div class="nav-pills-container mt-1">
+   <div class="nav-pills-container mt-1 px-1">
     <!-- <div class="nav-pills">
       <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
         (click)="selectTab(tab.name)">
@@ -500,23 +500,30 @@
     <div class="table-responsive mt-1 table-borderless">
         <table class="table table-hover align-middle no-wrap  table-sm mb-1">
             <thead>
-                <tr class="bg-info">
-                    <th class="bg-transparent text-light" scope="col" width="3%"></th>
-                    <th class="bg-transparent text-light" scope="col">Slab?</th>
-                    <th class="bg-transparent text-light" scope="col">Effective From</th>
-                    <th class="bg-transparent text-light" scope="col">Expired On</th>
-                    <th class="bg-transparent text-light" scope="col">Charge</th>
-                    <th class="bg-transparent text-light " scope="col">Description</th>
-                    <th class="bg-transparent text-light" scope="col">Cargo Type</th>
-                    <th class="bg-transparent text-light" scope="col">UOM</th>
-                    <th class="bg-transparent text-light" scope="col">Sale Curr</th>
-                    <th class="bg-transparent text-light" scope="col">Sale Unit Price</th>
-                    <th class="bg-transparent text-light" scope="col">Buy Curr.</th>
-                    <th class="bg-transparent text-light" scope="col">Buy Unit Price</th>
-                    <th class="bg-transparent text-light" scope="col">Min Sale</th>
-                    <th class="bg-transparent text-light" scope="col">Remarks</th>
-                    <th class="bg-transparent text-light" scope="col">Status</th>
+               <tr class="bg-info text-center align-middle">
+                    <th class="bg-transparent text-light" rowspan="2" width="1%"></th>
+                    <th class="bg-transparent text-light" rowspan="2">Slab?</th>
+                    <th class="bg-transparent text-light" rowspan="2">Effective From</th>
+                    <th class="bg-transparent text-light" rowspan="2">Expired On</th>
+                    <th class="bg-transparent text-light" rowspan="2">Charge</th>
+                    <th class="bg-transparent text-light" rowspan="2">Description</th>
+                    <th class="bg-transparent text-light" rowspan="2">Cargo Type</th>
+                    <th class="bg-transparent text-light" rowspan="2">UOM</th>
+                    <!-- Revenue group -->
+                    <th class="bg-transparent text-light text-center" colspan="2" style="border-bottom: none; border-left: 1px solid #eef5f9; border-right: 1px solid #eef5f9;">Revenue</th>
+                    <!-- Cost group -->
+                    <th class="bg-transparent text-light text-center" colspan="2" style="border-bottom: none; border-right: 1px solid #eef5f9;">Cost</th>
+                    <th class="bg-transparent text-light" rowspan="2">Min Sale</th>
+                    <th class="bg-transparent text-light" rowspan="2">Remarks</th>
+                    <th class="bg-transparent text-light" rowspan="2">Status</th>
                 </tr>
+                <tr class="bg-info text-center">
+                    <th class="bg-transparent text-light" style="border-left: 1px solid #eef5f9;"> Curr</th>
+                    <th class="bg-transparent text-light" style="border-right: 1px solid #eef5f9;"> Unit Price</th>
+                    <th class="bg-transparent text-light" > Curr</th>
+                    <th class="bg-transparent text-light" style="border-right: 1px solid #eef5f9;"> Unit Price</th>
+                </tr>
+              
             </thead>
             <tbody>
                 @for (tariffDetail of filteredTariffDetail; track $index) {
@@ -526,10 +533,10 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center ">
-                            <a class="text-info mx-2" (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate,tariffDetail)">
+                            <a class="text-info " (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate,tariffDetail)">
                                 <i-feather name="eye" class="feather-sm"></i-feather>
                             </a>
-                            <a class="link mx-2 ps-3 border-start text-danger" (click)="deleteTariffDetail(tariffDetail.TariffDetailSid)">
+                            <a class="link  ps-2  text-danger" (click)="deleteTariffDetail(tariffDetail.TariffDetailSid)">
                                 <i-feather name="trash-2" class="feather-sm"></i-feather>
                             </a>
                         </div>
@@ -614,11 +621,11 @@
 
 <ng-template #tariffDetailEntryTemplate let-modal>
     <div class="col-12">
-        <div class="card mb-0 h-100">
-            <div class="modal-header p-2 bg-info text-white">
+        
+            <div class="modal-header modalHeaderpart">
                 <h4 class="modal-title">{{isModalEditMode ? 'Edit Tariff Detail':'Tariff Details'}}</h4>
                 @if(isModalEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showDetailInfo()">
+                    <a class="text-info  d-flex align-items-center w-2 h-2" (click)="showDetailInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
@@ -632,7 +639,7 @@
                         <div class="row compact-form">
                             <aside [class.col-md-4]="tariffDetailsForm.get('detailisSlabApplicable')?.value"
                                 [class.col-md-12]="!tariffDetailsForm.get('detailisSlabApplicable')?.value" >
-                                <div class="form-check mt-3 mb-4 px-0">
+                                <div class="form-check mt-3  px-0">
                                     <input type="checkbox" formControlName="detailisSlabApplicable" id="text-input"
                                         placeholder="" class="form-check-input ms-lg-1">
                                     <label for="text-input" class="form-check-label ms-lg-1">Slab Applicable </label>
@@ -835,7 +842,40 @@
                                     }
                                 </div>
                             </aside>
-                            
+                               <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <textarea type="text" formControlName="detailRemarks" id="text-input" placeholder="" class="custom-input-field sm"
+                                        [textWithNumbers]="100" rows="1"></textarea>
+                                    <label for="text-input" class="input-label">Remarks <span class="text-danger"></span></label>
+                                    @if(tariffDetailsForm.get('detailRemarks')?.touched && tariffDetailsForm.get('detailRemarks')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailRemarks')?.hasError('required')){
+                                        <span>Required</span>
+                                        } @else if(tariffDetailsForm.get('detailRemarks')?.hasError('maxlength')) {
+                                        <span>Max 100 chars</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                              <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailstatus')?.value">
+
+                                    @if(isModalEditMode){
+                                    <ng-select name="status" class="ng-select" formControlName="detailstatus" id="text-input">
+                                        <ng-option value="Active" [disabled]="tariffDetailData?.status === 'S'">Active</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
+                                    </ng-select>
+                                    } @else {
+                                    <input type="text" name="status" class="custom-input-field sm"
+                                        formControlName="detailstatus" id="text-input" readonly>
+                                    }
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger"></span></label>
+
+                                </div>
+                            </aside>
+                         
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailSaleCurrency')?.value">
                                     <!-- <ng-select class="ng-select" formControlName="detailSaleCurrency"placeholder="">
@@ -849,7 +889,7 @@
                                             [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
                                             [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
                                         </dofi-searchable-dropdown>
-                                    <label for="text-input" class="input-label">Sale Currency <span
+                                    <label for="text-input" class="input-label">Revenue Currency <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailSaleCurrency')?.touched &&
                                     tariffDetailsForm.get('detailSaleCurrency')?.errors){
@@ -865,7 +905,7 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailSalePerUnitPrice"
                                         placeholder="" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
-                                    <label for="text-input" class="input-label">Sale Per Unit Price <span
+                                    <label for="text-input" class="input-label">Revenue Per Unit Price <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.touched &&
                                     tariffDetailsForm.get('detailSalePerUnitPrice')?.errors){
@@ -893,7 +933,7 @@
                                             }}</ng-option>
                                         }
                                     </ng-select> -->
-                                    <label for="text-input" class="input-label">Buy Currency <span
+                                    <label for="text-input" class="input-label">Cost Currency <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailBuyCurrency')?.touched &&
                                     tariffDetailsForm.get('detailBuyCurrency')?.errors){
@@ -909,7 +949,7 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailBuyPerUnitPrice"
                                         placeholder="" class="custom-input-field sm tex text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
-                                    <label for="text-input" class="input-label">Buy Per Unit Price <span
+                                    <label for="text-input" class="input-label">Cost Per Unit Price <span
                                             class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.touched &&
                                     tariffDetailsForm.get('detailBuyPerUnitPrice')?.errors){
@@ -941,39 +981,7 @@
                                 </div>
                             </aside>
                             
-                            <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailstatus')?.value">
-
-                                    @if(isModalEditMode){
-                                    <ng-select name="status" class="ng-select" formControlName="detailstatus" id="text-input">
-                                        <ng-option value="Active" [disabled]="tariffDetailData?.status === 'S'">Active</ng-option>
-                                        <ng-option value="Suspended">Suspended</ng-option>
-                                    </ng-select>
-                                    } @else {
-                                    <input type="text" name="status" class="custom-input-field sm"
-                                        formControlName="detailstatus" id="text-input" readonly>
-                                    }
-                                    <label for="text-input" class="input-label">Status <span
-                                            class="text-danger"></span></label>
-
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <textarea type="text" formControlName="detailRemarks" id="text-input" placeholder="" class="custom-input-field sm"
-                                        [textWithNumbers]="100" rows="1"></textarea>
-                                    <label for="text-input" class="input-label">Remarks <span class="text-danger"></span></label>
-                                    @if(tariffDetailsForm.get('detailRemarks')?.touched && tariffDetailsForm.get('detailRemarks')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailRemarks')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(tariffDetailsForm.get('detailRemarks')?.hasError('maxlength')) {
-                                        <span>Max 100 chars</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+                          
                             <!-- <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select class="ng-select" formControlName="detailCompanyMasterSid">
@@ -1038,7 +1046,7 @@
                 </form>
             </div>
 
-            <div class="modal-footer p-2">
+            <div class="modal-footer p-1">
   <!-- Creation mode: Save (existing behaviour) -->
   <button *ngIf="!isModalEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
           (click)="onModalSave()">
@@ -1059,7 +1067,7 @@
   </div>
 </div>
 
-        </div>
+        
     </div>
 </ng-template>
 <!-- @if(isEditMode){

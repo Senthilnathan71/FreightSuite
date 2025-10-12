@@ -10,8 +10,6 @@ import { ProfitabilityReportEntryComponent } from './profitability-report/profit
 import { InvoiceListComponent } from './Invoice/invoice-list/invoice-list.component';
 import { InvoiceEntryComponent } from './Invoice/invoice-entry/invoice-entry.component';
 import { InvoiceNewComponent } from './Invoice/invoice-new/invoice-new.component';
-import { CragoReceiptEntryComponent } from './cargo-receipt/crago-receipt-entry/crago-receipt-entry.component';
-import { CragoReceiptListComponent } from './cargo-receipt/crago-receipt-list/crago-receipt-list.component';
 import { LoadingPlanEntryComponent } from './loading-plan/loading-plan-entry/loading-plan-entry.component';
 import { SplitBookingEntryComponent } from './Split-Booking/split-booking-entry/split-booking-entry.component';
 import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booking.component';
@@ -21,6 +19,8 @@ import { OperationReportComponent } from './operation-report/operation-report/op
 import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
 import { ReceiptListComponent } from './receipt/receipt-list/receipt-list.component';
 import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.component';
+import { CargoReceiptEntryComponent } from './cargo-receipt/cargo-receipt-entry/cargo-receipt-entry.component';
+import { CargoReceiptListComponent } from './cargo-receipt/cargo-receipt-list/cargo-receipt-list.component';
 
 
 export const OperationRoutes: Routes = [
@@ -166,7 +166,7 @@ export const OperationRoutes: Routes = [
       },
         {
         path: 'cargo-receipt/entry',
-        component: CragoReceiptEntryComponent,
+        component: CargoReceiptEntryComponent,
         data: {
           title: 'Cargo Receipt',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
@@ -174,7 +174,7 @@ export const OperationRoutes: Routes = [
       },
        {
         path: 'cargo-receipt/list',
-        component: CragoReceiptListComponent,
+        component: CargoReceiptListComponent,
         data: {
           title: 'Cargo Receipt',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
@@ -182,7 +182,7 @@ export const OperationRoutes: Routes = [
       },
       {
         path: 'cargo-receipt/entry/:BookingHeaderSid',
-        component: CragoReceiptEntryComponent,
+        component: CargoReceiptEntryComponent,
         data: {
           title: 'Cargo Receipt',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],

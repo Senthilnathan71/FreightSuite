@@ -436,22 +436,22 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  getAllShippers(CompanyMasterSid: number) {
-    return this.http.post('customer/shipper',{CompanyMasterSid}).pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
-  getAllConsignees(CompanyMasterSid:number) {
-    return this.http.post('customer/consignee',{CompanyMasterSid}).pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
+  // getAllShippers(CompanyMasterSid: number) {
+  //   return this.http.post('customer/shipper',{CompanyMasterSid}).pipe(
+  //     map((resp: any) => {
+  //       let response = resp;
+  //       return response;
+  //     })
+  //   )
+  // }
+  // getAllConsignees(CompanyMasterSid:number) {
+  //   return this.http.post('customer/consignee',{CompanyMasterSid}).pipe(
+  //     map((resp: any) => {
+  //       let response = resp;
+  //       return response;
+  //     })
+  //   )
+  // }
 
   // Set, Get, Clear the data fro Quotation
 

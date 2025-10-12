@@ -70,6 +70,9 @@ export class InvoiceEntryComponent implements OnInit {
 
   // UI state
   selectedTab = 'Invoice';
+  selectTab(tab: string): void {
+    this.selectedTab = tab;
+  }
   tabs = [
     { name: 'Invoice', icon: 'fas fa-file-invoice' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' }
@@ -1005,10 +1008,7 @@ export class InvoiceEntryComponent implements OnInit {
   }
 
   onReset() {
-    if (confirm('Reset invoice form?')) {
       this.invoiceForm.reset({ status: 'A', ExchangeRate: 1 });
-      this.details.clear();
-    }
   }
 
   goBack() {

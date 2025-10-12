@@ -10,7 +10,30 @@
 
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+
+         <app-page-header 
+    [title]="'Invoice'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+    <div class="col-12 px-0">
+        <app-reusable-table
+        #invoiceTable
+        [config]="tableConfig"
+        [data]="allInvoice"
+        [loading]="tableLoading"
+        [totalRecords]="totalLengthOfCollection"
+        [paginationConfig]="paginationConfig"
+        (actionClick)="onTableActionClick($event)"
+        (rowClick)="onTableRowClick($event)"
+        (sortChange)="onTableSortChange($event)"
+        (filterChange)="onTableFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+        <!-- <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Invoice</h4>
             </div>
@@ -62,10 +85,10 @@
                     </button>
                 </form>
             </div>
-        </div>
+        </div> -->
     </div>
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0 && !loading">
+    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0 && !loading">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -192,10 +215,10 @@
                 </ngb-pagination>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
+    <!-- <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
         <div class="alert alert-info mt-3">No records found</div>
-    </div>
+    </div> -->
 </div>

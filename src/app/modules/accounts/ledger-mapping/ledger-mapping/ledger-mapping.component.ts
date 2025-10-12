@@ -116,6 +116,8 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
   subledgerMappingList: any[] = [];
   customerList: any[] = [];
   chargeList: any[] = [];
+  permissions: string[] = [];
+	currentMenuPermissions: any = {};
 
 
   auditLogs: any[] = []; // Stores audit logs
@@ -204,10 +206,38 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
       }
     });
     super.ngOnInit();
+    this.checkPermissions();
       this.initializeTableConfig();
       this.initializeHeaderActions();
     this.initializeModalDropdownItems();
   }
+
+  checkPermissions() {
+		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+		if (currentMenuId && userRole) {
+			this.masterService
+				.getRoleMenuPermissions(currentMenuId, userRole)
+				.subscribe({
+					next: (response) => {
+						this.currentMenuPermissions = response.data.MenuPermissions || {};
+						this.permissions = Object.keys(this.currentMenuPermissions).filter(
+							(key) => this.currentMenuPermissions[key] === 'isTrue'
+						);
+					},
+				});
+		}
+	}
+
+	//  checks for menu permission
+	hasPermission(permission: string): boolean {
+		return this.permissions.includes(permission);
+	}
+
+	hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+    }
 
   modeOfStatus = [
     { id: 'A', name: 'Active' },

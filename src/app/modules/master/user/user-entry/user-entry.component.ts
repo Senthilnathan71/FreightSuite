@@ -5,7 +5,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { FfUser, UserRole } from 'src/app/modules/crm-mobile/Interfaces/ffuser.interface';
 import { CommonModule } from '@angular/common';
@@ -23,6 +23,7 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
 	selector: 'app-user-entry',
@@ -43,6 +44,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 	styleUrl: './user-entry.component.scss'
 })
 export class UserEntryComponent implements OnInit {
+  private destroy$ = new Subject<void>();
 
 	UserMasterSid: number;
 	isEditMode: boolean;
@@ -84,7 +86,8 @@ export class UserEntryComponent implements OnInit {
 		private currentRoute: ActivatedRoute,
 		private modalService: NgbModal,
 		private fb: FormBuilder,
-		private settingService: SettingsService
+		private settingService: SettingsService,
+		public dropdownStore: DropdownStore
 	) { }
 
 	ngOnInit(): void {
@@ -348,9 +351,8 @@ openAuditLogs(modal: TemplateRef<any>) {
 			userType: this.masterService.getAllUserType(),
 			companies: this.masterService.getAllCompanies(),
 			roles: this.settingService.getAllRole(CompanyMasterSid),
-			countries: this.masterService.getAllCountry(),
 			menus: this.settingService.getAllMenu()
-		}).subscribe(({ departments, userType, companies, roles, countries, menus }) => {
+		}).subscribe(({ departments, userType, companies, roles, menus }) => {
 			this.departmentList = departments,
 			this.userTypeList = userType.data,
 			// this.companyList = companies
@@ -358,7 +360,6 @@ openAuditLogs(modal: TemplateRef<any>) {
       (company: any) => Array.isArray(company.branchMaster) && company.branchMaster.length > 0
     );
 			this.roleList = roles.data;
-			this.countryList = countries.data;
 			this.menuList = menus;
 
 			this.currentRoute.paramMap.subscribe((param) => {
@@ -371,6 +372,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 				}
 			});
 		})
+		this.dropdownStore.loadCountries()
 	}
 
 	// Load Data for Edit Mode
@@ -461,7 +463,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 			userTypeId: formValue.userTypeId,
 			contactNumber: formValue.contactNumber,
 			CountryMasterSid: formValue.CountryMasterSid,
-			status: formValue.status === 'Active' ? 'A' : 'S',
+			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			roles : formValue.roles,
 			userCode: this.getUserCode(formValue.userName),
 			companies : companyPayload,
@@ -755,6 +757,12 @@ openAuditLogs(modal: TemplateRef<any>) {
 		modalRef.componentInstance.idLabel = 'User Id';
 		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
 	}
+
+	ngOnDestroy(): void {
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 	
 }
 // constructRoleForm(data?: any) {

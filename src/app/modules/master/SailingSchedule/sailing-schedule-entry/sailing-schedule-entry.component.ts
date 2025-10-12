@@ -7,7 +7,7 @@ import { MasterService } from '../../master.service';
 import { NgbCalendar, NgbDate, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { CommonModule, DatePipe, UpperCasePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -23,6 +23,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -54,7 +55,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     ],
 })
 export class SailingScheduleEntryComponent implements OnInit {
-
+    private destroy$ = new Subject<void>();
     // Header-only form and state
     scheduleForm !: FormGroup;
 
@@ -111,7 +112,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         private dialog : MatDialog,
         private fb : FormBuilder,
         private calendar: NgbCalendar,  
-        private cdr: ChangeDetectorRef 
+        private cdr: ChangeDetectorRef,
+        public dropdownStore: DropdownStore
     ){}
 
     ngOnInit(): void {
@@ -228,11 +230,11 @@ export class SailingScheduleEntryComponent implements OnInit {
     forkJoin({
         vessels : this.masterService.getAllVessels(),
         carriers : this.masterService.getAllCarriers(CompanyMasterSid),
-        ports : this.masterService.getAllPorts()
-    }).subscribe(({vessels,carriers,ports})=>{
+        // ports : this.masterService.getAllPorts()
+    }).subscribe(({vessels,carriers})=>{
         this.vesselList = vessels.data || [];
         this.carrierList = carriers || [];
-        this.portList = ports.data || [];
+        // this.portList = ports.data || [];
 
         // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
         const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
@@ -254,12 +256,13 @@ export class SailingScheduleEntryComponent implements OnInit {
     }, (err) => {
         console.error('Error loading lookup fields', err);
     });
+    this.dropdownStore.loadPorts();
 }
 
     applyPolPodExclusion() {
         // Always start from the base filtered lists (which may be full lists or already voyage-filtered lists)
-        const basePOL = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.portList];
-        const basePOD = this.filteredPODList.length ? [...this.filteredPODList] : [...this.portList];
+        const basePOL = this.filteredPOLList.length ? [...this.filteredPOLList] : [...this.dropdownStore.ports()];
+        const basePOD = this.filteredPODList.length ? [...this.filteredPODList] : [...this.dropdownStore.ports()];
 
         const selectedPOL = this.scheduleForm.get('POLSid')?.value;
         const selectedPOD = this.scheduleForm.get('PODSid')?.value;
@@ -288,7 +291,7 @@ export class SailingScheduleEntryComponent implements OnInit {
      */
     applyPortTypeFilter(voyageType: string | null | undefined, init = false) {
         // If no ports loaded yet, keep empty arrays until loadAllFields sets them.
-        if (!this.portList || this.portList.length === 0) {
+        if (!this.dropdownStore.ports() || this.dropdownStore.ports().length === 0) {
             this.filteredPOLList = [];
             this.filteredPODList = [];
             return;
@@ -296,8 +299,8 @@ export class SailingScheduleEntryComponent implements OnInit {
 
         // When voyageType is falsy, restore full list
         if (!voyageType) {
-            this.filteredPOLList = [...this.portList];
-            this.filteredPODList = [...this.portList];
+            this.filteredPOLList = [...this.dropdownStore.ports()];
+            this.filteredPODList = [...this.dropdownStore.ports()];
             // If init, do not clear existing selection
             if (!init) {
                 this.clearPolPodIfNotInList();
@@ -339,12 +342,12 @@ export class SailingScheduleEntryComponent implements OnInit {
         };
 
         // Apply filter
-        const polFiltered = this.portList.filter(p => portMatchesVoyageType(p));
-        const podFiltered = this.portList.filter(p => portMatchesVoyageType(p));
+        const polFiltered = this.dropdownStore.ports().filter(p => portMatchesVoyageType(p));
+        const podFiltered = this.dropdownStore.ports().filter(p => portMatchesVoyageType(p));
 
         // If filter results are empty, fallback to full list (prevents blank selects)
-        this.filteredPOLList = polFiltered.length ? polFiltered : [...this.portList];
-        this.filteredPODList = podFiltered.length ? podFiltered : [...this.portList];
+        this.filteredPOLList = polFiltered.length ? polFiltered : [...this.dropdownStore.ports()];
+        this.filteredPODList = podFiltered.length ? podFiltered : [...this.dropdownStore.ports()];
 
         // If currently selected POL/POD not in filtered list, clear them (unless during init)
         if (!init) {
@@ -448,7 +451,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             VesselMasterSid : parseInt(formValue.VesselMasterSid),
             Carrier : formValue.Carrier ? parseInt(formValue.Carrier) : null,
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
-            status : formValue.status === 'Active' ? 'A' : 'S',
+            status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
             POLSid: formValue.POLSid ? parseInt(formValue.POLSid) : null,
             PODSid: formValue.PODSid ? parseInt(formValue.PODSid) : null,
             ETA: formValue.ETA,
@@ -525,8 +528,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         });
 
         // restore full lists
-        this.filteredPOLList = [...this.portList];
-        this.filteredPODList = [...this.portList];
+        this.filteredPOLList = [...this.dropdownStore.ports()];
+        this.filteredPODList = [...this.dropdownStore.ports()];
 
         this.scheduleForm.markAsUntouched();
         this.scheduleForm.markAsPristine();
@@ -622,10 +625,10 @@ export class SailingScheduleEntryComponent implements OnInit {
     }
 
     getFormattedPort(PortMasterSid:any) {
-        if (!PortMasterSid || this.portList.length === 0) {
+        if (!PortMasterSid || this.dropdownStore.ports().length === 0) {
             return '';
         }
-        const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
+        const port = this.dropdownStore.ports().find(p => p.PortMasterSid === PortMasterSid)
         return port ? `${port.PortName} (${port.PortCode})` : '';
     }
 

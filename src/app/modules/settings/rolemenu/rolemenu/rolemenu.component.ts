@@ -631,6 +631,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	openModal(content: TemplateRef<any>, data?: any) {
 		this.initRoleMenuForm();
 		if (data) {
+			console.log("During model open",data)
 			this.isEditMode = true;
 			this.roleMenuData = data;
 			const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
@@ -650,7 +651,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 				MenuMasterSid: data.MenuMasterSid,
 				RoleMasterSid: data.RoleMasterSid,
 				Remarks: data.Remarks,
-				status: data.status === 'A' ? 'Active' : 'Suspended',
+				status: data.status,
 
 			})
 			if (permissions) {

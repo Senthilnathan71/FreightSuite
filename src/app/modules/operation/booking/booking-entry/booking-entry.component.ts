@@ -32,13 +32,33 @@ import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
 import { BookingData } from '../excel-parser.service';
 import { BookingUploadComponent } from '../booking-upload/booking-upload.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
-import * as html2pdf from 'html2pdf.js';
+import html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { TaxCalculationService, BookingRateDetails } from '../../services/tax-calculation.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+type Html2PdfOptions = {
+  margin?: number | [number, number, number, number];
+  filename?: string;
+  image?: {
+    type?: 'jpeg' | 'png' | 'webp';
+    quality?: number;
+  };
+  html2canvas?: {
+    scale?: number;
+    logging?: boolean;
+    dpi?: number;
+    letterRendering?: boolean;
+    useCORS?: boolean;
+  };
+  jsPDF?: {
+    unit?: string;
+    format?: string | [number, number];
+    orientation?: 'portrait' | 'landscape';
+  };
+};
 
 @Component({
   selector: 'app-booking-entry',
@@ -2285,13 +2305,13 @@ openAuditLogs(modal: TemplateRef<any>) {
     return new Promise((resolve, reject) => {
       const element = document.getElementById('pdfContent');
 
-      const opt = {
-        margin: 0.5,
-        filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
+      const opt: Html2PdfOptions = {
+    margin: 0.5,
+      filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
 
       if (!element) return reject('No element found');
 
@@ -2308,7 +2328,9 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.spinner.show();
     const element = document.getElementById('pdfContent');
 
-    const opt = {
+
+
+    const opt: Html2PdfOptions = {
       margin: 0.5,
       filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
       image: { type: 'jpeg', quality: 0.98 },

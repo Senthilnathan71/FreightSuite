@@ -136,7 +136,7 @@ hasAnyDropdownPermission(): boolean {
             const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
             const payload = {
                 ...formValue,
-                status: formValue.status === 'Active' ? 'A' : 'S',
+                status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
                 ImcoUn: parseFloat(formValue.ImcoUn),
                 ImcoPageNo: parseFloat(formValue.ImcoPageNo),
                 ...(this.isEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })

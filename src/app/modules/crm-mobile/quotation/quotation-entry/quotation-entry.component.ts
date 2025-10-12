@@ -37,8 +37,30 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { de, ro } from 'date-fns/locale';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ToastrService } from 'ngx-toastr';
-import * as html2pdf from 'html2pdf.js';
+import html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+
+type Html2PdfOptions = {
+  margin?: number | [number, number, number, number];
+  filename?: string;
+  image?: {
+    type?: 'jpeg' | 'png' | 'webp';
+    quality?: number;
+  };
+  html2canvas?: {
+    scale?: number;
+    logging?: boolean;
+    dpi?: number;
+    letterRendering?: boolean;
+    useCORS?: boolean;
+  };
+  jsPDF?: {
+    unit?: string;
+    format?: string | [number, number];
+    orientation?: 'portrait' | 'landscape';
+  };
+};
+
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -71,6 +93,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     CustomDatePipe
   ],
 })
+
 export class QuotationEntryComponent implements OnInit {
 
   private subscription = new Subscription()
@@ -2829,20 +2852,20 @@ ${this.userData.userName}`;
 
   downloadPDF() {
     const element = document.getElementById('pdfContent');
-  
+
     if (!element) {
       console.error('No element found');
       return;
     }
-  
-    const opt = {
+
+    const opt: Html2PdfOptions = {
       margin: 0.5,
       filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
-  
+
     html2pdf().from(element).set(opt).save(); // ✅ this triggers download
   }
 
@@ -2850,13 +2873,14 @@ ${this.userData.userName}`;
     return new Promise((resolve, reject) => {
       const element = document.getElementById('pdfContent');
 
-      const opt = {
+      const opt: Html2PdfOptions = {
         margin: 0.5,
         filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: "jpeg", quality: 0.98 }, // ✅ TypeScript now sees it as literal
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
       };
+
 
       if (!element) return reject('No element found');
 

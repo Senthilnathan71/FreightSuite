@@ -91,14 +91,14 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Booking',
+        tooltip: 'View ',
         condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
         label: 'Delete',
         action: 'delete',
-        tooltip: 'Delete Zone',
+        tooltip: 'Delete ',
         class: "text-danger",
         condition: (row: any) => this.hasPermission('Delete')
       }

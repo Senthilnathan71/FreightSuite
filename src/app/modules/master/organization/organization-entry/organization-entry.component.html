@@ -110,7 +110,7 @@
           <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="customerForm.get('CountryMasterSid')?.value">
-              <ng-select [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid"
+              <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
                 formControlName="CountryMasterSid" placeholder="Country" [searchable]="true" [clearable]="false">
                 <ng-template ng-option-tmp let-item="item">
                   {{ item.countryName }} - {{ item.countryCode }}

@@ -240,7 +240,7 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select"  [class.filled]="!!userForm.get('CountryMasterSid')?.value">
-                            <ng-select formControlName="CountryMasterSid" [items]="countryList" bindLabel="countryName"
+                            <ng-select formControlName="CountryMasterSid" [items]="dropdownStore.countries()" bindLabel="countryName"
                                 bindValue="CountryMasterSid" placeholder="">
 
                             </ng-select>

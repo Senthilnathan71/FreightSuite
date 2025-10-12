@@ -1,10 +1,10 @@
 <div class="row compact-form" [formGroup]="cargoForm">
-    <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">Cargo Receipt</h4>
             </div>
-            <div class="col-md-8 pb-1">
+            <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -16,8 +16,7 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                    (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-sync-alt me-1" ></i>
                         Reset
                     </button>
@@ -31,7 +30,7 @@
         </div>
     </div>
 
-    <div class="col-md-12 px-0">
+    <div class="col-md-12">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row">
@@ -44,7 +43,7 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class=" custom-form-group custom-form-group-select-date">
+                        <div class=" custom-form-group custom-form-group-select">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="BookingDateTime" readonly/>
                             <label class="input-label">Booking Date <span class="text-danger"></span>
@@ -68,7 +67,13 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="HBLNo" readonly/>
+                            <label for="text-input" class="input-label">HBL No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -111,35 +116,28 @@
                             <label for="text-input" class="input-label">FPD <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="HBLNo" readonly/>
-                            <label for="text-input" class="input-label">HBL No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-12 mt-1">
+    <div class="col-md-12 mt-2 mx-1">
         <div class="row bg-white py-2 rounded shadow-sm">
-            <div class="table-responsive table-borderless">
-                <table class="table table-hover align-middle no-wrap table-sm mb-1">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col">Commodity</th>
                             <th class="bg-transparent text-light" scope="col">Shipping Bill No</th>
                             <th class="bg-transparent text-light" scope="col">Date</th>
                             <th class="bg-transparent text-light" scope="col">External Pkg</th>
-                            <th class="bg-transparent text-light text-center" scope="col">No of Pkg</th>
+                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
                             <th class="bg-transparent text-light" scope="col">Gross Weight</th>
                             <th class="bg-transparent text-light" scope="col">Net Weight</th>
                             <th class="bg-transparent text-light" scope="col">Volume(CBM)</th>
-                            <th class="bg-transparent text-light" scope="col">Cargo Recd. Date</th>
+                            <th class="bg-transparent text-light" scope="col">Cargo Read Date</th>
                             <th class="bg-transparent text-light" scope="col">CFS</th>
-                            <th class="bg-transparent text-light" scope="col">Recd Pack</th>
+                            <th class="bg-transparent text-light" scope="col">Record Pack</th>
                         </tr>
                     </thead>
                     <tbody formArrayName="bookingProducts">
@@ -154,56 +152,31 @@
       <div class="text-truncate">{{ prod.value.ShippingBillDate }}</div>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="text-truncate text-center">{{ prod.value.ExternaPkg }}</div>
+      <div class="text-truncate">{{ prod.value.ExternaPkg }}</div>
     </td>
 
     <!-- Editable fields -->
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="ExternlQty" [onlyNumbers] />
+      <input type="number" class="form-control form-control-sm" formControlName="ExternlQty"/>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
+      <input type="number" class="form-control form-control-sm" formControlName="GrossWeight"/>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
+      <input type="number" class="form-control form-control-sm" formControlName="NetWeight"/>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"/>
+      <input type="number" class="form-control form-control-sm" formControlName="Volume"/>
     </td>
-    <td>
-  <div class="input-group" style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-                <input
-                  class="form-control"
-                  formControlName="CargoRecDate"
-                  placeholder="DD-MMM-YYYY"
-                  (click)="d.toggle()"
-                  (keydown.arrowDown)="d.open()"
-                  ngbDatepicker
-                  container="body"
-                  #d="ngbDatepicker"
-                  [minDate]="today"
-                />
-                <button class="btn" type="button" (click)="d.toggle()">
-                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                </button>
-              </div>
-</td>
-
-
+    <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
+      <input type="date" class="form-control form-control-sm" formControlName="CargoRecDate"/>
+    </td>
 
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <div class="custom-form-group custom-form-group-select" style="width: 150px;" [class.filled]="!!cargoForm.get('CFS')?.value">
-                <ng-select 
-                  formControlName="CFS" 
-                  [items]="cfsList" 
-                  bindLabel="CustomerName" 
-                  bindValue="CustomerName"
-                  placeholder=""
-                ></ng-select>
-              </div>
+      <div class="text-truncate">{{ prod.value.CFS }}</div>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="number" class="form-control form-control-sm text-end" formControlName="RecdPack" [onlyNumbers]/>
+      <div class="text-truncate">{{ prod.value.RecdPack }}</div>
     </td>
   </tr>
 </tbody>

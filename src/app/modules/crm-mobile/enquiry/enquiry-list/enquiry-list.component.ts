@@ -24,6 +24,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { NewLineKind } from 'typescript';
+import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 @Component({
   selector: 'app-enquiry-list',
   standalone: true,
@@ -37,7 +38,8 @@ import { NewLineKind } from 'typescript';
     CustomDatePipe,
     PreventMultiClickDirective,
     NgxSpinnerModule,
-    ReusableTableComponent
+    ReusableTableComponent,
+    PageHeaderComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './enquiry-list.component.html',
@@ -73,7 +75,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         icon: 'fas fa-eye',
         label: 'View',
         action: 'view',
-        tooltip: 'View Zone',
+        tooltip: 'View',
         // condition: (row: any) => this.hasPermission('View')
       },
       // {
@@ -91,16 +93,16 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
     showFilters: true,
     showPagination: true,
     trackByKey: 'EnquiryHeaderSid',
-    emptyMessage: 'No bookings found',
+    emptyMessage: 'No Enquiry found',
     dragAndDrop: true
   };
 
   tableLoading = false;
-
+  headerActions: HeaderAction[] = [];
   protected config: ListComponentConfig = {
     storageKey: 'enquiry-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'BookingNo',
+    defaultSortColumn: 'EnquiryNumber',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -125,7 +127,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.searchEnquiry();
+    // this.searchEnquiry();
     this.isMobile = this.appService.getDevice()
     this.appSettingService.userSettingSource.subscribe(
       (res) => {
@@ -134,7 +136,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
     )
     // Initialize table configuration
     this.initializeTableConfig();
-
+    this.initializeHeaderActions();
     // Initialize base component
     super.ngOnInit();
   }
@@ -157,29 +159,85 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
     };
   }
 
-protected processSearchResults(response: any): void {
-  this.tableLoading = false;
-  this.spinner.hide();
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
 
-  if (response.status) {
-    this.allItems = response.data.items.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended',
-      ShipmentExpectedDate: this.datePipe.transform(item.ShipmentExpectedDate) ?? '',
-      POLPortName: item.POL?.PortName ?? '',
-      PODPortName: item.POD?.PortName ?? ''
-    }));
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        status: item.status === 'A' ? 'Active' : 'Suspended',
+        ShipmentExpectedDate: this.datePipe.transform(item.ShipmentExpectedDate) ?? '',
+        POLPortName: item.POL?.PortName ?? '',
+        PODPortName: item.POD?.PortName ?? ''
+      }));
 
-    this.totalLengthOfCollection = response.data.totalCount || 0;
-    this.applySorting();
-  } else {
-    this.appSettingService.showError('Error searching Enquiry.');
-    this.allItems = [];
-    this.totalLengthOfCollection = 0;
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingService.showError('Error searching Enquiry.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
   }
-}
 
+  onSearchTriggered(searchValue: string): void {
+    this.filterValue = searchValue;
+    this.searchEnquirys();
+  }
 
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+      this.createNew()
+        break;
+      case 'report':
+        this.report();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
 
 
   protected override handleSearchError(error: any): void {
@@ -221,7 +279,7 @@ protected processSearchResults(response: any): void {
         sortable: true,
         filterable: true,
         visible: true,
-        template:'link',
+        template: 'link',
         dataType: 'string'
       },
       {
@@ -240,7 +298,7 @@ protected processSearchResults(response: any): void {
         visible: true,
         dataType: 'string'
       },
-        {
+      {
         key: 'POLPortName',
         label: 'POL',
         sortable: true,
@@ -248,7 +306,7 @@ protected processSearchResults(response: any): void {
         visible: true,
         dataType: 'string'
       },
-        {
+      {
         key: 'PODPortName',
         label: 'POD',
         sortable: true,
@@ -288,7 +346,7 @@ protected processSearchResults(response: any): void {
     }
   }
 
-  viewEnquiry(row:any){
+  viewEnquiry(row: any) {
     this.route.navigate(['crm/enquiry/entry', row.EnquiryHeaderSid])
   }
 
@@ -296,7 +354,7 @@ protected processSearchResults(response: any): void {
     // Row clicking can be handled by the table component if needed
   }
 
-  file(row:any){
+  file(row: any) {
     this.goForQuotationCreation(row.EnquiryHeaderSid)
   }
 
@@ -331,36 +389,36 @@ protected processSearchResults(response: any): void {
     });
   }
   // Search
-  searchEnquiry() {
-    this.spinner.show();
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    const params = {
-      search: this.filterValue.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId: CompanyMasterSid,
-      activeBranchId: BranchMasterSid,
-    }
-    this.leadService.searchEnquiry(params).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.enquiryItems = resp.data?.items;
-          this.totalLengthOfCollection = resp.data?.totalCount || 0;
-          this.applySorting();
-          this.searchPerformed = true;
-        } else {
-          this.appSettingService.showError(resp.message);
-          console.error('Error searching Enquiry', resp.message)
-          this.enquiryItems = [];
-          this.totalLengthOfCollection = 0;
-        }
-        this.spinner.hide();
-      }, error: (error: any) => {
-        console.error(error);
-      }
-    })
-  }
+  // searchEnquiry() {
+  //   this.spinner.show();
+  //   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  //   const params = {
+  //     search: this.filterValue.trim() || '',
+  //     page: this.page,
+  //     pageSize: this.pageSize,
+  //     activeCompanyId: CompanyMasterSid,
+  //     activeBranchId: BranchMasterSid,
+  //   }
+  //   this.leadService.searchEnquiry(params).subscribe({
+  //     next: (resp: any) => {
+  //       if (resp.status) {
+  //         this.enquiryItems = resp.data?.items;
+  //         this.totalLengthOfCollection = resp.data?.totalCount || 0;
+  //         this.applySorting();
+  //         this.searchPerformed = true;
+  //       } else {
+  //         this.appSettingService.showError(resp.message);
+  //         console.error('Error searching Enquiry', resp.message)
+  //         this.enquiryItems = [];
+  //         this.totalLengthOfCollection = 0;
+  //       }
+  //       this.spinner.hide();
+  //     }, error: (error: any) => {
+  //       console.error(error);
+  //     }
+  //   })
+  // }
 
   // clearFilterValue(){
   //   this.filterValue = "";
@@ -408,7 +466,7 @@ protected processSearchResults(response: any): void {
 
 
   updatePaginatedData(): void {
-    this.searchEnquiry()
+    // this.searchEnquiry()
   }
 
   //   report(): void {
@@ -505,13 +563,13 @@ protected processSearchResults(response: any): void {
           PODSid: route.PODSid,
           FPODSid: route.FDPSid,
           CargoType: cargo.CargoType,
-          GrossWeight : cargo.GrossWeight,
-          NetWeight : cargo.NetWeight,
+          GrossWeight: cargo.GrossWeight,
+          NetWeight: cargo.NetWeight,
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           Qty: cargo.Qty,
-          ServiceLevel : response.IncoTerms
+          ServiceLevel: response.IncoTerms
         };
       });
     });
@@ -540,7 +598,7 @@ protected processSearchResults(response: any): void {
       status: response.status,
       cargoTypeList: cargoTypeList,  // Merging from both possible sources
       ShipmentType: selectedFCLLCL,
-      FreightPPCC : response.FreightPPCC,
+      FreightPPCC: response.FreightPPCC,
       rateRequest: true,
       quoteRoutes: routeDetails,
     };
@@ -557,7 +615,7 @@ protected processSearchResults(response: any): void {
     this.totalLengthOfCollection = this.enquiryItems.length;
     this.page = 1;
     this.searchPerformed = false;
-    this.searchEnquiry();
+    // this.searchEnquiry();
   }
 
   openVoiceEnquiry(): void {

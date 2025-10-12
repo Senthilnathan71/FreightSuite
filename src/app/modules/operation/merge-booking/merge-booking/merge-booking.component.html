@@ -1,7 +1,7 @@
 <div class="row compact-form">
   <div class="col-12 px-0">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-      <div class="col-md-4 d-flex pb-2">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
             <i class="fas fa-code-branch"></i>
@@ -9,7 +9,7 @@
           <h4 class="page-title mb-0">Merge Booking</h4>
         </div>
       </div>
-      <div class="col-md-8 pb-2">
+      <div class="col-md-8 pb-1">
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
@@ -29,7 +29,7 @@
 
   <div class="row justify-content-center">
     <div class="col-12 col-sm-8 col-md-6 col-lg-4">
-      <div class="custom-form-group custom-form-group-select">
+      <div class="custom-form-group custom-form-group-select mt-0">
         <ng-select class="ng-select" [items]="departments" bindLabel="departmentName" bindValue="DepartmentMasterSid"
           placeholder="Select Department" formControlName="DepartmentMasterSid" (change)="onDeptChange($event)">
         </ng-select>
@@ -39,13 +39,13 @@
   </div>
 
 
-  <div class="col-md-12 mt-1 px-0">
+  <div class="col-md-12  px-0">
     <div class="row">
       <!-- From Booking -->
-      <div class="col-md-6">
+      <div class="col-md-6 pe-md-1">
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
-            <h5 class="page-title mb-1">From :</h5>
+            <h5 class="page-title mb-0">From :</h5>
             <form [formGroup]="fromBookingForm">
               <div class="row">
                 <!-- Department -->
@@ -129,9 +129,9 @@
             </form>
             <!-- Demo Data Table (replace with live) -->
             @if(fromTotalRecords > 0){
-            <div class="col-md-12 p-2">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+            <div class="col-md-12">
+              <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                   <thead>
                     <tr class="bg-info">
                       <th class="bg-transparent text-light" scope="col">Commodity</th>
@@ -164,26 +164,26 @@
                   </tbody>
                 </table>
               </div>
-              <div>
+              <!-- <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="fromTotalRecords"
                   [pageSize]="pageSizeFrom" [(page)]="pageFrom" (pageChange)="updateFromPagination()" [rotate]="true"
                   [ellipses]="false" [maxSize]="10">
                 </ngb-pagination>
-              </div>
+              </div> -->
             </div>
             } @else {
             <div class="col-12">
-              <div class="alert alert-info text-center"> Choose booking to see respective cargo details.</div>
+              <!-- <div class="text-center"> Choose booking to see respective cargo details.</div> -->
             </div>
             }
           </div>
         </div>
       </div>
       <!-- To Booking -->
-      <div class="col-md-6 mt-2 mt-md-0">
+      <div class="col-md-6 mt-1 mt-md-0 ps-md-1">
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
-            <h5 class="page-title mb-1">To :</h5>
+            <h5 class="page-title mb-0">To :</h5>
             <form [formGroup]="toBookingForm">
               <div class="row">
                 <!-- Department -->
@@ -267,9 +267,9 @@
             </form>
             <!-- Demo Data Table (replace with live) -->
             @if(toTotalRecords > 0){
-            <div class="col-md-12 p-2">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+            <div class="col-md-12">
+              <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                   <thead>
                     <tr class="bg-info">
                       <th class="bg-transparent text-light" scope="col">Commodity</th>
@@ -302,16 +302,16 @@
                   </tbody>
                 </table>
               </div>
-              <div>
+              <!-- <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="toTotalRecords"
                   [pageSize]="pageSizeTo" [(page)]="pageTo" (pageChange)="updateToPagination()" [rotate]="true"
                   [ellipses]="false" [maxSize]="10">
                 </ngb-pagination>
-              </div>
+              </div> -->
             </div>
             } @else {
             <div class="col-12">
-              <div class="alert alert-info text-center"> Choose booking to see respective cargo details.</div>
+             
             </div>
             }
           </div>
@@ -319,7 +319,7 @@
       </div>
     </div><!-- end row -->
 
-    <div class="d-flex justify-content-end mt-2">
+    <div class="d-flex justify-content-end mt-1">
       <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="mergeBookings()">
         <i class="fas fa-code-branch me-1"></i> Merge
       </button>

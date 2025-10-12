@@ -652,11 +652,11 @@ export class SectorComponent extends BaseListComponent implements OnInit {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "S"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         ...createdBy,
-        status: formValue.status === "Active" ? "A" : "S"
+        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       };
 
       console.log('payload', payload);

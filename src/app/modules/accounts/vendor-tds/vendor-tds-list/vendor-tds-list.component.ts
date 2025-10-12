@@ -71,7 +71,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
+        // condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
@@ -79,7 +79,7 @@ export class VendorTdsListComponent extends BaseListComponent implements OnInit 
         action: 'delete',
         tooltip: 'Delete ',
         class: "text-danger",
-        condition: (row: any) => this.hasPermission('Delete')
+        // condition: (row: any) => this.hasPermission('Delete')
       }
     ],
     selectable: false,
