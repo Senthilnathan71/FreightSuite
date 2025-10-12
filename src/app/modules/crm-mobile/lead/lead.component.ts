@@ -650,10 +650,6 @@ export class LeadComponent implements OnInit {
     backdrop: 'static',
   });
 
-  // Pass screen name and optional data
-  modalRef.componentInstance.screenName = 'Edoc';
-  modalRef.componentInstance.dataItems = this.leadData; // if you want to pass any data
-
   // Listen for close event
   modalRef.componentInstance.closeModal.subscribe((data: boolean) => {
     if (data) {

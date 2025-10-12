@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -36,12 +37,19 @@ export class EdocComponent {
   edocform: FormGroup;
   minDate : NgbDateStruct;
   selectedFiles: File[] | null = null;
-
-  constructor(private commonService:CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
+currentCompany:any
+userData:any;
+currentBranch:any
+MenuMasterSid:any
+DocumentSid:number
+  constructor(private route:ActivatedRoute,private commonService:CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.initEdocForm();
     this.minDate = this.toNgbDateStruct(new Date())
   }
   ngOnChanges(changes: SimpleChanges) {
+    this.route.paramMap.subscribe(params => {
+      this.DocumentSid = +params.get('id');
+    });
     if (changes['resetTrigger'] && this.resetTrigger) {
       this.resetForm();
     }
@@ -54,10 +62,20 @@ export class EdocComponent {
     }
 
     console.log(this.screenName, 'screenName')
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
+    }
+    const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+    this.MenuMasterSid = localStorage.getItem('currentMenuId');
+
   }
   initEdocForm() {
     this.edocform = this.fb.group({
-      DocuNo: ['', Validators.required],
+      AttachDocmentNo: ['', Validators.required],
       Date: ['', Validators.required],
       file: ['', Validators.required],
       Filename: ['', Validators.required],
@@ -69,6 +87,10 @@ export class EdocComponent {
       FollowupAction: [''],
       Remarks: [''],
       Status: ['', Validators.required],
+      CompanyMasterSid:Number(this.currentCompany),
+      BranchMasterSid: Number(this.currentBranch),
+      MenuMasterSid:Number(this.MenuMasterSid),
+      DocumentSid: Number(this.DocumentSid)
     });
     this.edocform.get('FollowupRequired')?.valueChanges.subscribe((isChecked) => {
       const dateCtrl = this.edocform.get('FollowupDate');
