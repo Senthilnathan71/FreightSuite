@@ -84,6 +84,7 @@ ngOnInit(): void {
   let storedCompany = null;
   let storedBranch = null;
 
+
   try {
     const encryptedCompany = localStorage.getItem('selected-company');
     const encryptedBranch = localStorage.getItem('selected-branch');
@@ -105,6 +106,8 @@ ngOnInit(): void {
     const companyToUse = storedCompany?.CompanyMasterSid
       ? this.companyList.find(c => c.CompanyMasterSid === storedCompany.CompanyMasterSid) || defaultCompany
       : defaultCompany;
+      console.log(companyToUse,'companyToUse')
+
     this.selectedCompanyId = companyToUse.CompanyMasterSid;
 
     this.branchList = (companyToUse.companyMaster?.userBranchMaster || [])
@@ -136,7 +139,8 @@ ngOnInit(): void {
         try {
           const companyToStore = {
             CompanyMasterSid: companyToUse.CompanyMasterSid,
-            companyName: companyToUse.companyMaster.companyName
+            companyName: companyToUse.companyMaster.companyName,
+            CountryName: companyToUse.companyMaster.countryMaster.countryName
           };
 
           const branchToStore = {
@@ -235,7 +239,8 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   try {
     const companyToStore = {
       CompanyMasterSid: updatedBranchCompany.companyMaster.CompanyMasterSid,
-      companyName: updatedBranchCompany.companyMaster.companyName
+      companyName: updatedBranchCompany.companyMaster.companyName,
+      CountryName: updatedBranchCompany.companyMaster.countryMaster.countryName
     };
 
     const branchToStore = {

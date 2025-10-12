@@ -150,6 +150,12 @@ export class CostEntryComponent implements OnInit {
 
   @Input()
   set dataItems(value: any[]) {
+    // Safety check: ensure rateForm is initialized before accessing rateFormArray
+    if (!this.rateForm) {
+      this._dataItems = value || [];
+      return;
+    }
+
     this.rateFormArray.clear(); // clear existing rows first
     if (value && value.length > 0) {
       this._dataItems = value;
@@ -212,6 +218,11 @@ export class CostEntryComponent implements OnInit {
     this.rateFormArray.valueChanges.subscribe(() => {
     this.dataEmitter.emit(this.rateFormArray.getRawValue());
   });
+
+    // If dataItems was set before ngOnInit, process them now
+    if (this._dataItems && this._dataItems.length > 0) {
+      this.patchValues(this._dataItems);
+    }
   }
   ngOnChanges(){
     if(!this.dataItems){
@@ -309,9 +320,12 @@ createRateFormGroup(data?: any): FormGroup {
   const costDocTypeName = data?.costVoucherTypeMaster?.DocumentTypeName || data?.CostVoucherType?.DocumentTypeName || '';
   const revenueDocTypeName = data?.revenueVoucherTypeMaster?.DocumentTypeName || data?.RevenueVoucherType?.DocumentTypeName || '';
 
+  // Ensure BookingHeaderSid is available - try from data, then helper method
+  const bookingHeaderSid = data?.BookingHeaderSid ?? this.getBookingHeaderSid();
+
   const form = this.fb.group({
     BookingRatesSid: [data?.BookingRatesSid ?? null],
-    BookingHeaderSid: [data?.BookingHeaderSid ?? null],
+    BookingHeaderSid: [bookingHeaderSid],
 
     CompanyMasterSid: [data?.CompanyMasterSid ?? null],
     BranchMasterSid: [data?.BranchMasterSid ?? null],
@@ -370,27 +384,41 @@ createRateFormGroup(data?: any): FormGroup {
 }
 
 
+  /**
+   * Get BookingHeaderSid from parent form or existing rates
+   */
+  getBookingHeaderSid(): number | null {
+    // First try to get from parent form
+    if (this.parentFormValue?.BookingHeaderSid) {
+      return this.parentFormValue.BookingHeaderSid;
+    }
+
+    // If not in parent form, try to get from existing rates
+    if (this.rateFormArray.length > 0) {
+      const firstRate = this.rateFormArray.at(0).getRawValue();
+      if (firstRate.BookingHeaderSid) {
+        return firstRate.BookingHeaderSid;
+      }
+    }
+
+    return null;
+  }
+
   addRateRow(data?:any){
+    // When adding a new row without data, populate it with parent form values immediately
+    if (!data && this.parentFormValue) {
+      const bookingHeaderSid = this.getBookingHeaderSid();
+      data = {
+        BookingHeaderSid: bookingHeaderSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid || null,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid || null,
+        CustomerMasterSid: this.parentFormValue.CustomerMasterSid || null,
+        CustomerBranchSid: this.parentFormValue.CustomerBranchSid || null
+      };
+    }
+
     const formGroup = this.createRateFormGroup(data);
     this.rateFormArray.push(formGroup);
-
-    // Auto-populate BookingHeaderSid and Revenue Billing Party from parent booking
-    // Cost Billing Party (AgentSid & AgentBranchSid) should remain empty for manual selection
-    // Use setTimeout to ensure ng-select dropdowns are fully initialized before setting values
-    if (!data && this.parentFormValue) {
-      setTimeout(() => {
-        const index = this.rateFormArray.length - 1;
-        const control = this.rateFormArray.at(index);
-        if (control) {
-          control.patchValue({
-            BookingHeaderSid: this.parentFormValue.BookingHeaderSid || null,
-            CustomerMasterSid: this.parentFormValue.CustomerMasterSid || null,
-            CustomerBranchSid: this.parentFormValue.CustomerBranchSid || null
-            // AgentSid is intentionally NOT set - user must select manually for cost billing party
-          });
-        }
-      }, 100);
-    }
   }
 
 
@@ -508,7 +536,7 @@ createRateFormGroup(data?: any): FormGroup {
       const rateData = control.getRawValue();
 
       // Validate required fields before creating payload
-      const bookingHeaderSid = this.parentFormValue?.BookingHeaderSid || rateData.BookingHeaderSid;
+      const bookingHeaderSid = this.getBookingHeaderSid() || rateData.BookingHeaderSid;
 
       if (!bookingHeaderSid) {
         errorCount++;
@@ -648,8 +676,14 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
+    const bookingHeaderSid = this.getBookingHeaderSid() || rateData.BookingHeaderSid;
+    if (!bookingHeaderSid) {
+      this.appSettingService.showWarning('Please save the booking first before adding rates.');
+      return;
+    }
+
     const payload = {
-      BookingHeaderSid: this.parentFormValue?.BookingHeaderSid,
+      BookingHeaderSid: bookingHeaderSid,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       CreatedBy: localStorage.getItem('userName') || 'system',
@@ -1126,6 +1160,18 @@ createRateFormGroup(data?: any): FormGroup {
         if (resp.status) {
           console.log(resp.data)
           const response: any[] = resp.data || [];
+
+          // Check if no tariffs found
+          if (response.length === 0) {
+            this.tariffLoading = false;
+            this.modalService.dismissAll();
+            this.appSettingService.showError("No tariff charges found for the selected criteria.");
+            return;
+          }
+
+          // Check if standard rates were returned
+          const isStandardRate = response.length > 0 && response[0].isStandardRate === true;
+
           this.tariffDetails = response
             .map((td: any) => {
               const charge = this.getCharge(td.ChargeCode);
@@ -1153,12 +1199,24 @@ createRateFormGroup(data?: any): FormGroup {
                 }
               }
             })
+
           console.log(this.tariffDetails);
           this.tariffLoading = false;
+
+          // Show info message if standard rates were returned
+          if (isStandardRate) {
+            this.appSettingService.showInfo("No specific tariff found. Displaying standard rates based on Department, POL, POD, and Company.");
+          }
         } else {
           this.appSettingService.showError("Error loading Tariff Details");
           this.tariffLoading = false;
+          this.modalService.dismissAll();
         }
+      },
+      (error) => {
+        this.tariffLoading = false;
+        this.modalService.dismissAll();
+        this.appSettingService.showError("Error loading Tariff Details");
       }
     )
 

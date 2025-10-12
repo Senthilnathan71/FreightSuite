@@ -128,7 +128,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 18px;
+  padding: 2px 18px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -259,7 +259,7 @@
 .custom-accordion .accordion-button {
   background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
   color: #fff;
-  padding: 2px;
+  padding: 1px;
 }
 
 .custom-accordion .accordion-button::after {

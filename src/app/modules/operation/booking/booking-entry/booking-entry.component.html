@@ -2890,7 +2890,7 @@
               <small>{{ charge.ChargeDescription || charge.ChargeMaster?.chargeName || '-' }}</small>
             </td>
             <td>
-              <small class="text-muted">{{ charge.ChargeMaster?.HSNSAC || '-' }}</small>
+              <small class="text-muted">{{ charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-' }}</small>
             </td>
             <td class="text-center">
               {{ charge.NoOfUnit || charge.NumberOfUnit || 1 }}

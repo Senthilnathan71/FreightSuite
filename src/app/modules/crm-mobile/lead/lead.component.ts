@@ -47,7 +47,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
     OnlyTextDirective,
     DatePipe,
     TextWithNumbersDirective,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    EdocComponent
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -127,7 +128,7 @@ export class LeadComponent implements OnInit {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
-
+MenuMasterSid:any
   leads = [{ id: 1, name: 'Lead 001' }]; // Initial lead
 
   constructor(
@@ -157,7 +158,7 @@ export class LeadComponent implements OnInit {
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     console.info(this.currentBranch, this.userData, 'userData')
-
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 
 
     // Subscribe to route params and load lead if ID exists
@@ -308,28 +309,28 @@ export class LeadComponent implements OnInit {
       this.leadService.updateLeadById(this.PreCustomerMasterSid, payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Lead Updated Successfully');
+            this.appSettingService.showSuccess(resp.message || 'Lead Updated Successfully');
             this.router.navigate(['crm/lead/list']);
           } else {
-            this.appSettingService.showError('Error Updating Lead');
+            this.appSettingService.showError(resp.message || 'Internal Server Error');
           }
         },
         (error) => {
-          console.error('Error Updating Lead', error)
+          console.error('leadUpdate', error)
         }
       )
     } else {
       this.leadService.createNewLead(payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Lead Created Successfully');
+            this.appSettingService.showSuccess(resp.message || 'Lead Created Successfully');
             this.router.navigate(['crm/lead/list']);
           } else {
-            this.appSettingService.showError('Error Creating Lead');
+            this.appSettingService.showError(resp.message || "Internal Server Error");
           }
         },
         (error) => {
-          console.error('Error Creating Lead', error)
+          console.error('leadCreate', error)
         }
       )
     }
@@ -426,7 +427,6 @@ export class LeadComponent implements OnInit {
     }).subscribe(({ companies}) => {
       this.companyList = companies.data;
       // this.countryList = countries
-      console.log(this.countryList);
     })
     this.dropdownStore.loadCountries()
   }
@@ -634,19 +634,43 @@ export class LeadComponent implements OnInit {
     modalRef.componentInstance.documentSid = this.PreCustomerMasterSid;
   }
 
-  openEDoc() {
-    if (!this.leadData) return;
-    const modalRef = this.modalService.open(EdocComponent, {
-      size: 'xl',
-      centered: true,
-      backdrop: 'static',
-    });
-    modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
-      if(data){
-        this.modalService.dismissAll();
-      }
-    });
+openEDoc() {
+  console.log('openEDoc clicked');
+
+  if (!this.leadData) return;
+
+  // Permission check before opening modal
+  if (!this.hasPermission('Edoc')) {
+    this.appSettingService.showWarning('You do not have permission to access Edoc.');
+    return;
   }
+
+  const modalRef = this.modalService.open(EdocComponent, {
+    size: 'xl',
+    centered: true,
+    backdrop: 'static',
+  });
+
+  // ✅ Pass data to EdocComponent here
+  modalRef.componentInstance.screenName = 'Edoc';
+ modalRef.componentInstance.formData = this.leadData; // or any object
+  modalRef.componentInstance.resetTrigger = false;
+  modalRef.componentInstance.componentData = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.PreCustomerMasterSid
+  }
+
+  // Listen for close event
+  modalRef.componentInstance.closeModal.subscribe((data: boolean) => {
+    if (data) {
+      this.modalService.dismissAll();
+    }
+  });
+}
+
+
 
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()

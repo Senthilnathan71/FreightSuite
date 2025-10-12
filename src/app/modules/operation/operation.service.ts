@@ -492,6 +492,15 @@ getAllPorts() {
       })
     );
   }
+  
+  getCustomerByItsType(payload: any) {
+    return this.http.post<{ data: any[] }>('customer/customer_type/filter', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
   getAllAgents(CompanyMasterSid: number) {
     return this.http.post('customer/agent',{CompanyMasterSid}).pipe(
       map((resp: any) => {
@@ -618,6 +627,22 @@ searchInvoices(payload: any) {
       })
     );
   }
+
+sendInvoiceEmail(payload: any) {
+  return this.http.post<{ status: boolean; message: string; data: any }>('invoice/send-email', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+getCountryById(CountryMasterSid: number) {
+  return this.http.get<{ status: boolean; data: any }>(`country/${CountryMasterSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
   getAllCharges(CompanyMasterSid: number) {
     return this.http.post('charge',{ CompanyMasterSid }).pipe(
       map((resp: any) => {
