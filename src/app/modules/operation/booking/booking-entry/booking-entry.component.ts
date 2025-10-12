@@ -5,7 +5,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, delay, firstValueFrom, forkJoin, of, tap } from 'rxjs';
+import { catchError, delay, firstValueFrom, forkJoin, of, Subject, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -39,6 +39,7 @@ import { TaxCalculationService, BookingRateDetails } from '../../services/tax-ca
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -104,7 +105,7 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
     |--------------------------------------------------
   */
 
-
+  private destroy$ = new Subject<void>();
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
@@ -200,7 +201,8 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   isShipperOther :boolean
   private isManualFreightChange = false;
   decimalAfterPrecision = 3;
-  
+  currentCompanyBranches : any[] = [];
+  measurementUnitList : any[] = [];
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
@@ -240,6 +242,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Product Part
   productDataLength: number;
+  digitsAfterDecimal = 3;
   page = 1;
   pageSize = 5;
   currentProductIndex: number;
@@ -358,6 +361,17 @@ dataFromQuotation:any
     displayLabels: ['Code', 'Name', 'Size'],
     labelFields: ['ContainerName']
   }
+  uomLookupConfig = {
+    displayFields: ['UOMCode', 'UOMName'],
+    displayLabels: ['Code', 'Name'],
+    labelFields: ['UOMCode']
+  }
+
+  imcoLookupConfig = {
+    displayFields: ['ImcoName', 'ImcoUn','PackingGroup'],
+    displayLabels: ['Name', 'UN No', 'Packing Group'],
+    labelFields: ['ImcoClass']
+  }
 
 
   /**
@@ -379,7 +393,8 @@ dataFromQuotation:any
     private spinner: NgxSpinnerService,
     private taxCalculationService: TaxCalculationService,
     private leadService: LeadService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    public dropdownStore: DropdownStore
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -445,7 +460,11 @@ dataFromQuotation:any
   ngOnInit(): void {
   this.userData = this.appSettingService.getDecryptedUserProfile();
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+  this.currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.getCurrentCompanyBranches();
+  console.log("these are current Company branches", this.currentCompanyBranches);
 
   this.filterOption = {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -470,8 +489,8 @@ dataFromQuotation:any
   // Load lookups first
   this.loadHeaderLookups().subscribe(() => {
     this.loadCargoLookups();
+    this.loadProductLookups();
     this.loadOtherLookups();
-    this.initializeYardCFSData(); 
 
     this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
     this.autoSetFreightTerms(incoTerm);
@@ -508,6 +527,12 @@ dataFromQuotation:any
       });
     }
   });
+}
+
+getCurrentCompanyBranches(){
+  const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+  const currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
+  this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
 }
 
   /**
@@ -548,7 +573,7 @@ dataFromQuotation:any
 
       VesselName: [null],
       VoyageMasterSid: [null],
-      VoyageNo: [null],
+      VoyageNo: [{value : null,disabled : true}],
       ETA: [{ value: '', disabled: true }],
       ETD: [{ value: '', disabled: true }],
       POO: [null],
@@ -712,7 +737,7 @@ dataFromQuotation:any
   createBookingProductGroup(data?: any): FormGroup {
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
-      ProductName: [data?.ProductName || ''],
+      ProductName: [data?.ProductName || null],
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
@@ -733,6 +758,11 @@ dataFromQuotation:any
     return productForm;
   }
 
+  addProduct(){
+    const formGroup = this.createBookingProductGroup();
+    this.bookingProducts.push(formGroup);
+  }
+
   createBookingConnectionGroup(data?: any): FormGroup {
     const connectionForm = this.fb.group({
       BookingConnectionSid: [data?.BookingConnectionSid || null],
@@ -750,67 +780,53 @@ dataFromQuotation:any
   /**
    *  Load Lookups
   */
+ 
 
   loadHeaderLookups() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
-      allMasters: this.operationService.getBookingHeaderLookups(this.filterOption).pipe(catchError(err => of( {departments: [],vessels: [], ports: [], incos: [] , country : Object }))),
-      customerMaster: this.operationService.getAllCustomerRelatedLookups(this.filterOption).pipe(catchError(err => of({ customers: [], salesmans: [], shippers: [], consignees: [], agents: [], carriers: [], forwarder: [], notify: [], yard: [], cFS: []  }))),
-    }).pipe(tap(({ allMasters, customerMaster}) => {
-      this.departmentList = allMasters.departments;
-      this.customerList = customerMaster.customers;
-      this.salesmanList = customerMaster.salesmans;
-      this.shipperList = customerMaster.shippers;
-      this.filteredShipperList = customerMaster.shippers;
-      // this.filteredShipperList.push({CustomerName: 'Other', CustomerAddress1: ''});
-      this.consigneeList = customerMaster.consignees;
-      this.filteredConsigneeList = customerMaster.consignees;
-      this.agentList = customerMaster.agents;
-      this.carrierList = customerMaster.carriers;
-      this.forwarderList = customerMaster.forwarder;
-      this.notifyList = customerMaster.notify;
-      this.yardlist = customerMaster.yards || [];
-      this.cfslist = customerMaster.cfs || [];
-      this.vesselList = allMasters.vessels;
-      this.portList = (allMasters.ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
-      console.log(this.portList);
-      this.incoList = allMasters.incos;
-      this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
-      console.log('Yard/CFS data loaded:', {
-      yardCount: this.yardlist.length,
-      cfsCount: this.cfslist.length
-    });
+      departments : this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
+      vessels : this.operationService.getAllVessels().pipe(catchError(err => of([]))),
+      ports : this.operationService.getAllPorts().pipe(catchError(err => of([]))),
+      incos : this.operationService.getAllINCO().pipe(catchError(err => of([]))),
+
+      customers : this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
+      salesmans : this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
+      shippers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['shipper']}).pipe(catchError(err => of([]))),
+      consignees : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['consignee']}).pipe(catchError(err => of([]))),
+      agents : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['agent']}).pipe(catchError(err => of([]))),
+      carriers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['carrier']}).pipe(catchError(err => of([]))),
+      forwarder : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['forwarder']}).pipe(catchError(err => of([]))),
+      notify : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['notify']}).pipe(catchError(err => of([]))),
+      yard : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['yard']}).pipe(catchError(err => of([]))),
+      cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['cFS']}).pipe(catchError(err => of([]))),
+      userCountry : this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
+
+    }).pipe(tap(({ departments, vessels , ports , incos ,customers , salesmans , shippers , consignees , agents , carriers , forwarder , notify , yard , cfs , userCountry }) => {
+      this.departmentList = departments.data;
+      this.vesselList = vessels.data;
+      this.portList = (ports.data || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
+      this.incoList = incos.data;
+
+
+      this.customerList = customers;
+      this.salesmanList = salesmans;
+      this.shipperList = shippers.data;
+      this.filteredShipperList = shippers.data;
+      this.consigneeList = consignees.data;
+      this.filteredConsigneeList = consignees.data;
+      this.agentList = agents.data;
+      this.carrierList = carriers.data;
+      this.forwarderList = forwarder.data;
+      this.notifyList = notify.data;
+      this.yardlist = yard.data;
+      this.cfslist = cfs.data;
+
+      
+      this.countryOfCompany = (userCountry.countryCode).trim().toLowerCase();
     }))
   }
- initializeYardCFSData() {
-  console.log('Initializing Yard/CFS Data:', {
-    yardlist: this.yardlist,
-    cfslist: this.cfslist
-  });
 
-  // Safely initialize arrays if they are undefined
-  const yardList = (this.yardlist || []).map(item => ({
-      ...item,
-      type: 'yard',
-      displayName: `${item.CustomerName || item.name || 'Unknown'} (Yard)`,
-      // Ensure we have the required properties
-      CustomerName: item.CustomerName || item.name || 'Unknown Yard',
-      CustomerAddress1: item.CustomerAddress1 || item.Address || ''
-  }));
-
-  const cfsList = (this.cfslist || []).map(item => ({
-      ...item,
-      type: 'cfs', 
-      displayName: `${item.CustomerName || item.name || 'Unknown'} (CFS)`,
-      // Ensure we have the required properties
-      CustomerName: item.CustomerName || item.name || 'Unknown CFS',
-      CustomerAddress1: item.CustomerAddress1 || item.Address || ''
-  }));
-
-  this.yardCFSList = [...yardList, ...cfsList];
-  console.log('YardCFSList after initialization:', this.yardCFSList);
-  
-   
-}
   loadCargoLookups() {
     forkJoin({
       containerTypes: this.operationService.getAllContainerTypes().pipe(catchError(err => of({ data: [] }))),
@@ -840,12 +856,15 @@ dataFromQuotation:any
 
   loadProductLookups() {
     forkJoin({
-      allMasters: this.operationService.getAllBookingProductLookups(this.filterOption).pipe(catchError(err => of( { products: [], packageTypes: [], imcos: [], uoms: [] }))),
-    }).subscribe(({ allMasters }) => {
-      this.productList = allMasters.products;
-      this.packageTypeList = allMasters.packageTypes;
-      this.imcoList = allMasters.imcos;
-      this.uomList = allMasters.uoms;
+      products : this.operationService.getAllProducts(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
+      packageTypes : this.operationService.getUOMsByType('P').pipe(catchError(err => of([]))),
+      imcos : this.operationService.getAllIMCO().pipe(catchError(err => of([]))),
+      uoms : this.operationService.getUOMsByType('M').pipe(catchError(err => of([]))),
+    }).subscribe(({ products , packageTypes , imcos , uoms }) => {
+      this.productList = products.data;
+      this.packageTypeList = packageTypes.data;
+      this.imcoList = imcos.data;
+      this.uomList = uoms.data;
       this.productLookupsLoaded = true;
     })
   }
@@ -1159,7 +1178,7 @@ patchBookingFromQuotation(data: any) {
 
 
   onSubmit() {
-    console.log('Submit triggered');
+    console.log('Submit triggered',this.bookingForm.value);
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
@@ -1451,26 +1470,26 @@ patchBookingFromQuotation(data: any) {
     console.log(exportImportType);
     if (exportImportType === "Export") {
       // Handle Export logic
-      const customerName = this.b['CustomerName']?.value;
+      const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
 
-      if (!customerName) {
+      if (!CustomerBranchSid) {
         this.b['ShipperName']?.setValue(null);
         this.b['ShipperAddress']?.setValue('');
         this.onShipperChange();
         return;
       }
 
-      const shipperExist = this.shipperList.find(s => s.CustomerName === customerName);
-      const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerName === customerName);
+      const shipperExist = this.shipperList.find(s => s.CustomerBranchSid === CustomerBranchSid);
+      const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerBranchSid === CustomerBranchSid);
 
       if(shipperExist && shipperExistInFiltered) {
         this.b['ShipperName']?.setValue(shipperExistInFiltered.CustomerName);
-        this.b['ShipperAddress']?.setValue(shipperExistInFiltered.CustomerAddress1);
+        this.b['ShipperAddress']?.setValue(shipperExistInFiltered.Address);
         this.onShipperChange(shipperExistInFiltered);
         this.onConsigneeChange();
       } else if (shipperExist && !shipperExistInFiltered) {
-        this.b['ShipperName']?.setValue(customerName);
-        this.b['ShipperAddress']?.setValue(shipperExist.CustomerAddress1);
+        this.b['ShipperName']?.setValue(shipperExist.CustomerName);
+        this.b['ShipperAddress']?.setValue(shipperExist.Address);
         this.b['ConsigneeName']?.setValue(null);
         this.b['ConsigneeAddress']?.setValue('');
         this.onShipperChange(shipperExist);
@@ -1485,26 +1504,26 @@ patchBookingFromQuotation(data: any) {
 
     if (exportImportType === "Import") {
       // Handle Import logic
-      const customerName = this.b['CustomerName']?.value;
+      const customerBranchSid = this.b['CustomerBranchSid']?.value;
 
-      if (!customerName) {
+      if (!customerBranchSid) {
         this.b['ConsigneeName']?.setValue(null);
         this.b['ConsigneeAddress']?.setValue('');
         this.onConsigneeChange();
         return;
       }
 
-      const consigneeExist = this.consigneeList.find(c => c.CustomerName === customerName);
-      const consigneeExistInFiltered = this.filteredConsigneeList.find(c => c.CustomerName === customerName);
+      const consigneeExist = this.consigneeList.find(c => c.CustomerBranchSid === customerBranchSid);
+      const consigneeExistInFiltered = this.filteredConsigneeList.find(c => c.CustomerBranchSid === customerBranchSid);
 
       if (consigneeExist && consigneeExistInFiltered) {
         this.b['ConsigneeName']?.setValue(consigneeExistInFiltered.CustomerName);
-        this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.CustomerAddress1);
+        this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.Address);
         this.onConsigneeChange(consigneeExistInFiltered);
         this.onShipperChange();
       } else if(consigneeExist && !consigneeExistInFiltered) {
-        this.b['ConsigneeName']?.setValue(customerName);
-        this.b['ConsigneeAddress']?.setValue(consigneeExist.CustomerAddress1);
+        this.b['ConsigneeName']?.setValue(consigneeExist.CustomerName);
+        this.b['ConsigneeAddress']?.setValue(consigneeExist.Address);
         this.b['ShipperName']?.setValue(null);
         this.b['ShipperAddress']?.setValue('');
         this.onConsigneeChange(consigneeExist);
@@ -1544,7 +1563,7 @@ patchBookingFromQuotation(data: any) {
   }
 
   setAddress(controlName: string, item: any) {
-    this.b[controlName]?.setValue(item ? item.CustomerAddress1 : '')
+    this.b[controlName]?.setValue(item ? item.Address : '')
   }
 
   handlePOLChange(selectedPort: any) {
@@ -1558,7 +1577,7 @@ patchBookingFromQuotation(data: any) {
     }
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
     this.b['ETA']?.setValue(new Date(selectedPort.ETA));
-    this.getVesselBasedOnPorts();
+    this.getVesselVoyBasedOnPorts();
   }
 
   handlePODChange(selectedPort: any) {
@@ -1575,7 +1594,7 @@ patchBookingFromQuotation(data: any) {
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
     this.b['FPD']?.setValue(selectedPort.PortCode);
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
-    this.getVesselBasedOnPorts();
+    this.getVesselVoyBasedOnPorts();
   }
 
   handleFPODChange(port){
@@ -1586,15 +1605,21 @@ patchBookingFromQuotation(data: any) {
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
   }
 
-  onVesselChange(vessel: any) {
-    if (!vessel) {
-      this.voyageList = [];
-      this.b['VoyageNo']?.setValue(null);
-      this.b['ETA'].setValue('');
-      this.b['ETD'].setValue('');
+  onVesselChange(voyage: any) {
+    console.log(voyage);
+    if (!voyage) {
+      this.bookingForm.patchValue({
+        VoyageNo : null,
+        ETA : '',
+        ETD : ''
+      })
       return;
     }
-    this.getVoyageForPortsAndVessels();
+    this.bookingForm.patchValue({
+      VoyageNo : voyage.VoyageNo,
+      ETA : new Date(voyage.ETA),
+      ETD : new Date(voyage.ETD)
+    })
   }
 
   onVoyageChange(voyage: any) {
@@ -1615,17 +1640,31 @@ patchBookingFromQuotation(data: any) {
     this.minStartDate = new Date(podETA);
   }
 
-  getVesselBasedOnPorts() {
-    // const POO = this.b['POO']?.value;
+  getVoyageTypeBasedOnDept(deptId:number){
+    const dept = this.departmentList.find(dept => dept.DepartmentMasterSid === deptId);
+    const deptType = dept?.departmentType;
+    switch(deptType){
+      case 'Sea':
+        return 'Sea';
+      case 'Air':
+        return 'Air';
+      case 'Transport':
+        return 'Road';
+      default:
+        return 'Sea';
+    }
+  }
+
+  getVesselVoyBasedOnPorts() {
     const POL = this.b['POL']?.value;
     const POD = this.b['POD']?.value;
-    // const FPOD = this.b['FPD']?.value;
-    const MovementType = this.selectedDepartment?.departmentType;
+    const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    if (!POLSid || !PODSid) return;
-    const payload = {  POL: POLSid, POD: PODSid, MovementType: MovementType };
-    this.operationService.getVesselsBasedOnPorts(payload).subscribe(
+    if (!POLSid || !PODSid || !voyageType) return;
+    const payload = {  POL: POLSid, POD: PODSid, segment : voyageType };
+
+    this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.headerVesselList = resp.data;
@@ -1711,32 +1750,76 @@ patchBookingFromQuotation(data: any) {
     this.productForm.get('PkgGroup')?.setValue(product.PackingGroup);
   }
 
-  deleteBookingProduct(productIndex: number, BookingProductSid?: number) {
-    const productToDelete = this.slicedProductArr[productIndex];
-    const realIndex = this.bookingProducts.controls.indexOf(productToDelete);
+  onImcoChange(productIndex:number,item:any){
+    console.log(item);
+    const productForm = this.bookingProducts.at(productIndex) as FormGroup;
+    if(!item){
+      productForm.get('UnNo')?.setValue("");
+      productForm.get('PkgGroup')?.setValue("");
+      return;
+    }
+    productForm.get('UnNo')?.setValue(item.ImcoUn);
+    productForm.get('PkgGroup')?.setValue(item.PackingGroup);
+  }
 
+   onHazChange(productIndex:number,event:any){
+      const element = event.target as HTMLInputElement;
+      const control = this.bookingProducts.at(productIndex).get('IsHaz');
+      if(event instanceof KeyboardEvent){
+        element.checked = !element.checked;
+      }
+      control.setValue(element.checked);
+      this.toggleHazProduct(productIndex);
+  }
+
+  toggleHazProduct(productIndex: number) {
+    const isHaz = this.bookingProducts.at(productIndex).get('IsHaz')?.value;
+    console.log(isHaz);
+    if (isHaz) {
+      this.bookingProducts.at(productIndex).get('ImcoClass')?.enable();
+      this.bookingProducts.at(productIndex).get('PkgGroup')?.enable();
+      this.bookingProducts.at(productIndex).get('UnNo')?.enable();
+      this.bookingProducts.at(productIndex).get('ImcoClass')?.setValidators(Validators.required);
+      this.bookingProducts.at(productIndex).get('PkgGroup')?.setValidators(Validators.required);
+      this.bookingProducts.at(productIndex).get('UnNo')?.setValidators(Validators.required);
+    } else {
+      this.bookingProducts.at(productIndex).get('ImcoClass')?.setValue(null);
+      this.bookingProducts.at(productIndex).get('UnNo')?.setValue('');
+      this.bookingProducts.at(productIndex).get('PkgGroup')?.setValue('');
+      this.bookingProducts.at(productIndex).get('ImcoClass')?.clearValidators();
+      this.bookingProducts.at(productIndex).get('ImcoClass')?.disable();
+      this.bookingProducts.at(productIndex).get('UnNo')?.clearValidators();
+      this.bookingProducts.at(productIndex).get('UnNo')?.disable();
+      this.bookingProducts.at(productIndex).get('PkgGroup')?.clearValidators();
+      this.bookingProducts.at(productIndex).get('PkgGroup')?.disable();
+    }
+  }
+
+  deleteBookingProduct(productIndex: number, BookingProductSid?: number) {
+    const productToDelete = this.bookingProducts.at(productIndex);
     if (BookingProductSid) {
       this.operationService.deleteBookingProduct(BookingProductSid).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.bookingProducts.removeAt(realIndex);
+            this.bookingProducts.removeAt(productIndex);
             this.productDataLength = this.bookingProducts.length;
             this.appSettingService.showSuccess('Product Deleted Successfully');
-            this.adjustPageAfterDelete();
-            this.updateProductPagination();
+            // this.adjustPageAfterDelete();
+            // this.updateProductPagination();
             this.handleProductRelatedCalculation();
           } else {
             this.appSettingService.showError("Error deleting product.");
           }
         })
-    } else {
-      this.bookingProducts.removeAt(realIndex);
+      } else {
+      this.bookingProducts.removeAt(productIndex);
       this.productDataLength = this.bookingProducts.length;
-      this.adjustPageAfterDelete();
+      this.appSettingService.showSuccess('Product Deleted Successfully');
+      // this.adjustPageAfterDelete();
       this.handleProductRelatedCalculation();
     }
     this.bookingProducts.updateValueAndValidity();
-    this.updateProductPagination();
+    // this.updateProductPagination();
   }
 
   adjustPageAfterDelete() {
@@ -1770,19 +1853,23 @@ patchBookingFromQuotation(data: any) {
 
     let productValue = this.bookingProducts.getRawValue() || [];
     productValue.forEach(product => {
-      totalNoOfPkg += (Number(product.ExternlQty) || 0).toFixed(this.decimalAfterPrecision);
+      totalNoOfPkg += (Number(product.ExternlQty) || 0);
       totalGrossWeight += Number(product.GrossWeight) || 0;
       totalNetWeight += Number(product.NetWeight) || 0;
       totalVolume += Number(product.Volume) || 0;
     });
 
-    this.c['NoOfPackage']?.setValue(totalNoOfPkg);
+    this.c['NoOfPackage']?.setValue(Number(totalNoOfPkg.toFixed(this.decimalAfterPrecision)));
     this.c['NoOfPackage']?.disable();
-    this.c['GrossWeight']?.setValue(totalGrossWeight);
+
+    this.c['GrossWeight']?.setValue(Number(totalGrossWeight.toFixed(this.decimalAfterPrecision)));
+    this.c['GrossWeight']?.markAsTouched();
     this.c['GrossWeight']?.disable();
-    this.c['NetWeight']?.setValue(totalNetWeight);
+
+    this.c['NetWeight']?.setValue(Number(totalNetWeight.toFixed(this.decimalAfterPrecision)));
     this.c['NetWeight']?.disable();
-    this.c['Volume']?.setValue(totalVolume);
+
+    this.c['Volume']?.setValue(Number(totalVolume.toFixed(this.decimalAfterPrecision)));
     this.c['Volume']?.disable();
   }
 
@@ -3260,7 +3347,10 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.availableCharges = [];
   }
   ngOnDestroy(){
-  this.dataFromQuotation = null;
+    this.dataFromQuotation = null;
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
   }
  getFilteredNominationList() {
     const isShipmentTypeChecked = this.bookingForm.get('ShipmentType')?.value;
@@ -3316,9 +3406,6 @@ onFreightTermsManualChange() {
 
 
   getBookingStatus(){
-    console.log(this.modeOfStatus);
-    console.log("Response",this.bookingHeader);
-    console.log("FormControl value",this.bookingForm.get('status')?.value)
     return this.bookingForm.get('status')?.value;
   }
 

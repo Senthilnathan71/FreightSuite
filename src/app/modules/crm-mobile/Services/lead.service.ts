@@ -178,6 +178,15 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
+  getCustomerByItsType(payload : any) {
+    return this.http.post<{ data: any[] }>('customer/customer_type/filter', payload).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAllCargoTypes(CompanyMasterSid:number) {
     return this.http.post('ff-enquiry/package-type',{CompanyMasterSid}).pipe(
       map((resp: any) => {
@@ -301,23 +310,23 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  getAllMeasurementUnit(){
-    return this.http.get<{ data: any }>(`uom/measurement-uom`).pipe(
-      map((resp:any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
+  // getAllMeasurementUnit(){
+  //   return this.http.get<{ data: any }>(`uom/measurement-uom`).pipe(
+  //     map((resp:any) => {
+  //       let response = resp;
+  //       return response;
+  //     })
+  //   )
+  // }
 
-  getAllWeightUnit(){
-    return this.http.get<{ data: any }>(`uom/weight-uom`).pipe(
-      map((resp:any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
+  // getAllWeightUnit(){
+  //   return this.http.get<{ data: any }>(`uom/weight-uom`).pipe(
+  //     map((resp:any) => {
+  //       let response = resp;
+  //       return response;
+  //     })
+  //   )
+  // }
   
   getUOMsByType(type:string){
     return this.http.get<{ data: any }>(`uom/uom-type?type=${type}`).pipe(

@@ -300,26 +300,32 @@
                   </aside> -->
 
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6 pe-0">
                     <div class="custom-form-group custom-form-group-select-date">
                       <!-- ng-select mode -->
-                      <div class="input-group" *ngIf="!this.b['isShipperFreeText']?.value">
-                        <ng-select [items]="filteredShipperList" bindLabel="CustomerName" formControlName="ShipperName" appendTo="body" bindValue="CustomerName"
+                      <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
+                        <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName" (itemSelected)="setAddress('ShipperAddress',$event); onShipperChange($event)"
+                        style="width : 100%;"
+                      >
+                      </dofi-searchable-dropdown>
+
+                        <!-- <ng-select [items]="filteredShipperList" bindLabel="CustomerName" formControlName="ShipperName" appendTo="body" bindValue="CustomerName"
                           (change)="setAddress('ShipperAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
-                          style="width: 80%;">
-                          <!-- Show only CustomerName in input box -->
+                          style="width: 100%;">
+
                           <ng-template ng-label-tmp let-item="item">
                             {{ item?.CustomerName }}
                           </ng-template>
                   
-                          <!-- Option display -->
                           <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.CustomerName }}</strong><br>
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                        </ng-select>
+                        </ng-select> -->
                   
                         <!-- Swap icon -->
                         <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
@@ -384,27 +390,31 @@
                     </div>
                   </aside> -->
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6 pe-0">
                     <div class="custom-form-group custom-form-group-select-date">
                       <!-- ng-select mode -->
-                      <div class="input-group" *ngIf="!this.b['isConsigneeFreeText']?.value">
-                        <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="ConsigneeName" appendTo="body" 
+                      <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
+                        <!-- <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="ConsigneeName" appendTo="body" 
                           (change)="setAddress('ConsigneeAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
-                          style="width: 80%;">
-                          <!-- Show only CustomerName in input box -->
+                         style="width: 100%;" >
                           <ng-template ng-label-tmp let-item="item">
                             {{ item?.CustomerName }}
                           </ng-template>
                   
-                          <!-- Option display -->
                           <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.CustomerName }}</strong><br>
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                        </ng-select>
-                  
+                        </ng-select> -->
+                        <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName" (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
+                        style="width : 100%;"
+                      >
+                      </dofi-searchable-dropdown>
+
                         <!-- Swap icon -->
                         <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry" >
@@ -459,27 +469,30 @@
                     </div>
                   </aside> -->
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6 pe-0">
                     <div class="custom-form-group custom-form-group-select-date">
                       <!-- ng-select mode -->
-                      <div class="input-group" *ngIf="!this.b['isNotifyFreeText']?.value">
-                        <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="Notify" appendTo="body" 
+                      <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
+                        <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="Notify" appendTo="body" 
                           (change)="setAddress('NotifyAddress',$event)" [clearable]="false" placeholder="" class="ng-select"
-                          style="width: 80%;">
-                          <!-- Show only CustomerName in input box -->
+                          style="width: 100%;">
                           <ng-template ng-label-tmp let-item="item">
                             {{ item?.CustomerName }}
                           </ng-template>
                   
-                          <!-- Option display -->
                           <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.CustomerName }}</strong><br>
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                        </ng-select>
-                  
+                        </ng-select> -->
+                        <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName" (itemSelected)="setAddress('NotifyAddress',$event)"
+                        style="width : 100%;"
+                      >
+                      </dofi-searchable-dropdown>
                         <!-- Swap icon -->
                         <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('Notify','isNotifyFreeText',$event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry" >
@@ -512,7 +525,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('DestinationAgent')?.value">
-                      <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="DestinationAgent" placeholder=""
                         (change)="setAddress('AgentAddress',$event)" appendTo="body">
 
@@ -522,7 +535,13 @@
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="agentList" formControlName="DestinationAgent" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerMasterSid" (itemSelected)="setAddress('AgentAddress',$event)"
+                        style="width : 100%;"
+                      >
+                      </dofi-searchable-dropdown>
 
                       <label for="text-input" class="input-label">Destination Agent <span
                           class="text-danger">*</span></label>
@@ -538,7 +557,7 @@
 
 
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6 pe-0">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="AgentAddress">
@@ -559,22 +578,26 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select-date">
                       <!-- ng-select mode -->
-                      <div class="input-group" *ngIf="!this.b['isCarrierFreeText']?.value">
-                        <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="CarrierName" appendTo="body" [clearable]="false" placeholder="" class="ng-select"
-                          style="width: 80%;">
-                          <!-- Show only CustomerName in input box -->
+                      <div class="d-flex align-items-center" *ngIf="!this.b['isCarrierFreeText']?.value">
+                        <!-- <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="CarrierName" appendTo="body" [clearable]="false" placeholder="" class="ng-select"
+                          style="width: 100%;">
                           <ng-template ng-label-tmp let-item="item">
                             {{ item?.CustomerName }}
                           </ng-template>
                   
-                          <!-- Option display -->
                           <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.CustomerName }}</strong><br>
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                        </ng-select>
+                        </ng-select> -->
+                        <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName"
+                        style="width : 100%;"
+                      >
+                      </dofi-searchable-dropdown>
                   
                         <!-- Swap icon -->
                         <button class="btn  bi bi-calendar3 " type="button" (click)="toggleInputType('Carrier','isCarrierFreeText',$event)">
@@ -766,10 +789,26 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('VesselName')?.value">
-                      <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
+                      <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
                         class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
                         (change)="onVesselChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <ng-select class="ng-select" [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName" (change)="onVesselChange($event)" formControlName="VesselName" placeholder="" [appendTo]="'body'">
+                        <ng-template ng-option-tmp let-item="item">
+                          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
+                                        {{item.VesselName}} / {{ item.VoyageNo }}
+                                    </div>
+                                    <div
+                                        style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
+                                        <div style="flex: 1; text-align: left;">
+                                            <div>ETA: {{ item.ETD | formatDate }}</div>
+                                        </div>
+                                        <div style="flex: 1; text-align: right;">
+                                            <div>ETD: {{ item.ETA | formatDate }}</div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
                       <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -1274,7 +1313,7 @@
           <div class="toolbar-left"></div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="openProductModal(productModal)">
+            <button class="table-action-btn primary" (click)="addProduct()">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">
@@ -1286,7 +1325,7 @@
               </button> -->
           </div>
         </div>
-        @if(productDataLength > 0) {
+        <!-- @if(productDataLength > 0) {
         <div class="modern-table-wrapper">
           <table class="modern-table">
             <thead>
@@ -1341,9 +1380,183 @@
         <div class="col-12">
           <div class="my-2 text-center">No Product added yet.</div>
         </div>
-        }
-      </div>
-    </div>
+        } -->
+        <div class="col-12 px-2" [formGroup]="detailForm">
+          <div class="table-responsive table-borderless" formArrayName="bookingProducts">
+            <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+              <thead>
+                <tr class="bg-info text-center">
+                  <th class="bg-transparent text-light" scope="col" *ngIf="bookingProducts.length > 0" width="2%">
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-160" scope="col" width="7%">Commodity
+                  </th>
+        
+                  <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">Shipping Bill No
+                    <span class="text-danger">*</span>
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">Shipping Bill Date
+                    <span class="text-danger">*</span>
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">Extl Pkg
+                    <span class="text-danger">*</span>
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">No of Pkg
+                    <span class="text-danger">*</span>
+                  </th>
+                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'FCL'){
+                  <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Gross Weight
+                    <span class="text-danger">*</span>
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Net Weight
+                    <span class="text-danger">*</span>
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">CBM <span
+                      class="text-danger">*</span></th>
+                  }
+                  @if(selectedFCLLCL === 'AIR'){
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Length</th>
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Width</th>
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Height</th>
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">UOM</th>
+                  }
+                  <th class="bg-transparent text-light" scope="col" width="5%">Is Haz</th>
+        
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Imco Class
+                  </th>
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">UN No</th>
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Pkg Group
+                  </th>
+        
+        
+        
+                </tr>
+              </thead>
+              <tbody>
+                @if(bookingProducts.length > 0){
+                <tr *ngFor="let product of bookingProducts.controls; let productIndex = index"
+                  [formGroupName]="productIndex" class="py-0">
+                  <td>
+                    <button class="btn btn-link text-danger py-0 px-1"
+                      (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)" ngbTooltip="Delete">
+                      <i class="fas fa-trash text-center"></i>
+                    </button>
+                  </td>
+                  <td>
+                    <dofi-searchable-dropdown [items]="productList" formControlName="ProductName" [placeholder]="''"
+                      [displayFields]="[ 'ProductCode','ProductName']" [displayLabels]="[ 'Code','Name']"
+                      [labelFields]="['ProductName']" [bindValue]="'ProductName'" style="padding: 0;">
+                    </dofi-searchable-dropdown>
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ShippingBillNo"
+                      [textWithNumbers]="100">
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d22="ngbDatepicker" [minDate]="minDate"
+                      (keydown.arrowDown)="d22.open()" (click)="d22.toggle()" formControlName="ShippingBillDate" />
+                    <button class="btn  bi bi-calendar3" (click)="d22.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
+                    </div>
+                    
+                  </td>
+        
+                  <td>
+                    <dofi-searchable-dropdown [items]="packageTypeList" formControlName="ExternaPkg" [placeholder]="''"
+                      [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
+                      [bindValue]="'UOMCode'" style="padding:0;">
+                    </dofi-searchable-dropdown>
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="ExternlQty" [onlyNumbers]=5 placeholder=""  (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
+                  </td>
+                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'FCL'){
+                  <td>
+        
+                    <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision
+                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder="" class="custom-input-field sm text-end">
+        
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="8"
+                      [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
+                      class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
+                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter] ="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
+                  </td>
+                  }
+        
+                  <!-- AIR Part -->
+                  @if(selectedFCLLCL === 'AIR'){
+                  <td>
+                    <input type="text" id="text-input" formControlName="Length" placeholder="" [onlyNumbers] class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Width" placeholder="" [onlyNumbers] class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Height" placeholder="" [onlyNumbers] class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <!-- <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="UOMName"
+                      bindValue="UOMMasterSid" appendTo="body"></ng-select> -->
+                    <dofi-searchable-dropdown [items]="measurementUnitList" formControlName="UomMasterSid" [placeholder]="''"
+                      [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
+                      [bindValue]="'UOMCode'" style="padding:0;">
+                    </dofi-searchable-dropdown>
+                  </td>
+                  }
+        
+                  <!-- Haz Part  -->
+                  <td>
+                    <div class="form-check ms-5">
+                      <input class="form-check-input" type="checkbox" id="leadOrCustomer" formControlName="IsHaz"
+                        (change)="onHazChange(productIndex,$event)"
+                        (keydown.enter)="onHazChange(productIndex,$event)">
+                    </div>
+                  </td>
+        
+                  <td>
+                      <dofi-searchable-dropdown [items]="imcoList" formControlName="ImcoClass" [placeholder]="''"
+                      [displayFields]="imcoLookupConfig.displayFields" [displayLabels]="imcoLookupConfig.displayLabels" [labelFields]="imcoLookupConfig.labelFields"
+                      [bindValue]="'ImcoName'" style="padding:0;">
+                    </dofi-searchable-dropdown>
+                    <!-- <ng-select class="" [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" appendTo="body"
+                      formControlName="ImcoClass" (change)="onImcoChange(productIndex,$event)"></ng-select> -->
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="UnNo" placeholder="" class="custom-input-field sm">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="PkgGroup" placeholder="" class="custom-input-field sm">
+                  </td>
+        
+        
+        
+        
+                </tr>
+                } @else {
+                <tr>
+                  <!-- <td>
+                    <button class="btn btn-link text-info py-0 me-1" (click)="addProduct()"
+                      ngbTooltip="Add Product">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </td> -->
+                  <td colspan="10">
+                    <div class="text-center">No Products added</div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        
+        </div>
+        </div>
+        </div>
 
 
     <div class="workspace-content" *ngIf="selectedTab === 'Others'">
@@ -1387,9 +1600,6 @@
             formControlName="YardCFS" 
             placeholder=""
             appendTo="body">
-            <ng-template ng-label-tmp let-item="item">
-                {{ item?.CustomerName || 'Select Yard' }}
-            </ng-template>
             <ng-template ng-option-tmp let-item="item">
                 <div>
                     <strong>{{ item.CustomerName }}</strong>
@@ -1415,9 +1625,6 @@
             formControlName="YardCFS" 
             placeholder=""
             appendTo="body">
-            <ng-template ng-label-tmp let-item="item">
-                {{ item?.CustomerName || 'Select CFS' }}
-            </ng-template>
             <ng-template ng-option-tmp let-item="item">
                 <div>
                     <strong>{{ item.CustomerName }}</strong>
@@ -1721,7 +1928,7 @@
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
-              <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
+              <ng-select class="ng-select" [items]="consigneeList" bindLabel="CustomerName" bindValue="CustomerName"
                 formControlName="SwitchBLConsignee" placeholder="" appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">BL Consignee<span class="text-danger"></span></label>
@@ -1730,9 +1937,10 @@
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="SwitchLocation">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="otherForm.get('SwitchLocation')?.value">
+              <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="SwitchLocation"> -->
+                <ng-select class="ng-select" [items]="currentCompanyBranches" bindLabel="branchName" bindValue="branchName" placeholder="" formControlName="SwitchLocation"></ng-select>
               <label for="text-input" class="input-label">Location<span class="text-danger"></span></label>
             </div>
           </aside>
