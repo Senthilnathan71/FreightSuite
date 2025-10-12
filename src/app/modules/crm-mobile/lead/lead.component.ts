@@ -156,7 +156,7 @@ export class LeadComponent implements OnInit {
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
-    console.info(this.currentBranch, this.userData, 'userData')
+    console.info(this.currentBranch,this.currentCompany, this.userData, 'userData')
 
 
 
