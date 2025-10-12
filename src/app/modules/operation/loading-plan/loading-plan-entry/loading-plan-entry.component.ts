@@ -278,6 +278,7 @@ export class LoadingPlanEntryComponent {
     const payload = {
       POL: this.selectedPOL.PortMasterSid,
       POD: this.selectedPOD.PortMasterSid,
+      segment : 'Sea'  // As Loading Plan is only for LCL Import and Export
     }
     this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
@@ -369,33 +370,38 @@ export class LoadingPlanEntryComponent {
     this.calculateTotal();
   }
 
-  handleMultipleVoyages(){
-    this.selectedBookings = this.selectedBookings.map(b => {
-      return {
-        ...b,
-        vslVoy : this.getVesselVoy(b),
-      }
-    })
-    const multipleVoyage = new Set(this.selectedBookings.map(b => {return `${b.VesselName}/${b.VoyageNo}`}));
-    this.hasMultipleVoyages = multipleVoyage.size > 1;
-    this.hasMultipleVoyages = this.selectedBookings.length > 1;
-    if(this.selectedBookings.length > 1){
-      this.multipleVoyageList = this.selectedBookings.map(b => {
-        return {
-          ...b,
-          vslVoy : this.getVesselVoy(b),
-        };
-      })
-    } else {
-      this.multipleVoyageList = [];
-    }
+  handleMultipleVoyages() {
+    this.selectedBookings.forEach(b => {
+      b.vslVoy = this.getVesselVoy(b);
+    });
 
-  }
-    
-  handleSelectedVoyage() {
-    if (this.multipleVoyageList.find(vsl => vsl === this.selectedVoyage) === undefined) {
+    const uniqueVoyages = new Map();
+    this.selectedBookings.forEach(b => {
+      // Use VoyageMasterSid as a unique key for the voyage object
+      if (b.VoyageMasterSid) {
+        uniqueVoyages.set(b.VoyageMasterSid, b);
+      }
+    });
+
+    this.multipleVoyageList = Array.from(uniqueVoyages.values());
+    this.hasMultipleVoyages = this.multipleVoyageList.length > 1;
+
+    // if the previously selected voyage is not in the new list of unique voyages, reset it
+    if (this.selectedVoyage && !this.multipleVoyageList.some(v => v.VoyageMasterSid === this.selectedVoyage.VoyageMasterSid)) {
       this.selectedVoyage = null;
     }
+
+    // If only one unique voyage remains, auto-select it.
+    if (this.multipleVoyageList.length === 1) {
+      this.selectedVoyage = this.multipleVoyageList[0];
+    }
+  }
+
+    
+  handleSelectedVoyage() {
+    // if (this.multipleVoyageList.find(vsl => vsl === this.selectedVoyage) === undefined) {
+    //   this.selectedVoyage = null;
+    // }
   }
 
   calculateTotal() {
@@ -487,7 +493,7 @@ export class LoadingPlanEntryComponent {
   loadContainerLookups() {
     forkJoin({
       containerTypes: this.operationService.getAllContainerTypes().pipe(catchError(err => of({ data: [] }))),
-      pkgTypes : this.operationService.getPackageTypeUOM().pipe(catchError(err => of({ data: [] }))),
+      pkgTypes : this.operationService.getUOMsByType('P').pipe(catchError(err => of({ data: [] })))
     }).subscribe(({ containerTypes , pkgTypes }) => {
       this.containerTypeList = containerTypes.data;
       this.packageTypeList = pkgTypes.data;

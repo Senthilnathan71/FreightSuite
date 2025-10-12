@@ -1,8 +1,11 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { NgbDateParserFormatter, NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
+import { GlobalDateFormatService } from "src/app/core/services/global-date-format.service";
 
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
+
+  private globalDateService = inject(GlobalDateFormatService);
 
   private readonly MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
                              'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -19,10 +22,12 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
   }
 
   format(date: NgbDateStruct | null): string {
-    if (!date) return '';
-    const day = String(date.day).padStart(2, '0');
-    const month = this.MONTHS[date.month - 1];
-    return `${day}-${month}-${date.year}`;
+    if (!date) {
+      return '';
+    }
+
+    const jsDate = new Date(date.year, date.month - 1, date.day);
+    return this.globalDateService.formatDate(jsDate);
   }
 }
 
