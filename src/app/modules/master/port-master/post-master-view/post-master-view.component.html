@@ -130,15 +130,15 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group custom-form-group-select">
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('ZoneMasterSid')?.value">
                                                 <!-- <ng-select class="ng-select" formControlName="ZoneMasterSid">
                                     <ng-option value="">Select Region</ng-option>
                                     @for (region of regionList; track region) {
                                     <ng-option [value]="region.ZoneMasterSid">{{ region.ZoneName }}</ng-option>
                                     }
                                 </ng-select> -->
-                                                <ng-select formControlName="ZoneMasterSid" [items]="regionList"
-                                                    bindLabel="ZoneName" bindValue="ZoneMasterSid" class="ng-select" [class.filled]="!!portForm.get('ZoneMasterSid')?.value">
+                                                <ng-select formControlName="ZoneMasterSid" [items]="dropdownStore.zone()"
+                                                    bindLabel="ZoneName" bindValue="ZoneMasterSid" class="ng-select">
 
                                                 </ng-select>
                                                 <label for="text-input" class="input-label">Region</label>

@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { NgbTooltip, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbModal, NgbModalRef, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'dofi-searchable-dropdown',
-  imports: [NgSelectModule, CommonModule, ReactiveFormsModule,NgbTooltipModule],
+  imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule],
   standalone: true,
   templateUrl: './searchable-dropdown.component.html',
   styleUrls: ['./searchable-dropdown.component.scss'],
@@ -23,30 +22,45 @@ import { NgSelectModule } from '@ng-select/ng-select';
 })
 export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccessor {
   @Input() items: any[] = [];
-  @Input() placeholder: string = '';
+  @Input() placeholder: string = 'Select an option';
   @Input() displayFields: string[] = [];
   @Input() displayLabels: string[] = [];
   @Input() bindLabel: string = '';
   @Input() labelFields: string[] = [];
   @Input() bindValue!: string;
   @Input() isLoading: boolean = false;
-  @Input() control: FormControl | null = null;  
+  @Input() control: FormControl | null = null;
+  @Input() disabled: boolean = false;
 
   @Output() itemSelected = new EventEmitter<any>();
 
   columnWidths: number[] = [];
   internalControl: FormControl = new FormControl(null);
+  searchControl: FormControl = new FormControl('');
+  filteredItems: any[] = [];
+  selectedItem: any = null;
+  modalRef: NgbModalRef | null = null;
 
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
 
-  constructor() {}
+  constructor(private modalService: NgbModal) {}
 
   ngOnInit() {
-   
     if (this.control) {
       this.internalControl = this.control;
     }
+    this.filteredItems = [...this.items];
+    
+    // Subscribe to search control changes
+    this.searchControl.valueChanges.subscribe(term => {
+      this.filterItems(term || '');
+    });
+
+    // Update selected item display when value changes
+    this.internalControl.valueChanges.subscribe(value => {
+      this.updateSelectedItem(value);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -54,13 +68,24 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       this.internalControl = this.control;
     }
 
-    if (changes['items'] || changes['displayFields'] || changes['displayLabels']) {
+    if (changes['items']) {
+      this.filteredItems = [...this.items];
       this.calculateColumnWidths();
+      this.updateSelectedItem(this.internalControl.value);
+    }
+
+    if (changes['displayFields'] || changes['displayLabels']) {
+      this.calculateColumnWidths();
+    }
+
+    if (changes['disabled']) {
+      this.setDisabledState(this.disabled);
     }
   }
 
   writeValue(value: any): void {
     this.internalControl.setValue(value, { emitEvent: false });
+    this.updateSelectedItem(value);
   }
 
   registerOnChange(fn: (value: any) => void): void {
@@ -79,27 +104,93 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     }
   }
 
-  onSelectionChange(item: any) {
+  openModal(content: any) {
+    if (this.disabled || this.internalControl.disabled) {
+      return;
+    }
+
+    this.searchControl.setValue('');
+    this.filteredItems = [...this.items];
+    this.modalRef = this.modalService.open(content, {
+      size: 'lg',
+      centered: true,
+      scrollable: true,
+      windowClass: 'compact-modal'
+    });
+    this.onTouched();
+  }
+
+  selectItem(item: any) {
+    this.selectedItem = item;
     const value = item ? item[this.bindValue] : null;
-    this.onChange(value); 
-    this.onTouched(); 
-    this.itemSelected.emit(item); 
+    this.internalControl.setValue(value);
+    this.onChange(value);
+    this.itemSelected.emit(item);
+    this.closeModal();
+  }
+
+  clearSelection() {
+    this.selectedItem = null;
+    this.internalControl.setValue(null);
+    this.onChange(null);
+    this.itemSelected.emit(null);
+  }
+
+  closeModal() {
+    if (this.modalRef) {
+      this.modalRef.close();
+      this.modalRef = null;
+    }
+  }
+
+  updateSelectedItem(value: any) {
+    if (value && this.items.length > 0) {
+      this.selectedItem = this.items.find(item => item[this.bindValue] === value) || null;
+    } else {
+      this.selectedItem = null;
+    }
+  }
+
+  getDisplayText(): string {
+    if (!this.selectedItem) {
+      return this.placeholder;
+    }
+    return this.getLabel(this.selectedItem);
   }
 
   getLabel(item: any): string {
-    if (!item || !this.labelFields?.length) {
-      return this.bindLabel ? item[this.bindLabel] : '';
+    if (!item) {
+      return '';
     }
-    if (!this.internalControl.value || this.internalControl.value !== item) {
+    if (this.labelFields?.length) {
       return this.labelFields.map((field) => item[field]).join(' - ');
     }
-    return this.displayFields.map((field) => item[field]).join(' - ');
+    if (this.bindLabel) {
+      return item[this.bindLabel];
+    }
+    return '';
+  }
+
+  filterItems(term: string) {
+    if (!term || term.trim() === '') {
+      this.filteredItems = [...this.items];
+      return;
+    }
+
+    const searchTerm = term.toLowerCase().trim();
+    const fieldsToSearch = this.labelFields?.length ? this.labelFields : this.displayFields;
+
+    this.filteredItems = this.items.filter(item => {
+      return fieldsToSearch.some((field) => {
+        const value = item[field] ? item[field].toString().toLowerCase().trim() : '';
+        return value.includes(searchTerm);
+      });
+    });
   }
 
   getColumnStyle(index: number): any {
-    const width = this.columnWidths[index] || 50;
-    const finalWidth = index === 0 ? Math.max(width, 75) : width;
-    return { width: `${finalWidth}px`, minWidth: `${finalWidth}px` };
+    const width = this.columnWidths[index] || 100;
+    return { width: `${width}px`, minWidth: `${width}px` };
   }
 
   calculateColumnWidths() {
@@ -129,24 +220,5 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     });
 
     this.columnWidths = this.columnWidths.map((width) => width + 24);
-  }
-
-  searchFn = (term: string, item: any): boolean => {
-    if (!term || !item) return true;
-
-    const searchTerm = term.toLowerCase().trim();
-    const fieldsToSearch = this.labelFields?.length ? this.labelFields : this.displayFields;
-
-    return fieldsToSearch.some((field) => {
-      const value = item[field] ? item[field].toString().toLowerCase().trim() : '';
-      return value.includes(searchTerm);
-    });
-  };
-  onOpen(){
-    this.onTouched();
-    if (this.control) {
-      this.control.markAsTouched();
-      this.control.markAsDirty();
-    }
   }
 }

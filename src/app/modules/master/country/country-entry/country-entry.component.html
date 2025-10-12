@@ -167,7 +167,7 @@
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!countryForm.get('ZoneMasterSid')?.value">
-                  <ng-select [items]="zones" bindLabel="ZoneName" bindValue="ZoneMasterSid"
+                  <ng-select [items]="dropdownStore.zone()" bindLabel="ZoneName" bindValue="ZoneMasterSid"
                     formControlName="ZoneMasterSid" placeholder="" [class.is-invalid]="
         countryForm.get('ZoneMasterSid')?.invalid &&
         (countryForm.get('ZoneMasterSid')?.touched || countryForm.get('ZoneMasterSid')?.dirty)
@@ -219,7 +219,7 @@
                     </ng-template>
                   </ng-select> -->
                   <dofi-searchable-dropdown
- [items]="currencies" 
+ [items]="dropdownStore.currencies()" 
   formControlName="CurrencyMasterSid"
   [placeholder]="''"
 [displayFields]="['currencyCode', 'currencyName']"
