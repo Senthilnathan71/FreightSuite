@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Optional, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, SimpleChanges } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -18,68 +18,47 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 @Component({
   selector: 'app-edoc',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule,NgbDatepickerModule,FeatherModule],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDatepickerModule, FeatherModule],
   templateUrl: './edoc.component.html',
   styleUrl: './edoc.component.scss',
-   providers: [
-      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
-      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-      CustomDatePipe
-    ],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe
+  ],
 })
-export class EdocComponent {
+export class EdocComponent implements OnInit, OnDestroy {
   @Input() screenName: string = "Edoc";
   @Output() closeModal = new EventEmitter<boolean>();
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: boolean = false;
   @Input() formData: any = null;
+  @Input() componentData: any = null;
   @Output() dataEmitter = new EventEmitter<any>();
   edocform: FormGroup;
-  minDate : NgbDateStruct;
+  minDate: NgbDateStruct;
   selectedFiles: File[] | null = null;
-currentCompany:any
-userData:any;
-currentBranch:any
-MenuMasterSid:any
-DocumentSid:number
-  constructor(private route:ActivatedRoute,private commonService:CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
-    this.initEdocForm();
+  currentCompany: any
+  userData: any;
+  currentBranch: any
+  constructor(private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.minDate = this.toNgbDateStruct(new Date())
   }
-  ngOnChanges(changes: SimpleChanges) {
-    this.route.paramMap.subscribe(params => {
-      this.DocumentSid = +params.get('id');
-    });
-    if (changes['resetTrigger'] && this.resetTrigger) {
-      this.resetForm();
-    }
-    if (changes['screenName'] && this.screenName) {
-      console.log(this.screenName, 'screenName')
-    }
 
-    if (changes['dataItems'] && this.dataItems && this.dataItems.length > 0) {
-      console.log(this.dataItems, 'dataItems')
-    }
-
-    console.log(this.screenName, 'screenName')
-    const userProfile = this.appSettingService.getDecryptedUserProfile();
-    if (userProfile) {
-      this.userData = userProfile;
-    }
-    const storedCompany = localStorage.getItem('selected-company');
-    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
-    const storedBranch = localStorage.getItem('selected-branch');
-    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
-    this.MenuMasterSid = localStorage.getItem('currentMenuId');
-
+  ngOnInit() {
+    console.log('📂 Edoc modal opened!');
+    console.log('📋 Received screenName:', this.screenName);
+    console.log('📋 Received formData:', this.formData);
+    console.log('📋 Received dataItems:', this.dataItems);
+    console.log('📋 Received ComponentData:', this.componentData);
+    this.initEdocForm();
   }
   initEdocForm() {
     this.edocform = this.fb.group({
       AttachDocmentNo: ['', Validators.required],
-      Date: ['', Validators.required],
-      file: ['', Validators.required],
+      DocumentDate: ['', Validators.required],
       Filename: ['', Validators.required],
-      Type: ['', Validators.required],
+      DocumentType: ['', Validators.required],
       ReceivedDate: ['', Validators.required],
       SentDate: ['', Validators.required],
       FollowupRequired: [false],
@@ -87,10 +66,10 @@ DocumentSid:number
       FollowupAction: [''],
       Remarks: [''],
       Status: ['', Validators.required],
-      CompanyMasterSid:Number(this.currentCompany),
-      BranchMasterSid: Number(this.currentBranch),
-      MenuMasterSid:Number(this.MenuMasterSid),
-      DocumentSid: Number(this.DocumentSid)
+      CompanyMasterSid: Number(this.componentData.CompanyMasterSid),
+      BranchMasterSid: Number(this.componentData.BranchMasterSid),
+      MenuMasterSid: Number(this.componentData.MenuMasterSid),
+      DocumentSid: Number(this.componentData.DocumentSid)
     });
     this.edocform.get('FollowupRequired')?.valueChanges.subscribe((isChecked) => {
       const dateCtrl = this.edocform.get('FollowupDate');
@@ -123,11 +102,6 @@ DocumentSid:number
 
     // Create FormData for file upload
     const formData = new FormData();
-
-    // Required fields
-    formData.append('componentName', 'Lead');
-    formData.append('DocumentSid', "74"); // or from your dynamic value
-
     // Append files
     this.selectedFiles.forEach((file) => {
       formData.append('files', file, file.name);
@@ -152,7 +126,7 @@ DocumentSid:number
     // Upload
     this.commonService.createEdoc(formData).subscribe(
       (res) => {
-        if (res && res.success) {
+        if (res) {
           this.appSettingService.showSuccess(
             res.message || 'Edoc created successfully'
           );
@@ -174,18 +148,41 @@ DocumentSid:number
 
 
 
- 
 
 
-onFileSelect(event: any) {
+
+  onFileSelect(event: any) {
     const files = event.target.files;
+
     if (files && files.length > 0) {
       this.selectedFiles = Array.from(files);
-      console.log('Files selected:', this.selectedFiles);
+
+      const firstFile = this.selectedFiles[0];
+
+      // Full filename with extension
+      const fullFileName = firstFile.name;
+
+      // Extract filename without extension
+      const fileNameOnly = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
+
+      // Extract extension (optional)
+      const extension = fullFileName.split('.').pop()?.toLowerCase();
+
+      // Patch to form
+      this.edocform.patchValue({
+        Filename: fileNameOnly,
+        DocumentType: extension
+      });
     } else {
       this.selectedFiles = null;
+      this.edocform.patchValue({
+        Filename: '',
+        Type: ''
+      });
     }
   }
+
+
 
   resetForm() {
     this.edocform.reset();
@@ -220,4 +217,9 @@ onFileSelect(event: any) {
   closeTemplate() {
     this.closeModal.emit(true);
   }
+
+  ngOnDestroy(): void {
+
+  }
+
 }

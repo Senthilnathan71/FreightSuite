@@ -1,7 +1,6 @@
 <form [formGroup]="edocform">
 
     <div class="row compact-form">
-        <!-- @if(screenName !== 'Edoc'){ -->
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 pb-2">
@@ -31,15 +30,7 @@
                 </div>
             </div>
         </div>
-        <!-- }@else {
-        <div class="ml-2">
-            <div class="modal-header modalHeaderpart">
-                <h5 class="modal-title text-white">Edoc</h5>
-                <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="closeTemplate()"></button>
-            </div>
-        </div>
-        } -->
+
         <div class="row m-1">
             <div class="col-md-6 pe-md-1 ps-0">
                 <div class="card h-100 mb-0">
@@ -54,7 +45,7 @@
                                     <label for="text-input" class="input-label">Document No <span
                                             class="text-danger"></span></label>
                                     <div class="error-message"
-                                        *ngIf="edocform.get('DocuNo')?.touched && edocform.get('DocuNo')?.hasError('required')">
+                                        *ngIf="edocform.get('AttachDocmentNo')?.touched && edocform.get('AttachDocmentNo')?.hasError('required')">
                                         Required
                                     </div>
                                 </div>
@@ -63,7 +54,7 @@
                                 <div class=" custom-form-group custom-form-group-select-date">
                                     <div class="input-group ">
                                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                            #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="Date"
+                                            #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="DocumentDate"
                                             [minDate]="minDate" (keydown.arrowDown)="d1.open()" container="body" />
                                         <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
@@ -112,14 +103,14 @@
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!edocform.get('Type')?.value">
-                                    <ng-select formControlName="Type" [items]="modeOfType" bindLabel="name"
+                                    [class.filled]="!!edocform.get('DocumentType')?.value">
+                                    <ng-select formControlName="DocumentType" [items]="modeOfType" bindLabel="name"
                                         bindValue="name">
 
                                     </ng-select>
                                     <label for="" class="input-label">Type <span class="text-danger"></span></label>
                                     <div class="error-message"
-                                        *ngIf="edocform.get('Type')?.touched && edocform.get('Type')?.hasError('required')">
+                                        *ngIf="edocform.get('DocumentType')?.touched && edocform.get('DocumentType')?.hasError('required')">
                                         Required
                                     </div>
                                 </div>

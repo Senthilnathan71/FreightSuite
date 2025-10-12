@@ -47,7 +47,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
     OnlyTextDirective,
     DatePipe,
     TextWithNumbersDirective,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    EdocComponent
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -127,7 +128,7 @@ export class LeadComponent implements OnInit {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
-
+MenuMasterSid:any
   leads = [{ id: 1, name: 'Lead 001' }]; // Initial lead
 
   constructor(
@@ -157,7 +158,7 @@ export class LeadComponent implements OnInit {
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     console.info(this.currentBranch, this.userData, 'userData')
-
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 
 
     // Subscribe to route params and load lead if ID exists
@@ -633,8 +634,8 @@ export class LeadComponent implements OnInit {
     modalRef.componentInstance.documentSid = this.PreCustomerMasterSid;
   }
 
-  openEDoc() {
-      console.log('openEDoc clicked'); // 👈 check this
+openEDoc() {
+  console.log('openEDoc clicked');
 
   if (!this.leadData) return;
 
@@ -650,6 +651,17 @@ export class LeadComponent implements OnInit {
     backdrop: 'static',
   });
 
+  // ✅ Pass data to EdocComponent here
+  modalRef.componentInstance.screenName = 'Edoc';
+ modalRef.componentInstance.formData = this.leadData; // or any object
+  modalRef.componentInstance.resetTrigger = false;
+  modalRef.componentInstance.componentData = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.PreCustomerMasterSid
+  }
+
   // Listen for close event
   modalRef.componentInstance.closeModal.subscribe((data: boolean) => {
     if (data) {
@@ -657,6 +669,7 @@ export class LeadComponent implements OnInit {
     }
   });
 }
+
 
 
   ngOnDestroy(): void {
