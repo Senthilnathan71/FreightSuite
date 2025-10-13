@@ -311,11 +311,11 @@ export class EnquiryEntryComponent implements OnInit {
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       BranchMasterSid : this.currentBranch?.BranchMasterSid
     }
-    this.dropdownStore.loadDepartments(CompanyMasterSid);
-    this.dropdownStore.loadPorts();
+    // this.dropdownStore.loadDepartments({CompanyMasterSid});
+    // this.dropdownStore.loadPorts();
     return forkJoin({
-      // departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of([]))),
-      // ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
+      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of([]))),
+      ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
       leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
@@ -323,10 +323,10 @@ export class EnquiryEntryComponent implements OnInit {
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
       products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
-    }).pipe(tap(({ customers, leads, incos, weightUnits, packageTypes, containerTypes, products }) => {
-      // this.departments = departments;
-      // this.ports = ports;
-      this.filteredPorts = [...this.dropdownStore.ports()];
+    }).pipe(tap(({ departments , ports , customers, leads, incos, weightUnits, packageTypes, containerTypes, products }) => {
+      this.departments = departments;
+      this.ports = ports.map(p => ({...p,Country : p.countryMaster?.countryName}));
+      this.filteredPorts = [...this.ports];
       this.customers = customers;
       this.leadList = leads.data;
       this.incoList = incos;
@@ -518,10 +518,10 @@ export class EnquiryEntryComponent implements OnInit {
 
 
     getFormattedPort(PortMasterSid) {
-    if (!PortMasterSid || PortMasterSid === undefined || this.dropdownStore.ports().length === 0) {
+    if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
       return '';
     }
-    const ourPort = this.dropdownStore.ports().find(p => p.PortMasterSid === PortMasterSid);
+    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
     return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
   }
 
@@ -705,7 +705,7 @@ ${this.userData.userName}`;
     const selectedDepartmentId = Number(event);
     this.rateRequestForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
 
-    const selectedDept = this.dropdownStore.department().find(
+    const selectedDept = this.departments.find(
       dept => dept.DepartmentMasterSid === selectedDepartmentId
     );
 
@@ -731,7 +731,7 @@ ${this.userData.userName}`;
       });
     });
 
-    this.filteredPorts = this.dropdownStore.ports().filter(port => {
+    this.filteredPorts = this.ports.filter(port => {
       if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
       return port.PortType === 'Sea';
     });
@@ -957,7 +957,7 @@ onSelectionChange(selectedItem: any) {
   }
 
     this.selectedDepartment = response.ShipmentType;
-    const selectedDept = this.dropdownStore.department().find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
+    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     if (selectedDept?.departmentType === "Sea") {
       this.selectedFCLLCL = selectedDept?.FCLLCL;
     } else {
@@ -1205,7 +1205,7 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
   routesArray.clear();
   this.filteredPOLPorts = [];
   this.filteredPODPorts = [];
-  this.filteredPorts = [...this.dropdownStore.ports()]; // reset filtered ports to full list
+  this.filteredPorts = [...this.ports]; // reset filtered ports to full list
   this.addRoute(); // adds one default route and one cargo row (same as init)
 
   // Reset the other form used on second tab
@@ -1268,7 +1268,7 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
       }
     });
 
-    const dept = this.dropdownStore.department().find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    const dept = this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
 
     let selectedFCLLCL;
     if (dept?.departmentType === "Sea") {
@@ -1358,11 +1358,11 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
 
   getFilteredPortsBySegment(): any[] {
     if (this.selectedFCLLCL === 'AIR') {
-      return this.dropdownStore.ports().filter(port => port.PortType === 'Air');
+      return this.ports.filter(port => port.PortType === 'Air');
     } else if (this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL') {
-      return this.dropdownStore.ports().filter(port => port.PortType === 'Sea');
+      return this.ports.filter(port => port.PortType === 'Sea');
     }
-    return this.dropdownStore.ports();
+    return this.ports;
   }
 
   statusRequiredValidator(control: AbstractControl): ValidationErrors | null {
@@ -1590,9 +1590,9 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
     const POD = routeForm.get('POD')?.value;
     const FPOD = routeForm.get('FDC')?.value;
     const portArray: String[] = [];
-    const POLName = this.dropdownStore.ports().find(p => p.PortMasterSid === POL)?.PortCode;
-    const PODName = this.dropdownStore.ports().find(p => p.PortMasterSid === POD)?.PortCode;
-    const FPODName = this.dropdownStore.ports().find(p => p.PortMasterSid === FPOD)?.PortCode;
+    const POLName = this.ports.find(p => p.PortMasterSid === POL)?.PortCode;
+    const PODName = this.ports.find(p => p.PortMasterSid === POD)?.PortCode;
+    const FPODName = this.ports.find(p => p.PortMasterSid === FPOD)?.PortCode;
     if (POLName && PODName) {
       portArray.push(POLName);
       portArray.push(PODName);

@@ -1280,7 +1280,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
       leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
-      // departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
+      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
       salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
@@ -1293,12 +1293,12 @@ private extractCargoData(enquiryCargo: any[]): any {
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ cargoTypes, carriers, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ departments , cargoTypes, carriers, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
       this.leadList = leads.data;
       this.customers = customers || [];
-      // this.departments = departments || [];
+      this.departments = departments || [];
       this.ports = (ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
       this.chargeMaster = masters.charges || [];
       this.currencyMaster = masters.currencies || [];
@@ -1335,7 +1335,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   patchValues(response: any) {
     
-    const selectedDept = this.dropdownStore.department().find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
+    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     if (selectedCustomer) {
       this.f['CustomerName']?.setValue(selectedCustomer?.CustomerName);
@@ -3024,7 +3024,7 @@ ${this.userData.userName}`;
       const departmentNames = charge.DepartmentMasterSid || []; 
 
       const fullDepartments = departmentNames
-        .map(name => this.dropdownStore.department().find(dept => dept.departmentName === name))
+        .map(name => this.departments.find(dept => dept.departmentName === name))
         .filter((dept): dept is any => Boolean(dept)); 
 
       return fullDepartments.some(dept => {
