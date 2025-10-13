@@ -33,32 +33,37 @@ export class EdocComponent implements OnInit, OnDestroy {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: boolean = false;
   @Input() formData: any = null;
-  @Input() componentData: any = null;
   @Output() dataEmitter = new EventEmitter<any>();
+
   edocform: FormGroup;
   minDate: NgbDateStruct;
   selectedFiles: File[] | null = null;
   currentCompany: any
   userData: any;
   currentBranch: any
+  componentData: any
   constructor(private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.minDate = this.toNgbDateStruct(new Date())
   }
+
 
   ngOnInit() {
     console.log('📂 Edoc modal opened!');
     console.log('📋 Received screenName:', this.screenName);
     console.log('📋 Received formData:', this.formData);
     console.log('📋 Received dataItems:', this.dataItems);
-    console.log('📋 Received ComponentData:', this.componentData);
-    this.initEdocForm();
+    this.componentData = this.commonService.documentData()
+    console.log(this.componentData, ' this.componentData')
+    this.initEdocForm()
+    this.loadEdocData()
+
   }
   initEdocForm() {
     this.edocform = this.fb.group({
       AttachDocmentNo: ['', Validators.required],
       DocumentDate: ['', Validators.required],
-      Filename: ['', Validators.required],
-      DocumentType: ['', Validators.required],
+      FileName: ['', Validators.required],
+      Documenttype: ['', Validators.required],
       ReceivedDate: ['', Validators.required],
       SentDate: ['', Validators.required],
       FollowupRequired: [false],
@@ -89,6 +94,35 @@ export class EdocComponent implements OnInit, OnDestroy {
       actionCtrl?.updateValueAndValidity();
     });
   }
+
+  loadEdocData() {
+    const payload = {
+      menuMasterSid: this.componentData.MenuMasterSid,
+      DocumentSid: this.componentData.DocumentSid
+    };
+
+    this.commonService.getExistingFile(payload).subscribe((res) => {
+      if (res) {
+        const type:any = this.modeOfType.filter(item=>item.name === res.DocumentType)
+        console.log(res,'getExistingFile')
+        this.edocform.patchValue({
+          AttachDocmentNo: res.AttachDocmentNo || '',
+          DocumentDate: res.DocumentDate ? this.toNgbDateStruct(new Date(res.DocumentDate)) : '',
+          Filename: res.FileName || '',           // ✅ changed here
+          DocumentType: type ? type.name : '',  // ✅ changed here
+          ReceivedDate: res.ReceivedDate ? this.toNgbDateStruct(new Date(res.ReceivedDate)) : '',
+          SentDate: res.SentDate ? this.toNgbDateStruct(new Date(res.SentDate)) : '',
+          FollowupRequired: res.FollowupRequire?.trim() === 'Y' || false, // ✅ changed here
+          FollowupDate: res.FollowupDate ? this.toNgbDateStruct(new Date(res.FollowupDate)) : '',
+          FollowupAction: res.FollowupAction || '',
+          Remarks: res.Remarks || '',
+          Status: res.status || 'A' // ✅ changed here
+        });
+
+      }
+    });
+  }
+
 
 
   onSubmit() {
@@ -172,12 +206,6 @@ export class EdocComponent implements OnInit, OnDestroy {
       this.edocform.patchValue({
         Filename: fileNameOnly,
         DocumentType: extension
-      });
-    } else {
-      this.selectedFiles = null;
-      this.edocform.patchValue({
-        Filename: '',
-        Type: ''
       });
     }
   }

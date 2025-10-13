@@ -28,6 +28,7 @@ import { LeadStatus } from 'src/app/common/helper';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { MasterService } from '../../master/master.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { CommonService } from 'src/app/common/common.service';
 
 
 @Component({
@@ -140,7 +141,8 @@ MenuMasterSid:any
     private route: ActivatedRoute,
     private router: Router,
     private modalService: NgbModal,
-    public dropdownStore:DropdownStore
+    public dropdownStore:DropdownStore,
+    private commonService: CommonService
   ) { }
 
   ngOnInit(): void {
@@ -177,6 +179,8 @@ MenuMasterSid:any
           this.filterStateByCountryId(this.userData)
         }
       }
+
+      
 
     });
 
@@ -655,12 +659,17 @@ openEDoc() {
   modalRef.componentInstance.screenName = 'Edoc';
  modalRef.componentInstance.formData = this.leadData; // or any object
   modalRef.componentInstance.resetTrigger = false;
-  modalRef.componentInstance.componentData = {
-    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+
+  const data:any={
+        CompanyMasterSid: this.currentCompany.CompanyMasterSid,
     BranchMasterSid: this.currentBranch.BranchMasterSid,
     MenuMasterSid : this.MenuMasterSid,
     DocumentSid: this.PreCustomerMasterSid
-  }
+      }
+
+      this.commonService.documentData.set(data)
+
+  
 
   // Listen for close event
   modalRef.componentInstance.closeModal.subscribe((data: boolean) => {
