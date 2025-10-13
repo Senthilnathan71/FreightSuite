@@ -92,25 +92,25 @@
                             <aside class="col-md-8">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="Filename">
+                                        formControlName="FileName">
                                     <label for="text-input" class="input-label">Flle Name <span
                                             class="text-danger"></span></label>
                                     <div class="error-message"
-                                        *ngIf="edocform.get('Filename')?.touched && edocform.get('Filename')?.hasError('required')">
+                                        *ngIf="edocform.get('FileName')?.touched && edocform.get('FileName')?.hasError('required')">
                                         Required
                                     </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
-                                    [class.filled]="!!edocform.get('DocumentType')?.value">
-                                    <ng-select formControlName="DocumentType" [items]="modeOfType" bindLabel="name"
+                                    [class.filled]="!!edocform.get('Documenttype')?.value">
+                                    <ng-select formControlName="Documenttype" [items]="modeOfType" bindLabel="name"
                                         bindValue="name">
 
                                     </ng-select>
                                     <label for="" class="input-label">Type <span class="text-danger"></span></label>
                                     <div class="error-message"
-                                        *ngIf="edocform.get('DocumentType')?.touched && edocform.get('DocumentType')?.hasError('required')">
+                                        *ngIf="edocform.get('Documenttype')?.touched && edocform.get('Documenttype')?.hasError('required')">
                                         Required
                                     </div>
                                 </div>
