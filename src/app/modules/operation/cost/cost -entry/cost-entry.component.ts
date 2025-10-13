@@ -1,6 +1,6 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
@@ -195,6 +195,7 @@ export class CostEntryComponent implements OnInit {
   }
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
+  private routeBookingHeaderSid: number | null = null;
 
   constructor(
     private modalService: NgbModal,
@@ -202,12 +203,22 @@ export class CostEntryComponent implements OnInit {
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private excelExportService: ExcelExportService,
-    private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+
+    // Extract BookingHeaderSid from route parameter
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.routeBookingHeaderSid = Number(params['id']);
+        console.log('BookingHeaderSid from route:', this.routeBookingHeaderSid);
+      }
+    });
+
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentCompany?.BranchMasterSid,
@@ -385,7 +396,7 @@ createRateFormGroup(data?: any): FormGroup {
 
 
   /**
-   * Get BookingHeaderSid from parent form or existing rates
+   * Get BookingHeaderSid from parent form, existing rates, or route parameter
    */
   getBookingHeaderSid(): number | null {
     // First try to get from parent form
@@ -399,6 +410,11 @@ createRateFormGroup(data?: any): FormGroup {
       if (firstRate.BookingHeaderSid) {
         return firstRate.BookingHeaderSid;
       }
+    }
+
+    // Third fallback - try to get from route parameter
+    if (this.routeBookingHeaderSid) {
+      return this.routeBookingHeaderSid;
     }
 
     return null;
