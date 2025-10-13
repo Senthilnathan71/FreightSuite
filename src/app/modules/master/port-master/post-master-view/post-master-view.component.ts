@@ -217,12 +217,13 @@ hasAnyDropdownPermission(): boolean {
   loadAllFields() {
     forkJoin({
       // countries: this.masterService.getAllCountry(),
-      regions: this.masterService.getAllZones()
-    }).subscribe(({  regions }) => {
+      // regions: this.masterService.getAllZones()
+    }).subscribe(({   }) => {
       // this.countryList = countries.data,
-        this.regionList = regions
+        // this.regionList = regions
     });
     this.dropdownStore.loadCountries();
+    this.dropdownStore.loadZones();
   }
 
   filterStateByCountry(country) {

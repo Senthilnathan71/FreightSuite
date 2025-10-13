@@ -179,9 +179,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
       this.checkPermissions();
     }
     // this.getAllCountries();
-    this.getAllState();
+    // this.getAllState();
     // this.loadCities();
-    this.dropdownStore.loadCountries();
     this.loadCountryAndStateData();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -225,6 +224,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
       });
     }
   }
+
 
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
@@ -541,13 +541,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
 
 
   loadCountryAndStateData() {
-    forkJoin({
-      // countries: this.masterService.getAllCountry(),
-      states: this.masterService.getAllState(),
-    }).subscribe(({  states }) => {
-      // this.countryList = countries.data;
-      this.stateList = states.data;
-    });
+    this.dropdownStore.loadStates();
     this.dropdownStore.loadCountries();
   }
 
@@ -921,11 +915,11 @@ export class CityComponent extends BaseListComponent implements OnInit {
   // }
 
 
-  getAllState() {
-    this.masterService.getAllState().subscribe((res) => {
-      this.stateList = res.data;
-    })
-  }
+  // getAllState() {
+  //   this.masterService.getAllState().subscribe((res) => {
+  //     this.stateList = res.data;
+  //   })
+  // }
 
   // resetPage(): void {
   //   this.filterValue = '';

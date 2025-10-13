@@ -55,7 +55,8 @@
 
   <!-- Tabs -->
   <div class="nav-pills-container">
-  <div class="nav-pills">
+  <div class="nav-pills d-flex align-items-center w-100">
+    <div class="pills-left d-flex flex-nowrap" style="flex:1;">
     <div class="nav-pill" *ngFor="let tab of tabs" 
          [class.active]="selectedTab === tab.name"
          [class.disabled]="!shouldShowTab(tab.name)"
@@ -65,6 +66,34 @@
       </div>
       <span class="pill-label">{{ tab.name }}</span>
       <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+    </div>
+    </div>
+    <div *ngIf="selectedTab === 'Branch'" class="pe-2">
+        <button class="btn btn-sm btn-info" (click)="addNewBranch()">
+        <i class="fas fa-plus"></i> Add Branch
+      </button>
+    </div>
+    <div *ngIf="selectedTab === 'Salesman'">
+         <button type="button" class="btn btn-sm btn-info" (click)="onAddSalesTeam()">
+          <i class="fas fa-plus me-1"></i> Add Salesman
+        </button>
+    </div>
+      <div *ngIf="selectedTab === 'Email'">
+          <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerEmail()"
+            [disabled]="!isEditMode">
+            <i class="fas fa-plus me-1"></i> Add Email
+          </button>
+    </div>
+     <div *ngIf="selectedTab === 'eLogin'">
+            <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerLogin()"
+            [disabled]="!isEditMode">
+            <i class="fas fa-plus me-1"></i> Add Login
+          </button>
+    </div>
+      <div *ngIf="selectedTab === 'Milestone'">
+           <button type="button" class="btn btn-sm btn-info" (click)="onAddMilestone()">
+          <i class="fas fa-plus me-1"></i> Add Milestone
+        </button>
     </div>
   </div>
 </div>
@@ -438,13 +467,13 @@
 
 <!-- BRANCH -->
 <ng-template #branchList>
-  <div class="toolbar-right1">
+  <!-- <div class="toolbar-right1">
     <div class="d-flex align-items-center gap-1">
       <button class="btn btn-sm btn-info" (click)="addNewBranch()">
         <i class="fas fa-plus"></i> Add Branch
       </button>
     </div>
-  </div>
+  </div> -->
 
 
   <div class="col-12">
@@ -1069,12 +1098,12 @@
     <div class="row">
       <div class="col-12">
         <!-- Add Login Button -->
-        <div class="d-flex justify-content-end align-items-center mb-1">
+        <!-- <div class="d-flex justify-content-end align-items-center mb-1">
           <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerLogin()"
             [disabled]="!isEditMode">
             <i class="fas fa-plus me-1"></i> Add Login
           </button>
-        </div>
+        </div> -->
 
         <!-- Table -->
         <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;"
@@ -1172,12 +1201,12 @@
     <div class="row">
       <div class="col-12">
         <!-- Add Email Button -->
-        <div class="d-flex justify-content-end align-items-center mb-1">
+        <!-- <div class="d-flex justify-content-end align-items-center mb-1">
           <button type="button" class="btn btn-sm btn-info dofi-max-w-120" (click)="onAddCustomerEmail()"
             [disabled]="!isEditMode">
             <i class="fas fa-plus me-1"></i> Add Email
           </button>
-        </div>
+        </div> -->
 
         <!-- Table -->
         <div class="table-responsive table-borderless" style="max-height: 400px; overflow-y: auto;"
@@ -1285,7 +1314,7 @@
 <!-- MILESTONE -->
 <ng-template #milestoneList>
   <form [formGroup]="customerForm" class="compact-form">
-    <div class="table-right1 mb-1">
+    <!-- <div class="table-right1 mb-1">
       <div class="d-flex justify-content-end align-items-end gap-1">
         <button type="button" class="btn btn-sm btn-info" (click)="onAddMilestone()">
           <i class="fas fa-plus me-1"></i> Add Milestone
@@ -1295,7 +1324,7 @@
 
 
 
-    </div>
+    </div> -->
     <div class="col-12">
       <div class="table-responsive table-borderless">
         <table class="table table-hover align-middle no-wrap  table-sm mb-1"
@@ -1448,7 +1477,7 @@
 <!-- SALESMAN -->
 <ng-template #salesmanList>
   <form [formGroup]="customerForm" class="compact-form">
-    <div class="table-right1 mb-1">
+    <!-- <div class="table-right1 mb-1">
       <div class="d-flex justify-content-end align-items-end gap-1">
         <button type="button" class="btn btn-sm btn-info" (click)="onAddSalesTeam()">
           <i class="fas fa-plus me-1"></i> Add Salesman
@@ -1458,7 +1487,7 @@
 
 
 
-    </div>
+    </div> -->
 
     <div class="col-12">
       <div class="table-responsive table-borderless" style="max-height: 300px; overflow-y: auto;">
