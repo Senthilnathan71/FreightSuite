@@ -33,25 +33,30 @@ export class EdocComponent implements OnInit, OnDestroy {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: boolean = false;
   @Input() formData: any = null;
-  @Input() componentData: any = null;
   @Output() dataEmitter = new EventEmitter<any>();
+
   edocform: FormGroup;
   minDate: NgbDateStruct;
   selectedFiles: File[] | null = null;
   currentCompany: any
   userData: any;
   currentBranch: any
+  componentData:any
   constructor(private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.minDate = this.toNgbDateStruct(new Date())
   }
+  
 
   ngOnInit() {
     console.log('📂 Edoc modal opened!');
     console.log('📋 Received screenName:', this.screenName);
     console.log('📋 Received formData:', this.formData);
     console.log('📋 Received dataItems:', this.dataItems);
-    console.log('📋 Received ComponentData:', this.componentData);
-    this.initEdocForm();
+    this.componentData = this.commonService.documentData()
+    console.log(this.componentData,' this.componentData')
+    this.initEdocForm()
+    this.loadEdocData()
+
   }
   initEdocForm() {
     this.edocform = this.fb.group({
@@ -88,6 +93,18 @@ export class EdocComponent implements OnInit, OnDestroy {
       dateCtrl?.updateValueAndValidity();
       actionCtrl?.updateValueAndValidity();
     });
+  }
+
+  loadEdocData(){
+    const payload = {
+      menuMasterSid:this.componentData.MenuMasterSid,
+      DocumentSid: this.componentData.DocumentSid
+    }
+    this.commonService.getExistingFile(payload).subscribe((res)=>{
+      if(res){
+        console.log(res,'loadEdocData')
+      }
+    })
   }
 
 
