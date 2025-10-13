@@ -257,8 +257,6 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                template: 'link',
-                width: '180px',
                 dataType: 'string'
             },
             {

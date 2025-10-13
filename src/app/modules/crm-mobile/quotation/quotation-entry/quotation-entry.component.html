@@ -383,7 +383,7 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('DepartmentMasterSid')?.value">
-                          <ng-select formControlName="DepartmentMasterSid" [items]="dropdownStore.department()"
+                          <ng-select formControlName="DepartmentMasterSid" [items]="departments"
                             bindLabel="departmentName" bindValue="DepartmentMasterSid"
                             (change)="onDeptChange($event,routeIndex)">
 

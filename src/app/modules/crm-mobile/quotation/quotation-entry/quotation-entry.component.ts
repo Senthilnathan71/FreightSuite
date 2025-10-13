@@ -706,6 +706,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
       this.addQuoteCarrier(this.quoteRoutes.length - 1);
+    } else {
+      this.filterChargesBySegment(routeIndex,data?.segmentType)
     }
 
     routeForm.get('GrossWeight')?.valueChanges.subscribe(() => {
@@ -1269,13 +1271,16 @@ private extractCargoData(enquiryCargo: any[]): any {
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       BranchMasterSid : this.currentBranch?.BranchMasterSid
     }
-    this.dropdownStore.loadDepartments(CompanyMasterSid);
+    const supplierFilterOption = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      types : ['vendor', 'transporter', 'agent']
+    }
     return forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
       carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
       leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
-      // departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
+      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
       salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
@@ -1284,16 +1289,16 @@ private extractCargoData(enquiryCargo: any[]): any {
       packageTypes : this.leadService.getUOMsByType('P').pipe(catchError(err => of([]))),
       measurementUnits : this.leadService.getUOMsByType('M').pipe(catchError(err => of([]))),
       weightUnits : this.leadService.getUOMsByType('W').pipe(catchError(err => of([]))),
-      vendors: this.leadService.getAllVendorSupplier(CompanyMasterSid).pipe(catchError(err => of([]))),
+      vendors: this.leadService.getCustomerByItsType(supplierFilterOption).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ cargoTypes, carriers, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ departments , cargoTypes, carriers, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
       this.leadList = leads.data;
       this.customers = customers || [];
-      // this.departments = departments || [];
+      this.departments = departments || [];
       this.ports = (ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
       this.chargeMaster = masters.charges || [];
       this.currencyMaster = masters.currencies || [];
@@ -1304,7 +1309,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.incoList = incos || [];
       this.salesmanList = salesman || [];
       this.containerTypeList = containerTypes || [],
-      this.vendorSupplierList = vendors || [];
+      this.vendorSupplierList = vendors.data || [];
       this.productList = products || [];
       this.imcoList = imcos.data || [];
     })
@@ -1330,7 +1335,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   patchValues(response: any) {
     
-    const selectedDept = this.dropdownStore.department().find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
+    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     if (selectedCustomer) {
       this.f['CustomerName']?.setValue(selectedCustomer?.CustomerName);
@@ -3019,7 +3024,7 @@ ${this.userData.userName}`;
       const departmentNames = charge.DepartmentMasterSid || []; 
 
       const fullDepartments = departmentNames
-        .map(name => this.dropdownStore.department().find(dept => dept.departmentName === name))
+        .map(name => this.departments.find(dept => dept.departmentName === name))
         .filter((dept): dept is any => Boolean(dept)); 
 
       return fullDepartments.some(dept => {

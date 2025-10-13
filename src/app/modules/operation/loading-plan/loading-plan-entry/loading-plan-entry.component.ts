@@ -160,7 +160,7 @@ export class LoadingPlanEntryComponent {
       types:['carrier']
     }
 
-    this.dropdownStore.loadDepartments(activeCompanyId)
+    this.dropdownStore.loadDepartments({CompanyMasterSid : activeCompanyId})
     this.dropdownStore.loadPorts()
     this.dropdownStore.loadCustomerTypeData(payload)
     this.dropdownStore.loadContainerTypes()

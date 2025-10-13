@@ -189,6 +189,26 @@ export class OperationService {
     );
   }
 
+  getAllCustomersWithBranch(CompanyMasterSid: number) {
+    return this.http.post('customer/with-branches', { CompanyMasterSid }).pipe(
+      map((resp: any) => {
+        console.log(resp)
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getAllSalesman() {
+    return this.http.get<{ data: any[] }>('ff-quotation/salesman').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
   getCustomerBranchByCustomer(CustomerMasterSid: number) {
     return this.http.get<{ data: any[] }>(`customer-branch/fetch-by/${CustomerMasterSid}`).pipe(
       map((resp) => {
@@ -216,7 +236,7 @@ export class OperationService {
   }
 
   getAllContainerTypes() {
-    return this.http.get<{ data: any[] }>('ff-booking/container-type').pipe(
+    return this.http.get<{ data: any[] }>('container-type').pipe(
       map((resp) => {
         return resp;
       })
@@ -224,7 +244,7 @@ export class OperationService {
   }
   
   getAllCurrencies() {
-    return this.http.get<{ data: any[] }>('ff-booking/currency').pipe(
+    return this.http.get<{ data: any[] }>('currency').pipe(
       map((resp) => {
         let response = resp
         return response;
@@ -250,7 +270,7 @@ export class OperationService {
 
   getAllProducts(CompanyMasterSid: number) {
     return this.http.post<{ data: any[] }>('product', { CompanyMasterSid }).pipe(
-      map((resp) => {
+      map((resp:any) => {
         let response = resp;
         return response;
       })
@@ -537,7 +557,16 @@ getAllPorts() {
 
   getAllIMCO() {
     return this.http.get<{ data: any[] }>('imco').pipe(
-      map((resp) => {
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllINCO() {
+    return this.http.get<{ data: any[] }>('inco').pipe(
+      map((resp:any) => {
         let response = resp;
         return response;
       })
@@ -638,7 +667,7 @@ sendInvoiceEmail(payload: any) {
 
 getCountryById(CountryMasterSid: number) {
   return this.http.get<{ status: boolean; data: any }>(`country/${CountryMasterSid}`).pipe(
-    map((resp) => {
+    map((resp:any) => {
       return resp;
     })
   );

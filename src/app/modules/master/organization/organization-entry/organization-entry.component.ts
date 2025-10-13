@@ -418,9 +418,15 @@ onCountryChange(): void {
       console.log('User Profile loaded:', this.userData);
       console.log('User Email:', this.userData?.userEmail || this.userData?.UserEmail);
       this.checkPermissions();
-    } else {
+    } 
+    else {
       console.error('No user profile found in localStorage');
     }
+     this.initForm();
+    this.initializePanFields();
+    this.loadAllSpfields();
+    // this.loadDepartments();
+    this.loadMenus();
     if (!this.isEditMode) {
     // For new customer, only show Party and Branch tabs initially
     this.tabs = [
@@ -2320,64 +2326,64 @@ loadCustomerData(customerId: number) {
   }
 
   // Save sales team data
-  saveSalesTeamData(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.cusSalesteam.length === 0) {
-        resolve({ success: true });
-        return;
-      }
+  // saveSalesTeamData(): Promise<any> {
+  //   return new Promise((resolve, reject) => {
+  //     if (this.cusSalesteam.length === 0) {
+  //       resolve({ success: true });
+  //       return;
+  //     }
 
-      const salesTeamsPayload = this.prepareUpdateSalesTeamsPayload();
+  //     const salesTeamsPayload = this.prepareUpdateSalesTeamsPayload();
 
-      if (salesTeamsPayload.length === 0) {
-        resolve({ success: true });
-        return;
-      }
+  //     if (salesTeamsPayload.length === 0) {
+  //       resolve({ success: true });
+  //       return;
+  //     }
 
-      const payload = {
-        CustomerMasterSid: this.CustomerMasterSid,
-        salesTeams: salesTeamsPayload
-      };
+  //     const payload = {
+  //       CustomerMasterSid: this.CustomerMasterSid,
+  //       salesTeams: salesTeamsPayload
+  //     };
 
-      this.masterService.saveCustomerSalesTeam(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess('Sales team saved successfully');
-            resolve({ success: true });
-          } else {
-            this.appSettingService.showError('Error saving sales team');
-            reject({ success: false, message: 'Error saving sales team' });
-          }
-        },
-        (error) => {
-          console.error('Error saving sales team:', error);
-          this.appSettingService.showError('Error saving sales team');
-          reject({ success: false, error });
-        }
-      );
-    });
-  }
+  //     this.masterService.saveCustomerSalesTeam(payload).subscribe(
+  //       (resp: any) => {
+  //         if (resp.status) {
+  //           this.appSettingService.showSuccess('Sales team saved successfully');
+  //           resolve({ success: true });
+  //         } else {
+  //           this.appSettingService.showError('Error saving sales team');
+  //           reject({ success: false, message: 'Error saving sales team' });
+  //         }
+  //       },
+  //       (error) => {
+  //         console.error('Error saving sales team:', error);
+  //         this.appSettingService.showError('Error saving sales team');
+  //         reject({ success: false, error });
+  //       }
+  //     );
+  //   });
+  // }
 
   // Save customer milestones
-  saveCustomerMilestones(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.cusMilestone.length === 0) {
-        resolve({ success: true });
-        return;
-      }
+  // saveCustomerMilestones(): Promise<any> {
+  //   return new Promise((resolve, reject) => {
+  //     if (this.cusMilestone.length === 0) {
+  //       resolve({ success: true });
+  //       return;
+  //     }
 
-      const milestonesPayload = this.prepareUpdateMilestonesPayload();
+  //     const milestonesPayload = this.prepareUpdateMilestonesPayload();
 
-      if (milestonesPayload.length === 0) {
-        resolve({ success: true });
-        return;
-      }
+  //     if (milestonesPayload.length === 0) {
+  //       resolve({ success: true });
+  //       return;
+  //     }
 
-      // Assuming there's a save method for milestones, similar to sales team
-      // If not, this should be integrated into the main customer update
-      resolve({ success: true });
-    });
-  }
+  //     // Assuming there's a save method for milestones, similar to sales team
+  //     // If not, this should be integrated into the main customer update
+  //     resolve({ success: true });
+  //   });
+  // }
 
   // Email tab methods
   onAddCustomerEmail() {
@@ -2598,74 +2604,26 @@ onPanAvailableChange(): void {
   // Add other template-referenced methods
   // Add this method to your OrganizationEntryComponent class
   // Replace your existing onSubmit method with this comprehensive version
-  async onSubmit() {
-    // Set loading state
-    this.btnDisable = true;
+ async onSubmit() {
+  this.btnDisable = true;
 
-    // Debug: Log email tab status
-    console.log('=== Save operation started ===');
-    console.log('Email tab entries:', this.customerEmails.length);
-    console.log('Email tab data:', this.customerEmails.value);
-
-    // Validate main customer form
-    if (this.customerForm.invalid) {
-      this.appSettingService.showWarning('Please fill all required fields in the Party section.');
-      this.customerForm.markAllAsTouched();
-      this.selectedTab = 'Party';
-      this.btnDisable = false;
-      return;
+  try {
+    if (this.isEditMode && this.CustomerMasterSid) {
+      // SINGLE PAYLOAD - Everything included
+      const updatePayload = this.prepareUpdatePayload();
+      await this.updateCustomerWithAllData(updatePayload);
+    } else {
+      // Create new customer
+      const createPayload = this.prepareCreatePayload();
+      await this.createCustomerWithAllData(createPayload);
     }
-
-    // Validate branches if any exist
-    if (this.branches.length > 0) {
-      const branchValidation = this.validateAllBranches();
-      if (!branchValidation.isValid) {
-        this.appSettingService.showWarning(branchValidation.message);
-        this.selectedTab = 'Branch';
-        this.btnDisable = false;
-        return;
-      }
-    }
-
-    // Validate sales team if in edit mode and any exist
-    if (this.isEditMode && this.cusSalesteam.length > 0) {
-      const salesTeamValidation = this.validateSalesTeam();
-      if (!salesTeamValidation.isValid) {
-        this.appSettingService.showWarning(salesTeamValidation.message);
-        this.selectedTab = 'Salesman';
-        this.btnDisable = false;
-        return;
-      }
-    }
-
-    // Validate milestones if in edit mode and any exist
-    if (this.isEditMode && this.cusMilestone.length > 0) {
-      const milestoneValidation = this.validateMilestones();
-      if (!milestoneValidation.isValid) {
-        this.appSettingService.showWarning(milestoneValidation.message);
-        this.selectedTab = 'Milestone';
-        this.btnDisable = false;
-        return;
-      }
-    }
-
-    try {
-      if (this.isEditMode && this.CustomerMasterSid) {
-        // UPDATE existing customer with all data
-        const updatePayload = this.prepareUpdatePayload();
-        await this.updateCustomerWithAllData(updatePayload);
-      } else {
-        // CREATE new customer with only customer and branches
-        const createPayload = this.prepareCreatePayload();
-        await this.createCustomerWithAllData(createPayload);
-      }
-    } catch (error) {
-      console.error('Error saving customer:', error);
-      this.appSettingService.showError('Error saving customer data');
-    } finally {
-      this.btnDisable = false;
-    }
+  } catch (error) {
+    console.error('Error saving customer:', error);
+    this.appSettingService.showError('Error saving customer data');
+  } finally {
+    this.btnDisable = false;
   }
+}
 
   // Add this missing validation method
   private validateAllBranches(): { isValid: boolean; message: string } {
@@ -2877,14 +2835,10 @@ onPanAvailableChange(): void {
     return loginsPayload;
   }
   // For UPDATE mode - send all data including sales teams and milestones
-  private prepareUpdatePayload(): any {
+ private prepareUpdatePayload(): any {
   const formValue = this.customerForm.value;
-  const currentUserEmail = this.getUserEmail();
   const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-
-
   const statusValue = formValue.status === 'Active' ? 'A' : 'S';
-  console.log(statusValue, 'statusValue')
 
   const payload = {
     customer: {
@@ -2894,7 +2848,7 @@ onPanAvailableChange(): void {
       CustomerAliasName: formValue.CustomerAliasName,
       CustomerAddress1: formValue.CustomerAddress1,
       CustomerAddress2: formValue.CustomerAddress2,
-      CountryMasterSid:formValue.CountryMasterSid,
+      CountryMasterSid: formValue.CountryMasterSid,
       CustomerType: formValue.CustomerType,
       PanName: formValue.PanName,
       PanType: formValue.PanType,
@@ -2913,9 +2867,7 @@ onPanAvailableChange(): void {
     customerBranches: this.prepareUpdateBranchesPayload(),
   };
 
-  // Debug: Log the complete payload
-  console.log('Complete update payload:', JSON.stringify(payload, null, 2));
-
+  console.log('Complete update payload with all data:', payload);
   return payload;
 }
 
@@ -2925,11 +2877,10 @@ onPanAvailableChange(): void {
   for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
     const branchForm = this.branches.at(branchIndex);
     const branchData = branchForm.value;
-     console.log('Branch Data:', branchData); 
-    console.log('CustBranchCode value:', branchData.CustBranchCode); 
+    const branchSid = branchData.CustomerBranchSid;
 
     const branchPayload: any = {
-      CustomerBranchSid: branchData.CustomerBranchSid,
+      CustomerBranchSid: branchSid,
       BranchName: branchData.CustBranchName?.trim(),
       StateMasterSid: branchData.CustBranchState,
       CityMasterSid: branchData.CustBranchCity,
@@ -2942,17 +2893,17 @@ onPanAvailableChange(): void {
       Address: branchData.CustBranchAddress,
       Registered: branchData.CustBranchRegistered,
       CustomerGstType: branchData.CustBranchGSTtype,
-      GSTNo: branchData.CustBranchGSTIN || '', 
-      ...(branchData.CustBranchGSTIN && { GSTNo: branchData.CustBranchGSTIN }), // Only include if GST number exists
+      GSTNo: branchData.CustBranchGSTIN || '',
       status: branchData.status === 'Active' ? 'A' : 'S',
 
+      // ALL RELATED DATA INCLUDED
       customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
       customerBranchEmails: this.prepareUpdateEmailsPayload(branchIndex),
       customerBranchLogins: this.prepareUpdateLoginsPayload(branchIndex),
-      customerSalesTeams: this.prepareUpdateSalesTeamsPayload(branchData.CustomerBranchSid),
-      customerMilestones: this.prepareUpdateMilestonesPayload(branchData.CustomerBranchSid)
+      customerSalesTeams: this.prepareSalesTeamsForBranch(branchSid), 
+      customerMilestones: this.prepareMilestonesForBranch(branchSid) 
     };
-    console.log('Final Branch Payload:', branchPayload);
+
     branchesPayload.push(branchPayload);
   }
 
@@ -2990,191 +2941,148 @@ onPanAvailableChange(): void {
     console.log(`Branch ${branchIndex} contacts payload:`, contactsPayload);
     return contactsPayload;
   }
+  private prepareSalesTeamsForBranch(branchSid: number): any[] {
+  const salesTeamsForBranch = [];
+  
+  for (let teamIndex = 0; teamIndex < this.cusSalesteam.length; teamIndex++) {
+    const teamForm = this.cusSalesteam.at(teamIndex);
+    const teamData = teamForm.value;
 
-  private prepareUpdateEmailsPayload(branchIndex: number): any[] {
-    const emailsPayload = [];
-    const processedEmailSids = new Set<number>(); // Track processed email SIDs to avoid duplicates
-
-    // Get the branch SID for the current branch
-    const branch = this.branches.at(branchIndex);
-    const branchSid = branch.get('CustomerBranchSid')?.value;
-
-    // Debug: Log current state
-    console.log(`Preparing emails for branch ${branchIndex} (SID: ${branchSid})`);
-    console.log('Total customerEmails:', this.customerEmails.length);
-
-    // Process emails from the Email tab (customerEmails FormArray) for this specific branch
-    // We'll prioritize Email tab data over branch tab data
-    for (let i = 0; i < this.customerEmails.length; i++) {
-      const emailForm = this.customerEmails.at(i);
-      const emailData = emailForm.value;
-
-      // Only include emails that belong to this branch
-      if (emailData.CustomerBranchSid !== branchSid) {
-        continue;
-      }
-
-      // Track this email SID if it exists
-      if (emailData.CustomerBrEmailSid) {
-        processedEmailSids.add(emailData.CustomerBrEmailSid);
-      }
-
-      // Ensure DepartmentMasterSid is always an array as expected by API
-      let departmentValue = emailData.DepartmentMasterSid;
-      if (!Array.isArray(departmentValue)) {
-        // If it's a string (from old data), convert to array
-        departmentValue = departmentValue ? [departmentValue] : [];
-      }
-
-      const emailPayload: any = {
-        MenuMasterSid: Number(emailData.MenuMasterSid),
-        DepartmentMasterSid: departmentValue, // Keep as array
-        Toemail: emailData.Toemail,
-        CCemail: emailData.CCemail,
-        status: emailData.status === 'Active' ? 'A' : 'S'
-      };
-
-      // createdBy/updatedBy now handled automatically by backend via JWT token
-      if (emailData.CustomerBrEmailSid) {
-        emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
-      }
-
-      emailsPayload.push(emailPayload);
-      console.log('Added email from Email tab:', emailPayload);
+    // Only include sales teams that belong to this branch
+    if (teamData.branchSid !== branchSid) {
+      continue;
     }
 
-    // Then, get emails from the branch's own emails FormArray (from Branch tab)
-    // Only add those that haven't been processed from the Email tab
-    const branchEmails = this.getEmails(branchIndex);
-    for (let emailIndex = 0; emailIndex < branchEmails.length; emailIndex++) {
-      const emailForm = branchEmails.at(emailIndex);
-      const emailData = emailForm.value;
+    const salesTeamPayload: any = {
+      DepartmentMasterSid: Array.isArray(teamData.DepartmentMasterSid)
+        ? teamData.DepartmentMasterSid.map((id: any) => String(id))
+        : teamData.DepartmentMasterSid
+          ? [String(teamData.DepartmentMasterSid)]
+          : [],
+      Salesman: teamData.Salesman,
+      CSPerson: teamData.CSPerson,
+      DocPerson: teamData.DocPerson,
+      EffectiveFrom: teamData.EffectiveFrom,
+      status: teamData.status === 'Active' ? 'A' : 'S',
+      CompanyMasterSid: Number(this.currentCompany?.CompanyMasterSid),
+      CustomerBranchSid: Number(teamData.branchSid)
+    };
 
-      // Skip if we already processed this email from the Email tab
-      if (emailData.CustomerBrEmailSid && processedEmailSids.has(emailData.CustomerBrEmailSid)) {
-        continue;
-      }
-
-      // Ensure DepartmentMasterSid is always an array as expected by API
-      let departmentValue = emailData.DepartmentMasterSid;
-      if (!Array.isArray(departmentValue)) {
-        // If it's a string (from old data), convert to array
-        departmentValue = departmentValue ? [departmentValue] : [];
-      }
-
-      const emailPayload: any = {
-        MenuMasterSid: Number(emailData.MenuMasterSid),
-        DepartmentMasterSid: departmentValue, // Keep as array
-        Toemail: emailData.Toemail,
-        CCemail: emailData.CCemail,
-        status: emailData.status === 'Active' ? 'A' : 'S'
-      };
-
-      // createdBy/updatedBy now handled automatically by backend via JWT token
-      if (emailData.CustomerBrEmailSid) {
-        emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
-      }
-
-      emailsPayload.push(emailPayload);
-      console.log('Added email from Branch tab:', emailPayload);
+    if (teamData.CustomerSalesSid) {
+      salesTeamPayload.CustomerSalesSid = teamData.CustomerSalesSid;
     }
 
-    // Debug: Log the emails being sent
-    if (emailsPayload.length > 0) {
-      console.log(`Branch ${branchIndex} emails payload:`, emailsPayload);
-    }
-
-    return emailsPayload;
+    salesTeamsForBranch.push(salesTeamPayload);
   }
+
+  return salesTeamsForBranch;
+}
+
+private prepareMilestonesForBranch(branchSid: number): any[] {
+  const milestonesForBranch = [];
+  
+  for (let mileIndex = 0; mileIndex < this.cusMilestone.length; mileIndex++) {
+    const mileForm = this.cusMilestone.at(mileIndex);
+    const mileData = mileForm.value;
+
+    // Only include milestones that belong to this branch
+    if (mileData.CustomerBranchSid !== branchSid) {
+      continue;
+    }
+
+    const milestonePayload: any = {
+      MilestoneMasterSid: mileData.MilestoneMasterSid,
+      UpdateType: mileData.UpdateType,
+      ContactInfo: mileData.ContactInfo,
+      EffectiveFrom: mileData.EffectiveFrom,
+      Status: mileData.Status === 'Active' ? 'A' : 'S'
+    };
+
+    if (mileData.CustomerMilestoneSid) {
+      milestonePayload.CustomerMilestoneSid = mileData.CustomerMilestoneSid;
+    }
+
+    milestonesForBranch.push(milestonePayload);
+  }
+
+  return milestonesForBranch;
+}
+  
+  private prepareUpdateEmailsPayload(branchIndex: number): any[] {
+  const emailsPayload = [];
+  const branch = this.branches.at(branchIndex);
+  const branchSid = branch.get('CustomerBranchSid')?.value;
+
+  // Process emails from Email tab for this branch
+  for (let i = 0; i < this.customerEmails.length; i++) {
+    const emailForm = this.customerEmails.at(i);
+    const emailData = emailForm.value;
+
+    if (emailData.CustomerBranchSid !== branchSid) {
+      continue;
+    }
+
+    let departmentValue = emailData.DepartmentMasterSid;
+    if (!Array.isArray(departmentValue)) {
+      departmentValue = departmentValue ? [departmentValue] : [];
+    }
+
+    const emailPayload: any = {
+      MenuMasterSid: Number(emailData.MenuMasterSid),
+      DepartmentMasterSid: departmentValue,
+      Toemail: emailData.Toemail,
+      CCemail: emailData.CCemail,
+      status: emailData.status === 'Active' ? 'A' : 'S'
+    };
+
+    if (emailData.CustomerBrEmailSid) {
+      emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
+    }
+
+    emailsPayload.push(emailPayload);
+  }
+
+  return emailsPayload;
+}
 
   private prepareUpdateLoginsPayload(branchIndex: number): any[] {
-    const loginsPayload = [];
-    const processedLoginSids = new Set<number>(); // Track processed login SIDs to avoid duplicates
+  const loginsPayload = [];
+  const branch = this.branches.at(branchIndex);
+  const branchSid = branch.get('CustomerBranchSid')?.value;
 
-    // Get the branch SID for the current branch
-    const branch = this.branches.at(branchIndex);
-    const branchSid = branch.get('CustomerBranchSid')?.value;
+  // Process logins from eLogin tab for this branch
+  for (let i = 0; i < this.customerLogins.length; i++) {
+    const loginForm = this.customerLogins.at(i);
+    const loginData = loginForm.value;
 
-    // Debug: Log current state
-    console.log(`Preparing logins for branch ${branchIndex} (SID: ${branchSid})`);
-    console.log('Total customerLogins:', this.customerLogins.length);
-
-    // Process logins from the eLogin tab (customerLogins FormArray) for this specific branch
-    // We'll prioritize eLogin tab data over branch tab data
-    for (let i = 0; i < this.customerLogins.length; i++) {
-      const loginForm = this.customerLogins.at(i);
-      const loginData = loginForm.value;
-
-      // Only include logins that belong to this branch
-      if (loginData.CustomerBranchSid !== branchSid) {
-        continue;
-      }
-
-      // Track this login SID if it exists
-      if (loginData.CustomerLoginSid) {
-        processedLoginSids.add(loginData.CustomerLoginSid);
-      }
-
-      const loginPayload: any = {
-        LoginName: loginData.LoginName?.trim(),
-        LoginEmail: loginData.LoginEmail,
-        LoginPassword: loginData.LoginPassword,
-        status: loginData.status === 'Active' ? 'A' : 'S'
-      };
-
-      // createdBy/updatedBy now handled automatically by backend via JWT token
-      if (loginData.CustomerLoginSid) {
-        loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
-      }
-
-      loginsPayload.push(loginPayload);
-      console.log('Added login from eLogin tab:', loginPayload);
+    if (loginData.CustomerBranchSid !== branchSid) {
+      continue;
     }
 
-    // Then, get logins from the branch's own logins FormArray (from Branch tab)
-    // Only add those that haven't been processed from the eLogin tab
-    const branchLogins = this.getLogins(branchIndex);
-    for (let loginIndex = 0; loginIndex < branchLogins.length; loginIndex++) {
-      const loginForm = branchLogins.at(loginIndex);
-      const loginData = loginForm.value;
+    const loginPayload: any = {
+      LoginName: loginData.LoginName?.trim(),
+      LoginEmail: loginData.LoginEmail,
+      LoginPassword: loginData.LoginPassword,
+      status: loginData.status === 'Active' ? 'A' : 'S'
+    };
 
-      // Skip if we already processed this login from the eLogin tab
-      if (loginData.CustomerLoginSid && processedLoginSids.has(loginData.CustomerLoginSid)) {
-        continue;
-      }
-
-      const loginPayload: any = {
-        LoginName: loginData.LoginName?.trim(),
-        LoginEmail: loginData.LoginEmail,
-        LoginPassword: loginData.LoginPassword,
-        status: loginData.status === 'Active' ? 'A' : 'S'
-      };
-
-      // createdBy/updatedBy now handled automatically by backend via JWT token
-      if (loginData.CustomerLoginSid) {
-        loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
-      }
-
-      loginsPayload.push(loginPayload);
-      console.log('Added login from Branch tab:', loginPayload);
+    if (loginData.CustomerLoginSid) {
+      loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
     }
 
-    // Debug: Log the logins being sent
-    if (loginsPayload.length > 0) {
-      console.log(`Branch ${branchIndex} logins payload:`, loginsPayload);
-    }
-
-    return loginsPayload;
+    loginsPayload.push(loginPayload);
   }
 
+  return loginsPayload;
+}
   private prepareUpdateSalesTeamsPayload(branchSid?: number): any[] {
   if (this.cusSalesteam.length === 0) return [];
+  
   const activeCompanyId = this.currentCompany?.CompanyMasterSid;
   const salesTeamsPayload = [];
-  const salesTeams = this.cusSalesteam;
 
-  for (let teamIndex = 0; teamIndex < salesTeams.length; teamIndex++) {
-    const teamForm = salesTeams.at(teamIndex);
+  for (let teamIndex = 0; teamIndex < this.cusSalesteam.length; teamIndex++) {
+    const teamForm = this.cusSalesteam.at(teamIndex);
     const teamData = teamForm.value;
 
     // Filter by branch if branchSid is provided
@@ -3194,7 +3102,7 @@ onPanAvailableChange(): void {
       EffectiveFrom: teamData.EffectiveFrom,
       status: teamData.status === 'Active' ? 'A' : 'S',
       CompanyMasterSid: Number(activeCompanyId),
-      CustomerBranchSid: teamData.branchSid ? Number(teamData.branchSid) : null // ✅ Fixed: use branchSid
+      CustomerBranchSid: teamData.branchSid ? Number(teamData.branchSid) : null
     };
 
     if (teamData.CustomerSalesSid) {
@@ -3206,40 +3114,37 @@ onPanAvailableChange(): void {
 
   return salesTeamsPayload;
 }
-
   private prepareUpdateMilestonesPayload(branchSid?: number): any[] {
-    if (this.cusMilestone.length === 0) return [];
+  if (this.cusMilestone.length === 0) return [];
 
-    const milestonesPayload = [];
-    const milestones = this.cusMilestone;
+  const milestonesPayload = [];
 
-    for (let mileIndex = 0; mileIndex < milestones.length; mileIndex++) {
-      const mileForm = milestones.at(mileIndex);
-      const mileData = mileForm.value;
+  for (let mileIndex = 0; mileIndex < this.cusMilestone.length; mileIndex++) {
+    const mileForm = this.cusMilestone.at(mileIndex);
+    const mileData = mileForm.value;
 
-      // Filter by branch if branchSid is provided
-      if (branchSid && mileData.CustomerBranchSid !== branchSid) {
-        continue;
-      }
-
-      const milestonePayload: any = {
-        MilestoneMasterSid: mileData.MilestoneMasterSid,
-        UpdateType: mileData.UpdateType,
-        ContactInfo: mileData.ContactInfo,
-        EffectiveFrom: mileData.EffectiveFrom,
-        Status: mileData.Status === 'Active' ? 'A' : 'S'
-      };
-
-      // createdBy/updatedBy now handled automatically by backend via JWT token
-      if (mileData.CustomerMilestoneSid) {
-        milestonePayload.CustomerMilestoneSid = mileData.CustomerMilestoneSid;
-      }
-
-      milestonesPayload.push(milestonePayload);
+    // Filter by branch if branchSid is provided
+    if (branchSid && mileData.CustomerBranchSid !== branchSid) {
+      continue;
     }
 
-    return milestonesPayload;
+    const milestonePayload: any = {
+      MilestoneMasterSid: mileData.MilestoneMasterSid,
+      UpdateType: mileData.UpdateType,
+      ContactInfo: mileData.ContactInfo,
+      EffectiveFrom: mileData.EffectiveFrom,
+      Status: mileData.Status === 'Active' ? 'A' : 'S'
+    };
+
+    if (mileData.CustomerMilestoneSid) {
+      milestonePayload.CustomerMilestoneSid = mileData.CustomerMilestoneSid;
+    }
+
+    milestonesPayload.push(milestonePayload);
   }
+
+  return milestonesPayload;
+}
   // Create customer with all data (same as before)
   private async createCustomerWithAllData(payload: any): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -3285,53 +3190,30 @@ onPanAvailableChange(): void {
   return this.isEditMode || this.showAdditionalTabs;
 }
   // Update customer with all data
-  private async updateCustomerWithAllData(payload: any): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // First update the customer and branches
-        await new Promise<void>((res, rej) => {
-          this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
-            next: (resp: any) => {
-              if (resp.status) {
-                res();
-              } else {
-                rej(resp.message);
-              }
-            },
-            error: (error) => {
-              console.error('Error updating customer:', error);
-              rej(error);
-            }
-          });
-        });
-
-        // Then save sales team data if any
-        if (this.cusSalesteam.length > 0) {
-          await this.saveSalesTeamData();
+ private async updateCustomerWithAllData(payload: any): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // SINGLE API CALL - Everything is handled in one call
+    this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess('Customer updated successfully');
+          
+          // Reload all data to reflect changes
+          this.loadCustomerData(this.CustomerMasterSid);
+          resolve();
+        } else {
+          this.appSettingService.showError(resp.message);
+          reject(resp.message);
         }
-
-        // Save milestones if any
-        if (this.cusMilestone.length > 0) {
-          await this.saveCustomerMilestones();
-        }
-
-        this.appSettingService.showSuccess('Customer updated successfully');
-
-        // Reload the data to reflect changes
-        this.loadCustomerData(this.CustomerMasterSid);
-        this.loadCustomerSalesTeamData();
-        this.loadCustomerMilestones();
-
-        resolve();
-      } catch (error) {
-        this.errorMessage = error?.message || 'Error updating customer';
+      },
+      error: (error) => {
         console.error('Error updating customer:', error);
         this.appSettingService.showError('Error updating customer');
         reject(error);
       }
     });
-  }
-
+  });
+}
 
 
 
