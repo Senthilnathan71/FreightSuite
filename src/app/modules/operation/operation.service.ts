@@ -208,23 +208,6 @@ export class OperationService {
     )
   }
 
-  getCustomerByItsType(payload: any) {
-    return this.http.post<{ data: any[] }>('customer/customer_type/filter', payload).pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
-
-  getCountryById(CountryId: number) {
-    return this.http.get<{ data: any }>(`country/${CountryId}`).pipe(
-      map((resp:any) => {
-        return resp.data;
-      })
-    );
-  }
-
 
   getCustomerBranchByCustomer(CustomerMasterSid: number) {
     return this.http.get<{ data: any[] }>(`customer-branch/fetch-by/${CustomerMasterSid}`).pipe(
@@ -684,7 +667,7 @@ sendInvoiceEmail(payload: any) {
 
 getCountryById(CountryMasterSid: number) {
   return this.http.get<{ status: boolean; data: any }>(`country/${CountryMasterSid}`).pipe(
-    map((resp) => {
+    map((resp:any) => {
       return resp;
     })
   );

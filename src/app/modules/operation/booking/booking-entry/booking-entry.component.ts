@@ -823,7 +823,7 @@ getCurrentCompanyBranches(){
       this.cfslist = cfs.data;
 
       
-      this.countryOfCompany = (userCountry.countryCode).trim().toLowerCase();
+      this.countryOfCompany = (userCountry?.data?.countryCode).trim().toLowerCase();
     }))
   }
 
