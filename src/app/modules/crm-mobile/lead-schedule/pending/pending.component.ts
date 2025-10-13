@@ -192,8 +192,8 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     this.tableLoading = false;
     this.spinner.hide();
     if (context === 'existing') {
-      if (response?.data && Array.isArray(response.data)) {
-        this.allExistingCustomers = response?.data || [];
+      if (response && Array.isArray(response)) {
+        this.allExistingCustomers = response || [];
         this.totalLengthOfCollection = this.allExistingCustomers.length;
         this.applySorting();
         return;
@@ -303,7 +303,7 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     ];
     this.tableCustomerConfig.columns = [
       {
-        key: 'preCustomerName',
+        key: 'CustomerName',
         label: 'Customer Name',
         sortable: true,
         filterable: true,
@@ -311,23 +311,13 @@ export class PendingComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
       {
-        key: 'cityName',
-        label: 'City',
+        key: 'CustomerAddress1',
+        label: 'Customer Address',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string'
       },
-      {
-        key: 'calendarIcon',
-        label: 'Schedule',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: "100px",
-        template: 'link',
-      }
     ];
   }
 onTabChange(tab: string) {

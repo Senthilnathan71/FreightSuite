@@ -220,7 +220,6 @@ export class EnquiryEntryComponent implements OnInit {
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.initializeForm();
-    this.initOthersForm();
 
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     const storedCompany = localStorage.getItem('selected-company');
@@ -365,6 +364,7 @@ export class EnquiryEntryComponent implements OnInit {
     });
 
     this.addRoute();
+    this.initOthersForm()
   }
 
   subscribeToLeadCustomerToggle() {
@@ -1008,11 +1008,31 @@ onSelectionChange(selectedItem: any) {
     // Get the FormArray for routes and clear existing data
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
-    this.enquiryOtherForm.patchValue({
-      ...response?.enquiryOther[0]
-    })
-    this.filterConsignee();
-    this.filterShipper();
+    // this.enquiryOtherForm.patchValue({
+    //   ...response?.enquiryOther[0]
+    // })
+
+    if (response?.enquiryOther && response.enquiryOther.length > 0) {
+  const other = response.enquiryOther[0];
+
+  
+
+  this.enquiryOtherForm.patchValue({
+    EnquiryOtherSid: other.EnquiryOtherSid,
+    ShipperName: other.ShipperName,
+    ShipperAddress: other.ShipperAddress || '',
+    ConsigneeName: other.ConsigneeName,
+    ConsigneeAddress: other.ConsigneeAddress || '',
+    FreightTerms: other.FreightTerms,
+    AdditionalService: other.AdditionalService,
+    PickupAddress: other.PickupAddress,
+  });
+
+ 
+}
+
+    // this.onConsigneeChange();
+    // this.onShipperChange();
 
     response.enquiryRoute.forEach((route, index) => {
       this.quotationPOL = route.POLSid;
@@ -1391,28 +1411,57 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
     };
   }
 
-  filterConsignee() {
-    const shipperName = this.enquiryOtherForm.get('ShipperName')?.value
-    if (!this.consigneeList) {
-      return;
-    }
-    if (!shipperName) {
-      this.finalConsigneeList = [...this.consigneeList];
-    } else {
-      this.finalConsigneeList = this.consigneeList.filter(consignee => consignee.CustomerName !== shipperName)
-    }
+  onShipperChange(selectedShipper?: any) {
+  if (!selectedShipper) {
+    // Clear ShipperAddress and reset Consignee list
+    this.enquiryOtherForm.patchValue({ ShipperAddress: '' });
+    this.finalConsigneeList = [...this.consigneeList];
+    return;
   }
-  filterShipper() {
-    const consigneeName = this.enquiryOtherForm.get('ConsigneeName')?.value
-    if (!this.shipperList) {
-      return;
-    }
-    if (!consigneeName) {
-      this.finalShipperList = [...this.shipperList];
-    } else {
-      this.finalShipperList = this.shipperList.filter(consignee => consignee.CustomerName !== consigneeName)
-    }
+
+  // Find the full shipper object from finalShipperList
+  const shipper = this.finalShipperList.find(
+    (s: any) => s.CustomerName === selectedShipper.CustomerName || s.CustomerName === selectedShipper
+  );
+
+  if (shipper) {
+    // ✅ Auto fill the ShipperAddress from CustomerAddress1
+    this.enquiryOtherForm.patchValue({
+      ShipperAddress: shipper.CustomerAddress1 || ''
+    });
+
+    // ✅ Filter consignee list to exclude same shipper
+    this.finalConsigneeList = this.consigneeList.filter(
+      (consignee: any) => consignee.CustomerName !== shipper.CustomerName
+    );
   }
+}
+onConsigneeChange(selectedConsignee?: any) {
+  if (!selectedConsignee) {
+    // Clear ConsigneeAddress and reset shipper list
+    this.enquiryOtherForm.patchValue({ ConsigneeAddress: '' });
+    this.finalShipperList = [...this.shipperList]; // reset shipper options
+    return;
+  }
+
+  // Find the full consignee object
+  const consignee = this.finalConsigneeList.find(
+    (c: any) => c.CustomerName === selectedConsignee.CustomerName || c.CustomerName === selectedConsignee
+  );
+
+  if (consignee) {
+    // ✅ Auto fill the Consignee Address from CustomerAddress1
+    this.enquiryOtherForm.patchValue({
+      ConsigneeAddress: consignee.CustomerAddress1 || ''
+    });
+
+    // ✅ Filter shipper list to exclude same consignee
+    this.finalShipperList = this.shipperList.filter(
+      (shipper: any) => shipper.CustomerName !== consignee.CustomerName
+    );
+  }
+}
+
 
 
   showInfo() {
