@@ -30,7 +30,6 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     FeatherModule,
     NgSelectModule,
     NgbDatepickerModule,
-    DatePipe,
     FormsModule,
     MultiSelectComponent,
     NgbDropdownModule,
@@ -43,6 +42,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    DatePipe
   ],
 })
 export class ChargeEntryComponent implements OnInit {
@@ -51,13 +51,12 @@ export class ChargeEntryComponent implements OnInit {
   { name: "TDS Details", icon: "fas fa-percent" }
 ];
 unitQtyOptions = [
-  { value: '20ft', name: '20ft' },
-  { value: '40ft', name: '40ft' },
-  { value: 'CBM', name: 'CBM' },
-  { value: 'BL', name: 'BL' },
+  { value: 'Per Cont', name: 'Per Cont' },
+  { value: 'Per CBM', name: 'Per CBM' },
+  { value: 'Per BL', name: 'Per BL' },
   { value: 'ChargeableWeight', name: 'Chargeable Weight ' },
-  { value: 'Shipment', name: 'Shipment' },
-  { value: 'GrossWeight', name: 'Gross Weight ' }
+  { value: 'Per Shipment', name: 'Per Shipment' },
+  { value: 'Per GrossWeight', name: 'Per Gross Weight ' }
 ];
 CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
@@ -97,6 +96,11 @@ selectedTab = this.tab[0].name;
   // GST and TDS lists
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
+   HSSACLookupConfig = {
+    displayFields : ['HSSACCode', 'HSSACName'],
+    displayLabels : ['Code', 'Name'],
+    labelFields :['HSSACCode'],
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -105,7 +109,8 @@ selectedTab = this.tab[0].name;
     private router: Router,
     private appSettingService: AppSettingsService,
     private calendar: NgbCalendar,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private datePipe: DatePipe,
   ) {
     this.initForms();
   }
@@ -174,16 +179,34 @@ selectedTab = this.tab[0].name;
 
   // TDS Form Controls
   createTdsFormGroup(tdsData?: any): FormGroup {
-    const eff = tdsData?.EffectiveFrom ? this.toNgbDateStruct(tdsData.EffectiveFrom) : null;
-  // ensure Status casing consistent: prefer 'Status' if present, otherwise fallback to 'status'
+        let effDate = '';
+  if (tdsData?.EffectiveFrom) {
+    const dateObj = new Date(tdsData.EffectiveFrom);
+    effDate = this.datePipe.transform(dateObj, 'dd-MMM-yyyy')?.toUpperCase() || '';
+  }
+
   const statusVal = tdsData?.Status ?? tdsData?.status ?? 'A';
     return this.fb.group({
       TDSSet: [tdsData?.TDSSet || '' ],
-      EffectiveFrom: [tdsData?.EffectiveFrom ? new Date(tdsData.EffectiveFrom) : '', ],
-      Status: [tdsData?.status || 'A'],
+      // EffectiveFrom: [(tdsData?.EffectiveFrom ? new Date(tdsData?.EffectiveFrom) : '') || '' ],
+      EffectiveFrom: [effDate],
+      Status: [statusVal],
       ChargeTdsSid: [tdsData?.ChargeTdsSid || null]
     });
   }
+
+  onTdsSetChange(tdsIndex: number, tdsSetValue: any) {
+  const tdsArray = this.chargeForm.get('chargeTds') as FormArray;
+  const tdsControl = tdsArray.at(tdsIndex) as FormGroup;
+
+  // Patch TDSSet
+  tdsControl.patchValue({ TDSSet: tdsSetValue });
+
+  // Auto-patch EffectiveFrom to today and make it readonly
+  tdsControl.patchValue({ EffectiveFrom: new Date() });
+  tdsControl.get('EffectiveFrom')?.disable(); // makes it readonly
+}
+
 
   // Add new GST row
   addGstRow(gstData?: any) {
@@ -233,7 +256,7 @@ selectedTab = this.tab[0].name;
       this.masterService.getAllChargeGroups(CompanyMasterSid),
       this.masterService.getAllCurrencies(),
       this.masterService.getAllDepartments(CompanyMasterSid),
-      this.masterService.getChargeUOMBasedOnSegment('ALL'), // CHANGED: Use new API
+      this.masterService.getUOMsByType('C'), // CHANGED: Use new API
       this.masterService.getAllHssac(),
       this.masterService.getAllTds(CompanyMasterSid)
     ]).subscribe({
@@ -301,6 +324,9 @@ selectedTab = this.tab[0].name;
       if (charge.chargeTds && charge.chargeTds.length > 0) {
         charge.chargeTds.forEach(tds => {
           this.addTdsRow(tds);
+          const lastIndex = this.chargeTds.length - 1;
+          const tdsGroup = this.chargeTds.at(lastIndex) as FormGroup;
+          tdsGroup.get('EffectiveFrom')?.enable();
         });
       } else {
         this.addTdsRow(); // Add empty row if no TDS data
@@ -315,7 +341,76 @@ selectedTab = this.tab[0].name;
     }
   });
 }
+
+validateUOMDepartmentCompatibility(): boolean {
+  const selectedUOMId = this.chargeForm.get('UOM')?.value;
+  console.log('UOM:',selectedUOMId);
+    const selectedUOM = this.uomOptions.find(uom => uom.UOMMasterSid === selectedUOMId)?.UOMCode;
+  console.log('UOM Code:', selectedUOM);
+  const selectedDepartmentIds = this.chargeForm.get('DepartmentMasterSid')?.value;
+  console.log('Departments:',selectedDepartmentIds);
+  if (!selectedUOM || !selectedDepartmentIds || selectedDepartmentIds.length === 0) {
+    return true; // No validation needed if either field is empty
+  }
+
+  // Get department objects from selected IDs
+  const selectedDepartments = this.departmentOptions
+    .filter(dept => selectedDepartmentIds.includes(dept.departmentName));
+    console.log('Selected Departments:', selectedDepartments);
+  // Check for FCL departments (both Export and Import)
+  const hasFCLExport = selectedDepartments.some(dept => 
+    dept.FCLLCL === 'FCL' && dept.ExportImport === 'Export'
+  );
+  console.log('hasFCLexp:',hasFCLExport)
+  const hasFCLImport = selectedDepartments.some(dept => 
+    dept.FCLLCL === 'FCL' && dept.ExportImport === 'Import'
+  );
+  console.log('hasFCLimp:',hasFCLImport)
+  const hasFCL = hasFCLExport || hasFCLImport;
+  console.log('fcl',hasFCL)
+  // Check for LCL departments (both Export and Import)
+  const hasLCLExport = selectedDepartments.some(dept => 
+    dept.FCLLCL === 'LCL' && dept.ExportImport === 'Export'
+  );
+  console.log('lclexp',hasLCLExport)
+  const hasLCLImport = selectedDepartments.some(dept => 
+    dept.FCLLCL === 'LCL' && dept.ExportImport === 'Import'
+  );
+  console.log('lclimp',hasLCLImport)
+  const hasLCL = hasLCLExport || hasLCLImport;
+
+
+  // Validation 1: FCL department (both Export and Import) cannot have CBM UOM
+  if (hasFCL && selectedUOM === 'CBM') {
+    this.appSettingService.showError('CBM is not applicable for FCL');
+    this.chargeForm.get('UOM')?.setErrors({ invalidCombination: true });
+    return false;
+  }
+
+  // Validation 2: LCL department (both Export and Import) cannot have CON UOM
+  if (hasLCL && selectedUOM === 'CON') {
+    this.appSettingService.showError('CON is not applicable for LCL');
+    this.chargeForm.get('UOM')?.setErrors({ invalidCombination: true });
+    return false;
+  }
+
+  // Clear any previous errors if validation passes
+  if (this.chargeForm.get('UOM')?.errors?.['invalidCombination']) {
+    this.chargeForm.get('UOM')?.setErrors(null);
+  }
+  return true;
+}
+
+// Call this method when UOM changes
+onUOMChange() {
+  this.validateUOMDepartmentCompatibility();
+}
+
+
   onSubmit() {
+      if (!this.validateUOMDepartmentCompatibility()) {
+    return;
+  }
     if (this.chargeForm.invalid) {
         this.markFormGroupTouched(this.chargeForm);
         return;
@@ -351,6 +446,7 @@ selectedTab = this.tab[0].name;
         Status: statusValue,
         chargeTaxMaster: this.chargeTaxMasters.getRawValue().map(gst => ({
     HSNCode: gst.HSNCode,
+    EffectiveFrom:gst.EffectiveFrom,
     description: gst.description,
     TaxGroup: gst.TaxGroup,
     TaxRate: gst.TaxRate,
@@ -359,7 +455,7 @@ selectedTab = this.tab[0].name;
 })),
         chargeTds: this.chargeTds.getRawValue().map(tds => ({
   TDSSet: tds.TDSSet,
-  EffectiveFrom: this.fromNgbDateStructToIso(tds.EffectiveFrom),
+  EffectiveFrom: tds.EffectiveFrom,
   Status: tds.Status,
   ...(tds.ChargeTdsSid ? { ChargeTdsSid: tds.ChargeTdsSid } : {})
 })),
@@ -385,8 +481,6 @@ selectedTab = this.tab[0].name;
 
             if (!this.isEditMode && resp.data?.charge?.ChargeMasterSid) {
                 this.router.navigate(['/master/charge/entry', resp.data.charge.ChargeMasterSid]);
-            } else {
-                this.router.navigate(['master/charge/list']);
             }
         },
         error: (err) => {
@@ -610,7 +704,7 @@ selectedTab = this.tab[0].name;
     modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
   }
 
-  onDepartmentChange(selectedNames: string[]) {
+  onDepartmentChange(selectedNames?: string[]) {
     this.selectedDepartments = selectedNames;
 
     const selectedIds = this.departmentOptions
@@ -618,6 +712,7 @@ selectedTab = this.tab[0].name;
       .map(dept => dept.DepartmentMasterSid);
 
     this.chargeForm.get('DepartmentMasterSid')?.setValue(selectedIds);
+    this.validateUOMDepartmentCompatibility();
   }
 
   onHsnsacSelect(event: any, index: number) {
@@ -642,6 +737,29 @@ enableGstFields(index: number) {
   const gstGroup = this.chargeTaxMasters.at(index) as FormGroup;
   gstGroup.get('TaxGroup')?.enable();
   gstGroup.get('TaxRate')?.enable();
+}
+
+onTdsSelect(event: any, index: number) {
+  if (event) {
+    console.log('event')
+    const selectedTds = this.tdsOptions.find(item => item.TDSSetHeaderSid === event.TDSSetHeaderSid);
+    if (selectedTds) {
+      const tdsGroup = this.chargeTds.at(index) as FormGroup;
+            const formattedDate = selectedTds.EffectiveFrom 
+        ? this.datePipe.transform(new Date(selectedTds.EffectiveFrom), 'dd-MMM-yyyy')?.toUpperCase() 
+        : '';
+      
+        tdsGroup.patchValue({ EffectiveFrom: formattedDate });
+      
+      // Disable the fields since they're auto-populated
+      tdsGroup.get('EffectiveFrom')?.disable();
+    }
+  }
+}
+
+enableTdsFields(index: number) {
+  const tdsGroup = this.chargeTds.at(index) as FormGroup;
+  tdsGroup.get('EffectiveFrom')?.enable();
 }
 
   getTdsSetName(tdsSetId: number): string {
