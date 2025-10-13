@@ -217,6 +217,7 @@ export class CostEntryComponent implements OnInit {
 
     this.rateFormArray.valueChanges.subscribe(() => {
     this.dataEmitter.emit(this.rateFormArray.getRawValue());
+    this.calculateProfit();
   });
 
     // If dataItems was set before ngOnInit, process them now
@@ -1016,39 +1017,43 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
 
+
+
   calculateProfit() {
     this.profitSummary = [];
     // const costFormValue: any[] = this.costFormArray.getRawValue() || [];
     // const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];
-    // const data = [...costFormValue, ...revenueFormValue];
+    const rateFormValue = this.rateFormArray.getRawValue() || [];
+    const data = [...rateFormValue];
 
-    // data.forEach(item => {
-    //   console.log(item);
-    //   const amt = parseFloat(item.LocalAmount);
-    //   const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
-    //   const chargeName = charge ? charge.chargeName : "Unknown";
+    data.forEach(item => {
+      console.log(item);
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+      const chargeName = charge ? charge.chargeName : "Unknown";
 
-    //   let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
 
-    //   if (!existing) {
-    //     existing = {
-    //       chargeName,
-    //       totalSales: 0,
-    //       totalCost: 0,
-    //       profit: 0,
-    //       profitPercent: "0%"
-    //     };
-    //     this.profitSummary.push(existing);
-    //   }
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
 
-    //   if (item.CostRevenue === "Cost") {
-    //     existing.totalCost += item.DrCr === "D" ? amt : -amt;
-    //   }
+      // if (item.CostRevenue === "Cost") {
+        existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
 
-    //   if (item.CostRevenue === "Revenue") {
-    //     existing.totalSales += item.DrCr === "C" ? amt : -amt;
-    //   }
-    // });
+      // if (item.CostRevenue === "Revenue") {
+        existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
 
     this.profitSummary.forEach(p => {
       let profit: number;
@@ -1068,7 +1073,7 @@ createRateFormGroup(data?: any): FormGroup {
       p.totalCost = p.totalCost.toFixed(2);
     });
 
-
+    console.log(this.profitSummary);
   }
 
   calculateTotal(field: string): number {

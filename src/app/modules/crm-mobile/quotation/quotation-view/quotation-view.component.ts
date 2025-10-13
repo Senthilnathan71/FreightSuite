@@ -359,7 +359,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           PODSid: route.PODSid,
           FPODSid: route.FDPSid,
           CargoType: cargo.CargoType,
-          CBM: cargo.Volume,
+          GrossWeight : cargo.GrossWeight,
+          NetWeight : cargo.NetWeight,
+          Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           ContainerQty: cargo.Qty

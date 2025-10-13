@@ -330,7 +330,7 @@ export class EnquiryEntryComponent implements OnInit {
       this.customers = customers;
       this.leadList = leads.data;
       this.incoList = incos;
-      this.weightUnitList = weightUnits;
+      this.weightUnitList = weightUnits.data;
       this.packageTypes = packageTypes.data;
       this.containerTypes = containerTypes;
       this.productList = products;
@@ -1288,7 +1288,9 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
           PODSid: route.PODSid,
           FPODSid: route.FDPSid,
           CargoType: cargo.CargoType,
-          CBM: cargo.Volume,
+          GrossWeight : cargo.GrossWeight,
+          NetWeight : cargo.NetWeight,
+          Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           Qty: cargo.Qty

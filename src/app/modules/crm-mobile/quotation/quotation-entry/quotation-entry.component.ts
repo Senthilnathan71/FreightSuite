@@ -706,6 +706,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
       this.addQuoteCarrier(this.quoteRoutes.length - 1);
+    } else {
+      this.filterChargesBySegment(routeIndex,data?.segmentType)
     }
 
     routeForm.get('GrossWeight')?.valueChanges.subscribe(() => {
@@ -1269,7 +1271,10 @@ private extractCargoData(enquiryCargo: any[]): any {
       CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       BranchMasterSid : this.currentBranch?.BranchMasterSid
     }
-    this.dropdownStore.loadDepartments(CompanyMasterSid);
+    const supplierFilterOption = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      types : ['vendor', 'transporter', 'agent']
+    }
     return forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
       carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
@@ -1284,7 +1289,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       packageTypes : this.leadService.getUOMsByType('P').pipe(catchError(err => of([]))),
       measurementUnits : this.leadService.getUOMsByType('M').pipe(catchError(err => of([]))),
       weightUnits : this.leadService.getUOMsByType('W').pipe(catchError(err => of([]))),
-      vendors: this.leadService.getAllVendorSupplier(CompanyMasterSid).pipe(catchError(err => of([]))),
+      vendors: this.leadService.getCustomerByItsType(supplierFilterOption).pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
@@ -1304,7 +1309,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.incoList = incos || [];
       this.salesmanList = salesman || [];
       this.containerTypeList = containerTypes || [],
-      this.vendorSupplierList = vendors || [];
+      this.vendorSupplierList = vendors.data || [];
       this.productList = products || [];
       this.imcoList = imcos.data || [];
     })

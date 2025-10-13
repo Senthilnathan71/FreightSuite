@@ -87,9 +87,7 @@
                             <i class="fas fa-plus me-1"></i> New
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-                        <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()"
-                            type="button"> <i class="fas fa-plus me-1"></i> Create
-                            Quotation</button>
+                        
                         }
                         @if (!isMobile) {
                         <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
@@ -97,14 +95,17 @@
                             <i class="fas fa-plus me-1"></i>Add
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-                        <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()"
+                        <!-- <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()"
                             type="button"> <i class="fas fa-plus me-1"></i> Create
-                            Quotation</button>
+                            Quotation</button> -->
                         <!-- (click)="addNewRoute()" -->
                         }
                     </div>
                 </div>
-
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()" type="button"> 
+                    <i class="fas fa-plus me-1"></i> 
+                    Create Quotation
+                </button>
             </div>
         </div>
 
@@ -919,7 +920,7 @@
                                                                     placeholder="" appendTo="body"
                                                                     [class.filled]="!!routes.at(routeIndex).get('WeightUnitSid')?.value">
                                                                     <ng-option *ngFor="let unit of weightUnitList"
-                                                                        [value]="unit.UnitMasterSid">{{unit.unitCode}}</ng-option>
+                                                                        [value]="unit.UOMMasterSid">{{unit.UOMCode}}</ng-option>
                                                                 </ng-select>
                                                             </td>
                                                             <td>
