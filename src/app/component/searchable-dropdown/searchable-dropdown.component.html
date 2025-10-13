@@ -10,20 +10,20 @@
       readonly
       (click)="openModal(searchModal)"
     />
-    <div class="dropdown-actions">
+    <div class="dropdown-actions mt-1">
       <button 
         *ngIf="selectedItem && !disabled && !internalControl.disabled" 
         type="button" 
         class="btn-clear"
         (click)="clearSelection(); $event.stopPropagation()">
-        ×
+       <i-feather name="x" class="feather-sm fs-2 mt-1"></i-feather>
       </button>
       <button 
         type="button" 
         class="btn-dropdown"
         [disabled]="disabled || internalControl.disabled"
         (click)="openModal(searchModal)">
-        ▼
+       <i class="fas fa-caret-down"></i>
       </button>
     </div>
   </div>
@@ -33,12 +33,12 @@
 <ng-template #searchModal let-modal>
   <div class="modal-header">
     <h6 class="modal-title mb-0">{{ placeholder || 'Select an option' }}</h6>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   
   <div class="modal-body">
     <!-- Search Input -->
-    <div class="search-box mb-2">
+    <div class="search-box mb-1">
       <input 
         type="text" 
         class="form-control form-control-sm" 
@@ -57,7 +57,7 @@
 
     <!-- Table -->
     <div *ngIf="!isLoading" class="table-container">
-      <table class="table table-sm table-hover table-bordered mb-0">
+      <table class="table table-sm   mb-0">
         <thead class="table-light sticky-header">
           <tr>
             <th *ngFor="let label of displayLabels; let i = index" [ngStyle]="getColumnStyle(i)">
@@ -88,7 +88,7 @@
     </div>
   </div>
   
-  <div class="modal-footer py-2">
+  <div class="modal-footer py-1">
     <button type="button" class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
   </div>
 </ng-template>

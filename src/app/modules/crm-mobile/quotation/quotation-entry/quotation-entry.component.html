@@ -8,7 +8,7 @@
       <div class="d-flex align-items-center gap-2">
         <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Update' : 'Add' }} Quotation</h5>
         @if(isEditMode){
-        <a class="text-info d-flex align-items-center w-2 h-2" (click)="showInfo()">
+        <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
         }
@@ -162,7 +162,7 @@
                   <span class="text-danger"></span></label>
               </div>
             </aside>
-            <aside class="col-md-4 mt-md-1 mt-md-1">
+            <aside class="col-md-4">
               <div class="custom-form-group">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
@@ -350,7 +350,7 @@
               <h2 ngbAccordionHeader>
                 <button ngbAccordionButton
                   class="d-flex justify-content-between align-items-center w-100 position-relative">
-                  <h5 class="fw-semibold my-1 text-light">{{getRouteInfo(routeIndex)}}</h5>
+                  <h6 class="fw-semibold my-1 text-light">{{getRouteInfo(routeIndex)}}</h6>
                   @if(quoteRoutes.length > 1){
 
                   <button class="btn btn-sm waves-effect waves-light text-light"
@@ -584,7 +584,7 @@
                             class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
                             (focus)="route.get('GrossWeight')?.updateValueAndValidity()"
                             (blur)="route.get('GrossWeight')?.updateValueAndValidity()">
-                          <label for="text-input" class="input-label">Gross Weight <span class="text-danger">{{
+                          <label for="text-input" class="input-label px-md-5">Gross Weight <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
                           <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
                                 Gr weight > Net weight
@@ -596,7 +596,7 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label">Net Weight <span class="text-danger">{{
+                          <label for="text-input" class="input-label px-md-5">Net Weight <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'NetWeight') ? '*' : '' }}</span></label>
                         </div>
                       </aside>
@@ -606,7 +606,7 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label">CBM <span class="text-danger">{{
+                          <label for="text-input" class="input-label px-md-5 mx-md-4">CBM <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
                           @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
                           <div class="error-message">
@@ -682,8 +682,8 @@
                             <i class="fas fa-plus me-1"></i> Add Product
                           </button> -->
                         </div>
-                        <div class="table-responsive table-borderless" formArrayName="quoteProducts">
-                          <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                        <div class="table-responsive table-borderless" formArrayName="quoteProducts" style="overflow-y: hidden;">
+                          <table class="table table-hover align-middle no-wrap  table-sm mb-1" >
                             <thead>
                               <tr class="bg-info text-center">
                                 <th class="bg-transparent text-light" scope="col"
@@ -730,13 +730,13 @@
                                 [formGroupName]="productIndex" class="py-0">
                                 <td>
                                   <button *ngIf="productIndex === quoteProducts(routeIndex).length - 1"
-                                    class="btn btn-link text-info py-0 px-1" (click)="addQuoteProduct(routeIndex)">
-                                    <i class="fas fa-plus"></i>
+                                    class="btn btn-link text-info py-0 px-1" (click)="addQuoteProduct(routeIndex)" ngbTooltip="Add Product">
+                                    <i class="fas fa-plus fs-2"></i>
                                   </button>
                                   <button class="btn btn-link text-danger py-0 px-1"
                                     (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid)"
                                     [disabled]="disableAllModification" ngbTooltip="Delete">
-                                    <i class="fas fa-trash text-center"></i>
+                                    <i class="fas fa-trash text-center fs-2"></i>
                                   </button>
                                 </td>
                                 <td>
@@ -843,7 +843,7 @@
                                       <i class="fas fa-plus"></i>
                                     </button>
                                   </td>
-                                  <td colspan="9">
+                                  <td colspan="7">
                                     <div class="text-center">No Products added</div>
                                   </td>
                                 </tr>
@@ -872,8 +872,8 @@
                             <h2 ngbAccordionHeader>
                               <button ngbAccordionButton
                                 class="d-flex justify-content-between align-items-center w-100 position-relative">
-                                <h5 class="fw-semibold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
-                                  Details'}}</h5>
+                                <h6 class="fw-semibold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
+                                  Details'}}</h6>
                                 <span class="fw-semibold my-1 text-warning ps-2" *ngIf="isEditMode">
                                   @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex)){
                                   @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Approved"){
@@ -959,7 +959,7 @@
                                         <aside class="col-md-2">
                                           <div class="custom-form-group">
                                             <input type="text" id="text-input" formControlName="authorizerRemarks"
-                                              class="custom-input-field sm" placeholder="">
+                                              class="custom-input-field sm" >
                                             <label for="text-input" class="input-label">Authorizer Remarks <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerRemarks')
                                                 ? '*' : '' }}</span></label>
@@ -1016,7 +1016,7 @@
                                   </div>
                                 </div>
                               </div>
-                              <div class="table-responsive table-borderless" formArrayName="quoteCharges">
+                              <div class="table-responsive table-borderless" formArrayName="quoteCharges" style="overflow-y:hidden;">
                                 <div>
                                   <table class="table table-hover align-middle no-wrap  table-sm mb-0">
                                     <thead>
@@ -1125,8 +1125,8 @@
                                         <td *ngIf="quoteCharges(routeIndex,carrierIndex).length > 1">
                                           <button class="btn btn-link text-danger py-0"
                                             (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-                                            [disabled]="disableAllModification">
-                                            <i class="fas fa-trash text-center"></i>
+                                            [disabled]="disableAllModification" ngbTooltip="Delete">
+                                            <i class="fas fa-trash text-center fs-2"></i>
                                           </button>
                                         </td>
                                         <td>
@@ -1147,8 +1147,8 @@
                                         </td>
                                         <td>
                                           <input type="text" id="text-input" placeholder=""
-                                            class="form-control custom-input-field sm overflow-auto"
-                                            formControlName="ChargeDisplayName" readonly>
+                                            class=" custom-input-field sm overflow-auto"
+                                            formControlName="ChargeDisplayName" style="margin-top: 2px;" readonly>
                                         </td>
                                         <td>
                                           <dofi-searchable-dropdown [items]="chargeUnitMaster"
@@ -1161,9 +1161,9 @@
                                         </td>
                                         <td>
                                           <input type="text" id="text-input" formControlName="Qty" placeholder="" [onlyNumbers]="3"
-                                            class="custom-input-field sm text-end"
-                                            (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex) ; calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)">
-
+                                            class="custom-input-field sm text-end" 
+                                            (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex) ; calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)" style="margin-top: 2px;" >
+                                          
                                         </td>
                                         <!-- <td>
                                           <dofi-searchable-dropdown [items]="chargeUnitMaster"
@@ -1195,7 +1195,7 @@
                                             <input type="text" id="text-input" formControlName="RevenueRate"
                                               placeholder="" class="custom-input-field sm text-end" DecimalPrecision
                                               [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
-                                              (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)">
+                                              (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)" style="margin-top: 2px;" >
                                             @if(charge.get("RevenueRate")?.touched &&
                                             charge.get("RevenueRate")?.invalid){
                                             <div class="error-message">
@@ -1213,7 +1213,7 @@
                                             id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             class="form-control custom-input-field sm  text-end" DecimalPrecision
-                                            [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
 
                                         </td>
                                         }
@@ -1221,7 +1221,7 @@
                                           <input type="text" id="text-input" formControlName="RevenueAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
 
                                         </td>
                                         @if(f['AgreedRate']?.value){
@@ -1229,7 +1229,7 @@
                                           <input type="text" id="text-input" formControlName="RevenueLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
 
                                         </td>
                                         }
@@ -1278,7 +1278,7 @@
                                               DecimalPrecision [DecimalPrecisionBefore]="6"
                                               [DecimalPrecisionAfter]="digitsAfterDecimal"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
-                                              class="custom-input-field sm  text-end">
+                                              class="custom-input-field sm  text-end" style="margin-top: 2px;" >
                                             @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
                                             <div class="error-message">
                                               @if(charge.get("CostRate")?.hasError('required')){
@@ -1294,7 +1294,7 @@
                                             (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             placeholder="" class="form-control custom-input-field sm  text-end"
                                             DecimalPrecision [DecimalPrecisionBefore]="4"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
 
                                         </td>
                                         }
@@ -1302,7 +1302,7 @@
                                           <input type="text" id="text-input" formControlName="CostAmount" placeholder=""
                                             class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
 
                                         </td>
                                         @if(f['AgreedRate']?.value){
@@ -1310,7 +1310,7 @@
                                           <input type="text" id="text-input" formControlName="CostLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
-                                            [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                            [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;" >
 
                                         </td>
                                         }

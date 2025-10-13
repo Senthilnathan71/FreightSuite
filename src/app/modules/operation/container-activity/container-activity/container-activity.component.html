@@ -69,7 +69,7 @@
 </div>
 
 <ng-template #activityModal let-modal>
-    <div class="modal-header p-2 bg-info">
+    <div class="modal-header modalHeaderpart">
         <h5 class="modal-title text-white">{{currentActivityIndex === -1 ? 'Add' : 'Edit'}} Container Activity</h5>
         <button type="button" class="btn-close btn-close-white" aria-label="Close"
             (click)="modal.dismiss('Cross click')"></button>
@@ -167,9 +167,9 @@
                 </div>
             </aside>
 
-            <aside class="col-md-12">
-                <div class="custom-form-group">
-                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="3" placeholder=""></textarea>
+            <aside class="col-md-4">
+                <div class="custom-form-group mt-1">
+                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="1" placeholder=""></textarea>
                     <label class="input-label">Remarks</label>
                 </div>
             </aside>
