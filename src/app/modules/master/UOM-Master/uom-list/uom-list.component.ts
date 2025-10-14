@@ -304,6 +304,14 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
       {
+        key: 'UOMType',
+        label: 'UOMType',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
         key: 'status',
         label: 'Status',
         sortable: true,

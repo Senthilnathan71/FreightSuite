@@ -124,7 +124,7 @@
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!chargeForm.get('DepartmentMasterSid')?.value">
                                         <multi-select [items]="departmentOptions" bindLabel="departmentName"
-                                            bindValue="departmentName" placeholder=""
+                                            bindValue="departmentName" placeholder="" (onChange)="onDepartmentChange()"
                                             [control]="chargeForm.get('DepartmentMasterSid')">
                                         </multi-select>
                                         <label class="input-label">Departments <span
@@ -144,7 +144,7 @@
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!chargeForm.get('UOM')?.value">
                                         <ng-select formControlName="UOM" [items]="uomOptions" bindLabel="UOMCode"
-                                            bindValue="UOMMasterSid" placeholder="">
+                                            bindValue="UOMMasterSid" placeholder="" (change)="onUOMChange()">
                                         </ng-select>
                                         <label class="input-label">UOM <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('UOM')?.touched && chargeForm.get('UOM')?.invalid"
@@ -283,10 +283,14 @@
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <ng-select [formControlName]="'HSNCode'" [items]="hsnsacOptions"
+                                                    <!-- <ng-select [formControlName]="'HSNCode'" [items]="hsnsacOptions"
                                                         bindLabel="HSSACCode" bindValue="HSSACCode" placeholder=""
                                                         (change)="onHsnsacSelect($event, i)" appendTo="body">
-                                                    </ng-select>
+                                                    </ng-select> -->
+                                                    <dofi-searchable-dropdown  [items]="hsnsacOptions" formControlName="HSNCode" [placeholder]="''"
+                                            [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
+                                            [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACCode'" (itemSelected)="onHsnsacSelect($event, i)" appendTo="body">
+                                        </dofi-searchable-dropdown>
                                                     <!-- <div *ngIf="gst.get('HSNCode')?.touched && gst.get('HSNCode')?.invalid"
                                                         class="error-message">
                                                         <span
@@ -374,7 +378,7 @@
                                                 </td>
                                                 <td>
                                                     <ng-select [formControlName]="'TDSSet'" [items]="tdsOptions"
-                                                        bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
+                                                        bindLabel="TDSSetName" bindValue="TDSSetHeaderSid" (change)="onTdsSelect($event, i)"
                                                         placeholder="" appendTo="body" >
                                                     </ng-select>
                                                     <!-- <div *ngIf="tds.get('TDSSet')?.touched && tds.get('TDSSet')?.invalid"
@@ -384,7 +388,7 @@
                                                     </div> -->
                                                 </td>
                                                 <td>
-                                                    <div class="custom-form-group custom-form-group-select-date mt-0 ">
+                                                    <!-- <div class="custom-form-group custom-form-group-select-date mt-0 ">
                                                         <div class="input-group">
                                                             <input class="form-control" placeholder="dd-mm-yyyy"
                                                                 name="dp" ngbDatepicker #d1="ngbDatepicker"
@@ -396,6 +400,13 @@
                                                                     class="feather-sm"></i-feather>
                                                             </button>
                                                         </div>
+                                                    </div> -->
+                                                    <input type="" formControlName="EffectiveFrom"
+                                                        class="custom-input-field sm" readonly />
+                                                    <div *ngIf="tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid"
+                                                        class="error-message">
+                                                        <span
+                                                            *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
                                                     </div>
                                                 </td>
                                                 <!-- <td>

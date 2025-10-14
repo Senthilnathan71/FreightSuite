@@ -9,6 +9,7 @@ import {
   NgbActiveModal,
   NgbPaginationModule,
   NgbDropdownModule,
+  NgbTooltip,
   
 } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
@@ -72,7 +73,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     NgbPaginationModule,
     NgbDropdownModule,
      NgxSpinnerModule,
-     SearchableDropdown
+     SearchableDropdown,
+     NgbTooltip
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],

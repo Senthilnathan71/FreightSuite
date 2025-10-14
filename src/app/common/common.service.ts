@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs';
 
@@ -6,6 +6,8 @@ import { map } from 'rxjs';
   providedIn: 'root'
 })
 export class CommonService {
+      documentData = signal<any[]>([]);
+  
       constructor(private http: HttpClient) { }
 
       getEdocById(id: number) {
@@ -16,7 +18,7 @@ export class CommonService {
             })
           );
         }
-      
+
         createEdoc(payload: any) {
           return this.http.post('attach-document/Create', payload).pipe(
             map((res: any) => {
@@ -33,4 +35,13 @@ export class CommonService {
             })
           );
         }
+
+        getExistingFile(payload: any) {
+          return this.http.post('attach-document/fetch-by-folder', payload).pipe(
+            map((res: any) => {
+              return res.data;
+            })
+          );
+        }
+
     }

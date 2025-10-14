@@ -51,8 +51,9 @@
                             <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem
                                 appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i>
                                 Email</button>
-                                <button *ngIf="selectedFCLLCL === 'FCL'" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openAgentEmail()"><i class="fas fa-envelope me-1"></i> Agent Email</button>
+                            <button *ngIf="selectedFCLLCL === 'FCL'" class="text-dark" ngbDropdownItem
+                                appPreventMultiClick (click)="openAgentEmail()"><i class="fas fa-envelope me-1"></i>
+                                Agent Email</button>
                         </div>
                     </div>
                 </div>
@@ -87,7 +88,7 @@
                             <i class="fas fa-plus me-1"></i> New
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
-                        
+
                         }
                         @if (!isMobile) {
                         <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
@@ -102,8 +103,9 @@
                         }
                     </div>
                 </div>
-                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()" type="button"> 
-                    <i class="fas fa-plus me-1"></i> 
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()"
+                    type="button">
+                    <i class="fas fa-plus me-1"></i>
                     Create Quotation
                 </button>
             </div>
@@ -476,13 +478,13 @@
                     </div>
                 </aside>
                 }
-
                 <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('ShipperName')?.value">
                         <ng-select class="ng-select" [items]="finalShipperList" bindValue="CustomerName"
                             bindLabel="CustomerName" placeholder="" formControlName="ShipperName"
-                            (change)="filterConsignee()" (clear)="filterConsignee()" appendTo="body"></ng-select>
+                            (change)="onShipperChange($event)" (clear)="onShipperChange(null)"
+                            appendTo="body"></ng-select>
                         <label for="text-input" class="input-label">Shipper Name <span
                                 class="text-danger"></span></label>
                         @if(enquiryOtherForm.get('ShipperName')?.invalid &&
@@ -495,20 +497,24 @@
                         }
                     </div>
                 </aside>
+                <!-- Shipper Address -->
                 <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group">
-                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="ShipperAddress">
-                        <label for="text-input" class="input-label">Shipper Address <span
-                                class="text-danger"></span></label>
+                        <input type="text" id="shipper-address" placeholder="" class="custom-input-field sm"
+                            formControlName="ShipperAddress" />
+                        <label for="shipper-address" class="input-label">
+                            Shipper Address <span class="text-danger"></span>
+                        </label>
                     </div>
                 </aside>
+
                 <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
                         <ng-select class="ng-select" [items]="finalConsigneeList" bindLabel="CustomerName"
                             bindValue="CustomerName" placeholder="" formControlName="ConsigneeName"
-                            (change)="filterShipper()" (clear)="filterShipper()" appendTo="body"></ng-select>
+                            (change)="onConsigneeChange($event)" (clear)="onConsigneeChange(null)"
+                            appendTo="body"></ng-select>
                         <label for="text-input" class="input-label">Consignee Name <span
                                 class="text-danger"></span></label>
                         @if(enquiryOtherForm.get('ConsigneeName')?.invalid &&
@@ -521,12 +527,14 @@
                         }
                     </div>
                 </aside>
+                <!-- Consignee Address -->
                 <aside class="col-md-3" [formGroup]="enquiryOtherForm">
                     <div class="custom-form-group">
-                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="ConsigneeAddress">
-                        <label for="text-input" class="input-label">Consignee Address <span
-                                class="text-danger"></span></label>
+                        <input type="text" id="consignee-address" placeholder="" class="custom-input-field sm"
+                            formControlName="ConsigneeAddress" />
+                        <label for="consignee-address" class="input-label">
+                            Consignee Address <span class="text-danger"></span>
+                        </label>
                     </div>
                 </aside>
                 <!-- <aside class="col-md-4">
@@ -696,33 +704,10 @@
                                             <label class="input-label">POO</label>
                                         </div>
                                     </div>
-                                    <!--                                     
-                                    <div class="col-12 col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
-
-                                            <ng-select formControlName="POL" class="ng-select" placeholder=""
-                                                appendTo="body">
-                                                <ng-option *ngFor="let item of filteredPOLPorts[routeIndex]"
-                                                    [value]="item.PortMasterSid">
-                                                    {{ item.PortName }} ({{ item.PortCode }})
-                                                </ng-option>
-                                            </ng-select>
-                                            <label class="input-label">POL <span class="text-danger">*</span></label>
-                                            <div *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
-                                                class="error-message">
-                                                Required
-                                            </div>
-
-                                        </div>
-                                    </div> -->
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
-                                            <!-- <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
-
-                          </ng-select> -->
+                                          
                                             <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]"
                                                 formControlName="POL" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
@@ -741,49 +726,29 @@
                                             }
                                         </div>
                                     </aside>
-                                         <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select"
-                          [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
-                          <!-- <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
-                            (change)="onRouteChange(routeIndex)">
-
-                          </ng-select> -->
-                          <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]" formControlName="POD"
-                            placeholder="" [displayFields]="portLookupConfig.displayFields"
-                            [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
-                            (itemSelected)="onRouteChange(routeIndex)">
-                          </dofi-searchable-dropdown>
-                          <label for="" class="input-label">POD <span class="text-danger">*</span></label>
-                          @if(route.get('POD')?.invalid && route.get('POD').touched){
-                          <div class="error-message">
-                            @if(route.get('POD')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
-                                    <!-- <div class="col-12 col-md-3">
+                                    <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
-
-                                            <ng-select formControlName="POD" class="ng-select" placeholder=""
-                                                appendTo="body">
-                                                <ng-option *ngFor="let item of filteredPODPorts[routeIndex]"
-                                                    [value]="item.PortMasterSid">
-                                                    {{ item.PortName }} ({{ item.PortCode }})
-                                                </ng-option>
-                                            </ng-select>
-
-                                            <label class="input-label">POD <span class="text-danger">*</span></label>
-                                            <div *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
-                                                class="error-message">
-                                                Required
+                                            
+                                            <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]"
+                                                formControlName="POD" placeholder=""
+                                                [displayFields]="portLookupConfig.displayFields"
+                                                [displayLabels]="portLookupConfig.displayLabels"
+                                                [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                                                bindValue="PortMasterSid" (itemSelected)="onRouteChange(routeIndex)">
+                                            </dofi-searchable-dropdown>
+                                            <label for="" class="input-label">POD <span
+                                                    class="text-danger">*</span></label>
+                                            @if(route.get('POD')?.invalid && route.get('POD').touched){
+                                            <div class="error-message">
+                                                @if(route.get('POD')?.hasError('required')){
+                                                <span>Required</span>
+                                                }
                                             </div>
+                                            }
                                         </div>
-                                    </div> -->
+                                    </aside>
+                                    
                                     <div class="col-12 col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
@@ -911,8 +876,8 @@
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
-                                                                    class="custom-input-field sm text-end w-100" [onlyNumbers]
-                                                                    appendTo="body">
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    [onlyNumbers] appendTo="body">
                                                             </td>
                                                             <td>
                                                                 <ng-select name="weightunit"
@@ -926,7 +891,8 @@
                                                             <td>
                                                                 <!-- <div class="custom-form-group"> -->
                                                                 <input type="text" formControlName="GrossWeight"
-                                                                    class="custom-input-field sm text-end w-100" DecimalPrecision
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision
                                                                     (focus)="cargo.get('GrossWeight')?.updateValueAndValidity()"
                                                                     (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
                                                                     [DecimalPrecisionBefore]="7"
@@ -938,14 +904,14 @@
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="NetWeight"
-                                                                    class="custom-input-field sm text-end w-100" DecimalPrecision
-                                                                    [DecimalPrecisionBefore]="7"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="cbm"
-                                                                    class="custom-input-field sm text-end w-100" DecimalPrecision
-                                                                    [DecimalPrecisionBefore]="7"
+                                                                    class="custom-input-field sm text-end w-100"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
                                                             <td>
@@ -1003,8 +969,8 @@
                                                                 <label class="form-label mb-0">Container Type <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td
-                                                                class="bg-transparent text-light text-center " style="width: 40px;" >
+                                                            <td class="bg-transparent text-light text-center "
+                                                                style="width: 40px;">
                                                                 <label class="form-label mb-0">No. of Containers <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
@@ -1078,8 +1044,8 @@
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="Qty"
-                                                                    class="custom-input-field sm text-end" DecimalPrecision
-                                                                    [DecimalPrecisionBefore]="5"
+                                                                    class="custom-input-field sm text-end"
+                                                                    DecimalPrecision [DecimalPrecisionBefore]="5"
                                                                     [DecimalPrecisionAfter]="0" appendTo="body">
                                                             </td>
                                                             <td>
@@ -1162,7 +1128,8 @@
                                                                 <label class="form-label mb-0">Cargo Type <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center " style="width: 280px;"
+                                                            <td class="bg-transparent text-light text-center "
+                                                                style="width: 280px;"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Cargo Description
                                                                     <span class="text-danger"></span></label>
@@ -1173,22 +1140,26 @@
                                                                         class="text-danger">*</span></label>
                                                             </td>
 
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
+                                                                style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Chargable Weight <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100" style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
+                                                                style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Length <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100" style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
+                                                                style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Width<span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100" style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
+                                                                style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Height <span
                                                                         class="text-danger">*</span></label>
@@ -1235,19 +1206,23 @@
 
                                                             <td>
                                                                 <input type="text" formControlName="ChargeableWeight"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]>
+                                                                    class="custom-input-field sm text-end"
+                                                                    [onlyNumbers]>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="length"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]>
+                                                                    class="custom-input-field sm text-end"
+                                                                    [onlyNumbers]>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="width"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]>
+                                                                    class="custom-input-field sm text-end"
+                                                                    [onlyNumbers]>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="height"
-                                                                    class="custom-input-field sm text-end" [onlyNumbers]>
+                                                                    class="custom-input-field sm text-end"
+                                                                    [onlyNumbers]>
                                                             </td>
 
                                                             @if( routeCargo(routeIndex).controls.length > 1){

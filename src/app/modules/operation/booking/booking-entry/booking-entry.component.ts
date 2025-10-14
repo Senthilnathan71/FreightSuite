@@ -40,6 +40,7 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -86,7 +87,8 @@ type Html2PdfOptions = {
     BookingUploadComponent,
     NgxSpinnerModule,
     NgbTooltip,
-    SearchableDropdown
+    SearchableDropdown,
+    SearchableDropdownModal
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],

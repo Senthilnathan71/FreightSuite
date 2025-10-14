@@ -1,0 +1,251 @@
+/* Dropdown Trigger Styling */
+.searchable-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  input {
+    flex: 1;
+    cursor: pointer;
+    background-color: #fff;
+    // padding-right: 70px;
+
+    &:disabled {
+      cursor: not-allowed;
+      background-color: #e9ecef;
+    }
+
+    // &:focus {
+    //   outline: none;
+    //   border-color: #80bdff;
+    //   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    // }
+  }
+
+  .dropdown-actions {
+    position: absolute;
+    right: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 2px;
+  }
+
+  .btn-clear,
+  .btn-dropdown {
+    border: none;
+    background: transparent;
+    padding: 6px 2px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #9c9696be;
+    transition: color 0.2s;
+    font-weight: 400 !important;
+
+    &:hover:not(:disabled) {
+      color: #495057;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .btn-clear {
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 6px;
+    font-weight: 400 !important;
+
+    &:hover {
+      color: #dc3545 !important;
+    }
+  }
+}
+
+/* Modal Sizing */
+::ng-deep .compact-modal .modal-dialog {
+  max-width: 550px;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+  padding: 0.5rem 0.75rem;
+
+  .modal-title {
+    font-weight: 600;
+    color: #212529;
+    font-size: 0.9rem;
+    color: #ffffff;
+  }
+
+  .btn-close {
+    font-size: 0.8rem;
+    padding: 0.25rem;
+  }
+}
+
+.modal-body {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+/* Search Box */
+.search-box {
+  margin-bottom: 0.5rem;
+
+  input {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.875rem;
+    border: none;
+    border-bottom: 2px solid #dee2e6;
+
+    &:focus {
+      // border-color: #80bdff;
+      // box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+  }
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+  max-height: 250px;
+  overflow-y: auto;
+  border-radius: 0.25rem;
+}
+
+/* Table Styling */
+.table {
+  margin-bottom: 0;
+  font-size: 0.8rem;
+  table-layout: fixed;
+  width: 100%;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    th {
+      background-color: #d4d4cf;
+      font-weight: 500;
+      text-align: left;
+      padding: 2px 8px;
+      white-space: nowrap;
+      color: black;
+      font-size: 0.8rem;
+      line-height: 1.2;
+      height: 26px;
+    }
+  }
+
+  tbody {
+  tr.selectable-row {
+  cursor: pointer;
+  transition: background-color 0.1s ease-in-out;
+  height: 30px;
+
+  &.table-active {
+    background-color: #05608d !important;
+    color: #fff;
+
+    td {
+      background-color: #05608d !important;
+      color: #fff !important;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    &:hover {
+      background-color: #edeff1 !important;
+
+      td {
+        background-color: #05608d !important;
+        color: #fff !important;
+      }
+    }
+  }
+
+  td {
+    padding: 2px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    height: 30px;
+    vertical-align: middle;
+  }
+}
+
+
+    .text-muted {
+      font-style: italic;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+
+/* Loading Spinner */
+.spinner-border-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Sticky Header */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background-color: #f1f3f5;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar Styling */
+.table-container::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  ::ng-deep .modal-dialog.modal-xl {
+    max-width: 95%;
+  }
+
+  .table {
+    font-size: 0.85rem;
+
+    th,
+    td {
+      padding: 8px;
+    }
+  }
+}
+
+

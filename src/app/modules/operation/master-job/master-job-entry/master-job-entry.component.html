@@ -91,15 +91,15 @@
             <!-- master forms-->
             <div class="content-layout px-1">
                 <div class="row two-column-layout gap-1">
-                    <div class="info-card col-md-4 px-0 border border-top-0">
-                        <div class="card-header">
+                    <div class="info-card col-md-4 px-0  ">
+                        <!-- <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
                                     <i class="fas fa-database "></i>
                                     Master Job
                                 </h4>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="card-body">
                             <div class="col-md-12">
                                 <div class="row compact-form" [formGroup]="masterJobForm">
@@ -128,7 +128,7 @@
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="MasterJobNumber"
                                                 class="form-control custom-input-field sm" [readonly]="isEditMode"
-                                                [textWithNumbers]="15">
+                                                [textWithNumbers]="15" placeholder="">
                                             <label class="input-label">Master Job No <span
                                                     class="text-danger"></span></label>
                                             @if(masterJobForm.get('MasterJobNumber')?.touched &&
@@ -145,7 +145,7 @@
 
                                         </div>
                                     </aside>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -170,7 +170,7 @@
 
                                         </div>
                                     </div>
-                                    <aside class="col-md-6">
+                                    <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FreightPPCC')?.value">
                                             <ng-select [items]="modeOfFreightTerms" bindLabel="name" bindValue="id"
@@ -197,8 +197,8 @@
                                             <ng-select [items]="filteredDestinationAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="DestinationAgent"
                                                 placeholder="" (change)="onDestinationAgentChange($event)"
-                                                appendTo="body">
-                                                <ng-template ng-option-tmp let-item="item">
+                                                appendTo="body" >
+                                                <ng-template ng-option-tmp let-item="item" >
                                                     <div>
                                                         <strong>{{ item.CustomerName }}</strong><br>
                                                         <small>{{ item.CustomerAddress1 }}</small>
@@ -213,14 +213,14 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="DestinationAgentAddress"
-                                                class="custom-input-field sm">
+                                                class="custom-input-field sm" placeholder="">
                                             <label class="input-label">Address</label>
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="MBLNo" class="custom-input-field sm"
-                                                [textWithNumbers]="20">
+                                                [textWithNumbers]="20" placeholder="">
                                             <label class="input-label">MBL NO </label>
                                             @if(masterJobForm.get('MBLNo')?.touched &&
                                             masterJobForm.get('MBLNo')?.invalid){
@@ -295,15 +295,15 @@
                     </div>
 
 
-                    <div class="info-card col-md px-0 border border-top-0">
-                        <div class="card-header">
+                    <div class="info-card col-md px-0  ">
+                        <!-- <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
                                     <i class="fas fa-ship "></i>
                                     Vessel & Voyage
                                 </h4>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="card-body">
                             <div class="col-md-12">
                                 <div class="row compact-form" [formGroup]="masterJobForm">
@@ -368,7 +368,7 @@
                                     </aside>
 
                                     <!-- FDC Field -->
-                                    <aside class="col-md-4">
+                                    <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FPD')?.value">
                                             <ng-select [items]="filteredPorts" bindLabel="PortCode"
@@ -383,7 +383,7 @@
                                     </aside>
 
                                     <!-- Vessel Field -->
-                                    <aside class="col-md-4">
+                                    <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('VesselName')?.value">
                                             <ng-select [items]="headerVesselList" bindLabel="VesselName"
@@ -395,7 +395,7 @@
                                     </aside>
 
                                     <!-- Voyage Field -->
-                                    <aside class="col-md-4">
+                                    <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('VoyageNo')?.value">
                                             <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
@@ -424,7 +424,7 @@
                                     </aside>
 
                                     <!-- Carrier Field -->
-                                    <aside class="col-md-4">
+                                    <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('CarrierName')?.value">
                                             <ng-select [items]="carrierList" bindLabel="CustomerName"
@@ -442,7 +442,7 @@
                                     </aside>
 
                                     <!-- ETD Field -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -458,7 +458,7 @@
                                     </div>
 
                                     <!-- ETA Field -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -496,7 +496,7 @@
                                     <!-- SI Cut Off Field -->
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
-                                            <input type="text" formControlName="SICutOff" class="custom-input-field sm">
+                                            <input type="text" formControlName="SICutOff" class="custom-input-field sm" placeholder="">
                                             <label class="input-label">SI Cut Off<span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -516,7 +516,7 @@
                                     </aside>
                                     
                                     <aside class="col-md-8">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group mt-1">
                                             <input type="textarea" formControlName="MarksandNumber" id="text-input"
                                                 class="custom-input-field sm" placeholder="" [textWithNumbers]="1000">
                                             <label for="text-input" class="input-label">Marks and Number </label>
@@ -535,15 +535,15 @@
                     </div>
 
 
-                    <div class="info-card1 col-md-3 px-0 border border-top-0">
-                        <div class="card-header">
+                    <div class="info-card1 col-md-3 px-0 ">
+                        <!-- <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
                                     <i class="fas fa-boxes "></i>
                                     Cargo & Package
                                 </h4>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="card-body">
                             <div class="col-md-12">
                                 <div class="row compact-form" [formGroup]="masterJobForm">
@@ -570,28 +570,28 @@
                                             <label class="input-label">Gross Weight</label>
                                         </div>
                                     </aside>
-                                    <aside class="col-md-6">
+                                    <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="NetWeight"
                                                 class="custom-input-field sm" step="0.001" min="0">
                                             <label class="input-label">Net Weight</label>
                                         </div>
                                     </aside>
-                                    <aside class="col-md-6">
+                                    <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="ChargeableWeight"
                                                 class="custom-input-field sm" step="0.001" min="0">
                                             <label class="input-label">Chargeable Weight</label>
                                         </div>
                                     </aside>
-                                    <aside class="col-md-6">
+                                    <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="Volume" class="custom-input-field sm"
                                                 step="0.001" min="0">
                                             <label class="input-label">Volume (CBM)</label>
                                         </div>
                                     </aside>
-                                    <aside class="col-md-12 ">
+                                    <aside class="col-md-12">
                                         <div class="custom-form-group">
                                             <input type="textarea" formControlName="CommodityDescription"
                                                 id="text-input" class="custom-input-field sm" placeholder=""
@@ -606,7 +606,7 @@
                                         </div>
                                     </aside>
 
-                                    <div class="d-flex justify-content-end">
+                                    <div class="d-flex justify-content-end mt-3">
                             <button class="btn btn-sm btn-info ms-auto" (click)="openAttachModal()"><i
                                     class="fas fa-paperclip"></i> Attach Booking</button>
                         </div>
@@ -629,11 +629,11 @@
 
                 @if(totalLengthOfAttachedBookings > 0){
                 <div>
-                    <div class="modern-table-wrapper my-2">
-                        <table class="modern-table my-2">
+                    <div class="modern-table-wrapper my-1">
+                        <table class="modern-table ">
                             <thead>
                                 <tr>
-                                    <th width="10%">Actions</th>
+                                    <th width="3%"></th>
                                     <th>Booking No</th>
                                     <!-- <th>Booking Date</th> -->
                                     <th>Dept</th>
@@ -661,13 +661,12 @@
                                         <div class="action-buttons">
 
                                             <a class="action-icon edit" target="_blank"
-                                                [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]">
-                                                <i class="fas fa-edit"></i>
+                                                [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]" ngbTooltip="View House Job">
+                                                <i class="fas fa-eye text-info"></i>
                                             </a>
                                             <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
                                             <button class="action-icon delete"
-                                                (click)="detachBooking(shipmentIndex,shipment)"><i
-                                                    class="fas fa-unlink"></i></button>
+                                                (click)="detachBooking(shipmentIndex,shipment)" ngbTooltip="Delete"> <i class="fas fa-trash text-danger"></i></button>
                                         </div>
                                     </td>
                                     <td><a class="fw-bold"
@@ -700,7 +699,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-2">
+                    <div class="mt-1">
                         <ngb-pagination class="d-flex justify-content-end"
                             [collectionSize]="totalLengthOfAttachedBookings" [pageSize]="pageSize" [(page)]="page"
                             (pageChange)="  updateAttachedBookingsPagination()" [rotate]="true" [ellipses]="false"
@@ -741,7 +740,7 @@
                         <table class="modern-table">
                             <thead>
                                 <tr>
-                                    <th width="10%">Actions</th>
+                                    <th width="3%"></th>
                                     <th>Container Type</th>
                                     <th>Container Number</th>
                                     <th>Line Seal</th>
@@ -763,11 +762,11 @@
                                     <td class="actions-cell">
                                         <div class="action-buttons">
                                             <button class="action-icon edit"
-                                                (click)="openContainerModal(containerModal, container.value, i)">
-                                                <i class="fas fa-edit"></i>
+                                                (click)="openContainerModal(containerModal, container.value, i)" ngbTooltip="View">
+                                                <i class="fas fa-eye text-info"></i>
                                             </button>
-                                            <button class="action-icon delete" (click)="removeContainer(i)">
-                                                <i class="fas fa-trash"></i>
+                                            <button class="action-icon delete" (click)="removeContainer(i)" ngbTooltip="Delete">
+                                                <i class="fas fa-trash text-danger"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -864,7 +863,7 @@
                     </aside>
 
                      <!-- Origin Agent Field -->
-                                    <aside class="col-md-6">
+                                    <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('OriginAgent')?.value">
                                             <ng-select [items]="filteredOriginAgents" bindLabel="CustomerName"
@@ -916,7 +915,7 @@
                     <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" placeholder=""
+                                <input class="form-control" placeholder="dd-mm-yyyy" 
                                     formControlName="StuffingStartDate" ngbDatepicker
                                     #stuffingStartDatePicker="ngbDatepicker" (click)="stuffingStartDatePicker.toggle()"
                                     container="body" />
@@ -932,7 +931,7 @@
                     <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" placeholder=""
+                                <input class="form-control" placeholder="dd-mm-yyyy" 
                                     formControlName="StuffingEndDate" ngbDatepicker
                                     #stuffingEndDatePicker="ngbDatepicker" (click)="stuffingEndDatePicker.toggle()"
                                     container="body" />
@@ -962,21 +961,29 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="number" formControlName="SellExchangeRate" placeholder=""
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <input type="number" formControlName="SellExchangeRate" 
                                 class="custom-input-field sm" step="0.0001" min="0" placeholder="0.0000">
                             <label class="input-label">Sell Exchange Rate</label>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="number" formControlName="AgentExchangeRate" placeholder=""
+                        <div class="custom-form-group custom-form-group-select-date mt-1">
+                            <input type="number" formControlName="AgentExchangeRate"
                                 class="custom-input-field sm" step="0.0001" min="0" placeholder="0.0000">
                             <label class="input-label">Agent Exchange Rate</label>
                         </div>
                     </aside>
-
+                      <aside class="col-md-3 d-flex align-items-center">
+                                        <div class="form-check form-check-inline p-0">
+                                            <div class="form-check d-flex align-items-center">
+                                                <input type="checkbox" id="hazCheckbox" formControlName="Haz"
+                                                    class="focus-ring form-check-input sm p-0">
+                                                <label for="hazCheckbox" class="form-check-label sm">Haz</label>
+                                            </div>
+                                        </div>
+                                    </aside>
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
@@ -989,7 +996,7 @@
 
                     <!-- CoLoader Field - Conditionally enabled/disabled -->
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select"
+                        <div class="custom-form-group custom-form-group-select mt-1"
                             [class.filled]="!!masterJobForm.get('CoLoader')?.value"
                             [class.disabled]="masterJobForm.get('CoLoader')?.disabled">
                             <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
@@ -1005,6 +1012,7 @@
                             <label class="input-label">CoLoader</label>
                         </div>
                     </aside>
+                  
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="ExportDoNo" class="custom-input-field sm" placeholder=""
@@ -1013,17 +1021,9 @@
                         </div>
                     </aside>
                      <!-- HAZ Checkbox -->
-                                    <aside class="col-md-6 d-flex align-items-center">
-                                        <div class="form-check form-check-inline p-0">
-                                            <div class="form-check d-flex align-items-center">
-                                                <input type="checkbox" id="hazCheckbox" formControlName="Haz"
-                                                    class="focus-ring form-check-input sm p-0">
-                                                <label for="hazCheckbox" class="form-check-label sm">Haz?</label>
-                                            </div>
-                                        </div>
-                                    </aside>
+                                    
                                      <!-- Show DG fields only if Haz = true -->
-                                    <div class="col-md-4" *ngIf="masterJobForm.get('Haz')?.value">
+                                    <div class="col-md-3" *ngIf="masterJobForm.get('Haz')?.value">
                                         <!-- Changed to cargoForm -->
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
@@ -1040,7 +1040,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-4" *ngIf="masterJobForm.get('Haz')?.value">
+                                    <div class="col-md-3" *ngIf="masterJobForm.get('Haz')?.value">
                                         <!-- Changed to cargoForm -->
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
@@ -1060,7 +1060,7 @@
                     <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" placeholder=""
+                                <input class="form-control" placeholder="dd-mm-yyyy" 
                                     formControlName="ExportDoDate" ngbDatepicker #exportDoDatePicker="ngbDatepicker"
                                     (click)="exportDoDatePicker.toggle()" container="body" />
                                 <button class="btn bi bi-calendar3" (click)="exportDoDatePicker.toggle()" type="button">
@@ -1122,7 +1122,7 @@
                             <label class="input-label">Movement Type<span class="text-danger"></span></label>
                         </div>
                     </aside>
-                     <aside class="col-md-6">
+                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('Status')?.value">
                                             <ng-select *ngIf="isEditMode" formControlName="Status"
@@ -1275,7 +1275,7 @@
         </div>
     </ng-template> -->
     <ng-template #auditLogModal let-modal>
-        <div class="modal-header bg-info text-white p-2">
+        <div class="modal-header modalHeaderpart ">
             <h5 class="modal-title mb-0">Audit Logs</h5>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
@@ -2230,7 +2230,7 @@
 
 
     <ng-template #containerModal let-modal>
-        <div class="modal-header p-2 bg-info">
+        <div class="modal-header modalHeaderpart ">
             <h5 class="modal-title text-white">{{isEditContainer ? 'Edit' : 'Add'}} Container</h5>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss(); "></button>
@@ -2373,7 +2373,7 @@
     </ng-template>
 
     <ng-template #productModal let-modal>
-        <div class="modal-header p-2 bg-info">
+        <div class="modal-header modalHeaderpart ">
             <h5 class="modal-title text-white">Product</h5>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>

@@ -1442,10 +1442,11 @@
                     </button>
                   </td>
                   <td>
-                    <dofi-searchable-dropdown [items]="productList" formControlName="ProductName" [placeholder]="''"
+                    <dofi-searchable-dropdown-modal [items]="productList" formControlName="ProductName" [placeholder]="''"
                       [displayFields]="[ 'ProductCode','ProductName']" [displayLabels]="[ 'Code','Name']"
                       [labelFields]="['ProductName']" [bindValue]="'ProductName'" style="padding: 0;">
-                    </dofi-searchable-dropdown>
+                    </dofi-searchable-dropdown-modal>
+                    
                   </td>
                   <td>
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ShippingBillNo"
@@ -1462,10 +1463,10 @@
                   </td>
         
                   <td>
-                    <dofi-searchable-dropdown [items]="packageTypeList" formControlName="ExternaPkg" [placeholder]="''"
+                    <dofi-searchable-dropdown-modal [items]="packageTypeList" formControlName="ExternaPkg" [placeholder]="''"
                       [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
                       [bindValue]="'UOMCode'" style="padding:0;">
-                    </dofi-searchable-dropdown>
+                    </dofi-searchable-dropdown-modal>
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="ExternlQty" [onlyNumbers]=5 placeholder=""  (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
@@ -1502,10 +1503,10 @@
                   <td>
                     <!-- <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="UOMName"
                       bindValue="UOMMasterSid" appendTo="body"></ng-select> -->
-                    <dofi-searchable-dropdown [items]="measurementUnitList" formControlName="UomMasterSid" [placeholder]="''"
+                    <dofi-searchable-dropdown-modal [items]="measurementUnitList" formControlName="UomMasterSid" [placeholder]="''"
                       [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
                       [bindValue]="'UOMCode'" style="padding:0;">
-                    </dofi-searchable-dropdown>
+                    </dofi-searchable-dropdown-modal>
                   </td>
                   }
         
@@ -1519,10 +1520,10 @@
                   </td>
         
                   <td>
-                      <dofi-searchable-dropdown [items]="imcoList" formControlName="ImcoClass" [placeholder]="''"
+                      <dofi-searchable-dropdown-modal [items]="imcoList" formControlName="ImcoClass" [placeholder]="''"
                       [displayFields]="imcoLookupConfig.displayFields" [displayLabels]="imcoLookupConfig.displayLabels" [labelFields]="imcoLookupConfig.labelFields"
                       [bindValue]="'ImcoName'" style="padding:0;">
-                    </dofi-searchable-dropdown>
+                    </dofi-searchable-dropdown-modal>
                     <!-- <ng-select class="" [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" appendTo="body"
                       formControlName="ImcoClass" (change)="onImcoChange(productIndex,$event)"></ng-select> -->
                   </td>

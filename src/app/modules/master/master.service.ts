@@ -499,6 +499,16 @@ export class MasterService {
       })
     );
   }
+
+  getUOMsByType(type:string){
+    return this.http.get<{ data: any }>(`uom/uom-type?type=${type}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  
   getChargeUOMBasedOnSegment(segment: 'LCL' | 'FCL' | 'AIR' | 'ALL' = 'ALL') {
   return this.http.get(`uom/charge-uom`, {params: { segment }}).pipe(
     map((resp: any) => {
