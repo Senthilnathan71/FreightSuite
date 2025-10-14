@@ -52,7 +52,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     SearchableDropdown,
     PreventMultiClickDirective,
     NgbDropdownModule,
-    SearchableDropdown
+    SearchableDropdown,
+    PreventMultiClickDirective
   ],
   templateUrl: './tarrif-entry.component.html',
   styleUrl: './tarrif-entry.component.scss',
@@ -101,6 +102,7 @@ export class TarrifEntryComponent implements OnInit {
   currentMenuPermissions: any = {};
   currentCompany: any;
   currentBranch: any;
+  filteredCharges: any[] = [];
 
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
@@ -336,51 +338,54 @@ export class TarrifEntryComponent implements OnInit {
 
   this.isModalEditMode = !!data;
   this.initDetailsForm();
-  this.loadModalFields();
+  
+  // Load modal fields first, then filter charges after they're loaded
+  this.loadModalFields().then(() => {
+    this.filterChargeBasedOnDept();
 
-  if (data) {
-    // Edit mode logic remains the same...
-    this.tariffDetailData = data;
-    this.minEffectiveFrom = null;
-    
-    // Patch form values
-    this.tariffDetailsForm.patchValue({
-      detailisSlabApplicable: data.IsSlabApplicable === 'Y',
-      detailSlabFrom: data.SlabFrom || '',
-      detailSlabTo: data.SlabTo || '',
-      detailEffectiveDate: new Date(data.EffectiveDate),
-      detailExpiredOn: new Date(data.ExpiredOn),
-      detailChargeCode: data.ChargeCode,
-      detailDescription: data.Description || '',
-      detailCargoType: data.CargoType,
-      detailUOMSid: data.UOMSid,
-      detailSaleCurrency: data.SaleCurrency,
-      detailSalePerUnitPrice: data.SalePerUnitPrice,
-      detailBuyCurrency: data.BuyCurrency,
-      detailBuyPerUnitPrice: data.BuyPerUnitPrice,
-      detailMinSale: data.MinSale || '',
-      detailstatus: data.status === 'A' ? 'Active' : 'Suspended',
-      detailRemarks: data.Remarks || ''
-    });
+    if (data) {
+      // Edit mode logic remains the same...
+      this.tariffDetailData = data;
+      this.minEffectiveFrom = null;
+      
+      // Patch form values
+      this.tariffDetailsForm.patchValue({
+        detailisSlabApplicable: data.IsSlabApplicable === 'Y',
+        detailSlabFrom: data.SlabFrom || '',
+        detailSlabTo: data.SlabTo || '',
+        detailEffectiveDate: new Date(data.EffectiveDate),
+        detailExpiredOn: new Date(data.ExpiredOn),
+        detailChargeCode: data.ChargeCode,
+        detailDescription: data.Description || '',
+        detailCargoType: data.CargoType,
+        detailUOMSid: data.UOMSid,
+        detailSaleCurrency: data.SaleCurrency,
+        detailSalePerUnitPrice: data.SalePerUnitPrice,
+        detailBuyCurrency: data.BuyCurrency,
+        detailBuyPerUnitPrice: data.BuyPerUnitPrice,
+        detailMinSale: data.MinSale || '',
+        detailstatus: data.status === 'A' ? 'Active' : 'Suspended',
+        detailRemarks: data.Remarks || ''
+      });
 
-    if (data.TariffDetailSid) this.TariffDetailSid = data.TariffDetailSid;
+      if (data.TariffDetailSid) this.TariffDetailSid = data.TariffDetailSid;
 
-    this.isModalStatusEditable = false;
-    this.setDetailControlsReadOnly(true);
-  } else {
-    // Create mode - ensure min date is set correctly
-    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
-    
-    // Set default effective date based on initially selected charge code (if any)
-    const initialChargeCode = this.tariffDetailsForm.get('detailChargeCode')?.value;
-    if (initialChargeCode) {
-      this.setEffectiveDateBasedOnChargeCode(initialChargeCode);
+      this.isModalStatusEditable = false;
+      this.setDetailControlsReadOnly(true);
+    } else {
+      // Create mode - ensure min date is set correctly
+      this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+      
+      // Set default effective date based on initially selected charge code (if any)
+      const initialChargeCode = this.tariffDetailsForm.get('detailChargeCode')?.value;
+      if (initialChargeCode) {
+        this.setEffectiveDateBasedOnChargeCode(initialChargeCode);
+      }
     }
-  }
 
-  this.modalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
-}
-
+    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
+  });
+} 
   // --- LOAD TARIFF AND SET READONLY VIEW ---
   loadTariff(TariffHeaderSid: number) {
     this.masterServ.getTariffById(TariffHeaderSid).subscribe(
@@ -452,6 +457,7 @@ export class TarrifEntryComponent implements OnInit {
     this.agentList = agents;
     this.carrierList = carriers;
     this.departmentList = departments;
+    this.filterChargeBasedOnDept();
     this.companyList = companies;
     
     // FIX: Also update currency mapping for consistency
@@ -511,17 +517,26 @@ export class TarrifEntryComponent implements OnInit {
 }
  
 
-  loadModalFields() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  loadModalFields(): Promise<void> {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  
+  return new Promise((resolve, reject) => {
     forkJoin({
       charges: this.masterServ.getAllCharges(CompanyMasterSid),
       UOMs: this.masterServ.getAllUom(),
-    }).subscribe(({ charges, UOMs }) => {
-      this.chargeList = charges;
-      this.UOMList = UOMs.data;
+    }).subscribe({
+      next: ({ charges, UOMs }) => {
+        this.chargeList = charges;
+        this.UOMList = UOMs.data;
+        resolve(); 
+      },
+      error: (err) => {
+        console.error('Error loading modal fields:', err);
+        reject(err);
+      }
     });
-  }
-
+  });
+}
   navigateBack() {
     history.back();
   }
@@ -805,44 +820,100 @@ export class TarrifEntryComponent implements OnInit {
   }
 
   onDeptChange(department: any): void {
-    if (!department) {
-      this.selectedDepartment = null;
-      this.selectedDepartmentType = '';
-      this.selectedFCLLCL = 'LCL';
-      this.filteredPorts = [...(this.portList || [])];
-      this.filteredPOL = [...this.filteredPorts];
-      this.filteredPOD = [...this.filteredPorts];
-      this.polList = [...this.filteredPOL];
-      this.podList = [...this.filteredPOD];
-      this.tariffHeaderForm.get('POOSid')?.setValue(null);
-      this.tariffHeaderForm.get('POLSid')?.setValue(null);
-      this.tariffHeaderForm.get('PODSid')?.setValue(null);
-      this.tariffHeaderForm.get('FDCSid')?.setValue(null);
-      this.tariffHeaderForm.get('MovementType')?.setValue(null);
-      return;
-    }
-
-    let deptObj = department;
-    if (typeof department === 'number' || typeof department === 'string') {
-      deptObj = this.departments?.find(d => Number(d.DepartmentMasterSid) === Number(department)) || { departmentType: '', FCLLCL: 'LCL' };
-    }
-
-    this.selectedDepartment = deptObj;
-    this.selectedDepartmentType = (deptObj.departmentType || '').toUpperCase();
-    this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
-      ? (deptObj.FCLLCL?.toUpperCase() || 'LCL')
-      : 'AIR';
-
-    this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
+  if (!department) {
+    this.selectedDepartment = null;
+    this.selectedDepartmentType = '';
+    this.selectedFCLLCL = 'LCL';
+    this.filteredPorts = [...(this.portList || [])];
     this.filteredPOL = [...this.filteredPorts];
     this.filteredPOD = [...this.filteredPorts];
     this.polList = [...this.filteredPOL];
     this.podList = [...this.filteredPOD];
+    this.tariffHeaderForm.get('POOSid')?.setValue(null);
+    this.tariffHeaderForm.get('POLSid')?.setValue(null);
+    this.tariffHeaderForm.get('PODSid')?.setValue(null);
+    this.tariffHeaderForm.get('FDCSid')?.setValue(null);
+    this.tariffHeaderForm.get('MovementType')?.setValue(null);
+    
+    // Clear filtered charges when no department selected
+    this.filteredCharges = [];
+    return;
+  }
 
-    if (this.selectedDepartmentType === 'SEA') {
-      this.tariffHeaderForm.get('MovementType')?.setValue('Sea');
-    } else if (this.selectedDepartmentType === 'AIR') {
-      this.tariffHeaderForm.get('MovementType')?.setValue('Air');
+  let deptObj = department;
+  if (typeof department === 'number' || typeof department === 'string') {
+    deptObj = this.departments?.find(d => Number(d.DepartmentMasterSid) === Number(department)) || { departmentType: '', FCLLCL: 'LCL' };
+  }
+
+  this.selectedDepartment = deptObj;
+  this.selectedDepartmentType = (deptObj.departmentType || '').toUpperCase();
+  this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
+    ? (deptObj.FCLLCL?.toUpperCase() || 'LCL')
+    : 'AIR';
+
+  this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
+  this.filteredPOL = [...this.filteredPorts];
+  this.filteredPOD = [...this.filteredPorts];
+  this.polList = [...this.filteredPOL];
+  this.podList = [...this.filteredPOD];
+
+  if (this.selectedDepartmentType === 'SEA') {
+    this.tariffHeaderForm.get('MovementType')?.setValue('Sea');
+  } else if (this.selectedDepartmentType === 'AIR') {
+    this.tariffHeaderForm.get('MovementType')?.setValue('Air');
+  }
+
+  // Filter charges based on selected department
+  // this.filterChargesByDepartment(deptObj);
+  // this.filterChargesByDepartment(this.selectedDepartment);
+  this.filterChargeBasedOnDept();
+}
+filterChargesByDepartment(department: any): void {
+  if (!department || !this.chargeList || this.chargeList.length === 0) {
+    this.filteredCharges = [];
+    return;
+  }
+
+  const departmentId = department.DepartmentMasterSid;
+  
+  this.filteredCharges = (this.chargeList || []).filter(charge => {
+    const departmentNames = charge.DepartmentMasterSid || [];
+    
+    // Map department names to full department objects
+    const fullDepartments = departmentNames
+      .map(name => this.departments.find(dept => dept.departmentName === name))
+      .filter((dept): dept is any => Boolean(dept));
+
+    // Check if any department matches the selected department ID
+    return fullDepartments.some(dept => {
+      if (!dept) return false;
+      return dept.DepartmentMasterSid === departmentId;
+    });
+  });
+
+  console.log("Filtered Charges for Department", this.filteredCharges);
+}
+  filterChargeBasedOnDept(){
+    const deptId = this.tariffHeaderForm.get('DepartmentMasterSid')?.value;
+    const departmentName = this.getDepartmentName(deptId);
+    if(!departmentName || this.departments.length === 0){
+      this.filteredCharges = [];
+      return;
+    } else {
+      this.filteredCharges = this.chargeList.filter(ch =>{
+        const departmentNames : any[] = ch.DepartmentMasterSid || [];
+        return departmentNames.includes(departmentName);
+      })
+      console.log(this.filteredCharges,departmentName,this.chargeList)
+    }
+    
+  }
+
+  getDepartmentName(deptId:number){
+    if(!deptId || this.departments.length === 0){
+      return null;
+    } else {
+      return (this.departments.find(dep => dep.DepartmentMasterSid === deptId)?.departmentName);
     }
   }
 
@@ -1078,23 +1149,22 @@ export class TarrifEntryComponent implements OnInit {
     this.modalService.open(EdocComponent, { size: 'lg', centered: true, backdrop: 'static' });
   }
 
-  setChargeDetails(charge?: Charge) {
-    if (!charge || this.chargeTaxes.length === 0) {
-      this.tariffDetailsForm.get('detailDescription')?.setValue('');
-      this.tariffDetailsForm.get('detailUOMSid')?.setValue(null);
-      return;
-    }
-
-    const ChargeMasterSid = (charge as any)?.ChargeMasterSid;
-    this.tariffDetailsForm.get('detailUOMSid')?.setValue((charge as any)?.UOM);
-
-    const reqTaxes = this.chargeTaxes.filter(t => t.chargeTaxMasterSid === ChargeMasterSid);
-    if (reqTaxes.length > 0) {
-      this.tariffDetailsForm.get('detailDescription')?.setValue(reqTaxes[0].description);
-    }
-
-    // DO NOT auto-adjust EffectiveDate here (only create flow does that in onChargeCodeChange)
+  setChargeDetails(charge?: any) {
+  if (!charge) {
+    this.tariffDetailsForm.get('detailDescription')?.setValue('');
+    this.tariffDetailsForm.get('detailUOMSid')?.setValue(null);
+    return;
   }
+  console.log('Charge Object:', charge);
+  // Set UOM from charge
+  this.tariffDetailsForm.get('detailUOMSid')?.setValue(charge.UOM);
+
+  
+  const chargeName = charge.chargeName || '';
+  this.tariffDetailsForm.get('detailDescription')?.setValue(chargeName);
+
+ 
+}
 
   setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
   if (!chargeCode) {
@@ -1124,15 +1194,18 @@ export class TarrifEntryComponent implements OnInit {
   }
 }
   onChargeCodeChange(chargeCode: string) {
+     const selectedCharge = this.chargeList.find(c => c.chargeCode === chargeCode);
   // Skip auto date logic while editing
   if (this.isModalEditMode) {
-    this.setChargeDetails(this.chargeList.find(c => c.chargeCode === chargeCode));
+  
+      this.setChargeDetails(selectedCharge);
     return;
   }
   
   // CREATE flow - apply the business logic
+  
   this.setEffectiveDateBasedOnChargeCode(chargeCode);
-  this.setChargeDetails(this.chargeList.find(c => c.chargeCode === chargeCode));
+  this.setChargeDetails(selectedCharge);
 }
 
   calculateMinEffectiveFrom(chargeCode?: string) {
