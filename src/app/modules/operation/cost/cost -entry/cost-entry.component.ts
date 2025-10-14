@@ -47,6 +47,7 @@ export class CostEntryComponent implements OnInit {
   // costFormArray: FormArray;
   // revenueFormArray: FormArray;
   chargeList: any[] = [];
+  filteredChargeList : any[] = [];
   uomList: any[] = [];
   docTypeList: any[] = [];
   vouchers:any[]=[]
@@ -64,6 +65,8 @@ export class CostEntryComponent implements OnInit {
   filterOption: any;
   currentCompany: any;
   currentBranch: any;
+  userData : any;
+  digitsAfterDecimal = 3;
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
@@ -71,8 +74,8 @@ export class CostEntryComponent implements OnInit {
   };
 
   ppcc = [
-    { id: 1, name: 'P' },
-    { id: 2, name: 'C' }
+    { id: 1, name: 'Prepaid' },
+    { id: 2, name: 'Collect' }
   ]
   drcr = [
     { id: 1, name: 'Dr', value: 'D' },
@@ -103,6 +106,9 @@ export class CostEntryComponent implements OnInit {
     { id: 2, name: "No" }
   ]
   selectTab(tab: string) {
+    if(tab === "Profit"){
+      this.calculateProfit();
+    }
     this.selectedTab = tab;
   }
 
@@ -179,6 +185,7 @@ export class CostEntryComponent implements OnInit {
   set formData(value: any) {
     if (value) {
       this.parentFormValue = value;
+      this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
     } else {
       this.parentFormValue = {};
     }
@@ -212,6 +219,8 @@ export class CostEntryComponent implements OnInit {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
 
     // Extract BookingHeaderSid from route parameter
     this.route.params.subscribe(params => {
@@ -247,8 +256,10 @@ export class CostEntryComponent implements OnInit {
   loadRateLookups() {
     forkJoin({
       allMasters: this.operationService.getAllBookingRateLookups(this.filterOption).pipe(catchError(err => of({ charges: [], uoms: [], docTypes: [] }))),
-    }).subscribe(({ allMasters }) => {
-      this.chargeList = allMasters.charges;
+      charges: this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
+    }).subscribe(({ allMasters , charges }) => {
+      this.chargeList = charges;
+      this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
       this.uomList = allMasters.uoms;
       this.docTypeList = allMasters.docTypes;
       this.vouchers= allMasters.Vouchers
@@ -354,15 +365,16 @@ createRateFormGroup(data?: any): FormGroup {
     NumberOfUnit: [data?.NoOfUnit ?? ''],
 
     // ChargeUomSid: [data?.ChargeUomSid ?? null],
+    unitQtyBasis: [data?.UnitQty || null],  // This is to track Charge Based on Unit Qty
 
-    CostPrepaidCollect: [data?.CostPrepaidCollect ?? null],
+    CostPrepaidCollect: [data?.CostPrepaidCollect ?? "Prepaid"],
     CostChargeUomSid:[data?.CostChargeUomSid ?? ''],
     CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
-    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate).toFixed(2) : ''],
-    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(2) : ''],
-    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(2) : ''],
-    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(2) : ''],
-    CostDrCr: ['D'], // Cost is always Debit
+    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate).toFixed(this.digitsAfterDecimal) : ''],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate).toFixed(this.digitsAfterDecimal) : ''],
+    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount).toFixed(this.digitsAfterDecimal) : ''],
+    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : ''],
+    CostDrCr: [data?.CostDrCr ?? 'D'],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
     CostVoucherHeader: [data?.costVoucherHeader || data?.CostVoucherHeader || null],  // Store voucher header object for display
@@ -370,13 +382,13 @@ createRateFormGroup(data?: any): FormGroup {
     CostNumberOfUnit: [data?.CostNumberOfUnit ?? null],
     RevenueNumberOfUnit:[data?.RevenueNumberOfUnit ?? ''],
     RevenueChargeUomSid:[data?.RevenueChargeUomSid ?? ''],
-    RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? null],
+    RevenuePrepaidCollect:[data?.RevenuePrepaidCollect ?? "Prepaid"],
     RevenueCurrencyMasterSid: [data?.RevenueCurrencyMasterSid ?? null],
-    RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(2) : ''],
-    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(2) : ''],
-    RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(2) : ''],
-    RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(2) : ''],
-    RevenueDrCr: ['C'], // Revenue is always Credit
+    RevenueExchangeRate: [data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate).toFixed(this.digitsAfterDecimal) : ''],
+    RevenueRate: [data?.RevenueRate != null ? Number(data.RevenueRate).toFixed(this.digitsAfterDecimal) : ''],
+    RevenueAmount: [data?.RevenueAmount != null ? Number(data.RevenueAmount).toFixed(this.digitsAfterDecimal) : ''],
+    RevenueLocalAmount: [data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount).toFixed(this.digitsAfterDecimal) : ''],
+    RevenueDrCr: [data?.RevenueDrCr ?? 'C'],
     RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
     RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
     RevenueVoucherHeader: [data?.revenueVoucherHeader || data?.RevenueVoucherHeader || null],  // Store voucher header object for display
@@ -384,6 +396,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     CustomerMasterSid: [data?.CustomerMasterSid ?? null],
     AgentSid: [data?.AgentMasterSid ?? null],
+    AgentBranchSid: [data?.AgentBranchSid ?? null],
     CustomerBranchSid: [data?.CustomerBranchSid ?? null],
 
     Status: [data?.Status ?? ''],
@@ -471,7 +484,8 @@ createRateFormGroup(data?: any): FormGroup {
 
   onChangeUOM(uom: any,i?:any) {
     if (!uom) {
-      this.rateForm.get('ChargeUomSid')?.setValue('');
+      this.rateForm.get('CostChargeUomSid')?.setValue('');
+      this.rateForm.get('RevenueChargeUomSid')?.setValue('');
       return;
     }
     this.rateForm.get('ChargeUomSid')?.setValue(uom.UOMName);
@@ -786,19 +800,68 @@ createRateFormGroup(data?: any): FormGroup {
    */
   onChargeChangeForRow(charge: any, index: number) {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
+    console.log(charge);
     if (!charge) {
       formGroup.patchValue({
         ChargeMasterSid: null,
-        ChargeDescription: ''
+        ChargeDescription: '',
+        unitQtyBasis: null,
+        RevenueCurrencyMasterSid: null,
+        CostCurrencyMasterSid: null,
+        RevenueChargeUomSid : null,
+        CostChargeUomSid : null,
       });
       return;
     }
 
     formGroup.patchValue({
       ChargeMasterSid: charge.ChargeMasterSid,
-      ChargeDescription: charge.chargeName
+      ChargeDescription: charge.chargeName,
+      unitQtyBasis: charge.UnitQty,
+      RevenueCurrencyMasterSid: charge.CurrencyMasterSid,
+      CostCurrencyMasterSid: charge.CurrencyMasterSid,
+      RevenueChargeUomSid: charge.UOM,
+      CostChargeUomSid: charge.UOM,
     });
+
+    this.updateSingleChargeQty(index);
   }
+
+  private updateAllChargeQuantitiesForRoute(): void {
+    const parentData = this.parentFormValue;
+    if (!parentData) return;
+
+    this.rateFormArray.controls.forEach((rate:FormGroup, rateIndex) => {
+      this.updateSingleChargeQty(rateIndex)
+    });
+
+  }
+  
+  updateSingleChargeQty(rateIndex:number): void {
+      const rateGroup = this.rateFormArray.at(rateIndex) as FormGroup;
+  
+      const unitQtyBasis = rateGroup.get('unitQtyBasis')?.value;
+      console.log(unitQtyBasis);
+      if (!unitQtyBasis) {
+        return; 
+      }
+  
+      const qtySourceField = this.findFieldForQty(unitQtyBasis);
+      console.log(qtySourceField);
+      let newQty = 1;
+      
+      if (typeof qtySourceField === 'string' && this.parentFormValue[qtySourceField]) {
+        newQty = this.parentFormValue[qtySourceField] || 1;
+      } else if (typeof qtySourceField === 'number') {
+        newQty = qtySourceField;
+      }
+      console.log(this.parentFormValue);
+      console.log(newQty);
+  
+      rateGroup.get('NumberOfUnit')?.setValue(newQty);
+      this.calculateRevenueLocalAmount(rateIndex);
+      this.calculateCostLocalAmount(rateIndex);
+    }
 
   /**
    * Calculate cost amount when per unit or number of units changes
@@ -811,7 +874,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     const amount = numberOfUnits * perUnit;
     formGroup.patchValue({
-      CostAmount: amount.toFixed(2)
+      CostAmount: amount.toFixed(this.digitsAfterDecimal)
     }, { emitEvent: false });
 
     this.calculateCostLocalAmount(index);
@@ -827,7 +890,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     const localAmount = amount * exchangeRate;
     formGroup.patchValue({
-      CostLocalAmount: localAmount.toFixed(2)
+      CostLocalAmount: localAmount.toFixed(this.digitsAfterDecimal)
     }, { emitEvent: false });
   }
 
@@ -842,7 +905,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     const amount = numberOfUnits * perUnit;
     formGroup.patchValue({
-      RevenueAmount: amount.toFixed(2)
+      RevenueAmount: amount.toFixed(this.digitsAfterDecimal)
     }, { emitEvent: false });
 
     this.calculateRevenueLocalAmount(index);
@@ -858,18 +921,18 @@ createRateFormGroup(data?: any): FormGroup {
 
     const localAmount = amount * exchangeRate;
     formGroup.patchValue({
-      RevenueLocalAmount: localAmount.toFixed(2)
+      RevenueLocalAmount: localAmount.toFixed(this.digitsAfterDecimal)
     }, { emitEvent: false });
   }
 
   /**
    * Get exchange rate for cost currency
    */
-  getCostExchangeRate(index: number, currencyMasterSid: number) {
-    if (!currencyMasterSid) return;
+  getCostExchangeRate(index: number, currency: any) {
+    if (!currency) return;
 
     const toCurrency = Number(this.currentCompany?.CurrencyMasterSid);
-    const fromCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === currencyMasterSid)?.currencyCode;
+    const fromCurrencyCode = currency?.currencyCode;
     const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
 
     if (!fromCurrencyCode || !toCurrencyCode) return;
@@ -881,12 +944,12 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    const payload = { fromCurrencyCode, toCurrencyCode };
+    const payload = { fromCurrencyCode, toCurrencyCode ,segment: 'cost' };
     this.operationService.getExchangeRate(payload).subscribe(
       (resp: any) => {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
-          formGroup.patchValue({ CostExchangeRate: Number(resp.data).toFixed(2) });
+          formGroup.patchValue({ CostExchangeRate: Number(resp.data).toFixed(this.digitsAfterDecimal) });
           this.calculateCostLocalAmount(index);
         }
       }
@@ -896,13 +959,11 @@ createRateFormGroup(data?: any): FormGroup {
   /**
    * Get exchange rate for revenue currency
    */
-  getRevenueExchangeRate(index: number, currencyMasterSid: number) {
-    if (!currencyMasterSid) return;
-
+  getRevenueExchangeRate(index: number, currency: any) {
+    if (!currency) return;
     const toCurrency = Number(this.currentCompany?.CurrencyMasterSid);
-    const fromCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === currencyMasterSid)?.currencyCode;
+    const fromCurrencyCode = currency?.currencyCode;
     const toCurrencyCode = this.currencyList.find(curr => curr.CurrencyMasterSid === toCurrency)?.currencyCode;
-
     if (!fromCurrencyCode || !toCurrencyCode) return;
 
     if (fromCurrencyCode === toCurrencyCode) {
@@ -912,12 +973,12 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    const payload = { fromCurrencyCode, toCurrencyCode };
+    const payload = { fromCurrencyCode, toCurrencyCode , segment : 'revenue'};
     this.operationService.getExchangeRate(payload).subscribe(
       (resp: any) => {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
-          formGroup.patchValue({ RevenueExchangeRate: Number(resp.data).toFixed(2) });
+          formGroup.patchValue({ RevenueExchangeRate: Number(resp.data).toFixed(this.digitsAfterDecimal) });
           this.calculateRevenueLocalAmount(index);
         }
       }
@@ -1085,10 +1146,10 @@ createRateFormGroup(data?: any): FormGroup {
         profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
       }
 
-      p.profit = profit.toFixed(2);
-      p.profitPercent = profitPercent.toFixed(2) + "%";
-      p.totalSales = p.totalSales.toFixed(2);
-      p.totalCost = p.totalCost.toFixed(2);
+      p.profit = profit.toFixed(this.digitsAfterDecimal);
+      p.profitPercent = profitPercent.toFixed(this.digitsAfterDecimal) + "%";
+      p.totalSales = p.totalSales.toFixed(this.digitsAfterDecimal);
+      p.totalCost = p.totalCost.toFixed(this.digitsAfterDecimal);
     });
 
     console.log(this.profitSummary);
@@ -1109,7 +1170,7 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   getTotalProfitPercent(): string {
-    return this.calculateTotalProfitPercent().toFixed(2);
+    return this.calculateTotalProfitPercent().toFixed(this.digitsAfterDecimal);
   }
 
 
@@ -1198,8 +1259,17 @@ createRateFormGroup(data?: any): FormGroup {
           this.tariffDetails = response
             .map((td: any) => {
               const charge = this.getCharge(td.ChargeCode);
+              const QtyValue = charge.UnitQty;
+              const qtySourceField = this.findFieldForQty(charge?.UnitQty);
+              let value = 1;
+              if (typeof qtySourceField === 'string' && this.parentFormValue[qtySourceField]) {
+                value = this.parentFormValue[qtySourceField] || 1;
+              } else if (typeof qtySourceField === 'number') {
+                value = qtySourceField;
+              }
+
               return {
-                ChargeMasterSid: charge.ChargeMasterSid,
+                ChargeMasterSid: charge?.ChargeMasterSid,
                 ChargeDescription: td.Description,
                 PrepaidCollect: "Collect",
                 ChargeUomSid: td.UOMSid,
@@ -1207,18 +1277,18 @@ createRateFormGroup(data?: any): FormGroup {
                 Cost: {
                   DrCr: 'D',
                   CurrencyMasterSid: td.BuyCurrency,
-                  Rate: Number(td.BuyPerUnitPrice).toFixed(2),
-                  Amount: (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
-                  LocalAmount: (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
-                  ExchangeRate: Number(td.costExchangeRate).toFixed(2)
+                  Rate: Number(td.BuyPerUnitPrice).toFixed(this.digitsAfterDecimal),
+                  Amount: (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                  LocalAmount: (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                  ExchangeRate: Number(td.costExchangeRate).toFixed(this.digitsAfterDecimal)
                 },
                 Revenue: {
                   DrCr: 'C',
                   CurrencyMasterSid: td.SaleCurrency,
-                  Rate: Number(td.SalePerUnitPrice).toFixed(2),
-                  Amount: (Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
-                  LocalAmount: (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
-                  ExchangeRate: Number(td.revenueExchangeRate).toFixed(2)
+                  Rate: Number(td.SalePerUnitPrice).toFixed(this.digitsAfterDecimal),
+                  Amount: (Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                  LocalAmount: (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                  ExchangeRate: Number(td.revenueExchangeRate).toFixed(this.digitsAfterDecimal)
                 }
               }
             })
@@ -1251,6 +1321,28 @@ createRateFormGroup(data?: any): FormGroup {
     }
     const charge = this.chargeList.find(ch => ch.chargeCode === chargeCode);
     return charge;
+  }
+
+    findFieldForQty(UnitQty:string){
+    const trimmedUnitQty = String(UnitQty).trim();
+    switch(trimmedUnitQty){
+      case 'GrossWeight':
+        return 'GrossWeight';
+      case 'CBM':
+        return 'Volume';
+      case '20ft':
+        return 'Qty';
+      case '40ft':
+        return 'Qty';
+      case 'ChargeableWeight':
+        return 'ChargeableWeight';
+      case 'BL':
+        return '1';
+      case 'Shipment':
+        return '1';
+      default:
+        return '1';
+    }
   }
 
   hasRequiredFieldsFilled() {
@@ -1306,7 +1398,7 @@ createRateFormGroup(data?: any): FormGroup {
       TotalSales: this.calculateTotal('totalSales'),
       TotalCost: this.calculateTotal('totalCost'),
       Profit: this.calculateTotal('profit'),
-      ProfitPercent: `${this.calculateTotalProfitPercent().toFixed(2)}%`
+      ProfitPercent: `${this.calculateTotalProfitPercent().toFixed(this.digitsAfterDecimal)}%`
     };
 
     formattedData.push(totalRow);
@@ -1357,8 +1449,34 @@ createRateFormGroup(data?: any): FormGroup {
 //   console.log('Updated row:', row.value);
 // }
 
+  handleCustomerChange(rateIndex:number , customer: any) {
+    const formGroup = this.rateFormArray.at(rateIndex) as FormGroup;
+    if (!customer || customer === undefined) {
+      formGroup.get('CustomerBranchSid')?.setValue(null);
+      return;
+    }
+    formGroup.get('CustomerBranchSid')?.setValue(customer.CustomerBranchSid);
+  }
 
+  handleAgentChange(rateIndex:number , agent: any) {
+    const formGroup = this.rateFormArray.at(rateIndex) as FormGroup;
+    if (!agent || agent === undefined) {
+      formGroup.get('AgentBranchSid')?.setValue(null);
+      return;
+    }
+    formGroup.get('AgentBranchSid')?.setValue(agent.CustomerBranchSid);
+  }
 
+  filterDepartmentBasedOnSegment(departmentName: string) {
+    if (departmentName) {
+      console.log(departmentName);
+      this.filteredChargeList = this.chargeList.filter(charge => {
+        const allDepartmentNames = charge.DepartmentMasterSid || [];
+        console.log(allDepartmentNames);
+        return allDepartmentNames.includes(departmentName);
+      });
+    }
+  }
 
 
 }

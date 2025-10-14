@@ -1322,7 +1322,7 @@ patchBookingFromQuotation(data: any) {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully updated.');
             this.router.navigate(['operation/booking/list']);
-            // this.loadBookingById(this.BookingHeaderSid);
+            this.loadBookingById(this.BookingHeaderSid);
           } else {
             this.appSettingService.showError('Error updating booking.');
             console.error(resp.message);
@@ -1945,13 +1945,15 @@ patchBookingFromQuotation(data: any) {
     const selectedPOL = this.b['POL']?.value;
     const selectedPOD = this.b['POD']?.value;
     const selectedFPD = this.b['FPD']?.value;
-    const EffectiveDate = this.b['ETA']?.value;
-    const ExpiredDate = this.b['ETD']?.value;
+    const EffectiveDate = this.b['BookingDateTime']?.value;
+    const ExpiredDate = this.b['BookingDateTime']?.value;
     const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
     const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
     const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
     const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const CargoType = this.c['CargoType']?.value;
+    const NetWeight = this.c['NetWeight']?.value;
+    const GrossWeight = this.c['GrossWeight']?.value;
     const NoofContainers = this.c['NoofContainers']?.value;
     const Volume = this.c['Volume']?.value;
     const ChargeableWeight = this.c['ChargeableWeight']?.value;
@@ -1976,8 +1978,10 @@ patchBookingFromQuotation(data: any) {
       EffectiveDate,
       ExpiredDate,
       CargoType,
-      NoofContainers,
+      GrossWeight,
+      NetWeight,
       Volume,
+      NoofContainers,
       ChargeableWeight
     }
   }

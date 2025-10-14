@@ -896,7 +896,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ], // Cost Exchange
       CostRate : [
         data?.CostRate ?
-        Number(data?.CostRate).toFixed :
+        Number(data?.CostRate).toFixed(this.digitsAfterDecimal) :
         0 || 0
       ],    // Cost Per Unit Rate
       CostNumberOfUnit : [data?.CostNumberOfUnit || 0],  // Count
@@ -2073,7 +2073,8 @@ private extractCargoData(enquiryCargo: any[]): any {
             .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
             .map((td: any) => {
               const charge = this.getCharge(td.ChargeCode);
-              let qtySourceField = this.findFieldForQty(charge.UnitQty);
+              console.log("Charge found",charge);
+              let qtySourceField = this.findFieldForQty(charge?.UnitQty);
               let qtyValue = 1; // Default to 1
 
               if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField)) {
@@ -2656,7 +2657,7 @@ ${this.userData.userName}`;
   }
 
   findFieldForQty(UnitQty:string){
-    const trimmedUnitQty = UnitQty.trim();
+    const trimmedUnitQty = String(UnitQty).trim();
     switch(trimmedUnitQty){
       case 'GrossWeight':
         return 'GrossWeight';
