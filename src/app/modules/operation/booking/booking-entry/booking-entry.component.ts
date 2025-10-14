@@ -88,7 +88,8 @@ type Html2PdfOptions = {
     NgxSpinnerModule,
     NgbTooltip,
     SearchableDropdown,
-    SearchableDropdownModal
+    SearchableDropdownModal,
+    NgxSpinnerModule
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -151,6 +152,9 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
+    if(tab === "Rate"){
+      this.syncFormValueWithRateComponent();
+    }
     this.selectedTab = tab;
   }
   CurrencyLookupConfig = {
@@ -489,28 +493,28 @@ dataFromQuotation:any
   console.log(this.dataFromQuotation, 'dataFromQuotation');
 
   // Load lookups first
-  this.loadHeaderLookups().subscribe(() => {
-    this.loadCargoLookups();
-    this.loadProductLookups();
-    this.loadOtherLookups();
+    this.loadHeaderLookups().subscribe(() => {
+      this.loadCargoLookups();
+      this.loadProductLookups();
+      this.loadOtherLookups();
 
-    this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
-    this.autoSetFreightTerms(incoTerm);
-  });
-    if (this.dataFromQuotation?.quotation) {
-      // this.patchBookingFromQuotation(this.dataFromQuotation);
-      this.patchValues(this.dataFromQuotation);
-      this.minDate = this.today;
-    } else {
-      this.currentRoute.paramMap.subscribe((param) => {
-        this.BookingHeaderSid = +param.get('id');
-        if (this.BookingHeaderSid) {
-          this.isEditMode = true;
-          this.loadBookingById(this.BookingHeaderSid);
-        } else {
-          this.minDate = this.today;
-        }
+      this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
+        this.autoSetFreightTerms(incoTerm);
       });
+      if (this.dataFromQuotation?.quotation) {
+        // this.patchBookingFromQuotation(this.dataFromQuotation);
+        this.patchValues(this.dataFromQuotation);
+        this.minDate = this.today;
+      } else {
+        this.currentRoute.paramMap.subscribe((param) => {
+          this.BookingHeaderSid = +param.get('id');
+          if (this.BookingHeaderSid) {
+            this.isEditMode = true;
+            this.loadBookingById(this.BookingHeaderSid);
+          } else {
+            this.minDate = this.today;
+          }
+        });
       
 
       // Listen for voucher generation completion
@@ -785,6 +789,7 @@ getCurrentCompanyBranches(){
  
 
   loadHeaderLookups() {
+    this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
       departments : this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
@@ -826,6 +831,7 @@ getCurrentCompanyBranches(){
 
       
       this.countryOfCompany = (userCountry?.data?.countryCode).trim().toLowerCase();
+      this.spinner.hide();
     }))
   }
 
@@ -949,6 +955,7 @@ getCurrentCompanyBranches(){
       FreightTerms : response.FreightTerms,
       ShipmentNo: response.ShipmentNo
     })
+    this.getVesselVoyBasedOnPorts();
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
     this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
@@ -1338,7 +1345,7 @@ patchBookingFromQuotation(data: any) {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully created.');
-            const bookingId = resp.data?.newBooking?.BookingHeaderSid;
+            const bookingId = resp.data?.bookingHeader?.BookingHeaderSid;
             this.router.navigate(['operation/booking/entry', bookingId]);
           } else {
             this.appSettingService.showError('Error creating booking.');

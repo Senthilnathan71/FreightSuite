@@ -94,7 +94,7 @@
             <button class="table-action-btn primary" (click)="addRateRow()">
               <i class="fas fa-plus"></i> Add Row
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.BookingHeaderSid">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
 
@@ -671,7 +671,7 @@
         <thead>
           <tr>
             <th>Charge</th>
-            <th>Sale Amt</th>
+            <th>Revenue Amt</th>
             <th>Cost Amt</th>
             <th>Profit</th>
             <th>Profit %</th>
@@ -904,10 +904,10 @@
               <thead>
                 <tr class="bg-info text-white">
                   <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                  <th class="bg-transparent text-light" scope="col">Sno</th>
+                  <!-- <th class="bg-transparent text-light" scope="col">Sno</th> -->
                   <th class="bg-transparent text-light" scope="col">Charge</th>
                   <th class="bg-transparent text-light" scope="col">Charge Desc</th>
-                  <th class="bg-transparent text-light" scope="col">PP/CC</th>
+                  <!-- <th class="bg-transparent text-light" scope="col">PP/CC</th> -->
                   <th class="bg-transparent text-light" scope="col">Unit</th>
                   <th class="bg-transparent text-light" scope="col">No. of Unit</th>
                   <th class="bg-transparent text-light" scope="col">Cost/Revenue</th>
@@ -928,30 +928,30 @@
                     <td rowspan="2">
                       <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply Charge</button>
                     </td>
-                    <td rowspan="2">{{ i + 1 }}</td>
+                    <!-- <td rowspan="2">{{ i + 1 }}</td> -->
                     <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
                     <td rowspan="2">{{ sc.ChargeDescription }}</td>
-                    <td rowspan="2">{{ sc.PrepaidCollect }}</td>
+                    <!-- <td rowspan="2">{{ sc.PrepaidCollect }}</td> -->
                     <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
-                    <td rowspan="2">{{ sc.NumberOfUnit }}</td>
+                    <td rowspan="2">{{ sc.NoOfUnit }}</td>
                     <td class="text-info fw-bold">Cost</td>
-                    <td>{{ sc.Cost?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                    <td>{{ getCurrencyCode(sc.Cost?.CurrencyMasterSid) }}</td>
-                    <td>{{ sc.Cost?.ExchangeRate }}</td>
-                    <td>{{ sc.Cost?.Rate }}</td>
-                    <td>{{ sc.Cost?.Amount }}</td>
-                    <td>{{ sc.Cost?.LocalAmount }}</td>
+                    <td>{{ sc.CostDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                    <td>{{ getCurrencyCode(sc.CostCurrencyMasterSid) }}</td>
+                    <td>{{ sc.CostExchangeRate }}</td>
+                    <td>{{ sc.CostRate }}</td>
+                    <td>{{ sc.CostAmount }}</td>
+                    <td>{{ sc.CostLocalAmount }}</td>
                   </tr>
 
                   <!-- Revenue Row -->
                   <tr>
                     <td class="text-info fw-bold">Revenue</td>
-                    <td>{{ sc.Revenue?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                    <td>{{ getCurrencyCode(sc.Revenue?.CurrencyMasterSid) }}</td>
-                    <td>{{ sc.Revenue?.ExchangeRate }}</td>
-                    <td>{{ sc.Revenue?.Rate }}</td>
-                    <td>{{ sc.Revenue?.Amount }}</td>
-                    <td>{{ sc.Revenue?.LocalAmount }}</td>
+                    <td>{{ sc.RevenueDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                    <td>{{ getCurrencyCode(sc.RevenueCurrencyMasterSid) }}</td>
+                    <td>{{ sc.RevenueExchangeRate }}</td>
+                    <td>{{ sc.RevenueRate }}</td>
+                    <td>{{ sc.RevenueAmount }}</td>
+                    <td>{{ sc.RevenueLocalAmount }}</td>
                   </tr>
                 </ng-container>
               </tbody>

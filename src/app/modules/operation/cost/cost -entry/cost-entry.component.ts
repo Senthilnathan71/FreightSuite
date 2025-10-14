@@ -825,6 +825,11 @@ createRateFormGroup(data?: any): FormGroup {
     });
 
     this.updateSingleChargeQty(index);
+    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === charge.CurrencyMasterSid);
+    if (currency) {
+      this.getRevenueExchangeRate(index, currency);
+      this.getCostExchangeRate(index, currency);
+    }
   }
 
   private updateAllChargeQuantitiesForRoute(): void {
@@ -1271,25 +1276,26 @@ createRateFormGroup(data?: any): FormGroup {
               return {
                 ChargeMasterSid: charge?.ChargeMasterSid,
                 ChargeDescription: td.Description,
-                PrepaidCollect: "Collect",
                 ChargeUomSid: td.UOMSid,
-                NumberOfUnit: value,
-                Cost: {
-                  DrCr: 'D',
-                  CurrencyMasterSid: td.BuyCurrency,
-                  Rate: Number(td.BuyPerUnitPrice).toFixed(this.digitsAfterDecimal),
-                  Amount: (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
-                  LocalAmount: (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
-                  ExchangeRate: Number(td.costExchangeRate).toFixed(this.digitsAfterDecimal)
-                },
-                Revenue: {
-                  DrCr: 'C',
-                  CurrencyMasterSid: td.SaleCurrency,
-                  Rate: Number(td.SalePerUnitPrice).toFixed(this.digitsAfterDecimal),
-                  Amount: (Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
-                  LocalAmount: (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
-                  ExchangeRate: Number(td.revenueExchangeRate).toFixed(this.digitsAfterDecimal)
-                }
+                NoOfUnit: value,
+
+                CostPrepaidCollect: "Prepaid",
+                CostCurrencyMasterSid : td.BuyCurrency,
+                CostExchangeRate : Number(td.costExchangeRate).toFixed(this.digitsAfterDecimal),
+                CostRate : Number(td.BuyPerUnitPrice).toFixed(this.digitsAfterDecimal),
+                CostDrCr : 'D',
+                CostAmount : (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                CostLocalAmount : (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                CostChargeUomSid: td.UOMSid,
+
+                RevenuePrepaidCollect: "Prepaid",
+                RevenueCurrencyMasterSid : td.SaleCurrency,
+                RevenueExchangeRate : Number(td.costExchangeRate).toFixed(this.digitsAfterDecimal),
+                RevenueRate : Number(td.SalePerUnitPrice).toFixed(this.digitsAfterDecimal),
+                RevenueDrCr : 'C',
+                RevenueAmount : (Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                RevenueLocalAmount : (Number(td.costExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(this.digitsAfterDecimal),
+                RevenueChargeUomSid: td.UOMSid
               }
             })
 
@@ -1353,29 +1359,29 @@ createRateFormGroup(data?: any): FormGroup {
   applyTariff(detail) {
     console.log(detail);
 
-    const rateFormValue = {
-      ChargeMasterSid: detail.ChargeMasterSid,
-      ChargeDescription: detail.ChargeDescription,
-      PrepaidCollect: detail.PrepaidCollect,
-      ChargeUomSid: detail.ChargeUomSid,
-      NumberOfUnit: detail.NumberOfUnit,
-
-      RevenueCurrencyMasterSid: detail.Revenue.CurrencyMasterSid,
-      RevenueDrCr: detail.Revenue.DrCr,
-      RevenueExchangeRate: detail.Revenue.ExchangeRate,
-      RevenueRate: detail.Revenue.Rate,
-      RevenueAmount: detail.Revenue.Amount,
-      RevenueLocalAmount: detail.Revenue.LocalAmount,
-
-      CostCurrencyMasterSid: detail.Cost.CurrencyMasterSid,
-      CostDrCr: detail.Cost.DrCr,
-      CostExchangeRate: detail.Cost.ExchangeRate,
-      CostRate: detail.Cost.Rate,
-      CostAmount: detail.Cost.Amount,
-      CostLocalAmount: detail.Cost.LocalAmount,
+    if(this.rateFormArray.length === 0){
+      this.rateFormArray.push(this.createRateFormGroup(detail));
+      return;
+    }
+    if(this.checkIfLastChargeEmpty()){
+      const rateGroup = this.rateFormArray.at(this.rateFormArray.length - 1);
+      rateGroup.patchValue(detail);
+    } else {
+      this.rateFormArray.push(this.createRateFormGroup(detail));
     }
     this.calculateProfit();
     this.modalService.dismissAll();
+  }
+
+  checkIfLastChargeEmpty(){
+    if(this.rateFormArray.length === 0){
+      return true;
+    }
+    const lastCharge = this.rateFormArray.at(this.rateFormArray.length - 1);
+    if(lastCharge.get('ChargeMasterSid')?.value === null){
+      return true;
+    }
+    return false;
   }
 
   closeTariffModal() {
