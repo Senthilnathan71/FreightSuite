@@ -228,8 +228,9 @@
                 <!-- Tab Navigation for GST and TDS Sections -->
                 <div class="mx-auto mt-1">
                     <div class="nav-pills-container">
-                        <div class="nav-pills">
-                            <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
+                        <div class="nav-pills d-flex align-items-center w-100">
+                            <div class="pills-left d-flex flex-nowrap" style="flex:1;">
+                                 <div class="nav-pill" *ngFor="let tab of tab" [class.active]="selectedTab === tab.name"
                                 (click)="selectTab(tab.name)">
                                 <div class="pill-icon">
                                     <i [class]="tab.icon"></i>
@@ -237,20 +238,30 @@
                                 <span class="pill-label">{{ tab.name }}</span>
                                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
                             </div>
+                            </div>
+                           <div *ngIf="selectedTab === 'GST Details'">
+                                    <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addGstRow()">
+                                        <i class="fas fa-plus"></i> Add GST
+                                    </button>
+                           </div>  
+                           <div *ngIf="selectedTab === 'TDS Details'">
+                                   <button type="button" class="btn btn-sm btn-info" (click)="addTdsRow()"
+                                        [disabled]="chargeTaxMasters.controls.length === 0">
+                                        <i class="fas fa-plus me-1"></i> Add TDS
+                                    </button>
+                           </div> 
                         </div>
                     </div>
 
                     <div class="content-workspace">
                         <!-- GST Details Tab -->
                         <div class="workspace-content" *ngIf="selectedTab === 'GST Details'">
-                            <div class="table-toolbar">
+                            <!-- <div class="table-toolbar">
                                 <div></div>
                                 <div class="toolbar-right1">
-                                    <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addGstRow()">
-                                        <i class="fas fa-plus"></i> Add GST
-                                    </button>
+                                
                                 </div>
-                            </div>
+                            </div> -->
 
                             @if(chargeTaxMasters.controls.length === 0) {
                             <div class="col-12 text-center py-3 text-danger">
@@ -342,15 +353,12 @@
 
                         <!-- TDS Details Tab -->
                         <div class="workspace-content" *ngIf="selectedTab === 'TDS Details'">
-                            <div class="table-toolbar">
+                            <!-- <div class="table-toolbar">
                                 <div></div>
                                 <div class="toolbar-right1">
-                                    <button type="button" class="btn btn-sm btn-info" (click)="addTdsRow()"
-                                        [disabled]="chargeTaxMasters.controls.length === 0">
-                                        <i class="fas fa-plus me-1"></i> Add TDS
-                                    </button>
+                                 
                                 </div>
-                            </div>
+                            </div> -->
 
 
 
@@ -402,7 +410,7 @@
                                                         </div>
                                                     </div> -->
                                                     <input type="" formControlName="EffectiveFrom"
-                                                        class="custom-input-field sm" readonly />
+                                                        class="custom-input-field sm " readonly />
                                                     <div *ngIf="tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid"
                                                         class="error-message">
                                                         <span
