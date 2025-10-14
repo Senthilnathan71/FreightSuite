@@ -704,33 +704,10 @@
                                             <label class="input-label">POO</label>
                                         </div>
                                     </div>
-                                    <!--                                     
-                                    <div class="col-12 col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
-
-                                            <ng-select formControlName="POL" class="ng-select" placeholder=""
-                                                appendTo="body">
-                                                <ng-option *ngFor="let item of filteredPOLPorts[routeIndex]"
-                                                    [value]="item.PortMasterSid">
-                                                    {{ item.PortName }} ({{ item.PortCode }})
-                                                </ng-option>
-                                            </ng-select>
-                                            <label class="input-label">POL <span class="text-danger">*</span></label>
-                                            <div *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
-                                                class="error-message">
-                                                Required
-                                            </div>
-
-                                        </div>
-                                    </div> -->
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
-                                            <!-- <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
-
-                          </ng-select> -->
+                                          
                                             <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]"
                                                 formControlName="POL" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
@@ -752,11 +729,7 @@
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
-                                            <!-- <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
-                            (change)="onRouteChange(routeIndex)">
-
-                          </ng-select> -->
+                                            
                                             <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]"
                                                 formControlName="POD" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
@@ -775,25 +748,7 @@
                                             }
                                         </div>
                                     </aside>
-                                    <!-- <div class="col-12 col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
-
-                                            <ng-select formControlName="POD" class="ng-select" placeholder=""
-                                                appendTo="body">
-                                                <ng-option *ngFor="let item of filteredPODPorts[routeIndex]"
-                                                    [value]="item.PortMasterSid">
-                                                    {{ item.PortName }} ({{ item.PortCode }})
-                                                </ng-option>
-                                            </ng-select>
-
-                                            <label class="input-label">POD <span class="text-danger">*</span></label>
-                                            <div *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
-                                                class="error-message">
-                                                Required
-                                            </div>
-                                        </div>
-                                    </div> -->
+                                    
                                     <div class="col-12 col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
