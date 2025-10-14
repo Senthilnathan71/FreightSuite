@@ -15,6 +15,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 
 @Component({
   selector: 'app-cost-entry',
@@ -31,7 +32,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
     OnlyNumbersDirective,
     TextWithNumbersDirective,
     NumberFormatPipe,
-    SearchableDropdown
+    SearchableDropdown,
+    SearchableDropdownModal
   ],
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],
