@@ -197,7 +197,7 @@
 }
 
 .workspace-content {
-  padding: 1px 10px;
+  padding: 2px 10px;
   height: 100%;
   // overflow-y: auto;
   animation: fadeInUp 0.50s ease;
@@ -418,7 +418,7 @@
 }
 
 .table-toolbar {
-  padding: 6px 0px;
+  padding: 2px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -430,7 +430,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 2px 12px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: white;
@@ -563,7 +563,7 @@
     backdrop-filter: blur(20px);
     border-radius: 8px;
     padding: 4px 12px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -738,7 +738,7 @@
     border-radius: 8px;
     // box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
     overflow: hidden;
-    border: 1px solid #f1f5f9;
+    border: 2px solid #d3d9e4;
     transition: all 0.3s ease;
     // width: 450px !important;
     // &:hover {
@@ -754,7 +754,7 @@
     border-radius: 8px;
     // box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
     overflow: hidden;
-    border: 1px solid #f1f5f9;
+    border: 2px solid #d3d9e4;
     transition: all 0.3s ease;
   }
 
@@ -1189,7 +1189,7 @@
   .modern-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10px;
+    font-size: 12px;
 
     thead {
       background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
@@ -1206,7 +1206,7 @@
 
     tbody {
       .table-row {
-        border-bottom: 1px solid #d6d8da;
+        // border-bottom: 1px solid #d6d8da;
 
         &:hover {
           cursor: pointer;
@@ -1215,9 +1215,9 @@
       }
 
       td {
-        padding: 6px;
+        padding: 2px 5px;
         white-space: nowrap;
-        color: #374151;
+        color: black;
         vertical-align: middle;
         font-size: 0.8rem;
       }
@@ -1560,6 +1560,9 @@
       width: 100%;
     }
 
+     .info-card1 {
+      width: 100% !important;
+    }
   }
 
   @media (max-width: 768px) {
@@ -2429,7 +2432,7 @@
   .modern-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10px;
+    font-size: 12px;
 
     thead {
       background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);

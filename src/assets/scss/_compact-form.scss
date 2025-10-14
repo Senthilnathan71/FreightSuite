@@ -10,6 +10,7 @@
     border-right: 0;
     border-top: 0;
     box-shadow: none;
+     font-size: 0.9rem !important;
   }
 
   .input-label {
@@ -31,11 +32,10 @@
       border-left: 0;
       padding: 6px 4px 0px;
       border-right: 0;
-      max-height: 10px;
+       max-height: 29px !important;
+      font-size: 0.9rem !important;
     }
-  }
-
-  .form-control {
+      .form-control {
     border-radius: 0;
     border-top: 0;
     border-left: 0;
@@ -43,6 +43,19 @@
     padding: 6px 4px 0px;
     max-height: 29px;
     color: black;
+    font-size: 0.9rem !important;
+  }
+  }
+
+   .form-control {
+    border-radius: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 6px 4px 0px;
+    max-height: 29px;
+    color: black;
+    font-size: 0.9rem !important;
   }
 
 
@@ -119,6 +132,10 @@
       padding-left: 0;
       padding-right: 0;
       color: #05567F;
+    }
+
+    .input-group{
+      margin-bottom: -3ppx !important;
     }
   }
 
