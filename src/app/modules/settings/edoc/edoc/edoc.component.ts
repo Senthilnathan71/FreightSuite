@@ -56,7 +56,6 @@ export class EdocComponent implements OnInit, OnDestroy {
     console.log(this.componentData, ' this.componentData')
     this.initEdocForm()
     this.loadEdocData()
-
   }
   initEdocForm() {
     this.edocform = this.fb.group({
@@ -95,33 +94,57 @@ export class EdocComponent implements OnInit, OnDestroy {
     });
   }
 
+  existingFileName: string | null = null;
+
   loadEdocData() {
-    const payload = {
-      menuMasterSid: this.componentData.MenuMasterSid,
-      DocumentSid: this.componentData.DocumentSid
-    };
+  const payload = {
+    menuMasterSid: this.componentData.MenuMasterSid,
+    DocumentSid: this.componentData.DocumentSid
+  };
 
-    this.commonService.getExistingFile(payload).subscribe((res) => {
-      if (res) {
-        const type:any = this.modeOfType.filter(item=>item.name === res.DocumentType)
-        console.log(res,'getExistingFile')
-        this.edocform.patchValue({
-          AttachDocmentNo: res.AttachDocmentNo || '',
-          DocumentDate: res.DocumentDate ? this.toNgbDateStruct(new Date(res.DocumentDate)) : '',
-          Filename: res.FileName || '',           // ✅ changed here
-          DocumentType: type ? type.name : '',  // ✅ changed here
-          ReceivedDate: res.ReceivedDate ? this.toNgbDateStruct(new Date(res.ReceivedDate)) : '',
-          SentDate: res.SentDate ? this.toNgbDateStruct(new Date(res.SentDate)) : '',
-          FollowupRequired: res.FollowupRequire?.trim() === 'Y' || false, // ✅ changed here
-          FollowupDate: res.FollowupDate ? this.toNgbDateStruct(new Date(res.FollowupDate)) : '',
-          FollowupAction: res.FollowupAction || '',
-          Remarks: res.Remarks || '',
-          Status: res.status || 'A' // ✅ changed here
-        });
-
+  this.commonService.getExistingFile(payload).subscribe((res) => {
+    if (res) {
+      console.log(res, 'getExistingFile');
+      
+      // Fix 1: Filter returns array, get first item
+      const typeMatch = this.modeOfType.find(item => item.name === res.DocumentType);
+      
+      // Fix 2: Map status code to status name
+      let statusValue = 'Active'; // default
+      if (res.status === 'A' || res.status === 'Active') {
+        statusValue = 'Active';
+      } else if (res.status === 'S' || res.status === 'Suspended') {
+        statusValue = 'Suspended';
       }
-    });
-  }
+      
+      // Fix 3: Correct field names to match form control names
+      this.edocform.patchValue({
+        AttachDocmentNo: res.AttachDocmentNo || '',
+        DocumentDate: res.DocumentDate ? this.toNgbDateStruct(new Date(res.DocumentDate)) : '',
+        FileName: res.FileName || '',           // ✅ Correct case
+        Documenttype: typeMatch ? typeMatch.name : '',  // ✅ Correct case + use find()
+        ReceivedDate: res.ReceivedDate ? this.toNgbDateStruct(new Date(res.ReceivedDate)) : '',
+        SentDate: res.SentDate ? this.toNgbDateStruct(new Date(res.SentDate)) : '',
+        FollowupRequired: res.FollowupRequire?.trim() === 'Y',
+        FollowupDate: res.FollowupDate ? this.toNgbDateStruct(new Date(res.FollowupDate)) : '',
+        FollowupAction: res.FollowupAction || '',
+        Remarks: res.Remarks || '',
+        Status: statusValue  // ✅ Map to correct status name
+      });
+
+      // Fix 4: Handle file display (if file path is available)
+      // Note: You cannot programmatically set a file input, but you can show the filename
+      if (res.FileName) {
+        // Store the existing file info for display
+        this.existingFileName = res.FileName;
+        // Optionally, you can fetch and create a File object if you have the file URL
+        // this.loadExistingFile(res.FileUrl);
+      }
+      
+      console.log('Form patched successfully:', this.edocform.value);
+    }
+  });
+}
 
 
 
@@ -233,14 +256,30 @@ export class EdocComponent implements OnInit, OnDestroy {
   //   this.activeModal.close();
   // }
 
-  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
-    if (!date) return null;
+  toNgbDateStruct(dateValue: string | Date | null | undefined): NgbDateStruct | null {
+  if (!dateValue) return null;
+  
+  try {
+    // If it's already a Date object, use it directly
+    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date:', dateValue);
+      return null;
+    }
+    
     return {
       year: date.getFullYear(),
       month: date.getMonth() + 1,
       day: date.getDate()
     };
+  } catch (error) {
+    console.error('Error converting date:', dateValue, error);
+    return null;
   }
+}
+
 
   closeTemplate() {
     this.closeModal.emit(true);
