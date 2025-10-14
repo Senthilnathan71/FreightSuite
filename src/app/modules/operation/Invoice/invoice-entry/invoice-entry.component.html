@@ -371,10 +371,19 @@
 
                     <!-- HSN/SAC -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
+                      <ng-select *ngIf="!isEditMode" [items]="hssacList" bindValue="HSSACMasterSid"
                         formControlName="HSSACMasterSid" placeholder="" appendTo="body">
+                        <ng-template ng-label-tmp let-item="item">
+                          {{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode || item?.sacCode || '-' }}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode || item?.sacCode || '-' }}</strong>
+                            <small *ngIf="item?.Description || item?.description"> - {{ item?.Description || item?.description }}</small>
+                          </div>
+                        </ng-template>
                       </ng-select>
-                      <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value) }}</span>
+                      <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span>
                     </td>
 
                     <!-- Unit -->
@@ -682,9 +691,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let detail of details.controls">
+              <tr *ngFor="let detail of details.controls; let i = index">
                 <td style="border: 2px solid black;">{{detail.get('ChargeDescription')?.value}}</td>
-                <td style="border: 2px solid black;">{{getHSSACCode(detail.get('HSSACMasterSid')?.value)}}</td>
+                <td style="border: 2px solid black;">{{getHSSACCode(detail.get('HSSACMasterSid')?.value, i)}}</td>
                 <td style="border: 2px solid black;">{{detail.get('CurrencyCode')?.value}}</td>
                 <td style="border: 2px solid black;">{{detail.get('NumberOfUnit')?.value | number:'1.3-3'}}</td>
                 <td style="border: 2px solid black;">{{detail.get('Rate')?.value | number:'1.2-2'}}</td>
