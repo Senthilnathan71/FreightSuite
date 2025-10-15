@@ -1,6 +1,6 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 
@@ -70,6 +70,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
   ],
 })
 export class EnquiryEntryComponent implements OnInit {
+   @ViewChild('enquiryPrint') enquiryPrint!: TemplateRef<any>;
       private destroy$ = new Subject<void>();
 
   selectedDepartment: any = '';
@@ -128,7 +129,11 @@ export class EnquiryEntryComponent implements OnInit {
   minExpDate: any;
   permissions: any[] = [];
   currentMenuPermissions = {}
-
+  departmentLookupConfig = {
+    displayFields : ['departmentCode','departmentName', 'departmentType'],
+    displayLabels : ['Code','Name', 'Type'],
+    labelFields :['departmentCode']
+  };
 
   modeOfEnquiry = [
     { id: 1, name: "Email" },
@@ -171,7 +176,7 @@ export class EnquiryEntryComponent implements OnInit {
     selectedTab = 'Enquiry';
  tabs = [
     { name: 'Enquiry', icon: 'fas fa-file-signature' },
-    { name: 'Route Details', icon: 'fas fa-file-signature' },
+    { name: 'Route Details', icon: 'fas fa-layer-group' },
   //  { name: 'Other', icon: 'fas fa-layer-group' }
   ];
   
@@ -359,6 +364,7 @@ export class EnquiryEntryComponent implements OnInit {
       status: [''],
       AuthorizerRemarks: [''],
       authorizerStatus: ['Pending'],
+      CustomerRef:[''],
       FreightPPCC : ['Prepaid'],
       routes: this.fb.array([]),
     });
@@ -694,6 +700,7 @@ ${this.userData.userName}`;
   onSegmentChange(event) {
     if (!event) {
       this.selectedFCLLCL = "LCL"
+      this.selectedDepartment = ""
       this.routes.controls.forEach((routeGroup: FormGroup) => {
         ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
           routeGroup.get(field)?.setValue(null);
@@ -764,6 +771,14 @@ ${this.userData.userName}`;
         this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
       },
       error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
+
+   openPrint() {
+    this.ngbModal.open(this.enquiryPrint, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     });
   }
   updateCargoValidators(cargoForm: FormGroup, type: string) {
@@ -994,6 +1009,7 @@ onSelectionChange(selectedItem: any) {
         AuthorizerRemarks: response.AuthorizerRemarks,
         authorizerStatus: response.authorizerStatus || 'Pending',
         status: response.status === 'A' ? 'Active' : 'Suspended',
+        CustomerRef:response.CustomerRef,
       });
     this.rateRequestForm.get('Segment')?.disable();
     this.rateRequestForm.get('enquiryNo')?.disable();

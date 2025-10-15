@@ -6,7 +6,7 @@
   <div class="row  bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
     <div class="col-md-4  pb-1">
       <div class="d-flex align-items-center gap-2">
-        <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Update' : 'Add' }} Quotation</h5>
+        <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Quotation</h5>
         @if(isEditMode){
         <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
@@ -25,7 +25,7 @@
 
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="quotationApproved"
           (click)="reportAndEmailModel(reportModel)">
-          <i class="fas fa-print"></i> Print
+          <i class="fas fa-print me-1"></i> Print
         </button>
 
         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
@@ -162,7 +162,7 @@
                   <span class="text-danger"></span></label>
               </div>
             </aside>
-            <aside class="col-md-4">
+            <!-- <aside class="col-md-4">
               <div class="custom-form-group">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
@@ -172,7 +172,39 @@
                   </label>
                 </div>
               </div>
-            </aside>
+            </aside> -->
+            <aside class="col-md-4 mt-md-1 mt-0">
+                <div class="custom-form-group">
+                  <div class="d-flex align-items-center gap-5">
+                    
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      id="Customer"
+                     
+                      [value]="true"
+                      formControlName="LeadOrCustomer"
+                    />
+                    <label class="form-check-label" for="customerRadio">Customer</label>
+                  </div>
+                       <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      id="lead"
+                    
+                      [value]="false"
+                      formControlName="LeadOrCustomer"
+                    />
+                    <label class="form-check-label" for="leadRadio">Lead</label>
+                  </div>
+
+                  </div>
+               
+                </div>
+              </aside>
+
             <aside class="col-md-4" *ngIf="!isEditMode && quotationForm.get('LeadOrCustomer')?.value">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
@@ -356,7 +388,7 @@
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
                     [disabled]="f['EnquirySid'].value || disableAllModification">
-                    <i-feather class="feather-sm me-1 text-danger" name="trash-2"></i-feather>
+                    <i class="fas fa-trash text-danger me-1"></i>
                   </button>
                   }
                   <span
@@ -584,7 +616,7 @@
                             class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
                             (focus)="route.get('GrossWeight')?.updateValueAndValidity()"
                             (blur)="route.get('GrossWeight')?.updateValueAndValidity()">
-                          <label for="text-input" class="input-label px-md-5">Gross Weight <span class="text-danger">{{
+                          <label for="text-input" class="input-label " style="display: block; text-align: center; width: 100%;">Gross Weight <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
                           <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
                                 Gr weight > Net weight
@@ -596,7 +628,7 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label px-md-5">Net Weight <span class="text-danger">{{
+                          <label for="text-input" class="input-label " style="display: block; text-align: center; width: 100%;">Net Weight <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'NetWeight') ? '*' : '' }}</span></label>
                         </div>
                       </aside>
@@ -606,7 +638,7 @@
                           <input type="text" id="text-input" placeholder=""
                             class="form-control custom-input-field sm text-end" formControlName="Volume"
                             DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                          <label for="text-input" class="input-label px-md-5 mx-md-4">CBM <span class="text-danger">{{
+                          <label for="text-input" class="input-label" style="display: block; text-align: center; width: 100%;">CBM <span class="text-danger">{{
                               isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
                           @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
                           <div class="error-message">

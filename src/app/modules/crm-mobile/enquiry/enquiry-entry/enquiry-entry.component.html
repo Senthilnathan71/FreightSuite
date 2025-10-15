@@ -5,7 +5,7 @@
             <div class="col-md-4 d-flex pb-1">
                 <h4 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Enquiry</h4>
                 @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
@@ -17,6 +17,10 @@
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                         (click)="openAuditLogs(auditLogModal)">
                         <i class="fas fa-history me-1"></i>Logs
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openPrint()">
+                        <i class="fas fa-print me-1"></i> Print
                     </button>
 
 
@@ -32,7 +36,7 @@
                     </button>
                     <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
                         [disabled]="disableAddButtons">
-                        <i class="fas fa-save me-1"></i> {{isEditMode ? 'Edit' : "Save"}}
+                        <i class="fas fa-save me-1"></i> {{isEditMode ? 'Save' : "Save"}}
                     </button>
                     <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -187,32 +191,45 @@
         </div> -->
         <ng-template #basicDetailTemplate>
             <div class="row parent">
-                @if(isEditMode){
-                <div class="col-md-4">
+                <!-- @if(isEditMode){
+                <div class="col-md-2">
                     <div class="custom-form-group">
                         <input type="text" id="enquiryNo" class="form-control custom-input-field sm"
                             [value]="selectedDepartment" disabled>
                         <label for="enquiryNo" class="input-label">Dept Name</label>
                     </div>
                 </div>
-                } @else {
-                <div class="col-md-4">
+                } @else { -->
+                    
+                <div class="col-md-2">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('Segment')?.value">
+                        <!-- <dofi-searchable-dropdown [items]="departments" formControlName="Segment" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields" [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onSegmentChange($event)">
+                        </dofi-searchable-dropdown> -->
 
                         <ng-select formControlName="Segment" class="ng-select" (change)="onSegmentChange($event)"
                             placeholder="" appendTo="body">
                             <ng-option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
-                                {{ item.departmentName }}
+                                {{ item.departmentCode }}
                             </ng-option>
                         </ng-select>
-                        <label for="customer" class="input-label">Dept Name <span class="text-danger">*</span></label>
+                        <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
                         <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
                             Required
                         </div>
                     </div>
                 </div>
-                }
+                <div class="col-md-2">
+                    <div class="custom-form-group">
+                        <input type="text" id="dept" class="form-control custom-input-field sm"
+                            [value]="selectedDepartment" disabled>
+                        <label for="dept" class="input-label">Dept Name</label>
+                    </div>
+                </div>
+                <!-- } -->
 
                 @if(isEditMode){
                 <!-- <div class="col-md-4">
@@ -222,21 +239,21 @@
                         <label for="enquiryBy" class="input-label">Customer</label>
                     </div>
                 </div> -->
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <div class="custom-form-group">
                         <input type="text" id="enquiryNo" class="form-control custom-input-field sm"
                             formControlName="enquiryNo" readonly>
                         <label for="enquiryNo" class="input-label">Enquiry No</label>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <div class=" custom-form-group custom-form-group-select-date">
 
                         <div class="input-group">
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                #d10="ngbDatepicker" formControlName="EnquiryDate" readonly container="body" />
+                                #d2="ngbDatepicker" formControlName="EnquiryDate" readonly container="body" />
                             <div>
-                                <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                <button class="btn  bi bi-calendar3" (click)="d2.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
 
@@ -246,59 +263,6 @@
                     </div>
                 </div>
                 }
-
-                <aside class="col-md-4 mt-md-2 mt-0" *ngIf="!isEditMode">
-                    <div class="custom-form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="leadOrCustomer"
-                                formControlName="LeadOrCustomer">
-                            <label class="form-check-label" for="flexCheckChecked">
-                                Customer / Lead
-                            </label>
-                        </div>
-                    </div>
-                </aside>
-                <aside class="col-md-4" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                        <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName"
-                            bindValue="CustomerMasterSid" formControlName="CustomerMasterSid" appendTo="body"
-                            (change)="onSelectionChange($event)">
-                            <ng-template ng-option-tmp let-item="item" let-index="index">
-                                <div>
-                                    <span class="d-block fw-bold">{{ item.CustomerName }}</span>
-                                    <span class="d-block fw-semibold">{{ item.BranchName }}</span>
-                                    <small class="d-block">{{ item.Address }}</small>
-                                </div>
-                            </ng-template>
-                        </ng-select>
-                        <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
-                                [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
-                                [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                (itemSelected)="onSelectionChange($event)">
-                            </dofi-searchable-dropdown> -->
-                        <label for="customerName" class="input-label">Customer <span
-                                class="text-danger">*</span></label>
-                        <small *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid"
-                            class="error-message">
-                            Required
-                        </small>
-                    </div>
-                </aside>
-                <aside class="col-md-4" *ngIf="!rateRequestForm.get('LeadOrCustomer')?.value">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('PreCustomerMasterSid')?.value">
-                        <ng-select class="ng-select" [items]="leadList" bindLabel="preCustomerName"
-                            bindValue="PreCustomerMasterSid" formControlName="PreCustomerMasterSid" appendTo="body"
-                            (change)="onSelectionChange($event)"></ng-select>
-                        <label for="customerName" class="input-label">Lead <span class="text-danger">*</span></label>
-                        <small
-                            *ngIf="rateRequestForm.get('PreCustomerMasterSid').touched && rateRequestForm.get('PreCustomerMasterSid').invalid"
-                            class="error-message">
-                            Required
-                        </small>
-                    </div>
-                </aside>
 
 
 
@@ -323,35 +287,27 @@
 
 
 
-                <aside class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('CustomerAddress')?.value">
-                        <ng-select formControlName="CustomerAddress" (change)="onCustomerAddressChange($event)"
-                            class="ng-select" [items]="cusBranchList" bindLabel="Address" bindValue="Address"
-                            placeholder="" appendTo="body">
+
+                <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                        [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
+                        <ng-select  formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
+                            bindValue="name" placeholder="" appendTo="body" >
                         </ng-select>
-                        <label class="input-label">Customer Address</label>
-                        <div *ngIf="f['CustomerAddress'].touched && f['CustomerAddress'].invalid" class="error-message">
-                            Required
-                        </div>
+                        <label class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
                 </aside>
 
-                <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="Email">
-                        <label for="text-input" class="input-label">Email <span class="text-danger"></span></label>
-                    </div>
-                </aside>
-                <div class="col-md-4">
+                
+
+                <div class="col-md-2">
                     <div class=" custom-form-group custom-form-group-select-date">
 
                         <div class="input-group">
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                 #d1="ngbDatepicker" (keydown.arrowDown)="d1.open()" (click)="d1.toggle()"
                                 formControlName="shipmentDate" [minDate]="minExpDate" readonly
-                                [footerTemplate]="footerTemplateShip" container="body" />
+                                [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected"/>
                             <div>
                                 <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
@@ -377,76 +333,200 @@
                         Close
                     </button>
                 </ng-template>
-                <aside class="col-md-3">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
-                        <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
-                            bindValue="name" placeholder="" appendTo="body">
-                        </ng-select>
-                        <label for="" class="input-label">Enquiry Type<span class="text-danger"></span></label>
-                    </div>
-                </aside>
-                <aside class="col-md-3">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
-                        <ng-select formControlName="FreightPPCC" [items]="freightTermsList" bindLabel="FreightTerms"
-                            bindValue="FreightTerms" placeholder="" [appendTo]="'body'">
-                        </ng-select>
-                        <label for="freightTerms" class="input-label">Freight Terms</label>
-                    </div>
-                </aside>
 
-                <aside class="col-md-3">
+                <!-- <aside class="col-md-2 mt-0 mt-md-1" *ngIf="!isEditMode">
+                                            <div class="custom-form-group">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="leadOrCustomer" formControlName="LeadOrCustomer">
+                                                    <label class="form-check-label" for="flexCheckChecked">
+                                                        Customer / Lead
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </aside> -->
+
+                                        <aside class="col-md-2 mt-0 mt-md-1" *ngIf="!isEditMode">
+                                            <div class="custom-form-group">
+                                            <div class="d-flex align-items-center gap-5">
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    id="Customer"
+                                                    
+                                                    [value]="true"
+                                                    formControlName="LeadOrCustomer"
+                                                />
+                                                <label class="form-check-label" for="flexCheckChecked">Customer</label>
+                                                </div>
+                                                <div class="form-check">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    id="lead"
+                                                  
+                                                    [value]="false"
+                                                    formControlName="LeadOrCustomer"
+                                                />
+                                                <label class="form-check-label" for="leadRadio">Lead</label>
+                                                </div>
+
+
+                                            </div>       
+                                            </div>
+                                            </aside>
+
+
+
+
+
+                <!-- <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
-                        <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindLabel="IncoName"
-                            bindValue="IncoName" placeholder="" appendTo="body"></ng-select>
-                        <label for="text-input" class="input-label">Inco </label>
-                    </div>
-                </aside>
-                <aside class="col-md-3">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
-                        <ng-select class="ng-select" formControlName="ClearanceBy" placeholder="" appendTo="body">
-                            <ng-option value="Own">Own</ng-option>
-                            <ng-option value="CHA">CHA</ng-option>
-                            <ng-option value="By us">By us</ng-option>
+                        [class.filled]="!!enquiryOtherForm.get('FreightTerms')?.value">
+                        <ng-select formControlName="FreightTerms" class="ng-select" placeholder="" appendTo="body">
+                            <ng-option *ngFor="let item of terms" [value]="item.name">
+                                {{ item.name }}
+                            </ng-option>
                         </ng-select>
-                        <label for="text-input" class="input-label">Clearance By </label>
+                        <label for="text-input" class="input-label">Shipment Terms <span
+                                class="text-danger"></span></label>
                     </div>
-                </aside>
-                <aside class="col-md-3">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('TransportBy')?.value">
-                        <ng-select class="ng-select" formControlName="TransportBy" placeholder="" appendTo="body">
-                            <ng-option value="Own">Own</ng-option>
-                            <ng-option value="CHA">CHA</ng-option>
-                            <ng-option value="By us">By us</ng-option>
-                        </ng-select>
-                        <label for="text-input" class="input-label">Transport By </label>
-                    </div>
-                </aside>
-                <aside class="col-md-3">
-                    <div class="custom-form-group">
-                        <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
-                            formControlName="Remarks"></textarea>
-                        <label for="text-input" class="input-label">Remarks </label>
-                    </div>
-                </aside>
-                @if(EnquiryHeaderSid){
-                <div class="col-12 col-md-3">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('status')?.value" appendTo="body">
-                        <ng-select formControlName="status" class="ng-select">
-                            <ng-option *ngFor="let option of statusList" [value]="option">{{ option }}</ng-option>
-                        </ng-select>
-                        <label for="status" class="input-label">Status</label>
-                        <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
-                            Required
-                        </small>
-                    </div>
-                </div>
-                }
+                </aside> -->
+
+
+
+
+                <div class="col-md-12 mt-3">
+                    <div class="row">
+                        <div class="col-md-6 pe-md-1 ps-md-1">
+                            <div class="card mb-0" style="padding-bottom: 2px;">
+                                <div class="card-body py-0">
+                                    <div class="row">
+                                        
+                                        <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
+                                                <ng-select class="ng-select" [items]="customers"
+                                                    bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                                    formControlName="CustomerMasterSid" appendTo="body"
+                                                    (change)="onSelectionChange($event)">
+                                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                        <div>
+                                                            <span class="d-block fw-bold">{{ item.CustomerName }}</span>
+                                                            <span class="d-block fw-semibold">{{ item.BranchName
+                                                                }}</span>
+                                                            <small class="d-block">{{ item.Address }}</small>
+                                                        </div>
+                                                    </ng-template>
+                                                </ng-select>
+                                                <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                                [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
+                                [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                (itemSelected)="onSelectionChange($event)">
+                            </dofi-searchable-dropdown> -->
+                                                <label for="customerName" class="input-label">Customer <span
+                                                        class="text-danger">*</span></label>
+                                                <small
+                                                    *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid"
+                                                    class="error-message">
+                                                    Required
+                                                </small>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6" *ngIf="!rateRequestForm.get('LeadOrCustomer')?.value">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('PreCustomerMasterSid')?.value">
+                                                <ng-select class="ng-select" [items]="leadList"
+                                                    bindLabel="preCustomerName" bindValue="PreCustomerMasterSid"
+                                                    formControlName="PreCustomerMasterSid" appendTo="body"
+                                                    (change)="onSelectionChange($event)"></ng-select>
+                                                <label for="customerName" class="input-label">Lead <span
+                                                        class="text-danger">*</span></label>
+                                                <small
+                                                    *ngIf="rateRequestForm.get('PreCustomerMasterSid').touched && rateRequestForm.get('PreCustomerMasterSid').invalid"
+                                                    class="error-message">
+                                                    Required
+                                                </small>
+                                            </div>
+                                        </aside>
+
+
+                                        <aside class="col-md-6">
+                                            <div class=" custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('CustomerAddress')?.value">
+                                                <ng-select formControlName="CustomerAddress"
+                                                    (change)="onCustomerAddressChange($event)" class="ng-select"
+                                                    [items]="cusBranchList" bindLabel="Address" bindValue="Address"
+                                                    placeholder="" appendTo="body">
+                                                </ng-select>
+                                                <label class="input-label">Customer Address</label>
+                                                <div *ngIf="f['CustomerAddress'].touched && f['CustomerAddress'].invalid"
+                                                    class="error-message">
+                                                    Required
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="emial" placeholder=""
+                                                    class="custom-input-field sm" formControlName="Email">
+                                                <label for="text-input" class="input-label">Email <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
+                                                <ng-select class="ng-select" formControlName="ClearanceBy"
+                                                    placeholder="" appendTo="body">
+                                                    <ng-option value="Own">Own</ng-option>
+                                                    <ng-option value="CHA">CHA</ng-option>
+                                                    <ng-option value="By us">By us</ng-option>
+                                                </ng-select>
+                                                <label for="text-input" class="input-label">Clearance By </label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="" placeholder=""
+                                                    class="custom-input-field sm" formControlName="CustomerRef">
+                                                <label for="text-input" class="input-label">Customer Ref <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6" [formGroup]="enquiryOtherForm">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
+                                                <ng-select [items]="modeOfAddtionalService" bindLabel="name"
+                                                    bindValue="name" formControlName="AdditionalService" placeholder=""
+                                                    appendTo="body">
+                                                </ng-select>
+                                                <label for="" class="input-label">Additional Service <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('TransportBy')?.value">
+                                                <ng-select class="ng-select" formControlName="TransportBy"
+                                                    placeholder="" appendTo="body">
+                                                    <ng-option value="Own">Own</ng-option>
+                                                    <ng-option value="CHA">CHA</ng-option>
+                                                    <ng-option value="By us">By us</ng-option>
+                                                </ng-select>
+                                                <label for="text-input" class="input-label">Transport By </label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6" [formGroup]="enquiryOtherForm">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="PickupAddress">
+                                                <label for="text-input" class="input-label">Pickup Address <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        
                 @if(isEditMode && isAuthorizedUser && !isApproved){
                 <aside class="col-md-3">
                     <div class="custom-form-group">
@@ -478,94 +558,126 @@
                     </div>
                 </aside>
                 }
-                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!enquiryOtherForm.get('ShipperName')?.value">
-                        <ng-select class="ng-select" [items]="finalShipperList" bindValue="CustomerName"
-                            bindLabel="CustomerName" placeholder="" formControlName="ShipperName"
-                            (change)="onShipperChange($event)" (clear)="onShipperChange(null)"
-                            appendTo="body"></ng-select>
-                        <label for="text-input" class="input-label">Shipper Name <span
-                                class="text-danger"></span></label>
-                        @if(enquiryOtherForm.get('ShipperName')?.invalid &&
-                        enquiryOtherForm.get('ShipperName')?.touched){
-                        <div class="error-message">
-                            @if(enquiryOtherForm.get('ShipperName')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                        </div>
-                        }
-                    </div>
-                </aside>
-                <!-- Shipper Address -->
-                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
-                    <div class="custom-form-group">
-                        <input type="text" id="shipper-address" placeholder="" class="custom-input-field sm"
-                            formControlName="ShipperAddress" />
-                        <label for="shipper-address" class="input-label">
-                            Shipper Address <span class="text-danger"></span>
-                        </label>
-                    </div>
-                </aside>
 
-                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
-                        <ng-select class="ng-select" [items]="finalConsigneeList" bindLabel="CustomerName"
-                            bindValue="CustomerName" placeholder="" formControlName="ConsigneeName"
-                            (change)="onConsigneeChange($event)" (clear)="onConsigneeChange(null)"
-                            appendTo="body"></ng-select>
-                        <label for="text-input" class="input-label">Consignee Name <span
-                                class="text-danger"></span></label>
-                        @if(enquiryOtherForm.get('ConsigneeName')?.invalid &&
-                        enquiryOtherForm.get('ConsigneeName')?.touched){
-                        <div class="error-message">
-                            @if(enquiryOtherForm.get('ConsigneeName')?.hasError('required')){
-                            <span>Required</span>
-                            }
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        }
+
+                        <div class="col-md-6 ps-md-1 mt-1 mt-md-0 pe-md-1">
+                            <div class="card mb-0">
+                                <div class="card-body  py-0">
+                                    <div class="row">
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
+                                                <ng-select class="ng-select" formControlName="IncoTerms"
+                                                    [items]="incoList" bindLabel="IncoName" bindValue="IncoName"
+                                                    placeholder="" appendTo="body"></ng-select>
+                                                <label for="text-input" class="input-label">Inco </label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
+                                                <ng-select formControlName="FreightPPCC" [items]="freightTermsList"
+                                                    bindLabel="FreightTerms" bindValue="FreightTerms" placeholder=""
+                                                    [appendTo]="'body'">
+                                                </ng-select>
+                                                <label for="freightTerms" class="input-label">Freight Terms</label>
+                                            </div>
+                                        </aside>
+
+                                        <aside class="col-md-6" [formGroup]="enquiryOtherForm">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!enquiryOtherForm.get('ShipperName')?.value">
+                                                <ng-select class="ng-select" [items]="finalShipperList"
+                                                    bindValue="CustomerName" bindLabel="CustomerName" placeholder=""
+                                                    formControlName="ShipperName" (change)="onShipperChange($event)"
+                                                    (clear)="onShipperChange(null)" appendTo="body"></ng-select>
+                                                <label for="text-input" class="input-label">Shipper Name <span
+                                                        class="text-danger"></span></label>
+                                                @if(enquiryOtherForm.get('ShipperName')?.invalid &&
+                                                enquiryOtherForm.get('ShipperName')?.touched){
+                                                <div class="error-message">
+                                                    @if(enquiryOtherForm.get('ShipperName')?.hasError('required')){
+                                                    <span>Required</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        <!-- Shipper Address -->
+                                        <aside class="col-md-6" [formGroup]="enquiryOtherForm">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="shipper-address" placeholder=""
+                                                    class="custom-input-field sm" formControlName="ShipperAddress" />
+                                                <label for="shipper-address" class="input-label">
+                                                    Shipper Address <span class="text-danger"></span>
+                                                </label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6" [formGroup]="enquiryOtherForm">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
+                                                <ng-select class="ng-select" [items]="finalConsigneeList"
+                                                    bindLabel="CustomerName" bindValue="CustomerName" placeholder=""
+                                                    formControlName="ConsigneeName" (change)="onConsigneeChange($event)"
+                                                    (clear)="onConsigneeChange(null)" appendTo="body"></ng-select>
+                                                <label for="text-input" class="input-label">Consignee Name <span
+                                                        class="text-danger"></span></label>
+                                                @if(enquiryOtherForm.get('ConsigneeName')?.invalid &&
+                                                enquiryOtherForm.get('ConsigneeName')?.touched){
+                                                <div class="error-message">
+                                                    @if(enquiryOtherForm.get('ConsigneeName')?.hasError('required')){
+                                                    <span>Required</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        <!-- Consignee Address -->
+                                        <aside class="col-md-6" [formGroup]="enquiryOtherForm">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="consignee-address" placeholder=""
+                                                    class="custom-input-field sm" formControlName="ConsigneeAddress" />
+                                                <label for="consignee-address" class="input-label">
+                                                    Consignee Address <span class="text-danger"></span>
+                                                </label>
+                                            </div>
+                                        </aside>
+
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group mb-0">
+                                                <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
+                                                    formControlName="Remarks"></textarea>
+                                                <label for="text-input" class="input-label">Remarks </label>
+                                            </div>
+                                        </aside>
+                                        @if(EnquiryHeaderSid){
+                                        <div class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('status')?.value" appendTo="body">
+                                                <ng-select formControlName="status" class="ng-select">
+                                                    <ng-option *ngFor="let option of statusList" [value]="option">{{
+                                                        option }}</ng-option>
+                                                </ng-select>
+                                                <label for="status" class="input-label">Status</label>
+                                                <small *ngIf="f['status'].touched && f['status'].invalid"
+                                                    class="text-danger">
+                                                    Required
+                                                </small>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                </aside>
-                <!-- Consignee Address -->
-                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
-                    <div class="custom-form-group">
-                        <input type="text" id="consignee-address" placeholder="" class="custom-input-field sm"
-                            formControlName="ConsigneeAddress" />
-                        <label for="consignee-address" class="input-label">
-                            Consignee Address <span class="text-danger"></span>
-                        </label>
-                    </div>
-                </aside>
-                <!-- <aside class="col-md-4">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!enquiryOtherForm.get('FreightTerms')?.value">
-                        <ng-select formControlName="FreightTerms" class="ng-select" placeholder="" appendTo="body">
-                            <ng-option *ngFor="let item of terms" [value]="item.name">
-                                {{ item.name }}
-                            </ng-option>
-                        </ng-select>
-                        <label for="text-input" class="input-label">Shipment Terms <span
-                                class="text-danger"></span></label>
-                    </div>
-                </aside> -->
-                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!enquiryOtherForm.get('AdditionalService')?.value">
-                        <ng-select [items]="modeOfAddtionalService" bindLabel="name" bindValue="name"
-                            formControlName="AdditionalService" placeholder="" appendTo="body">
-                        </ng-select>
-                        <label for="" class="input-label">Additional Service <span class="text-danger"></span></label>
-                    </div>
-                </aside>
-                <aside class="col-md-3" [formGroup]="enquiryOtherForm">
-                    <div class="custom-form-group">
-                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="PickupAddress">
-                        <label for="text-input" class="input-label">Pickup Address <span
-                                class="text-danger"></span></label>
-                    </div>
-                </aside>
+                </div>
+
 
             </div>
         </ng-template>
@@ -670,7 +782,7 @@
                                 @if(routes.controls.length > 1){
                                 <button class="btn btn-sm waves-effect waves-light text-danger px-1 py-0"
                                     (click)="removeRoute(routeIndex)" [disabled]="disableAddButtons">
-                                    <i-feather class="feather-sm mx-1" name="trash-2"></i-feather>
+                                     <i class="fas fa-trash text-danger mx-1"></i>
                                 </button>
                                 }
                                 <span
@@ -803,7 +915,7 @@
                                                                 <label for="" class="form-label mb-0">Qty <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 150px;"
+                                                            <td class="bg-transparent text-light " style="width: 100px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Weight Unit <span
                                                                         class="text-danger">*</span></label>
@@ -1346,5 +1458,179 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
+</ng-template>
+
+
+<ng-template #enquiryPrint let-modal>
+    <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info">
+
+
+        <h5 class="modal-title mb-0 text-white">Enquiry Preview</h5>
+
+        <div class="d-flex gap-2 align-items-center ">
+            <button type="button" class="btn btn-light-secondary btn-sm">
+                <i class="fas fa-download me-1"></i> Download
+            </button>
+            <button type="button" class="btn btn-light-secondary btn-sm email-btn">
+                <i class="fas fa-envelope me-1"></i> Email
+            </button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+        </div>
+
+
+    </div>
+
+    <div class="modal-body p-3">
+        <div style="max-width: 900px; margin: auto; border: 2px solid black; ">
+
+            <!-- Company Info -->
+            <div class="row px-3 pt-1">
+                <div class="col-md-6 col-12">
+                    <div class="d-flex align-items-center gap-4">
+                        <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="100" height="100"
+                            class="img-fluid" alt="">
+                        <h4 style="margin: 0;">DOFI<br>Infosys LLC</h4>
+                    </div>
+                </div>
+                <div class="col-md-6 col-12">
+                    <div>
+                        <h5 class="mb-1">Freight Ltd.</h5>
+                        <p class="mb-1">42 Skyview Avenue, Logistics Park,</p>
+                        <p class="mb-1">Metro City, Westland 543210, Countryland.</p>
+                        <p class="mb-3">TEL: +123-4567-8900</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Horizontal Line -->
+            <div style="height: 2px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+            <!-- Title -->
+            <h5 class="text-center fw-bold" style="margin: 0;">ENQUIRY</h5>
+
+            <!-- Horizontal Line -->
+            <div style="height: 2px; background-color: black; width: 100%; margin: 0.3em 0;"></div>
+
+            <!-- Enquiry Details -->
+            <div class="row px-3">
+                <div class="col-12 col-md-6">
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY NUMBER</strong></div>
+                        <div>: BOMFEE2400053</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY PARTY NAME</strong></div>
+                        <div>: VisVas Logistics</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY PARTY ADDRESS</strong></div>
+                        <div>: Thane, Mumbai</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY RECEIVED DATE</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>PORT OF ORIGIN</strong></div>
+                        <div>: NHAVA </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>PORT OF LOADING</strong></div>
+                        <div>: NHAVA </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>JOB TYPE</strong></div>
+                        <div>: FCL EXPORT</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>SHIPPER NAME</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>SHIPPER ADDRESS</strong></div>
+                        <div>: </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY CREATED BY</strong></div>
+                        <div>: Ebms PC Admin 1</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY CREATED DATE</strong></div>
+                        <div>: 25/Jul/2025</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>CONTACT PERSON / NUMBER</strong></div>
+                        <div>: Mukesh Tiwari </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>EXPECTED SHIPMENT DATE</strong></div>
+                        <div>: 25/Oct/2025</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>FINAL DESTINATION</strong></div>
+                        <div>: JEBEL ALI(AEJEA)</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>PORT OF DISCHARGE</strong></div>
+                        <div>: JEBEL ALI(AEJEA)</div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>INCO TERMS</strong></div>
+                        <div>: Ex Works</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cargo Summary -->
+            <div style="margin-top: 2rem;" class="px-3">
+                <p><strong>Cargo Type : General &nbsp; / Container Type : GP20 &nbsp; / Qty : 2.00 &nbsp; / Gross Weight
+                        :
+                        12000.00 &nbsp; / CBM : 12.000</strong></p>
+            </div>
+
+            <!-- Product Table -->
+            <div style="margin-top: 2rem;" class="px-3">
+                <p style="font-weight: bold; margin-bottom: 4px;">Product Details</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm" style="margin: 0;">
+                        <thead>
+                            <tr>
+                                <th style="border: 2px solid black;">Product Name</th>
+                                <th style="border: 2px solid black;">Pkg Type</th>
+                                <th style="border: 2px solid black;">Qty</th>
+                                <th style="border: 2px solid black;">Gross Wt.</th>
+                                <th style="border: 2px solid black;">CBM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 2px solid black;">SPECIAL</td>
+                                <td style="border: 2px solid black;">N/A</td>
+                                <td style="border: 2px solid black;">N/A</td>
+                                <td style="border: 2px solid black;"></td>
+                                <td style="border: 2px solid black;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Remarks with Bottom Space -->
+            <div style="margin-top: 1.5rem; margin-bottom: 3rem;" class="px-3">
+                <p style="font-weight: bold;">Enquiry Remarks</p>
+                <div style="height: 80px; "></div>
+            </div>
+
+
+            <p class="text-muted text-center  mb-2">
+                Copyright © 2025 DOFI Infosys LLC
+            </p>
+
+        </div>
     </div>
 </ng-template>

@@ -284,8 +284,21 @@ export class InvoiceEntryComponent implements OnInit {
 
       try {
         const hs: any = await firstValueFrom(this.operationService.getAllHssac());
-        this.hssacList = hs || [];
+        if (hs && Array.isArray(hs)) {
+          this.hssacList = hs;
+        } else if (hs && hs.data && Array.isArray(hs.data)) {
+          this.hssacList = hs.data;
+        } else if (hs && hs.status && Array.isArray(hs.data)) {
+          this.hssacList = hs.data;
+        } else {
+          this.hssacList = hs || [];
+        }
+        console.log('DEBUG - hssacList loaded:', this.hssacList.length, 'items');
+        if (this.hssacList.length > 0) {
+          console.log('DEBUG - First HSSAC item structure:', this.hssacList[0]);
+        }
       } catch (e) {
+        console.error('Error loading HSSAC list:', e);
         this.hssacList = [];
       }
 
@@ -564,6 +577,12 @@ export class InvoiceEntryComponent implements OnInit {
       const taxAmt1 = det.TaxAmount1 != null ? Number(det.TaxAmount1) : 0;
 
       const isIGST = taxPerc2 === 0 && taxAmt2 === 0 && (taxPerc1 > 0 || taxAmt1 > 0);
+
+      console.log('DEBUG - Loading detail row:', {
+        ChargeDescription: det.ChargeDescription,
+        HSSACMasterSid: det.HSSACMasterSid,
+        availableKeys: Object.keys(det)
+      });
 
       this.details.push(this.createDetailGroup({
         ChargeMasterSid: det.ChargeMasterSid,
@@ -972,29 +991,33 @@ export class InvoiceEntryComponent implements OnInit {
       ? Number(rawPartyControl)
       : (normalizedParty.PartyMasterSid != null ? Number(normalizedParty.PartyMasterSid) : null);
 
-    const voucherDetailArray = (raw.voucherDetails || []).map((d: any) => ({
-      ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
-      ChargeDescription: d.ChargeDescription || '',
-      HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
-      ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
-      NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
-      DrCr: d.DrCr || 'Dr',
-      CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
-      CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
-      Rate: d.Rate != null ? Number(d.Rate) : 0,
-      ExchangeRate: d.ExchangeRate != null ? Number(d.ExchangeRate) : (raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1),
-      Amount: d.Amount != null ? Number(d.Amount) : 0,
-      TaxableAmount: d.TaxableAmount != null ? Number(d.TaxableAmount) : (d.Amount != null ? Number(d.Amount) : 0),
-      TaxPercentage1: d.TaxPercentage1 != null ? Number(d.TaxPercentage1) : 0,
-      TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
-      TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
-      TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
-      TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
-      TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
-      LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
-      MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
-      HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
-    }));
+    const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
+      const detail = {
+        ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
+        ChargeDescription: d.ChargeDescription || '',
+        HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
+        ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
+        NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
+        DrCr: d.DrCr || 'Dr',
+        CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
+        CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
+        Rate: d.Rate != null ? Number(d.Rate) : 0,
+        ExchangeRate: d.ExchangeRate != null ? Number(d.ExchangeRate) : (raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1),
+        Amount: d.Amount != null ? Number(d.Amount) : 0,
+        TaxableAmount: d.TaxableAmount != null ? Number(d.TaxableAmount) : (d.Amount != null ? Number(d.Amount) : 0),
+        TaxPercentage1: d.TaxPercentage1 != null ? Number(d.TaxPercentage1) : 0,
+        TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
+        TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
+        TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
+        TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
+        TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
+        LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
+        MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
+        HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
+      };
+      console.log(`DEBUG - Saving detail row ${index + 1}: HSSACMasterSid =`, detail.HSSACMasterSid, ', Charge =', detail.ChargeDescription);
+      return detail;
+    });
 
     const rawVoucherOthers = raw.voucherOthers ? { ...raw.voucherOthers } : null;
     if (rawVoucherOthers && rawVoucherOthers.DueDate && (rawVoucherOthers.DueDate as NgbDateStructLike).year) {
@@ -1094,9 +1117,41 @@ export class InvoiceEntryComponent implements OnInit {
     return charge?.chargeCode || charge?.ChargeCode || '-';
   }
 
-  getHSSACCode(hssacSid: number): string {
-    const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
-    return hssac?.HSSACCode || hssac?.HSNCode || '-';
+  getHSSACCode(hssacSid: number, rowIndex?: number): string {
+    // First, try to get from hssacList using the HSSACMasterSid
+    if (hssacSid && this.hssacList && this.hssacList.length > 0) {
+      const hssac = this.hssacList.find(h =>
+        h.HSSACMasterSid === hssacSid ||
+        h.hssacMasterSid === hssacSid ||
+        h.HSSACMasterId === hssacSid ||
+        h.ChargeTaxMasterSid === hssacSid ||
+        h.chargeTaxMasterSid === hssacSid
+      );
+      if (hssac) {
+        const result = hssac?.HSSACCode || hssac?.hssacCode || hssac?.HSNCode || hssac?.hsnCode || hssac?.SACCode || hssac?.sacCode || '-';
+        console.log('DEBUG - getHSSACCode: hssacSid =', hssacSid, ', found in hssacList =', true, ', result =', result);
+        return result;
+      }
+    }
+
+    // Fallback: If rowIndex is provided and HSSACMasterSid is null, try to get HSN from chargeMaster
+    if (rowIndex !== undefined && !hssacSid && this.details && this.details.length > rowIndex) {
+      const row = this.details.at(rowIndex);
+      const chargeSid = row?.get('ChargeMasterSid')?.value;
+      if (chargeSid) {
+        const charge = this.chargeList?.find((c: any) => c.ChargeMasterSid === chargeSid);
+        if (charge?.chargeTaxMaster && Array.isArray(charge.chargeTaxMaster) && charge.chargeTaxMaster.length > 0) {
+          const hsnCode = charge.chargeTaxMaster[0]?.HSNCode || charge.chargeTaxMaster[0]?.hsnCode || charge.chargeTaxMaster[0]?.HSSACCode;
+          if (hsnCode) {
+            console.log('DEBUG - getHSSACCode: Got HSN from chargeTaxMaster =', hsnCode);
+            return hsnCode;
+          }
+        }
+      }
+    }
+
+    console.log('DEBUG - getHSSACCode: hssacSid =', hssacSid, ', hssacList length =', this.hssacList?.length || 0, ', not found');
+    return '-';
   }
 
   getUOMCode(uomSid: number): string {
