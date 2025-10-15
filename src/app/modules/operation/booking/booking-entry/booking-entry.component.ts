@@ -464,48 +464,53 @@ dataFromQuotation:any
   // }
 
   ngOnInit(): void {
-  this.userData = this.appSettingService.getDecryptedUserProfile();
-  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-  const currentCompanyId = this.currentCompany?.CompanyMasterSid;
-  this.currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
-  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-  this.getCurrentCompanyBranches();
-  console.log("these are current Company branches", this.currentCompanyBranches);
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
-  this.filterOption = {
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-    BranchMasterSid: this.currentBranch?.BranchMasterSid, // fixed: was currentCompany?.BranchMasterSid
-  };
+    const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+    this.currentCompany = (
+      (this.userData.userCompanyMaster || [])
+        .find(ucm => ucm.CompanyMasterSid === currentCompanyId)?.companyMaster
+    );
 
-  this.initBookingForm();
-  this.initCargoForm();
-  this.initOtherForm();
-  this.initDetailsForm();
-  this.onShipmentTypeChange();
-  const historyState = history?.state;
-  const quotationData = historyState?.dataFromQuotation;
 
-  this.dataFromQuotation = quotationData?.quotation ? quotationData : {};
+    this.filterOption = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid
+    };
 
-  // Clear browser state
-  if (quotationData?.quotation) history.replaceState({}, '', location.pathname);
 
-  console.log(this.dataFromQuotation, 'dataFromQuotation');
+    this.initBookingForm();
+    this.initCargoForm();
+    this.initOtherForm();
+    this.initDetailsForm();
+    this.onShipmentTypeChange();
 
-  // Load lookups first
-    this.loadHeaderLookups().subscribe(() => {
-      this.loadCargoLookups();
-      this.loadProductLookups();
-      this.loadOtherLookups();
 
-      this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
-        this.autoSetFreightTerms(incoTerm);
-      });
+    const historyState = history?.state;
+    const quotationData = historyState?.dataFromQuotation;
+    this.dataFromQuotation = quotationData?.quotation ? quotationData : {};
+
+
+    if (quotationData?.quotation) {
+      history.replaceState({}, '', location.pathname);
+    }
+
+    this.getCurrentCompanyBranches();
+    console.log('Current company branches:', this.currentCompanyBranches);
+
+
+    this.spinner.show();
+    this.loadHeaderMandatoryParts().subscribe(() => {
+      this.loadHeaderLookups().subscribe();
+
       if (this.dataFromQuotation?.quotation) {
-        // this.patchBookingFromQuotation(this.dataFromQuotation);
+
         this.patchValues(this.dataFromQuotation);
         this.minDate = this.today;
       } else {
+
         this.currentRoute.paramMap.subscribe((param) => {
           this.BookingHeaderSid = +param.get('id');
           if (this.BookingHeaderSid) {
@@ -515,25 +520,34 @@ dataFromQuotation:any
             this.minDate = this.today;
           }
         });
-      
 
-      // Listen for voucher generation completion
-      this.currentRoute.queryParams.subscribe((queryParams) => {
-        if (queryParams['voucherGenerated'] === 'true' && this.BookingHeaderSid) {
-          // Reload booking data to refresh rates with new voucher information
-          this.loadBookingById(this.BookingHeaderSid);
 
-          // Clear the query param to avoid re-triggering
-          this.router.navigate([], {
-            relativeTo: this.currentRoute,
-            queryParams: {},
-            queryParamsHandling: 'merge'
-          });
-        }
+        this.currentRoute.queryParams.subscribe((queryParams) => {
+          if (queryParams['voucherGenerated'] === 'true' && this.BookingHeaderSid) {
+            this.loadBookingById(this.BookingHeaderSid);
+
+
+            this.router.navigate([], {
+              relativeTo: this.currentRoute,
+              queryParams: {},
+              queryParamsHandling: 'merge'
+            });
+          }
+        });
+      }
+
+      this.loadCargoLookups();
+      this.loadProductLookups();
+      this.loadOtherLookups();
+
+      this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
+        this.autoSetFreightTerms(incoTerm);
       });
-    }
-  });
-}
+
+      this.spinner.hide();
+    });
+  }
+
 
 getCurrentCompanyBranches(){
   const currentCompanyId = this.currentCompany?.CompanyMasterSid;
@@ -786,52 +800,63 @@ getCurrentCompanyBranches(){
   /**
    *  Load Lookups
   */
- 
-
-  loadHeaderLookups() {
-    this.spinner.show();
+  loadHeaderMandatoryParts(){
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
       departments : this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
-      vessels : this.operationService.getAllVessels().pipe(catchError(err => of([]))),
-      ports : this.operationService.getAllPorts().pipe(catchError(err => of([]))),
-      incos : this.operationService.getAllINCO().pipe(catchError(err => of([]))),
-
       customers : this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
-      salesmans : this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
-      shippers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['shipper']}).pipe(catchError(err => of([]))),
-      consignees : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['consignee']}).pipe(catchError(err => of([]))),
-      agents : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['agent']}).pipe(catchError(err => of([]))),
-      carriers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['carrier']}).pipe(catchError(err => of([]))),
-      forwarder : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['forwarder']}).pipe(catchError(err => of([]))),
-      notify : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['notify']}).pipe(catchError(err => of([]))),
-      yard : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['yard']}).pipe(catchError(err => of([]))),
-      cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['cFS']}).pipe(catchError(err => of([]))),
+      ports : this.operationService.getAllPorts().pipe(catchError(err => of([]))),
       userCountry : this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
 
-    }).pipe(tap(({ departments, vessels , ports , incos ,customers , salesmans , shippers , consignees , agents , carriers , forwarder , notify , yard , cfs , userCountry }) => {
+
+    }).pipe(tap(({ 
+        departments , customers , ports , userCountry
+      }) => {
+      if(!this.isEditMode){
+        this.spinner.hide();
+      }
       this.departmentList = departments.data;
-      this.vesselList = vessels.data;
-      this.portList = (ports.data || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
-      this.incoList = incos.data;
-
-
       this.customerList = customers;
-      this.salesmanList = salesmans;
+      this.countryOfCompany = (userCountry?.data?.countryCode).trim().toLowerCase();
+      this.portList = (ports.data || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
+    }))
+  }
+
+  loadHeaderLookups() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    return forkJoin({
+      shippers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['shipper']}).pipe(catchError(err => of([]))),
+      consignees : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['consignee']}).pipe(catchError(err => of([]))),
+      notify : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['notify']}).pipe(catchError(err => of([]))),
+      agents : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['agent']}).pipe(catchError(err => of([]))),
+      carriers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['carrier']}).pipe(catchError(err => of([]))),
+
+      vessels : this.operationService.getAllVessels().pipe(catchError(err => of([]))),
+      incos : this.operationService.getAllINCO().pipe(catchError(err => of([]))),
+      salesmans : this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
+      
+      forwarder : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['forwarder']}).pipe(catchError(err => of([]))),
+      yard : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['yard']}).pipe(catchError(err => of([]))),
+      cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['cFS']}).pipe(catchError(err => of([]))),
+
+    }).pipe(tap(({shippers , consignees , notify ,carriers , vessels ,incos , salesmans , agents , forwarder , yard , cfs, }) => {
       this.shipperList = shippers.data;
       this.filteredShipperList = shippers.data;
       this.consigneeList = consignees.data;
       this.filteredConsigneeList = consignees.data;
-      this.agentList = agents.data;
-      this.carrierList = carriers.data;
-      this.forwarderList = forwarder.data;
       this.notifyList = notify.data;
-      this.yardlist = yard.data;
-      this.cfslist = cfs.data;
+      this.carrierList = carriers.data;
 
-      
-      this.countryOfCompany = (userCountry?.data?.countryCode).trim().toLowerCase();
-      this.spinner.hide();
+      this.cfslist = cfs.data;
+      this.vesselList = vessels.data;
+      this.incoList = incos.data;
+      this.salesmanList = salesmans;
+      this.agentList = agents.data;
+      this.forwarderList = forwarder.data;
+      this.yardlist = yard.data;
+      if(this.bookingData){
+        this.evaluateDropdownOrFreeText();
+      }
     }))
   }
 
@@ -878,6 +903,7 @@ getCurrentCompanyBranches(){
   }
 
   loadBookingById(BookingHeaderSid: number) {
+    this.spinner.show();
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -885,6 +911,7 @@ getCurrentCompanyBranches(){
           this.patchValues(resp.data);
           this.bookingData = resp.data;
           this.minDate = undefined;
+          this.spinner.hide();
         }
       }
     )
@@ -897,18 +924,7 @@ getCurrentCompanyBranches(){
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
-    if (response.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
-      this.bookingForm.patchValue({ isShipperFreeText: true });
-    }
-    if (response.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName)) {
-      this.bookingForm.patchValue({ isConsigneeFreeText: true });
-    }
-    if (response.Notify && !this.existsInList(this.notifyList, response.Notify)) {
-      this.bookingForm.patchValue({ isNotifyFreeText: true });
-    }
-    if (response.CarrierName && !this.existsInList(this.carrierList, response.CarrierName)) {
-      this.bookingForm.patchValue({ isCarrierFreeText: true });
-    }
+    this.evaluateDropdownOrFreeText();
     this.bookingForm.patchValue({
       BookingNo: response.BookingNo,
       BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
@@ -3385,7 +3401,10 @@ onShipmentTypeChange() {
 }
 
   existsInList(list: any[], value: any) {
-    return list.some(item => item.CustomerName === value);
+    if(list){
+      return list.some(item => item.CustomerName === value);
+    }
+    return null;
   }
   private autoSetFreightTerms(incoTerm: string) {
   if (!incoTerm) {
@@ -3415,6 +3434,22 @@ onIncoTermsChange(selectedInco: any) {
 onFreightTermsManualChange() {
   this.isManualFreightChange = true;
 }
+
+  evaluateDropdownOrFreeText(){
+    let response = this.bookingData;
+    if (response?.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
+      this.bookingForm.patchValue({ isShipperFreeText: true });
+    }
+    if (response?.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName)) {
+      this.bookingForm.patchValue({ isConsigneeFreeText: true });
+    }
+    if (response?.Notify && !this.existsInList(this.notifyList, response.Notify)) {
+      this.bookingForm.patchValue({ isNotifyFreeText: true });
+    }
+    if (response?.CarrierName && !this.existsInList(this.carrierList, response.CarrierName)) {
+      this.bookingForm.patchValue({ isCarrierFreeText: true });
+    }
+  }
 
 
 
