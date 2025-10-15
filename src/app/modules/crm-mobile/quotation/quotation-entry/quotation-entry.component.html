@@ -330,7 +330,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('FreightPPCC')?.value">
-                <ng-select formControlName="FreightPPCC" appendTo="body">
+                <ng-select formControlName="FreightPPCC" appendTo="body" (change)="handlePartyOnChargePPCC()">
                   <ng-option value="Prepaid">Prepaid</ng-option>
                   <ng-option value="Collect">Collect</ng-option>
                 </ng-select>
@@ -1266,7 +1266,7 @@
                                         </td>
                                         }
                                         <td>
-                                          <div [class.filled]="!!charge.get('CarrierMasterSid')?.value">
+                                          <div [class.filled]="!!charge.get('RevenueCustomerMasterSid')?.value">
                                             <dofi-searchable-dropdown [items]="customers"
                                               formControlName="RevenueCustomerMasterSid" placeholder=""
                                               [displayFields]="customerLookupConfig.displayFields"
@@ -1297,12 +1297,20 @@
                                           </ng-select>
                                         </td> -->
                                         <td>
-                                          <ng-select [items]="currencyMaster" bindLabel="currencyName"
+                                          <dofi-searchable-dropdown [items]="currencyMaster"
+                                            formControlName="CostCurrencyMasterSid" placeholder=""
+                                            [displayFields]="currencyLookupConfig.displayFields"
+                                            [displayLabels]="currencyLookupConfig.displayLabels"
+                                            [labelFields]="currencyLookupConfig.labelFields" bindLabel="currencyCode"
+                                            bindValue="CurrencyMasterSid"
+                                            (itemSelected)="fetchExchangeRate(routeIndex,carrierIndex,chargeIndex,'cost')">
+                                          </dofi-searchable-dropdown>
+                                          <!-- <ng-select [items]="currencyMaster" bindLabel="currencyName"
                                             bindValue="CurrencyMasterSid" formControlName="CostCurrencyMasterSid"
                                             (change)="fetchExchangeRate(routeIndex,carrierIndex,chargeIndex,'cost')"
                                             appendTo="body"
                                             [class.filled]="!!quoteRoutes.at(routeIndex).get('CostCurrencyMasterSid')?.value">
-                                          </ng-select>
+                                          </ng-select> -->
                                         </td>
                                         <td>
                                           <div>

@@ -18,7 +18,30 @@
 </ngx-spinner>
 
 <div class="row compact-form">
-    <div class="col-12">
+     <app-page-header 
+    [title]="'User'" [showFavorite]="true" [showSearch]="true" 
+    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
+    >
+    </app-page-header>
+    <div class="col-12 px-0">
+        <app-reusable-table
+        #userTable
+        [config]="tableConfig"
+        [data]="allUser"
+        [loading]="tableLoading"
+        [totalRecords]="totalLengthOfCollection"
+        [paginationConfig]="paginationConfig"
+        (actionClick)="onTableActionClick($event)"
+        (rowClick)="onTableRowClick($event)"
+        (sortChange)="onTableSortChange($event)"
+        (filterChange)="onTableFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+    </div>
+    <!-- <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">User</h4>
@@ -81,9 +104,7 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">User Name</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th>
-                            <th class="bg-transparent text-light" scope="col">Is Salesman</th> -->
+                           
                             <th class="bg-transparent text-light" scope="col" (click)="sort('userName')">
                                 User Name
                                 <i class="fas fa-sort ms-1" [ngClass]="{
@@ -189,28 +210,28 @@
     </div>
     <div class="col-12" *ngIf="totalNumberOfCollection === 0">
         <div>No records found</div>
-    </div>
+    </div> -->
 </div>
 <ng-template #resetTemplate let-modal>
-    <div class="card mb-0">
-        <div class="modal-header p-2 d-flex align-items-center">
-            <span class="db"><img src="assets/images/logos/xtreme-dark-icon.svg" alt="logo" /></span>
-            <h5 class="card-title ms-2 mb-0">Change Password</h5>
-            <button type="button" class="btn btn-close ms-auto me-2" (click)="modal.close()"></button>
+   
+        <div class="modal-header modalHeaderpart p-2">
+            <!-- <span class="db"><img src="assets/images/logos/xtreme-dark-icon.svg" alt="logo" width="50" height="50"/></span> -->
+            <h5 class="card-title ">Change Password</h5>
+            <button type="button" class="btn btn-close  btn-close-white" (click)="modal.close()"></button>
         </div>
         <div class="modal-body">
-            <form class="col-12 p-3" [formGroup]="resetPasswordForm">
-                <div class="d-flex flex-column align-items-center">
-                    <aside class="col-md-10 col-12">
-                        <div class="input-group my-2">
+            <form class="col-12" [formGroup]="resetPasswordForm">
+            
+                    <aside class="col-md-12">
+                        <div class="input-group mb-2">
                             <input type="password" formControlName="password" class="form-control custom-input-field md"
                                 placeholder="Password" [ngClass]="{'is-invalid': (resetPasswordForm.controls['password'].invalid) && 
         (resetPasswordForm.controls['password'].touched || resetPasswordForm.controls['password'].dirty )}"
-                                #passwordInput />
+                                #passwordInput style="height: 35px; font-size: 0.85rem; padding: 0 0.75rem; display: flex; align-items: center;" />
                             <button type="button" class="input-group-text password-toggle"
                                 (mousedown)="togglePassword(true,passwordInput)"
                                 (mouseup)="viewPassword(true,passwordInput)"
-                                (mouseleave)="viewPassword(true,passwordInput)">
+                                (mouseleave)="viewPassword(true,passwordInput)"  style="height: 35px; padding: 0 0.75rem; display: flex; align-items: center; background-color: #f8f9fa; border-left: none;">
                                 @if(!passwordView) {
                                 <i-feather class="feather-sm" name="eye"></i-feather>
                                 } @else {
@@ -240,19 +261,19 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-10 col-12">
-                        <div class="input-group my-2">
+                    <aside class="col-md-12 mt-3">
+                        <div class="input-group ">
                             <input type="password" formControlName="confirmPassword"
                                 class="form-control custom-input-field md" placeholder="Confirm Password" [ngClass]="{'is-invalid': 
                                 (resetPasswordForm.controls['confirmPassword'].invalid) && 
                                 (resetPasswordForm.controls['confirmPassword'].dirty || resetPasswordForm.controls['confirmPassword'].touched)
-                                }" #passwordInput1 />
+                                }" #passwordInput1 style="height: 35px; font-size: 0.85rem; padding: 0 0.75rem; display: flex; align-items: center;"/>
                             <button type="button" class="input-group-text password-toggle"
                                 (mousedown)="togglePassword(false,passwordInput1)"
                                 (mouseup)="viewPassword(false,passwordInput1)"
                                 (mouseleave)="viewPassword(false,passwordInput1)"
                                 [attr.aria-label]="passwordView1 ? 'Hide confirm password' : 'Show confirm password'"
-                                tabindex="0">
+                                tabindex="0"  style="height: 35px; padding: 0 0.75rem; display: flex; align-items: center; background-color: #f8f9fa; border-left: none;">
                                 @if(!passwordView1) {
                                 <i-feather class="feather-sm" name="eye"></i-feather>
                                 } @else {
@@ -272,12 +293,11 @@
                             }
                         </div>
                     </aside>
-                </div>
+              
             </form>
         </div>
-        <div class="modal-footer p-2">
-            <button class="btn btn-info ms-auto" type="submit" (click)="onSubmitPassForm()"><i
-                    class="fas fa-save me-1"></i> Save</button>
+        <div class="modal-footer p-1">
+            <button class="btn btn-info ms-auto" type="submit" (click)="onSubmitPassForm()"> Save</button>
         </div>
-    </div>
+ 
 </ng-template>

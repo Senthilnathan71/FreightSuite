@@ -1229,6 +1229,7 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
     EnquiryType: null,
     IncoTerms: null,
     ClearanceBy: null,
+    CustomerRef:"",
     TransportBy: null,
     Remarks: '',
     status: '',
