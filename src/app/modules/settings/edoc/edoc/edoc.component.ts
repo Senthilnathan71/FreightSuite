@@ -42,7 +42,9 @@ export class EdocComponent implements OnInit, OnDestroy {
   userData: any;
   currentBranch: any
   componentData: any
-  constructor(private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
+  constructor(
+    private datePipe: CustomDatePipe,
+    private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.minDate = this.toNgbDateStruct(new Date())
   }
 
@@ -96,51 +98,31 @@ export class EdocComponent implements OnInit, OnDestroy {
 
 
   loadEdocData() {
-  const payload = {
-    menuMasterSid: this.componentData.MenuMasterSid,
-    DocumentSid: this.componentData.DocumentSid
-  };
+    const payload = {
+      menuMasterSid: this.componentData.MenuMasterSid,
+      DocumentSid: this.componentData.DocumentSid
+    };
 
-  this.commonService.getExistingFile(payload).subscribe((res) => {
-    if (res) {
-      
-      // Fix 1: Filter returns array, get first item
-      const typeMatch = this.modeOfType.find(item => item.name === res.DocumentType);
-      
-      // Fix 2: Map status code to status name
-      let statusValue = 'Active'; // default
-      if (res.status === 'A' || res.status === 'Active') {
-        statusValue = 'Active';
-      } else if (res.status === 'S' || res.status === 'Suspended') {
-        statusValue = 'Suspended';
+    this.commonService.getExistingFile(payload).subscribe((res) => {
+      if (res) {
+        const type:any = this.modeOfType.filter(item=>item.name === res.DocumentType)
+        console.log(res,'getExistingFile')
+        this.edocform.patchValue({
+          AttachDocmentNo: res.AttachDocmentNo || '',
+          DocumentDate: res.DocumentDate ? this.datePipe.transform(res.DocumentDate) : '',
+          Filename: res.FileName || '',           // ✅ changed here
+          DocumentType: type ? type.name : '',  // ✅ changed here
+          ReceivedDate: res.ReceivedDate ? this.datePipe.transform(res.ReceivedDate): '',
+          SentDate: res.SentDate ? this.datePipe.transform(res.SentDate) : '',
+          FollowupRequired: res.FollowupRequire?.trim() === 'Y' || false, // ✅ changed here
+          FollowupDate: res.FollowupDate ? this.datePipe.transform(res.FollowupDate) : '',
+          FollowupAction: res.FollowupAction || '',
+          Remarks: res.Remarks || '',
+          Status: res.status || 'A' // ✅ changed here
+        });
       }
-
-const fullFileName = res.FileName || '';
-// Extract name and extension safely
-const fileExt = fullFileName.includes('.') ? fullFileName.split('.').pop()?.toLowerCase() : '';
-const baseFileName = fullFileName.includes('.') ? fullFileName.substring(0, fullFileName.lastIndexOf('.')) : fullFileName;
-
-      
-      // Fix 3: Correct field names to match form control names
-      this.edocform.patchValue({
-        AttachDocmentNo: res.AttachDocmentNo || '',
-        DocumentDate: res.DocumentDate ? this.toNgbDateStruct(res.DocumentDate) : null,
-        FileName: baseFileName || '',           // ✅ Correct case
-        Documenttype: typeMatch ? typeMatch.name : fileExt,  // ✅ Correct case + use find()
-        ReceivedDate: res.ReceivedDate ? this.toNgbDateStruct(res.ReceivedDate) : null,
-        SentDate: res.SentDate ? this.toNgbDateStruct(res.SentDate) : null,
-        FollowupRequired: res.FollowupRequire?.trim() === 'Y',
-        FollowupDate: res.FollowupDate ? this.toNgbDateStruct(res.FollowupDate) : null,
-        FollowupAction: res.FollowupAction || '',
-        Remarks: res.Remarks || '',
-        Status: statusValue  // ✅ Map to correct status name
-      });
-
-      
-      console.log('Form patched successfully:', this.edocform.value);
-    }
-  });
-}
+    })
+  }
 
 
 
