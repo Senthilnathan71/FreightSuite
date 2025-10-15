@@ -154,6 +154,10 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
 
     console.log('test');
     this.setDateStringModel();
+
+      setTimeout(() => {
+    this.showTimePickerToggle = true;   // switch UI to time picker mode
+  }, 150);
   }
 
 
