@@ -151,7 +151,7 @@
               </td>
               <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                  <ng-select class="ng-select" [items]="filteredChargeList" formControlName="ChargeMasterSid"
+                  <!-- <ng-select class="ng-select" [items]="filteredChargeList" formControlName="ChargeMasterSid"
                      bindLabel="chargeCode" bindValue="ChargeMasterSid"
                      (change)="onChargeChangeForRow($event, i)"
                      [disabled]="!canEditRate(i)"
@@ -164,7 +164,12 @@
                      <ng-template ng-option-tmp let-item="item">
                        <div><strong>{{item.chargeCode}}</strong> - {{item.chargeName}}</div>
                      </ng-template>
-                  </ng-select>
+                  </ng-select> -->
+                      <dofi-searchable-dropdown-modal [items]="filteredChargeList" formControlName="ChargeMasterSid" [placeholder]="''"
+                        [displayFields]="chargeDropdownConfig.displayFields" [displayLabels]="chargeDropdownConfig.displayLabels"
+                        [labelFields]="chargeDropdownConfig.labelFields" [bindValue]="'ChargeMasterSid'" [disabled]="!canEditRate(i)"
+                        (itemSelected)="onChargeChangeForRow($event,i)" appendTo="body">
+                      </dofi-searchable-dropdown-modal>
                 </div>
               </td>
               <td>
@@ -176,9 +181,14 @@
 
               <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                  <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                  <!-- <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
                     formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown-modal [items]="uomList" formControlName="CostChargeUomSid" [placeholder]="''"
+                        [displayFields]="uomDropdownConfig.displayFields" [displayLabels]="uomDropdownConfig.displayLabels"
+                        [labelFields]="uomDropdownConfig.labelFields" [bindValue]="'UOMMasterSid'" [disabled]="!canEditRate(i)"
+                        (itemSelected)="onChangeUOM($event)" appendTo="body">
+                  </dofi-searchable-dropdown-modal>
 
                 </div>
               </td>
@@ -310,10 +320,15 @@
 
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                    <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                       formControlName="CustomerMasterSid"
                       [disabled]="!canEditRate(i)" (change)="handleCustomerChange(i,$event)" appendTo="body">
-                    </ng-select>
+                    </ng-select> -->
+                    <dofi-searchable-dropdown-modal [items]="customerList" formControlName="CustomerMasterSid" [placeholder]="''"
+                          [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerMasterSid'" [disabled]="!canEditRate(i)"
+                          (itemSelected)="handleCustomerChange(i, $event)" appendTo="body">
+                    </dofi-searchable-dropdown-modal>
                   </div>
                 </td>
 
@@ -359,11 +374,16 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
+                    <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
                       formControlName="CostCurrencyMasterSid"
                       (change)="getCostExchangeRate(i, $event)"
                       [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select>
+                    </ng-select> -->
+                    <dofi-searchable-dropdown-modal [items]="currencyList" formControlName="CostCurrencyMasterSid" [placeholder]="''"
+                        [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                        [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
+                        (itemSelected)="getCostExchangeRate(i, $event)" appendTo="body">
+                      </dofi-searchable-dropdown-modal>
                   </div>
                 </td>
                 <td>
@@ -419,10 +439,15 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                    <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                       formControlName="AgentSid"
                       [disabled]="!canEditRate(i)" (change)="handleAgentChange(i,$event)" appendTo="body">
-                    </ng-select>
+                    </ng-select> -->
+                    <dofi-searchable-dropdown-modal [items]="agentList" formControlName="AgentSid" [placeholder]="''"
+                          [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerMasterSid'" [disabled]="!canEditRate(i)"
+                          (itemSelected)="handleAgentChange(i, $event)" appendTo="body">
+                    </dofi-searchable-dropdown-modal>
                   </div>
                 </td>
 

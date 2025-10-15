@@ -70,7 +70,7 @@ export class CostEntryComponent implements OnInit {
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
+    labelFields :['currencyCode'],
   };
 
   ppcc = [
@@ -205,6 +205,22 @@ export class CostEntryComponent implements OnInit {
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
   private routeBookingHeaderSid: number | null = null;
+
+  customerLookupConfig = {
+    displayFields : ['CustomerName','BranchName', 'Address'],
+    displayLabels : ['Customer','Branch', 'Address'],
+    labelFields :['CustomerName']
+  };
+  chargeDropdownConfig = {
+    displayFields: ['chargeCode', 'chargeName'],
+    displayLabels: ['Code', 'Name'],
+    labelFields: ['chargeCode']
+  };
+  uomDropdownConfig = {
+    displayFields: ['UOMCode', 'UOMName'],
+    displayLabels: ['Code', 'Name'],
+    labelFields: ['UOMCode']
+  };
 
   constructor(
     private modalService: NgbModal,
