@@ -1,16 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, TemplateRef, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router ,ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
-import { NgbModal, NgbModalRef,NgbDateStruct, NgbCalendar, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef, NgbDateStruct, NgbCalendar, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -19,14 +19,16 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AccountsService } from '../../accounts.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 @Component({
   selector: 'app-chart-account-entry',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDropdownModule,SearchableDropdown],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDropdownModule, SearchableDropdown],
   templateUrl: './chart-account-entry.component.html',
   styleUrl: './chart-account-entry.component.scss',
 })
-export class ChartAccountEntryComponent {
+export class ChartAccountEntryComponent implements OnInit {
   chartForm!: FormGroup;
   chartData: any;
   isSubledgerRequired: boolean = false;
@@ -35,78 +37,85 @@ export class ChartAccountEntryComponent {
   chartMasterSid: number;
   isEditMode: boolean = false;
   currencyList: any[] = [];
-  currentCompany:any;
+  currentCompany: any;
   userData: any;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
-  permissions : string[] = [];
+  permissions: string[] = [];
   currentMenuPermissions: any = {};
-  modeOfCategory = [
-  { id: 1, name: 'Asset' },
-  { id: 2, name: 'Liability' },
-  { id: 3, name: 'Income' },
-  { id: 4, name: 'Expenses' }
+  
+  // Dynamic dropdown data
+  groupList: any[] = [];
+  subgroupList: any[] = [];
+  isGroupDropdown: boolean = false;
+  isSubgroupDropdown: boolean = false;
+
+  modeOfCategoryRadio = [
+  { id: 1, name: 'Asset', value: 'Asset' },
+  { id: 2, name: 'Liability', value: 'Liability' },
+  { id: 3, name: 'Income', value: 'Income' },
+  { id: 4, name: 'Expense', value: 'Expense' }
 ];
-modeofreporttype = [
-  { id: 1, name: 'Balance Sheet' },
-  { id: 2, name: 'Profit and Loss' }
-];
+
+  modeofreporttype = [
+    { id: 1, name: 'Balance Sheet' },
+    { id: 2, name: 'Profit and Loss' }
+  ];
 
   modeOfStatus = [
-  { id: 'A', name: 'Active' },
-  { id: 'S', name: 'Suspended' },
-];
+    { id: 'A', name: 'Active' },
+    { id: 'S', name: 'Suspended' },
+  ];
 
+  ledgerCategoryList = [
+    { id: 1, name: 'Group' },
+    { id: 2, name: 'Subgroup' },
+    { id: 3, name: 'Ledger' }
+  ];
 
-  // modeOfledgertype = [
-  //   { id: 1, name: 'Expense' },
-  //   { id: 2, name: 'Asset' },
-  // ];
+  modeOfledgertype = [
+    { id: 1, name: 'Bank' },
+    { id: 2, name: 'Cash' },
+    { id: 3, name: 'Depreciation' },
+    { id: 4, name: 'Expenses GST' },
+    { id: 5, name: 'Imprest' },
+    { id: 6, name: 'Income GST' },
+    { id: 7, name: 'Income Tax Payable' },
+    { id: 8, name: 'Income Tax Receivable' },
+    { id: 9, name: 'Input Tax' },
+    { id: 10, name: 'Liabilities' },
+    { id: 11, name: 'Output Tax' },
+    { id: 12, name: 'Sy Cr' },
+    { id: 13, name: 'Sy Dr' }
+  ];
 
-
- modeOfledgertype = [
-  { id: 1, name: 'Bank' },
-  { id: 2, name: 'Cash' },
-  { id: 3, name: 'Depreciation' },
-  { id: 4, name: 'Expenses GST' },
-  { id: 5, name: 'Imprest' },
-  { id: 6, name: 'Income GST' },
-  { id: 7, name: 'Income Tax Payable' },
-  { id: 8, name: 'Income Tax Receivable' },
-  { id: 9, name: 'Input Tax' },
-  { id: 10, name: 'Liabilities' },
-  { id: 11, name: 'Output Tax' },
-  { id: 12, name: 'Sy Cr' },
-  { id: 13, name: 'Sy Dr' }
-];
-CurrencyLookupConfig = {
-    displayFields : ['currencyCode', 'currencyName','countryName'],
-    displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
+  CurrencyLookupConfig = {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode', 'currencyName', 'countryName'],
   };
 
-
-  
-auditLogs: any[] = []; // Stores audit logs
- auditLogModalRef!: NgbModalRef;
-
+  auditLogs: any[] = [];
+  auditLogModalRef!: NgbModalRef;
 
   constructor(
     private masterServ: MasterService,
     private fb: FormBuilder,
     private route: Router,
-     private activatedRoute: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
     private modalService: NgbModal,
-     private calendar: NgbCalendar,
-      private accountService: AccountsService,
-  ) {}
+    private calendar: NgbCalendar,
+    private accountService: AccountsService,
+  ) { }
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.initForm();
     this.getCurrencies();
+    this.setupFormListeners();
+    
     this.activatedRoute.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -115,38 +124,346 @@ auditLogs: any[] = []; // Stores audit logs
         this.loadChartAccount();
       }
     });
-      const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
       this.checkPermissions();
-		}
+    }
+    
     if (!this.isEditMode) {
       this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
     }
   }
 
- getCurrencies(): void {
-  this.masterServ.getAllCurrencies().subscribe({
-    next: (data) => {
-      console.log('Currency List(raw):', data); 
-      const rawlist = data?. data ?? data??[];
+  initForm() {
+    this.chartForm = this.fb.group({
+      LedgerName: ['', [ Validators.maxLength(100)]],
+      LedgerCode: ['', [ Validators.maxLength(10)]],
+      SubGroupName: ['', [Validators.maxLength(20)]],
+      LedgerCurrency: [],
+      GroupName: ['', [Validators.maxLength(100)]],
+      LedgerType: [''],
+      Category: ['', Validators.required],
+      LedgerCategory: ['', Validators.required],
+      ReportType: [{ value: '', disabled: true }],
+      Remarks: ['', [Validators.maxLength(200)]],
+      Status: ['Active'],
+      SubledgerName: ['N'],
+      JobNoRequire: ['N'],
+      HSNRequire: ['N']
+    });
+  }
 
-      this.currencyList = rawlist.map((item:any)=>({
-        ...item,
-        countryName: item?.countryMaster?.countryName?? '',
-      }));
-    },
-    error: (err) => {
-      console.error('Failed to load currencies', err);
-      this.currencyList = [];
+  setupFormListeners() {
+    // Category change listener
+    this.chartForm.get('Category')!.valueChanges.subscribe((category: string) => {
+      this.updateReportType(category);
+      this.resetDependentFields();
+      if (category) {
+        this.loadGroupsByCategory(category);
+      }
+    });
+
+    // Ledger Category change listener
+    this.chartForm.get('LedgerCategory')!.valueChanges.subscribe((ledgerCategory: string) => {
+      this.handleLedgerCategoryChange(ledgerCategory);
+    });
+
+    // GroupName change listener
+    this.chartForm.get('GroupName')!.valueChanges.subscribe((groupName: string) => {
+      const category = this.chartForm.get('Category')?.value;
+      const ledgerCategory = this.chartForm.get('LedgerCategory')?.value;
+      
+      if (category && groupName && (ledgerCategory === 'Subgroup' || ledgerCategory === 'Ledger')) {
+        this.loadSubgroupsByGroup(category, groupName);
+      } else {
+        this.subgroupList = [];
+        this.chartForm.get('SubGroupName')?.setValue('');
+      }
+    });
+  }
+
+  // Field visibility methods
+  shouldShowGroupName(): boolean {
+    const ledgerCategory = this.chartForm.get('LedgerCategory')?.value;
+    return ledgerCategory === 'Group' || ledgerCategory === 'Subgroup' || ledgerCategory === 'Ledger';
+  }
+
+  shouldShowSubGroupName(): boolean {
+    const ledgerCategory = this.chartForm.get('LedgerCategory')?.value;
+    return ledgerCategory === 'Subgroup' || ledgerCategory === 'Ledger';
+  }
+
+  shouldShowLedgerFields(): boolean {
+    const ledgerCategory = this.chartForm.get('LedgerCategory')?.value;
+    return ledgerCategory === 'Ledger';
+  }
+
+  updateReportType(category: string) {
+    const reportType = (category === 'Asset' || category === 'Liability') ? 'Balance Sheet' :
+                      (category === 'Income' || category === 'Expense') ? 'Profit and Loss' : '';
+    this.chartForm.get('ReportType')!.setValue(reportType, { emitEvent: false });
+  }
+
+  handleLedgerCategoryChange(ledgerCategory: string) {
+    const category = this.chartForm.get('Category')?.value;
+    
+    // Reset dependent fields
+    this.chartForm.get('GroupName')?.setValue('');
+    this.chartForm.get('SubGroupName')?.setValue('');
+    this.subgroupList = [];
+
+    switch (ledgerCategory) {
+      case 'Group':
+        this.isGroupDropdown = false; // Free text for new group creation
+        this.isSubgroupDropdown = false;
+        break;
+        
+      case 'Subgroup':
+        this.isGroupDropdown = true; // Dropdown for existing groups
+        this.isSubgroupDropdown = false; // Free text for new subgroup
+        if (category) {
+          this.loadGroupsByCategory(category);
+        }
+        break;
+        
+      case 'Ledger':
+        this.isGroupDropdown = true; // Dropdown for existing groups
+        this.isSubgroupDropdown = true; // Dropdown for existing subgroups
+        if (category) {
+          this.loadGroupsByCategory(category);
+        }
+        break;
+        
+      default:
+        this.isGroupDropdown = false;
+        this.isSubgroupDropdown = false;
     }
-  });
+  }
+
+  resetDependentFields() {
+    this.chartForm.get('GroupName')?.setValue('');
+    this.chartForm.get('SubGroupName')?.setValue('');
+    this.groupList = [];
+    this.subgroupList = [];
+  }
+
+  loadGroupsByCategory(category: string) {
+    if (!category || !this.currentCompany?.CompanyMasterSid) return;
+
+    this.masterServ.getAllGroupsByCategory({
+      Category: category,
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid
+    }).subscribe({
+      next: (groups: string[]) => {
+        this.groupList = groups.map(group => ({ name: group }));
+      },
+      error: (err) => {
+        console.error('Failed to load groups', err);
+        this.groupList = [];
+      }
+    });
+  }
+
+  loadSubgroupsByGroup(category: string, groupName: string) {
+    if (!category || !groupName || !this.currentCompany?.CompanyMasterSid) return;
+
+    this.masterServ.getAllSubgroupsByGroup({
+      Category: category,
+      GroupName: groupName,
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid
+    }).subscribe({
+      next: (subgroups: string[]) => {
+        this.subgroupList = subgroups.map(subgroup => ({ name: subgroup }));
+      },
+      error: (err) => {
+        console.error('Failed to load subgroups', err);
+        this.subgroupList = [];
+      }
+    });
+  }
+
+  getCurrencies(): void {
+    this.masterServ.getAllCurrencies().subscribe({
+      next: (data) => {
+        const rawlist = data?.data ?? data ?? [];
+        this.currencyList = rawlist.map((item: any) => ({
+          ...item,
+          countryName: item?.countryMaster?.countryName ?? '',
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to load currencies', err);
+        this.currencyList = [];
+      }
+    });
+  }
+
+  loadChartAccount() {
+    this.masterServ.fetchCoaById(this.chartMasterSid).subscribe(
+      (data: any) => {
+        this.chartData = data;
+        this.isSubledgerRequired = data.IsSubledgerRequired;
+
+        if (this.isSubledgerRequired) {
+          this.chartForm.get('LedgerName')?.setValidators([Validators.required, Validators.maxLength(20)]);
+        }
+
+        // First set the category and ledger category to trigger the listeners
+        this.chartForm.patchValue({
+          Category: data.Category,
+          LedgerCategory: data.LedgerCategory
+        });
+
+        // Wait for the listeners to process and then patch the remaining values
+        setTimeout(() => {
+          this.chartForm.patchValue({
+            LedgerName: data.LedgerName,
+            LedgerCode: data.LedgerCode,
+            SubGroupName: data.SubGroupName,
+            LedgerCurrency: data.LedgerCurrency,
+            GroupName: data.GroupName,
+            LedgerType: data.LedgerType,
+            ReportType: data.ReportType,
+            Remarks: data.Remarks,
+            Status: data.Status === 'A' ? 'Active' : 'Suspended',
+            SubledgerName: data.SubledgerName === 'Y' ? 'Y' : 'N',
+            JobNoRequire: data.JobNoRequire === 'Y' ? 'Y' : 'N',
+            HSNRequire: data.HSNRequire === 'Y' ? 'Y' : 'N',
+          });
+
+          // Load groups and subgroups for existing record after form is patched
+          if (data.Category && data.GroupName) {
+            this.loadSubgroupsByGroup(data.Category, data.GroupName);
+          }
+
+          // Disable fields if needed
+          if (this.isEditMode && data.SubledgerName === 'Y') {
+            this.chartForm.get('SubledgerName')?.disable({ emitEvent: false });
+          }
+          if (this.isEditMode && data.JobNoRequire === 'Y') {
+            this.chartForm.get('JobNoRequire')?.disable({ emitEvent: false });
+          }
+          if (this.isEditMode && data.HSNRequire === 'Y') {
+            this.chartForm.get('HSNRequire')?.disable({ emitEvent: false });
+          }
+        }, 100);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Chart Account', error);
+      }
+    );
+  }
+
+  onSubmit(): void {
+    if (this.chartForm.invalid) {
+        this.chartForm.markAllAsTouched();
+        this.appSettingService.showWarning('Please fill out all required fields correctly.');
+        return;
+    }
+
+    const formValue = this.chartForm.getRawValue();
+    const mappedStatus = formValue.Status === 'Active' || formValue.Status === 'A' ? 'A' : 'S';
+    const currentuseremail = this.appSettingService.userSettingSource.value['userEmail'];
+
+    const payload = this.isEditMode ? {
+        ...formValue,
+        Status: mappedStatus,
+        UpdatedBy: currentuseremail,
+    } : {
+        ...formValue,
+        Status: mappedStatus,
+        CreatedBy: currentuseremail,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    };
+
+    if (this.isEditMode) {
+        this.masterServ.updateCoaById(this.chartMasterSid, payload).subscribe(
+            (resp: any) => {
+                if (resp.status) {
+                    this.appSettingService.showSuccess("Chart Account Updated Successfully");
+                    if (resp?.data?.COAMasterSid) {
+                        this.route.navigate(['/accounts/chart-accounts/entry', resp?.data?.COAMasterSid]);
+                    }
+                    this.resetFormForNewEntry();
+                } else {
+                    this.appSettingService.showError(resp.message);
+                }
+            },
+            (error) => {
+                console.error('Error updating Chart Account', error);
+                // Show specific error message for linked records
+                if (error.error && error.error.message) {
+                    this.appSettingService.showError(error.error.message);
+                } else {
+                    this.appSettingService.showError('Error updating Chart Account');
+                }
+            }
+        );
+    } else {
+        this.masterServ.createNewCoa(payload).subscribe(
+            (resp: any) => {
+                if (resp.status) {
+                    this.appSettingService.showSuccess(resp.message);
+                    if (resp?.data?.COAMasterSid) {
+                        this.route.navigate(['/accounts/chart-accounts/entry', resp.data.COAMasterSid]);
+                    }
+                    this.resetFormForNewEntry();
+                } else {
+                    this.appSettingService.showError(resp.message);
+                }
+            },
+            (error) => {
+                console.error('Error creating Chart Account', error);
+                this.appSettingService.showError('Error creating Chart Account');
+            }
+        );
+    }
 }
+
+  resetFormForNewEntry() {
+    this.isEditMode = false;
+    this.chartMasterSid = null;
+    this.chartData = null;
+
+    this.chartForm.reset({
+      LedgerName: '',
+      LedgerCode: '',
+      SubGroupName: '',
+      LedgerCurrency: '',
+      GroupName: '',
+      Category: '',
+      LedgerType: '',
+      LedgerCategory: '',
+      ReportType: '',
+      Remarks: '',
+      Status: 'Active',
+      SubledgerName: 'N',
+      JobNoRequire: 'N',
+      HSNRequire: 'N',
+    });
+
+    this.isSubledgerRequired = false;
+    this.groupList = [];
+    this.subgroupList = [];
+    this.isGroupDropdown = false;
+    this.isSubgroupDropdown = false;
+
+    const ledgerControl = this.chartForm.get('LedgerName');
+    ledgerControl?.clearValidators();
+    ledgerControl?.setValidators([Validators.required, Validators.maxLength(100)]);
+    ledgerControl?.updateValueAndValidity();
+
+    this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+    this.chartForm.markAsUntouched();
+    this.chartForm.updateValueAndValidity();
+  }
+
+  // Other methods remain the same...
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
     if (currentMenuId && userRole) {
       this.accountService
         .getRoleMenuPermissions(currentMenuId, userRole)
@@ -156,7 +473,6 @@ auditLogs: any[] = []; // Stores audit logs
             this.permissions = Object.keys(this.currentMenuPermissions).filter(
               (key) => this.currentMenuPermissions[key] === 'isTrue'
             );
-            console.log(this.permissions);
           },
         });
     }
@@ -169,9 +485,9 @@ auditLogs: any[] = []; // Stores audit logs
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-    }
+  }
 
- toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
     return {
       year: date.getFullYear(),
@@ -180,217 +496,42 @@ auditLogs: any[] = []; // Stores audit logs
     };
   }
 
-  initForm() {
-    this.chartForm = this.fb.group({
-      LedgerName: ['', [Validators.required, Validators.maxLength(100)]],
-      LedgerCode: ['', [Validators.required, Validators.maxLength(10)]],
-      SubGroupName: ['', [Validators.maxLength(20)]],
-      LedgerCurrency: [],
-      GroupName: ['', [Validators.maxLength(100)]],
-      LedgerType:['',[Validators.required]],
-      Category: ['', [Validators.required]],
-      ReportType: [{ value: '' }, [Validators.required]],
-      Remarks: ['', [Validators.maxLength(200)]],
-      Status: ['Active'],
-      // IsSubledgerRequired: [false],
-      SubledgerName: ['N', [Validators.required]],
-      JobNoRequire: ['N' ],
-      HSNRequire: ['N' ]
-    });
-    this.chartForm.get('Category')!.valueChanges.subscribe((cat: string) => {
-    const report = (cat === 'Asset' || cat === 'Liability') ? 'Balance Sheet' :
-                   (cat === 'Income' || cat === 'Expenses') ? 'Profit and Loss' : '';
-    this.chartForm.get('ReportType')!.setValue(report, { emitEvent: false });
-  });
-  }
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.chartMasterSid) return;
 
-  loadChartAccount() {
-    this.masterServ.fetchCoaById(this.chartMasterSid).subscribe(
-      (data: any) => {
-        this.chartData = data;
-        this.isSubledgerRequired = data.IsSubledgerRequired;
+    this.masterServ.getAuditLogsCOA(
+      'COAMaster',
+      this.chartMasterSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['UpdatedOn', 'UpdatedBy'];
 
-        if (this.isSubledgerRequired) {
-          this.chartForm
-            .get('LedgerName')
-            ?.setValidators([Validators.required, Validators.maxLength(20)]);
-        }
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key))
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-          this.chartForm.patchValue({
-          LedgerName: data.LedgerName,
-          LedgerCode: data.LedgerCode,
-          SubGroupName: data.SubGroupName,
-          LedgerCurrency: data.LedgerCurrency,
-          GroupName: data.GroupName,
-          Category: data.Category,
-          LedgerType: data.LedgerType,
-          ReportType:data.ReportType,
-          Remarks: data.Remarks,
-          Status: data.Status === 'A' ? 'Active' : 'Suspended',
-          SubledgerName: data.SubledgerName === 'Y' ? 'Y' : 'N',
-          JobNoRequire: data.JobNoRequire === 'Y' ? 'Y' : 'N',
-          HSNRequire: data.HSNRequire === 'Y' ? 'Y' : 'N',
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
         });
-        if (this.isEditMode && data.SubledgerName === 'Y') {
-        this.chartForm.get('SubledgerName')?.disable({ emitEvent: false });
-      }
- if (this.isEditMode && data.JobNoRequire === 'Y') {
-        this.chartForm.get('JobNoRequire')?.disable({ emitEvent: false });
-      }
-      if (this.isEditMode && data.HSNRequire === 'Y') {
-        this.chartForm.get('HSNRequire')?.disable({ emitEvent: false });
-      }
-
-        
       },
-      (error) => {
-        this.appSettingService.showError('Error loading Chart Account', error);
-      }
-    );
+      error: err => console.error('Error fetching audit logs:', err)
+    });
   }
-
-onSubmit(): void {
-  if (this.chartForm.invalid) {
-    this.chartForm.markAllAsTouched();
-    this.appSettingService.showWarning('Please fill out all required fields correctly.');
-    return;
-  }
-
-  const formValue = this.chartForm.getRawValue();
-  const mappedStatus = formValue.Status === 'Active' || formValue.Status === 'A' ? 'A' : 'S';
-  const currentuseremail = this.appSettingService.userSettingSource.value['userEmail'];
-  
-  const payload = this.isEditMode ? {
-    ...this.chartForm.value,
-    Status: mappedStatus,
-    UpdatedBy: currentuseremail,
-  } : {
-    ...this.chartForm.value,
-    Status: mappedStatus,
-    CreatedBy: currentuseremail,
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-  };
-
-  if (this.isEditMode) {
-    this.masterServ.updateCoaById(this.chartMasterSid, payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.appSettingService.showSuccess("Chart Account Updated Successfully");
-          // Navigate to create new entry after successful update
-          if(resp?.data?.COAMasterSid){
-             this.route.navigate(['/accounts/chart-accounts/entry', resp?.data?.COAMasterSid]);
-          }
-          this.resetFormForNewEntry();
-        } else {
-          this.appSettingService.showError(resp.message);
-          console.error(resp.message);
-        }
-      },
-      (error) => {
-        console.error('Error updating Chart Account', error);
-      }
-    );
-  } else {
-    this.masterServ.createNewCoa(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.appSettingService.showSuccess(resp.message);
-          // const caoId = resp?.data?.COAMasterSid;
-          if(resp?.data?.COAMasterSid){
-             this.route.navigate(['/accounts/chart-accounts/entry', resp.data.chartMasterSid]);
-          }
-          // For new entries, stay on the same page but reset form for next entry
-          this.resetFormForNewEntry();
-          // Optionally navigate to the new entry if you want to show the created record
-          
-        } else {
-          this.appSettingService.showError(resp.message);
-          console.error(resp.message);
-        }
-      },
-      (error) => {
-        console.error('Error creating Chart Account', error);
-      }
-    );
-  }
-}
-
-// Add this method to reset form for new entry after update
-resetFormForNewEntry() {
-  this.isEditMode = false;
-  this.chartMasterSid = null;
-  this.chartData = null;
-  
-  // Reset the form
-  this.chartForm.reset({
-    LedgerName: '',
-    LedgerCode: '',
-    SubGroupName: '',
-    LedgerCurrency: '',
-    GroupName: '',
-    Category: '',
-    LedgerType: '',
-    ReportType:'',
-    Remarks: '',
-    Status: 'Active',
-    SubledgerName: 'N',
-    JobNoRequire: 'N',
-    HSNRequire: 'N',
-  });
-  
-  // Reset additional state
-  this.isSubledgerRequired = false;
-  
-  // Reset validation for LedgerName
-  const ledgerControl = this.chartForm.get('LedgerName');
-  ledgerControl?.clearValidators();
-  ledgerControl?.setValidators([Validators.required, Validators.maxLength(100)]);
-  ledgerControl?.updateValueAndValidity();
-  
-  // Reset date restrictions
-  this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
-  
-  // Reset form state
-  this.chartForm.markAsUntouched();
-  this.chartForm.updateValueAndValidity();
-}
-
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.chartMasterSid) return;
-
-  this.masterServ.getAuditLogsCOA(
-    'COAMaster',
-    this.chartMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
-
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
-
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
 
   showInfo() {
     if (!this.chartData) return;
@@ -420,16 +561,11 @@ openAuditLogs(modal: TemplateRef<any>) {
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.chartMasterSid;
         } else {
-          this.appSettingService.showError(
-            'Error loading Terms and Conditions'
-          );
+          this.appSettingService.showError('Error loading Terms and Conditions');
         }
       },
       (error) => {
-        this.appSettingService.showError(
-          'Error loading Terms and Conditions',
-          error
-        );
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
       }
     );
   }
@@ -443,8 +579,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     });
   }
 
-
-    openAuthority() {
+  openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
@@ -468,63 +603,46 @@ openAuditLogs(modal: TemplateRef<any>) {
     modalRef.componentInstance.idValue = this.chartData?.VesselMasterSid;
   }
 
-  // onReset(): void {
-  //   this.chartForm.reset({
-  //     Name: '',
-  //     code: '',
-  //     subGroup: '',
-  //     CurrencyCode: '',
-  //     Group: '',
-  //     Category: '',
-  //     reportType: '',
-  //     PortType: '',
-  //     Remarks: '',
-  //     AccountType: '',
-  //     IsSubledgerRequired: false,
-  //   });
-
-  //   this.chartForm.markAsPristine();
-  //   this.chartForm.markAsUntouched();
-  // }
   onReset() {
-  // If editing an existing chart account, reload it (restore original state)
-  if (this.isEditMode && this.chartMasterSid) {
-    this.loadChartAccount();
-    return;
+    if (this.isEditMode && this.chartMasterSid) {
+      this.loadChartAccount();
+      return;
+    }
+
+    this.chartForm.reset({
+      LedgerName: '',
+      LedgerCode: '',
+      SubGroupName: '',
+      LedgerCurrency: '',
+      GroupName: '',
+      Category: '',
+      LedgerType: '',
+      ReportType: '',
+      Remarks: '',
+      Status: 'Active',
+      SubledgerName: 'N',
+      JobNoRequire: 'N',
+      HSNRequire: 'N',
+    });
+    
+    this.chartForm.get('SubledgerName')?.enable({ emitEvent: false });
+    this.chartForm.get('JobNoRequire')?.enable({ emitEvent: false });
+    this.chartForm.get('HSNRequire')?.enable({ emitEvent: false });
+    
+    this.chartData = null;
+    this.isSubledgerRequired = false;
+    this.groupList = [];
+    this.subgroupList = [];
+    this.isGroupDropdown = false;
+    this.isSubgroupDropdown = false;
+
+    const ledgerControl = this.chartForm.get('LedgerName');
+    ledgerControl?.clearValidators();
+    ledgerControl?.setValidators([Validators.required, Validators.maxLength(100)]);
+    ledgerControl?.updateValueAndValidity();
+
+    this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
   }
-
-  // Create-mode: reset form to initial state with proper defaults
-  this.chartForm.reset({
-    LedgerName: '',
-    LedgerCode: '',
-    SubGroupName: '',
-    LedgerCurrency: '',
-    GroupName: '',
-    Category: '',
-    LedgerType: '',
-    ReportType:'',
-    Remarks: '',
-    Status: 'Active',
-    SubledgerName: 'N',
-    JobNoRequire: 'N',
-    HSNRequire: 'N',
-  });
-  this.chartForm.get('SubledgerName')?.enable({ emitEvent: false });
-  this.chartForm.get('JobNoRequire')?.enable({ emitEvent: false });
-  this.chartForm.get('HSNRequire')?.enable({ emitEvent: false });
-  // Reset additional state variables
-  this.chartData = null;
-  this.isSubledgerRequired = false;
-  
-  // Reset validation for LedgerName
-  const ledgerControl = this.chartForm.get('LedgerName');
-  ledgerControl?.clearValidators();
-  ledgerControl?.setValidators([Validators.required, Validators.maxLength(100)]);
-  ledgerControl?.updateValueAndValidity();
-
-  // Reset min date to today for new entries
-  this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
-}
 
   nagivateback() {
     this.route.navigate(['accounts/chart-accounts/list']);
