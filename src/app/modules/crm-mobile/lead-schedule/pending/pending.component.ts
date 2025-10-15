@@ -74,7 +74,7 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'Schedule-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'BookingNo',
+    defaultSortColumn: 'leadStatus',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -219,6 +219,29 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     this.allItems = [];
     this.totalLengthOfCollection = 0;
   }
+
+    protected override applySorting(): void {
+  if (!this.allItems.length) return;
+
+  // Custom sorting to prioritize Qualify records
+  this.allItems.sort((a, b) => {
+    const isAQualify = a.leadStatus === 'Qualify' || a.leadStatus === 'Qualified';
+    const isBQualify = b.leadStatus === 'Qualify' || b.leadStatus === 'Qualified';
+    
+    // If one is qualify and other isn't, qualify comes first
+    if (isAQualify && !isBQualify) return -1;
+    if (!isAQualify && isBQualify) return 1;
+    
+    // If both are qualify or both aren't, apply normal sorting
+    if (this.sortColumn && a[this.sortColumn] !== b[this.sortColumn]) {
+      const direction = this.sortDirection === 'asc' ? 1 : -1;
+      if (a[this.sortColumn] < b[this.sortColumn]) return -1 * direction;
+      if (a[this.sortColumn] > b[this.sortColumn]) return 1 * direction;
+    }
+    
+    return 0;
+  });
+}
 
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
