@@ -34,20 +34,20 @@
                         Reset
                     </button>
 
-                    <button *ngIf="!isEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                    <button  appPreventMultiClick *ngIf="!isEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onSave()" [disabled]="btnDisable">
       <i class="fas fa-save me-1"></i> Save
     </button>
 
                     <div *ngIf="isEditMode && hasPermission('Edit')" class="d-inline-block">
                       
-                        <button *ngIf="!isStatusEditable" type="button" class="btn btn-outline-info btn-sm dofi-min-w-80"
+                        <button appPreventMultiClick *ngIf="!isStatusEditable" type="button" class="btn btn-outline-info btn-sm dofi-min-w-80"
                                 (click)="onEditStatusClick()">
                             <i class="fas fa-save me-1"></i> Save
                         </button>
 
                         
-                        <button *ngIf="isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
+                        <button appPreventMultiClick *ngIf="isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
                                 (click)="onSave()" [disabled]="btnDisable">
                             <i class="fas fa-save me-1"></i> Save
                         </button>
@@ -213,8 +213,7 @@
     <dofi-searchable-dropdown 
   [items]="portList" 
   formControlName="FDCSid"
-  [placeholder]="''"
-  [disabled]="!!tariffHeaderForm.get('PODSid')?.value" 
+  [placeholder]="''" 
   [displayFields]="portLookupConfig.displayFields" 
   [displayLabels]="portLookupConfig.displayLabels" 
   [labelFields]="portLookupConfig.labelFields"
@@ -683,15 +682,25 @@
                                 </div>
                             </aside>
                             }
-                           <aside class="col-md-6 col-lg-4">
+                          <aside class="col-md-6 col-lg-4">
   <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailChargeCode')?.value">
+    <!-- Replace the existing ng-select with this filtered version -->
     <ng-select 
       class="ng-select" 
       formControlName="detailChargeCode"
-      [items]="chargeList" 
+      [items]="filteredCharges" 
       bindLabel="chargeCode" 
       bindValue="chargeCode" 
-      placeholder="">
+      placeholder=""
+      >
+      <ng-template ng-option-tmp let-item="item">
+        {{ item.chargeCode }} - {{ item.chargeName }}
+      </ng-template>
+      <ng-template ng-notfound-tmp>
+        <div class="text-muted p-2">
+          No charges available for selected department
+        </div>
+      </ng-template>
     </ng-select>
     <label for="charge" class="input-label">Charge Code <span class="text-danger">*</span></label>
     @if(tariffDetailsForm.get('detailChargeCode')?.touched && tariffDetailsForm.get('detailChargeCode')?.errors){
@@ -780,13 +789,15 @@
                             </ng-template>
                             
                             <aside class="col-md-6 col-lg-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailDescription"
-                                        placeholder="" class="form-control custom-input-field sm"  [textWithNumbers]="100"  style="background-color:white;cursor:not-allowed">
-                                    <label for="text-input" [ngClass]="{
-                                        'input-label': true,
-                                        'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value
-                                    }">Charge Description</label>
+  <div class="custom-form-group">
+    <input type="text" id="text-input" formControlName="detailDescription"
+           placeholder="" class="form-control custom-input-field sm"  
+           [textWithNumbers]="100"  
+           style="background-color:white;cursor:not-allowed" readonly>
+    <label for="text-input" [ngClass]="{
+        'input-label': true,
+        'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value
+    }">Charge Description </label>
                                     @if(tariffDetailsForm.get('detailDescription')?.touched &&
                                     tariffDetailsForm.get('detailDescription')?.errors){
                                     <div class="error-message">
@@ -799,6 +810,18 @@
                                     }
                                 </div>
                             </aside>
+                            <!-- <aside class="col-md-6 col-lg-4">
+  <div class="custom-form-group">
+    <input type="text" id="text-input" formControlName="detailDescription"
+           placeholder="" class="form-control custom-input-field sm"  
+           [textWithNumbers]="100"  
+           style="background-color:white;cursor:not-allowed" readonly>
+    <label for="text-input" [ngClass]="{
+        'input-label': true,
+        'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value
+    }">Charge Description (Auto-filled from Charge Master)</label>
+  </div>
+</aside> -->
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailCargoType')?.value">
                                     <ng-select class="ng-select" formControlName="detailCargoType" placeholder="">
@@ -1048,7 +1071,7 @@
 
             <div class="modal-footer p-1">
   <!-- Creation mode: Save (existing behaviour) -->
-  <button *ngIf="!isModalEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+  <button appPreventMultiClick *ngIf="!isModalEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
           (click)="onModalSave()">
     <i class="fas fa-save me-1"></i> Save
   </button>
@@ -1060,7 +1083,7 @@
       <i class="fas fa-edit me-1"></i> Edit
     </button>
 
-    <button *ngIf="isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
+    <button appPreventMultiClick *ngIf="isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
             (click)="onModalSave()">
       <i class="fas fa-save me-1"></i> Save
     </button>

@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, JsonPipe } from '@angular/common';
+import { CommonModule, DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
 import {
   ChangeDetectorRef,
   ChangeDetectionStrategy,
@@ -92,7 +92,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
   styleUrl: './organization-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
-    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    UpperCasePipe
   ],
 })
 export class OrganizationEntryComponent implements OnInit, OnDestroy {
@@ -108,7 +109,8 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     private cdRef: ChangeDetectorRef,
     private calendar: NgbCalendar,
     private leadService: LeadService,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    private casepipe : UpperCasePipe
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
   }
@@ -121,6 +123,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   extraCustomerTypesCount = 0;
   currentTaxIdLabel: string = 'PAN/VAT Number';
    activeBranchIds: string[] = [];
+   private selectedStatusChanges = new Subject<void>();
 
 
 
@@ -506,8 +509,8 @@ onCountryChange(): void {
       )
       .subscribe(() => {
       this.onCountryChange();
-      this.updateShortCodeFieldState();
-      this.generateCustomerShortCode();
+      // this.updateShortCodeFieldState();
+      // this.generateCustomerShortCode();
       this.updateTaxIdFieldValidation();
       this.updateTaxIdFieldState();
       this.getStatesByCountryId();
@@ -522,8 +525,8 @@ onCountryChange(): void {
       )
       .subscribe(() => {
          this.onCountryChange();
-        this.updateShortCodeFieldState();
-      this.generateCustomerShortCode();
+        // this.updateShortCodeFieldState();
+      // this.generateCustomerShortCode();
       this.updateTaxIdFieldValidation();
       this.updateTaxIdFieldState();
       this.getStatesByCountryId(); // Load states when country changes
@@ -657,7 +660,7 @@ selectCustomer(customer: any): void {
     this.customerSearchResults = [];
     
     // Generate short code when customer is selected
-    this.generateCustomerShortCode();
+    // this.generateCustomerShortCode();
   }
 }
 
@@ -695,7 +698,7 @@ clearCustomerSearch(): void {
       CustBranchEmail: [data?.Email || '', [Validators.required, EmailValidators.multipleEmails()]],
       CustBranchAddress: [data?.Address || '', [Validators.required]],
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
-      CustBranchGSTtype: [data?.CustomerGstType || ''],
+      CustBranchGSTtype: [data?.CustomerGstType || 'Regular'],
       CustBranchGSTIN: [data?.GSTNo || '', this.gstValidator],
       status: [{ value: data?.status === 'A' ? 'Active' : data?.status === 'S' ? 'Suspended' : 'Active', disabled: false }, Validators.required],
 
@@ -711,8 +714,17 @@ clearCustomerSearch(): void {
 
     // Initialize cities array for this branch
     branchForm['cities'] = data?.cities || [];
-
+    branchForm.get('CustBranchGSTIN')?.valueChanges.subscribe((value:string)=>{
+      if(value){
+        branchForm.get('CustBranchGSTIN')?.setValue(this.casepipe.transform(value));
+      }
+    })
     return branchForm;
+  }
+
+  getPANNo(){
+    const pan = this.customerForm.get('PanType')?.value;
+    return pan ? String(pan).toUpperCase() : ''
   }
 
   // Create contacts array from data
@@ -1028,6 +1040,7 @@ clearCustomerSearch(): void {
   private populateBranchFormArray(branches: any[]): void {
   // Clear existing form array
   this.branchFormArray = this.fb.array([]);
+   this.getStatesByCountryId();
 
   // Populate form array with branch data
   branches.forEach(branch => {
@@ -1059,11 +1072,18 @@ clearCustomerSearch(): void {
     }
 
     // Initialize GST digits after a short delay to ensure DOM is ready
-    setTimeout(() => {
-      if (branch.GSTNo) {
-        this.initializeGSTINDigits(currentBranchIndex, branch.GSTNo);
+     setTimeout(() => {
+      if (branch.stateMaster?.StateMasterSid) {
+        this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
+        
+        // Initialize GST digits after cities are loaded
+        setTimeout(() => {
+          if (branch.GSTNo) {
+            this.initializeGSTINDigits(currentBranchIndex, branch.GSTNo);
+          }
+        }, 200);
       }
-    }, 100);
+    }, 300);
   });
 
   this.totalLengthOfBranch = this.branches.length || 0;
@@ -1152,7 +1172,7 @@ clearCustomerSearch(): void {
     if (!stateId) {
       branchForm['cities'] = [];
       branchForm.get('CustBranchCity')?.setValue('');
-      this.generateBranchCode(branchIndex);
+   
       this.generateGST(branchIndex);
       return;
     }
@@ -1172,7 +1192,7 @@ clearCustomerSearch(): void {
           branchForm['cities'] = [];
         }
 
-        this.generateBranchCode(branchIndex);
+       
         this.generateGST(branchIndex);
       },
       (error) => {
@@ -1181,11 +1201,11 @@ clearCustomerSearch(): void {
       }
     );
   }
-  generateGST(branchIndex: number): void {
+   generateGST(branchIndex: number): void {
     const branchForm = this.branches.at(branchIndex) as FormGroup;
     const stateId = branchForm.get('CustBranchState')?.value;
     const stateCode = this.getStateGSTCode(stateId);
-    const pan = this.customerForm.get('PanType')?.value || '';
+    const pan = String(this.customerForm.get('PanType')?.value).toUpperCase() || '';
 
     const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
     const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
@@ -1205,6 +1225,7 @@ clearCustomerSearch(): void {
       branchForm.get('CustBranchGSTIN')?.setValue('');
     }
   }
+  
   getStatesForSelect(): any[] {
     if (!this.stateList || this.stateList.length === 0) {
       this.getStatesByCountryId();
@@ -1226,29 +1247,32 @@ clearCustomerSearch(): void {
     this.getCitiesByStateIdForBranch(branchIndex, stateId);
   }
   onCityChange(branchIndex: number): void {
-    this.generateBranchCode(branchIndex);
+  
   }
 
   // Handle branch name change for specific branch
   onBranchNameChange(branchIndex: number): void {
-    this.generateBranchCode(branchIndex);
+  
   }
 
 
   getStateGSTCode(StateMasterSid: number): string {
-    if (!StateMasterSid || !this.stateList || this.stateList.length === 0) {
-      return '';
-    }
-
-    const stateSid = Number(StateMasterSid);
-    const state = this.stateList.find(s => s.StateMasterSid === stateSid);
-
-    if (state && state.stateGSTCode) {
-      return state.stateGSTCode;
-    } else {
-      return '';
-    }
+  if (!StateMasterSid || !this.stateList || this.stateList.length === 0) {
+    console.warn('State list not loaded or StateMasterSid not provided:', StateMasterSid, this.stateList);
+    return '';
   }
+
+  const stateSid = Number(StateMasterSid);
+  const state = this.stateList.find(s => s.StateMasterSid === stateSid);
+
+  if (state && state.stateGSTCode) {
+    console.log(`Found state GST code: ${state.stateGSTCode} for StateMasterSid: ${stateSid}`);
+    return state.stateGSTCode;
+  } else {
+    console.warn(`State GST code not found for StateMasterSid: ${stateSid}`, state);
+    return '';
+  }
+}
   parseGST(gstin: string, digit: number): string {
     if (!gstin || gstin.length !== 15) return '';
     return gstin[digit];
@@ -1263,50 +1287,7 @@ clearCustomerSearch(): void {
     if (fifteenthDigitInput) fifteenthDigitInput.value = gstin[14] || '';
   }
 
-  generateBranchCode(branchIndex: number): void {
-  const branchForm = this.branches.at(branchIndex) as FormGroup;
-  const branchName = branchForm.get('CustBranchName')?.value;
-  const stateId = branchForm.get('CustBranchState')?.value;
-  const cityId = branchForm.get('CustBranchCity')?.value;
-  console.log('Generating branch code with:', { branchName, stateId, cityId }); 
-  if (!branchName || !stateId || !cityId) {
-    branchForm.get('CustBranchCode')?.setValue('');
-    return;
-  }
-
-  const state = this.stateList?.find(s => s.StateMasterSid == stateId);
-  const city = branchForm['cities']?.find((c: any) => c.CityMasterSid == cityId);
-   console.log('Found state/city:', { state, city });
-  if (!state || !city) {
-    branchForm.get('CustBranchCode')?.setValue('');
-    return;
-  }
-
-  // Ensure we have valid codes with fallbacks
-  const namePart = (branchName.substring(0, 3) || 'BRN').trim().toUpperCase();
-  const statePart = (state.stateCode?.substring(0, 3) || state.stateName?.substring(0, 3) || 'ST').trim().toUpperCase();
-  const cityPart = (city.cityCode?.substring(0, 3) || city.cityName?.substring(0, 3) || 'CT').trim().toUpperCase();
-
-  const branchCode = `${namePart}${statePart}${cityPart}`;
-  console.log('Generated branch code:', branchCode); 
-  branchForm.get('CustBranchCode')?.setValue(branchCode);
-}
-  validateEmailForm(emailForm: FormGroup): boolean {
-    if (emailForm.invalid) {
-      emailForm.markAllAsTouched();
-      return false;
-    }
-
-    // Additional validation for department selection
-    const departments = emailForm.get('DepartmentMasterSid')?.value;
-    if (!departments || (Array.isArray(departments) && departments.length === 0)) {
-      this.appSettingService.showWarning('Please select at least one department for the email');
-      return false;
-    }
-
-    return true;
-  }
-
+ 
 
 
   getCitiesByStateId(state) {
@@ -1381,7 +1362,7 @@ clearCustomerSearch(): void {
   initForm() {
     this.customerForm = this.fb.group({
       CustomerName: ['', [Validators.required]],
-      CustomerShortCode: [{ value: '', disabled: true }],
+      CustomerShortCode: [''],
       CustomerAliasName: [''],
       CustomerAddress1: ['', [Validators.required]],
       CustomerAddress2: [''],
@@ -1389,7 +1370,7 @@ clearCustomerSearch(): void {
       CompanyType: [''],
       PanAvailable: [false],
       PanType: [{ value: '', disabled: true }, [this.panValidator]],
-      PanName: [{ value: '', disabled: true },],
+      PanName: [''],
       GroupName: [''],
       Website: [''],
       paymentType: [''],
@@ -1402,8 +1383,8 @@ clearCustomerSearch(): void {
       Network: [''],
       cusMilestone: this.fb.array([]),
       cusSalesteam: this.fb.array([]),
-      customerEmails: this.fb.array([]), // Add customer emails FormArray
-      customerLogins: this.fb.array([]), // Add customer logins FormArray
+      customerEmails: this.fb.array([]), 
+      customerLogins: this.fb.array([]), 
       AirlineNumber: [''],
       AirlineCode: ['']
     });
@@ -1429,26 +1410,38 @@ clearCustomerSearch(): void {
     return GST_REGEX.test(gstin) ? null : { invalidGST: true };
   }
 
-  panValidator(control: AbstractControl): ValidationErrors | null {
+  panValidator = (control: AbstractControl): ValidationErrors | null => {
   const pan = control.value;
   if (!pan) return null;
 
-  // Basic PAN format validation
+  // Remove any spaces and convert to uppercase
+  const cleanPan = pan.toString().replace(/\s/g, '').toUpperCase();
+  
+  // Basic PAN format validation - 5 letters + 4 digits + 1 letter
   const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-  if (!PAN_REGEX.test(pan)) {
-    return { invalidPAN: true };
+  
+  if (!PAN_REGEX.test(cleanPan)) {
+    return { 
+      invalidPAN: true,
+      message: 'PAN must be in format:(e.g., ABCDE1234F)'
+    };
   }
 
   // Enhanced 4th character validation for holder type
-  const fourthChar = pan[3]; // 4th character (0-based index)
+  const fourthChar = cleanPan[3]; // 4th character (0-based index)
   const companyType = this.customerForm?.get('CompanyType')?.value;
   
-  const holderTypeValidation = this.validatePanHolderType(fourthChar, companyType);
-  if (!holderTypeValidation.isValid) {
-    return { 
-      invalidPANHolderType: true,
-      holderTypeMessage: holderTypeValidation.message
-    };
+  console.log('PAN Validation:', { pan: cleanPan, fourthChar, companyType }); // Debug log
+
+  // Only validate holder type if Company Type is selected
+  if (companyType) {
+    const holderTypeValidation = this.validatePanHolderType(fourthChar, companyType);
+    if (!holderTypeValidation.isValid) {
+      return { 
+        invalidPANHolderType: true,
+        holderTypeMessage: holderTypeValidation.message
+      };
+    }
   }
 
   return null;
@@ -1500,22 +1493,23 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
   const holderInfo = holderTypeMap[fourthChar];
   
   if (!holderInfo) {
+    const validChars = Object.keys(holderTypeMap).join(', ');
     return { 
       isValid: false, 
-      message: `Invalid 4th character '${fourthChar}'. Valid characters: ${Object.keys(holderTypeMap).join(', ')}` 
+      message: `Invalid 4th character '${fourthChar}'. Must be one of: ${validChars}` 
     };
   }
 
-  // If company type is selected, validate against it
-  if (companyType && !holderInfo.types.includes(companyType)) {
-    const expectedTypes = Object.entries(holderTypeMap)
+  // Validate against selected company type
+  if (!holderInfo.types.includes(companyType)) {
+    const expectedChars = Object.entries(holderTypeMap)
       .filter(([char, info]) => info.types.includes(companyType))
       .map(([char, info]) => `${char} (${info.description})`)
-      .join(', ');
+      .join(' or ');
     
     return { 
       isValid: false, 
-      message: `4th character '${fourthChar}' (${holderInfo.description}) doesn't match selected company type '${companyType}'. Expected: ${expectedTypes}` 
+      message: `Company Type '${companyType}', 4th character should be ${expectedChars}` 
     };
   }
 
@@ -1558,7 +1552,7 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
   // Debug log to check the status
   console.log('Selected statuses:', this.selectedStatus);
   console.log('Is airline selected:', this.isAirlineSelected);
-  
+  this.selectedStatusChanges.next();
   this.updateCustomerType();
 }
   toCamelCase(str: string): string {
@@ -1571,43 +1565,6 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
 
   isCustomerFormValid(): boolean {
     return this.customerForm.valid;
-  }
-
-  updateShortCodeFieldState() {
-    const customerName = this.customerForm.get('CustomerName')?.value;
-    const countryId = this.customerForm.get('CountryMasterSid')?.value;
-
-    if (customerName && countryId) {
-      this.customerForm.get('CustomerShortCode')?.enable();
-    } else {
-      this.customerForm.get('CustomerShortCode')?.disable();
-    }
-  }
-
-
-  generateCustomerShortCode() {
-    const customerName = this.customerForm.get('CustomerName')?.value;
-    const countryId = this.customerForm.get('CountryMasterSid')?.value;
-
-    if (!customerName || !countryId) {
-      this.customerForm.get('CustomerShortCode')?.disable();
-      this.customerForm.get('CustomerShortCode')?.setValue('');
-      return;
-    }
-
-    const selectedCountry = this.dropdownStore.countries()?.find(c => c.CountryMasterSid == countryId);
-    if (!selectedCountry || !selectedCountry.countryCode) {
-      this.customerForm.get('CustomerShortCode')?.disable();
-      this.customerForm.get('CustomerShortCode')?.setValue('');
-      return;
-    }
-
-    this.customerForm.get('CustomerShortCode')?.enable();
-
-    const namePart = customerName.substring(0, 3).toUpperCase();
-    const countryPart = selectedCountry.countryCode.slice(-3).toUpperCase();
-
-    this.customerForm.get('CustomerShortCode')?.setValue(`${namePart}${countryPart}`);
   }
 
   isIndianCountry(): boolean {
@@ -1640,37 +1597,7 @@ shouldShowPanAvailable(): boolean {
   if (errors['required']) return 'Required';
   return 'Invalid format';
 }
-getPanFormatDescription(): string {
-  const companyType = this.customerForm.get('CompanyType')?.value;
-  
-  if (!companyType) {
-    return 'PAN Format: 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F)';
-  }
 
-  const expectedChars = this.getExpectedPanFourthChars(companyType);
-  
-  if (expectedChars.length === 0) {
-    return 'PAN Format: 5 letters + 4 digits + 1 letter';
-  }
-
-  const charDescriptions = expectedChars.map(char => {
-    const holderTypeMap = {
-      'C': 'Company',
-      'P': 'Individual/Person',
-      'H': 'HUF',
-      'F': 'Firm',
-      'A': 'AOP',
-      'T': 'Trust',
-      'B': 'BOI',
-      'L': 'Local Authority',
-      'J': 'Artificial Juridical Person',
-      'G': 'Government'
-    };
-    return `${char} (${holderTypeMap[char] || char})`;
-  });
-
-  return `PAN Format: 3 letters + [${expectedChars.join('/')}] + 1 letter + 4 digits + 1 letter. Expected 4th character: ${charDescriptions.join(', ')}`;
-}
 getExpectedPanFourthChars(companyType: string): string[] {
   const holderTypeMap: { [key: string]: string[] } = {
     'Company': ['C'],
@@ -1712,24 +1639,21 @@ getPanBreakdown(pan: string): any {
     panTypeControl?.clearValidators();
 
     if (countryName.toLowerCase().includes('india')) {
-      panTypeControl?.setValidators([this.panValidator]);
-      this.updateTaxIdLabel();
+      panTypeControl?.setValidators([Validators.required, this.panValidator]);
+      this.currentTaxIdLabel = 'PAN Number';
     }
-    else if (countryName.toLowerCase().includes('uae') ||
-      countryName.toLowerCase().includes('dubai') ||
-      countryName.toLowerCase().includes('united arab emirates')) {
-      panTypeControl?.setValidators([this.vatValidator]);
-      this.updateTaxIdLabel();
+    else if (this.isUaeCountry()) {
+      panTypeControl?.setValidators([Validators.required, this.vatValidator]);
+      this.currentTaxIdLabel = 'VAT Number';
     }
     else {
       panTypeControl?.setValidators([]);
-      this.updateTaxIdLabel();
+      this.currentTaxIdLabel = 'Tax Identification Number';
     }
 
     panTypeControl?.updateValueAndValidity();
   }
 }
-
 
 
   updateTaxIdLabel(): void {
@@ -1788,11 +1712,11 @@ getPanBreakdown(pan: string): any {
     .subscribe((panAvailable: boolean) => {
       if (panAvailable) {
         panTypeControl?.enable();
-        panNameControl?.enable();
+        
         this.updateTaxIdFieldValidation();
       } else {
         panTypeControl?.disable();
-        panNameControl?.disable();
+        
         panTypeControl?.clearValidators();
         panTypeControl?.updateValueAndValidity();
         panTypeControl?.setValue('');
@@ -1804,11 +1728,12 @@ getPanBreakdown(pan: string): any {
   const currentPanAvailable = panAvailableControl?.value;
   if (currentPanAvailable) {
     panTypeControl?.enable();
-    panNameControl?.enable();
+    
   } else {
     panTypeControl?.disable();
-    panNameControl?.disable();
+   
   }
+ panNameControl?.enable(); 
 }
 // onCountryChange(): void {
 //   this.updateTaxIdLabel();
@@ -1842,7 +1767,7 @@ onCompanyTypeChange(): void {
   
   // Also update PAN validation when company type changes
   const panTypeControl = this.customerForm.get('PanType');
-  if (panTypeControl?.value) {
+  if (panTypeControl?.value &&  this.customerForm.get('PanAvilable')?.value) {
     panTypeControl.updateValueAndValidity();
   }
 }
@@ -1929,7 +1854,8 @@ loadCustomerData(customerId: number) {
         PanAvailable: customerData.PanType || customerData.PanName ? true : false,
         CustomerType: customerType,
         AirlineNumber: customerData.AirlineNumber || '',
-        AirlineCode: customerData.AirlineCode || ''
+        AirlineCode: customerData.AirlineCode || '',
+        PanName: customerData.PanName || ''
       });
 
       // Handle customer types
@@ -2325,66 +2251,7 @@ loadCustomerData(customerId: number) {
     }, 0);
   }
 
-  // Save sales team data
-  // saveSalesTeamData(): Promise<any> {
-  //   return new Promise((resolve, reject) => {
-  //     if (this.cusSalesteam.length === 0) {
-  //       resolve({ success: true });
-  //       return;
-  //     }
-
-  //     const salesTeamsPayload = this.prepareUpdateSalesTeamsPayload();
-
-  //     if (salesTeamsPayload.length === 0) {
-  //       resolve({ success: true });
-  //       return;
-  //     }
-
-  //     const payload = {
-  //       CustomerMasterSid: this.CustomerMasterSid,
-  //       salesTeams: salesTeamsPayload
-  //     };
-
-  //     this.masterService.saveCustomerSalesTeam(payload).subscribe(
-  //       (resp: any) => {
-  //         if (resp.status) {
-  //           this.appSettingService.showSuccess('Sales team saved successfully');
-  //           resolve({ success: true });
-  //         } else {
-  //           this.appSettingService.showError('Error saving sales team');
-  //           reject({ success: false, message: 'Error saving sales team' });
-  //         }
-  //       },
-  //       (error) => {
-  //         console.error('Error saving sales team:', error);
-  //         this.appSettingService.showError('Error saving sales team');
-  //         reject({ success: false, error });
-  //       }
-  //     );
-  //   });
-  // }
-
-  // Save customer milestones
-  // saveCustomerMilestones(): Promise<any> {
-  //   return new Promise((resolve, reject) => {
-  //     if (this.cusMilestone.length === 0) {
-  //       resolve({ success: true });
-  //       return;
-  //     }
-
-  //     const milestonesPayload = this.prepareUpdateMilestonesPayload();
-
-  //     if (milestonesPayload.length === 0) {
-  //       resolve({ success: true });
-  //       return;
-  //     }
-
-  //     // Assuming there's a save method for milestones, similar to sales team
-  //     // If not, this should be integrated into the main customer update
-  //     resolve({ success: true });
-  //   });
-  // }
-
+ 
   // Email tab methods
   onAddCustomerEmail() {
     const newEmail = this.fb.group({
@@ -2619,7 +2486,7 @@ onPanAvailableChange(): void {
     }
   } catch (error) {
     console.error('Error saving customer:', error);
-    this.appSettingService.showError('Error saving customer data');
+  
   } finally {
     this.btnDisable = false;
   }
@@ -3227,7 +3094,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     // Create-mode: reset customer form to sensible defaults
     this.customerForm.reset({
       CustomerName: '',
-      CustomerShortCode: { value: '', disabled: true },
+      CustomerShortCode: '',
       CustomerAliasName: '',
       CustomerAddress1: '',
       CustomerAddress2: '',
@@ -3263,7 +3130,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     this.customerForm.markAsPristine();
 
     // Enable/disable fields based on initial conditions
-    this.updateShortCodeFieldState();
+    // this.updateShortCodeFieldState();
 
     // Reset customer name reference
     this.customerName = '';
@@ -3394,11 +3261,107 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     const city = this.cityList.find((c) => c.CityMasterSid === citySid);
     return city ? city.cityName : '';
   }
+private setupPanValidation(): void {
+  const panAvailableControl = this.customerForm.get('PanAvailable');
+  const companyTypeControl = this.customerForm.get('CompanyType');
+  const panTypeControl = this.customerForm.get('PanType');
+  const panNameControl = this.customerForm.get('PanName');
 
- 
+  // Listen to PanAvailable changes
+  panAvailableControl?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((panAvailable: boolean) => {
+      if (panAvailable) {
+        // Enable fields
+        panTypeControl?.enable();
+        panNameControl?.enable();
+        
+        // Add validators
+        companyTypeControl?.setValidators([Validators.required]);
+        panTypeControl?.setValidators([Validators.required, this.panValidator]);
+        
+        // Clear any existing values if CompanyType is not selected
+        if (!companyTypeControl?.value) {
+          panTypeControl?.setValue('');
+          panNameControl?.setValue('');
+          this.showCompanyTypeAlert();
+        }
+      } else {
+        // Disable fields and clear validators
+        panTypeControl?.disable();
+        panNameControl?.disable();
+        companyTypeControl?.clearValidators();
+        panTypeControl?.clearValidators();
+        
+        // Clear values
+        panTypeControl?.setValue('');
+        panNameControl?.setValue('');
+      }
+      
+      // Update validation states
+      companyTypeControl?.updateValueAndValidity();
+      panTypeControl?.updateValueAndValidity();
+    });
+
+  // Also validate when CompanyType changes
+  companyTypeControl?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
+      if (panTypeControl?.value) {
+        panTypeControl.updateValueAndValidity();
+      }
+    });
+}
+
+ private showCompanyTypeAlert(): void {
+  this.appSettingService.showWarning('Please select Company Type before entering PAN details.');
+}
+setupAirlineValidation(): void {
+  // Watch for changes in selected customer types
+  this.customerForm.get('CustomerType')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
+      this.updateAirlineFieldValidation();
+    });
+
+  // Also watch for direct changes to selectedStatus
+  this.selectedStatusChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
+      this.updateAirlineFieldValidation();
+    });
+}
+updateAirlineFieldValidation(): void {
+  const airlineNumberControl = this.customerForm.get('AirlineNumber');
+  const airlineCodeControl = this.customerForm.get('AirlineCode');
+  
+  const isAirlineSelected = this.selectedStatus.includes('Air Line');
+  
+  if (isAirlineSelected) {
+    // Make fields mandatory when Air Line is selected
+    airlineNumberControl?.setValidators([Validators.required, Validators.maxLength(20)]);
+    airlineCodeControl?.setValidators([Validators.required, Validators.maxLength(10)]);
+  } else {
+    // Remove required validation when Air Line is not selected
+    airlineNumberControl?.setValidators([Validators.maxLength(20)]);
+    airlineCodeControl?.setValidators([Validators.maxLength(10)]);
+    
+    // Clear the values when Air Line is deselected
+    airlineNumberControl?.setValue('');
+    airlineCodeControl?.setValue('');
+  }
+  
+  // Update validation state
+  airlineNumberControl?.updateValueAndValidity();
+  airlineCodeControl?.updateValueAndValidity();
+}
+
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  
+  
 }
