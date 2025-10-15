@@ -263,7 +263,7 @@
         </div>
     </div>
       <div class="content-workspace">
-         <div class="workspace-content" *ngIf="selectedTab === 'TDSDetail'">
+         <div class="workspace-content" *ngIf="selectedTab === 'TDS Detail'">
             <ng-container *ngTemplateOutlet="detailListTemplate"></ng-container>
          </div>
          <div class="workspace-content" *ngIf="selectedTab === 'Exemption Detail'">
@@ -650,8 +650,7 @@
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="TDSRate" DecimalPrecision [DecimalPrecisionBefore]="2"
                                         [DecimalPrecisionAfter]="2">
-                                    <label for="text-input" class="input-label">Percentage <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Percentage</label>
                                     @if(tdsDetailForm.get('TDSRate')?.invalid &&
                                     (tdsDetailForm.get('TDSRate')?.touched ||
                                     tdsDetailForm.get('TDSRate')?.dirty)) {
@@ -674,7 +673,7 @@
                                             ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
                                             formControlName="EffectiveFrom" [footerTemplate]="detailfooterTemplate"
                                             [minDate]="minDetailEffectiveFrom" />
-                                        <label for="text-input" class="input-label">Effective Form <span
+                                        <label for="text-input" class="input-label">Effective From <span
                                                 class="text-danger">*</span></label>
                                         @if(tdsDetailForm.get('EffectiveFrom')?.touched &&
                                         tdsDetailForm.get('EffectiveFrom')?.invalid){
