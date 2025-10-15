@@ -159,7 +159,6 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
 
   adjustDropdownWidth() {
     const ngSelectElement: HTMLElement = this.ngSelectRef?.nativeElement;
-    console.log(ngSelectElement);
     if (!ngSelectElement) return;
 
     // Get bounding box of the ng-select
