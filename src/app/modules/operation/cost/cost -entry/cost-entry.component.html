@@ -94,16 +94,16 @@
             <button class="table-action-btn primary" (click)="addRateRow()">
               <i class="fas fa-plus"></i> Add Row
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.BookingHeaderSid">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
 
             <button class="table-action-btn export">
               <i class="fas fa-download"></i> Export
             </button>
-            <button class="table-action-btn print" (click)="saveAllRates()">
+            <!-- <button class="table-action-btn print" (click)="saveAllRates()">
               <i class="fas fa-save"></i> Save
-            </button>
+            </button> -->
             <!-- <button class="table-action-btn print">
           <i class="fas fa-print"></i> Print
         </button> -->
@@ -127,9 +127,9 @@
               <th class="bg-info text-white"></th>
               <th class="bg-info text-white">SNo</th>
               <th class="table-header1">Charge <span class="text-danger"></span></th>
-              <th class="table-header1">ChargeDesc</th>
-              <!-- <th class="table-header1 ">Unit</th> -->
-              <th class="table-header1 ">No of Unit</th>
+              <th class="table-header1">Charge Desc</th>
+              <th class="table-header1 ">Unit</th>
+              <th class="table-header1 ">No. of Unit</th>
             </tr>
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
@@ -145,13 +145,13 @@
                 </div>
               </td>
               <td>
-                <div class="custom-form-group dofi-min-w-30 dofi-min-w-30">
-                  <input type="number" formControlName="SerialNumber" id="text-input" class="custom-input-field sm">
+                <div class="custom-form-group dofi-min-w-50 dofi-max-w-50">
+                  <input type="number" id="text-input" [value]="i+1" class="custom-input-field sm" disabled>
                 </div>
               </td>
               <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                  <ng-select class="ng-select" [items]="chargeList" formControlName="ChargeMasterSid"
+                  <!-- <ng-select class="ng-select" [items]="filteredChargeList" formControlName="ChargeMasterSid"
                      bindLabel="chargeCode" bindValue="ChargeMasterSid"
                      (change)="onChargeChangeForRow($event, i)"
                      [disabled]="!canEditRate(i)"
@@ -164,7 +164,12 @@
                      <ng-template ng-option-tmp let-item="item">
                        <div><strong>{{item.chargeCode}}</strong> - {{item.chargeName}}</div>
                      </ng-template>
-                  </ng-select>
+                  </ng-select> -->
+                      <dofi-searchable-dropdown-modal [items]="filteredChargeList" formControlName="ChargeMasterSid" [placeholder]="''"
+                        [displayFields]="chargeDropdownConfig.displayFields" [displayLabels]="chargeDropdownConfig.displayLabels"
+                        [labelFields]="chargeDropdownConfig.labelFields" [bindValue]="'ChargeMasterSid'" [disabled]="!canEditRate(i)"
+                        (itemSelected)="onChargeChangeForRow($event,i)" appendTo="body">
+                      </dofi-searchable-dropdown-modal>
                 </div>
               </td>
               <td>
@@ -174,20 +179,25 @@
                 </div>
               </td>
 
-              <!-- <td>
+              <td>
                 <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                  <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
-                    formControlName="ChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                  </ng-select>
+                  <!-- <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
+                    formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
+                  </ng-select> -->
+                  <dofi-searchable-dropdown-modal [items]="uomList" formControlName="CostChargeUomSid" [placeholder]="''"
+                        [displayFields]="uomDropdownConfig.displayFields" [displayLabels]="uomDropdownConfig.displayLabels"
+                        [labelFields]="uomDropdownConfig.labelFields" [bindValue]="'UOMMasterSid'" [disabled]="!canEditRate(i)"
+                        (itemSelected)="onChangeUOM($event)" appendTo="body">
+                  </dofi-searchable-dropdown-modal>
 
                 </div>
-              </td> -->
+              </td>
               <td>
                 <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
-                  <input type="number" min="0" formControlName="NumberOfUnit" id="text-input"
+                  <input type="text" min="0" formControlName="NumberOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (input)="calculateCostAmount(i); calculateRevenueAmount(i)"
-                    [disabled]="!canEditRate(i)">
+                    [disabled]="!canEditRate(i)" [onlyNumbers]>
                 </div>
               </td>
             </tr>
@@ -203,7 +213,8 @@
             <thead>
               <tr>
                 <!-- Revenue -->
-                <th style="background-color: #6e91d3;" class="table-header">Unit</th>
+                <!-- <th style="background-color: #6e91d3;" class="table-header">Unit</th> -->
+                <th style="background-color: #6e91d3;" class="table-header currHeader">Cr/Dr</th>
                 <th style="background-color: #6e91d3;" class="table-header currHeader">Curr</th>
                 <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span>
                 </th>
@@ -215,7 +226,8 @@
                 <th style="background-color: #6e91d3;" class="table-header">Type</th>
                 <th style="background-color: #6e91d3;" class="table-header">Voucher No</th>
                 <!-- Cost -->
-                <th style="background-color: #9dd376;" class="table-header">Unit</th>
+                <!-- <th style="background-color: #9dd376;" class="table-header">Unit</th> -->
+                <th style="background-color: #9dd376;" class="table-header">Cr/Dr</th>
                 <th style="background-color: #9dd376;" class="table-header">Curr</th>
                 <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
                 <th style="background-color: #9dd376;" class="table-header">Per Unit</th>
@@ -230,11 +242,19 @@
             <tbody #rightTableBody formArrayName="rateFormArray">
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
                 <!-- Revenue -->
-                <td>
+                <!-- <td>
                   <div class="custom-form-group dofi-min-w-100">
                     <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
                       formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid"
                       [disabled]="!canEditRate(i)" appendTo="body">
+                    </ng-select>
+                  </div>
+                </td> -->
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <ng-select formControlName="RevenueDrCr" appendTo="body">
+                      <ng-option value="D">Dr</ng-option>
+                      <ng-option value="C">Cr</ng-option>
                     </ng-select>
                   </div>
                 </td>
@@ -244,33 +264,41 @@
     <dofi-searchable-dropdown-modal [items]="currencyList" formControlName="RevenueCurrencyMasterSid" [placeholder]="''"
       [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
       [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
-      (itemSelected)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" appendTo="body">
+      (itemSelected)="getRevenueExchangeRate(i, $event)" appendTo="body">
     </dofi-searchable-dropdown-modal>
   </div>
   </td>
 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" formControlName="RevenueExchangeRate"
+                    <input type="text" id="text-input" formControlName="RevenueExchangeRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueLocalAmount(i)"
-                      [disabled]="!canEditRate(i)">
+                      [disabled]="!canEditRate(i)"
+                      DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      >
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <input type="number" id="text-input" formControlName="RevenueRate"
+                    <input type="text" id="text-input" formControlName="RevenueRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueAmount(i)"
-                      [disabled]="!canEditRate(i)">
+                      [disabled]="!canEditRate(i)"
+                      DecimalPrecision [DecimalPrecisionBefore]="6"
+                      [DecimalPrecisionAfter] ="digitsAfterDecimal"
+                      >
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" formControlName="RevenueAmount"
+                    <input type="text" id="text-input" formControlName="RevenueAmount"
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueLocalAmount(i)"
-                      [disabled]="!canEditRate(i)">
+                      [disabled]="!canEditRate(i)"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="digitsAfterDecimal" 
+                    >
                   </div>
                 </td>
 
@@ -292,10 +320,15 @@
 
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                    <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                       formControlName="CustomerMasterSid"
-                      [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select>
+                      [disabled]="!canEditRate(i)" (change)="handleCustomerChange(i,$event)" appendTo="body">
+                    </ng-select> -->
+                    <dofi-searchable-dropdown-modal [items]="customerList" formControlName="CustomerMasterSid" [placeholder]="''"
+                          [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerMasterSid'" [disabled]="!canEditRate(i)"
+                          (itemSelected)="handleCustomerChange(i, $event)" appendTo="body">
+                    </dofi-searchable-dropdown-modal>
                   </div>
                 </td>
 
@@ -322,7 +355,7 @@
                 </td>
 
                 <!-- cost -->
-                <td>
+                <!-- <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
                       formControlName="CostChargeUomSid"
@@ -330,39 +363,61 @@
                       [disabled]="!canEditRate(i)" appendTo="body">
                     </ng-select>
                   </div>
-                </td>
+                </td> -->
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
-                      formControlName="CostCurrencyMasterSid"
-                      (change)="getCostExchangeRate(i, $event?.CurrencyMasterSid)"
-                      [disabled]="!canEditRate(i)" appendTo="body">
+                    <ng-select formControlName="CostDrCr" appendTo="body">
+                      <ng-option value="D">Dr</ng-option>
+                      <ng-option value="C">Cr</ng-option>
                     </ng-select>
                   </div>
                 </td>
                 <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
+                      formControlName="CostCurrencyMasterSid"
+                      (change)="getCostExchangeRate(i, $event)"
+                      [disabled]="!canEditRate(i)" appendTo="body">
+                    </ng-select> -->
+                    <dofi-searchable-dropdown-modal [items]="currencyList" formControlName="CostCurrencyMasterSid" [placeholder]="''"
+                        [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                        [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
+                        (itemSelected)="getCostExchangeRate(i, $event)" appendTo="body">
+                      </dofi-searchable-dropdown-modal>
+                  </div>
+                </td>
+                <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" formControlName="CostExchangeRate"
+                    <input type="text" id="text-input" formControlName="CostExchangeRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostLocalAmount(i)"
-                      [disabled]="!canEditRate(i)">
+                      [disabled]="!canEditRate(i)"
+                      DecimalPrecision [DecimalPrecisionBefore]="4"
+                     [DecimalPrecisionAfter]="digitsAfterDecimal"
+                    >
                   </div>
                 </td>
 
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" formControlName="CostRate"
+                    <input type="text" id="text-input" formControlName="CostRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostAmount(i)"
-                      [disabled]="!canEditRate(i)">
+                      [disabled]="!canEditRate(i)"
+                      DecimalPrecision [DecimalPrecisionBefore]="6"
+                      [DecimalPrecisionAfter]="digitsAfterDecimal" 
+                    >
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-100">
-                    <input type="number" id="text-input" formControlName="CostAmount"
+                    <input type="text" id="text-input" formControlName="CostAmount"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostLocalAmount(i)"
-                      [disabled]="!canEditRate(i)">
+                      [disabled]="!canEditRate(i)"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      >
                   </div>
                 </td>
 
@@ -384,10 +439,15 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                    <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                       formControlName="AgentSid"
-                      [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select>
+                      [disabled]="!canEditRate(i)" (change)="handleAgentChange(i,$event)" appendTo="body">
+                    </ng-select> -->
+                    <dofi-searchable-dropdown-modal [items]="agentList" formControlName="AgentSid" [placeholder]="''"
+                          [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerMasterSid'" [disabled]="!canEditRate(i)"
+                          (itemSelected)="handleAgentChange(i, $event)" appendTo="body">
+                    </dofi-searchable-dropdown-modal>
                   </div>
                 </td>
 
@@ -636,7 +696,7 @@
         <thead>
           <tr>
             <th>Charge</th>
-            <th>Sale Amt</th>
+            <th>Revenue Amt</th>
             <th>Cost Amt</th>
             <th>Profit</th>
             <th>Profit %</th>
@@ -869,12 +929,12 @@
               <thead>
                 <tr class="bg-info text-white">
                   <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                  <th class="bg-transparent text-light" scope="col">Sno</th>
+                  <!-- <th class="bg-transparent text-light" scope="col">Sno</th> -->
                   <th class="bg-transparent text-light" scope="col">Charge</th>
                   <th class="bg-transparent text-light" scope="col">Charge Desc</th>
-                  <th class="bg-transparent text-light" scope="col">PP/CC</th>
+                  <!-- <th class="bg-transparent text-light" scope="col">PP/CC</th> -->
                   <th class="bg-transparent text-light" scope="col">Unit</th>
-                  <th class="bg-transparent text-light" scope="col">No of Unit</th>
+                  <th class="bg-transparent text-light" scope="col">No. of Unit</th>
                   <th class="bg-transparent text-light" scope="col">Cost/Revenue</th>
                   <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
                   <th class="bg-transparent text-light" scope="col">Curr</th>
@@ -893,30 +953,30 @@
                     <td rowspan="2">
                       <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply Charge</button>
                     </td>
-                    <td rowspan="2">{{ i + 1 }}</td>
+                    <!-- <td rowspan="2">{{ i + 1 }}</td> -->
                     <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
                     <td rowspan="2">{{ sc.ChargeDescription }}</td>
-                    <td rowspan="2">{{ sc.PrepaidCollect }}</td>
+                    <!-- <td rowspan="2">{{ sc.PrepaidCollect }}</td> -->
                     <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
-                    <td rowspan="2">{{ sc.NumberOfUnit }}</td>
+                    <td rowspan="2">{{ sc.NoOfUnit }}</td>
                     <td class="text-info fw-bold">Cost</td>
-                    <td>{{ sc.Cost?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                    <td>{{ getCurrencyCode(sc.Cost?.CurrencyMasterSid) }}</td>
-                    <td>{{ sc.Cost?.ExchangeRate }}</td>
-                    <td>{{ sc.Cost?.Rate }}</td>
-                    <td>{{ sc.Cost?.Amount }}</td>
-                    <td>{{ sc.Cost?.LocalAmount }}</td>
+                    <td>{{ sc.CostDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                    <td>{{ getCurrencyCode(sc.CostCurrencyMasterSid) }}</td>
+                    <td>{{ sc.CostExchangeRate }}</td>
+                    <td>{{ sc.CostRate }}</td>
+                    <td>{{ sc.CostAmount }}</td>
+                    <td>{{ sc.CostLocalAmount }}</td>
                   </tr>
 
                   <!-- Revenue Row -->
                   <tr>
                     <td class="text-info fw-bold">Revenue</td>
-                    <td>{{ sc.Revenue?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                    <td>{{ getCurrencyCode(sc.Revenue?.CurrencyMasterSid) }}</td>
-                    <td>{{ sc.Revenue?.ExchangeRate }}</td>
-                    <td>{{ sc.Revenue?.Rate }}</td>
-                    <td>{{ sc.Revenue?.Amount }}</td>
-                    <td>{{ sc.Revenue?.LocalAmount }}</td>
+                    <td>{{ sc.RevenueDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                    <td>{{ getCurrencyCode(sc.RevenueCurrencyMasterSid) }}</td>
+                    <td>{{ sc.RevenueExchangeRate }}</td>
+                    <td>{{ sc.RevenueRate }}</td>
+                    <td>{{ sc.RevenueAmount }}</td>
+                    <td>{{ sc.RevenueLocalAmount }}</td>
                   </tr>
                 </ng-container>
               </tbody>

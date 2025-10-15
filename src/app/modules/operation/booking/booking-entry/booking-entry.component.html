@@ -342,7 +342,7 @@
                           </i>
                         </button>
                       </div>
-                      <label for="text-input" class="input-label">Shipper Name</label>
+                      <label for="text-input" class="input-label">Shipper Name <span class="text-danger">*</span></label>
                     </div>
                   </aside>
 
@@ -430,7 +430,8 @@
                           </i>
                         </button>
                       </div>
-                      <label for="text-input" class="input-label">Consignee Name</label>
+                      <label for="text-input" class="input-label">Consignee Name <span
+                          class="text-danger">*</span></label>
                     </div>
                   </aside>
 
@@ -1803,7 +1804,7 @@
                         </ng-select> -->
               <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
                 [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" appendTo="body">
+                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyCode'" appendTo="body">
               </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
