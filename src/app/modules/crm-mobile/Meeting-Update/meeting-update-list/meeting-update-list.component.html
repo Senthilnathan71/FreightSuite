@@ -4,16 +4,9 @@
 
 <div class="row compact-form">
     <div class="col-12">
-        <app-page-header 
-            [title]="'Meeting Update'" 
-            [showFavorite]="true" 
-            [showSearch]="true" 
-            [searchPlaceholder]="'Search'" 
-            [searchButtonText]="'Search'" 
-            [(searchValue)]="filterValue" 
-            [actions]="headerActions" 
-            (searchTriggered)="onSearchTriggered($event)" 
-            (searchCleared)="onSearchCleared()" 
+        <app-page-header [title]="'Meeting Update'" [showFavorite]="true" [showSearch]="true"
+            [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue"
+            [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
             (actionTriggered)="onActionTriggered($event)">
         </app-page-header>
     </div>
@@ -21,17 +14,10 @@
     <div class="col-12 px-0">
         <!-- Desktop View with Reusable Table -->
         <div *ngIf="!isMobile" class="desktop-view">
-            <app-reusable-table
-                #meetingTable
-                [config]="tableConfig"
-                [data]="allItems"
-                [loading]="tableLoading"
-                [totalRecords]="totalLengthOfCollection"
-                [paginationConfig]="paginationConfig"
-                (actionClick)="onTableActionClick($event)"
-                (sortChange)="onTableSortChange($event)"
-                (pageChange)="onPageChange($event)"
-                (pageSizeChange)="onPageSizeChange($event)">
+            <app-reusable-table #meetingTable [config]="tableConfig" [data]="allItems" [loading]="tableLoading"
+                [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+                (actionClick)="onTableActionClick($event)" (sortChange)="onTableSortChange($event)"
+                (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
             </app-reusable-table>
         </div>
 
@@ -57,17 +43,17 @@
                                     <i-feather name="calendar" class="feather-sm text-muted me-2"></i-feather>
                                     <small class="text-muted">{{ meeting.meetingDate }}</small>
                                 </div>
-                                
+
                                 <div class="d-flex align-items-center mb-1">
                                     <i-feather name="users" class="feather-sm text-muted me-2"></i-feather>
                                     <small class="text-muted">{{ meeting.salesPerson }}</small>
                                 </div>
-                                
+
                                 <div class="d-flex align-items-center mb-1">
                                     <i-feather name="type" class="feather-sm text-muted me-2"></i-feather>
                                     <small class="text-muted">{{ meeting.meetingType }}</small>
                                 </div>
-                                
+
                                 <div class="d-flex align-items-center mb-1">
                                     <i-feather name="trending-up" class="feather-sm text-muted me-2"></i-feather>
                                     <small class="text-muted">{{ meeting.leadStatus }}</small>
@@ -87,21 +73,16 @@
 
                 <!-- Mobile Pagination -->
                 <div class="d-flex justify-content-center mt-3" *ngIf="totalLengthOfCollection > pageSize">
-                    <ngb-pagination 
-                        [collectionSize]="totalLengthOfCollection" 
-                        [pageSize]="pageSize" 
-                        [(page)]="page" 
-                        [maxSize]="config.maxPagesToShow"
-                        (pageChange)="onPageChange($event)"
-                        class="pagination-sm">
+                    <ngb-pagination [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize" [(page)]="page"
+                        [maxSize]="config.maxPagesToShow" (pageChange)="onPageChange($event)" class="pagination-sm">
                     </ngb-pagination>
                 </div>
 
                 <!-- Page Info -->
                 <div class="text-center text-muted mt-2">
                     <small>
-                        Showing {{ (page - 1) * pageSize + 1 }} to 
-                        {{ min(page * pageSize, totalLengthOfCollection) }} of 
+                        Showing {{ (page - 1) * pageSize + 1 }} to
+                        {{ min(page * pageSize, totalLengthOfCollection) }} of
                         {{ totalLengthOfCollection }} entries
                     </small>
                 </div>
@@ -139,19 +120,21 @@
         </a>
         <div class="ms-auto d-flex align-items-center">
             <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
+                <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                    ngbDropdownToggle>
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
                 <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
+                    <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                        (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                    <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem
+                        appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms &
+                        Condition</button>
+                    <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                        (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                    <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                        (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                </div>
             </div>
             <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
         </div>
@@ -291,16 +274,26 @@
                     </ng-container>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!meetingForm.get('remarks')?.value">
-                            <ng-select [items]="reasonList" bindLabel="name" bindValue="name" formControlName="remarks">
-                            </ng-select>
-                            <label class="input-label">Reason <span class="text-danger"></span></label>
-                            <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
-                                Required.
-                            </small>
-                        </div>
-                    </aside>
+  <div class="custom-form-group custom-form-group-select"
+      [class.filled]="!!meetingForm.get('remarks')?.value"
+      [class.error]="f['remarks'].touched && f['remarks'].invalid">
+    <ng-select [items]="reasonList" bindLabel="name" bindValue="name" formControlName="remarks"
+        [class.ng-invalid]="f['remarks'].touched && f['remarks'].invalid"
+        placeholder="Select reason">
+    </ng-select>
+    <label class="input-label">Reason
+      <span *ngIf="meetingForm.get('remarks')?.hasError('required')" class="text-danger">*</span>
+    </label>
+    <!-- Improved error message display -->
+    <div *ngIf="f['remarks'].touched && f['remarks'].invalid" class="error-message">
+      <small class="text-danger">
+        <span *ngIf="f['remarks'].errors?.['required']">
+          Reason is required when meeting date is changed.
+        </span>
+      </small>
+    </div>
+  </div>
+</aside>
                 </div>
             </section>
         </div>
