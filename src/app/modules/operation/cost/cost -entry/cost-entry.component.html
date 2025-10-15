@@ -65,8 +65,8 @@
         <span>Profit</span>
       </div>
     </div>
-    <div class="table-toolbar" *ngIf="selectedTab === 'Profit'">
-      <div class="toolbar-right">
+    <div class="" *ngIf="selectedTab === 'Profit'">
+      <div class="">
         <button class="table-action-btn export" (click)="reportProfitSummary()">
           <i class="fas fa-download"></i> Export
         </button>
@@ -76,9 +76,9 @@
       </div>
     </div>
     <div *ngIf="selectedTab === 'Sales and cost'" class="d-flex gap-1">
-      <div class="table-toolbar">
+      <div class="">
         <div class="d-flex gap-2">
-          <div class="mode-selector">
+          <div class="mode-selector d-none">
 
             <div class="d-flex align-items-center gap-1">
               <div class="circle-option revenue"></div>
@@ -91,16 +91,16 @@
           </div>
 
           <div class="buttons">
-            <button class="table-action-btn primary" (click)="addRateRow()">
-              <i class="fas fa-plus"></i> Add Row
+            <button class="btn btn-sm btn-info" (click)="addRateRow()">
+              <i class="fas fa-plus"></i> Add Charge
             </button>
             <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.BookingHeaderSid">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
 
-            <button class="table-action-btn export">
+            <!-- <button class="table-action-btn export">
               <i class="fas fa-download"></i> Export
-            </button>
+            </button> -->
             <!-- <button class="table-action-btn print" (click)="saveAllRates()">
               <i class="fas fa-save"></i> Save
             </button> -->
@@ -118,31 +118,33 @@
 
   <div class="modern-table-container" *ngIf="selectedTab === 'Sales and cost'">
 
-    <div class="split-table-container compact-form" style="max-height: 300px;overflow-y: scroll;">
+    <div class="split-table-container compact-form">
       <!-- Fixed First Half -->
       <div class="table-fixed ">
         <table>
           <thead>
-            <tr>
-              <th class="bg-info text-white"></th>
-              <th class="bg-info text-white">SNo</th>
-              <th class="table-header1">Charge <span class="text-danger"></span></th>
-              <th class="table-header1">Charge Desc</th>
-              <th class="table-header1 ">Unit</th>
-              <th class="table-header1 ">No. of Unit</th>
-            </tr>
+      <tr class="first-table">
+    <th class=""  style="max-width: 5px;background-color:#005a9e;"></th>
+    <th class="" style="background-color:#005a9e;color: white;">SNo</th>
+    <th class="table-header" >Charge</th>
+    <th class="table-header" >Charge Desc</th>
+    <th class="tableHeader" style="background-color:#005a9e;color: white;">Unit</th>
+    <th class="tableHeader"  >No. of Unit</th>
+  </tr>
+  
+
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
             <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
-              <td class="actions-cell" style="width: 10px;">
-                <div class="action-buttons">
-                  <button class="action-icon delete"
+              <td  >
+              
+                  <button class="action-icon delete py-0"
                     (click)="deleteRate(i,row.value.BookingRatesSid)"
                     [disabled]="!canEditRate(i)"
                     title="Delete rate">
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash fs-2"></i>
                   </button>
-                </div>
+               
               </td>
               <td>
                 <div class="custom-form-group dofi-min-w-50 dofi-max-w-50">
@@ -150,7 +152,7 @@
                 </div>
               </td>
               <td>
-                <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                <div class="custom-form-group custom-form-group-select dofi-min-w-80">
                   <!-- <ng-select class="ng-select" [items]="filteredChargeList" formControlName="ChargeMasterSid"
                      bindLabel="chargeCode" bindValue="ChargeMasterSid"
                      (change)="onChargeChangeForRow($event, i)"
@@ -173,14 +175,14 @@
                 </div>
               </td>
               <td>
-                <div class="custom-form-group dofi-min-w-100 dofi-min-w-150">
+                <div class="custom-form-group dofi-max-w-200 dofi-min-w-200">
                   <input type="text" id="text-input" class="custom-input-field sm" formControlName="ChargeDescription"
                     [textWithNumbers]="100" [disabled]="!canEditRate(i)">
                 </div>
               </td>
 
               <td>
-                <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                <div class="custom-form-group custom-form-group-select dofi-max-w-100">
                   <!-- <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
                     formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
                   </ng-select> -->
@@ -193,7 +195,7 @@
                 </div>
               </td>
               <td>
-                <div class="custom-form-group dofi-min-w-100 dofi-min-w-50">
+                <div class="custom-form-group ">
                   <input type="text" min="0" formControlName="NumberOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (input)="calculateCostAmount(i); calculateRevenueAmount(i)"
@@ -208,35 +210,39 @@
 
       <!-- Scrollable Second Half -->
       <div class="table-scrollable">
-        <div class="scroll-inner" #scrollContainer (scroll)="syncScroll($event)">
+        <div  #scrollContainer (scroll)="syncScroll($event)">
           <table>
             <thead>
               <tr>
+                <th  class="table-header text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">Revenue</th>
+                <th  class="table-header text-center"  colspan="10">Cost</th>
+              </tr>
+              <tr>
                 <!-- Revenue -->
-                <!-- <th style="background-color: #6e91d3;" class="table-header">Unit</th> -->
-                <th style="background-color: #6e91d3;" class="table-header currHeader">Cr/Dr</th>
-                <th style="background-color: #6e91d3;" class="table-header currHeader">Curr</th>
-                <th style="background-color: #6e91d3;" class="table-header">Ex Rate <span class="text-danger"></span>
+                <!-- <th class="table-header">Unit</th> -->
+                <th  class="table-header currHeader" style="border-left: 1px solid white;">Cr/Dr</th>
+                <th class="table-header currHeader">Curr</th>
+                <th class="table-header">Ex Rate <span class="text-danger"></span>
                 </th>
-                <th style="background-color: #6e91d3;" class="table-header">Per Unit</th>
-                <th style="background-color: #6e91d3;" class="table-header"> Amt</th>
-                <th style="background-color: #6e91d3;" class="table-header">Local Amt</th>
-                <th style="background-color: #6e91d3;" class="text-white">PP/CC</th>
-                <th style="background-color: #6e91d3;" class="table-header">Billing Party</th>
-                <th style="background-color: #6e91d3;" class="table-header">Type</th>
-                <th style="background-color: #6e91d3;" class="table-header">Voucher No</th>
+                <th class="table-header">Per Unit</th>
+                <th class="table-header"> Amt</th>
+                <th class="table-header">Local Amt</th>
+                <th class="table-header">PP/CC</th>
+                <th class="table-header">Billing Party</th>
+                <th class="table-header">Type</th>
+                <th class="table-header" style="border-right: 1px solid white">Voucher No</th>
                 <!-- Cost -->
                 <!-- <th style="background-color: #9dd376;" class="table-header">Unit</th> -->
-                <th style="background-color: #9dd376;" class="table-header">Cr/Dr</th>
-                <th style="background-color: #9dd376;" class="table-header">Curr</th>
-                <th style="background-color: #9dd376;" class="table-header">Ex Rate</th>
-                <th style="background-color: #9dd376;" class="table-header">Per Unit</th>
-                <th style="background-color: #9dd376;" class="table-header">Amt</th>
-                <th style="background-color: #9dd376;" class="table-header">Local Amt</th>
-                <th style="background-color: #9dd376;" class="text-white">PP/CC</th>
-                <th style="background-color: #9dd376;" class="table-header">Party</th>
-                <th style="background-color: #9dd376;" class="table-header">Type</th>
-                <th style="background-color: #9dd376;" class="table-header">Voucher No</th>
+                <th  class="table-header">Cr/Dr</th>
+                <th  class="table-header">Curr</th>
+                <th  class="table-header">Ex Rate</th>
+                <th  class="table-header">Per Unit</th>
+                <th  class="table-header">Amt</th>
+                <th  class="table-header">Local Amt</th>
+                <th  class="table-header">PP/CC</th>
+                <th  class="table-header">Party</th>
+                <th  class="table-header">Type</th>
+                <th  class="table-header">Voucher No</th>
               </tr>
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
@@ -270,7 +276,7 @@
   </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-70">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueLocalAmount(i)"
@@ -373,7 +379,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-50">
                     <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
                       formControlName="CostCurrencyMasterSid"
                       (change)="getCostExchangeRate(i, $event)"
@@ -387,7 +393,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-80">
                     <input type="text" id="text-input" formControlName="CostExchangeRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostLocalAmount(i)"
@@ -482,11 +488,11 @@
 
 
 
-    <div class="mt-2 mb-1">
+    <!-- <div class="mt-2 mb-1">
       <ngb-pagination class="d-flex justify-content-end" [collectionSize]="revenueDataLength" [pageSize]="pageSize1"
         [(page)]="page1" (pageChange)="updateRevenuePagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
       </ngb-pagination>
-    </div>
+    </div> -->
 
 
     <!-- <div class="table-responsive compact-form">

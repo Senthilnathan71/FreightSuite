@@ -51,7 +51,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   quotationManager: QuotationListManager;
 
   // Component State
-  selectedTab = 'Pending Enquiry';
+  selectedTab = 'Quotation';
   tabs = [
     { name: 'Pending Enquiry', icon: 'fas fa-file-signature' },
     { name: 'Quotation', icon: 'fas fa-layer-group' }

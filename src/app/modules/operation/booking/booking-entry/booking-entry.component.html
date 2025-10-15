@@ -201,18 +201,18 @@
         <div class="two-column-layout">
 
           <!-- Party Information Card - Left Half -->
-          <div class="info-card  border border-top-0">
-            <div class="card-header">
-              <div class="header-content">
+          <div class="info-card  ">
+            <!--<div class="card-header">
+               <div class="header-content">
                 <h4 class="card-title">
                   <i class="fas fa-users fs-4"></i>
                   Party
                 </h4>
-                <!-- <button class="card-action-btn">
+                <button class="card-action-btn">
                   <i class="fas fa-plus"></i>
-                </button> -->
+                </button>
               </div>
-            </div>
+            </div>  -->
             <div class="card-body py-1">
               <div class="col-md-12">
 
@@ -301,7 +301,7 @@
 
 
                   <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select-date">
+                    <div class="custom-form-group custom-form-group-select mt-1" [class.filled]="!!bookingForm.get('ShipperName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
                         <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName" placeholder=""
@@ -391,7 +391,7 @@
                   </aside> -->
 
                   <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select-date">
+                    <div class="custom-form-group custom-form-group-select mt-1" [class.filled]="!!bookingForm.get('ConsigneeName')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
                         <!-- <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="ConsigneeName" appendTo="body" 
@@ -471,7 +471,7 @@
                   </aside> -->
 
                   <aside class="col-md-6 pe-0">
-                    <div class="custom-form-group custom-form-group-select-date">
+                    <div class="custom-form-group custom-form-group-select mt-1" [class.filled]="!!bookingForm.get('Notify')?.value">
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isNotifyFreeText']?.value">
                         <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="Notify" appendTo="body" 
@@ -577,7 +577,7 @@
                   </aside> -->
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select-date">
+                    <div class="custom-form-group custom-form-group-select mt-1"[class.filled]="!!bookingForm.get('CarrierName')?.value" >
                       <!-- ng-select mode -->
                       <div class="d-flex align-items-center" *ngIf="!this.b['isCarrierFreeText']?.value">
                         <!-- <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="CarrierName" appendTo="body" [clearable]="false" placeholder="" class="ng-select"
@@ -682,18 +682,18 @@
           </div>
 
           <!-- Vessel & Route Card - Right Half -->
-          <div class="info-card border border-top-0">
-            <div class="card-header">
+          <div class="info-card ">
+            <!-- <div class="card-header">
               <div class="header-content">
                 <h4 class="card-title">
                   <i class="fas fa-ship fs-4"></i>
                   Route
                 </h4>
-                <!-- <div class="card-status">
+                <div class="card-status">
                   <span class="status-badge status-draft">Draft</span>
-                </div> -->
+                </div>
               </div>
-            </div>
+            </div> -->
             <div class="card-body  py-1">
               <div class="col-md-12">
                 <div class="row compact-form" [formGroup]="bookingForm">
@@ -773,22 +773,22 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                    <div class="custom-form-group " style="margin-top: 12px;">
+                      <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
                         formControlName="POLTerminal">
                       <label for="text-input" class="input-label">POL Terminal<span class="text-danger"></span></label>
                     </div>
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                    <div class="custom-form-group " style="margin-top: 12px;">
+                      <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
                         formControlName="PODTerminal">
                       <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
+                    <div class="custom-form-group custom-form-group-select " style="margin-top: 12px;"
                       [class.filled]="!!bookingForm.get('VesselName')?.value">
                       <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
                         class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
@@ -814,7 +814,7 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
+                    <div class="custom-form-group custom-form-group-select " style="margin-top: 12px;"
                       [class.filled]="!!bookingForm.get('VoyageNo')?.value">
                       <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
                         appendTo="body" formControlName="VoyageNo" placeholder="" (change)="onVoyageChange($event)">
@@ -863,7 +863,7 @@
                     </div>
                   </aside>
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date mb-0">
+                    <div class=" custom-form-group custom-form-group-select-date " style="margin-top: 12px;">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
                           container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
@@ -877,7 +877,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date mb-0">
+                    <div class=" custom-form-group custom-form-group-select-date" style="margin-top: 12px;">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
                           container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
@@ -890,7 +890,7 @@
                     </div>
                   </div>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
+                    <div class="custom-form-group custom-form-group-select mt-1"
                       [class.filled]="!!bookingForm.get('IncoTerms')?.value">
                       <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
                         [displayFields]="incoLookupConfig.displayFields" [displayLabels]="incoLookupConfig.displayLabels"
@@ -910,7 +910,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date mb-0 mt-md-1">
+                    <div class=" custom-form-group custom-form-group-select-date mt-1">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
                           [minDate]="minDate" ngbDatepicker #d6="ngbDatepicker" (keydown.arrowDown)="d6.open()"
@@ -925,7 +925,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mb-0 mt-md-1"
+                    <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('FreightTerms')?.value">
                       <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select" appendTo="body"
                         placeholder="" formControlName="FreightTerms" (change)="onFreightTermsManualChange()">
@@ -1100,8 +1100,8 @@
 
     <!-- Charges Tab -->
     <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Booking Rates & Charges</h5>
+      <div class="d-flex justify-content-end align-items-center mb-1">
+        <!-- <h5 class="mb-0">Booking Rates & Charges</h5> -->
         <button
           type="button"
           class="btn btn-success btn-sm"
@@ -1411,9 +1411,9 @@
                   <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Net Weight
                     <span class="text-danger">*</span>
                   </th>
-                  <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">CBM <span
-                      class="text-danger">*</span></th>
-                  }
+                  <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">CBM <span class="text-danger">*</span></th>
+                }
+                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Cargo Recd. Date <span class="text-danger">*</span></th>
                   @if(selectedFCLLCL === 'AIR'){
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Length</th>
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Width</th>
@@ -1445,7 +1445,7 @@
                   <td>
                     <dofi-searchable-dropdown-modal [items]="productList" formControlName="ProductName" [placeholder]="''"
                       [displayFields]="[ 'ProductCode','ProductName']" [displayLabels]="[ 'Code','Name']"
-                      [labelFields]="['ProductName']" [bindValue]="'ProductName'" style="padding: 0;">
+                      [labelFields]="['ProductName']" [bindValue]="'ProductName'" style="padding: 0;" (itemSelected)="handleProductChange($event,productIndex)">
                     </dofi-searchable-dropdown-modal>
                     
                   </td>
@@ -1488,8 +1488,21 @@
                     <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter] ="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
                   </td>
-                  }
-        
+                }
+                <td>
+                  <!-- <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
+                    [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter] ="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"> -->
+                    <div class="custom-form-group custom-form-group-select-date">
+                      <div class="input-group">
+                        <input class="form-control" placeholder="" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                          (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()" [minDate]="today"
+                          container="body" readonly/>
+                        <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                            class="feather-sm"></i-feather></button>
+                      </div>
+                    </div>
+                </td>
+                
                   <!-- AIR Part -->
                   @if(selectedFCLLCL === 'AIR'){
                   <td>
@@ -1523,7 +1536,7 @@
                   <td>
                       <dofi-searchable-dropdown-modal [items]="imcoList" formControlName="ImcoClass" [placeholder]="''"
                       [displayFields]="imcoLookupConfig.displayFields" [displayLabels]="imcoLookupConfig.displayLabels" [labelFields]="imcoLookupConfig.labelFields"
-                      [bindValue]="'ImcoName'" style="padding:0;">
+                      [bindValue]="'ImcoName'" style="padding:0;" (itemSelected)="onImcoChange(productIndex,$event)">
                     </dofi-searchable-dropdown-modal>
                     <!-- <ng-select class="" [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" appendTo="body"
                       formControlName="ImcoClass" (change)="onImcoChange(productIndex,$event)"></ng-select> -->
@@ -1594,7 +1607,9 @@
 <aside class="col-md-3">
     <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!otherForm.get('YardCFS')?.value">
-        <ng-select 
+        <dofi-searchable-dropdown [items]="yardlist" formControlName="YardCFS" placeholder="" [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName" >
+        </dofi-searchable-dropdown>
+        <!-- <ng-select 
             [items]="yardlist" 
             bindLabel="CustomerName" 
             bindValue="CustomerName"
@@ -1609,7 +1624,7 @@
                     <small class="text-muted">{{ item.CustomerAddress1 || 'No address' }}</small>
                 </div>
             </ng-template>
-        </ng-select>
+        </ng-select> -->
         <label for="text-input" class="input-label">Yard<span class="text-danger"></span></label>
     </div>
 </aside>
@@ -1619,7 +1634,9 @@
 <aside class="col-md-3">
     <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!otherForm.get('YardCFS')?.value">
-        <ng-select 
+        <dofi-searchable-dropdown [items]="cfslist" formControlName="YardCFS" placeholder="" [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName" >
+        </dofi-searchable-dropdown>
+        <!-- <ng-select 
             [items]="cfslist" 
             bindLabel="CustomerName" 
             bindValue="CustomerName"
@@ -1634,7 +1651,7 @@
                     <small class="text-muted">{{ item.CustomerAddress1 || 'No address' }}</small>
                 </div>
             </ng-template>
-        </ng-select>
+        </ng-select> -->
         <label for="text-input" class="input-label">CFS<span class="text-danger"></span></label>
     </div>
 </aside>
@@ -1662,16 +1679,8 @@
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!otherForm.get('Forwarder')?.value">
-              <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                placeholder="" (change)="setAddressOthers('ForwarderAddress',$event)" formControlName="Forwarder"
-                [textWithNumbers]="20" appendTo="body">
-                <ng-template ng-option-tmp let-item="item">
-                  <div>
-                    <strong>{{ item.CustomerName }}</strong><br>
-                    <small>{{ item.CustomerAddress1 }}</small>
-                  </div>
-                </ng-template>
-              </ng-select>
+                <dofi-searchable-dropdown [items]="forwarderList" formControlName="Forwarder" placeholder="" [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName" (itemSelected)="setAddressOthers('ForwarderAddress',$event)">
+                </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Forwarder<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1706,16 +1715,11 @@
           </aside> -->
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Notify2')?.value">
-              <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="Notify2" placeholder="" appendTo="body"
-                (change)="setAddressOthers('NotifyAddress2',$event)">
-                <ng-template ng-option-tmp let-item="item">
-                  <div>
-                    <strong>{{ item.CustomerName }}</strong><br>
-                    <small>{{ item.CustomerAddress1 }}</small>
-                  </div>
-                </ng-template>
-              </ng-select>
+              <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify2" placeholder="" [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                 (itemSelected)="setAddressOthers('NotifyAddress2',$event)"
+                >
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Notify 2<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1729,7 +1733,9 @@
           @if(b['Coload'].value){
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
-              <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Coloader" placeholder="" [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName">
+              </dofi-searchable-dropdown>
+              <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="Coloader" placeholder="" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -1737,7 +1743,7 @@
                     <small>{{ item.CustomerAddress1 }}</small>
                   </div>
                 </ng-template>
-              </ng-select>
+              </ng-select> -->
               <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -2060,7 +2066,7 @@
 </div>
 
 
-<ng-template #productModal let-modal>
+<!-- <ng-template #productModal let-modal>
   <div class="modal-header p-2 bg-info">
     <h5 class="modal-title text-white">Add Product</h5>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
@@ -2146,7 +2152,6 @@
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
-          <!-- Validation Messages -->
           @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) &&
           productForm.get('GrossWeight')?.invalid) {
           <div class="error-message">
@@ -2166,7 +2171,6 @@
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="NetWeight"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
-          <!-- Validation Messages -->
           @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) &&
           productForm.get('NetWeight')?.invalid) {
           <div class="error-message">
@@ -2186,7 +2190,6 @@
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
-          <!-- Validation Messages -->
           @if ((productForm.get('Volume')?.touched || productForm.get('Volume')?.dirty) &&
           productForm.get('Volume')?.invalid)
           {
@@ -2286,7 +2289,7 @@
     <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
     <button type="button" class="btn btn-info btn-sm" (click)="onProductSubmit()">Save</button>
   </div>
-</ng-template>
+</ng-template> -->
 
 @if(isEditMode){
 <div class="col-12 mt-3">

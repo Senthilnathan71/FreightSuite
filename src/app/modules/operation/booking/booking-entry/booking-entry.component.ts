@@ -611,7 +611,7 @@ getCurrentCompanyBranches(){
       InternalNote: [''],
       GeneralNote: [''],
       NominatedBy: ['Self'],
-
+      BookingStatus : 'Pending',
       ShipmentNo: ['']
     })
     this.bookingForm.valueChanges.subscribe(()=>{
@@ -762,20 +762,40 @@ getCurrentCompanyBranches(){
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
-      GrossWeight: [data?.GrossWeight || '', [Validators.required]],
-      NetWeight: [data?.NetWeight || '', [Validators.required]],
-      Volume: [data?.Volume || '', [Validators.required]],
+      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
+      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
+      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
-      ImcoClass : [data?.ImcoClass || null],
-      UnNo : [data?.UnNo || ''],
-      PkgGroup : [data?.PkgGroup || ''],
+      ImcoClass : [{ value : data?.ImcoClass || null, disabled : true }],
+      UnNo : [{ value : data?.UnNo || '', disabled : true }],
+      PkgGroup : [{ value : data?.PkgGroup || '', disabled : true }],
       Length : [data?.Length || ''],
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
       UomMasterSid : [data?.UomMasterSid || null],
       CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     })
+
+    productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
+      this.changeAuthStateBasedOnDate();
+    })
+
     return productForm;
+  }
+
+  changeAuthStateBasedOnDate(){
+    let atLeastOneHasDate = false;
+    this.bookingProducts.controls.forEach((product:FormGroup,productIndex:number)=>{
+      const productDate = product.get('CargoRecDate')?.value;
+      if(productDate){
+        atLeastOneHasDate = true;
+      }
+    })
+    if(atLeastOneHasDate){
+      this.b['CargoRecDate']?.disable();
+    } else {
+      this.b['CargoRecDate']?.enable();
+    }
   }
 
   addProduct(){
@@ -969,6 +989,7 @@ getCurrentCompanyBranches(){
       GeneralNote: response.GeneralNote,
       NominatedBy: response.NominatedBy,
       FreightTerms : response.FreightTerms,
+      BookingStatus : response.BookingStatus,
       ShipmentNo: response.ShipmentNo
     })
     this.getVesselVoyBasedOnPorts();
@@ -1344,7 +1365,7 @@ patchBookingFromQuotation(data: any) {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully updated.');
-            this.router.navigate(['operation/booking/list']);
+            // this.router.navigate(['operation/booking/list']);
             this.loadBookingById(this.BookingHeaderSid);
           } else {
             this.appSettingService.showError('Error updating booking.');
@@ -1761,30 +1782,48 @@ patchBookingFromQuotation(data: any) {
 
   //  Product Form Related Functions
 
-  handleProductChange(product: any) {
+  handleProductChange(product: any,productIndex:number) {
+    const productGroup = this.bookingProducts.at(productIndex) as FormGroup;
     if (!product) {
-      this.productForm.get('IsHaz')?.setValue(false);
-      this.productForm.get('ImcoClass')?.setValue('');
-      this.productForm.get('UnNo')?.setValue('');
-      this.productForm.get('PkgGroup')?.setValue('');
+      productGroup.patchValue({
+        IsHaz : false,
+        ImcoClass : '',
+        UnNo : '',
+        PkgGroup : ''
+      })
       return;
     }
-    this.productForm.get('IsHaz')?.setValue(product.ProductType === "2");
-    this.productForm.get('ImcoClass')?.setValue(product.IMOClass);
-    this.productForm.get('UnNo')?.setValue(product.UNNo);
-    this.productForm.get('PkgGroup')?.setValue(product.PackingGroup);
+    productGroup.patchValue({
+      IsHaz : product.ProductType === "2",
+      ImcoClass : product.IMOClass,
+      UnNo : product.UNNo,
+      PkgGroup : product.PackingGroup
+    })
+    if(product.ProductType === "2"){
+      productGroup.get('ImcoClass')?.enable();
+      productGroup.get('UnNo')?.enable();
+      productGroup.get('PkgGroup')?.enable();
+    } else {
+      productGroup.get('ImcoClass')?.disable();
+      productGroup.get('UnNo')?.disable();
+      productGroup.get('PkgGroup')?.disable();
+    }
   }
 
   onImcoChange(productIndex:number,item:any){
     console.log(item);
     const productForm = this.bookingProducts.at(productIndex) as FormGroup;
     if(!item){
-      productForm.get('UnNo')?.setValue("");
-      productForm.get('PkgGroup')?.setValue("");
+      productForm.patchValue({
+        UnNo : null,
+        PkgGroup : null
+      })
       return;
     }
-    productForm.get('UnNo')?.setValue(item.ImcoUn);
-    productForm.get('PkgGroup')?.setValue(item.PackingGroup);
+    productForm.patchValue({
+      UnNo : item.ImcoUn,
+      PkgGroup : item.PackingGroup
+    })
   }
 
    onHazChange(productIndex:number,event:any){
@@ -1903,7 +1942,7 @@ patchBookingFromQuotation(data: any) {
   //  Other Form Related Functions
 
   setAddressOthers(controlName: string, item: any) {
-    this.o[controlName]?.setValue(item ? item.CustomerAddress1 : '')
+    this.o[controlName]?.setValue(item ? item.Address : '')
   }
 
  handleCFSOrYard() {
