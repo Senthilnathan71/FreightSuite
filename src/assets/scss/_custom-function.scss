@@ -92,3 +92,10 @@ $prefixVariable: dofi- !default;
 .form-label {
   margin-bottom:calc(0.125rem + var(--bs-border-width));
 }
+
+// ng select with table fix start
+ng-dropdown-panel {
+  width:fit-content !important;
+  max-width: 650px;
+}
+// ng select with table fix end

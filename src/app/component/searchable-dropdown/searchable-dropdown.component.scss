@@ -26,10 +26,12 @@
 
 /* Header and rows styling */
 :host ::ng-deep .dropdown-header,
-:host ::ng-deep .dropdown-row {
+:host ::ng-deep .dropdown-row,
+.dropdown-header,
+.dropdown-row {
   display: flex;
   width: max-content;
-  min-width: 100%;
+  // min-width: 100%;
   align-items: center;
   padding: 2px 0;
   box-sizing: border-box;
@@ -37,14 +39,19 @@
 
 /* Columns inside header and rows */
 :host ::ng-deep .dropdown-header > div,
-:host ::ng-deep .dropdown-row > div {
-  padding: 0 12px;
+:host ::ng-deep .dropdown-row > div,
+ .dropdown-header > div,
+.dropdown-row > div  {
+  --value:80px;
+  padding: 0 18x;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 0 0 auto;
   border-right: 1px solid #e0e0e0;
-  min-width: fit-content;
+  min-width: var(--value) !important;
+  width:inherit !important;
+  max-width: var(--value) !important;
 }
 
 /* Remove border for last column */
@@ -81,6 +88,9 @@
   min-width: max-content !important;
   overflow-x: auto !important;
 }
+
+
+
 
 
 
