@@ -94,7 +94,6 @@ export class EdocComponent implements OnInit, OnDestroy {
     });
   }
 
-  existingFileName: string | null = null;
 
   loadEdocData() {
   const payload = {
@@ -104,7 +103,6 @@ export class EdocComponent implements OnInit, OnDestroy {
 
   this.commonService.getExistingFile(payload).subscribe((res) => {
     if (res) {
-      console.log(res, 'getExistingFile');
       
       // Fix 1: Filter returns array, get first item
       const typeMatch = this.modeOfType.find(item => item.name === res.DocumentType);
@@ -116,30 +114,28 @@ export class EdocComponent implements OnInit, OnDestroy {
       } else if (res.status === 'S' || res.status === 'Suspended') {
         statusValue = 'Suspended';
       }
+
+const fullFileName = res.FileName || '';
+// Extract name and extension safely
+const fileExt = fullFileName.includes('.') ? fullFileName.split('.').pop()?.toLowerCase() : '';
+const baseFileName = fullFileName.includes('.') ? fullFileName.substring(0, fullFileName.lastIndexOf('.')) : fullFileName;
+
       
       // Fix 3: Correct field names to match form control names
       this.edocform.patchValue({
         AttachDocmentNo: res.AttachDocmentNo || '',
-        DocumentDate: res.DocumentDate ? this.toNgbDateStruct(new Date(res.DocumentDate)) : '',
-        FileName: res.FileName || '',           // ✅ Correct case
-        Documenttype: typeMatch ? typeMatch.name : '',  // ✅ Correct case + use find()
-        ReceivedDate: res.ReceivedDate ? this.toNgbDateStruct(new Date(res.ReceivedDate)) : '',
-        SentDate: res.SentDate ? this.toNgbDateStruct(new Date(res.SentDate)) : '',
+        DocumentDate: res.DocumentDate ? this.toNgbDateStruct(res.DocumentDate) : null,
+        FileName: baseFileName || '',           // ✅ Correct case
+        Documenttype: typeMatch ? typeMatch.name : fileExt,  // ✅ Correct case + use find()
+        ReceivedDate: res.ReceivedDate ? this.toNgbDateStruct(res.ReceivedDate) : null,
+        SentDate: res.SentDate ? this.toNgbDateStruct(res.SentDate) : null,
         FollowupRequired: res.FollowupRequire?.trim() === 'Y',
-        FollowupDate: res.FollowupDate ? this.toNgbDateStruct(new Date(res.FollowupDate)) : '',
+        FollowupDate: res.FollowupDate ? this.toNgbDateStruct(res.FollowupDate) : null,
         FollowupAction: res.FollowupAction || '',
         Remarks: res.Remarks || '',
         Status: statusValue  // ✅ Map to correct status name
       });
 
-      // Fix 4: Handle file display (if file path is available)
-      // Note: You cannot programmatically set a file input, but you can show the filename
-      if (res.FileName) {
-        // Store the existing file info for display
-        this.existingFileName = res.FileName;
-        // Optionally, you can fetch and create a File object if you have the file URL
-        // this.loadExistingFile(res.FileUrl);
-      }
       
       console.log('Form patched successfully:', this.edocform.value);
     }
