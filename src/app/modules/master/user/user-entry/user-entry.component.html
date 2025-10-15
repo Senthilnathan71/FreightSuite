@@ -1,7 +1,7 @@
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
+    <div class="col-12 ">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
                 <div class="d-flex align-items-center gap-2">
                      <div class="brand-icon">
                         <i class="fas fa-user"></i>
@@ -15,7 +15,7 @@
                 }
              </div>
             </div>
-            <div class="col-md-8 pb-2">
+            <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
@@ -55,14 +55,14 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12" [formGroup]="userForm">
+    <div class="col-md-12 " [formGroup]="userForm">
         <div class="card mb-0">
-             <div class="card-body py-2 px-3">
-                <div class="row pb-3 rounded border border-top-0">
-                      <div class="card-header-title d-flex align-items-center gap-2 ">
+             <div class="card-body py-0">
+                <div class="row ">
+                      <!-- <div class="card-header-title d-flex align-items-center gap-2 ">
                         <i class="fas fa-user fs-4"></i>
                         <h5 class="card-titlename mb-0">User Information</h5>
-                    </div>
+                    </div> -->
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -190,7 +190,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4 d-flex align-items-center my-3 my-md-0">
+                    <aside class="col-md-4 mt-1 mt-md-2">
                         <div class=" form-check">
                             <input type="checkbox" id="text-input" placeholder="" class="form-check-input focus-ring"
                                 formControlName="isSalesperson" (keydown.enter)="toggleCheckbox($event)">
@@ -319,17 +319,17 @@
 
 </div>
 
-<div class="mt-2">
+<div class="mt-1 ">
     <div class="card mb-0 border border-info position-relative">
 
         <!-- Card Header -->
-        <div class="card-header bg-info rounded-top-1 d-flex align-items-center ">
+        <div class="card-header bg-info rounded-top-1 d-flex align-items-center p-1">
             <h6 class="font-bold mb-0 text-light">Company</h6>
 
         </div>
 
 
-        <div class="px-4 py-2">
+        <div class="px-2">
             <div class="row">
                 <div class="col-md-5">
                     <div class="custom-form-group custom-form-group-select">
@@ -353,22 +353,25 @@
 
 
 
-<ng-container [formGroup]="userForm">
+<ng-container [formGroup]="userForm" >
     <div formArrayName="userCompanies">
         <ng-container *ngFor="let company of userCompanies.controls ; let companyIndex = index">
-            <div class="card mb-0 mt-2 border border-info position-relative" [formGroupName]="companyIndex">
+            <div class="card mb-0 mt-1 border border-info position-relative " [formGroupName]="companyIndex">
 
                 <!-- Card Header -->
-                <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom">
-                    <h6 class="font-bold mb-0 text-info text-start">{{company.value.companyName}}  <small class="text-warning">{{isDefaultCompany(company.value.CompanyMasterSid) ? '[DEFAULT]' : ''}}</small></h6>
-                    <div class="form-check ms-3">
-    <input type="checkbox"
-           class="form-check-input"
-           name="defaultCompany"
-           [checked]="isDefaultCompany(company.value.CompanyMasterSid)"
-           (click)="toggleDefaultCompany(companyIndex, company.value.CompanyMasterSid, $event)">
-    <label class="form-check-label text-secondary small">Default</label>
-  </div>
+                <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom p-0">
+                    <h6 class="font-bold mb-0 text-white text-start px-1">{{company.value.companyName}}  <small class="text-warning">{{isDefaultCompany(company.value.CompanyMasterSid) ? '[DEFAULT]' : ''}}</small></h6>
+                    <div>
+
+                        <div class="form-check ">
+        <input type="checkbox"
+               class="form-check-input"
+               name="defaultCompany"
+               [checked]="isDefaultCompany(company.value.CompanyMasterSid)"
+               (click)="toggleDefaultCompany(companyIndex, company.value.CompanyMasterSid, $event)">
+        <label class="form-check-label text-white small">Default</label>
+      </div>
+                    </div>
                     @if (userForm.get('userCompanies')?.hasError('noDefault') && (userForm.get('userCompanies')?.invalid)) {
                     <small class="text-end text-danger">At least one branch must be marked as default.</small>
                     }
@@ -378,10 +381,10 @@
                 </div>
 
 
-                <div class="px-4">
+                <div class="px-1">
                     <div class="row align-items-center">
                         <div class="table-responsive">
-                            <table class="table table-sm no-wrap align-middle mb-2">
+                            <table class="table table-sm no-wrap align-middle mb-0">
                                 <thead>
                                     <tr>
                                         <th scope="col" style="border-style: none;" width="10%">Sno.</th>
