@@ -25,3 +25,10 @@ export const LeadStatusLabels: Record<LeadStatus, string> = {
   [LeadStatus.DealWon]: 'Deal Won',
   [LeadStatus.DealLost]: 'Deal Lost'
 };
+
+
+export enum Status {
+  Active = 'A',
+  Suspended = 'S',
+  Deleted = 'D',
+}

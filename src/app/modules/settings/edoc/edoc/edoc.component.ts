@@ -12,6 +12,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { Subject } from 'rxjs';
 import { CommonService } from 'src/app/common/common.service';
+import { Status } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -72,15 +73,15 @@ export class EdocComponent implements OnInit, OnDestroy {
       Documenttype: ['', Validators.required],
       ReceivedDate: ['', Validators.required],
       SentDate: ['', Validators.required],
-      FollowupRequired: [false],
+      FollowupRequired: ['N'],
       FollowupDate: [''],
       FollowupAction: [''],
       EdocRemarks: [''],
       FollowupRemarks: [''],
-      EdocStatus: [''],
+  EdocStatus: [Status.Active, Validators.required],      // ✅ Default "A"
       Public: ['N'],
       sentEmail: ['N'],
-      FollowupStatus: [''],
+  FollowupStatus: [Status.Active],                       // ✅ Default "A"
       CompanyMasterSid: Number(this.componentData.CompanyMasterSid),
       BranchMasterSid: Number(this.componentData.BranchMasterSid),
       MenuMasterSid: Number(this.componentData.MenuMasterSid),
@@ -148,16 +149,6 @@ loadEdocData() {
         : fullFileName;
 
 
-      console.log('📝 Patching form with data:', {
-        AttachDocmentNo: res.AttachDocmentNo,
-        DocumentDate: res.DocumentDate,
-        FileName: baseFileName,
-        Documenttype: fileExt,
-        ReceivedDate: res.ReceivedDate,
-        SentDate: res.SentDate,
-        existingFileName: this.existingFileName
-      });
-
       // Patch main document data
       // The CustomDateAdapter will automatically convert date strings to NgbDateStruct
       this.edocform.patchValue({
@@ -167,61 +158,35 @@ loadEdocData() {
         Documenttype: fileExt || '',
         ReceivedDate: res.ReceivedDate || null,  // Let adapter handle conversion
         SentDate: res.SentDate || null,          // Let adapter handle conversion
-        FollowupRequired: res.FollowupRequire?.trim() === 'Y',
+        FollowupRequired: res.FollowupRequire,
         EdocRemarks: res.Remarks || '',
-        EdocStatus: res.status === "A"? "Active": "Suspended",
+        EdocStatus: res.status || Status.Active,
         Public: res.Public || 'N',
         sentEmail: res.sentEmail || 'N',
       });
 
-      console.log('✅ Form patched. Current values:', {
-        DocumentDate: this.edocform.get('DocumentDate')?.value,
-        ReceivedDate: this.edocform.get('ReceivedDate')?.value,
-        SentDate: this.edocform.get('SentDate')?.value,
-      });
-
       // Patch followup data if present
       if (followup) {
-        const followupStatusValue = followup.Status === 'A' || followup.Status === 'Active' 
-          ? 'Active' 
-          : 'Suspended';
-
-        console.log('📝 Patching followup data:', {
-          FollowupDate: followup.FollowupDate,
-          FollowupAction: followup.FollowupAction,
-        });
-
         this.edocform.patchValue({
           FollowupDate: followup.FollowupDate || null,  // Let adapter handle conversion
           FollowupAction: followup.FollowupAction || '',
           Public: followup.Public || 'N',
           sentEmail: followup.sentEmail || 'N',
           FollowupRemarks: followup.Remarks || '',
-          FollowupStatus: followupStatusValue,
+          FollowupStatus: followup.Status || Status.Active,
         });
 
-        console.log('✅ Followup data patched:', {
-          FollowupDate: this.edocform.get('FollowupDate')?.value,
-        });
       } else {
         // Clear follow-up fields if no record exists
         this.edocform.patchValue({
           FollowupDate: null,
           FollowupAction: '',
           FollowupRemarks: '',
-          FollowupStatus: 'Active',
+          FollowupStatus: Status.Active,
         });
         
         console.log('ℹ️ No followup data found');
       }
-
-      // Log final form state
-      console.log('📋 Final Form State:', {
-        value: this.edocform.value,
-        valid: this.edocform.valid,
-        errors: this.getFormErrors()
-      });
-
       // Force change detection
       this.edocform.updateValueAndValidity();
     } else {
@@ -300,7 +265,9 @@ if (formValue.FollowupDate) {
   formValue.FollowupDate = this.toUTCISO(formValue.FollowupDate);
 }
 
-  formValue.FollowupStatus = formValue.FollowupStatus === "Active" ? "A" : "S"
+formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
+
+
 
   // Append form fields (non-empty values only)
   Object.keys(formValue).forEach(key => {
@@ -373,9 +340,10 @@ if (formValue.FollowupDate) {
   ];
 
   modeOfStatus = [
-    { id: '1', name: 'Active' },
-    { id: '2', name: 'Suspended' },
-  ];
+  { id: Status.Active, name: 'Active' },
+  { id: Status.Suspended, name: 'Suspended' },
+  { id: Status.Deleted, name: 'Deleted' },
+];
 
   modeOfAction = [
     { id: '1', name: 'Internal followup' },

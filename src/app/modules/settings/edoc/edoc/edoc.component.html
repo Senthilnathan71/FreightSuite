@@ -185,7 +185,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select mt-md-1">
                                     <ng-select formControlName="EdocStatus" [items]="modeOfStatus" bindLabel="name"
-                                        bindValue="name">
+                                        bindValue="id">
                                     </ng-select>
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
                                     <div class="error-message"
@@ -279,7 +279,7 @@
                                 <div class="custom-form-group custom-form-group-select mt-md-1"
                                     [class.filled]="!!edocform.get('FollowupStatus')?.value">
                                     <ng-select formControlName="FollowupStatus" [items]="modeOfStatus" bindLabel="name"
-                                        bindValue="name">
+                                        bindValue="id">
                                     </ng-select>
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
                                     <div class="error-message"
