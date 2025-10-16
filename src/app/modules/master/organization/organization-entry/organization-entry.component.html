@@ -333,34 +333,42 @@
             </aside>
 
             <ng-container *ngIf="isAirlineSelected">
-              <aside class="col-md-4">
-                <div class="custom-form-group">
-                  <input type="text" id="AirlineNumber" formControlName="AirlineNumber" placeholder=""
-                    class="custom-input-field sm" [textWithNumbers]="20" />
-                  <label for="AirlineNumber" class="input-label">Airline Number</label>
-                  @if (customerForm.get('AirlineNumber')?.touched && customerForm.get('AirlineNumber')?.invalid) {
-                  <div class="error-message">
-                    @if (customerForm.get('AirlineNumber')?.hasError('maxlength')) { <span>Max 20 chars</span> }
-                  </div>
-                  }
-                </div>
-              </aside>
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <input type="text" id="AirlineNumber" formControlName="AirlineNumber" placeholder=""
+             class="custom-input-field sm" [textWithNumbers]="20" />
+      <label for="AirlineNumber" class="input-label">Airline Number <span class="text-danger">*</span></label>
+      @if (customerForm.get('AirlineNumber')?.touched && customerForm.get('AirlineNumber')?.invalid) {
+      <div class="error-message">
+        @if (customerForm.get('AirlineNumber')?.hasError('required')) { 
+        <span>Airline Number is required</span> 
+        }
+        @else if (customerForm.get('AirlineNumber')?.hasError('maxlength')) { 
+        <span>Max 20 chars</span> 
+        }
+      </div>
+      }
+    </div>
+  </aside>
 
-              <aside class="col-md-4">
-                <div class="custom-form-group">
-                  <input type="text" id="AirlineCode" formControlName="AirlineCode" placeholder=""
-                    class="custom-input-field sm" [textWithNumbers]="10" />
-                  <label for="AirlineCode" class="input-label">Airline Code</label>
-                  @if (customerForm.get('AirlineCode')?.touched && customerForm.get('AirlineCode')?.invalid) {
-                  <div class="error-message">
-                    @if (customerForm.get('AirlineCode')?.hasError('maxlength')) { <span>Max 10 chars</span> }
-                  </div>
-                  }
-                </div>
-              </aside>
-            </ng-container>
-
-
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <input type="text" id="AirlineCode" formControlName="AirlineCode" placeholder=""
+             class="custom-input-field sm" [textWithNumbers]="10" />
+      <label for="AirlineCode" class="input-label">Airline Code <span class="text-danger">*</span></label>
+      @if (customerForm.get('AirlineCode')?.touched && customerForm.get('AirlineCode')?.invalid) {
+      <div class="error-message">
+        @if (customerForm.get('AirlineCode')?.hasError('required')) { 
+        <span>Airline Code is required</span> 
+        }
+        @else if (customerForm.get('AirlineCode')?.hasError('maxlength')) { 
+        <span>Max 10 chars</span> 
+        }
+      </div>
+      }
+    </div>
+  </aside>
+</ng-container>
 
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
@@ -404,7 +412,7 @@
                     [class.filled]="customerForm.get('CompanyType')?.value"
                     [class.is-invalid]="customerForm.get('CompanyType')?.invalid && customerForm.get('CompanyType')?.touched">
                     <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
-                      placeholder="Select Company Type" [searchable]="false" [clearable]="false"
+                      placeholder="Select Company Type" [searchable]="false" [clearable]="false" 
                       (change)="onCompanyTypeChange()">
                     </ng-select>
                     <label class="input-label">Company Type</label>
@@ -1143,7 +1151,7 @@
   </ng-template>
   <!-- Elogin -->
   <ng-template #eLoginList>
-    <form [formGroup]="customerForm" class="compact-form">
+    <form [formGroup]="customerForm" autocomplete="off" class="compact-form">
       <div class="row">
         <div class="col-12">
           <!-- Add Login Button -->
@@ -1202,14 +1210,14 @@
 
                   <!-- Email -->
                   <td class="px-1">
-                    <input type="text" class="custom-input-field sm" formControlName="LoginEmail" placeholder="">
+                    <input type="text" class="custom-input-field sm"  formControlName="LoginEmail" placeholder="">
                     <!-- @if (login.get('LoginEmail')?.touched && login.get('LoginEmail')?.invalid) {
                   <div class="error-message">Required</div>
                   } -->
                   </td>
 
                   <!-- Password -->
-                  <td class="px-1">
+                  <!-- <td class="px-1">
                     <div class="d-flex align-items-center">
                       <input [type]="'password'" [id]="'loginPassword' + i" class="custom-input-field sm"
                         formControlName="LoginPassword" placeholder="">
@@ -1217,10 +1225,20 @@
                         <i [id]="'eyeIcon' + i" class="fas fa-eye"></i>
                       </button>
                     </div>
-                    <!-- @if (login.get('LoginPassword')?.touched && login.get('LoginPassword')?.invalid) {
-                  <div class="error-message">Required</div>
-                  } -->
-                  </td>
+                   
+                  </td> -->
+                   <!-- Password -->
+<td class="px-1">
+  <div class="d-flex align-items-center">
+    <input type="password" [id]="'loginPassword' + i" class="custom-input-field sm"
+           formControlName="LoginPassword" placeholder="" 
+           autocomplete="new-password"
+           [attr.autocomplete]="'new-password'">
+    <button class="btn btn-sm" type="button" (click)="togglePasswordVisibility(i)">
+      <i [id]="'eyeIcon' + i" class="fas fa-eye"></i>
+    </button>
+  </div>
+</td>
 
                   <!-- Status -->
                   <td class="px-1">
