@@ -308,7 +308,7 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'Mail', icon: 'fas fa-envelope' },
+    // { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
   ];
@@ -355,6 +355,8 @@ auditLogs: any[] = []; // Stores audit logs
     this.initCargoForm();
     this.initOtherForm();
     this.initDetailsForm();
+    this.spinner.show();
+  this.loadHeaderMandatoryParts().subscribe(() => {
     this.loadHeaderLookups().subscribe(() => {
       this.currentRoute.paramMap.subscribe((param) => {
         this.HouseJobSid = +param.get('id');
@@ -364,14 +366,13 @@ auditLogs: any[] = []; // Stores audit logs
         } else {
           this.minDate = this.today;
         }
-        this.loadCargoLookups();
-        this.loadOtherLookups();
-      })
+      });
+      this.loadCargoLookups();
+      this.loadOtherLookups();
     });
-
-
-  }
-
+    this.spinner.hide();
+  });
+}
   /**
   |--------------------------------------------------
   |   Section-4 : Main Functions
@@ -601,31 +602,85 @@ auditLogs: any[] = []; // Stores audit logs
   /**
    *  Load Lookups
   */
+loadHeaderMandatoryParts() {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  console.log('Current Company:', this.currentCompany);
+  console.log('CountryMasterSid:', this.currentCompany?.CountryMasterSid);
+  const countrySid = this.currentCompany?.CountryMasterSid;
+  return forkJoin({
+    departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
+    customers: this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
+    ports: this.operationService.getAllPorts().pipe(catchError(err => of([]))),
+     userCountry: countrySid ? 
+      this.operationService.getCountryById(countrySid).pipe(catchError(err => of({}))) : 
+      of({}),
+  }).pipe(tap(({ 
+      departments, customers, ports, userCountry 
+    }) => {
+    if (!this.isEditMode) {
+      this.spinner.hide();
+    }
+    this.departmentList = departments.data;
+    this.customerList = customers;
+    this.countryOfCompany = (userCountry?.data?.countryCode)?.trim().toLowerCase();
+    this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
+  }));
+}
 
-  loadHeaderLookups() {
-    return forkJoin({
-      allMasters: this.operationService.getBookingHeaderLookups(this.filterOption).pipe(catchError(err => of( {departments: [],vessels: [], ports: [], incos: [] , country : Object }))),
-      customerMaster: this.operationService.getAllCustomerRelatedLookups(this.filterOption).pipe(catchError(err => of({ customers: [], salesmans: [], shippers: [], consignees: [], agents: [], carriers: [], forwarder: [], notify: [] }))),
-    }).pipe(tap(({ allMasters, customerMaster}) => {
-      this.departmentList = allMasters.departments;
-      this.customerList = customerMaster.customers;
-      this.salesmanList = customerMaster.salesmans;
-      this.shipperList = customerMaster.shippers;
-      this.filteredShipperList = customerMaster.shippers;
-      this.consigneeList = customerMaster.consignees;
-      this.filteredConsigneeList = customerMaster.consignees;
-      this.agentList = customerMaster.agents;
-      this.deliveryAgentList = [...this.agentList];
-      this.originAgentList = [...this.agentList];
-      this.carrierList = customerMaster.carriers;
-      this.forwarderList = customerMaster.forwarder;
-      this.notifyList = customerMaster.notify;
-      this.vesselList = allMasters.vessels;
-      this.portList = allMasters.ports;
-      this.incoList = allMasters.incos;
-      this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
-    }))
-  }
+loadHeaderLookups() {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  return forkJoin({
+    shippers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['shipper'] }).pipe(catchError(err => of([]))),
+    consignees: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['consignee'] }).pipe(catchError(err => of([]))),
+    notify: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['notify'] }).pipe(catchError(err => of([]))),
+    agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['agent'] }).pipe(catchError(err => of([]))),
+    carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
+    vessels: this.operationService.getAllVessels().pipe(catchError(err => of([]))),
+    incos: this.operationService.getAllINCO().pipe(catchError(err => of([]))),
+    salesmans: this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
+    forwarder: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] }).pipe(catchError(err => of([]))),
+  }).pipe(tap(({ shippers, consignees, notify, carriers, vessels, incos, salesmans, agents, forwarder }) => {
+    this.shipperList = shippers.data;
+    this.filteredShipperList = shippers.data;
+    this.consigneeList = consignees.data;
+    this.filteredConsigneeList = consignees.data;
+    this.notifyList = notify.data;
+    this.carrierList = carriers.data;
+    this.vesselList = vessels.data;
+    this.incoList = incos.data;
+    this.salesmanList = salesmans;
+    this.agentList = agents.data;
+    this.deliveryAgentList = [...this.agentList];
+    this.originAgentList = [...this.agentList];
+    this.forwarderList = forwarder.data;
+  }));
+}
+
+
+  // loadHeaderLookups() {
+  //   return forkJoin({
+  //     allMasters: this.operationService.getBookingHeaderLookups(this.filterOption).pipe(catchError(err => of( {departments: [],vessels: [], ports: [], incos: [] , country : Object }))),
+  //     customerMaster: this.operationService.getAllCustomerRelatedLookups(this.filterOption).pipe(catchError(err => of({ customers: [], salesmans: [], shippers: [], consignees: [], agents: [], carriers: [], forwarder: [], notify: [] }))),
+  //   }).pipe(tap(({ allMasters, customerMaster}) => {
+  //     this.departmentList = allMasters.departments;
+  //     this.customerList = customerMaster.customers;
+  //     this.salesmanList = customerMaster.salesmans;
+  //     this.shipperList = customerMaster.shippers;
+  //     this.filteredShipperList = customerMaster.shippers;
+  //     this.consigneeList = customerMaster.consignees;
+  //     this.filteredConsigneeList = customerMaster.consignees;
+  //     this.agentList = customerMaster.agents;
+  //     this.deliveryAgentList = [...this.agentList];
+  //     this.originAgentList = [...this.agentList];
+  //     this.carrierList = customerMaster.carriers;
+  //     this.forwarderList = customerMaster.forwarder;
+  //     this.notifyList = customerMaster.notify;
+  //     this.vesselList = allMasters.vessels;
+  //     this.portList = allMasters.ports;
+  //     this.incoList = allMasters.incos;
+  //     this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
+  //   }))
+  // }
 
   loadCargoLookups() {
     forkJoin({

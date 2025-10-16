@@ -1630,11 +1630,11 @@
     </div>
   </div>
 
-  <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
+  <!-- <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
     <app-email-entry [dataItems]="emailData" [resetTrigger]="emailResetTrigger" [formData]="currentEmailFormValue"
       (dataChange)="handleEmailChange($event)">
     </app-email-entry>
-  </div>
+  </div> -->
 
   <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
     <app-follow-up screenName="MasterJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"

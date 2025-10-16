@@ -785,7 +785,7 @@ export class LedgerMappingComponent extends BaseListComponent implements OnInit 
 
     const form = this.ledgerForm.value;
 
-    const mappedStatus = form.Status === 'Active' ? 'A' : 'S';
+    const mappedStatus = form.Status === 'A' ? 'A' : 'S';
     const currentuseremail =
       this.appSettingService.userSettingSource.value['userEmail'];
     const payload = this.isEditMode
