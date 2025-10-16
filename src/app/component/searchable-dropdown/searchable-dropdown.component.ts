@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef, ViewChild, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef, ViewChild, HostListener, ElementRef, AfterViewInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NgbTooltip, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -21,7 +21,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     },
   ],
 })
-export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccessor {
+export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccessor, AfterViewInit {
   @Input() items: any[] = [];
   @Input() placeholder: string = '';
   @Input() displayFields: string[] = [];
@@ -54,7 +54,6 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
         this.width.push(Math.floor(12 / length));
       }
     }
-    this.adjustDropdownWidth();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -65,6 +64,10 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     if (changes['items'] || changes['displayFields'] || changes['displayLabels']) {
       this.calculateColumnWidths();
     }
+  }
+
+  ngAfterViewInit() {
+    this.calculateColumnWidths();
   }
 
   writeValue(value: any): void {
@@ -154,7 +157,9 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       this.control.markAsTouched();
       this.control.markAsDirty();
     }
-    setTimeout(() => this.adjustDropdownWidth(), 0);
+    setTimeout(() => {
+    requestAnimationFrame(() => this.adjustDropdownWidth());
+  }, 10); // You can experiment with 0, 10, or 50ms
   }
 
   adjustDropdownWidth() {
@@ -168,10 +173,11 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     // Calculate available space from ng-select's left to right edge of the window
     const availableWidth = windowWidth - rect.left - 16; // -16 for slight padding/margin
     // Apply this width to the dropdown panel
-    const dropdownPanel = document.querySelector('.ng-dropdown-panel') as HTMLElement;
+    const panels = document.querySelectorAll('.ng-dropdown-panel');
+    const dropdownPanel = panels[panels.length - 1] as HTMLElement; // Most recently opened
     if (dropdownPanel) {
       dropdownPanel.style.width = `${availableWidth}px`;
-      dropdownPanel.style.maxWidth = `${availableWidth}px`;
+      // dropdownPanel.style.maxWidth = `${availableWidth}px`;
     }
   }
 
