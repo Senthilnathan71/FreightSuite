@@ -134,6 +134,11 @@ export class EnquiryEntryComponent implements OnInit {
     displayLabels : ['Code','Name', 'Type'],
     labelFields :['departmentCode']
   };
+  customerLookupConfig = {
+    displayFields : ['CustomerName','BranchName', 'Address'],
+    displayLabels : ['Customer','Branch', 'Address'],
+    labelFields :['CustomerName']
+  };
 
   modeOfEnquiry = [
     { id: 1, name: "Email" },
@@ -697,53 +702,67 @@ ${this.userData.userName}`;
     }
   }
 
-  onSegmentChange(event) {
-    if (!event) {
-      this.selectedFCLLCL = "LCL"
-      this.selectedDepartment = ""
-      this.routes.controls.forEach((routeGroup: FormGroup) => {
-        ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
-          routeGroup.get(field)?.setValue(null);
-        });
-      })
-      return;
-    }
-
-    const selectedDepartmentId = Number(event);
-    this.rateRequestForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
-
-    const selectedDept = this.departments.find(
-      dept => dept.DepartmentMasterSid === selectedDepartmentId
-    );
-
-    this.selectedDepartment = selectedDept?.departmentName;
-    if (selectedDept?.departmentType === "Sea") {
-      this.selectedFCLLCL = selectedDept?.FCLLCL;
-    } else {
-      this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
-    }
-
-    this.routes.controls.forEach((routeGroup: FormGroup, index) => {
-      ['POO', 'POL', 'POD', 'FDC'].forEach((field) => {
+  onSegmentChange(event: any) {
+  if (!event) {
+    this.selectedFCLLCL = "LCL";
+    this.selectedDepartment = "";
+    this.routes.controls.forEach((routeGroup: FormGroup) => {
+      ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
         routeGroup.get(field)?.setValue(null);
-      }
-      );
-      const initialPorts = this.getFilteredPortsBySegment();
-      this.filteredPOLPorts[index] = initialPorts;
-      this.filteredPODPorts[index] = initialPorts;
-
-      const cargoArray = routeGroup.get('cargo') as FormArray;
-      cargoArray.controls.forEach((cargoForm: FormGroup) => {
-        this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
       });
     });
+    return;
+  }
 
-    this.filteredPorts = this.ports.filter(port => {
-      if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
-      return port.PortType === 'Sea';
+  // Get the selected department ID - handle both object and ID scenarios
+  let selectedDepartmentId: number;
+  
+  if (typeof event === 'object' && event.DepartmentMasterSid) {
+    // Event is the selected department object
+    selectedDepartmentId = Number(event.DepartmentMasterSid);
+  } else {
+    // Event is just the ID
+    selectedDepartmentId = Number(event);
+  }
+
+  this.rateRequestForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
+
+  const selectedDept = this.departments.find(
+    dept => dept.DepartmentMasterSid === selectedDepartmentId
+  );
+
+  // Set selectedDepartment correctly
+  this.selectedDepartment = selectedDept?.departmentName || '';
+  
+  if (selectedDept?.departmentType === "Sea") {
+    this.selectedFCLLCL = selectedDept?.FCLLCL || "LCL";
+  } else {
+    this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase() || "LCL";
+  }
+
+  // Reset route ports
+  this.routes.controls.forEach((routeGroup: FormGroup, index) => {
+    ['POO', 'POL', 'POD', 'FDC'].forEach((field) => {
+      routeGroup.get(field)?.setValue(null);
     });
     
-  }
+    const initialPorts = this.getFilteredPortsBySegment();
+    this.filteredPOLPorts[index] = initialPorts;
+    this.filteredPODPorts[index] = initialPorts;
+
+    // Update cargo validators
+    const cargoArray = routeGroup.get('cargo') as FormArray;
+    cargoArray.controls.forEach((cargoForm: FormGroup) => {
+      this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
+    });
+  });
+
+  // Filter ports based on selected segment
+  this.filteredPorts = this.ports.filter(port => {
+    if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
+    return port.PortType === 'Sea';
+  });
+}
 
 
   openAuditLogs(modal: TemplateRef<any>) {
