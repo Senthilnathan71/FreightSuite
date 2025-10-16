@@ -312,7 +312,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('POO')?.value">
-                                            <ng-select formControlName="POO" [items]="filteredPorts"
+                                            <ng-select formControlName="POO" [items]="portList"
                                                 bindLabel="PortCode" bindValue="PortMasterSid" placeholder=""
                                                 appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
@@ -371,7 +371,7 @@
                                     <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FPD')?.value">
-                                            <ng-select [items]="filteredPorts" bindLabel="PortCode"
+                                            <ng-select [items]="portList" bindLabel="PortCode"
                                                 bindValue="PortMasterSid" formControlName="FPD" placeholder=""
                                                 (change)="onRouteChange()" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">

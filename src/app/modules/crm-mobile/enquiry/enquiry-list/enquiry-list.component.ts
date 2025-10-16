@@ -338,13 +338,21 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   }
 
   // Table event handlers
-  onTableActionClick(event: TableEventData): void {
-    if (event.action === 'view') {
-      this.viewEnquiry(event.row);
-    } else if (event.action === 'file') {
-      this.file(event.row);
-    }
+  onTableActionClick(event: TableEventData): void { 
+  console.log(event);
+  
+  if (event.column?.template === "link") {
+    // Handle link template click (Quotation No)
+    this.route.navigate(['crm/quotation/entry', event.row.QuoteHeaderSid])
+  } else if (event.action === 'view') {
+    // Handle view action - navigate to enquiry entry page
+    this.viewEnquiry(event.row);
+  } else if (event.action === 'file') {
+    // Handle file action
+    this.file(event.row);
   }
+}
+  
 
   viewEnquiry(row: any) {
     this.route.navigate(['crm/enquiry/entry', row.EnquiryHeaderSid])

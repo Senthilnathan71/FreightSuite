@@ -41,6 +41,12 @@ export class LoadingPlanEntryComponent {
   private destroy$ = new Subject<void>();
 
   @Input() screenName: string = "Loading Plan";
+  @Input() masterJobFormValue = {
+    hasValue : false,
+    DepartmentMasterSid : null,
+    POL : null,
+    POD : null
+  };
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() onSubmit = new EventEmitter<any>();
 
@@ -126,6 +132,24 @@ export class LoadingPlanEntryComponent {
       // Run setup only when all lists are loaded and not empty
       if (departments?.length && ports?.length) {
         this.setInitialConfig();
+        if (this.masterJobFormValue.hasValue) {
+          const dept = this.masterJobFormValue.DepartmentMasterSid;
+          let selectedDept = this.departmentList.find(d => d.DepartmentMasterSid === dept);
+          this.selectedPOL = this.portList.find(p => p.PortCode === this.masterJobFormValue.POL);
+          this.selectedPOD = this.portList.find(p => p.PortCode === this.masterJobFormValue.POD);
+          console.log(this.selectedPOL,this.selectedPOD);
+          this.onDeptChange(selectedDept);
+          this.loadingPlanForm.patchValue({
+            dept: this.masterJobFormValue.DepartmentMasterSid,
+            pol: this.masterJobFormValue.POL,
+            pod: this.masterJobFormValue.POD
+          })
+          this.loadingPlanForm.get('dept')?.disable();
+          this.loadingPlanForm.get('pol')?.disable();
+          this.loadingPlanForm.get('pod')?.disable();
+          this.fetchVesselForCondition();
+          console.log(this.selectedPOL,this.selectedPOD);
+        }
       }
     })
   }
@@ -330,13 +354,20 @@ export class LoadingPlanEntryComponent {
   }
 
   getBookings() {
+    if(this.masterJobFormValue.hasValue){
+      this.selectedPOL = this.portList.find(p => p.PortCode === this.masterJobFormValue.POL);
+      this.selectedPOD = this.portList.find(p => p.PortCode === this.masterJobFormValue.POD);
+    }
+    
     const companyId = this.currentCompany?.CompanyMasterSid;
     const branchId = this.currentBranch?.BranchMasterSid;
-    const departmentId = this.loadingPlanForm.get('dept')?.value;
+    const departmentId = this.loadingPlanForm.get('dept')?.getRawValue();
+    console.log(this.selectedPOL,this.selectedPOD);
     const polId = this.selectedPOL?.PortCode;
     const podId = this.selectedPOD?.PortCode;
     const vesselName = this.selectedVoyage?.VesselName;
     const voyageNo = this.selectedVoyage?.VoyageNo;
+    console.log(departmentId,polId,podId);
     if (!departmentId || !polId || !podId) {
       this.loadingPlanForm.markAllAsTouched();
       this.loadingPlanForm.updateValueAndValidity();

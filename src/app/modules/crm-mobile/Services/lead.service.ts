@@ -820,5 +820,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
         })
       );
     }
+
+  getSalespersonOfLead(PreCustomerMasterSid:number){
+    return this.http.get('ff-pre-customer-meeting/salespersonForLead/'+PreCustomerMasterSid).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
   
 }

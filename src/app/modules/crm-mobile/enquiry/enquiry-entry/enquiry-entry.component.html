@@ -200,35 +200,32 @@
                     </div>
                 </div>
                 } @else { -->
-                    
-                <div class="col-md-2">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('Segment')?.value">
-                        <!-- <dofi-searchable-dropdown [items]="departments" formControlName="Segment" placeholder=""
-                            [displayFields]="departmentLookupConfig.displayFields" [displayLabels]="departmentLookupConfig.displayLabels"
-                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
-                            (itemSelected)="onSegmentChange($event)">
-                        </dofi-searchable-dropdown> -->
-
-                        <ng-select formControlName="Segment" class="ng-select" (change)="onSegmentChange($event)"
-                            placeholder="" appendTo="body">
-                            <ng-option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
-                                {{ item.departmentCode }}
-                            </ng-option>
-                        </ng-select>
-                        <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
-                        <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
-                            Required
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="custom-form-group">
-                        <input type="text" id="dept" class="form-control custom-input-field sm"
-                            [value]="selectedDepartment" disabled>
-                        <label for="dept" class="input-label">Dept Name</label>
-                    </div>
-                </div>
+              <div class="col-md-2">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!rateRequestForm.get('Segment')?.value">
+        <dofi-searchable-dropdown 
+            [items]="departments" 
+            formControlName="Segment" 
+            placeholder=""
+            [displayFields]="departmentLookupConfig.displayFields" 
+            [displayLabels]="departmentLookupConfig.displayLabels"
+            [labelFields]="departmentLookupConfig.labelFields" 
+            bindValue="DepartmentMasterSid"
+            (itemSelected)="onSegmentChange($event)">
+        </dofi-searchable-dropdown>
+        <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
+        <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
+            Required
+        </div>
+    </div>
+</div>
+<div class="col-md-2">
+    <div class="custom-form-group">
+        <input type="text" id="dept" class="form-control custom-input-field sm"
+            formControlName="CustomerRef" placeholder="">
+        <label for="dept" class="input-label">Customer Ref</label>
+    </div>
+</div>
                 <!-- } -->
 
                 @if(isEditMode){
@@ -407,7 +404,7 @@
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                                                <ng-select class="ng-select" [items]="customers"
+                                                <!-- <ng-select class="ng-select" [items]="customers"
                                                     bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                                     formControlName="CustomerMasterSid" appendTo="body"
                                                     (change)="onSelectionChange($event)">
@@ -419,12 +416,13 @@
                                                             <small class="d-block">{{ item.Address }}</small>
                                                         </div>
                                                     </ng-template>
-                                                </ng-select>
-                                                <!-- <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder="Select Customer"
-                                [displayFields]="['BranchName', 'Address']" [displayLabels]="['Branch Name', 'Address']"
-                                [labelFields]="['BranchName', 'Address']" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                                </ng-select> -->
+                                                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder=""
+                               [displayFields]="customerLookupConfig.displayFields" 
+            [displayLabels]="customerLookupConfig.displayLabels"
+            [labelFields]="customerLookupConfig.labelFields"  bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                 (itemSelected)="onSelectionChange($event)">
-                            </dofi-searchable-dropdown> -->
+                            </dofi-searchable-dropdown>
                                                 <label for="customerName" class="input-label">Customer <span
                                                         class="text-danger">*</span></label>
                                                 <small
@@ -488,10 +486,11 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="" placeholder=""
-                                                    class="custom-input-field sm" formControlName="CustomerRef">
-                                                <label for="text-input" class="input-label">Customer Ref <span
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
+                                                    <ng-select formControlName="UserMasterSid" [items]="salesmanList" bindLabel="userName"
+                                                    bindValue="Salesman" appendTo="body">
+                                                        </ng-select>
+                                                <label for="text-input" class="input-label">Salesman<span
                                                         class="text-danger"></span></label>
                                             </div>
                                         </aside>
@@ -591,10 +590,16 @@
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!enquiryOtherForm.get('ShipperName')?.value">
-                                                <ng-select class="ng-select" [items]="finalShipperList"
+                                                <!-- <ng-select class="ng-select" [items]="finalShipperList"
                                                     bindValue="CustomerName" bindLabel="CustomerName" placeholder=""
                                                     formControlName="ShipperName" (change)="onShipperChange($event)"
-                                                    (clear)="onShipperChange(null)" appendTo="body"></ng-select>
+                                                    (clear)="onShipperChange(null)" appendTo="body"></ng-select> -->
+                                                    <dofi-searchable-dropdown [items]="finalShipperList" formControlName="ShipperName" placeholder=""
+                               [displayFields]="customerLookupConfig.displayFields" 
+            [displayLabels]="customerLookupConfig.displayLabels"
+            [labelFields]="customerLookupConfig.labelFields"  bindLabel="CustomerName" bindValue="CustomerName"
+                                (itemSelected)="onShipperChange($event)" (clear)="onShipperChange(null)" appendTo="body" >
+                            </dofi-searchable-dropdown>
                                                 <label for="text-input" class="input-label">Shipper Name <span
                                                         class="text-danger"></span></label>
                                                 @if(enquiryOtherForm.get('ShipperName')?.invalid &&
@@ -620,10 +625,16 @@
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!enquiryOtherForm.get('ConsigneeName')?.value">
-                                                <ng-select class="ng-select" [items]="finalConsigneeList"
+                                                <!-- <ng-select class="ng-select" [items]="finalConsigneeList"
                                                     bindLabel="CustomerName" bindValue="CustomerName" placeholder=""
                                                     formControlName="ConsigneeName" (change)="onConsigneeChange($event)"
-                                                    (clear)="onConsigneeChange(null)" appendTo="body"></ng-select>
+                                                    (clear)="onConsigneeChange(null)" appendTo="body"></ng-select> -->
+                                                <dofi-searchable-dropdown [items]="finalConsigneeList" formControlName="ConsigneeName" placeholder="Select Customer"
+                                                    [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                                                    [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName"
+                                                    (itemSelected)="onConsigneeChange($event)" (clear)="onConsigneeChange(null)" appendTo="body" >
+                                                </dofi-searchable-dropdown>
+
                                                 <label for="text-input" class="input-label">Consignee Name <span
                                                         class="text-danger"></span></label>
                                                 @if(enquiryOtherForm.get('ConsigneeName')?.invalid &&
@@ -806,13 +817,20 @@
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POO')?.value">
 
-                                            <ng-select formControlName="POO" class="ng-select" placeholder=""
+                                            <!-- <ng-select formControlName="POO" class="ng-select" placeholder=""
                                                 appendTo="body">
                                                 <ng-option *ngFor="let item of filteredPorts"
                                                     [value]="item.PortMasterSid">
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
-                                            </ng-select>
+                                            </ng-select> -->
+                                             <dofi-searchable-dropdown [items]="ports"
+                                                formControlName="POO" placeholder=""
+                                                [displayFields]="portLookupConfig.displayFields"
+                                                [displayLabels]="portLookupConfig.displayLabels"
+                                                [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                                                bindValue="PortMasterSid" >
+                                            </dofi-searchable-dropdown>
                                             <label class="input-label">POO</label>
                                         </div>
                                     </div>
@@ -864,13 +882,20 @@
                                     <div class="col-12 col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
-                                            <ng-select formControlName="FDC" class="ng-select" placeholder=""
+                                            <!-- <ng-select formControlName="FDC" class="ng-select" placeholder=""
                                                 appendTo="body">
                                                 <ng-option *ngFor="let item of filteredPorts"
                                                     [value]="item.PortMasterSid">
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
-                                            </ng-select>
+                                            </ng-select> -->
+                                              <dofi-searchable-dropdown [items]="ports"
+                                                formControlName="FDC" placeholder=""
+                                                [displayFields]="portLookupConfig.displayFields"
+                                                [displayLabels]="portLookupConfig.displayLabels"
+                                                [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                                                bindValue="PortMasterSid" >
+                                            </dofi-searchable-dropdown>
                                             <label class="input-label">FPOD</label>
                                         </div>
                                     </div>
