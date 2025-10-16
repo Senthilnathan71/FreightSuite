@@ -21,6 +21,8 @@ import { ReceiptListComponent } from './receipt/receipt-list/receipt-list.compon
 import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.component';
 import { CargoReceiptEntryComponent } from './cargo-receipt/cargo-receipt-entry/cargo-receipt-entry.component';
 import { CargoReceiptListComponent } from './cargo-receipt/cargo-receipt-list/cargo-receipt-list.component';
+import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-entry/vendor-invoice-entry.component';
+import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list/vendor-invoice-list.component';
 
 
 export const OperationRoutes: Routes = [
@@ -242,6 +244,23 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Operation Report',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Operation Report' }],
+        },
+      },
+      
+       {
+        path: 'vendor-invoice/entry',
+        component: VendorInvoiceEntryComponent,
+        data: {
+          title: 'Vendor Invoice',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Vendor Invoice' }],
+        },
+      },
+       {
+        path: 'vendor-invoice/list',
+        component: VendorInvoiceListComponent,
+        data: {
+          title: 'Vendor Invoice',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Vendor Invoice' }],
         },
       },
     ],

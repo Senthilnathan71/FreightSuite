@@ -132,15 +132,43 @@
 
 <div class="" [formGroup]="emailForm">
   <div class="border">
-    <div class="d-flex align-items-center modalHeaderpart text-white justify-content-between">
+    <!-- <div class="d-flex align-items-center modalHeaderpart text-white justify-content-between">
       <h5 class="mb-0">
          Send Mail
       </h5>
       <button class="btn btn-sm" (click)="closeModal()">
         <i class="fas fa-times fs-3 text-white"></i>
       </button>
-    </div>
+    </div> -->
 
+
+       <div class="col-12">
+            <div class="row mb-2 align-items-center pt-2 rounded mx-0">
+                <div class="col-md-4 pb-2">
+                    <h4 class="page-title mb-0">Email</h4>
+                </div>
+                <div class="col-md-8 pb-2">
+
+                    <div
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            >
+                            <i class="fas fa-chevron-left me-1"></i>
+                            Close
+                        </button>
+
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="resetForm()">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                        <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="saveForm()">
+                <i class="fas fa-paper-plane me-1"></i> Send
+              </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     <div class="p-1">
       <div class="row">
         <div class="col-md-12">
@@ -236,11 +264,6 @@
                 *ngIf="emailForm.get('Mailbody')?.touched && emailForm.get('Mailbody')?.hasError('required')">
                 Message is required
               </div>
-            </div>
-            <div class="text-end mt-1">
-              <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="saveForm()">
-                <i class="fas fa-paper-plane me-1"></i> Send
-              </button>
             </div>
           </aside>
         </div>

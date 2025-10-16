@@ -1467,4 +1467,11 @@ export class InvoiceEntryComponent implements OnInit {
 
     return `${currency} ${words} Only`;
   }
+
+  getCustomerName(CustomerMasterSid:number){
+    if(!CustomerMasterSid || this.customerList.length === 0){
+      return 'N/A'
+    }
+    return (this.customerList.find(cus => cus.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
+  }
 }
