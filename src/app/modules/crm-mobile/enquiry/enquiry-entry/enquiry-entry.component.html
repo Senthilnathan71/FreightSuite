@@ -222,8 +222,8 @@
 <div class="col-md-2">
     <div class="custom-form-group">
         <input type="text" id="dept" class="form-control custom-input-field sm"
-            [value]="selectedDepartment || ''" disabled>
-        <label for="dept" class="input-label">Dept Name</label>
+            formControlName="CustomerRef" placeholder="">
+        <label for="dept" class="input-label">Customer Ref</label>
     </div>
 </div>
                 <!-- } -->
@@ -486,10 +486,11 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="" placeholder=""
-                                                    class="custom-input-field sm" formControlName="CustomerRef">
-                                                <label for="text-input" class="input-label">Customer Ref <span
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
+                                                    <ng-select formControlName="UserMasterSid" [items]="salesmanList" bindLabel="userName"
+                                                    bindValue="Salesman" appendTo="body">
+                                                        </ng-select>
+                                                <label for="text-input" class="input-label">Salesman<span
                                                         class="text-danger"></span></label>
                                             </div>
                                         </aside>

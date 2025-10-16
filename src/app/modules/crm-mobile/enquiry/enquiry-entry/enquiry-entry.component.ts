@@ -41,6 +41,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-enquiry-entry',
@@ -80,6 +81,7 @@ export class EnquiryEntryComponent implements OnInit {
   isEditMode = false; // Flag for edit mode
   customers: any[] = [];
   incoList: any[] = [];
+  salesmanList : any[] = [];
   packageTypes: any;
   containerTypes: any;
   // ports: any
@@ -129,11 +131,7 @@ export class EnquiryEntryComponent implements OnInit {
   minExpDate: any;
   permissions: any[] = [];
   currentMenuPermissions = {}
-  departmentLookupConfig = {
-    displayFields : ['departmentCode','departmentName', 'departmentType'],
-    displayLabels : ['Code','Name', 'Type'],
-    labelFields :['departmentCode']
-  };
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = {
     displayFields : ['CustomerName','BranchName', 'Address'],
     displayLabels : ['Customer','Branch', 'Address'],
@@ -331,8 +329,8 @@ export class EnquiryEntryComponent implements OnInit {
       weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
-      products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
-    }).pipe(tap(({ departments , ports , customers, leads, incos, weightUnits, packageTypes, containerTypes, products }) => {
+      products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
+    }).pipe(tap(({ departments , ports , customers, leads, incos, weightUnits, packageTypes, containerTypes, products,salesman }) => {
       this.departments = departments;
       this.ports = ports.map(p => ({...p,Country : p.countryMaster?.countryName}));
       this.filteredPorts = [...this.ports];
@@ -343,6 +341,7 @@ export class EnquiryEntryComponent implements OnInit {
       this.packageTypes = packageTypes.data;
       this.containerTypes = containerTypes;
       this.productList = products;
+      this.salesmanList = salesman
     })
     );
   }
@@ -370,6 +369,7 @@ export class EnquiryEntryComponent implements OnInit {
       AuthorizerRemarks: [''],
       authorizerStatus: ['Pending'],
       CustomerRef:[''],
+      UserMasterSid: [null],
       FreightPPCC : ['Prepaid'],
       routes: this.fb.array([]),
     });
@@ -1018,8 +1018,10 @@ onSelectionChange(selectedItem: any) {
         EnquiryDate: new Date(response.EnquiryDate),
         shipmentDate: new Date(response.ShipmentExpectedDate),
         Segment: response.DepartmentMasterSid,
+        UserMasterSid: response.UserMasterSid,
         // CustomerAddress: response.CustomerAddress,
         // Email: response.Email,
+        FreightPPCC : response.FreightPPCC,
         EnquiryType: response.EnquiryType,
         IncoTerms: response.IncoTerms,
         ClearanceBy: response.ClearanceBy,
@@ -1165,7 +1167,6 @@ onSelectionChange(selectedItem: any) {
         enquiryOther: otherFormValue,
         updatedBy: userEmail,
         MenuMaster: this.currentMenuId,
-        UserMasterSid: this.userData?.UserMasterSid,
         approvalStatusChange: this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         Segment: this.selectedDepartment,
@@ -1349,7 +1350,8 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
-          Qty: cargo.Qty
+          Qty: cargo.Qty,
+          ServiceLevel : response.IncoTerms
         };
       });
     });
@@ -1364,6 +1366,8 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
       CustomerMasterSid: response.CustomerMasterSid,
       PreCustomerMasterSid: response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
+      SalesmanSid : response.UserMasterSid,
+      FreightPPCC : response.FreightPPCC,
       polList: polList,
       podList: podList,
       status: response.status,

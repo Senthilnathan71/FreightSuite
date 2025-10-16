@@ -1881,6 +1881,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   openAttachModal(){
+    const requiredFields = ['DepartmentMasterSid','POL','POD'];
+    if(!this.hasEveryRequiredFieldsFilled(requiredFields , this.masterJobForm)){
+      requiredFields.forEach(field => {
+        this.masterJobForm.get(field)?.markAsTouched();
+        this.masterJobForm.get(field)?.updateValueAndValidity();
+      });
+      this.appSettingsService.showWarning('Please fill all required fields correctly');
+      return;
+    }
     const modalRef = this.modalService.open(LoadingPlanEntryComponent,{
       size : 'xl',
       backdrop: 'static',
@@ -1888,6 +1897,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       windowClass: 'custom-modal-size'
     });
     modalRef.componentInstance.screenName = 'Master Job';
+    const value = this.masterJobForm.value;
+    modalRef.componentInstance.masterJobFormValue = {
+      DepartmentMasterSid : value.DepartmentMasterSid,
+      POL : this.getPortCode(value.POL),
+      POD : this.getPortCode(value.POD),
+      hasValue : true
+    }
     modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
       if(data){
         this.modalService.dismissAll();
@@ -1902,6 +1918,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.updateAttachedBookingsPagination();
       this.modalService.dismissAll();
     });
+  }
+
+  hasEveryRequiredFieldsFilled(requiredFields:string[],group: FormGroup): boolean {
+    const formValue = group.value;
+    return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined && group.get(field)?.valid);
+  }
+
+  getPortCode(portSid:number){
+    if(!portSid || this.portList.length === 0) return '';
+    const port = this.portList.find(p => p.PortMasterSid === portSid);
+    return port ? port.PortCode : '';
   }
 
   getMBLDate(){
