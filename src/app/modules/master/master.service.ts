@@ -3257,6 +3257,26 @@ getFieldConfiguration() {
     );
   }
 
+
+ getAllGroupsByCategory(payload: { Category: string; CompanyMasterSid: number }) {
+  return this.http.post<{ data: any[] }>('coa/groups-by-category', payload).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Get all subgroups by group
+getAllSubgroupsByGroup(payload: { Category: string; GroupName: string; CompanyMasterSid: number }) {
+  return this.http.post<{ data: any[] }>('coa/subgroups-by-group', payload).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
   fetchCoaById(id: number) {
     return this.http.get<{ data: any }>(`coa/fetch/${id}`).pipe(
       map((resp) => {

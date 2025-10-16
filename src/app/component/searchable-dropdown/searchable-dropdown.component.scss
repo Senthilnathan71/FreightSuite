@@ -7,13 +7,14 @@
 
 /* Dropdown panel styling */
 :host ::ng-deep .ng-dropdown-panel {
-  width: 100%;
+  // width: 100%;
   max-width: 100%;
   border: 1px solid #ccc;
   border-radius: 6px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 0;
   background-color: #fff;
+  overflow-x: scroll !important;
 }
 
 /* Scrollable wrapper inside panel */
@@ -21,15 +22,18 @@
   display: block;
   min-width: 800px; 
   overflow-x: auto;
-  overflow-y: auto;
+  // overflow-y: auto;
 }
 
 /* Header and rows styling */
 :host ::ng-deep .dropdown-header,
-:host ::ng-deep .dropdown-row {
+:host ::ng-deep .dropdown-row,
+.dropdown-header,
+.dropdown-row {
   display: flex;
-  width: max-content;
-  min-width: 100%;
+  // width: max-content;
+  // min-width: 100%;
+  font-size: 0.9rem;
   align-items: center;
   padding: 2px 0;
   box-sizing: border-box;
@@ -37,14 +41,20 @@
 
 /* Columns inside header and rows */
 :host ::ng-deep .dropdown-header > div,
-:host ::ng-deep .dropdown-row > div {
-  padding: 0 12px;
+:host ::ng-deep .dropdown-row > div,
+ .dropdown-header > div,
+.dropdown-row > div  {
+  // --value:80px;
+  padding: 0 18x;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 0 0 auto;
   border-right: 1px solid #e0e0e0;
-  min-width: fit-content;
+  // min-width: var(--value) !important;
+  // width:inherit !important;
+  max-width: var(--value) !important;
+
 }
 
 /* Remove border for last column */
@@ -53,11 +63,11 @@
   border-right: none;
 }
 
-/* Sticky header */
-:host ::ng-deep .dropdown-header {
+.dropdown-header {
   font-weight: 700;
-  background-color: #f1f3f5;
+  background-color: rgb(240, 236, 236);
   position: sticky;
+  color: black;
   top: 0;
   z-index: 5;
   box-shadow: 0 2px 2px -2px rgba(0,0,0,0.1);
@@ -84,6 +94,9 @@
 
 
 
+
+
+
 /* Smooth scrollbar styling (optional, modern look) */
 :host ::ng-deep .ng-dropdown-panel-items-wrapper::-webkit-scrollbar {
   height: 8px;
@@ -98,4 +111,9 @@
 :host ::ng-deep .ng-dropdown-panel-items-wrapper::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
+}
+:host ::ng-deep .ng-dropdown-panel {
+  // width:480px !important;
+  // max-width: 360px !important;
+  max-width: none;
 }

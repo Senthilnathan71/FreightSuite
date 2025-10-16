@@ -70,6 +70,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   userData: any;
+  originalMeetingDate: string;
 
   // For mobile view data
   filteredMeetings: any[] = [];
@@ -120,8 +121,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   protected config: ListComponentConfig = {
     storageKey: 'meeting-update-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'meetingDate',
-    defaultSortDirection: 'desc',
+    defaultSortColumn: 'customerName',
+    defaultSortDirection: 'asc',
     pageSizeOptions: [10, 20, 50, 100],
     maxPagesToShow: 3
   };
@@ -158,6 +159,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     this.initializeHeaderActions();
     
     super.ngOnInit();
+    this.sort('asc')
   }
    checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -235,6 +237,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           createdOn: meeting.createdOn,
           updatedBy: meeting.updatedBy,
           updatedOn: meeting.updatedOn,
+          rawMeetingDate: meeting.meetingDate,
+          rawCustomerName: meeting.preCustomerMaster?.preCustomerName || ''
         };
       });
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -553,7 +557,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           : '';
 
         const followUp = !!(meeting.followUpDate || meeting.followUpNote);
-
+        this.originalMeetingDate = meetingDate;
         this.meetingForm.patchValue({
           customerName: meeting.preCustomerMaster?.preCustomerName || '',
           PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
@@ -568,9 +572,10 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           meetingDuration: meeting.meetingDuration,
           preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null,
           createdBy: meeting.createdBy,
-          updatedBy: meeting.updatedBy
+          updatedBy: meeting.updatedBy,
+          remarks: meeting.remarks || ''
         });
-
+        this.setupMeetingDateListener();
         this.meetingForm.controls['meetingStatus'].enable();
         if (meeting.meetingStatus === 'confirmed') {
           this.meetingForm.controls['meetingStatus'].disable();
@@ -579,6 +584,26 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       }
     );
   }
+  private setupMeetingDateListener(): void {
+  this.meetingForm.get('meetingDate')?.valueChanges.subscribe((newDate: string) => {
+    this.handleMeetingDateChange(newDate);
+  });
+}
+private handleMeetingDateChange(newDate: string): void {
+  if (this.originalMeetingDate && newDate !== this.originalMeetingDate) {
+    // Date has changed - make remarks mandatory
+    this.meetingForm.get('remarks')?.setValidators([Validators.required]);
+    this.meetingForm.get('remarks')?.updateValueAndValidity();
+    
+    // Show alert message
+    this.appSettingService.showWarning('Meeting date has been changed. Please select a reason for the change.');
+  } else {
+    // Date is same as original or no original date - remove required validator
+    this.meetingForm.get('remarks')?.clearValidators();
+    this.meetingForm.get('remarks')?.updateValueAndValidity();
+  }
+}
+
 
   formatDateForInput(dateString: string) {
     const date = new Date(dateString);
@@ -586,6 +611,15 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   }
 
   onUpdateMeeting() {
+     const currentMeetingDate = this.meetingForm.get('meetingDate')?.value;
+     if (this.originalMeetingDate && currentMeetingDate !== this.originalMeetingDate) {
+    // Validate remarks if date changed
+    this.meetingForm.get('remarks')?.markAsTouched();
+    if (this.meetingForm.get('remarks')?.invalid) {
+      this.appSettingService.showError("Reason is mandatory when meeting date is changed.");
+      return;
+    }
+  }
     if (this.meetingForm.get('meetingStatus')?.value === 'on hold' &&
       !this.meetingForm.get('meetingNote')?.value) {
       this.meetingForm.get('meetingNote')?.markAsTouched();
@@ -670,8 +704,11 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       leadAssignTo: this.selectedMeeting?.leadAssignTo || '',
       meetingNote: this.selectedMeeting?.meetingNote || '',
       meetingStatus: this.selectedMeeting?.meetingStatus || 'Scheduled',
-      followUpNote: this.selectedMeeting?.followUpNote || ''
+      followUpNote: this.selectedMeeting?.followUpNote || '',
+      remarks: this.selectedMeeting?.remarks || ''
     };
+      this.originalMeetingDate = originalValues.meetingDate;
+
 
     this.meetingForm.patchValue(originalValues);
     this.meetingForm.markAsPristine();
@@ -683,6 +720,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       control?.markAsUntouched();
       control?.setErrors(null);
     });
+     this.meetingForm.get('remarks')?.clearValidators();
+  this.meetingForm.get('remarks')?.updateValueAndValidity();
 
     this.btnDisable = false;
   }

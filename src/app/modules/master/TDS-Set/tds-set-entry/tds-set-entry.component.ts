@@ -114,7 +114,7 @@ export class TdsSetEntryComponent implements OnInit {
     currentBranch: any;
 
     tab = [
-        { name: "TDSDetail", icon: "fas fa-file-invoice" },
+        { name: "TDS Detail", icon: "fas fa-file-invoice" },
         { name: "Exemption Detail", icon: "fas fa-percent" }
     ];
     
@@ -232,7 +232,7 @@ export class TdsSetEntryComponent implements OnInit {
         const payload = {
             ...formValue,
             CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+            status: formValue.status === 'Active' ? 'A' : 'S',
             ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
         if (this.isEditMode) {
@@ -296,19 +296,38 @@ export class TdsSetEntryComponent implements OnInit {
         })
     }
 
-    initDetailForm() {
-        this.tdsDetailForm = this.fb.group({
-            CountryMasterSid: [null],
-            Sno: [''],
-            CompanyType: [null, [Validators.required]],
-            IncomeCategory: [''],
-            ITSectionCode: ['', [Validators.required]],
-            TDSAmount: [''],
-            TDSRate: ['', [Validators.required]],
-            EffectiveFrom: ['', [Validators.required]],
-            detailStatus: ['Active']
-        })
-    }
+   initDetailForm() {
+    this.tdsDetailForm = this.fb.group({
+        CountryMasterSid: [null],
+        Sno: [''],
+        CompanyType: [null, [Validators.required]],
+        IncomeCategory: [''],
+        ITSectionCode: ['', [Validators.required]],
+        TDSAmount: [''],
+        TDSRate: [''],
+        EffectiveFrom: ['', [Validators.required]],
+        detailStatus: ['Active']
+    });
+
+    // ADD THIS AFTER form is created!
+   this.tdsDetailForm.get('TDSAmount').valueChanges.subscribe(value => {
+  if (value !== null && value !== '') {
+    this.tdsDetailForm.get('TDSRate').disable({ emitEvent: false });
+  } else {
+    this.tdsDetailForm.get('TDSRate').enable({ emitEvent: false });
+  }
+});
+this.tdsDetailForm.get('TDSRate').valueChanges.subscribe(value => {
+  if (value !== null && value !== '') {
+    this.tdsDetailForm.get('TDSAmount').disable({ emitEvent: false });
+  } else {
+    this.tdsDetailForm.get('TDSAmount').enable({ emitEvent: false });
+  }
+});
+
+}
+
+
 
     openDetailModal(content: TemplateRef<any>, data?: any) {
         this.initDetailForm();
@@ -418,7 +437,7 @@ openAuditLogs(modal: TemplateRef<any>) {
             TDSAmount: parseFloat(formValue.TDSAmount),
             TDSRate: parseFloat(formValue.TDSRate),
             EffectiveFrom: formValue.EffectiveFrom,
-            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+            status: formValue.detailStatus === 'Active' ? 'A' : 'S',
             ...(this.detailModalEdit ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
 
@@ -532,7 +551,7 @@ openAuditLogs(modal: TemplateRef<any>) {
             Transporter: formValue.Transporter,
             EffectiveFrom: formValue.EffectiveFrom,
             EffectiveTo: formValue.EffectiveTo,
-            status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+            status: formValue.exemptionStatus === 'Active' ? 'A' : 'S',
             ...(this.exemptionModalEdit ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
 

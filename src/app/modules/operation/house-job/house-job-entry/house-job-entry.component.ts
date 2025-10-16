@@ -117,6 +117,9 @@ export class HouseJobEntryComponent  implements OnInit {
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
+    if (tab === "Rate") {
+      this.syncFormValueWithRateComponent();
+    }
     this.selectedTab = tab;
   }
 
@@ -1606,23 +1609,32 @@ auditLogs: any[] = []; // Stores audit logs
     const selectedPOL = this.b['POL']?.value;
     const selectedPOD = this.b['POD']?.value;
     const selectedFPD = this.b['FPD']?.value;
-    const EffectiveDate = this.b['ETA']?.value;
-    const ExpiredDate = this.b['ETD']?.value;
+    const EffectiveDate = this.b['BookingDateTime']?.value;
+    const ExpiredDate = this.b['BookingDateTime']?.value;
     const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
     const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
     const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
     const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const CargoType = this.c['CargoType']?.value;
+    const NetWeight = this.c['NetWeight']?.value;
+    const GrossWeight = this.c['GrossWeight']?.value;
     const NoofContainers = this.c['NoofContainers']?.value;
     const Volume = this.c['Volume']?.value;
     const ChargeableWeight = this.c['ChargeableWeight']?.value;
+
+    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
+    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    const BookingHeaderSid = this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
 
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
       BookingNumber,
+      BookingHeaderSid,
+      CustomerMasterSid,
+      CustomerBranchSid,
       departmentName,
-      Segment : this.selectedFCLLCL,
+      Segment: this.selectedFCLLCL,
       PORSid,
       POLSid,
       PODSid,
@@ -1630,11 +1642,14 @@ auditLogs: any[] = []; // Stores audit logs
       EffectiveDate,
       ExpiredDate,
       CargoType,
-      NoofContainers,
+      GrossWeight,
+      NetWeight,
       Volume,
+      NoofContainers,
       ChargeableWeight
     }
   }
+
 
 
   navigateBack() {

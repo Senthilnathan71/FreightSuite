@@ -1,3 +1,4 @@
+
 .modern-table-container {
   background: #ffffff;
   border-radius: 6px;
@@ -23,7 +24,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 6px;
+  padding: 2px 6px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: white;
@@ -110,7 +111,7 @@
     background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
 
     th {
-      padding: 6px 4px;
+      padding: 2px 4px;
       text-align: left;
       font-weight: 600;
       font-size: 0.8rem;
@@ -130,7 +131,7 @@
     }
 
     td {
-      padding: 4px;
+      padding: 2px;
       color: #374151;
       white-space: nowrap;
       vertical-align: middle;
@@ -294,7 +295,7 @@
 .charges-nav {
   background: #ffffff;
   border-radius: 6px;
-  padding: 6px 0px;
+  padding: 0px 0px !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -309,7 +310,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 18px;
+  padding: 2px 18px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -422,12 +423,22 @@
   width: 100%;
 }
 
+.first-table{
+  height: 58px !important;
+}
+
 .table-header1 {
   background-color: #005a9e;
   color: white;
   padding: 4px;
   min-width: 90px;
   width: 100%;
+}
+
+.tableHeader{
+    background-color: #005a9e;
+  color: white;
+  min-width: 100px !important;
 }
 
 .table-header2 {
@@ -440,7 +451,7 @@
 
 
 table tbody td {
-  padding: 0px 10px;
+  padding: 0px 6px;
 }
 
 .table-scrollable {
@@ -499,30 +510,6 @@ table tbody td {
   gap: 3px;
 }
 
-// Make all ng-select dropdowns user-friendly with proper width
-::ng-deep .ng-dropdown-panel {
-  min-width: 280px !important;
-  max-width: 500px !important;
-  width: auto !important;
-}
-
-
-// Specific styling for charge dropdown to show full text
-::ng-deep .charge-dropdown-wide + .ng-dropdown-panel,
-::ng-deep .ng-dropdown-panel.charge-dropdown-wide {
-  min-width: 400px !important;
-  max-width: 600px !important;
-}
-
-::ng-deep .charge-dropdown-wide + .ng-dropdown-panel .ng-option,
-::ng-deep .ng-dropdown-panel.charge-dropdown-wide .ng-option {
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  line-height: 1.5 !important;
-  min-height: 40px !important;
-  display: flex !important;
-  align-items: center !important;
-}
 
 // Voucher generated row highlighting
 tr.voucher-generated {

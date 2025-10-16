@@ -938,6 +938,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       costPerUnitCtrl.updateValueAndValidity();
     }
     this.quoteCharges(routeIndex,carrierIndex).push(chargeForm)
+    this.handlePartyOnChargePPCC();
   }
 
   setupDynamicQtyUpdates(routeIndex: number): void {
@@ -1430,6 +1431,9 @@ private extractCargoData(enquiryCargo: any[]): any {
         ...routeDetails,
         quoteCarrier: approvedQuoteCarrier
       };
+
+      this.quotationForm.disable();
+      
     }
 
     console.log("Approved Route:", approvedRoute);
@@ -3222,6 +3226,24 @@ ${this.userData.userName}`;
       costRateCtrl.setValidators([Validators.required]);
     }
     costRateCtrl.updateValueAndValidity();
+  }
+
+  handlePartyOnChargePPCC() {
+    const CustomerMasterSid = this.quotationForm.get('CustomerMasterSid')?.value;
+    const CustomerBranchSid = this.quotationForm.get('CustomerBranchSid')?.value;
+    const ppcc = this.quotationForm.get('FreightPPCC')?.value;
+    if (ppcc === 'Prepaid') {
+      this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+        this.quoteCarriers(routeIndex).controls.forEach((carrier: FormGroup, carrierIndex: number) => {
+          this.quoteCharges(routeIndex, carrierIndex).controls.forEach((charge: FormGroup, chargeIndex: number) => {
+            if (!charge.get('RevenueCustomerMasterSid')?.value) {
+              charge.get('RevenueCustomerMasterSid')?.setValue(CustomerMasterSid)
+              charge.get('RevenueCustomerBranchSid')?.setValue(CustomerBranchSid)
+            }
+          })
+        })
+      })
+    }
   }
 
 }

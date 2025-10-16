@@ -263,16 +263,24 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
       //   dataType: 'string'
       // },
       {
-        key: 'LedgerName',
-        label: 'Name',
+        key: 'Category',
+        label: 'Category',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+       {
+        key: 'LedgerCategory',
+        label: 'Ledger Category',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string'
       },
       {
-        key: 'LedgerCode',
-        label: 'Ledger Code ',
+        key: 'LedgerName',
+        label: 'Ledger Name',
         sortable: true,
         filterable: true,
         visible: true,
@@ -294,6 +302,23 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
         visible: true,
         dataType: 'string'
       },
+      {
+        key: 'LedgerCode',
+        label: 'Ledger Code ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+       {
+        key: 'LedgerType',
+        label: 'Ledger Type ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      
       {
         key: 'Status',
         label: 'Status',
@@ -394,20 +419,25 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     const dialogRef = this.dialog.open(DeleteWarningComponent);
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.masterService.deleteCOA(id).subscribe(
-          (resp: any) => {
-            this.appSettingService.showSuccess("Chart Account Deleted!");
-            // this.search(); 
-            this.searchChartAccounts();
-          },
-          (error) => {
-            this.appSettingService.showError("Error Deleting Chart Account", error);
-          }
-        );
-      }
+        if (result === true) {
+            this.masterService.deleteCOA(id).subscribe(
+                (resp: any) => {
+                    this.appSettingService.showSuccess("Chart Account Deleted!");
+                    this.searchChartAccounts();
+                },
+                (error) => {
+                    console.error('Error deleting Chart Account', error);
+                    // Show specific error message for linked records
+                    if (error.error && error.error.message) {
+                        this.appSettingService.showError(error.error.message);
+                    } else {
+                        this.appSettingService.showError("Error Deleting Chart Account");
+                    }
+                }
+            );
+        }
     });
-  }
+}
   softDeleteTaxGroup(id: number): void {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
