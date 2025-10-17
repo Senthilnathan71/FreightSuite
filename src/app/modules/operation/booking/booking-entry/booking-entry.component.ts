@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -89,7 +89,8 @@ type Html2PdfOptions = {
     NgbTooltip,
     SearchableDropdown,
     SearchableDropdownModal,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -99,7 +100,7 @@ type Html2PdfOptions = {
     CustomDatePipe
   ],
 })
-export class BookingEntryComponent implements OnInit,OnDestroy {
+export class BookingEntryComponent implements OnInit, OnDestroy {
 
 
   /**
@@ -113,6 +114,7 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
   @ViewChild('chargeSelectionModal') chargeSelectionModal!: TemplateRef<any>;
+  @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
 
   parsedBookings: BookingData[] = [];
   showParsedData = false;
@@ -144,23 +146,23 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
-  userData : any;
-  isPrintLoading : boolean;
-  currentCompany : any;
-  currentBranch : any;
-  filterOption : any;
-    public rateComponent = CostEntryComponent;
-    public ArApcomponent = ArApComponent;
+  userData: any;
+  isPrintLoading: boolean;
+  currentCompany: any;
+  currentBranch: any;
+  filterOption: any;
+  public rateComponent = CostEntryComponent;
+  public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
-    if(tab === "Rate"){
+    if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
     }
     this.selectedTab = tab;
   }
   CurrencyLookupConfig = {
-    displayFields : ['currencyCode', 'currencyName','countryName'],
-    displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode', 'currencyName', 'countryName'],
   };
 
   modeOfStatus = [
@@ -176,7 +178,7 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   selectedFCLLCL: string = "LCL";
   isEditMode: boolean;
   bookingData: any;
-  quotationNumber : any ='';
+  quotationNumber: any = '';
   departmentList: any[] = [];
   customerList: any[] = [];
   customerBranchList: any[] = [];
@@ -191,8 +193,8 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   yardlist: any[] = [];
   cfslist: any[] = [];
   yardCFSList: any[] = [];
-  filteredYardCFSList: any[] = []; 
-  currentYardCFSType: 'yard' | 'cfs' | null = null; 
+  filteredYardCFSList: any[] = [];
+  currentYardCFSType: 'yard' | 'cfs' | null = null;
   vesselList: any[] = [];
   headerVesselList: any[] = [];
   voyageList: any[] = [];
@@ -201,16 +203,18 @@ export class BookingEntryComponent implements OnInit,OnDestroy {
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
   incoList: any[] = [];
-  TandCList: any[]=[];
+  TandCList: any[] = [];
   bookingHeader: any;
-  selectedCustomerBranch : any;
-  isShipperOther :boolean
+  selectedCustomerBranch: any;
+  isShipperOther: boolean
   private isManualFreightChange = false;
   decimalAfterPrecision = 3;
-  currentCompanyBranches : any[] = [];
-  measurementUnitList : any[] = [];
-auditLogs: any[] = []; // Stores audit logs
+  currentCompanyBranches: any[] = [];
+  measurementUnitList: any[] = [];
+  auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  permissions: any[] = [];
+  currentMenuPermissions = {};
 
 
   bookingForm !: FormGroup;
@@ -228,7 +232,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Cargo Part
   containerTypeList: any[] = [];
-  selectedContainerType : any;
+  selectedContainerType: any;
   cargoForm !: FormGroup;
   modeOfCargoType = [
     { id: 1, name: 'General' },
@@ -258,7 +262,7 @@ auditLogs: any[] = []; // Stores audit logs
   productList: any[];
   packageTypeList: any[];
   productForm !: FormGroup;
-  countryOfCompany : string;
+  countryOfCompany: string;
 
   // Variable Declaration - Other Part
   YardCFSLabel: string = "CFS"
@@ -269,26 +273,26 @@ auditLogs: any[] = []; // Stores audit logs
   otherForm !: FormGroup;
 
   // Variable Declaration - Connection Part
-  PODandFPODsame : boolean = true;
-  minStartDate : Date = new Date();
-  resetTriggerConnection : boolean;
-  bookingConnectionsArr : any[] = [];
-  connectionResult : any[] =[];
+  PODandFPODsame: boolean = true;
+  minStartDate: Date = new Date();
+  resetTriggerConnection: boolean;
+  bookingConnectionsArr: any[] = [];
+  connectionResult: any[] = [];
 
-    
+
 
   // Variable Declaration - Rate Part
-  resetTriggerRate : boolean;
-  rateResult : any[] = [];
-  bookingRateArr : any[] = [];
-  currentFormValue : any;
-  
-  // Variable Declaration - Milestone Part
-  resetTriggerMilestone : boolean;
-  milestoneResult: any[] =[];
+  resetTriggerRate: boolean;
+  rateResult: any[] = [];
+  bookingRateArr: any[] = [];
+  currentFormValue: any;
 
-  today : any;
-  minDate : any;
+  // Variable Declaration - Milestone Part
+  resetTriggerMilestone: boolean;
+  milestoneResult: any[] = [];
+
+  today: any;
+  minDate: any;
   currentDate = new Date();
 
   modeOfShippmentTerms = [
@@ -343,17 +347,17 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     // { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
-dataFromQuotation:any
+  dataFromQuotation: any
   // Mail content
   customerLookupConfig = {
-    displayFields : ['CustomerName','BranchName', 'Address'],
-    displayLabels : ['Customer','Branch', 'Address'],
-    labelFields :['CustomerName']
+    displayFields: ['CustomerName', 'BranchName', 'Address'],
+    displayLabels: ['Customer', 'Branch', 'Address'],
+    labelFields: ['CustomerName']
   };
 
   portLookupConfig = {
-    displayFields: ['PortCode', 'PortName','Country'],
-    displayLabels: ['Code', 'Name','Country'],
+    displayFields: ['PortCode', 'PortName', 'Country'],
+    displayLabels: ['Code', 'Name', 'Country'],
     labelFields: ['PortName']
   };
 
@@ -374,7 +378,7 @@ dataFromQuotation:any
   }
 
   imcoLookupConfig = {
-    displayFields: ['ImcoName', 'ImcoUn','PackingGroup'],
+    displayFields: ['ImcoName', 'ImcoUn', 'PackingGroup'],
     displayLabels: ['Name', 'UN No', 'Packing Group'],
     labelFields: ['ImcoClass']
   }
@@ -393,9 +397,9 @@ dataFromQuotation:any
     private currentRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private calendar : NgbCalendar,
+    private calendar: NgbCalendar,
     private exportExcelService: ExcelExportService,
-    private datePipe : CustomDatePipe,
+    private datePipe: CustomDatePipe,
     private spinner: NgxSpinnerService,
     private taxCalculationService: TaxCalculationService,
     private leadService: LeadService,
@@ -406,7 +410,7 @@ dataFromQuotation:any
     // const nav = this.router.getCurrentNavigation();
     // console.log(nav)
     // this.dataFromQuotation = nav?.extras?.state?.['dataFromQuotation'] ?? {};
-   }
+  }
 
   /**
     |--------------------------------------------------
@@ -465,6 +469,9 @@ dataFromQuotation:any
 
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
+    if (this.userData) {
+      this.checkPermissions();
+    }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
@@ -549,11 +556,28 @@ dataFromQuotation:any
   }
 
 
-getCurrentCompanyBranches(){
-  const currentCompanyId = this.currentCompany?.CompanyMasterSid;
-  const currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
-  this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
-}
+  getCurrentCompanyBranches() {
+    const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+    const currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
+    this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
+  }
+
+  checkPermissions() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    if (this.currentMenuId && userRole) {
+      this.leadService
+        .getRoleMenuPermissions(this.currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+          },
+        });
+    }
+  }
 
   /**
   |--------------------------------------------------
@@ -572,18 +596,18 @@ getCurrentCompanyBranches(){
       CustomerName: [''],
       CustomerAddress: [null, [Validators.required]],
       SalesmanSid: [null],
-      isShipperFreeText : [false],
+      isShipperFreeText: [false],
       ShipperName: [null, [Validators.required]],
       ShipperAddress: ['', [Validators.required]],
-      isConsigneeFreeText : [false],
+      isConsigneeFreeText: [false],
       ConsigneeName: [null, [Validators.required]],
       ConsigneeAddress: ['', [Validators.required]],
-      isNotifyFreeText : [false],
+      isNotifyFreeText: [false],
       Notify: [null],
       NotifyAddress: [''],
-      DestinationAgent : [null, [Validators.required]],
+      DestinationAgent: [null, [Validators.required]],
       AgentAddress: [''],
-      isCarrierFreeText : [false],
+      isCarrierFreeText: [false],
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
@@ -593,7 +617,7 @@ getCurrentCompanyBranches(){
 
       VesselName: [null],
       VoyageMasterSid: [null],
-      VoyageNo: [{value : null,disabled : true}],
+      VoyageNo: [{ value: null, disabled: true }],
       ETA: [{ value: '', disabled: true }],
       ETD: [{ value: '', disabled: true }],
       POO: [null],
@@ -604,22 +628,22 @@ getCurrentCompanyBranches(){
       FPD: [null],
       MovementType: [null],
       DoValid: [{ value: '', disabled: true }],
-      FreightTerms : [null],
+      FreightTerms: [null],
       Coload: [false],
       ShipmentType: [false],
       IncoTerms: [null, [Validators.required]],
       InternalNote: [''],
       GeneralNote: [''],
       NominatedBy: ['Self'],
-      BookingStatus : 'Pending',
+      BookingStatus: 'Pending',
       ShipmentNo: ['']
     })
-    this.bookingForm.valueChanges.subscribe(()=>{
+    this.bookingForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
     })
   }
 
- toggleInputType(mainCtrl:string ,flagCtrl, event: MouseEvent): void {
+  toggleInputType(mainCtrl: string, flagCtrl, event: MouseEvent): void {
     event.stopPropagation(); // Prevents click from opening ng-select dropdown
     // this.isShipperOther = !this.isShipperOther;
     const value = this.b[flagCtrl]?.value;
@@ -647,9 +671,15 @@ getCurrentCompanyBranches(){
       ShipmentTerms: [null],
       MovementType: [null],
       FreightTerms: [null],
-      ModeOfTransport : [null],
+      ModeOfTransport: [null],
       StuffingAt: ['Dock']
     })
+    this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.cargoForm);
+    });
+    this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.cargoForm);
+    });
     this.cargoForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
     })
@@ -661,8 +691,8 @@ getCurrentCompanyBranches(){
     this.productForm = this.fb.group({
       BookingProductSid: [null],
       ProductName: [null],
-      ShippingBillNo: ['',isIndianCompany ? [Validators.required] : []],
-      ShippingBillDate: [null,isIndianCompany ? [Validators.required] : []],
+      ShippingBillNo: ['', isIndianCompany ? [Validators.required] : []],
+      ShippingBillDate: [null, isIndianCompany ? [Validators.required] : []],
       ExternaPkg: [null, [Validators.required]],
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
@@ -676,7 +706,7 @@ getCurrentCompanyBranches(){
       Width: [''],
       Height: [''],
       UomMasterSid: [null],
-      CargoRecDate : [null]
+      CargoRecDate: [null]
     })
   }
 
@@ -686,14 +716,14 @@ getCurrentCompanyBranches(){
       CustomerRefNo: [''],
       YardCFS: [''],
       ReleaseType: [null],
-      HBLNo: [{value :'', disabled: true}],
+      HBLNo: [{ value: '', disabled: true }],
       Forwarder: [null],
       ForwarderAddress: [''],
       NotifyParty: [null],
       NotifyPartyAddress: [''],
-      Notify2 : [null],
-      NotifyAddress2 : [''],
-      Coloader : [null],
+      Notify2: [null],
+      NotifyAddress2: [''],
+      Coloader: [null],
       PickupPlace: [''],
       DeliveryPlace: [''],
       DeliveryDate: [''],
@@ -711,8 +741,8 @@ getCurrentCompanyBranches(){
       SwitchBLShipper: [null],
       SwitchBLConsignee: [null],
       SwitchLocation: [''],
-      CarrierBookingRef : [''],
-      CarrierBookingDate : ['']
+      CarrierBookingRef: [''],
+      CarrierBookingDate: ['']
     })
   }
 
@@ -765,15 +795,15 @@ getCurrentCompanyBranches(){
       GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
       Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required]],
-      IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
-      ImcoClass : [{ value : data?.ImcoClass || null, disabled : true }],
-      UnNo : [{ value : data?.UnNo || '', disabled : true }],
-      PkgGroup : [{ value : data?.PkgGroup || '', disabled : true }],
-      Length : [data?.Length || ''],
-      Width : [data?.Width || ''],
-      Height : [data?.Height || ''],
-      UomMasterSid : [data?.UomMasterSid || null],
-      CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
+      IsHaz: [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
+      ImcoClass: [{ value: data?.ImcoClass || null, disabled: true }],
+      UnNo: [{ value: data?.UnNo || '', disabled: true }],
+      PkgGroup: [{ value: data?.PkgGroup || '', disabled: true }],
+      Length: [data?.Length || ''],
+      Width: [data?.Width || ''],
+      Height: [data?.Height || ''],
+      UomMasterSid: [data?.UomMasterSid || null],
+      CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     })
 
     productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
@@ -783,22 +813,22 @@ getCurrentCompanyBranches(){
     return productForm;
   }
 
-  changeAuthStateBasedOnDate(){
+  changeAuthStateBasedOnDate() {
     let atLeastOneHasDate = false;
-    this.bookingProducts.controls.forEach((product:FormGroup,productIndex:number)=>{
+    this.bookingProducts.controls.forEach((product: FormGroup, productIndex: number) => {
       const productDate = product.get('CargoRecDate')?.value;
-      if(productDate){
+      if (productDate) {
         atLeastOneHasDate = true;
       }
     })
-    if(atLeastOneHasDate){
+    if (atLeastOneHasDate) {
       this.b['CargoRecDate']?.disable();
     } else {
       this.b['CargoRecDate']?.enable();
     }
   }
 
-  addProduct(){
+  addProduct() {
     const formGroup = this.createBookingProductGroup();
     this.bookingProducts.push(formGroup);
   }
@@ -820,46 +850,46 @@ getCurrentCompanyBranches(){
   /**
    *  Load Lookups
   */
-  loadHeaderMandatoryParts(){
+  loadHeaderMandatoryParts() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
-      departments : this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
-      customers : this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
-      ports : this.operationService.getAllPorts().pipe(catchError(err => of([]))),
-      userCountry : this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
+      departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
+      customers: this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
+      ports: this.operationService.getAllPorts().pipe(catchError(err => of([]))),
+      userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
 
 
-    }).pipe(tap(({ 
-        departments , customers , ports , userCountry
-      }) => {
-      if(!this.isEditMode){
+    }).pipe(tap(({
+      departments, customers, ports, userCountry
+    }) => {
+      if (!this.isEditMode) {
         this.spinner.hide();
       }
       this.departmentList = departments.data;
       this.customerList = customers;
       this.countryOfCompany = (userCountry?.data?.countryCode).trim().toLowerCase();
-      this.portList = (ports.data || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
+      this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     }))
   }
 
   loadHeaderLookups() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
-      shippers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['shipper']}).pipe(catchError(err => of([]))),
-      consignees : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['consignee']}).pipe(catchError(err => of([]))),
-      notify : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['notify']}).pipe(catchError(err => of([]))),
-      agents : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['agent']}).pipe(catchError(err => of([]))),
-      carriers : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['carrier']}).pipe(catchError(err => of([]))),
+      shippers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['shipper'] }).pipe(catchError(err => of([]))),
+      consignees: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['consignee'] }).pipe(catchError(err => of([]))),
+      notify: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['notify'] }).pipe(catchError(err => of([]))),
+      agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['agent'] }).pipe(catchError(err => of([]))),
+      carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
 
-      vessels : this.operationService.getAllVessels().pipe(catchError(err => of([]))),
-      incos : this.operationService.getAllINCO().pipe(catchError(err => of([]))),
-      salesmans : this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
-      
-      forwarder : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['forwarder']}).pipe(catchError(err => of([]))),
-      yard : this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['yard']}).pipe(catchError(err => of([]))),
-      cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid , types : ['cFS']}).pipe(catchError(err => of([]))),
+      vessels: this.operationService.getAllVessels().pipe(catchError(err => of([]))),
+      incos: this.operationService.getAllINCO().pipe(catchError(err => of([]))),
+      salesmans: this.operationService.getAllSalesman().pipe(catchError(err => of([]))),
 
-    }).pipe(tap(({shippers , consignees , notify ,carriers , vessels ,incos , salesmans , agents , forwarder , yard , cfs, }) => {
+      forwarder: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] }).pipe(catchError(err => of([]))),
+      yard: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] }).pipe(catchError(err => of([]))),
+      cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] }).pipe(catchError(err => of([]))),
+
+    }).pipe(tap(({ shippers, consignees, notify, carriers, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
       this.shipperList = shippers.data;
       this.filteredShipperList = shippers.data;
       this.consigneeList = consignees.data;
@@ -874,7 +904,7 @@ getCurrentCompanyBranches(){
       this.agentList = agents.data;
       this.forwarderList = forwarder.data;
       this.yardlist = yard.data;
-      if(this.bookingData){
+      if (this.bookingData) {
         this.evaluateDropdownOrFreeText();
       }
     }))
@@ -889,31 +919,31 @@ getCurrentCompanyBranches(){
   }
 
   loadOtherLookups() {
-  forkJoin({
-    currencies: this.operationService.getAllCurrencies().pipe(
-      catchError(() => of({ data: [] }))
-    ),
-  }).subscribe(({ currencies }) => {
+    forkJoin({
+      currencies: this.operationService.getAllCurrencies().pipe(
+        catchError(() => of({ data: [] }))
+      ),
+    }).subscribe(({ currencies }) => {
       const rawCurrencies: any[] = Array.isArray(currencies)
-      ? currencies
-      : currencies?.data || [];
-       this.currencyList = rawCurrencies.map((c: any) => ({
-      ...c,
-      countryName: c?.countryMaster?.countryName || ''
-    }));
-  });
-}
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
+    });
+  }
 
 
 
 
   loadProductLookups() {
     forkJoin({
-      products : this.operationService.getAllProducts(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
-      packageTypes : this.operationService.getUOMsByType('P').pipe(catchError(err => of([]))),
-      imcos : this.operationService.getAllIMCO().pipe(catchError(err => of([]))),
-      uoms : this.operationService.getUOMsByType('M').pipe(catchError(err => of([]))),
-    }).subscribe(({ products , packageTypes , imcos , uoms }) => {
+      products: this.operationService.getAllProducts(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
+      packageTypes: this.operationService.getUOMsByType('P').pipe(catchError(err => of([]))),
+      imcos: this.operationService.getAllIMCO().pipe(catchError(err => of([]))),
+      uoms: this.operationService.getUOMsByType('M').pipe(catchError(err => of([]))),
+    }).subscribe(({ products, packageTypes, imcos, uoms }) => {
       this.productList = products.data;
       this.packageTypeList = packageTypes.data;
       this.imcoList = imcos.data;
@@ -947,7 +977,7 @@ getCurrentCompanyBranches(){
     this.evaluateDropdownOrFreeText();
     this.bookingForm.patchValue({
       BookingNo: response.BookingNo,
-      BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
+      BookingDateTime: response.BookingDateTime ? new Date(response.BookingDateTime) : null,
       DepartmentMasterSid: response.DepartmentMasterSid,
       CustomerMasterSid: response.CustomerMasterSid,
       CustomerBranchSid: response.CustomerBranchSid,
@@ -988,8 +1018,8 @@ getCurrentCompanyBranches(){
       InternalNote: response.InternalNote,
       GeneralNote: response.GeneralNote,
       NominatedBy: response.NominatedBy,
-      FreightTerms : response.FreightTerms,
-      BookingStatus : response.BookingStatus,
+      FreightTerms: response.FreightTerms,
+      BookingStatus: response.BookingStatus,
       ShipmentNo: response.ShipmentNo
     })
     this.getVesselVoyBasedOnPorts();
@@ -1015,28 +1045,28 @@ getCurrentCompanyBranches(){
       ShipmentTerms: cargoData?.ShipmentTerms,
       MovementType: cargoData?.MovementType,
       FreightTerms: cargoData?.FreightTerms,
-      ModeOfTransport : cargoData?.ModeOfTransport,
+      ModeOfTransport: cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt
     })
-    console.log("Patched Cargo",this.cargoForm.value);
+    console.log("Patched Cargo", this.cargoForm.value);
     this.handleCFSOrYard();
     const otherData = response.bookingOthers?.[0];
     this.otherForm.patchValue({
       BookingOthersSid: otherData?.BookingOthersSid,
       CustomerRefNo: otherData?.CustomerRefNo,
       YardCFS: otherData?.YardCFS,
-      ReleaseType : otherData?.ReleaseType || null,
+      ReleaseType: otherData?.ReleaseType || null,
       HBLNo: otherData?.HBLNo || null,
       Forwarder: otherData?.Forwarder || null,
       ForwarderAddress: otherData?.ForwarderAddress,
       NotifyParty: otherData?.NotifyParty || null,
       NotifyPartyAddress: otherData?.NotifyPartyAddress,
-      Notify2 : otherData?.Notify2 || null,
-      NotifyAddress2 : otherData?.NotifyAddress2,
-      Coloader : otherData?.Coloader || null,
+      Notify2: otherData?.Notify2 || null,
+      NotifyAddress2: otherData?.NotifyAddress2,
+      Coloader: otherData?.Coloader || null,
       PickupPlace: otherData?.PickupPlace,
       DeliveryPlace: otherData?.DeliveryPlace,
-      DeliveryDate:otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
+      DeliveryDate: otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
       CHAName: otherData?.CHAName,
       PickupAddress: otherData?.PickupAddress,
       DeliveryAddress: otherData?.DeliveryAddress,
@@ -1045,20 +1075,20 @@ getCurrentCompanyBranches(){
       SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
       BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
       Depo: otherData?.Depo,
-      ROValidity:otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
-      SwitchBLAgent : otherData?.SwitchBLAgent,
-      AgentAddress : otherData?.AgentAddress,
-      SwitchBLShipper : otherData?.SwitchBLShipper,
-      SwitchBLConsignee : otherData?.SwitchBLConsignee,
-      SwitchLocation  : otherData?.SwitchLocation,
-      CarrierBookingRef : otherData?.CarrierBookingRef,
-      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
+      ROValidity: otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
+      SwitchBLAgent: otherData?.SwitchBLAgent,
+      AgentAddress: otherData?.AgentAddress,
+      SwitchBLShipper: otherData?.SwitchBLShipper,
+      SwitchBLConsignee: otherData?.SwitchBLConsignee,
+      SwitchLocation: otherData?.SwitchLocation,
+      CarrierBookingRef: otherData?.CarrierBookingRef,
+      CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
     })
 
     this.bookingProducts.clear();
     const productsFromResponse = response.bookingProduct || [];
     this.productDataLength = productsFromResponse.length;
-    if(this.productDataLength){
+    if (this.productDataLength) {
       for (const productData of productsFromResponse) {
         const formWithData = this.createBookingProductGroup(productData);
         this.bookingProducts.push(formWithData);
@@ -1070,7 +1100,7 @@ getCurrentCompanyBranches(){
     this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
       return {
         ...connection,
-        TransactionSid : connection.BookingConnectionSid,
+        TransactionSid: connection.BookingConnectionSid,
       }
     }); // for child component
     this.connectionResult = [...this.bookingConnectionsArr]
@@ -1078,11 +1108,11 @@ getCurrentCompanyBranches(){
     this.bookingRateArr = response.bookingRates || [];
     this.rateResult = [...this.bookingRateArr];
     const shipmentTypeValue = response.ShipmentType === "Y" ? true : false;
-if (shipmentTypeValue) {
-    this.bookingForm.get('NominatedBy')?.setValue('Nomination');
-} else {
-    this.bookingForm.get('NominatedBy')?.setValue('Self');
-}
+    if (shipmentTypeValue) {
+      this.bookingForm.get('NominatedBy')?.setValue('Nomination');
+    } else {
+      this.bookingForm.get('NominatedBy')?.setValue('Self');
+    }
 
   }
 
@@ -1103,29 +1133,29 @@ if (shipmentTypeValue) {
   // }
 
   // Patch booking from quotation
-patchBookingFromQuotation(data: any) {
-  // Find customer from loaded customer list
-  const customer = this.customerList.find(c => c.CustomerMasterSid === data.CustomerMasterSid);
-  if (customer) {
-    this.onCustomerChange(customer); // sets CustomerName and CustomerAddress properly
-  } else {
-    // fallback if customer not found
-    this.b['CustomerName']?.setValue(data.CustomerName || '');
-    this.b['CustomerAddress']?.setValue(data.CustomerAddress || '');
+  patchBookingFromQuotation(data: any) {
+    // Find customer from loaded customer list
+    const customer = this.customerList.find(c => c.CustomerMasterSid === data.CustomerMasterSid);
+    if (customer) {
+      this.onCustomerChange(customer); // sets CustomerName and CustomerAddress properly
+    } else {
+      // fallback if customer not found
+      this.b['CustomerName']?.setValue(data.CustomerName || '');
+      this.b['CustomerAddress']?.setValue(data.CustomerAddress || '');
+    }
+
+    // Patch remaining form fields
+    this.bookingForm.patchValue({
+      QuotationHeaderSid: data.QuotationHeaderSid,
+      DepartmentMasterSid: data.DepartmentMasterSid,
+      CustomerMasterSid: data.CustomerMasterSid,
+      SalesmanSid: data.SalesmanSid,
+      FreightTerms: data.FreightTerms,
+    });
   }
 
-  // Patch remaining form fields
-  this.bookingForm.patchValue({
-    QuotationHeaderSid: data.QuotationHeaderSid,
-    DepartmentMasterSid: data.DepartmentMasterSid,
-    CustomerMasterSid: data.CustomerMasterSid,
-    SalesmanSid: data.SalesmanSid,
-    FreightTerms: data.FreightTerms,
-  });
-}
-
-  onContainerTypeChange(containerType : any){
-    if(!containerType){
+  onContainerTypeChange(containerType: any) {
+    if (!containerType) {
       this.selectedContainerType = '';
       return;
     }
@@ -1156,7 +1186,7 @@ patchBookingFromQuotation(data: any) {
         Width: data?.Width,
         Height: data?.Height,
         UomMasterSid: data?.UomMasterSid,
-        CargoRecDate : data?.CargoRecDate
+        CargoRecDate: data?.CargoRecDate
       })
       const productItem = this.slicedProductArr[productIndex];
       this.currentProductIndex = this.bookingProducts.controls.indexOf(productItem);
@@ -1174,7 +1204,7 @@ patchBookingFromQuotation(data: any) {
   }
 
   onProductSubmit() {
-    if(this.productForm.invalid){
+    if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
       this.productForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all the required fields correctly.')
@@ -1199,23 +1229,23 @@ patchBookingFromQuotation(data: any) {
     this.modalService.dismissAll();
   }
 
-  handleConnectionChange(allConnections:any[]){
+  handleConnectionChange(allConnections: any[]) {
     console.log(allConnections);
-    if(allConnections.length > 0){
+    if (allConnections.length > 0) {
       this.connectionResult = [...allConnections];
     }
   }
 
-  handleRateChange(allRates:any[]){
+  handleRateChange(allRates: any[]) {
     console.log(allRates);
-    if(allRates.length > 0){
+    if (allRates.length > 0) {
       this.rateResult = [...allRates];
     }
   }
 
-  handleMilestoneChange(allmilestones:any[]){
+  handleMilestoneChange(allmilestones: any[]) {
     console.log(allmilestones);
-    if(allmilestones.length !== 0){
+    if (allmilestones.length !== 0) {
       this.milestoneResult = [...allmilestones];
     }
   }
@@ -1224,11 +1254,18 @@ patchBookingFromQuotation(data: any) {
 
 
   onSubmit() {
-    console.log('Submit triggered',this.bookingForm.value);
+    console.log('Submit triggered', this.bookingForm.value);
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
+    }
+
+    const isRateValid = this.costEntryComponent?.validateRateArray?.();
+    console.log(isRateValid);
+    if (!isRateValid) {
+      console.warn('Rate validation failed — submission stopped');
       return;
     }
     const bookingFormValue = this.bookingForm.getRawValue();
@@ -1241,7 +1278,7 @@ patchBookingFromQuotation(data: any) {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      MenuMasterSid : currentMenuId,
+      MenuMasterSid: currentMenuId,
       DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
       CustomerMasterSid: bookingFormValue.CustomerMasterSid,
       CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
@@ -1281,10 +1318,10 @@ patchBookingFromQuotation(data: any) {
       InternalNote: bookingFormValue.InternalNote || '',
       GeneralNote: bookingFormValue.GeneralNote || '',
       NominatedBy: bookingFormValue.NominatedBy || 'Self',
-      FreightTerms : bookingFormValue.FreightTerms || '',
+      FreightTerms: bookingFormValue.FreightTerms || '',
       ShipmentNo: bookingFormValue.ShipmentNo || '',
       bookingCargo: {
-        BookingCargoSid : cargoFormValue.BookingCargoSid || null,
+        BookingCargoSid: cargoFormValue.BookingCargoSid || null,
         CargoType: cargoFormValue.CargoType || null,
         ContainerType: cargoFormValue.ContainerType || null,
         NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
@@ -1296,11 +1333,11 @@ patchBookingFromQuotation(data: any) {
         ShipmentTerms: cargoFormValue.ShipmentTerms || null,
         MovementType: cargoFormValue.MovementType || null,
         FreightTerms: cargoFormValue.FreightTerms || null,
-        ModeOfTransport : cargoFormValue.ModeOfTransport || null,
+        ModeOfTransport: cargoFormValue.ModeOfTransport || null,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
       },
       bookingOther: {
-        BookingOthersSid : otherFormValue.BookingOthersSid || null,
+        BookingOthersSid: otherFormValue.BookingOthersSid || null,
         CustomerRefNo: otherFormValue.CustomerRefNo || '',
         YardCFS: otherFormValue.YardCFS || '',
         ReleaseType: otherFormValue.ReleaseType || null,
@@ -1329,11 +1366,11 @@ patchBookingFromQuotation(data: any) {
         SwitchBLShipper: otherFormValue?.SwitchBLShipper,
         SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
         SwitchLocation: otherFormValue?.SwitchLocation,
-        CarrierBookingRef : otherFormValue?.CarrierBookingRef,
-        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
+        CarrierBookingRef: otherFormValue?.CarrierBookingRef,
+        CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
       },
       bookingProducts: detailFormValue.bookingProducts.map((product: any) => ({
-        BookingProductSid : product.BookingProductSid || null,
+        BookingProductSid: product.BookingProductSid || null,
         ProductName: product.ProductName || '',
         ShippingBillNo: product.ShippingBillNo || '',
         ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
@@ -1350,11 +1387,11 @@ patchBookingFromQuotation(data: any) {
         Width: Number(product.Width),
         Height: Number(product.Height),
         UomMasterSid: product.UomMasterSid,
-        CargoRecDate : product.CargoRecDate
+        CargoRecDate: product.CargoRecDate
       })),
       bookingConnections: this.connectionResult,
       bookingRates: this.rateResult,
-      milestones: this.milestoneResult ,
+      milestones: this.milestoneResult,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
 
@@ -1404,7 +1441,7 @@ patchBookingFromQuotation(data: any) {
   */
 
   // Header Part Related
-  
+
   onDeptChange(department) {
     this.selectedDepartment = department;
     if (!department) {
@@ -1427,12 +1464,12 @@ patchBookingFromQuotation(data: any) {
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
-        this.cargoForm.get('StuffingAt')?.setValue('Dock');
-        this.cargoForm.get('StuffingAt')?.disable();
+      this.cargoForm.get('StuffingAt')?.setValue('Dock');
+      this.cargoForm.get('StuffingAt')?.disable();
     } else {
-        this.cargoForm.get('StuffingAt')?.enable();
+      this.cargoForm.get('StuffingAt')?.enable();
     }
-    
+
     this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
     this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
     this.handleCFSOrYard()
@@ -1528,7 +1565,7 @@ patchBookingFromQuotation(data: any) {
       const shipperExist = this.shipperList.find(s => s.CustomerBranchSid === CustomerBranchSid);
       const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerBranchSid === CustomerBranchSid);
 
-      if(shipperExist && shipperExistInFiltered) {
+      if (shipperExist && shipperExistInFiltered) {
         this.b['ShipperName']?.setValue(shipperExistInFiltered.CustomerName);
         this.b['ShipperAddress']?.setValue(shipperExistInFiltered.Address);
         this.onShipperChange(shipperExistInFiltered);
@@ -1567,7 +1604,7 @@ patchBookingFromQuotation(data: any) {
         this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.Address);
         this.onConsigneeChange(consigneeExistInFiltered);
         this.onShipperChange();
-      } else if(consigneeExist && !consigneeExistInFiltered) {
+      } else if (consigneeExist && !consigneeExistInFiltered) {
         this.b['ConsigneeName']?.setValue(consigneeExist.CustomerName);
         this.b['ConsigneeAddress']?.setValue(consigneeExist.Address);
         this.b['ShipperName']?.setValue(null);
@@ -1587,7 +1624,7 @@ patchBookingFromQuotation(data: any) {
     this.operationService.getCustomerBranchByCustomer(CustomerMasterSid).subscribe((resp: any) => {
       if (resp.status) {
         this.customerBranchList = resp.data;
-        if(this.isEditMode){
+        if (this.isEditMode) {
           this.selectedCustomerBranch = this.customerBranchList.find(c => c.CustomerBranchSid === this.bookingHeader?.CustomerBranchSid);
         }
       } else {
@@ -1643,8 +1680,8 @@ patchBookingFromQuotation(data: any) {
     this.getVesselVoyBasedOnPorts();
   }
 
-  handleFPODChange(port){
-    if(!port){
+  handleFPODChange(port) {
+    if (!port) {
       this.PODandFPODsame = true;
       return;
     }
@@ -1655,16 +1692,16 @@ patchBookingFromQuotation(data: any) {
     console.log(voyage);
     if (!voyage) {
       this.bookingForm.patchValue({
-        VoyageNo : null,
-        ETA : '',
-        ETD : ''
+        VoyageNo: null,
+        ETA: '',
+        ETD: ''
       })
       return;
     }
     this.bookingForm.patchValue({
-      VoyageNo : voyage.VoyageNo,
-      ETA : new Date(voyage.ETA),
-      ETD : new Date(voyage.ETD)
+      VoyageNo: voyage.VoyageNo,
+      ETA: new Date(voyage.ETA),
+      ETD: new Date(voyage.ETD)
     })
   }
 
@@ -1686,10 +1723,10 @@ patchBookingFromQuotation(data: any) {
     this.minStartDate = new Date(podETA);
   }
 
-  getVoyageTypeBasedOnDept(deptId:number){
+  getVoyageTypeBasedOnDept(deptId: number) {
     const dept = this.departmentList.find(dept => dept.DepartmentMasterSid === deptId);
     const deptType = dept?.departmentType;
-    switch(deptType){
+    switch (deptType) {
       case 'Sea':
         return 'Sea';
       case 'Air':
@@ -1708,7 +1745,7 @@ patchBookingFromQuotation(data: any) {
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
     if (!POLSid || !PODSid || !voyageType) return;
-    const payload = {  POL: POLSid, POD: PODSid, segment : voyageType };
+    const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
 
     this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
@@ -1738,7 +1775,7 @@ patchBookingFromQuotation(data: any) {
     if (!POL || !POD || !vesselId) {
       return;
     }
-    const payload = { VesselMasterSid: vesselId,  POL: POLSid, POD: PODSid, MovementType: MovementType }
+    const payload = { VesselMasterSid: vesselId, POL: POLSid, POD: PODSid, MovementType: MovementType }
     this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -1749,14 +1786,14 @@ patchBookingFromQuotation(data: any) {
             const podName = pod?.PortName;
             const polWithName = pol ? { ...pol, PortName: polName } : null;
             const podWithName = pod ? { ...pod, PortName: podName } : null;
-            
+
 
 
             return {
-              VoyageNo : voyage.VoyageNo,
-              ETD : voyage.ETD,
-              ETA : voyage.ETA,
-              VoyageMasterHeaderSid : voyage.VoyageMasterHeaderSid,
+              VoyageNo: voyage.VoyageNo,
+              ETD: voyage.ETD,
+              ETA: voyage.ETA,
+              VoyageMasterHeaderSid: voyage.VoyageMasterHeaderSid,
               POL: polWithName,
               POD: podWithName
             };
@@ -1782,24 +1819,24 @@ patchBookingFromQuotation(data: any) {
 
   //  Product Form Related Functions
 
-  handleProductChange(product: any,productIndex:number) {
+  handleProductChange(product: any, productIndex: number) {
     const productGroup = this.bookingProducts.at(productIndex) as FormGroup;
     if (!product) {
       productGroup.patchValue({
-        IsHaz : false,
-        ImcoClass : '',
-        UnNo : '',
-        PkgGroup : ''
+        IsHaz: false,
+        ImcoClass: '',
+        UnNo: '',
+        PkgGroup: ''
       })
       return;
     }
     productGroup.patchValue({
-      IsHaz : product.ProductType === "2",
-      ImcoClass : product.IMOClass,
-      UnNo : product.UNNo,
-      PkgGroup : product.PackingGroup
+      IsHaz: product.ProductType === "2",
+      ImcoClass: product.IMOClass,
+      UnNo: product.UNNo,
+      PkgGroup: product.PackingGroup
     })
-    if(product.ProductType === "2"){
+    if (product.ProductType === "2") {
       productGroup.get('ImcoClass')?.enable();
       productGroup.get('UnNo')?.enable();
       productGroup.get('PkgGroup')?.enable();
@@ -1810,30 +1847,30 @@ patchBookingFromQuotation(data: any) {
     }
   }
 
-  onImcoChange(productIndex:number,item:any){
+  onImcoChange(productIndex: number, item: any) {
     console.log(item);
     const productForm = this.bookingProducts.at(productIndex) as FormGroup;
-    if(!item){
+    if (!item) {
       productForm.patchValue({
-        UnNo : null,
-        PkgGroup : null
+        UnNo: null,
+        PkgGroup: null
       })
       return;
     }
     productForm.patchValue({
-      UnNo : item.ImcoUn,
-      PkgGroup : item.PackingGroup
+      UnNo: item.ImcoUn,
+      PkgGroup: item.PackingGroup
     })
   }
 
-   onHazChange(productIndex:number,event:any){
-      const element = event.target as HTMLInputElement;
-      const control = this.bookingProducts.at(productIndex).get('IsHaz');
-      if(event instanceof KeyboardEvent){
-        element.checked = !element.checked;
-      }
-      control.setValue(element.checked);
-      this.toggleHazProduct(productIndex);
+  onHazChange(productIndex: number, event: any) {
+    const element = event.target as HTMLInputElement;
+    const control = this.bookingProducts.at(productIndex).get('IsHaz');
+    if (event instanceof KeyboardEvent) {
+      element.checked = !element.checked;
+    }
+    control.setValue(element.checked);
+    this.toggleHazProduct(productIndex);
   }
 
   toggleHazProduct(productIndex: number) {
@@ -1875,7 +1912,7 @@ patchBookingFromQuotation(data: any) {
             this.appSettingService.showError("Error deleting product.");
           }
         })
-      } else {
+    } else {
       this.bookingProducts.removeAt(productIndex);
       this.productDataLength = this.bookingProducts.length;
       this.appSettingService.showSuccess('Product Deleted Successfully');
@@ -1910,9 +1947,9 @@ patchBookingFromQuotation(data: any) {
       return;
     }
 
-    let totalNoOfPkg : any = 0;
-    let totalGrossWeight :any = 0;
-    let totalNetWeight:any = 0;
+    let totalNoOfPkg: any = 0;
+    let totalGrossWeight: any = 0;
+    let totalNetWeight: any = 0;
     let totalVolume: any = 0;
 
     let productValue = this.bookingProducts.getRawValue() || [];
@@ -1945,60 +1982,60 @@ patchBookingFromQuotation(data: any) {
     this.o[controlName]?.setValue(item ? item.Address : '')
   }
 
- handleCFSOrYard() {
-  const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
-  
-  console.log('handleCFSOrYard called:', {
-    selectedDepartment: this.selectedDepartment,
-    stuffingAt: stuffingAt,
-    selectedFCLLCL: this.selectedFCLLCL
-  });
+  handleCFSOrYard() {
+    const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
 
-  if (!this.selectedDepartment) {
+    console.log('handleCFSOrYard called:', {
+      selectedDepartment: this.selectedDepartment,
+      stuffingAt: stuffingAt,
+      selectedFCLLCL: this.selectedFCLLCL
+    });
+
+    if (!this.selectedDepartment) {
       this.YardCFSLabel = "CFS";
       this.currentYardCFSType = null;
-     
+
       return;
-  }
+    }
 
-  const isFCL = this.selectedFCLLCL === "FCL";
-  const isExport = this.selectedDepartment?.ExportImport === "Export";
-  const isLCL = this.selectedFCLLCL === "LCL";
-  const isAIR = this.selectedFCLLCL === "AIR";
+    const isFCL = this.selectedFCLLCL === "FCL";
+    const isExport = this.selectedDepartment?.ExportImport === "Export";
+    const isLCL = this.selectedFCLLCL === "LCL";
+    const isAIR = this.selectedFCLLCL === "AIR";
 
-  console.log('Business rules:', { isFCL, isExport, isLCL, isAIR });
+    console.log('Business rules:', { isFCL, isExport, isLCL, isAIR });
 
-  // Determine Yard/CFS type based on business rules
-  this.o['YardCFS']?.reset();
-  if (isFCL && isExport) {
+    // Determine Yard/CFS type based on business rules
+    this.o['YardCFS']?.reset();
+    if (isFCL && isExport) {
       if (stuffingAt === "Factory") {
-          // FCL Export with Factory Stuffing -> Container Yard
-          this.YardCFSLabel = "Yard";
-          // this.currentYardCFSType = 'yard';
-      }  else {
-          this.YardCFSLabel = "CFS";
-          // this.currentYardCFSType = null;
+        // FCL Export with Factory Stuffing -> Container Yard
+        this.YardCFSLabel = "Yard";
+        // this.currentYardCFSType = 'yard';
+      } else {
+        this.YardCFSLabel = "CFS";
+        // this.currentYardCFSType = null;
       }
-  } 
-  
-  else {
-      
+    }
+
+    else {
+
       this.YardCFSLabel = "CFS";
-      
+
+    }
+
+    console.log('Final Yard/CFS settings:', {
+      label: this.YardCFSLabel,
+      type: this.currentYardCFSType
+    });
+
+
   }
-
-  console.log('Final Yard/CFS settings:', {
-    label: this.YardCFSLabel,
-    type: this.currentYardCFSType
-  });
-
- 
-}
 
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 
-  syncFormValueWithRateComponent(){
+  syncFormValueWithRateComponent() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.b['DepartmentMasterSid']?.value;
     const BookingNumber = this.b['BookingNo']?.value;
@@ -2032,7 +2069,7 @@ patchBookingFromQuotation(data: any) {
       CustomerMasterSid,
       CustomerBranchSid,
       departmentName,
-      Segment : this.selectedFCLLCL,
+      Segment: this.selectedFCLLCL,
       PORSid,
       POLSid,
       PODSid,
@@ -2056,33 +2093,33 @@ patchBookingFromQuotation(data: any) {
   selectedTab = 'Shipment';
   isQuickFormExpanded = false;
 
-resetForm() {
-  this.bookingForm.reset({
-    status: 'Active'
-  });
+  resetForm() {
+    this.bookingForm.reset({
+      status: 'Active'
+    });
 
-  this.filteredPorts = [];
-  this.filteredPOL = [];
-  this.filteredPOD = [];
-  this.vesselList = [];
-  this.voyageList = [];
+    this.filteredPorts = [];
+    this.filteredPOL = [];
+    this.filteredPOD = [];
+    this.vesselList = [];
+    this.voyageList = [];
 
-  this.resetTriggerConnection = !this.resetTriggerConnection;
-  this.connectionResult = [];
-  this.resetTriggerRate = !this.resetTriggerRate;
-  this.rateResult = [];
-  this.resetTriggerMilestone = !this.resetTriggerMilestone;
-  this.milestoneResult = [];
+    this.resetTriggerConnection = !this.resetTriggerConnection;
+    this.connectionResult = [];
+    this.resetTriggerRate = !this.resetTriggerRate;
+    this.rateResult = [];
+    this.resetTriggerMilestone = !this.resetTriggerMilestone;
+    this.milestoneResult = [];
 
-  this.detailForm.reset();
-  (this.detailForm.get('bookingProducts') as FormArray).clear();
+    this.detailForm.reset();
+    (this.detailForm.get('bookingProducts') as FormArray).clear();
 
-  this.slicedProductArr = [];
-  this.productDataLength = 0;
+    this.slicedProductArr = [];
+    this.productDataLength = 0;
 
-  this.cargoForm.reset();
-  this.otherForm.reset();
-}
+    this.cargoForm.reset();
+    this.otherForm.reset();
+  }
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
@@ -2094,40 +2131,40 @@ resetForm() {
   }
 
 
-  
-    showInfo() {
-      if(!this.bookingData) return;
-      const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-      modalRef.componentInstance.item = this.bookingData;
-      modalRef.componentInstance.idLabel = 'Booking Id';
-      modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
-    }
+
+  showInfo() {
+    if (!this.bookingData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.bookingData;
+    modalRef.componentInstance.idLabel = 'Booking Id';
+    modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+  }
 
   openTandC() {
-        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-        const payload = { MenuMasterSid: this.currentMenuId };
-        this.masterService.getTandCByCondition(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.TandCList = resp.data;
-              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-                size: 'lg',
-                backdrop: 'static',
-                centered: true
-              });
-              modalRef.componentInstance.terms = this.TandCList;
-              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-              modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
-    
-            } else {
-              this.appSettingService.showError('Error loading Terms and Conditions');
-            }
-          },
-          (error) => {
-            this.appSettingService.showError('Error loading Terms and Conditions',error);
-          }
-        );
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
       }
+    );
+  }
   async openEmail() {
     if (!this.bookingData) return;
 
@@ -2172,7 +2209,7 @@ Best Regards,
 ${this.userData['userName']}`;
 
       this.spinner.hide();
-      
+
       modalRef.componentInstance.setContent = {
         EmailTo: toEmail,
         EmailCC: ccEmail,
@@ -2188,13 +2225,13 @@ ${this.userData['userName']}`;
       this.appSettingService.showError('Error generating PDF for email attachment.');
     }
   }
-  
+
   openAuthority() {
     if (!this.bookingData) return;
-    const modalRef = this.modalService.open(AuthorityLogComponent, { 
-      size: 'lg', 
-      centered: true, 
-      backdrop: 'static' 
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     })
   }
   toggleQuickForm() {
@@ -2210,13 +2247,13 @@ ${this.userData['userName']}`;
 
     })
   }
-  
+
   openEDoc() {
     if (!this.bookingData) return;
-    const modalRef = this.modalService.open(EdocComponent, { 
-      size: 'lg', 
-      centered: true, 
-      backdrop: 'static' 
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     })
   }
 
@@ -2239,7 +2276,7 @@ ${this.userData['userName']}`;
     const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.bookingHeader?.BookingHeaderSid;
     modalRef.componentInstance.parentEmail = toEmail;
-    modalRef.componentInstance.parentSubject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${ formattedPOL } - ${ formattedPOD }${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
+    modalRef.componentInstance.parentSubject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
     modalRef.componentInstance.parentMailbody = `
       <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
         <p>Dear Sir/Madam,</p>
@@ -2267,70 +2304,70 @@ ${this.userData['userName']}`;
     })
   }
 
-//   openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.BookingHeaderSid) return;
+  //   openAuditLogs(modal: TemplateRef<any>) {
+  //   if (!this.BookingHeaderSid) return;
 
-//   this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
+  //   this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
+  //     next: (logs: any[]) => {
+  //       const formatFields = (val: any) => {
+  //         if (!val) return ['NA'];
+  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
+  //         delete obj.updatedOn; // Remove updatedOn field
+  //         // If no fields exist after deleting updatedOn
+  //         if (Object.keys(obj).length === 0) return ['NA'];
+  //         return Object.entries(obj).map(
+  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+  //         );
+  //       };
 
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
+  //       this.auditLogs = logs.map(log => ({
+  //         ...log,
+  //         oldValDisplay: formatFields(log.oldVal),
+  //         newValDisplay: formatFields(log.newVal)
+  //       }));
 
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
+  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+  //     },
+  //     error: err => console.error('Error fetching audit logs:', err)
+  //   });
+  // }
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.BookingHeaderSid) return;
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.BookingHeaderSid) return;
 
-  this.operationService.getAuditLogsBooking(
-    'BookingHeader',
-    this.BookingHeaderSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
+    this.operationService.getAuditLogsBooking(
+      'BookingHeader',
+      this.BookingHeaderSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
 
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;
@@ -2342,7 +2379,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     return '-';
   }
 
-  toggleMinimizeMaximize(){
+  toggleMinimizeMaximize() {
     toggleFullScreen();
   }
 
@@ -2425,22 +2462,22 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
 
-  getFormattedPort(code:string){
+  getFormattedPort(code: string) {
     console.log(code);
-    if(!code) return '';
+    if (!code) return '';
     const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
     console.log(ourPort);
     return `${ourPort} (${code})`
   }
 
-  getFPDETA(){
+  getFPDETA() {
     const POD = this.bookingHeader?.POD;
     const FPD = this.bookingHeader?.FPD;
-    const connections : any[] = this.bookingHeader?.bookingConnection || [];
-    if(POD === FPD){
+    const connections: any[] = this.bookingHeader?.bookingConnection || [];
+    if (POD === FPD) {
       return this.datePipe.transform(this.bookingHeader?.ETA);
     } else {
-      if(connections){
+      if (connections) {
         return this.datePipe.transform(connections[connections.length - 1]?.ETA);
       } else {
         return 'N/A'
@@ -2448,7 +2485,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     }
   }
 
-  reportAndEmailModel(content:TemplateRef<any>){
+  reportAndEmailModel(content: TemplateRef<any>) {
     this.modalService.open(content, {
       size: 'xl',
       scrollable: false,
@@ -2461,12 +2498,12 @@ openAuditLogs(modal: TemplateRef<any>) {
       const element = document.getElementById('pdfContent');
 
       const opt: Html2PdfOptions = {
-    margin: 0.5,
-      filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
+        margin: 0.5,
+        filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
 
       if (!element) return reject('No element found');
 
@@ -2550,7 +2587,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       const formattedPOL = this.getFormattedPort(POL);
       const formattedPOD = this.getFormattedPort(POD);
       const formattedFPD = this.getFormattedPort(FPD);
-      formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${ formattedPOL } - ${ formattedPOD }${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`);
+      formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`);
       formData.append('Mailbody', `
       <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
         <p>Dear Sir/Madam,</p>
@@ -2561,17 +2598,17 @@ openAuditLogs(modal: TemplateRef<any>) {
         <p>${this.userData['userName']}</p>
       </div>
     `);
-    formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
-    console.log(formData)
-    this.operationService.bookingPrint(formData).subscribe((resp: any) => {
-      this.spinner.hide();
-      if (resp?.data) {
-        this.appSettingService.showSuccess('Booking Print Sent successfully!');
-      }
-    }, error => {
-      this.spinner.hide();
-      this.appSettingService.showError('Failed to send email.');
-    });
+      formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
+      console.log(formData)
+      this.operationService.bookingPrint(formData).subscribe((resp: any) => {
+        this.spinner.hide();
+        if (resp?.data) {
+          this.appSettingService.showSuccess('Booking Print Sent successfully!');
+        }
+      }, error => {
+        this.spinner.hide();
+        this.appSettingService.showError('Failed to send email.');
+      });
     } catch (error) {
       this.spinner.hide();
       console.error('PDF generation error:', error);
@@ -2905,7 +2942,7 @@ openAuditLogs(modal: TemplateRef<any>) {
           // If TaxGroup is specified, try to match it as well
           if (taxGroup) {
             const typeMatch = tg.TaxType === taxGroup ||
-                            (taxGroup === 'GST' && (tg.TaxType === 'Input' || tg.TaxType === 'Output' || tg.TaxType === 'GST'));
+              (taxGroup === 'GST' && (tg.TaxType === 'Input' || tg.TaxType === 'Output' || tg.TaxType === 'GST'));
             return rateMatch && typeMatch;
           }
 
@@ -3414,67 +3451,67 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.selectedCharges.clear();
     this.availableCharges = [];
   }
-  ngOnDestroy(){
+  ngOnDestroy() {
     this.dataFromQuotation = null;
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();
   }
- getFilteredNominationList() {
+  getFilteredNominationList() {
     const isShipmentTypeChecked = this.bookingForm.get('ShipmentType')?.value;
     if (isShipmentTypeChecked) {
-        return this.nominationList.filter(item => item.name === 'Nomination');
+      return this.nominationList.filter(item => item.name === 'Nomination');
     } else {
-        return this.nominationList.filter(item => item.name === 'Self');
+      return this.nominationList.filter(item => item.name === 'Self');
     }
-}
+  }
 
-onShipmentTypeChange() {
+  onShipmentTypeChange() {
     const isShipmentTypeChecked = this.bookingForm.get('ShipmentType')?.value;
-    
+
     if (isShipmentTypeChecked) {
-        this.bookingForm.get('NominatedBy')?.setValue('Nomination');
+      this.bookingForm.get('NominatedBy')?.setValue('Nomination');
     } else {
-        this.bookingForm.get('NominatedBy')?.setValue('Self');
+      this.bookingForm.get('NominatedBy')?.setValue('Self');
     }
-}
+  }
 
   existsInList(list: any[], value: any) {
-    if(list){
+    if (list) {
       return list.some(item => item.CustomerName === value);
     }
     return null;
   }
   private autoSetFreightTerms(incoTerm: string) {
-  if (!incoTerm) {
-    this.bookingForm.get('FreightTerms')?.setValue(null, { emitEvent: false });
-    return;
+    if (!incoTerm) {
+      this.bookingForm.get('FreightTerms')?.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    const inco = this.incoList.find(item => item.IncoName === incoTerm);
+    if (inco && inco.OceanFreight) {
+      this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight, { emitEvent: false });
+    }
+  }
+  onIncoTermsChange(selectedInco: any) {
+    if (!selectedInco || this.isManualFreightChange) {
+      return;
+    }
+
+    const inco = this.incoList.find(item =>
+      item.IncoName === selectedInco || item.IncoMasterSid === selectedInco
+    );
+
+    if (inco && inco.OceanFreight) {
+      this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight);
+    }
   }
 
-  const inco = this.incoList.find(item => item.IncoName === incoTerm);
-  if (inco && inco.OceanFreight) {
-    this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight, { emitEvent: false });
-  }
-}
-onIncoTermsChange(selectedInco: any) {
-  if (!selectedInco || this.isManualFreightChange) {
-    return;
+  onFreightTermsManualChange() {
+    this.isManualFreightChange = true;
   }
 
-  const inco = this.incoList.find(item => 
-    item.IncoName === selectedInco || item.IncoMasterSid === selectedInco
-  );
-
-  if (inco && inco.OceanFreight) {
-    this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight);
-  }
-}
-
-onFreightTermsManualChange() {
-  this.isManualFreightChange = true;
-}
-
-  evaluateDropdownOrFreeText(){
+  evaluateDropdownOrFreeText() {
     let response = this.bookingData;
     if (response?.ShipperName && !this.existsInList(this.shipperList, response.ShipperName)) {
       this.bookingForm.patchValue({ isShipperFreeText: true });
@@ -3490,9 +3527,34 @@ onFreightTermsManualChange() {
     }
   }
 
+  setOrResetWeightError(formGroup: FormGroup) {
+    const grossCtrl = formGroup.get('GrossWeight');
+    const grossValue = formGroup.get('GrossWeight')?.value;
+    const netValue = formGroup.get('NetWeight')?.value;
 
+    if (!grossValue || !netValue) {
+      grossCtrl.setErrors(null);
+      return;
+    }
+    if (grossCtrl) {
+      if (Number(grossValue) <= Number(netValue)) {
+        grossCtrl.setErrors({ grossNotGreater: true });
+      } else {
+        grossCtrl.setErrors(null);
+      }
+    }
+  }
 
-  getBookingStatus(){
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
+
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+  }
+
+  getBookingStatus() {
     return this.bookingForm.get('status')?.value;
   }
 

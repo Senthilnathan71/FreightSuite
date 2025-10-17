@@ -59,6 +59,21 @@
           <span>Save</span>
         </button>
       </div>
+      <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+          </div>
+        </div>
     </div>
   </div>
 
@@ -1113,7 +1128,7 @@
         </button>
       </div>
 
-      <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
+      <app-cost-entry #costEntryComponent screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
       [agentList]="agentList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
         (dataEmitter)="handleRateChange($event)"></app-cost-entry>
@@ -1179,8 +1194,8 @@
               @if ((cargoForm.get('GrossWeight')?.touched || cargoForm.get('GrossWeight')?.dirty) &&
               cargoForm.get('GrossWeight')?.invalid) {
               <div class="error-message">
-                @if (cargoForm.get('GrossWeight')?.errors?.['max']) {
-                <span>Gross Weight cannot exceed 9,999,999.999</span>
+                @if (cargoForm.get('GrossWeight')?.errors?.['grossNotGreater']) {
+                <span>Gross Weight should be greater than Net Weight</span>
                 } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 }
@@ -1194,7 +1209,7 @@
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
-                max="9999999.999">
+                max="9999999.999" (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()" (input)="cargoForm.get('GrossWeight')?.updateValueAndValidity()">
               <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
@@ -2291,13 +2306,13 @@
   </div>
 </ng-template> -->
 
-@if(isEditMode){
+<!-- @if(isEditMode){
 <div class="col-12 mt-3">
   <div class="card">
     <div class="card-body">
       <div class="row">
         <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-          <!-- eDoc Button -->
+       
 
           <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
             <i class="fas fa-file-alt me-1"></i> e-Doc
@@ -2322,7 +2337,7 @@
     </div>
   </div>
 </div>
-}
+} -->
 
 
 
