@@ -24,6 +24,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -45,7 +46,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
         DatePipe,
         RouterModule,
         NgbDropdownModule,
-        SearchableDropdown
+        SearchableDropdown,
     ],
     templateUrl: './sailing-schedule-entry.component.html',
     styleUrl: './sailing-schedule-entry.component.scss',
@@ -102,6 +103,9 @@ export class SailingScheduleEntryComponent implements OnInit {
         { id: "Suspended", name: "Suspended" },
     ]
 
+    customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+    portLookupConfig = DROPDOWN_CONFIGS.PORT;
+
 
     constructor(
         private route : Router,
@@ -118,8 +122,10 @@ export class SailingScheduleEntryComponent implements OnInit {
         effect(()=>{
             const vesselData= this.dropdownStore.vesselData();
             const carrierData = this.dropdownStore.customerTypeData();
+            const portData = this.dropdownStore.ports();
             this.vesselList = vesselData;
             this.carrierList  = carrierData
+            this.portList  = (portData || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
         })
     }
 
