@@ -5,10 +5,11 @@
         <h4 class="page-title mb-0">Invoice</h4>
       </div>
       <div class="col-md-8 pb-1">
-        
+
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()" *ngIf="isEditMode">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()"
+            *ngIf="isEditMode">
             <i class="fas fa-print me-1"></i> Print
           </button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
@@ -23,7 +24,7 @@
             <i class="fas fa-save me-1"></i> Save
           </button>
 
-      
+
         </div>
       </div>
     </div>
@@ -358,16 +359,17 @@
 
                     <!-- Charge -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="chargeList" bindLabel="chargeCode" bindValue="ChargeMasterSid"
-                        formControlName="ChargeMasterSid" (change)="onDetailChange(i, 'ChargeMasterSid')" placeholder=""
-                        appendTo="body">
+                      <ng-select *ngIf="!isEditMode" [items]="chargeList" bindLabel="chargeCode"
+                        bindValue="ChargeMasterSid" formControlName="ChargeMasterSid"
+                        (change)="onDetailChange(i, 'ChargeMasterSid')" placeholder="" appendTo="body">
                       </ng-select>
                       <span *ngIf="isEditMode">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span>
                     </td>
 
                     <!-- Description -->
                     <td>
-                      <input *ngIf="!isEditMode" class="custom-input-field sm" formControlName="ChargeDescription" readonly>
+                      <input *ngIf="!isEditMode" class="custom-input-field sm" formControlName="ChargeDescription"
+                        readonly>
                       <span *ngIf="isEditMode">{{ row.get('ChargeDescription')?.value || '-' }}</span>
                     </td>
 
@@ -376,12 +378,15 @@
                       <ng-select *ngIf="!isEditMode" [items]="hssacList" bindValue="HSSACMasterSid"
                         formControlName="HSSACMasterSid" placeholder="" appendTo="body">
                         <ng-template ng-label-tmp let-item="item">
-                          {{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode || item?.sacCode || '-' }}
+                          {{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode ||
+                          item?.sacCode || '-' }}
                         </ng-template>
                         <ng-template ng-option-tmp let-item="item">
                           <div>
-                            <strong>{{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode || item?.sacCode || '-' }}</strong>
-                            <small *ngIf="item?.Description || item?.description"> - {{ item?.Description || item?.description }}</small>
+                            <strong>{{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode ||
+                              item?.SACCode || item?.sacCode || '-' }}</strong>
+                            <small *ngIf="item?.Description || item?.description"> - {{ item?.Description ||
+                              item?.description }}</small>
                           </div>
                         </ng-template>
                       </ng-select>
@@ -390,45 +395,45 @@
 
                     <!-- Unit -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid" placeholder=""
-                        formControlName="ChargeUOMSid" appendTo="body">
+                      <ng-select *ngIf="!isEditMode" [items]="uomList" bindLabel="UOMCode" bindValue="UOMMasterSid"
+                        placeholder="" formControlName="ChargeUOMSid" appendTo="body">
                       </ng-select>
                       <span *ngIf="isEditMode">{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span>
                     </td>
 
                     <!-- No of Unit -->
                     <td>
-                      <input *ngIf="!isEditMode" type="number" min="0" class="custom-input-field sm" formControlName="NumberOfUnit"
-                        (input)="onDetailChange(i, 'NumberOfUnit')">
+                      <input *ngIf="!isEditMode" type="number" min="0" class="custom-input-field sm"
+                        formControlName="NumberOfUnit" (input)="onDetailChange(i, 'NumberOfUnit')">
                       <span *ngIf="isEditMode">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
                     </td>
 
                     <!-- Dr/Cr -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]" bindLabel="name" bindValue="id"
-                        formControlName="DrCr" appendTo="body"></ng-select>
+                      <ng-select *ngIf="!isEditMode" [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]"
+                        bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
                       <span *ngIf="isEditMode">{{ row.get('DrCr')?.value || '-' }}</span>
                     </td>
 
                     <!-- Currency -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode"
-                        formControlName="CurrencyCode" (change)="onDetailChange(i,'CurrencyCode')"
-                        appendTo="body"></ng-select>
+                      <ng-select *ngIf="!isEditMode" [items]="currencyList" bindLabel="currencyCode"
+                        bindValue="currencyCode" formControlName="CurrencyCode"
+                        (change)="onDetailChange(i,'CurrencyCode')" appendTo="body"></ng-select>
                       <span *ngIf="isEditMode">{{ row.get('CurrencyCode')?.value || '-' }}</span>
                     </td>
 
                     <!-- Rate -->
                     <td>
-                      <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm" formControlName="Rate"
-                        (input)="onDetailChange(i, 'Rate')">
+                      <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
+                        formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
                       <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
                     </td>
 
                     <!-- Exchange Rate -->
                     <td>
-                      <input *ngIf="!isEditMode" type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate"
-                        (input)="onDetailChange(i, 'ExchangeRate')">
+                      <input *ngIf="!isEditMode" type="number" step="0.0001" class="custom-input-field sm"
+                        formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
                       <span *ngIf="isEditMode">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
                     </td>
 
@@ -519,9 +524,9 @@
 
                     <!-- MasterJobSid column -->
                     <td style="min-width:200px;">
-                      <ng-select *ngIf="!isEditMode" [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid"
-                        formControlName="MasterJobSid" placeholder="" [clearable]="true" [searchable]="true"
-                        appendTo="body">
+                      <ng-select *ngIf="!isEditMode" [items]="masterJobList" bindLabel="displayLabel"
+                        bindValue="MasterJobSid" formControlName="MasterJobSid" placeholder="" [clearable]="true"
+                        [searchable]="true" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.MasterJobNumber }}</strong><br>
@@ -536,9 +541,10 @@
 
                     <!-- HouseJobSid column -->
                     <td style="min-width:200px;">
-                      <ng-select *ngIf="!isEditMode" [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []"
-                        bindLabel="displayLabel" bindValue="HouseJobSid" formControlName="HouseJobSid" placeholder=""
-                        [clearable]="true" [searchable]="true" appendTo="body">
+                      <ng-select *ngIf="!isEditMode"
+                        [items]="houseJobListByMasterJob[row.get('MasterJobSid')?.value] || []" bindLabel="displayLabel"
+                        bindValue="HouseJobSid" formControlName="HouseJobSid" placeholder="" [clearable]="true"
+                        [searchable]="true" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.HouseJobNumber }}</strong>
@@ -548,7 +554,8 @@
                           {{ item.HouseJobNumber }}
                         </ng-template>
                       </ng-select>
-                      <span *ngIf="isEditMode">{{ getHouseJobNumber(row.get('HouseJobSid')?.value, row.get('MasterJobSid')?.value) }}</span>
+                      <span *ngIf="isEditMode">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
+                        row.get('MasterJobSid')?.value) }}</span>
                     </td>
 
 
@@ -598,170 +605,330 @@
             </div>
           </div>
         </form>
-    </div>
-  </div>
-</div>
-
-<!-- Print Modal Template -->
-<ng-template #printModal let-modal>
-  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-cente">
-    <h5 class="modal-title">Invoice</h5>
-    <div class="d-flex gap-1 align-items-center">
-      
-         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
-      <i class="fas fa-download me-1"></i> Download PDF
-    </button>
-    <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="openEmailModal(); modal.dismiss()">
-      <i class="fas fa-envelope me-1"></i> Send Email
-    </button>
-
-     
-      <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
-    </div>
-  </div>
-  <div class="modal-body">
-    <div id="printContent">
-      <!-- Invoice Print Template -->
-      <div class="print-a4" >
-        <div class="row">
-          <div class="d-flex" style="border-bottom: 1px solid black;">
-               <div class="col-md-6">
-            <div class="text-start">
-              <img src="assets/logo/dofi-logo.svg" width="50" height="50"
-                class="img-fluid" alt="">
-              <!-- <h4> {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company Name'}} </h4> -->
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="text-start">
-              <h5 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h5>
-              <h5>{{currentBranch?.branchName || 'Company Branch'}}</h5>
-              <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
-              <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}}, {{currentCompany?.postal_code || currentCompany?.ZipCode || 'Zipcode'}}</p>
-              <p class="mb-1">TEL: {{currentCompany?.phoneNumber || currentCompany?.Phone || 'Phone'}}</p>
-            </div>
-          </div>
-        </div>
-          </div>
-       
-
-        <div class="text-center">
-          <h5 class="fw-bold my-1">TAX INVOICE</h5>
-          <p style="font-size: 12px;">
-            GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GSTNo || '-'}}
-          </p>
-        </div>
-
-        <div class="row mt-2 ">
-          <div class="col-md-6">
-            <strong>BILLED TO</strong><br />
-            <span>{{ getCustomerName(invoiceForm.get('CustomerMasterSid')?.value) }}</span><br />
-            {{invoiceForm.get('PartyAddress')?.value || '-'}} <br>
-           <span class="fw-semibold">
-            PAN :
-           </span>  {{currentCompany?.Pan || currentCompany?.PAN || '-'}}  
-          </div>
-          <div class="col-md-6 ">
-            <div class="float-end">
-              <div class="d-flex">
-              <div style="width: 140px;"><strong>Invoice No</strong></div>
-              <div>: {{invoiceForm.get('VoucherNumber')?.value || '-'}}</div>
-            </div>
-            <div class="d-flex">
-              <div style="width: 140px;"><strong>Invoice Date</strong></div>
-              <div>: {{formatDate(invoiceForm.get('VoucherDate')?.value)}}</div>
-            </div>
-            <div class="d-flex">
-              <div style="width: 140px;"><strong>GST No</strong></div>
-              <div>: {{invoiceForm.get('GSTNo')?.value || '-'}}</div>
-            </div>
-            <div class="d-flex">
-              <div style="width: 140px;"><strong>IRN No</strong></div>
-              <div>: {{invoiceForm.get('IRNNumber')?.value || '-'}}</div>
-            </div>
-            </div>
-          </div>
-        </div>
-
-       
-
-        <div class=" table-responsive ">
-          <table class="table tablebordered table-sm align-middle my-1">
-            <thead>
-              <tr>
-                <th >Particulars</th>
-                <th >HSN/SAC</th>
-                <th >Curr</th>
-                <th >Qty</th>
-                <th >Rate</th>
-                <th >ROE</th>
-                <th >Taxable Value</th>
-                <ng-container *ngIf="isIndiaGST">
-                  <th >CGST %</th>
-                  <th >CGST Amt</th>
-                  <th >SGST %</th>
-                  <th >SGST Amt</th>
-                  <th >IGST %</th>
-                  <th >IGST Amt</th>
-                </ng-container>
-                <ng-container *ngIf="isVATMode">
-                  <th >VAT %</th>
-                  <th >VAT Amt</th>
-                </ng-container>
-                <th >Total ({{invoiceForm.get('CurrencyCode')?.value}})</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let detail of details.controls; let i = index">
-                <td >{{detail.get('ChargeDescription')?.value}}</td>
-                <td >{{getHSSACCode(detail.get('HSSACMasterSid')?.value, i)}}</td>
-                <td >{{detail.get('CurrencyCode')?.value}}</td>
-                <td >{{detail.get('NumberOfUnit')?.value | number:'1.3-3'}}</td>
-                <td >{{detail.get('Rate')?.value | number:'1.2-2'}}</td>
-                <td >{{detail.get('ExchangeRate')?.value | number:'1.2-4'}}</td>
-                <td >{{detail.get('TaxableAmount')?.value | number:'1.2-2'}}</td>
-                <ng-container *ngIf="isIndiaGST">
-                  <td >{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
-                  <td >{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
-                  <td >{{detail.get('TaxPercentage2')?.value | number:'1.2-2'}}</td>
-                  <td >{{detail.get('TaxAmount2')?.value | number:'1.2-2'}}</td>
-                  <td >{{detail.get('TaxPercentageIGST')?.value | number:'1.2-2'}}</td>
-                  <td >{{detail.get('TaxAmountIGST')?.value | number:'1.2-2'}}</td>
-                </ng-container>
-                <ng-container *ngIf="isVATMode">
-                  <td >{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
-                  <td >{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
-                </ng-container>
-                <td >{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
-              </tr>
-              <tr>
-                <td  [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
-                <td ><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="d-flex ">
-          <p class="fw-bold mb-0">Amount In Words</p>
-          <p class="mb-0 ms-2">: {{getAmountInWords()}}</p>
-        </div>
-
-        <div class="d-flex   mt-2">
-          <p style="width: 140px; margin-bottom: 5px; font-weight: 700;">Remarks</p>
-          <p style="margin-bottom: 0;">: {{invoiceForm.get('Remarks')?.value || '-'}}</p>
-        </div>
-
-        <div class="text-end mt-4  mb-1">
-          <p class="mb-0"><strong>For {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company Name'}}</strong></p>
-          <p class="mb-0">Authorised Signatory</p>
-        </div>
-
-        <footer class="text-center mb-0">Copyright © 2025 <span class="fw-bold">{{currentCompany?.companyName || currentCompany?.CompanyName}}</span></footer>
       </div>
     </div>
   </div>
-  <!-- <div class="modal-footer p-1">
+
+  <!-- Print Modal Template -->
+  <ng-template #printModal let-modal>
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-cente">
+      <h5 class="modal-title">Invoice</h5>
+      <div class="d-flex gap-1 align-items-center">
+
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+          <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="openEmailModal(); modal.dismiss()">
+          <i class="fas fa-envelope me-1"></i> Send Email
+        </button>
+
+
+        <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="printContent">
+        <!-- Invoice Print Template -->
+        <div class="print-a4">
+          <div class="row">
+            <div class="d-flex" style="border-bottom: 1px solid black;">
+              <div class="col-md-6">
+                <div class="text-start">
+                  <img src="assets/logo/dofi-logo.svg" width="50" height="50" class="img-fluid" alt="">
+                  <!-- <h4> {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company Name'}} </h4> -->
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="">
+                  <h5 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h5>
+                  <h5 class="mb-1">{{currentBranch?.branchName || 'Company Branch'}}</h5>
+                  <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
+                  <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}},
+                    {{currentCompany?.postal_code || currentCompany?.ZipCode || 'Zipcode'}}</p>
+                  <p class="mb-1">TEL: {{currentCompany?.phoneNumber || currentCompany?.Phone || 'Phone'}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="text-center">
+            <h5 class="fw-bold my-1">TAX INVOICE</h5>
+            <p style="font-size: 12px;">
+              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GSTNo || '-'}}
+            </p>
+          </div>
+
+          <div class="row mt-2 pb-2" style="border-bottom: 1px solid black;">
+            <div class="col-md-6">
+              <strong>BILLED TO</strong><br />
+              <span>{{ getCustomerName(invoiceForm.get('CustomerMasterSid')?.value) }}</span><br />
+              {{invoiceForm.get('PartyAddress')?.value || '-'}} <br>
+              <span class="fw-semibold">
+                PAN :
+              </span> {{currentCompany?.Pan || currentCompany?.PAN || '-'}}
+            </div>
+            <div class="col-md-6 ">
+              <div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>Invoice No</strong></div>
+                  <div>: {{invoiceForm.get('VoucherNumber')?.value || '-'}}</div>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>Invoice Date</strong></div>
+                  <div>: {{formatDate(invoiceForm.get('VoucherDate')?.value)}}</div>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>GST No</strong></div>
+                  <div>: {{invoiceForm.get('GSTNo')?.value || '-'}}</div>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>IRN No</strong></div>
+                  <div>: {{invoiceForm.get('IRNNumber')?.value || '-'}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-1">
+            <div class="col-md-6">
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Shipper</strong></div>
+                <div>: </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Consignee / Notify</strong></div>
+                <div>: </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Vessel / Carrier</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.voyages?.[0]?.VesselName || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Voyage / Flight No.</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.voyages?.[0]?.VoyageNo || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Loading Port</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.POL || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Place of Supply</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.POD || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Final Destination</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.FPD || '-' }}</div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>Vessel / Flight Date</strong></div>
+                <div>: 25/JUL/2025</div>
+            </div> -->
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>ETD</strong></div>
+                <div>: {{ (invoiceData?.VoucherDetail?.[0]?.masterJob?.voyages?.[0]?.ETD | formatDate )|| '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>ETA</strong></div>
+                <div>: {{ (invoiceData?.VoucherDetail?.[0]?.masterJob?.voyages?.[0]?.ETA | formatDate )|| '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>S Bill No</strong></div>
+                <div>: </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Shipper Reference No</strong></div>
+                <div>: </div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>Forwarder B/L No</strong></div>
+                <div>: </div>
+            </div> -->
+            </div>
+
+            <div class="col-md-6">
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>HBL / HAWB</strong></div>
+                <div>: </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>MBL / MAWB</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.MasterJobNumber || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Job Number</strong></div>
+                <div>: {{invoiceForm.get('MasterJobNumber')?.value || '-'}}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Freight</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.FreightPPCC || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.NoOfPkg || '-' }} / {{
+                  invoiceData?.VoucherDetail?.[0]?.masterJob?.GrossWeight || '-' }} / {{
+                  invoiceData?.VoucherDetail?.[0]?.masterJob?.Volume || '-' }}</div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>Exp Inv No</strong></div>
+                <div>: </div>
+            </div> -->
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Invoice Due Date</strong></div>
+                <div>: {{invoiceForm.get('DueDate')?.value || '-'}}</div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>BOE Reference</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex">
+                <div style="width: 180px;"><strong>IGM Number</strong></div>
+                <div>: /</div>
+            </div>
+            <div class="d-flex">
+                <div style="width: 180px;"><strong>Item Number</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex">
+                <div style="width: 180px;"><strong>Sub Item Number</strong></div>
+                <div>: </div>
+            </div> -->
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Currency / Ex-Rate</strong></div>
+                <div>: </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Sales Person</strong></div>
+                <div>: Vimal</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Carrier Name</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.voyages?.[0]?.CarrierName || '-' }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>CFS Name</strong></div>
+                <div>: {{ invoiceData?.VoucherDetail?.[0]?.masterJob?.others?.[0]?.CFS || '-' }} </div>
+              </div>
+            </div>
+          </div>
+
+          <div class=" table-responsive ">
+            <table class="table tablebordered table-sm align-middle my-1">
+              <thead>
+                <tr>
+                  <th>Particulars</th>
+                  <th>HSN/SAC</th>
+                  <th>Curr</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>ROE</th>
+                  <th>Taxable Value</th>
+                  <ng-container *ngIf="isIndiaGST">
+                    <th>CGST %</th>
+                    <th>CGST Amt</th>
+                    <th>SGST %</th>
+                    <th>SGST Amt</th>
+                    <th>IGST %</th>
+                    <th>IGST Amt</th>
+                  </ng-container>
+                  <ng-container *ngIf="isVATMode">
+                    <th>VAT %</th>
+                    <th>VAT Amt</th>
+                  </ng-container>
+                  <th>Total ({{invoiceForm.get('CurrencyCode')?.value}})</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let detail of details.controls; let i = index">
+                  <td>{{detail.get('ChargeDescription')?.value}}</td>
+                  <td>{{getHSSACCode(detail.get('HSSACMasterSid')?.value, i)}}</td>
+                  <td>{{detail.get('CurrencyCode')?.value}}</td>
+                  <td>{{detail.get('NumberOfUnit')?.value | number:'1.3-3'}}</td>
+                  <td>{{detail.get('Rate')?.value | number:'1.2-2'}}</td>
+                  <td>{{detail.get('ExchangeRate')?.value | number:'1.2-4'}}</td>
+                  <td>{{detail.get('TaxableAmount')?.value | number:'1.2-2'}}</td>
+                  <ng-container *ngIf="isIndiaGST">
+                    <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxPercentage2')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmount2')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxPercentageIGST')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmountIGST')?.value | number:'1.2-2'}}</td>
+                  </ng-container>
+                  <ng-container *ngIf="isVATMode">
+                    <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                  </ng-container>
+                  <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+                </tr>
+                <tr>
+                  <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
+                  <td><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex ">
+            <p class="fw-bold mb-0" style="width: 180px;">Amount In Words</p>
+            <p class="mb-0 " >: {{getAmountInWords()}}</p>
+          </div>
+
+          <div class="d-flex   mt-2">
+            <p  class="fw-bold" style="width: 180px;"> Remarks</p>
+            <p style="margin-bottom: 0;">: {{invoiceForm.get('Remarks')?.value || '-'}}</p>
+          </div>
+
+          <p style=" margin-bottom: 0;" class="mt-3">Bank Details</p>
+          <div class=" ">
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0; font-size: 12px;" ><strong>Account Name</strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">:</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;" ><strong>
+                Account No
+              </strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: </div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong>Bank Name </strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: </div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;" > <strong>
+                Swift Code
+              </strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: </div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;" ><strong> IFSC Code</strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: </div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;" ><strong>Address</strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: </div>
+            </div>
+          </div>
+          <div class="text-end mt-4  mb-1">
+            <p class="mb-0"><strong>For {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company
+                Name'}}</strong></p>
+            <p class="mb-0">Authorised Signatory</p>
+          </div>
+
+          <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+              <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
+              <span>
+                This document is computer-generated and does not require a signature.
+              </span>
+              <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="modal-footer p-1">
  
     <button type="button" class="btn btn-sm btn-success" (click)="downloadPDF()">
       <i class="fas fa-download me-1"></i> Download PDF
@@ -773,66 +940,66 @@
      Close
     </button>
   </div> -->
-</ng-template>
+  </ng-template>
 
-<!-- Email Modal Template -->
-<ng-template #emailModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Send Invoice via Email</h5>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body">
-    <form [formGroup]="emailForm">
-      <div class="mb-3">
-        <label class="form-label">From <span class="text-danger">*</span></label>
-        <input type="email" class="form-control" formControlName="from" placeholder="sender@example.com">
-        <div class="text-danger" *ngIf="emailForm.get('from')?.invalid && emailForm.get('from')?.touched">
-          Please enter a valid email address
+  <!-- Email Modal Template -->
+  <ng-template #emailModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Send Invoice via Email</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="emailForm">
+        <div class="mb-3">
+          <label class="form-label">From <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" formControlName="from" placeholder="sender@example.com">
+          <div class="text-danger" *ngIf="emailForm.get('from')?.invalid && emailForm.get('from')?.touched">
+            Please enter a valid email address
+          </div>
         </div>
-      </div>
 
-      <div class="mb-3">
-        <label class="form-label">To <span class="text-danger">*</span></label>
-        <input type="email" class="form-control" formControlName="to" placeholder="recipient@example.com">
-        <div class="text-danger" *ngIf="emailForm.get('to')?.invalid && emailForm.get('to')?.touched">
-          Please enter a valid email address
+        <div class="mb-3">
+          <label class="form-label">To <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" formControlName="to" placeholder="recipient@example.com">
+          <div class="text-danger" *ngIf="emailForm.get('to')?.invalid && emailForm.get('to')?.touched">
+            Please enter a valid email address
+          </div>
         </div>
-      </div>
 
-      <div class="mb-3">
-        <label class="form-label">CC</label>
-        <input type="email" class="form-control" formControlName="cc" placeholder="cc@example.com (optional)">
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Subject <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" formControlName="subject" placeholder="Invoice subject">
-        <div class="text-danger" *ngIf="emailForm.get('subject')?.invalid && emailForm.get('subject')?.touched">
-          Please enter a subject
+        <div class="mb-3">
+          <label class="form-label">CC</label>
+          <input type="email" class="form-control" formControlName="cc" placeholder="cc@example.com (optional)">
         </div>
-      </div>
 
-      <div class="mb-3">
-        <label class="form-label">Message</label>
-        <textarea class="form-control" formControlName="message" rows="4" placeholder="Email message"></textarea>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Attachment</label>
-        <div class="form-control bg-light">
-          <i class="fas fa-file-pdf text-danger me-2"></i>
-          Invoice_{{invoiceForm.get('VoucherNumber')?.value}}.pdf
+        <div class="mb-3">
+          <label class="form-label">Subject <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="subject" placeholder="Invoice subject">
+          <div class="text-danger" *ngIf="emailForm.get('subject')?.invalid && emailForm.get('subject')?.touched">
+            Please enter a subject
+          </div>
         </div>
-        <small class="text-muted">Invoice will be attached as PDF</small>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
-      <i class="fas fa-times me-1"></i> Cancel
-    </button>
-    <button type="button" class="btn btn-primary" (click)="sendInvoiceEmail()" [disabled]="emailForm.invalid">
-      <i class="fas fa-paper-plane me-1"></i> Send Email
-    </button>
-  </div>
-</ng-template>
+
+        <div class="mb-3">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" formControlName="message" rows="4" placeholder="Email message"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Attachment</label>
+          <div class="form-control bg-light">
+            <i class="fas fa-file-pdf text-danger me-2"></i>
+            Invoice_{{invoiceForm.get('VoucherNumber')?.value}}.pdf
+          </div>
+          <small class="text-muted">Invoice will be attached as PDF</small>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="sendInvoiceEmail()" [disabled]="emailForm.invalid">
+        <i class="fas fa-paper-plane me-1"></i> Send Email
+      </button>
+    </div>
+  </ng-template>
