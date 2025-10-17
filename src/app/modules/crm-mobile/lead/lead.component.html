@@ -276,10 +276,10 @@
                         </div>
 
                     </aside>
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
-                            <ng-select formControlName="CountryMasterSid" [items]="dropdownStore.countries()" bindLabel="countryName"
+                            <ng-select formControlName="CountryMasterSid" [items]="countryList" bindLabel="countryName"
                                 bindValue="CountryMasterSid" placeholder=""
                                 (change)="filterStateByCountryId($event)"></ng-select>
                             <label class="input-label">Country <span
@@ -294,8 +294,32 @@
                             }
                         </div>
 
-                    </aside>
-                    <aside class="col-md-3">
+                    </aside> -->
+                    <div class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
+        <dofi-searchable-dropdown 
+            [items]="countryList" 
+            formControlName="CountryMasterSid" 
+            placeholder=""
+            [displayFields]="countryLookupConfig.displayFields" 
+            [displayLabels]="countryLookupConfig.displayLabels"
+            [labelFields]="countryLookupConfig.labelFields" 
+            bindValue="CountryMasterSid"
+            (itemSelected)="filterStateByCountryId($event)">
+        </dofi-searchable-dropdown>
+        <label for="country" class="input-label">Country <span class="text-danger">*</span></label>
+        @if(leadForm.get('CountryMasterSid')?.touched &&
+                            leadForm.get('CountryMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(leadForm.get('CountryMasterSid')?.hasError('required')){
+                                <span>Required</span>
+                                }
+                            </div>
+                            }
+    </div>
+</div>
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!leadForm.get('StateMasterSid')?.value">
                             <ng-select class="ng-select" [items]="stateList" bindLabel="stateName"
@@ -314,7 +338,31 @@
                             }
                         </div>
 
-                    </aside>
+                    </aside> -->
+                    <div class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!leadForm.get('StateMasterSid')?.value">
+        <dofi-searchable-dropdown 
+            [items]="stateList" 
+            formControlName="StateMasterSid" 
+            placeholder=""
+            [displayFields]="stateLookupConfig.displayFields"
+            [displayLabels]="stateLookupConfig.displayLabels"
+            [labelFields]="stateLookupConfig.labelFields" 
+            bindValue="StateMasterSid"
+            (itemSelected)="filterCityByStateId($event)">
+        </dofi-searchable-dropdown>
+        <label for="state" class="input-label">State <span class="text-danger">*</span></label>
+        @if(leadForm.get('StateMasterSid')?.touched &&
+                            leadForm.get('StateMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(leadForm.get('StateMasterSid')?.hasError('required')){
+                                <span>Required</span>
+                                }
+                            </div>
+                            }
+    </div>
+</div>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!leadForm.get('CityMasterSid')?.value">

@@ -23,7 +23,22 @@ export const DROPDOWN_CONFIGS = {
     displayFields : ['departmentCode','departmentName','departmentType'],
     displayLabels : ['Code','Name','type'],
     labelFields :['departmentName']
-  }
+  },
+  COUNTRY: {
+    displayFields: ['countryCode', 'countryName'],
+    displayLabels: ['Code', 'Name'],
+    labelFields: ['countryName']
+  },
+  STATE: {
+    displayFields: ['stateName', 'Country'],
+    displayLabels: ['State', 'Country'],    
+    labelFields: ['stateName']
+  },
+  CITY: {
+    displayFields: ['CityName', 'State', 'Country'],
+    displayLabels: ['City', 'State', 'Country'],
+    labelFields: ['CityName']
+  },
 } satisfies Record<string, {
   displayFields: string[];
   displayLabels: string[];

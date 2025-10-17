@@ -270,18 +270,11 @@ export class PendingComponent extends BaseListComponent implements OnInit {
   // Base search implementation
   protected searchItems(context?: string): Observable<any> {
     this.tableLoading = true;
-    this.spinner.show();
- 
-    const companyId = this.currentCompany?.CompanyMasterSid;
-    const branchId = this.currentBranch?.BranchMasterSid;
- 
+    this.spinner.show(); 
     if (context === 'existing') {
-      return this.leadService.getAllExistingCustomers({
-        CompanyMasterSid: companyId,
-        BranchMasterSid: branchId
-      });
+      return this.leadService.searchExistingCustomers(this.getSearchParams());
     } else {
-      return this.leadService.getAllPendingMeetings(companyId, branchId);
+      return this.leadService.searchOpportunity(this.getSearchParams());
     }
   }
  
@@ -297,48 +290,49 @@ export class PendingComponent extends BaseListComponent implements OnInit {
     };
   }
  
-  protected processSearchResults(response: any, context?: any): void {
-    this.tableLoading = false;
-    this.spinner.hide();
-   
-    if (context === 'existing') {
-      if (response && Array.isArray(response)) {
-        this.allExistingCustomers = response || [];
-        this.totalLengthOfCollection = this.allExistingCustomers.length;
-       
-        // Update header actions disabled state
-        this.updateExistingCustomerHeaderActions();
-        return;
-      }
-    } else {
-      if (response?.data && Array.isArray(response.data)) {
-        this.allItems = response.data.map((schedule: any) => ({
-          ...schedule,
-          cityName: schedule.cityMaster?.cityName || 'N/A',
-          calendarIcon: '📅',
-          PreCustomerMasterSid: schedule.PreCustomerMasterSid,
-          leadStatus: LeadStatusLabels[schedule.leadStatus]
-        }));
- 
-        this.totalLengthOfCollection = this.allItems.length;
-        this.applySorting();
-       
-        // Update header actions disabled state
-        this.updateOpportunityHeaderActions();
-        return;
-      }
-    }
- 
-    // Error case
+ protected processSearchResults(response: any, context?: any): void {
+  this.tableLoading = false;
+  this.spinner.hide();
+
+  console.log('Search Result:', response);
+
+  // Handle structure: { status, data: { items: [] } }
+  const data =
+    response?.data?.items ??
+    response?.data ??
+    response; // fallback if structure changes
+
+  if (!Array.isArray(data)) {
     this.appSettingService.showError('Error searching schedule.');
+    console.error('Unexpected response format:', response);
     this.allItems = [];
     this.allExistingCustomers = [];
-    this.totalLengthOfCollection = 0;
-   
-    // Update header actions
-    this.updateOpportunityHeaderActions();
-    this.updateExistingCustomerHeaderActions();
+    return;
   }
+
+  if (context === 'existing') {
+    this.allExistingCustomers = data;
+    this.totalLengthOfCollection = data.length;
+    this.updateExistingCustomerHeaderActions();
+    return;
+  }
+
+  // Default: opportunity
+  this.allItems = data.map((schedule: any) => ({
+    ...schedule,
+    cityName: schedule.cityMaster?.cityName || 'N/A',
+    calendarIcon: '📅',
+    PreCustomerMasterSid: schedule.PreCustomerMasterSid,
+    leadStatus: LeadStatusLabels[schedule.leadStatus]
+  }));
+
+  this.totalLengthOfCollection = this.allItems.length;
+  this.applySorting();
+  this.updateOpportunityHeaderActions();
+}
+
+
+
  
   protected override applySorting(): void {
     if (!this.allItems.length) return;

@@ -160,14 +160,38 @@
                             </aside>
 
                             <!-- Carrier -->
-                            <aside class="col-md-4">
+                            <!-- <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!scheduleForm.get('Carrier')?.value">
                                     <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid"
                                         bindLabel="CustomerName" formControlName="Carrier" placeholder=""></ng-select>
                                     <label class="input-label">Carrier</label>
                                 </div>
-                            </aside>
+                            </aside> -->
+
+                             <div class="col-md-4">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!scheduleForm.get('Carrier')?.value">
+        <dofi-searchable-dropdown 
+            [items]="carrierList" 
+            formControlName="Carrier" 
+            placeholder=""
+            [displayFields]="customerLookupConfig.displayFields" 
+            [displayLabels]="customerLookupConfig.displayLabels"
+            [labelFields]="customerLookupConfig.labelFields" 
+            bindValue="CustomerMasterSid"
+            >
+        </dofi-searchable-dropdown>
+        <label class="input-label">Carrier</label>
+    </div>
+</div>
+<div class="col-md-2">
+    <div class="custom-form-group">
+        <input type="text" id="dept" class="form-control custom-input-field sm"
+            formControlName="CustomerRef" placeholder="">
+        <label for="dept" class="input-label">Customer Ref</label>
+    </div>
+</div>
                             <!-- Remarks -->
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
@@ -297,7 +321,7 @@
                     <div class="card-body py-0">
                         <div class="row">
                             <!-- --------- NEW: Ports & key dates inline in header ---------- -->
-                            <aside class="col-md-3">
+                            <!-- <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select w-100 mb-0"
                                     [class.filled]="!!scheduleForm.get('POLSid')?.value">
                                     <dofi-searchable-dropdown [items]="dropdownStore.ports()" formControlName="POLSid"
@@ -308,7 +332,24 @@
                                     </dofi-searchable-dropdown>
                                     <label class="input-label">POL </label>
                                 </div>
-                            </aside>
+                            </aside> -->
+
+                            <div class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!scheduleForm.get('POLSid')?.value" >
+        <dofi-searchable-dropdown 
+            [items]="portList" 
+            formControlName="POLSid" 
+            placeholder=""
+            [displayFields]="portLookupConfig.displayFields" 
+            [displayLabels]="portLookupConfig.displayLabels"
+            [labelFields]="portLookupConfig.labelFields" 
+            bindValue="PortMasterSid"
+            >
+        </dofi-searchable-dropdown>
+        <label class="input-label">POL</label>
+    </div>
+</div>
 
                             <aside class="col-md-3">
                                 <div class="d-flex mb-2 my-lg-0">
@@ -341,7 +382,7 @@
 
                          
 
-                            <aside class="col-md-3">
+                            <!-- <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!scheduleForm.get('PODSid')?.value">
                                     <dofi-searchable-dropdown [items]="dropdownStore.ports()" formControlName="PODSid"
@@ -352,7 +393,24 @@
                                     </dofi-searchable-dropdown>
                                     <label class="input-label">POD</label>
                                 </div>
-                            </aside>
+                            </aside> -->
+
+                            <div class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!scheduleForm.get('PODSid')?.value" >
+        <dofi-searchable-dropdown 
+            [items]="portList" 
+            formControlName="PODSid" 
+            placeholder=""
+            [displayFields]="portLookupConfig.displayFields" 
+            [displayLabels]="portLookupConfig.displayLabels"
+            [labelFields]="portLookupConfig.labelFields" 
+            bindValue="PortMasterSid"
+            >
+        </dofi-searchable-dropdown>
+        <label class="input-label">POD</label>
+    </div>
+</div>
 
                             <aside class="col-md-3">
                                 <div class="d-flex mb-2 my-lg-0">
