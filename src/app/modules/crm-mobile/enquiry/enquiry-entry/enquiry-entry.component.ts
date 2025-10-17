@@ -311,28 +311,61 @@ export class EnquiryEntryComponent implements OnInit {
     )
   }
 
+  // loadAllLookups() {
+  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  //   const filterOption = { 
+  //     CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+  //     BranchMasterSid : this.currentBranch?.BranchMasterSid
+  //   }
+  //   // this.dropdownStore.loadDepartments({CompanyMasterSid});
+  //   // this.dropdownStore.loadPorts();
+  //   return forkJoin({
+  //     departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of([]))),
+  //     ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
+  //     customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
+  //     leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
+  //     incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
+  //     weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
+  //     packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
+  //     containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
+  //     products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
+  //   }).pipe(tap(({ departments , ports , customers, leads, incos, weightUnits, packageTypes, containerTypes, products,salesman }) => {
+  //     this.departments = departments;
+  //     this.ports = ports.map(p => ({...p,Country : p.countryMaster?.countryName}));
+  //     this.filteredPorts = [...this.ports];
+  //     this.customers = customers;
+  //     this.leadList = leads.data;
+  //     this.incoList = incos;
+  //     this.weightUnitList = weightUnits.data;
+  //     this.packageTypes = packageTypes.data;
+  //     this.containerTypes = containerTypes;
+  //     this.productList = products;
+  //     this.salesmanList = salesman
+  //   })
+  //   );
+  // }
+
   loadAllLookups() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    const filterOption = { 
-      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid
-    }
-    // this.dropdownStore.loadDepartments({CompanyMasterSid});
-    // this.dropdownStore.loadPorts();
-    return forkJoin({
-      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of([]))),
-      ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
-      customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
-      leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
-      incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
-      weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
-      packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
-      containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
-      products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ departments , ports , customers, leads, incos, weightUnits, packageTypes, containerTypes, products,salesman }) => {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  const filterOption = { CompanyMasterSid, BranchMasterSid };
+
+  return forkJoin({
+    departments: this.dropdownStore.loadDepartments({ CompanyMasterSid }).pipe(catchError(() => of([]))),
+    ports: this.dropdownStore.loadPorts().pipe(catchError(() => of([]))),
+    customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
+    leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
+    incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
+    weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
+    packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
+    containerTypes: this.dropdownStore.loadContainerTypes().pipe(catchError(() => of([]))),
+    products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
+    salesman: this.leadService.getAllSalesman().pipe(catchError(() => of([]))),
+  }).pipe(
+    tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products, salesman }) => {
       this.departments = departments;
-      this.ports = ports.map(p => ({...p,Country : p.countryMaster?.countryName}));
+      this.ports = ports.map(p => ({ ...p, Country: p.countryMaster?.countryName }));
       this.filteredPorts = [...this.ports];
       this.customers = customers;
       this.leadList = leads.data;
@@ -341,10 +374,10 @@ export class EnquiryEntryComponent implements OnInit {
       this.packageTypes = packageTypes.data;
       this.containerTypes = containerTypes;
       this.productList = products;
-      this.salesmanList = salesman
+      this.salesmanList = salesman;
     })
-    );
-  }
+  );
+}
 
   initializeForm() {
     this.rateRequestForm = this.fb.group({
@@ -476,6 +509,7 @@ export class EnquiryEntryComponent implements OnInit {
       types: ['shipper', 'consignee']
     };
     this.dropdownStore.loadCustomerTypeData(payload)
+    this.dropdownStore.loadDepartments(CompanyMasterSid)
   }
 
 
