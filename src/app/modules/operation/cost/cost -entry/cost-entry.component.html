@@ -126,10 +126,10 @@
       <tr class="first-table">
     <th class=""  style="max-width: 5px;background-color:#005a9e;"></th>
     <th class="" style="background-color:#005a9e;color: white;">SNo</th>
-    <th class="table-header" >Charge</th>
-    <th class="table-header" >Charge Desc</th>
-    <th class="tableHeader" style="background-color:#005a9e;color: white;">Unit</th>
-    <th class="tableHeader"  >No. of Unit</th>
+    <th class="table-header" >Charge <span class="text-danger">{{hasRequired('ChargeMasterSid') ? '*' : ''}}</span></th>
+    <th class="table-header" >Charge Desc <span class="text-danger">{{hasRequired('ChargeDescription') ? '*' : ''}}</span></th>
+    <th class="tableHeader" style="background-color:#005a9e;color: white;">Unit <span class="text-danger">{{ hasRequired('CostChargeUomSid') ? '*' : ''}}</span></th>
+    <th class="tableHeader"  >No. of Unit <span class="text-danger">{{ hasRequired('NumberOfUnit') ? '*' : ''}}</span></th>
   </tr>
   
 
