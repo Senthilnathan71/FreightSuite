@@ -3281,6 +3281,101 @@ openAuditLogs(modal: TemplateRef<any>) {
     return companyState !== billingPartyState;
   }
 
+  /**
+   * Determine GST Type for Indian companies based on business rules
+   * B2B: Sale between GST-registered entities
+   * B2CS: Business to Consumer (Small) - unregistered, same state, <= 2.5 lakh
+   * B2CL: Business to Consumer (Large) - unregistered, different state, > 2.5 lakh
+   * EXWP: Export with payment of IGST
+   * EXWOP: Export without payment (LUT/bond)
+   */
+  private determineGSTType(selectedCharges: any[]): string | null {
+    // Only determine GST Type for Indian companies
+    if (this.countryOfCompany !== 'india') {
+      return null;
+    }
+
+    // Get first charge for common data
+    const firstCharge = selectedCharges[0];
+    if (!firstCharge) return null;
+
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+
+    // Get billing party details based on type
+    const billingParty = isRevenue
+      ? (firstCharge?.customerMasterBP || {})
+      : (firstCharge?.AgentMaster || {});
+
+    const customerBranch = firstCharge?.customerBranch || {};
+
+    // Check if this is an export shipment
+    // Get POL and POD from booking form
+    const polData = this.bookingForm?.get('POL')?.value;
+    const podData = this.bookingForm?.get('POD')?.value;
+
+    // If POL or POD has country information, check if it's export
+    const isExport = this.checkIfExportShipment(polData, podData);
+
+    if (isExport) {
+      // For export, check if IGST is applied
+      // EXWP: Export with payment (IGST applied)
+      // EXWOP: Export without payment (no IGST)
+      const hasIGST = this.chargeSelectionTaxResult?.totalIGST > 0;
+      return hasIGST ? 'EXWP' : 'EXWOP';
+    }
+
+    // Check if customer has GST number
+    const customerGSTNo = customerBranch?.GSTNo?.trim();
+    const hasGSTNumber = customerGSTNo && customerGSTNo.length > 0;
+
+    if (hasGSTNumber) {
+      // B2B: Customer has GST number
+      return 'B2B';
+    } else {
+      // B2C: Customer does not have GST number
+      // Check invoice amount and state
+
+      // Get total invoice amount from tax calculation result
+      const invoiceAmount = this.chargeSelectionTaxResult?.grandTotal || 0;
+      const invoiceAmountInLakhs = invoiceAmount / 100000; // Convert to lakhs
+
+      // Check if same state or different state
+      const companyState = this.currentBranch?.StateName || '';
+      const customerState = customerBranch?.StateName || '';
+      const isSameState = companyState === customerState;
+
+      if (isSameState && invoiceAmountInLakhs <= 2.5) {
+        // B2CS: Same state, amount <= 2.5 lakh
+        return 'B2CS';
+      } else {
+        // B2CL: Different state or amount > 2.5 lakh
+        return 'B2CL';
+      }
+    }
+  }
+
+  /**
+   * Check if this is an export shipment based on port countries
+   */
+  private checkIfExportShipment(polData: any, podData: any): boolean {
+    // If company country is India, check if either POL or POD is outside India
+    if (this.countryOfCompany !== 'india') {
+      return false;
+    }
+
+    // Check if POL or POD has country information
+    const polCountry = polData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
+                       polData?.Country?.trim()?.toLowerCase() || '';
+    const podCountry = podData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
+                       podData?.Country?.trim()?.toLowerCase() || '';
+
+    // Export if destination is outside India
+    // Import if origin is outside India (but for invoice, we typically generate for exports)
+    const isExport = podCountry && podCountry !== 'india' && podCountry !== 'in';
+
+    return isExport;
+  }
+
   getChargeTaxPercentage(charge: any): string {
     // First check if there's a manually selected tax group
     const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.BookingRatesSid);
@@ -3384,6 +3479,9 @@ openAuditLogs(modal: TemplateRef<any>) {
         });
       });
 
+      // Determine GST Type for Indian companies
+      const gstType = this.determineGSTType(selectedChargeData);
+
       const payload = {
         bookingHeaderSid: this.BookingHeaderSid,
         companyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -3400,7 +3498,8 @@ openAuditLogs(modal: TemplateRef<any>) {
           currencyCode: this.invoiceHeaderCurrency?.currencyCode,
           exchangeRate: this.invoiceHeaderExchangeRate,
           billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
-          billingPartyAddress: this.billingPartyAddress
+          billingPartyAddress: this.billingPartyAddress,
+          gstType: gstType  // Add GST Type to invoice header
         },
 
         // Charge tax group mappings
