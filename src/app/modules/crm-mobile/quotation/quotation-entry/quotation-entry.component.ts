@@ -334,6 +334,8 @@ patchEnqPageValues(enqData: any) {
     'LeadOrCustomer',
     'PreCustomerMasterSid',
     'CustomerMasterSid',
+    'CustomerBranchSid',
+    'CustomerRef',
     'CustomerName',
     'CustomerAddress',
     'Email',
@@ -1334,6 +1336,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     } else {
       this.f['SegmentType']?.setValue(selectedDept?.departmentType?.toUpperCase());
     }
+    this.f['AgreedRate']?.disable();
     this.f['DepartmentMasterSid']?.disable();
     this.f['LeadOrCustomer']?.disable();
     this.f['CustomerMasterSid']?.disable();
@@ -3100,6 +3103,11 @@ ${this.userData.userName}`;
 
 
   goForBookingCreation() {
+    const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
+    if(!customerHasBranch){
+      this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+      return;
+    }
     console.log(this.selectedItem, 'this.selectedItem');
     let QuoteData = this.selectedItem;
 
@@ -3126,6 +3134,7 @@ ${this.userData.userName}`;
     const data = {
       quotation: true,
       DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
+      IncoTerms : approvedRoute.ServiceLevel,
       CustomerMasterSid: QuoteData.CustomerMasterSid || null,
       CustomerBranchSid: QuoteData.CustomerBranchSid || null,
       CustomerName: QuoteData.CustomerName || "",

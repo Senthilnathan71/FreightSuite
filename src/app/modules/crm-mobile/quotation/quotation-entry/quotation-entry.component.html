@@ -310,7 +310,7 @@
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('SalesmanSid')?.value">
                 <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
-                  bindValue="Salesman" appendTo="body">
+                  bindValue="UserMasterSid" appendTo="body">
 
                 </ng-select>
                 <label for="" class="input-label">Salesman <span class="text-danger"></span></label>
@@ -916,7 +916,7 @@
                         <div class="col-12">
                           <div class="d-flex justify-content-between align-items-center px-1">
                             <div> </div>
-                            <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)">
+                            <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)" [disabled]="quotationApproved">
                               <i class="fas fa-plus me-1"></i> Add Carrier
                             </button>
                           </div>
@@ -1059,12 +1059,12 @@
 
                                           <button class="btn btn-light-secondary btn-sm me-1" type="button"
                                             (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
-                                            [disabled]="disableAllModification">
+                                            [disabled]="disableAllModification ||  quotationApproved">
                                             <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
                                           </button>
                                           <button class="btn btn-info btn-sm " type="button"
                                             (click)="addQuoteCharge(routeIndex,carrierIndex)"
-                                            [disabled]="disableAllModification">
+                                            [disabled]="disableAllModification ||  quotationApproved">
                                             <i class="fas fa-plus me-1"></i> Add Charge
                                           </button>
                                         </div>

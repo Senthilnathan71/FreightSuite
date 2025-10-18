@@ -25,6 +25,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { NewLineKind } from 'typescript';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { getConcatenatedPorts, getFormattedPort } from 'src/app/common/helper';
 @Component({
   selector: 'app-enquiry-list',
   standalone: true,
@@ -166,10 +167,12 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
+        quoteNo : item.quoteHeader?.QuoteNumber ?? '',
+        QuoteHeaderSid : item.quoteHeader?.QuoteHeaderSid || null,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         ShipmentExpectedDate: this.datePipe.transform(item.ShipmentExpectedDate) ?? '',
-        POLPortName: item.POL?.PortName ?? '',
-        PODPortName: item.POD?.PortName ?? ''
+        formattedPOL : item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
+        formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : ''
       }));
 
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -299,7 +302,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
       {
-        key: 'POLPortName',
+        key: 'formattedPOL',
         label: 'POL',
         sortable: true,
         filterable: true,
@@ -307,7 +310,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
       {
-        key: 'PODPortName',
+        key: 'formattedPOD',
         label: 'POD',
         sortable: true,
         filterable: true,

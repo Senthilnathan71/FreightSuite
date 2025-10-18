@@ -154,8 +154,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         { key: 'EnquiryDate', label: 'Enquiry Date', sortable: true, visible: true },
         { key: 'CustomerName', label: 'Customer', sortable: true, visible: true },
         { key: 'departmentName', label: 'Department', sortable: true, visible: true },
-        { key: 'POL', label: 'POL', sortable: true, visible: true },
-        { key: 'POD', label: 'POD', sortable: true, visible: true },
+        { key: 'formattedPOL', label: 'POL', sortable: true, visible: true },
+        { key: 'formattedPOD', label: 'POD', sortable: true, visible: true },
       ],
       actions: [{ icon: 'fas fa-file', label: 'File', action: 'navigate', tooltip: 'Create Quotation' }],
       selectable: false,
@@ -206,7 +206,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           dataType: 'string'
         },
         {
-          key: 'POLName',
+          key: 'formattedPOL',
           label: 'POL',
           sortable: true,
           filterable: true,
@@ -214,7 +214,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           dataType: 'string'
         },
         {
-          key: 'PODName',
+          key: 'formattedPOD',
           label: 'POD',
           sortable: true,
           filterable: true,
@@ -364,7 +364,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
-          ContainerQty: cargo.Qty
+          ContainerQty: cargo.Qty,
+          ServiceLevel: response.IncoTerms
         };
       });
     });
@@ -377,6 +378,10 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
       Email: response.Email,
       LeadOrCustomer : response.LeadOrCustomer === "C",
       CustomerMasterSid: response.CustomerMasterSid,
+      CustomerBranchSid: response.CustomerBranchSid,
+      CustomerRef: response.CustomerRef,
+      FreightPPCC: response.FreightPPCC,
+      SalesmanSid: response.UserMasterSid,
       PreCustomerMasterSid : response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
       polList: polList,

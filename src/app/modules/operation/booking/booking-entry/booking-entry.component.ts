@@ -41,6 +41,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -349,39 +350,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   ];
   dataFromQuotation: any
   // Mail content
-  customerLookupConfig = {
-    displayFields: ['CustomerName', 'BranchName', 'Address'],
-    displayLabels: ['Customer', 'Branch', 'Address'],
-    labelFields: ['CustomerName']
-  };
-
-  portLookupConfig = {
-    displayFields: ['PortCode', 'PortName', 'Country'],
-    displayLabels: ['Code', 'Name', 'Country'],
-    labelFields: ['PortName']
-  };
-
-  incoLookupConfig = {
-    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
-    displayLabels: ['Code', 'Name', 'P/C'],
-    labelFields: ['IncoCode']
-  }
-  containerTypeLookupConfig = {
-    displayFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
-    displayLabels: ['Code', 'Name', 'Size'],
-    labelFields: ['ContainerName']
-  }
-  uomLookupConfig = {
-    displayFields: ['UOMCode', 'UOMName'],
-    displayLabels: ['Code', 'Name'],
-    labelFields: ['UOMCode']
-  }
-
-  imcoLookupConfig = {
-    displayFields: ['ImcoName', 'ImcoUn', 'PackingGroup'],
-    displayLabels: ['Name', 'UN No', 'Packing Group'],
-    labelFields: ['ImcoClass']
-  }
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  containerTypeLookupConfig = DROPDOWN_CONFIGS.CONTAINER_TYPE;
+  uomLookupConfig = DROPDOWN_CONFIGS.UOM;
+  imcoLookupConfig = DROPDOWN_CONFIGS.IMCO;
 
 
   /**

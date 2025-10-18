@@ -42,6 +42,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-enquiry-entry',
@@ -71,8 +72,8 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
   ],
 })
 export class EnquiryEntryComponent implements OnInit {
-   @ViewChild('enquiryPrint') enquiryPrint!: TemplateRef<any>;
-      private destroy$ = new Subject<void>();
+  @ViewChild('enquiryPrint') enquiryPrint!: TemplateRef<any>;
+  private destroy$ = new Subject<void>();
 
   selectedDepartment: any = '';
   isMobile: boolean = false;
@@ -81,7 +82,7 @@ export class EnquiryEntryComponent implements OnInit {
   isEditMode = false; // Flag for edit mode
   customers: any[] = [];
   incoList: any[] = [];
-  salesmanList : any[] = [];
+  salesmanList: any[] = [];
   packageTypes: any;
   containerTypes: any;
   // ports: any
@@ -108,7 +109,7 @@ export class EnquiryEntryComponent implements OnInit {
   currentMenuId: number;
   TandCList: any;
   productList: any[];
-  leadList : any[] = [];
+  leadList: any[] = [];
   cusBranchList: any[] = [];
   weightUnitList: any[] = [];
   consigneeList: any[] = [];
@@ -132,11 +133,8 @@ export class EnquiryEntryComponent implements OnInit {
   permissions: any[] = [];
   currentMenuPermissions = {}
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
-  customerLookupConfig = {
-    displayFields : ['CustomerName','BranchName', 'Address'],
-    displayLabels : ['Customer','Branch', 'Address'],
-    labelFields :['CustomerName']
-  };
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
 
   modeOfEnquiry = [
     { id: 1, name: "Email" },
@@ -176,23 +174,18 @@ export class EnquiryEntryComponent implements OnInit {
     { id: 5, name: "Palletization" }
   ]
 
-    selectedTab = 'Enquiry';
- tabs = [
+  selectedTab = 'Enquiry';
+  tabs = [
     { name: 'Enquiry', icon: 'fas fa-file-signature' },
     { name: 'Route Details', icon: 'fas fa-layer-group' },
-  //  { name: 'Other', icon: 'fas fa-layer-group' }
+    //  { name: 'Other', icon: 'fas fa-layer-group' }
   ];
-  
-  
+
+
   freightTermsList: any[] = [
     { FreightTermsSid: 'Prepaid', FreightTerms: 'Prepaid' },
     { FreightTermsSid: 'Collect', FreightTerms: 'Collect' }
   ];
-   portLookupConfig = {
-    displayFields : ['PortCode', 'PortName','Country'],
-    displayLabels : ['Code', 'Name','Country'],
-    labelFields :['PortCode']
-  };
 
 
   selectTab(tab: string) {
@@ -201,6 +194,42 @@ export class EnquiryEntryComponent implements OnInit {
 
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+
+
+  /** Flag that decides whether to disable the whole form or not. */
+  isEnquiryAuthActionTaken: boolean;
+
+  /** Flag that indicate if the particular enquiry is approved or not.*/
+  isEnquiryApproved: boolean;
+
+  /** Stores the approved part of Enquiry Data */
+  approvedEnquiryData: any;
+
+  /** Flag that indicate whether quotation is already created against this enquiry or not. */
+  quotationCreatedAgainstThisEnquiry: boolean;
+
+  /**
+   * Stores authorization-related details for an enquiry.
+   *
+   * @typedef {Object} AuthRelatedDetails
+   * @property {boolean} isAuthorizer - Indicates whether the user is an authorizer for this enquiry.
+   * @property {boolean} alreadyApproved - Indicates whether the user has already approved this enquiry.
+   * @property {boolean} canAuthorize - Indicates whether the user has permission to authorize this enquiry.
+   * @property {number|null} AuthorityDetailSid - Unique identifier for the user's authorization record, or `null` if not applicable.
+   * @property {number|null} AuthorityLevel - Represents the user's authorization hierarchy level, or `null` if not applicable.
+   * @property {string} message - Descriptive message about the authorization status.
+   * @property {number} totalNumberOfAuthorizers - Total number of active authorizers for the current menu or enquiry.
+   */
+  authRelatedDetails = {
+    isAuthorizer: false,
+    alreadyApproved: false,
+    canAuthorize: false,
+    AuthorityDetailSid: null,
+    AuthorityLevel: null,
+    message: "User is not an authorizer for this menu.",
+    totalNumberOfAuthorizers: 0
+  };
+
 
   constructor(
     private appService: AppService,
@@ -213,9 +242,9 @@ export class EnquiryEntryComponent implements OnInit {
     private calendar: NgbCalendar,
     private ngbModal: NgbModal,
     private spinner: NgxSpinnerService,
-    private datePipe : CustomDatePipe,
+    private datePipe: CustomDatePipe,
     public dropdownStore: DropdownStore
-  ) { 
+  ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
       this.shipperList = customerTypeOutput.filter(c => c.CustomerType?.shipper === 'isTrue');
@@ -249,13 +278,13 @@ export class EnquiryEntryComponent implements OnInit {
         if (this.EnquiryHeaderSid) {
           this.isEditMode = true;
           this.loadEnquiry(this.EnquiryHeaderSid);
-          this.checkAuthorisedPerson(this.userData?.UserMasterSid, this.EnquiryHeaderSid);
         }
       });
       this.minExpDate = this.isEditMode ? undefined : this.today;
       this.checkPermissions();
     });
-    this.subscribeToLeadCustomerToggle(); 
+    this.checkAuthorisedPerson(this.userData?.UserMasterSid);
+    this.subscribeToLeadCustomerToggle();
   }
 
   checkPermissions() {
@@ -275,16 +304,17 @@ export class EnquiryEntryComponent implements OnInit {
     }
   }
 
+
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
   }
 
   hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
-}
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+  }
 
-  checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
+  checkAuthorisedPerson(UserMasterSid) {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     if (!UserMasterSid || !this.currentMenuId) {
       return;
@@ -298,8 +328,18 @@ export class EnquiryEntryComponent implements OnInit {
     }
     this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
-        this.isAuthorizedUser = resp.data?.canAuthorize
-        this.isApproved = resp.data?.alreadyApproved
+        const data = resp.data;
+        this.isAuthorizedUser = data?.canAuthorize
+        this.isApproved = data?.alreadyApproved
+        this.authRelatedDetails = {
+          isAuthorizer: data?.isAuthorizer,
+          alreadyApproved: data?.alreadyApproved,
+          canAuthorize: data?.canAuthorize && !data?.alreadyApproved,
+          AuthorityDetailSid: data?.AuthorityDetailSid || null,
+          AuthorityLevel: data?.AuthorityLevel || null,
+          message: data?.message || "User is not an authorizer for this menu.",
+          totalNumberOfAuthorizers: data?.totalNumberOfAuthorizers || 0
+        }
         const authorizerStatusControl = this.rateRequestForm.get('authorizerStatus');
         if (this.isAuthorizedUser && !this.isApproved) {
           authorizerStatusControl?.setValidators([this.statusRequiredValidator]);
@@ -347,42 +387,42 @@ export class EnquiryEntryComponent implements OnInit {
   // }
 
   loadAllLookups() {
-  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-  const filterOption = { CompanyMasterSid, BranchMasterSid };
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const filterOption = { CompanyMasterSid, BranchMasterSid };
 
-  return forkJoin({
-    departments: this.dropdownStore.loadDepartments({ CompanyMasterSid }).pipe(catchError(() => of([]))),
-    ports: this.dropdownStore.loadPorts().pipe(catchError(() => of([]))),
-    customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
-    leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
-    incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
-    weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
-    packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
-    containerTypes: this.dropdownStore.loadContainerTypes().pipe(catchError(() => of([]))),
-    products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
-    salesman: this.leadService.getAllSalesman().pipe(catchError(() => of([]))),
-  }).pipe(
-    tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products, salesman }) => {
-      this.departments = departments;
-      this.ports = ports.map(p => ({ ...p, Country: p.countryMaster?.countryName }));
-      this.filteredPorts = [...this.ports];
-      this.customers = customers;
-      this.leadList = leads.data;
-      this.incoList = incos;
-      this.weightUnitList = weightUnits.data;
-      this.packageTypes = packageTypes.data;
-      this.containerTypes = containerTypes;
-      this.productList = products;
-      this.salesmanList = salesman;
-    })
-  );
-}
+    return forkJoin({
+      departments: this.dropdownStore.loadDepartments({ CompanyMasterSid }).pipe(catchError(() => of([]))),
+      ports: this.dropdownStore.loadPorts().pipe(catchError(() => of([]))),
+      customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
+      leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
+      incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
+      weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
+      packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
+      containerTypes: this.dropdownStore.loadContainerTypes().pipe(catchError(() => of([]))),
+      products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
+      salesman: this.leadService.getAllSalesman().pipe(catchError(() => of([]))),
+    }).pipe(
+      tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products, salesman }) => {
+        this.departments = departments;
+        this.ports = ports.map(p => ({ ...p, Country: p.countryMaster?.countryName }));
+        this.filteredPorts = [...this.ports];
+        this.customers = customers;
+        this.leadList = leads.data;
+        this.incoList = incos;
+        this.weightUnitList = weightUnits.data;
+        this.packageTypes = packageTypes.data;
+        this.containerTypes = containerTypes;
+        this.productList = products;
+        this.salesmanList = salesman;
+      })
+    );
+  }
 
   initializeForm() {
     this.rateRequestForm = this.fb.group({
-      LeadOrCustomer : [true],
-      PreCustomerMasterSid : [null],
+      LeadOrCustomer: [true],
+      PreCustomerMasterSid: [null],
       CustomerMasterSid: [null],
       customerName: ['', Validators.required],
       enquiryNo: [''],
@@ -390,8 +430,8 @@ export class EnquiryEntryComponent implements OnInit {
       shipmentDate: ['', Validators.required],
       DepartmentMasterSid: [''],
       Segment: [null, Validators.required],
-      CustomerAddress: [null],
-      CustomerBranchSid: [''],
+      CustomerAddress: [''],
+      CustomerBranchSid: [null],
       Email: ['', [EmailValidators.singleEmail()]],
       EnquiryType: [null],
       IncoTerms: [null],
@@ -401,9 +441,9 @@ export class EnquiryEntryComponent implements OnInit {
       status: [''],
       AuthorizerRemarks: [''],
       authorizerStatus: ['Pending'],
-      CustomerRef:[''],
+      CustomerRef: [''],
       UserMasterSid: [null],
-      FreightPPCC : ['Prepaid'],
+      FreightPPCC: ['Prepaid'],
       routes: this.fb.array([]),
     });
 
@@ -434,7 +474,7 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   // toggleCustomerType(isCustomer: boolean) {
-    
+
   //   this.rateRequestForm.patchValue({
   //     PreCustomerMasterSid: null,
   //     CustomerMasterSid: null,
@@ -461,33 +501,33 @@ export class EnquiryEntryComponent implements OnInit {
   // }
 
   toggleCustomerType(isCustomer: boolean, isPatching = false) {
-  // Only reset if not patching existing record
-  if (!isPatching) {
-    this.rateRequestForm.patchValue({
-      PreCustomerMasterSid: null,
-      CustomerMasterSid: null,
-      customerName: '',
-      CustomerAddress: null,
-      CustomerBranchSid: null,
-      Email: null,
-    });
-    this.cusBranchList = []; 
+    // Only reset if not patching existing record
+    if (!isPatching) {
+      this.rateRequestForm.patchValue({
+        PreCustomerMasterSid: null,
+        CustomerMasterSid: null,
+        customerName: '',
+        CustomerAddress: null,
+        CustomerBranchSid: null,
+        Email: null,
+      });
+      this.cusBranchList = [];
+    }
+
+    const preCustomerControl = this.rateRequestForm.get('PreCustomerMasterSid');
+    const customerControl = this.rateRequestForm.get('CustomerMasterSid');
+
+    if (isCustomer) {
+      customerControl?.setValidators(Validators.required);
+      preCustomerControl?.clearValidators();
+    } else {
+      preCustomerControl?.setValidators(Validators.required);
+      customerControl?.clearValidators();
+    }
+
+    customerControl?.updateValueAndValidity();
+    preCustomerControl?.updateValueAndValidity();
   }
-
-  const preCustomerControl = this.rateRequestForm.get('PreCustomerMasterSid');
-  const customerControl = this.rateRequestForm.get('CustomerMasterSid');
-
-  if (isCustomer) {
-    customerControl?.setValidators(Validators.required);
-    preCustomerControl?.clearValidators();
-  } else {
-    preCustomerControl?.setValidators(Validators.required);
-    customerControl?.clearValidators();
-  }
-
-  customerControl?.updateValueAndValidity();
-  preCustomerControl?.updateValueAndValidity();
-}
 
   initOthersForm() {
     this.enquiryOtherForm = this.fb.group({
@@ -508,8 +548,8 @@ export class EnquiryEntryComponent implements OnInit {
       CompanyMasterSid,
       types: ['shipper', 'consignee']
     };
-    this.dropdownStore.loadCustomerTypeData(payload)
-    this.dropdownStore.loadDepartments(CompanyMasterSid)
+    this.dropdownStore.loadCustomerTypeData(payload).subscribe();
+    this.dropdownStore.loadDepartments(CompanyMasterSid).subscribe();
   }
 
 
@@ -525,15 +565,15 @@ export class EnquiryEntryComponent implements OnInit {
   addRoute() {
     const routeForm = this.fb.group(
       {
-        POO: [null, ],
+        POO: [null,],
         POL: [null, Validators.required],
         POD: [null, Validators.required],
-        FDC: [null, ],
+        FDC: [null,],
         cargo: this.fb.array([]),
       }
     );
 
-    
+
     this.routes.push(routeForm);
     this.subscribeToRouteChanges(routeForm, this.routes.length - 1);
     this.addCargo(this.routes.length - 1);
@@ -541,74 +581,67 @@ export class EnquiryEntryComponent implements OnInit {
     this.filteredPOLPorts[this.routes.length - 1] = initialPorts;
     this.filteredPODPorts[this.routes.length - 1] = initialPorts;
 
-  //POD Selected Automatically changed the FDC Value 
+    //POD Selected Automatically changed the FDC Value 
 
-  // routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
-  //   routeForm.get('FDC')?.setValue(podValue, { emitEvent: false });
-  // });
+    // routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
+    //   routeForm.get('FDC')?.setValue(podValue, { emitEvent: false });
+    // });
 
 
-  //Only FDC Value empty
-    
-  routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
-    const fdcControl = routeForm.get('FDC');
-    const currentFDC = fdcControl?.value;
+    //Only FDC Value empty
 
-    // ✅ Only assign when FDC is empty or null
-    if (!currentFDC || currentFDC.trim() === '') {
-      fdcControl?.setValue(podValue, { emitEvent: false });
-    }
-  });
+    routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
+      const fdcControl = routeForm.get('FDC');
+      const currentFDC = fdcControl?.value;
+
+      // ✅ Only assign when FDC is empty or null
+      if (!currentFDC || currentFDC.trim() === '') {
+        fdcControl?.setValue(podValue, { emitEvent: false });
+      }
+    });
   }
 
 
-    getFormattedPort(PortMasterSid) {
-    if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
-      return '';
-    }
-    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
-    return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
-  }
 
   openEmail() {
     if (!this.rateRequestData) return;
- 
+
     // Need to add later
     // if(!this.enquiryApproved){
     //   this.appSettingsService.showWarning("Please approve the quotation before sending email");
     //   return;
     // }
- 
+
     const selectedItem = this.rateRequestData;
- 
+
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
- 
+
     const toEmailSet = new Set<string>();
     toEmailSet.add(selectedItem.Email);
- 
+
     const toEmail = Array.from(toEmailSet);
     const ccEmail = [this.userData['userEmail']];
- 
+
     const POL = selectedItem?.enquiryRoute[0]?.POLSid;
     const POD = selectedItem?.enquiryRoute[0]?.PODSid;
     const FPD = selectedItem?.enquiryRoute[0]?.FDPSid;
-    const formattedPOL = this.getFormattedPort(POL);
-    const formattedPOD = this.getFormattedPort(POD);
-    const formattedFPD = this.getFormattedPort(FPD);
- 
+    const formattedPOL = getFormattedPort(this.ports, POL);
+    const formattedPOD = getFormattedPort(this.ports, POD);
+    const formattedFPD = getFormattedPort(this.ports, FPD);
+
     const subject = `Enquiry No.${this.rateRequestData?.EnquiryNumber} Date: ${this.datePipe.transform(this.rateRequestData?.EnquiryDate)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
- 
+
     const mailBody = `Dear Sir/Madam,
 Please find enclosed the enquiry as requested
 Kindly review the details at your convenience.
 Looking forward to your feedback and the opportunity to work together.
 Best Regards,
 ${this.userData.userName}`;
- 
+
     modalRef.componentInstance.setContent = {
       EmailTo: toEmail,
       EmailCC: ccEmail,
@@ -618,49 +651,49 @@ ${this.userData.userName}`;
       // attachments: [pdfFile]
     };
   }
- 
- 
+
+
   openAgentEmail() {
     if (!this.rateRequestData) return;
- 
+
     // Need to add later
     // if(!this.enquiryApproved){
     //   this.appSettingsService.showWarning("Please approve the quotation before sending email");
     //   return;
     // }
- 
+
     const selectedItem = this.rateRequestData;
- 
+
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
- 
+
     const toEmailSet = new Set<string>();
     // toEmailSet.add(selectedItem.Email);  // We dont take agent input in entry page
- 
+
     const toEmail = Array.from(toEmailSet);
     const ccEmail = [this.userData['userEmail']];
- 
+
     const POL = selectedItem?.enquiryRoute[0]?.POLSid;
     const POD = selectedItem?.enquiryRoute[0]?.PODSid;
     const FPD = selectedItem?.enquiryRoute[0]?.FDPSid;
-    const formattedPOL = this.getFormattedPort(POL);
-    const formattedPOD = this.getFormattedPort(POD);
-    const formattedFPD = this.getFormattedPort(FPD);
+    const formattedPOL = getFormattedPort(this.ports, POL);
+    const formattedPOD = getFormattedPort(this.ports, POD);
+    const formattedFPD = getFormattedPort(this.ports, FPD);
     const containerTypes = (selectedItem?.enquiryRoute?.[0]?.enquiryCargo || []).map(cargo => {
       return this.containerTypes.find(type => type.ContainerName === cargo.ContainerType)?.ContainerCode;
     }).join(', ');
- 
+
     const subject = `Rate Request for ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
- 
+
     const mailBody = `Dear Sir/Madam,
 Kindly share the rate for ${formattedPOL} - ${formattedPOD} Container: ${containerTypes}
 Looking forward to your feedback and the opportunity to work together.
 Best Regards,
 ${this.userData.userName}`;
- 
+
     modalRef.componentInstance.setContent = {
       EmailTo: toEmail,
       EmailCC: ccEmail,
@@ -737,66 +770,66 @@ ${this.userData.userName}`;
   }
 
   onSegmentChange(event: any) {
-  if (!event) {
-    this.selectedFCLLCL = "LCL";
-    this.selectedDepartment = "";
-    this.routes.controls.forEach((routeGroup: FormGroup) => {
-      ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
+    if (!event) {
+      this.selectedFCLLCL = "LCL";
+      this.selectedDepartment = "";
+      this.routes.controls.forEach((routeGroup: FormGroup) => {
+        ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
+          routeGroup.get(field)?.setValue(null);
+        });
+      });
+      return;
+    }
+
+    // Get the selected department ID - handle both object and ID scenarios
+    let selectedDepartmentId: number;
+
+    if (typeof event === 'object' && event.DepartmentMasterSid) {
+      // Event is the selected department object
+      selectedDepartmentId = Number(event.DepartmentMasterSid);
+    } else {
+      // Event is just the ID
+      selectedDepartmentId = Number(event);
+    }
+
+    this.rateRequestForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
+
+    const selectedDept = this.departments.find(
+      dept => dept.DepartmentMasterSid === selectedDepartmentId
+    );
+
+    // Set selectedDepartment correctly
+    this.selectedDepartment = selectedDept?.departmentName || '';
+
+    if (selectedDept?.departmentType === "Sea") {
+      this.selectedFCLLCL = selectedDept?.FCLLCL || "LCL";
+    } else {
+      this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase() || "LCL";
+    }
+
+    // Reset route ports
+    this.routes.controls.forEach((routeGroup: FormGroup, index) => {
+      ['POO', 'POL', 'POD', 'FDC'].forEach((field) => {
         routeGroup.get(field)?.setValue(null);
       });
+
+      const initialPorts = this.getFilteredPortsBySegment();
+      this.filteredPOLPorts[index] = initialPorts;
+      this.filteredPODPorts[index] = initialPorts;
+
+      // Update cargo validators
+      const cargoArray = routeGroup.get('cargo') as FormArray;
+      cargoArray.controls.forEach((cargoForm: FormGroup) => {
+        this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
+      });
     });
-    return;
-  }
 
-  // Get the selected department ID - handle both object and ID scenarios
-  let selectedDepartmentId: number;
-  
-  if (typeof event === 'object' && event.DepartmentMasterSid) {
-    // Event is the selected department object
-    selectedDepartmentId = Number(event.DepartmentMasterSid);
-  } else {
-    // Event is just the ID
-    selectedDepartmentId = Number(event);
-  }
-
-  this.rateRequestForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
-
-  const selectedDept = this.departments.find(
-    dept => dept.DepartmentMasterSid === selectedDepartmentId
-  );
-
-  // Set selectedDepartment correctly
-  this.selectedDepartment = selectedDept?.departmentName || '';
-  
-  if (selectedDept?.departmentType === "Sea") {
-    this.selectedFCLLCL = selectedDept?.FCLLCL || "LCL";
-  } else {
-    this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase() || "LCL";
-  }
-
-  // Reset route ports
-  this.routes.controls.forEach((routeGroup: FormGroup, index) => {
-    ['POO', 'POL', 'POD', 'FDC'].forEach((field) => {
-      routeGroup.get(field)?.setValue(null);
+    // Filter ports based on selected segment
+    this.filteredPorts = this.ports.filter(port => {
+      if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
+      return port.PortType === 'Sea';
     });
-    
-    const initialPorts = this.getFilteredPortsBySegment();
-    this.filteredPOLPorts[index] = initialPorts;
-    this.filteredPODPorts[index] = initialPorts;
-
-    // Update cargo validators
-    const cargoArray = routeGroup.get('cargo') as FormArray;
-    cargoArray.controls.forEach((cargoForm: FormGroup) => {
-      this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
-    });
-  });
-
-  // Filter ports based on selected segment
-  this.filteredPorts = this.ports.filter(port => {
-    if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
-    return port.PortType === 'Sea';
-  });
-}
+  }
 
 
   openAuditLogs(modal: TemplateRef<any>) {
@@ -827,7 +860,7 @@ ${this.userData.userName}`;
     });
   }
 
-   openPrint() {
+  openPrint() {
     this.ngbModal.open(this.enquiryPrint, {
       size: 'lg',
       centered: true,
@@ -885,40 +918,42 @@ ${this.userData.userName}`;
     cargoForm.updateValueAndValidity();
   }
 
-onSelectionChange(selectedItem: any) {
-  if (!selectedItem) {
-    this.rateRequestForm.patchValue({
-      customerName: '',
-      CustomerAddress: null,
-      CustomerBranchSid: null,
-      Email: null,
-    });
-    this.cusBranchList = [];
-    return;
-  }
+  onSelectionChange(selectedItem: any) {
+    if (!selectedItem) {
+      this.rateRequestForm.patchValue({
+        customerName: '',
+        CustomerAddress: null,
+        CustomerBranchSid: null,
+        Email: null,
+      });
+      this.cusBranchList = [];
+      return;
+    }
 
-  const isCustomer = this.rateRequestForm.get('LeadOrCustomer')?.value;
-  console.log(selectedItem);
-  if (isCustomer) {
-    this.rateRequestForm.patchValue({
-      customerName: selectedItem.CustomerName,
-      CustomerAddress: selectedItem.Address, 
-      Email: selectedItem.Email,
-      CustomerBranchSid: selectedItem.CustomerBranchSid,
-    });
-    this.selectedCustomerName = selectedItem.CustomerName;
-    this.getCustomerBranches(selectedItem.CustomerMasterSid);
-  } else {
-    this.rateRequestForm.patchValue({
-      customerName: selectedItem.preCustomerName,
-      CustomerAddress: selectedItem.preCustomerAddress1,
-      Email: selectedItem.email,
-      CustomerBranchSid: null, 
-    });
-    this.selectedCustomerName = selectedItem.preCustomerName;
-    this.cusBranchList = []; 
+    const isCustomer = this.rateRequestForm.get('LeadOrCustomer')?.value;
+    console.log(selectedItem);
+    if (isCustomer) {
+      this.rateRequestForm.patchValue({
+        customerName: selectedItem.CustomerName,
+        CustomerAddress: selectedItem.Address,
+        Email: selectedItem.Email,
+        CustomerMasterSid: selectedItem.CustomerMasterSid,
+        CustomerBranchSid: selectedItem.CustomerBranchSid,
+      });
+      this.selectedCustomerName = selectedItem.CustomerName;
+      // this.getCustomerBranches(selectedItem.CustomerMasterSid);
+    } else {
+      this.rateRequestForm.patchValue({
+        customerName: selectedItem.preCustomerName,
+        CustomerAddress: selectedItem.preCustomerAddress1,
+        Email: selectedItem.email,
+        CustomerBranchSid: null,
+      });
+      this.selectedCustomerName = selectedItem.preCustomerName;
+      this.patchSalespersonOfLead(selectedItem);
+      this.cusBranchList = [];
+    }
   }
-}
 
   onCustomerChange(event: any): void {
     console.log("Event triggered");
@@ -994,36 +1029,37 @@ onSelectionChange(selectedItem: any) {
 
 
   patchValues(response: any) {
-
- // Lead/Customer toggle first
-  const isCustomer = response.LeadOrCustomer === 'C';
-  this.rateRequestForm.get('LeadOrCustomer')?.setValue(isCustomer, { emitEvent: false });
-  this.toggleCustomerType(isCustomer, true);
-
-  if (!isCustomer) {
-    // patch lead only after leadList loaded
-    const selectedLead = this.leadList.find(l => l.PreCustomerMasterSid === Number(response.PreCustomerMasterSid));
-    if (selectedLead) {
-      this.rateRequestForm.patchValue({
-        PreCustomerMasterSid: selectedLead.PreCustomerMasterSid,
-        customerName: selectedLead.preCustomerName,
-        CustomerAddress: selectedLead.preCustomerAddress1,
-        Email: selectedLead.email,
-      });
+    /** Disables the form control. */
+    const disableFormControl = (formGroup: FormGroup, controlName: string) => {
+      formGroup.get(controlName)?.disable();
     }
-  }  else {
-    // patch customer fields
-    const selectedCustomer = this.customers.find(c => c.CustomerMasterSid === response.CustomerMasterSid);
-    if (selectedCustomer) {
-      this.rateRequestForm.patchValue({
-        CustomerMasterSid: selectedCustomer.CustomerMasterSid,
-        customerName: selectedCustomer.CustomerName,
-        CustomerAddress: selectedCustomer.Address,
-        Email: selectedCustomer.Email,
-      });
-    }
-  }
 
+    const isCustomer = response.LeadOrCustomer === 'C';
+    this.rateRequestForm.get('LeadOrCustomer')?.setValue(isCustomer);
+    if (!isCustomer) {
+      // patch lead only after leadList loaded
+      const selectedLead = this.leadList.find(l => l.PreCustomerMasterSid === Number(response.PreCustomerMasterSid));
+      if (selectedLead) {
+        this.rateRequestForm.patchValue({
+          PreCustomerMasterSid: selectedLead.PreCustomerMasterSid,
+          customerName: selectedLead.preCustomerName,
+          CustomerAddress: selectedLead.preCustomerAddress1,
+          Email: selectedLead.email,
+        });
+      }
+    } else {
+      const selectedCustomer = this.customers.find(c => c.CustomerBranchSid === response.CustomerBranchSid);
+      if (selectedCustomer) {
+        this.rateRequestForm.patchValue({
+          CustomerMasterSid: selectedCustomer.CustomerMasterSid,
+          CustomerBranchSid: selectedCustomer.CustomerBranchSid,
+          customerName: selectedCustomer.CustomerName,
+          CustomerAddress: selectedCustomer.Address,
+          Email: selectedCustomer.Email,
+        });
+      }
+    }
+    console.log(this.rateRequestForm.value)
     this.selectedDepartment = response.ShipmentType;
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     if (selectedDept?.departmentType === "Sea") {
@@ -1031,31 +1067,26 @@ onSelectionChange(selectedItem: any) {
     } else {
       this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
     }
-// const selectedLead = this.leadList.find(l => l.PreCustomerMasterSid === Number(response.PreCustomerMasterSid));
-// if (selectedLead) {
-//   this.rateRequestForm.get('PreCustomerMasterSid')?.setValue(selectedLead.PreCustomerMasterSid);
-// }
-    
-    console.log(response.PreCustomerMasterSid,'response.PreCustomerMasterSid')
+
     // Patch header fields
     this.quotationEnquiryNumber = response.EnquiryNumber;
     this.quotationCustomerId = response.CustomerMasterSid;
     this.quotationDepartmentId = response.DepartmentMasterSid;
     this.getCustomerBranches(response.CustomerMasterSid);
     this.authStateCache = response.authorizerStatus,
-    this.rateRequestForm.patchValue({
-        // PreCustomerMasterSid: Number(response.PreCustomerMasterSid),
-        // LeadOrCustomer : response.LeadOrCustomer === "C",
-        // CustomerMasterSid: response.CustomerMasterSid,
-        // customerName: response.CustomerName,
+      this.rateRequestForm.patchValue({
+        CustomerMasterSid: response.CustomerMasterSid,
+        CustomerBranchSid: response.CustomerBranchSid,
+        customerName : response.CustomerName,
+        CustomerAddress : response.CustomerAddress,
+        Email : response.Email,
+        PreCustomerMasterSid : response.PreCustomerMasterSid,
         enquiryNo: response.EnquiryNumber,
         EnquiryDate: new Date(response.EnquiryDate),
         shipmentDate: new Date(response.ShipmentExpectedDate),
         Segment: response.DepartmentMasterSid,
         UserMasterSid: response.UserMasterSid,
-        // CustomerAddress: response.CustomerAddress,
-        // Email: response.Email,
-        FreightPPCC : response.FreightPPCC,
+        FreightPPCC: response.FreightPPCC,
         EnquiryType: response.EnquiryType,
         IncoTerms: response.IncoTerms,
         ClearanceBy: response.ClearanceBy,
@@ -1064,46 +1095,34 @@ onSelectionChange(selectedItem: any) {
         AuthorizerRemarks: response.AuthorizerRemarks,
         authorizerStatus: response.authorizerStatus || 'Pending',
         status: response.status === 'A' ? 'Active' : 'Suspended',
-        CustomerRef:response.CustomerRef,
+        CustomerRef: response.CustomerRef,
       });
-    this.rateRequestForm.get('Segment')?.disable();
-    this.rateRequestForm.get('enquiryNo')?.disable();
-    this.rateRequestForm.get('EnquiryDate')?.disable();
-    this.rateRequestForm.get('customerName')?.disable();
-    this.rateRequestForm.get('CustomerMasterSid')?.disable();
-    this.rateRequestForm.get('PreCustomerMasterSid')?.disable();
+    const disableFields = ['Segment', 'enquiryNo', 'EnquiryDate', 'customerName', 'CustomerMasterSid', 'PreCustomerMasterSid'];
+    disableFields.forEach(f => disableFormControl(this.rateRequestForm, f));
     if (response.authorizerStatus !== "Pending") {
-      this.f['authorizerStatus']?.disable();
-      this.f['AuthorizerRemarks']?.disable();
+      ['authorizerStatus', 'AuthorizerRemarks'].forEach(f => disableFormControl(this.rateRequestForm, f));
     }
-    // Get the FormArray for routes and clear existing data
+
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
-    // this.enquiryOtherForm.patchValue({
-    //   ...response?.enquiryOther[0]
-    // })
 
     if (response?.enquiryOther && response.enquiryOther.length > 0) {
-  const other = response.enquiryOther[0];
+      const other = response.enquiryOther[0];
 
-  
 
-  this.enquiryOtherForm.patchValue({
-    EnquiryOtherSid: other.EnquiryOtherSid,
-    ShipperName: other.ShipperName,
-    ShipperAddress: other.ShipperAddress || '',
-    ConsigneeName: other.ConsigneeName,
-    ConsigneeAddress: other.ConsigneeAddress || '',
-    FreightTerms: other.FreightTerms,
-    AdditionalService: other.AdditionalService,
-    PickupAddress: other.PickupAddress,
-  });
 
- 
-}
+      this.enquiryOtherForm.patchValue({
+        EnquiryOtherSid: other.EnquiryOtherSid,
+        ShipperName: other.ShipperName,
+        ShipperAddress: other.ShipperAddress || '',
+        ConsigneeName: other.ConsigneeName,
+        ConsigneeAddress: other.ConsigneeAddress || '',
+        FreightTerms: other.FreightTerms,
+        AdditionalService: other.AdditionalService,
+        PickupAddress: other.PickupAddress,
+      });
 
-    // this.onConsigneeChange();
-    // this.onShipperChange();
+    }
 
     response.enquiryRoute.forEach((route, index) => {
       this.quotationPOL = route.POLSid;
@@ -1113,13 +1132,13 @@ onSelectionChange(selectedItem: any) {
         POO: [route.PORSid,],
         POL: [route.POLSid, Validators.required],
         POD: [route.PODSid, Validators.required],
-        FDC: [route.FDPSid, ],
+        FDC: [route.FDPSid,],
         cargo: this.fb.array([]),
       });
-      
+
       // Get the cargo array inside the route
       const cargoArray = routeFormGroup.get('cargo') as FormArray;
-      
+
       // Loop through enquiryCargo and add cargo rows dynamically
       route.enquiryCargo.forEach((cargo) => {
         cargoArray.push(
@@ -1144,19 +1163,27 @@ onSelectionChange(selectedItem: any) {
           })
         );
       });
-      
+
       // Push the route to the FormArray
       this.updateCargoValidators(routeFormGroup, this.selectedFCLLCL);
       routesArray.push(routeFormGroup);
       routeFormGroup.updateValueAndValidity();
       this.onRouteChange(index);
     });
-    // if (this.authStateCache !== "Pending") {
-    //   this.disableAddButtons = true;
-    //   this.rateRequestForm.disable();
-    //   this.enquiryOtherForm.disable();
-    // }
-    console.log(this.rateRequestForm.getRawValue());
+
+
+
+    this.isEnquiryAuthActionTaken = response.authorizerStatus === "Approved" || response.authorizerStatus === "Rejected";
+
+    if (this.isEnquiryAuthActionTaken) {
+      this.rateRequestForm.disable();
+      this.enquiryOtherForm.disable();
+    }
+    this.isEnquiryApproved = response.authorizerStatus === "Approved";
+    if (this.isEnquiryApproved) {
+      // Filter route that is approved
+    }
+    this.quotationCreatedAgainstThisEnquiry = response.QuoteHeaderSid === null;
   }
 
   restrictDecimal(event: KeyboardEvent) {
@@ -1166,22 +1193,22 @@ onSelectionChange(selectedItem: any) {
   }
 
   onSubmit() {
-    if (this.hasInvalidExcept('routes',this.rateRequestForm)) {
+    if (this.hasInvalidExcept('routes', this.rateRequestForm)) {
       this.rateRequestForm.markAllAsTouched();
       this.rateRequestForm.updateValueAndValidity();
       this.appSettingsService.showWarning('Please fill all the required fields correctly');
       return;
     }
-    let routeInvalid : boolean;
-    this.routes.controls.forEach((routeGroup: FormGroup,index:number) => {
-      if(this.hasInvalidExcept('cargo',routeGroup)){
+    let routeInvalid: boolean;
+    this.routes.controls.forEach((routeGroup: FormGroup, index: number) => {
+      if (this.hasInvalidExcept('cargo', routeGroup)) {
         routeGroup.markAllAsTouched();
         routeGroup.updateValueAndValidity();
         this.appSettingsService.showWarning(`Please enter the Route.`);
         routeInvalid = true;
       }
     });
-    if(routeInvalid){
+    if (routeInvalid) {
       this.selectedTab = "Route Details";
       return;
     }
@@ -1195,9 +1222,9 @@ onSelectionChange(selectedItem: any) {
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
         ...this.rateRequestForm.value,
-        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-			BranchMasterSid : this.currentBranch?. BranchMasterSid,
+        LeadOrCustomer: this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
         enquiryOther: otherFormValue,
         updatedBy: userEmail,
         MenuMaster: this.currentMenuId,
@@ -1216,6 +1243,9 @@ onSelectionChange(selectedItem: any) {
           })),
         })),
       };
+      if (this.authRelatedDetails.totalNumberOfAuthorizers === 0) {
+        updatePayload.authorizerStatus = AuthorizationStatus.Approved;
+      }
       this.leadService
         .updateEnquiryById(this.EnquiryHeaderSid, updatePayload)
         .subscribe((resp) => {
@@ -1232,9 +1262,9 @@ onSelectionChange(selectedItem: any) {
       const createPayload = {
         ...this.rateRequestForm.value,
         enquiryOther: otherFormValue,
-        LeadOrCustomer : this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-			BranchMasterSid : this.currentBranch?. BranchMasterSid,
+        LeadOrCustomer: this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
         createdBy: userEmail,
         DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')
           ?.value,
@@ -1242,6 +1272,9 @@ onSelectionChange(selectedItem: any) {
         CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,
       };
+      if (this.authRelatedDetails.totalNumberOfAuthorizers === 0) {
+        createPayload.authorizerStatus = AuthorizationStatus.Approved;
+      }
       this.leadService.createEnquiry(createPayload).subscribe((resp) => {
         if (resp.status) {
           this.modalService.openSuccessModal('Enquiry Created Successfully');
@@ -1255,87 +1288,87 @@ onSelectionChange(selectedItem: any) {
     this.btnDisable = false;
   }
 
-hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
-  return Object.keys(formGroup.controls)
-    .filter(control => control !== controlName)
-    .some(control => formGroup.get(control)?.invalid);
-}
+  hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
+    return Object.keys(formGroup.controls)
+      .filter(control => control !== controlName)
+      .some(control => formGroup.get(control)?.invalid);
+  }
 
   resetForm() {
-  // If editing an existing enquiry, reload it from server to restore original state
-  if (this.isEditMode && this.EnquiryHeaderSid) {
-    this.loadEnquiry(this.EnquiryHeaderSid);
-    return;
-  }
+    // If editing an existing enquiry, reload it from server to restore original state
+    if (this.isEditMode && this.EnquiryHeaderSid) {
+      this.loadEnquiry(this.EnquiryHeaderSid);
+      return;
+    }
 
-  // Reset main header form to sensible defaults
-  this.rateRequestForm.reset({
-    CustomerMasterSid: null,
-    customerName: '',
-    enquiryNo: '',
-    EnquiryDate: '',
-    shipmentDate: '',
-    DepartmentMasterSid: '',
-    Segment: null,
-    CustomerAddress: null,
-    CustomerBranchSid: '',
-    Email: '',
-    EnquiryType: null,
-    IncoTerms: null,
-    ClearanceBy: null,
-    CustomerRef:"",
-    TransportBy: null,
-    Remarks: '',
-    status: '',
-    AuthorizerRemarks: '',
-    authorizerStatus: 'Pending'
-  });
-
-  // Clear and re-create routes (preserve lookups like ports)
-  const routesArray = this.rateRequestForm.get('routes') as FormArray;
-  routesArray.clear();
-  this.filteredPOLPorts = [];
-  this.filteredPODPorts = [];
-  this.filteredPorts = [...this.ports]; // reset filtered ports to full list
-  this.addRoute(); // adds one default route and one cargo row (same as init)
-
-  // Reset the other form used on second tab
-  if (this.enquiryOtherForm) {
-    this.enquiryOtherForm.reset({
-      EnquiryOtherSid: null,
-      ShipperName: null,
-      ShipperAddress: '',
-      ConsigneeName: null,
-      ConsigneeAddress: '',
-      FreightTerms: null,
-      AdditionalService: null,
-      PickupAddress: ''
+    // Reset main header form to sensible defaults
+    this.rateRequestForm.reset({
+      CustomerMasterSid: null,
+      customerName: '',
+      enquiryNo: '',
+      EnquiryDate: '',
+      shipmentDate: '',
+      DepartmentMasterSid: '',
+      Segment: null,
+      CustomerAddress: null,
+      CustomerBranchSid: '',
+      Email: '',
+      EnquiryType: null,
+      IncoTerms: null,
+      ClearanceBy: null,
+      CustomerRef: "",
+      TransportBy: null,
+      Remarks: '',
+      status: '',
+      AuthorizerRemarks: '',
+      authorizerStatus: 'Pending'
     });
+
+    // Clear and re-create routes (preserve lookups like ports)
+    const routesArray = this.rateRequestForm.get('routes') as FormArray;
+    routesArray.clear();
+    this.filteredPOLPorts = [];
+    this.filteredPODPorts = [];
+    this.filteredPorts = [...this.ports]; // reset filtered ports to full list
+    this.addRoute(); // adds one default route and one cargo row (same as init)
+
+    // Reset the other form used on second tab
+    if (this.enquiryOtherForm) {
+      this.enquiryOtherForm.reset({
+        EnquiryOtherSid: null,
+        ShipperName: null,
+        ShipperAddress: '',
+        ConsigneeName: null,
+        ConsigneeAddress: '',
+        FreightTerms: null,
+        AdditionalService: null,
+        PickupAddress: ''
+      });
+    }
+
+    // Reset UI / state flags
+    this.selectedDepartment = '';
+    this.selectedFCLLCL = '';
+    this.disableAddButtons = false;
+    this.rateRequestData = null;
+    this.quotationEnquiryNumber = null;
+    this.quotationCustomerId = null;
+    this.quotationDepartmentId = null;
+    this.authStateCache = undefined;
+    this.isAuthorizedUser = false;
+    this.isApproved = false;
+    this.btnDisable = false;
+
+    // Ensure controls that should be disabled on init are disabled again
+    this.rateRequestForm.get('Segment')?.enable(); // segment enabled in create mode
+    this.rateRequestForm.get('customerName')?.enable();
+    this.rateRequestForm.get('CustomerMasterSid')?.enable();
+    this.rateRequestForm.get('enquiryNo')?.enable();
+    this.rateRequestForm.get('EnquiryDate')?.enable();
+
+    // run change detection if you have a reference
+    try { (this as any).cdRef?.detectChanges(); } catch (e) { /* ignore if cdRef not injected */ }
   }
-
-  // Reset UI / state flags
-  this.selectedDepartment = '';
-  this.selectedFCLLCL = '';
-  this.disableAddButtons = false;
-  this.rateRequestData = null;
-  this.quotationEnquiryNumber = null;
-  this.quotationCustomerId = null;
-  this.quotationDepartmentId = null;
-  this.authStateCache = undefined;
-  this.isAuthorizedUser = false;
-  this.isApproved = false;
-  this.btnDisable = false;
-
-  // Ensure controls that should be disabled on init are disabled again
-  this.rateRequestForm.get('Segment')?.enable(); // segment enabled in create mode
-  this.rateRequestForm.get('customerName')?.enable();
-  this.rateRequestForm.get('CustomerMasterSid')?.enable();
-  this.rateRequestForm.get('enquiryNo')?.enable();
-  this.rateRequestForm.get('EnquiryDate')?.enable();
-
-  // run change detection if you have a reference
-  try { (this as any).cdRef?.detectChanges(); } catch (e) { /* ignore if cdRef not injected */ }
-}
 
 
   goBack() {
@@ -1368,8 +1401,8 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
       selectedFCLLCL = dept?.departmentType?.toUpperCase();
     }
 
-    let routeDetails = (response.enquiryRoute|| []).flatMap(route => {
-      return (route.enquiryCargo||[]).map(cargo => {
+    let routeDetails = (response.enquiryRoute || []).flatMap(route => {
+      return (route.enquiryCargo || []).map(cargo => {
         const containerTypeCode = this.containerTypes.find(
           con => con.ContainerName === cargo.ContainerType
         )?.ContainerCode || null;
@@ -1379,13 +1412,13 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
           PODSid: route.PODSid,
           FPODSid: route.FDPSid,
           CargoType: cargo.CargoType,
-          GrossWeight : cargo.GrossWeight,
-          NetWeight : cargo.NetWeight,
+          GrossWeight: cargo.GrossWeight,
+          NetWeight: cargo.NetWeight,
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
           Qty: cargo.Qty,
-          ServiceLevel : response.IncoTerms
+          ServiceLevel: response.IncoTerms
         };
       });
     });
@@ -1396,12 +1429,14 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
       CustomerAddress: response.CustomerAddress,
       CustomerName: response.CustomerName,
       Email: response.Email,
+      CustomerRef: response.CustomerRef,
       LeadOrCustomer: response.LeadOrCustomer === "C",
       CustomerMasterSid: response.CustomerMasterSid,
+      CustomerBranchSid: response.CustomerBranchSid,
       PreCustomerMasterSid: response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
-      SalesmanSid : response.UserMasterSid,
-      FreightPPCC : response.FreightPPCC,
+      SalesmanSid: response.UserMasterSid,
+      FreightPPCC: response.FreightPPCC,
       polList: polList,
       podList: podList,
       status: response.status,
@@ -1486,55 +1521,55 @@ hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
   }
 
   onShipperChange(selectedShipper?: any) {
-  if (!selectedShipper) {
-    // Clear ShipperAddress and reset Consignee list
-    this.enquiryOtherForm.patchValue({ ShipperAddress: '' });
-    this.finalConsigneeList = [...this.consigneeList];
-    return;
-  }
+    if (!selectedShipper) {
+      // Clear ShipperAddress and reset Consignee list
+      this.enquiryOtherForm.patchValue({ ShipperAddress: '' });
+      this.finalConsigneeList = [...this.consigneeList];
+      return;
+    }
 
-  // Find the full shipper object from finalShipperList
-  const shipper = this.finalShipperList.find(
-    (s: any) => s.CustomerName === selectedShipper.CustomerName || s.CustomerName === selectedShipper
-  );
-
-  if (shipper) {
-    // ✅ Auto fill the ShipperAddress from CustomerAddress1
-    this.enquiryOtherForm.patchValue({
-      ShipperAddress: shipper.CustomerAddress1 || ''
-    });
-
-    // ✅ Filter consignee list to exclude same shipper
-    this.finalConsigneeList = this.consigneeList.filter(
-      (consignee: any) => consignee.CustomerName !== shipper.CustomerName
+    // Find the full shipper object from finalShipperList
+    const shipper = this.finalShipperList.find(
+      (s: any) => s.CustomerName === selectedShipper.CustomerName || s.CustomerName === selectedShipper
     );
+
+    if (shipper) {
+      // ✅ Auto fill the ShipperAddress from CustomerAddress1
+      this.enquiryOtherForm.patchValue({
+        ShipperAddress: shipper.CustomerAddress1 || ''
+      });
+
+      // ✅ Filter consignee list to exclude same shipper
+      this.finalConsigneeList = this.consigneeList.filter(
+        (consignee: any) => consignee.CustomerName !== shipper.CustomerName
+      );
+    }
   }
-}
-onConsigneeChange(selectedConsignee?: any) {
-  if (!selectedConsignee) {
-    // Clear ConsigneeAddress and reset shipper list
-    this.enquiryOtherForm.patchValue({ ConsigneeAddress: '' });
-    this.finalShipperList = [...this.shipperList]; // reset shipper options
-    return;
-  }
+  onConsigneeChange(selectedConsignee?: any) {
+    if (!selectedConsignee) {
+      // Clear ConsigneeAddress and reset shipper list
+      this.enquiryOtherForm.patchValue({ ConsigneeAddress: '' });
+      this.finalShipperList = [...this.shipperList]; // reset shipper options
+      return;
+    }
 
-  // Find the full consignee object
-  const consignee = this.finalConsigneeList.find(
-    (c: any) => c.CustomerName === selectedConsignee.CustomerName || c.CustomerName === selectedConsignee
-  );
-
-  if (consignee) {
-    // ✅ Auto fill the Consignee Address from CustomerAddress1
-    this.enquiryOtherForm.patchValue({
-      ConsigneeAddress: consignee.CustomerAddress1 || ''
-    });
-
-    // ✅ Filter shipper list to exclude same consignee
-    this.finalShipperList = this.shipperList.filter(
-      (shipper: any) => shipper.CustomerName !== consignee.CustomerName
+    // Find the full consignee object
+    const consignee = this.finalConsigneeList.find(
+      (c: any) => c.CustomerName === selectedConsignee.CustomerName || c.CustomerName === selectedConsignee
     );
+
+    if (consignee) {
+      // ✅ Auto fill the Consignee Address from CustomerAddress1
+      this.enquiryOtherForm.patchValue({
+        ConsigneeAddress: consignee.CustomerAddress1 || ''
+      });
+
+      // ✅ Filter shipper list to exclude same consignee
+      this.finalShipperList = this.shipperList.filter(
+        (shipper: any) => shipper.CustomerName !== consignee.CustomerName
+      );
+    }
   }
-}
 
 
 
@@ -1596,9 +1631,9 @@ onConsigneeChange(selectedConsignee?: any) {
   openEDoc() {
     // if (!this.tariffData) return;
     const modalRef = this.ngbModal.open(EdocComponent, {
-    	size: 'lg',
-    	centered: true,
-    	backdrop: 'static'
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     });
   }
 
@@ -1651,10 +1686,10 @@ onConsigneeChange(selectedConsignee?: any) {
 
       voiceData.routes.forEach((routeData: any, routeIndex: number) => {
         const routeFormGroup = this.fb.group({
-          POO: [routeData.POO, ],
+          POO: [routeData.POO,],
           POL: [routeData.POL, Validators.required],
           POD: [routeData.POD, Validators.required],
-          FDC: [routeData.FDC, ],
+          FDC: [routeData.FDC,],
           cargo: this.fb.array([])
         });
 
@@ -1734,11 +1769,27 @@ onConsigneeChange(selectedConsignee?: any) {
     return cargoForm.get('GrossWeight')?.hasError('grossNotGreater');
   }
 
+  patchSalespersonOfLead(precustomer: any) {
+    this.leadService.getSalespersonOfLead(precustomer.PreCustomerMasterSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.rateRequestForm.patchValue({
+            UserMasterSid: resp.data
+          })
+        } else {
+          this.appSettingsService.showError('Failed to load salesperson: Invalid response');
+        }
+      },
+      error => {
+        console.error('Error fetching salesperson:', error);
+      });
+  }
 
-ngOnDestroy(): void {
+
+  ngOnDestroy(): void {
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+
 }

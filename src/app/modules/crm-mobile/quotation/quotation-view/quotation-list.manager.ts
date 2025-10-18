@@ -6,6 +6,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { Router } from '@angular/router';
+import { getConcatenatedPorts } from 'src/app/common/helper';
 
 export class QuotationListManager {
     // State
@@ -44,8 +45,8 @@ export class QuotationListManager {
                     this.items = (response.data.items || []).map(item => ({
                         ...item,
                         departmentName: item.quoteRoute?.[0]?.departmentMaster?.departmentName ?? '',
-                        PODName: item.quoteRoute?.[0]?.PortPOD?.PortCode ?? '',
-                        POLName: item.quoteRoute?.[0]?.PortPOL?.PortCode ?? '',
+                        formattedPOD: item.quoteRoute?.[0]?.PortPOD ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOD?.PortName, item.quoteRoute?.[0]?.PortPOD?.PortCode) : '',
+                        formattedPOL: item.quoteRoute?.[0]?.PortPOL ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOL?.PortName, item.quoteRoute?.[0]?.PortPOL?.PortCode) : '',
                         QuoteDate: this.datePipe.transform(item?.QuoteDate),
                         status: item.status === 'A' ? 'Active' : 'Suspended',
                     }));
