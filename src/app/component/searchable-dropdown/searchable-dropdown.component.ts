@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef, ViewChild, HostListener, ElementRef, AfterViewInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NgbTooltip, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -21,7 +21,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     },
   ],
 })
-export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccessor {
+export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccessor, AfterViewInit {
   @Input() items: any[] = [];
   @Input() placeholder: string = '';
   @Input() displayFields: string[] = [];
@@ -30,8 +30,9 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   @Input() labelFields: string[] = [];
   @Input() bindValue!: string;
   @Input() isLoading: boolean = false;
-  @Input() control: FormControl | null = null;  
-
+  @Input() control: FormControl | null = null;
+  @ViewChild('ngSelect', { read: ElementRef }) ngSelectRef: any;
+  @Input() width : number[] = [];
   @Output() itemSelected = new EventEmitter<any>();
 
   columnWidths: number[] = [];
@@ -47,6 +48,12 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     if (this.control) {
       this.internalControl = this.control;
     }
+    if(this.width.length === 0){
+      const length = this.displayFields.length;
+      for (let index = 0; index < length; index++) {
+        this.width.push(Math.floor(12 / length));
+      }
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -57,6 +64,10 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     if (changes['items'] || changes['displayFields'] || changes['displayLabels']) {
       this.calculateColumnWidths();
     }
+  }
+
+  ngAfterViewInit() {
+    this.calculateColumnWidths();
   }
 
   writeValue(value: any): void {
@@ -97,9 +108,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   }
 
   getColumnStyle(index: number): any {
-    const width = this.columnWidths[index] || 50;
-    const finalWidth = index === 0 ? Math.max(width, 75) : width;
-    return { width: `${finalWidth}px`, minWidth: `${finalWidth}px` };
+    return `col-${this.width[index]}`
   }
 
   calculateColumnWidths() {
@@ -135,7 +144,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     if (!term || !item) return true;
 
     const searchTerm = term.toLowerCase().trim();
-    const fieldsToSearch = this.labelFields?.length ? this.labelFields : this.displayFields;
+    const fieldsToSearch = this.displayFields;
 
     return fieldsToSearch.some((field) => {
       const value = item[field] ? item[field].toString().toLowerCase().trim() : '';
@@ -148,5 +157,37 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       this.control.markAsTouched();
       this.control.markAsDirty();
     }
+    setTimeout(() => {
+    requestAnimationFrame(() => this.adjustDropdownWidth());
+  }, 10); // You can experiment with 0, 10, or 50ms
   }
+
+  adjustDropdownWidth() {
+    const ngSelectElement: HTMLElement = this.ngSelectRef?.nativeElement;
+    if (!ngSelectElement) return;
+
+    // Get bounding box of the ng-select
+    const rect = ngSelectElement.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+
+    // Calculate available space from ng-select's left to right edge of the window
+    const availableWidth = windowWidth - rect.left - 16; // -16 for slight padding/margin
+    // Apply this width to the dropdown panel
+    const panels = document.querySelectorAll('.ng-dropdown-panel');
+    const dropdownPanel = panels[panels.length - 1] as HTMLElement; // Most recently opened
+    if (dropdownPanel) {
+      dropdownPanel.style.width = `${availableWidth}px`;
+      // dropdownPanel.style.maxWidth = `${availableWidth}px`;
+    }
+  }
+
+  onScrollToEnd(){
+    console.log("Reached End");
+  }
+
+  @HostListener('window:resize', [])
+  onResize() {
+    this.adjustDropdownWidth();
+  }
+
 }

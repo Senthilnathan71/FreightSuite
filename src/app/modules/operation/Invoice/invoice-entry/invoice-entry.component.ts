@@ -23,6 +23,7 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -37,7 +38,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     ReactiveFormsModule,
     FormsModule,
     NgxSpinnerModule,
-    NumberFormatPipe
+    NumberFormatPipe,
+    CustomDatePipe
   ],
   templateUrl: './invoice-entry.component.html',
   styleUrls: ['./invoice-entry.component.scss'],
@@ -48,6 +50,7 @@ export class InvoiceEntryComponent implements OnInit {
   headerId: number | null = null;
   currentCompany: any;
   currentBranch: any;
+  invoiceData : any;
 
   // current user email to send CreatedBy / UpdatedBy
   currUserEmail: string | null = null;
@@ -70,7 +73,8 @@ export class InvoiceEntryComponent implements OnInit {
     { id: '2', name: 'Type 2' },
     { id: '3', name: 'Type 3' },
   ];
-
+   userData: any;
+  currentDate = new Date()
   // master jobs
   masterJobList: any[] = [];
   houseJobListByMasterJob: { [key: number]: any[] } = {};
@@ -128,6 +132,10 @@ export class InvoiceEntryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+     const userProfile = this.appSettingService.getDecryptedUserProfile();
+     if (userProfile) {
+      this.userData = userProfile;
+    }
     try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
@@ -486,6 +494,8 @@ export class InvoiceEntryComponent implements OnInit {
     this.operationService.getInvoiceById(id).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
+          this.invoiceData = resp.data;
+          console.log(this.invoiceData,"InvoiceData")
           this.patchValues(resp.data);
         } else {
           this.appSettingService.showError('Error loading invoice');
@@ -1473,5 +1483,12 @@ export class InvoiceEntryComponent implements OnInit {
     }
 
     return `${currency} ${words} Only`;
+  }
+
+  getCustomerName(CustomerMasterSid:number){
+    if(!CustomerMasterSid || this.customerList.length === 0){
+      return 'N/A'
+    }
+    return (this.customerList.find(cus => cus.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
   }
 }

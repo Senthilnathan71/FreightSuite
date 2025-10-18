@@ -34,6 +34,24 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
+    searchOpportunity(payload) {
+    return this.http.post<{ data: any[] }>('ff-pre-customer-meeting/search-Opportunity', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchExistingCustomers(payload) {
+    return this.http.post<{ data: any[] }>('customer/search-ExistingCustomers', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAuditLogsPreCustomerMeeting(tableName: string, recordId?: string) {
     let url = `ff-pre-customer-meeting/fetch/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
@@ -820,5 +838,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
         })
       );
     }
+
+  getSalespersonOfLead(PreCustomerMasterSid:number){
+    return this.http.get('ff-pre-customer-meeting/salespersonForLead/'+PreCustomerMasterSid).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
   
 }

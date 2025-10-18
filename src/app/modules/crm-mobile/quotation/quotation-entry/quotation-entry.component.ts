@@ -40,6 +40,7 @@ import { ToastrService } from 'ngx-toastr';
 import html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -238,27 +239,11 @@ dataFromEnqPage:any;
   }
 
   // Lookup Configuration
-  customerLookupConfig = {
-    displayFields : ['CustomerName','BranchName', 'Address'],
-    displayLabels : ['Customer','Branch', 'Address'],
-    labelFields :['CustomerName']
-  };
-   portLookupConfig = {
-    displayFields : ['PortCode', 'PortName','Country'],
-    displayLabels : ['Code', 'Name','Country'],
-    labelFields :['PortCode']
-  };
- 
-  chargeLookupConfig = {
-    displayFields : ['chargeCode','chargeName'],
-    displayLabels : ['Code','Name'],
-    labelFields :['chargeCode']
-  };
-  unitLookupConfig = {
-    displayFields : ['UOMCode','UOMName'],
-    displayLabels : ['Code','Name'],
-    labelFields :['UOMCode']
-  };
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
+  unitLookupConfig = DROPDOWN_CONFIGS.UOM;
+
   currencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code','Name','Country'],
@@ -352,7 +337,8 @@ patchEnqPageValues(enqData: any) {
     'CustomerName',
     'CustomerAddress',
     'Email',
-    'FreightPPCC'
+    'FreightPPCC',
+    'SalesmanSid'
   ];
 
   this.quotationForm.patchValue(
@@ -635,6 +621,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         Email: selectedItem.email,
         CustomerBranchSid: null,
       });
+      this.patchSalespersonOfLead(selectedItem.PreCustomerMasterSid);
     }
   }
 
@@ -785,7 +772,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       CarrierName : [data?.CarrierName || ''],
       TransitTime : [data?.TransitTime || null],
       authorizerStatus : [data?.ApprovalStatus || 'Pending'],
-      authorizerRemarks : [data?.authorizerRemarks || ''],
+      authorizerRemarks : [data?.Remarks || ''],
       ApprovedBy : [data?.ApprovedBy || ''],
 
       quoteCharges : this.fb.array([])
@@ -1359,6 +1346,14 @@ private extractCargoData(enquiryCargo: any[]): any {
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
     })
+    this.quotationForm.patchValue({
+      PreCustomerMasterSid: response.PreCustomerMasterSid,
+      CustomerMasterSid: response.CustomerMasterSid,
+      customerName: response.customerName,
+      CustomerAddress: response.CustomerAddress,
+      CustomerBranchSid: response.CustomerBranchSid,
+      Email: response.Email,
+    });
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
     (response.quoteRoute || []).forEach((route, routeIndex) => {
@@ -1597,6 +1592,8 @@ private extractCargoData(enquiryCargo: any[]): any {
                 backdrop: 'static',
                 centered: true
               });
+            } else {
+              this.loadQuotation(this.QuoteHeaderSid);
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -2793,8 +2790,8 @@ ${this.userData.userName}`;
       const toEmailSet = new Set<string>();
 
       if (this.selectedItem?.Email) {
-        // toEmailSet.add(this.selectedItem.Email);
-        toEmailSet.add('jdhineshjaisankar@gmail.com');
+        toEmailSet.add(this.selectedItem.Email);
+        // toEmailSet.add('jdhineshjaisankar@gmail.com');
       }
 
       if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
@@ -3244,6 +3241,22 @@ ${this.userData.userName}`;
         })
       })
     }
+  }
+
+  patchSalespersonOfLead(precustomer:any){
+    this.leadService.getSalespersonOfLead(precustomer.PreCustomerMasterSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.quotationForm.patchValue({
+            SalesmanSid: resp.data
+          })
+        } else {
+          this.appSettingService.showError('Failed to load salesperson: Invalid response');
+        }
+      },
+      error => {
+        console.error('Error fetching salesperson:', error);
+      });
   }
 
 }

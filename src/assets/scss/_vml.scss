@@ -2998,3 +2998,107 @@
     margin-top: 8px;
   }
 }
+
+
+
+// =====print style =======
+.print-a4 {
+  width: 280mm;             
+  min-height: 405mm;       
+  margin: 10px auto !important;
+  padding: 2mm 5mm;
+  background: #fff;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  position: relative;
+  color: #000;
+  page-break-after: always;
+
+  header,
+  footer {
+    width: 100%;
+    text-align: center;
+  }
+
+  header img {
+    max-height: 60px;
+  }
+
+  h5, h4, h6 {
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 2px 0;
+    font-size: 12pt;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .text-start { text-align: left; }
+  .text-end { text-align: right; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 11pt;
+
+    &.tablebordered {
+      border: 1px solid black;
+
+      th, td {
+        border: 1px solid black;
+        padding: 2px 8px;
+        color: #000;
+        text-align: left;
+        vertical-align: middle;
+        word-break: break-word;
+      }
+    }
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  footer {
+    position: absolute;
+    bottom: 2mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10pt;
+  }
+
+  // Prevent tables from breaking across pages
+  table, tr, td, th {
+    page-break-inside: avoid;
+  }
+
+  @media print {
+    &,
+    * {
+      visibility: visible;
+    }
+    margin: 10mm auto;
+    padding: 10mm;
+    border: none;
+    page-break-after: always;
+  }
+}
+
+
+

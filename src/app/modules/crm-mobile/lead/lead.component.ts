@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { NgbAccordionModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { LeadService } from '../Services/lead.service';
@@ -29,6 +29,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { MasterService } from '../../master/master.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { CommonService } from 'src/app/common/common.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 
 @Component({
@@ -49,7 +51,8 @@ import { CommonService } from 'src/app/common/common.service';
     DatePipe,
     TextWithNumbersDirective,
     DecimalPrecisionDirective,
-    EdocComponent
+    EdocComponent,
+    SearchableDropdown
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -123,7 +126,9 @@ export class LeadComponent implements OnInit {
     { id: 17, name: "Yard" }
   ]
 
-
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+  stateLookupConfig = DROPDOWN_CONFIGS.STATE;
+  cityLookupConfig = DROPDOWN_CONFIGS.CITY;
 
 
   auditLogs: any[] = []; // Stores audit logs
@@ -143,7 +148,16 @@ MenuMasterSid:any
     private modalService: NgbModal,
     public dropdownStore:DropdownStore,
     private commonService: CommonService
-  ) { }
+  ) { 
+    effect(()=> {
+      const countryData = this.dropdownStore.countries();
+      const stateData = this.dropdownStore.states();
+      const cityData = this.dropdownStore.cities();
+      this.countryList = countryData;
+      this.stateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
+      this.cityList = (cityData || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
+    })
+  }
 
   ngOnInit(): void {
 

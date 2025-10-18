@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -194,6 +194,7 @@ export class CostEntryComponent implements OnInit {
   
 
   @Output() dataEmitter = new EventEmitter<any[]>();
+  @Output() validationResult = new EventEmitter<boolean>();
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   @ViewChild('leftTableBody') leftBody!: ElementRef;
@@ -289,10 +290,10 @@ export class CostEntryComponent implements OnInit {
       CostRevenueChargesSid: [null],
       TransactionSid: [null],
       SerialNumber: [{ value: '', disabled: true }],
-      ChargeMasterSid: [null],
+      ChargeMasterSid: [null,[Validators.required]],
       ChargeDescription: [''],
       // ChargeUomSid: [null],
-      NumberOfUnit:[''],
+      NumberOfUnit:['',[Validators.required]],
       // Cost 
       CostCurrencyMasterSid: [null],
       CostPrepaidCollect: [''],
@@ -301,7 +302,7 @@ export class CostEntryComponent implements OnInit {
       CostDrCr: [''],
       CostAmount: [''],
       CostLocalAmount: [''],
-      CostChargeUomSid:[''],
+      CostChargeUomSid:['',[Validators.required]],
       CostVoucherHeaderSid: [''],
       CostVoucherTypeSid: [null],
       CostNumberOfUnit:[null],
@@ -313,7 +314,7 @@ export class CostEntryComponent implements OnInit {
       CustomerMasterSid: [''],
       // RevenueRate: [''],
       RevenueNumberOfUnit:[null],
-      RevenueChargeUomSid:[''],
+      RevenueChargeUomSid:['',[Validators.required]],
       RevenueDrCr: [''],
       RevenueAmount: [''],
       RevenueLocalAmount: [''],
@@ -326,6 +327,110 @@ export class CostEntryComponent implements OnInit {
     });
 
   }
+
+  hasRequired(controlName:string){
+    const requiredFields = ['ChargeMasterSid','ChargeDescription','CostChargeUomSid','NumberOfUnit'];
+    return requiredFields.includes(controlName);
+  }
+
+  validateRateArray(): boolean {
+    if (!this.rateFormArray || this.rateFormArray.length === 0) {
+      this.appSettingService.showWarning('No rate entries found.');
+      this.validationResult.emit(false);
+      return false;
+    }
+
+    for (let rateIndex = 0; rateIndex < this.rateFormArray.length; rateIndex++) {
+      const rate = this.rateFormArray.at(rateIndex) as FormGroup;
+
+      const requiredFields = [
+        'ChargeMasterSid',
+        'ChargeDescription',
+        'CostChargeUomSid',
+        'NumberOfUnit'
+      ];
+
+      const hasAllRequired = requiredFields.every(field => {
+        const control = rate.get(field);
+        control?.markAsTouched();
+        control?.updateValueAndValidity();
+        return !!control?.value;
+      });
+
+      if (!hasAllRequired) {
+        this.appSettingService.showWarning(
+          `[SNo: ${rateIndex + 1}] Please fill all required mandatory (*) fields.`
+        );
+        this.validationResult.emit(false);
+        return false;
+      }
+
+      const hasLocalAmountAtLeastOneSide =
+        !!Number(rate.get('CostLocalAmount')?.value) || !!Number(rate.get('RevenueLocalAmount')?.value);
+
+      if (!hasLocalAmountAtLeastOneSide) {
+        this.appSettingService.showWarning(
+          `[Sno: ${rateIndex + 1}] Please fill at least one side: either Revenue or Cost.`
+        );
+        this.validationResult.emit(false);
+        return false;
+      }
+
+      // Validate Cost side
+      if (!Number(rate.get('CostLocalAmount')?.value)) {
+        const hasCostCurrency = !!rate.get('CostCurrencyMasterSid')?.value;
+        const hasCostExchangeRate = rate.get('CostExchangeRate')?.value != null;
+        const hasCostRate = !!rate.get('CostRate')?.value;
+
+        if (hasCostCurrency || !hasCostExchangeRate) {
+          this.appSettingService.showWarning(
+            `[Sno: ${rateIndex + 1}] Please fill Exchange Rate for cost currency.`
+          );
+          this.validationResult.emit(false);
+          return false;
+        }
+
+        if (hasCostExchangeRate && !hasCostRate) {
+          this.appSettingService.showWarning(
+            `[Sno: ${rateIndex + 1}] Please fill Cost Per Unit Rate.`
+          );
+          this.validationResult.emit(false);
+          return false;
+        }
+      } else {
+
+      }
+
+      // Validate Revenue side
+      if (!Number(rate.get('RevenueLocalAmount')?.value)) {
+        const hasRevenueCurrency = !!rate.get('RevenueCurrencyMasterSid')?.value;
+        const hasRevenueExchangeRate = rate.get('RevenueExchangeRate')?.value != null;
+        const hasRevenueRate = !!rate.get('RevenueRate')?.value;
+
+        if (hasRevenueCurrency || !hasRevenueExchangeRate) {
+          this.appSettingService.showWarning(
+            `[Row: ${rateIndex + 1}] Please select Exchange Rate for Revenue currency.`
+          );
+          this.validationResult.emit(false);
+          return false;
+        }
+
+        if (!hasRevenueRate) {
+          this.appSettingService.showWarning(
+            `[Row: ${rateIndex + 1}] Please fill Revenue Per Unit Rate.`
+          );
+          this.validationResult.emit(false);
+          return false;
+        }
+      }
+    }
+
+    // ✅ Always return true if all checks passed
+    this.validationResult.emit(true);
+    return true;
+  }
+
+
 
   // Getter
 get rateFormArray(): FormArray {

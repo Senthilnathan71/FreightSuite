@@ -1,0 +1,579 @@
+<div class="row compact-form">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
+                <h4 class="page-title mb-0">Vendor Invoice</h4>
+            </div>
+            <div class="col-md-8 pb-1">
+
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        >
+                        <i class="fas fa-chevron-left me-1"></i> Back
+                    </button>
+
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        >
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" >
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 px-0">
+        <div class="card h-100 mb-0">
+            <div class="card-body">
+                <div class="row">
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                             <ng-select  [items]="modeOfSerachType" bindLabel="name" bindValue="value"
+                        
+                        appendTo="body" class="ng-select"></ng-select>
+                            <label for="SearchType" class="input-label">Search Type<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="VendorInvoiceNo" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="VendorInvoiceNo" class="input-label">Vendor Invoice No. <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                     <aside class="col-md-3">
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select-date w-100">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="EffectiveFrom"
+                                     [footerTemplate]="footerTemplate1"/>
+                                <label class="input-label" for="Date">
+                                    Date <span class="text-danger"></span>
+                                </label>
+                            </div>
+
+                            <button class="btn bi bi-calendar3  mt-2" (click)="d1.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+
+                      <ng-template #footerTemplate1>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="d1.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="VendorName" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="VendorName" class="input-label">Vendor Name <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="Address" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="Address" class="input-label">Address <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="Narration" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="Narration" class="input-label">Narration <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="HBLNO" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="HBLNO" class="input-label">HBL No. <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="GstNo" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="GstNo" class="input-label">GST No. <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="PlaceOfSupply" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="PlaceOfSupply" class="input-label">Place of Supply <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="PostedOn" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="PostedOn" class="input-label">Posted On <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="Curr" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="Curr" class="input-label">Curr. <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="ExRate" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="ExRate" class="input-label">Ex. Rate <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="BillNo" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="BillNo" class="input-label">Bill No. <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+
+                      <aside class="col-md-3">
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select-date w-100">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d="ngbDatepicker" (click)="d.toggle()" readonly formControlName="EffectiveFrom"
+                                     [footerTemplate]="footerTemplate"/>
+                                <label class="input-label" for="BillDate">
+                                    Bill Date <span class="text-danger"></span>
+                                </label>
+                            </div>
+
+                            <button class="btn bi bi-calendar3  mt-2" (click)="d.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+                       <ng-template #footerTemplate>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="d.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="BillAmt" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="BillAmt" class="input-label">Bill Amt <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="MBLNo" formControlName="" placeholder=""
+                                class="custom-input-field sm" />
+                            <label for="MBLNo" class="input-label">MBL No. <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                             <ng-select  [items]="" bindLabel="" bindValue=""
+                        
+                        appendTo="body" class="ng-select"></ng-select>
+                            <label for="InvoiceType" class="input-label">Invoice Type<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                       <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm"
+                                    formControlName="Remarks"></textarea>
+                                <label for="text-input" class="input-label">Remarks</label>
+                            </div>
+                        </aside>
+                    <aside class="col-3">
+                        <div class="custom-form-group">
+                           <ng-select  [items]="modeofStatus" bindLabel="name" bindValue="Value"
+                        
+                        appendTo="body" class="ng-select"></ng-select>
+                            <label for="status" class="input-label">Status<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="row bg-white rounded shadow-sm mx-auto mt-1">
+    <div class="col-12 py-1 px-0">
+        <div class="table-responsive table-borderless">
+            <table class="table table-hover align-middle no-wrap table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <!-- <th class="bg-transparent text-light" scope="col" width="2%">
+                  
+                </th> -->
+                        <th class="bg-transparent text-light" scope="col" width="2%">
+                            Sno
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Ledger
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Charge
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" width="8%">
+                            Charges Desc
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            SAC Code
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Unit
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            No. of Unit
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Dr/Cr
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Curr.
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Ex.Rate
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Rate
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Amount
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Taxable Amt
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            CGST%
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            CGST
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            SGST%
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            SGST
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Local Amount
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Master Job
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            House Job
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr >
+                        <!-- <td
+                  style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  "
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <a class="text-info mx-2">
+                     <i class="fa-solid fa-eye"></i>
+                    </a>
+
+                    <a class="text-danger mx-2 ps-3 border-start">
+                     <i class="fa-solid fa-trash"></i>
+                    </a>
+                  </div>
+                </td> -->
+
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            1
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Ledger
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Charge
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Charges Desc
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            SAC Code
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Unit
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            1
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Dr/Cr
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Curr.
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Ex. Rate
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Rate
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Amt
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Taxable Amt
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            CGST%
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            CGST
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            SGST%
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            SGST
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Local Amt
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Master job
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            House job
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row bg-white rounded shadow-sm mx-auto mt-1">
+    <h5 class="mb-0 px-0">TDS</h5>
+    <div class="col-12 py-1 px-0">
+        <div class="table-responsive table-borderless">
+            <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col" width="6%">
+                            TDS Set
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            TDS Company Type
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            IT Section Code
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" width="8%">
+                            Certificate No.
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Percentage
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Taxable Amt
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            TDS Amt
+                        </th>
+                        <th class="bg-transparent text-light" scope="col">
+                            Reason
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            1
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Ledger
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Charge
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Charge Desc
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            SAC Code
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Unit
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            1
+                        </td>
+                        <td style="
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    line-height: 1.5;
+                  ">
+                            Dr/Cr
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>

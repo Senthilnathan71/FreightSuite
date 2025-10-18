@@ -430,6 +430,7 @@ onCountryChange(): void {
     this.loadAllSpfields();
     // this.loadDepartments();
     this.loadMenus();
+    this.setupAirlineValidation();
     if (!this.isEditMode) {
     // For new customer, only show Party and Branch tabs initially
     this.tabs = [
@@ -711,6 +712,7 @@ clearCustomerSearch(): void {
       // Logins array
       logins: this.fb.array(data?.logins ? this.createLoginsArray(data.logins) : [])
     });
+    
 
     // Initialize cities array for this branch
     branchForm['cities'] = data?.cities || [];
@@ -719,6 +721,24 @@ clearCustomerSearch(): void {
         branchForm.get('CustBranchGSTIN')?.setValue(this.casepipe.transform(value));
       }
     })
+
+     branchForm.get('status')?.valueChanges.subscribe((status) => {
+    const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
+    if (branchIndex !== -1) {
+      this.onBranchStatusChange(branchIndex);
+    }
+  });
+
+  // Initialize status if branch is suspended
+  const initialStatus = branchForm.get('status')?.value;
+  if (initialStatus === 'Suspended' || initialStatus === 'S') {
+    const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
+    if (branchIndex !== -1) {
+      setTimeout(() => {
+        this.updateChildRecordsStatus(branchIndex, true);
+      });
+    }
+  }
     return branchForm;
   }
 
@@ -1054,7 +1074,7 @@ clearCustomerSearch(): void {
       // Ensure these fields are properly mapped
       CustBranchCode: branch.Branch_Code,
       CustBranchGSTIN: branch.GSTNo,
-      status: branch.status === 'A' ? 'Active' : 'Suspended'
+      status: branch.status
     };
 
     const branchFormGroup = this.addBranchFormGroup(branchWithDetails);
@@ -1201,30 +1221,39 @@ clearCustomerSearch(): void {
       }
     );
   }
-   generateGST(branchIndex: number): void {
-    const branchForm = this.branches.at(branchIndex) as FormGroup;
-    const stateId = branchForm.get('CustBranchState')?.value;
-    const stateCode = this.getStateGSTCode(stateId);
-    const pan = String(this.customerForm.get('PanType')?.value).toUpperCase() || '';
-
-    const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
-    const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
-
-    const thirteenthDigit = thirteenthDigitInput?.value || '';
-    const fifteenthDigit = fifteenthDigitInput?.value || '';
-    const fourteenthDigit = 'Z';
-
-    if (stateCode && stateCode.trim().length === 2 &&
-      pan && pan.length === 10 &&
-      thirteenthDigit.length === 1 &&
-      fifteenthDigit.length === 1) {
-
-      const gstin = `${stateCode.trim()}${pan}${thirteenthDigit}${fourteenthDigit}${fifteenthDigit}`;
-      branchForm.get('CustBranchGSTIN')?.setValue(gstin);
-    } else {
-      branchForm.get('CustBranchGSTIN')?.setValue('');
-    }
+   async generateGST(branchIndex: number): Promise<void> {
+  const branchForm = this.branches.at(branchIndex) as FormGroup;
+  const stateId = branchForm.get('CustBranchState')?.value;
+  
+  if (!stateId) {
+    branchForm.get('CustBranchGSTIN')?.setValue('');
+    return;
   }
+
+  // Ensure state list is loaded before getting GST code
+  await this.ensureStateListLoaded();
+  
+  const stateCode = this.getStateGSTCode(stateId);
+  const pan = String(this.customerForm.get('PanType')?.value).toUpperCase() || '';
+
+  const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
+  const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
+
+  const thirteenthDigit = thirteenthDigitInput?.value || '';
+  const fifteenthDigit = fifteenthDigitInput?.value || '';
+  const fourteenthDigit = 'Z';
+
+  if (stateCode && stateCode.trim().length === 2 &&
+    pan && pan.length === 10 &&
+    thirteenthDigit.length === 1 &&
+    fifteenthDigit.length === 1) {
+
+    const gstin = `${stateCode.trim()}${pan}${thirteenthDigit}${fourteenthDigit}${fifteenthDigit}`;
+    branchForm.get('CustBranchGSTIN')?.setValue(gstin);
+  } else {
+    branchForm.get('CustBranchGSTIN')?.setValue('');
+  }
+}
   
   getStatesForSelect(): any[] {
     if (!this.stateList || this.stateList.length === 0) {
@@ -1255,6 +1284,22 @@ clearCustomerSearch(): void {
   
   }
 
+  private ensureStateListLoaded(): Promise<void> {
+  return new Promise((resolve) => {
+    if (this.stateList && this.stateList.length > 0) {
+      resolve();
+    } else {
+      this.getStatesByCountryId();
+      // Wait for state list to load
+      const checkStateList = setInterval(() => {
+        if (this.stateList && this.stateList.length > 0) {
+          clearInterval(checkStateList);
+          resolve();
+        }
+      }, 100);
+    }
+  });
+}
 
   getStateGSTCode(StateMasterSid: number): string {
   if (!StateMasterSid || !this.stateList || this.stateList.length === 0) {
@@ -1273,6 +1318,7 @@ clearCustomerSearch(): void {
     return '';
   }
 }
+
   parseGST(gstin: string, digit: number): string {
     if (!gstin || gstin.length !== 15) return '';
     return gstin[digit];
@@ -1369,7 +1415,7 @@ clearCustomerSearch(): void {
       CountryMasterSid: ['', [Validators.required]],
       CompanyType: [''],
       PanAvailable: [false],
-      PanType: [{ value: '', disabled: true }, [this.panValidator]],
+      PanType: [{ value: '' }, [this.panValidator]],
       PanName: [''],
       GroupName: [''],
       Website: [''],
@@ -1705,35 +1751,37 @@ getPanBreakdown(pan: string): any {
   const panAvailableControl = this.customerForm.get('PanAvailable');
   const panTypeControl = this.customerForm.get('PanType');
   const panNameControl = this.customerForm.get('PanName');
+  const companyTypeControl = this.customerForm.get('CompanyType');
 
-  // Subscribe to PAN available changes
-  panAvailableControl?.valueChanges
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((panAvailable: boolean) => {
-      if (panAvailable) {
-        panTypeControl?.enable();
-        
-        this.updateTaxIdFieldValidation();
-      } else {
-        panTypeControl?.disable();
-        
-        panTypeControl?.clearValidators();
-        panTypeControl?.updateValueAndValidity();
-        panTypeControl?.setValue('');
-        panNameControl?.setValue('');
-      }
-    });
-    
-  // Initialize based on current value
-  const currentPanAvailable = panAvailableControl?.value;
-  if (currentPanAvailable) {
+  const isIndia = this.isIndianCountry();
+  const panAvailable = panAvailableControl?.value;
+
+  // Enable/disable based on country and PAN availability
+  if (isIndia && panAvailable) {
     panTypeControl?.enable();
+    panNameControl?.enable();
+    companyTypeControl?.enable();
     
+    // Add validation
+    companyTypeControl?.setValidators([Validators.required]);
+    panTypeControl?.setValidators([Validators.required, this.panValidator]);
   } else {
-    panTypeControl?.disable();
-   
+    // panTypeControl?.disable();
+    // panNameControl?.disable();
+    companyTypeControl?.clearValidators();
+    panTypeControl?.clearValidators();
+    
+    // Clear values if not applicable
+    if (!isIndia || !panAvailable) {
+      panTypeControl?.setValue('');
+      panNameControl?.setValue('');
+    }
   }
- panNameControl?.enable(); 
+
+  // Update validation states
+  companyTypeControl?.updateValueAndValidity();
+  panTypeControl?.updateValueAndValidity();
+  panNameControl?.updateValueAndValidity();
 }
 // onCountryChange(): void {
 //   this.updateTaxIdLabel();
@@ -1751,8 +1799,8 @@ getPanBreakdown(pan: string): any {
       panTypeControl?.enable();
       panNameControl?.enable();
     } else {
-      panTypeControl?.disable();
-      panNameControl?.disable();
+      // panTypeControl?.disable();
+      // panNameControl?.disable();
     }
   }
   // Add other existing methods that are referenced
@@ -2028,34 +2076,39 @@ loadCustomerData(customerId: number) {
   }
 
   // Load customer sales team data
-  loadCustomerSalesTeamData() {
-    if (!this.CustomerMasterSid) return;
+  // Replace the existing loadCustomerSalesTeamData method with this:
+loadCustomerSalesTeamData() {
+  if (!this.CustomerMasterSid) return;
 
-    this.masterService.getCustomerSalesTeam(this.CustomerMasterSid)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        (resp: any) => {
-          if (resp.status && resp.data) {
-            // Clear existing sales team form array
-            while (this.cusSalesteam.length > 0) {
-              this.cusSalesteam.removeAt(0);
-            }
-
-            // Add sales team data to form array
-            resp.data.forEach((salesTeam: any) => {
-              this.cusSalesteam.push(this.createSalesTeamFormGroup(salesTeam));
-            });
-
-            this.updateSalesTeamPagination();
-            this.cdRef.markForCheck();
+  this.masterService.getCustomerSalesTeam(this.CustomerMasterSid)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(
+      (resp: any) => {
+        if (resp.status && resp.data) {
+          // Clear existing sales team form array
+          while (this.cusSalesteam.length > 0) {
+            this.cusSalesteam.removeAt(0);
           }
-        },
-        (error) => {
-          console.error('Error loading sales team data:', error);
-          this.appSettingService.showWarning('Could not load sales team data');
+
+          // Handle both array and object responses
+          const salesTeamData = Array.isArray(resp.data) ? resp.data : [resp.data];
+          
+          // Add sales team data to form array
+          salesTeamData.forEach((salesTeam: any) => {
+            this.cusSalesteam.push(this.createSalesTeamFormGroup(salesTeam));
+          });
+
+          this.updateSalesTeamPagination();
+          this.cdRef.markForCheck();
         }
-      );
-  }
+      },
+      (error) => {
+        console.error('Error loading sales team data:', error);
+        this.appSettingService.showWarning('Could not load sales team data');
+      }
+    );
+}
+
 
   // Add the remaining methods that are referenced in the template
   get cusMilestone(): FormArray {
@@ -2734,7 +2787,11 @@ onPanAvailableChange(): void {
     customerBranches: this.prepareUpdateBranchesPayload(),
   };
 
-  console.log('Complete update payload with all data:', payload);
+    console.log('Update payload status:', {
+    frontendStatus: formValue.status,
+    backendStatus: statusValue,
+    payloadStatus: payload.customer.status
+  });
   return payload;
 }
 
@@ -2743,9 +2800,15 @@ onPanAvailableChange(): void {
 
   for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
     const branchForm = this.branches.at(branchIndex);
-    const branchData = branchForm.value;
+    const branchData = branchForm.getRawValue();
     const branchSid = branchData.CustomerBranchSid;
-
+     const branchStatus = branchData.status === 'Active' ? 'A' : 'S';
+     console.log(`Branch ${branchIndex} status mapping:`, {
+      branchName: branchData.CustBranchName,
+      frontendStatus: branchData.status,
+      backendStatus: branchStatus,
+      branchSid: branchSid
+    });
     const branchPayload: any = {
       CustomerBranchSid: branchSid,
       BranchName: branchData.CustBranchName?.trim(),
@@ -2761,7 +2824,7 @@ onPanAvailableChange(): void {
       Registered: branchData.CustBranchRegistered,
       CustomerGstType: branchData.CustBranchGSTtype,
       GSTNo: branchData.CustBranchGSTIN || '',
-      status: branchData.status === 'Active' ? 'A' : 'S',
+      status: branchStatus,
 
       // ALL RELATED DATA INCLUDED
       customerBranchContacts: this.prepareUpdateContactsPayload(branchIndex),
@@ -2787,14 +2850,14 @@ onPanAvailableChange(): void {
 
     for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
       const contactForm = contacts.at(contactIndex);
-      const contactData = contactForm.value;
-
+      const contactData = contactForm.getRawValue();
+       const contactStatus = contactData.status === 'Active' ? 'A' : 'S';
       const contactPayload: any = {
         ContactType: contactData.ContactType,
         ContactName: contactData.ContactName?.trim(),
         MobileNo: String(contactData.MobileNo),
         Email: contactData.Email,
-        status: contactData.status === 'Active' ? 'A' : 'S'
+        status: contactStatus
       };
 
       // createdBy/updatedBy now handled automatically by backend via JWT token
@@ -2883,7 +2946,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   // Process emails from Email tab for this branch
   for (let i = 0; i < this.customerEmails.length; i++) {
     const emailForm = this.customerEmails.at(i);
-    const emailData = emailForm.value;
+   const emailData = emailForm.getRawValue();;
 
     if (emailData.CustomerBranchSid !== branchSid) {
       continue;
@@ -2893,13 +2956,13 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     if (!Array.isArray(departmentValue)) {
       departmentValue = departmentValue ? [departmentValue] : [];
     }
-
+    const emailStatus = emailData.status === 'Active' ? 'A' : 'S';
     const emailPayload: any = {
       MenuMasterSid: Number(emailData.MenuMasterSid),
       DepartmentMasterSid: departmentValue,
       Toemail: emailData.Toemail,
       CCemail: emailData.CCemail,
-      status: emailData.status === 'Active' ? 'A' : 'S'
+      status: emailStatus
     };
 
     if (emailData.CustomerBrEmailSid) {
@@ -2920,17 +2983,18 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   // Process logins from eLogin tab for this branch
   for (let i = 0; i < this.customerLogins.length; i++) {
     const loginForm = this.customerLogins.at(i);
-    const loginData = loginForm.value;
+    const loginData = loginForm.getRawValue();
 
     if (loginData.CustomerBranchSid !== branchSid) {
       continue;
     }
+     const loginStatus = loginData.status === 'Active' ? 'A' : 'S';
 
     const loginPayload: any = {
       LoginName: loginData.LoginName?.trim(),
       LoginEmail: loginData.LoginEmail,
       LoginPassword: loginData.LoginPassword,
-      status: loginData.status === 'Active' ? 'A' : 'S'
+       status: loginStatus
     };
 
     if (loginData.CustomerLoginSid) {
@@ -3288,8 +3352,8 @@ private setupPanValidation(): void {
         }
       } else {
         // Disable fields and clear validators
-        panTypeControl?.disable();
-        panNameControl?.disable();
+        // panTypeControl?.disable();
+        // panNameControl?.disable();
         companyTypeControl?.clearValidators();
         panTypeControl?.clearValidators();
         
@@ -3362,6 +3426,160 @@ updateAirlineFieldValidation(): void {
     this.destroy$.complete();
   }
 
+  onBranchStatusChange(branchIndex: number): void {
+  const branchForm = this.branches.at(branchIndex) as FormGroup;
+  const branchStatus = branchForm.get('status')?.value;
+  const isSuspended = branchStatus === 'Suspended' || branchStatus === 'S';
+
+  // Update child records status and disable/enable controls
+  this.updateChildRecordsStatus(branchIndex, isSuspended);
+}
+
+private updateChildRecordsStatus(branchIndex: number, isSuspended: boolean): void {
+  const branchForm = this.branches.at(branchIndex) as FormGroup;
+  const branchSid = branchForm.get('CustomerBranchSid')?.value;
   
+  // Update contacts (existing)
+  const contacts = this.getContacts(branchIndex);
+  contacts.controls.forEach(contact => {
+    const contactForm = contact as FormGroup;
+    if (isSuspended) {
+      contactForm.get('status')?.setValue('Suspended');
+      contactForm.get('status')?.disable();
+      contactForm.get('ContactType')?.disable();
+      contactForm.get('ContactName')?.disable();
+      contactForm.get('MobileNo')?.disable();
+      contactForm.get('Email')?.disable();
+    } else {
+      contactForm.get('status')?.enable();
+      contactForm.get('ContactType')?.enable();
+      contactForm.get('ContactName')?.enable();
+      contactForm.get('MobileNo')?.enable();
+      contactForm.get('Email')?.enable();
+    }
+  });
+
+  // Update emails in Email tab for this branch
+  this.updateEmailTabForBranch(branchSid, isSuspended);
+  
+  // Update logins in eLogin tab for this branch
+  this.updateELoginTabForBranch(branchSid, isSuspended);
+
+  // Update sales teams for this branch
+  this.updateSalesTeamsForBranch(branchIndex, isSuspended);
+  
+  // Update milestones for this branch
+  this.updateMilestonesForBranch(branchIndex, isSuspended);
+}
+private updateEmailTabForBranch(branchSid: number, isSuspended: boolean): void {
+  this.customerEmails.controls.forEach(email => {
+    const emailForm = email as FormGroup;
+    const emailBranchSid = emailForm.get('CustomerBranchSid')?.value;
+    
+    if (emailBranchSid === branchSid) {
+      if (isSuspended) {
+        emailForm.get('status')?.setValue('Suspended');
+        emailForm.get('status')?.disable();
+        // Disable other email fields
+        emailForm.get('MenuMasterSid')?.disable();
+        emailForm.get('DepartmentMasterSid')?.disable();
+        emailForm.get('Toemail')?.disable();
+        emailForm.get('CCemail')?.disable();
+      } else {
+        emailForm.get('status')?.enable();
+        // Enable other email fields
+        emailForm.get('MenuMasterSid')?.enable();
+        emailForm.get('DepartmentMasterSid')?.enable();
+        emailForm.get('Toemail')?.enable();
+        emailForm.get('CCemail')?.enable();
+      }
+    }
+  });
+}
+
+private updateELoginTabForBranch(branchSid: number, isSuspended: boolean): void {
+  this.customerLogins.controls.forEach(login => {
+    const loginForm = login as FormGroup;
+    const loginBranchSid = loginForm.get('CustomerBranchSid')?.value;
+    
+    if (loginBranchSid === branchSid) {
+      if (isSuspended) {
+        loginForm.get('status')?.setValue('Suspended');
+        loginForm.get('status')?.disable();
+        // Disable other login fields
+        loginForm.get('LoginName')?.disable();
+        loginForm.get('LoginEmail')?.disable();
+        loginForm.get('LoginPassword')?.disable();
+      } else {
+        loginForm.get('status')?.enable();
+        // Enable other login fields
+        loginForm.get('LoginName')?.enable();
+        loginForm.get('LoginEmail')?.enable();
+        loginForm.get('LoginPassword')?.enable();
+      }
+    }
+  });
+}
+
+private updateSalesTeamsForBranch(branchIndex: number, isSuspended: boolean): void {
+  const branchForm = this.branches.at(branchIndex) as FormGroup;
+  const branchSid = branchForm.get('CustomerBranchSid')?.value;
+
+  this.cusSalesteam.controls.forEach(team => {
+    const teamForm = team as FormGroup;
+    const teamBranchSid = teamForm.get('branchSid')?.value;
+    
+    if (teamBranchSid === branchSid) {
+      if (isSuspended) {
+        teamForm.get('status')?.setValue('Suspended');
+        teamForm.get('status')?.disable();
+        // Disable other sales team fields
+        teamForm.get('DepartmentMasterSid')?.disable();
+        teamForm.get('Salesman')?.disable();
+        teamForm.get('CSPerson')?.disable();
+        teamForm.get('DocPerson')?.disable();
+        teamForm.get('EffectiveFrom')?.disable();
+      } else {
+        teamForm.get('status')?.enable();
+        // Enable other sales team fields
+        teamForm.get('DepartmentMasterSid')?.enable();
+        teamForm.get('Salesman')?.enable();
+        teamForm.get('CSPerson')?.enable();
+        teamForm.get('DocPerson')?.enable();
+        teamForm.get('EffectiveFrom')?.enable();
+      }
+    }
+  });
+}
+
+private updateMilestonesForBranch(branchIndex: number, isSuspended: boolean): void {
+  const branchForm = this.branches.at(branchIndex) as FormGroup;
+  const branchSid = branchForm.get('CustomerBranchSid')?.value;
+
+  this.cusMilestone.controls.forEach(milestone => {
+    const milestoneForm = milestone as FormGroup;
+    const milestoneBranchSid = milestoneForm.get('CustomerBranchSid')?.value;
+    
+    if (milestoneBranchSid === branchSid) {
+      if (isSuspended) {
+        milestoneForm.get('Status')?.setValue('Suspended');
+        milestoneForm.get('Status')?.disable();
+        // Disable other milestone fields
+        milestoneForm.get('MilestoneMasterSid')?.disable();
+        milestoneForm.get('UpdateType')?.disable();
+        milestoneForm.get('ContactInfo')?.disable();
+        milestoneForm.get('EffectiveFrom')?.disable();
+      } else {
+        milestoneForm.get('Status')?.enable();
+        // Enable other milestone fields
+        milestoneForm.get('MilestoneMasterSid')?.enable();
+        milestoneForm.get('UpdateType')?.enable();
+        milestoneForm.get('ContactInfo')?.enable();
+        milestoneForm.get('EffectiveFrom')?.enable();
+      }
+    }
+  });
+}
+
   
 }

@@ -237,7 +237,7 @@
                 [class.filled]="!!quotationForm.get('PreCustomerMasterSid')?.value">
                 <ng-select class="ng-select" [items]="leadList" bindLabel="preCustomerName"
                   bindValue="PreCustomerMasterSid" formControlName="PreCustomerMasterSid" appendTo="body"
-                  (change)="onSelectionChange($event)"></ng-select>
+                  (change)="onSelectionChange($event) ; patchSalespersonOfLead($event)"></ng-select>
                 <label for="customerName" class="input-label">Lead <span class="text-danger">*</span></label>
                 <small
                   *ngIf="quotationForm.get('PreCustomerMasterSid').touched && quotationForm.get('PreCustomerMasterSid').invalid"
@@ -310,7 +310,7 @@
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('SalesmanSid')?.value">
                 <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
-                  bindValue="CustomerSalesSid" appendTo="body">
+                  bindValue="Salesman" appendTo="body">
 
                 </ng-select>
                 <label for="" class="input-label">Salesman <span class="text-danger"></span></label>
@@ -433,20 +433,34 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
-                          <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
+                          <!-- <ng-select formControlName="PORSid" [items]="filteredPorts" bindLabel="PortName"
                             bindValue="PortMasterSid">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="ports"
+                            formControlName="PORSid" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                            bindValue="PortMasterSid">
+                          </dofi-searchable-dropdown>
                           <label for="" class="input-label">POR<span class="text-danger"></span></label>
                         </div>
                       </aside>
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('POLSid')?.value">
-                          <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
+                          <!-- <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
                             bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]"
+                            formControlName="POLSid" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                            bindValue="PortMasterSid" (itemSelected)="onRouteChange(routeIndex)">
+                          </dofi-searchable-dropdown>
                           <label for="" class="input-label">POL <span class="text-danger">*</span></label>
                           @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
                           <div class="error-message">
@@ -460,11 +474,18 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PODSid')?.value">
-                          <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
+                          <!-- <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
                             bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
                             (change)="onRouteChange(routeIndex)">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]"
+                            formControlName="PODSid" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                            bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)">
+                          </dofi-searchable-dropdown>
                           <label for="" class="input-label">POD <span class="text-danger">*</span></label>
                           @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
                           <div class="error-message">
@@ -478,10 +499,17 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('FPODSid')?.value">
-                          <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
+                          <!-- <ng-select formControlName="FPODSid" [items]="filteredPorts" bindLabel="PortName"
                             bindValue="PortMasterSid">
 
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="ports"
+                            formControlName="FPODSid" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
+                            bindValue="PortMasterSid">
+                          </dofi-searchable-dropdown>
                           <label for="" class="input-label">FPOD <span class="text-danger">*</span></label>
                           @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
                           <div class="error-message">
@@ -708,11 +736,11 @@
 
 
 
-                      <div class="col-12 px-2">
+                      <!-- <div class="col-12 px-2">
                         <div class="d-flex justify-content-end">
-                          <!-- <button class="btn btn-sm btn-info mb-1" (click)="addQuoteProduct(routeIndex)">
+                          <button class="btn btn-sm btn-info mb-1" (click)="addQuoteProduct(routeIndex)">
                             <i class="fas fa-plus me-1"></i> Add Product
-                          </button> -->
+                          </button>
                         </div>
                         <div class="table-responsive table-borderless" formArrayName="quoteProducts" style="overflow-y: hidden;">
                           <table class="table table-hover align-middle no-wrap  table-sm mb-1" >
@@ -754,9 +782,9 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <!-- <tr *ngIf="quoteProducts(routeIndex).controls.length === 0" class="text-center">
+                              <tr *ngIf="quoteProducts(routeIndex).controls.length === 0" class="text-center">
                                 <td colspan="14" class="ps-3">No products added</td>
-                              </tr> -->
+                              </tr>
                               @if(quoteProducts(routeIndex).length > 0){
                               <tr *ngFor="let product of quoteProducts(routeIndex).controls; let productIndex = index"
                                 [formGroupName]="productIndex" class="py-0">
@@ -815,8 +843,6 @@
                                     class="custom-input-field sm text-end">
                                 </td>
                                 }
-
-                                <!-- AIR Part -->
                                 @if(route.value.segmentType === 'AIR'){
                                 <td>
                                   <input type="text" id="text-input" formControlName="Length" placeholder=""
@@ -840,7 +866,6 @@
                                 </td>
                                 }
 
-                                <!-- Haz Part  -->
                                 <td>
                                   <div class="form-check ms-5">
                                     <input class="form-check-input" type="checkbox" id="IsHaz"
@@ -884,7 +909,7 @@
                           </table>
                         </div>
                         
-                      </div>
+                      </div> -->
 
 
                       <div class="col-12" formArrayName="quoteCarriers">
