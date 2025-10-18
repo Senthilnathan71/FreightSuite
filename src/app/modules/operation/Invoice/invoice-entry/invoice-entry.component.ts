@@ -1284,8 +1284,14 @@ export class InvoiceEntryComponent implements OnInit {
     const customerBranch = this.customerBranchList.find(b => b.CustomerBranchSid === customerBranchSid);
     const customerEmail = customerBranch?.Email || customerBranch?.email || '';
 
+    // Get company email from company config if available
+    let fromEmail = this.currUserEmail || '';
+    if (this.currentCompany?.config?.systemSettings?.emailConfig?.fromEmail) {
+      fromEmail = this.currentCompany.config.systemSettings.emailConfig.fromEmail;
+    }
+
     this.emailForm = this.fb.group({
-      from: [this.currUserEmail || '', [Validators.required, Validators.email]],
+      from: [fromEmail, [Validators.required, Validators.email]],
       to: [customerEmail, [Validators.required, Validators.email]],
       cc: ['', Validators.email],
       subject: [`Invoice ${this.invoiceForm.get('VoucherNumber')?.value}`, Validators.required],
@@ -1324,6 +1330,7 @@ export class InvoiceEntryComponent implements OnInit {
 
         // Prepare payload for API
         const payload = {
+          companyId: this.currentCompany?.CompanyMasterSid || null,
           from: emailData.from,
           to: emailData.to,
           cc: emailData.cc || '',

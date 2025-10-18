@@ -18,6 +18,17 @@ export interface CompanyConfigModule {
   [subsectionKey: string]: CompanyConfigSubsection;
 }
 
+export interface EmailConfiguration {
+  smtpHost: string;
+  smtpPort: number;
+  smtpSecure: boolean;
+  smtpUser: string;
+  smtpPassword: string;
+  fromEmail: string;
+  fromName: string;
+  replyToEmail?: string;
+}
+
 export interface CompanyConfiguration {
   systemSettings: {
     dateFormat: string;
@@ -40,6 +51,7 @@ export interface CompanyConfiguration {
       address: string;
       contact: string;
     };
+    emailConfig?: EmailConfiguration;
   };
   moduleFeatures: {
     crm: { [featureKey: string]: ModuleFeature };

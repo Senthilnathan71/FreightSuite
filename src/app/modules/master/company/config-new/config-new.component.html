@@ -270,6 +270,120 @@
                           </div>
                         </div>
 
+                        <!-- Email Configuration -->
+                        <div class="card mb-4">
+                          <div class="card-header">
+                            <h6 class="card-title mb-0">
+                              <i class="fas fa-envelope me-2"></i>
+                              Email Configuration
+                            </h6>
+                          </div>
+                          <div class="card-body">
+                            <div class="alert alert-info">
+                              <i class="fas fa-info-circle me-2"></i>
+                              Configure SMTP settings for sending emails from the system (invoices, notifications, etc.)
+                            </div>
+                            <div class="row">
+                              <div class="col-md-6 mb-3">
+                                <label for="smtpHost" class="form-label">SMTP Host <span class="text-danger">*</span></label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="smtpHost"
+                                       formControlName="smtpHost"
+                                       placeholder="smtp.gmail.com">
+                                <small class="form-text text-muted">SMTP server address</small>
+                              </div>
+
+                              <div class="col-md-3 mb-3">
+                                <label for="smtpPort" class="form-label">SMTP Port <span class="text-danger">*</span></label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="smtpPort"
+                                       formControlName="smtpPort"
+                                       placeholder="587"
+                                       [class.is-invalid]="isFieldInvalid('smtpPort')"
+                                       min="1" max="65535">
+                                <div *ngIf="isFieldInvalid('smtpPort')" class="invalid-feedback">
+                                  {{ getFieldError('smtpPort') }}
+                                </div>
+                                <small class="form-text text-muted">Port: 587 (TLS) or 465 (SSL)</small>
+                              </div>
+
+                              <div class="col-md-3 mb-3">
+                                <label class="form-label d-block">Connection Security</label>
+                                <div class="form-check form-switch mt-2">
+                                  <input class="form-check-input"
+                                         type="checkbox"
+                                         id="smtpSecure"
+                                         formControlName="smtpSecure">
+                                  <label class="form-check-label" for="smtpSecure">
+                                    Use SSL/TLS
+                                  </label>
+                                </div>
+                                <small class="form-text text-muted">Enable for port 465</small>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <label for="smtpUser" class="form-label">SMTP Username <span class="text-danger">*</span></label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="smtpUser"
+                                       formControlName="smtpUser"
+                                       placeholder="your-email@example.com">
+                                <small class="form-text text-muted">Email account username</small>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <label for="smtpPassword" class="form-label">SMTP Password <span class="text-danger">*</span></label>
+                                <input type="password"
+                                       class="form-control"
+                                       id="smtpPassword"
+                                       formControlName="smtpPassword"
+                                       placeholder="Enter SMTP password">
+                                <small class="form-text text-muted">App password or account password</small>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <label for="fromEmail" class="form-label">From Email Address <span class="text-danger">*</span></label>
+                                <input type="email"
+                                       class="form-control"
+                                       id="fromEmail"
+                                       formControlName="fromEmail"
+                                       [class.is-invalid]="isFieldInvalid('fromEmail')"
+                                       placeholder="noreply@yourcompany.com">
+                                <div *ngIf="isFieldInvalid('fromEmail')" class="invalid-feedback">
+                                  Please enter a valid email address
+                                </div>
+                                <small class="form-text text-muted">Sender email address</small>
+                              </div>
+
+                              <div class="col-md-6 mb-3">
+                                <label for="fromName" class="form-label">From Name</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="fromName"
+                                       formControlName="fromName"
+                                       placeholder="Your Company Name">
+                                <small class="form-text text-muted">Sender display name</small>
+                              </div>
+
+                              <div class="col-md-12 mb-3">
+                                <label for="replyToEmail" class="form-label">Reply-To Email (Optional)</label>
+                                <input type="email"
+                                       class="form-control"
+                                       id="replyToEmail"
+                                       formControlName="replyToEmail"
+                                       [class.is-invalid]="isFieldInvalid('replyToEmail')"
+                                       placeholder="support@yourcompany.com">
+                                <div *ngIf="isFieldInvalid('replyToEmail')" class="invalid-feedback">
+                                  Please enter a valid email address
+                                </div>
+                                <small class="form-text text-muted">Email address for replies</small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                       </form>
                     </div>
 

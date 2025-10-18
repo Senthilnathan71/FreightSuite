@@ -139,8 +139,10 @@ export class ConfigNewComponent implements OnInit {
     const state = history.state;
     this.companyName = state.companyName || '';
 
-    this.loadOptions();
-    this.loadConfiguration();
+    // Load options first, then configuration to ensure dropdowns are populated
+    this.loadOptions().then(() => {
+      this.loadConfiguration();
+    });
   }
 
   private initializeForms() {
@@ -156,7 +158,16 @@ export class ConfigNewComponent implements OnInit {
       thousandSeparator: [',', Validators.required],
       enableNotifications: [true],
       autoSave: [true],
-      sessionTimeout: [30, [Validators.required, Validators.min(5), Validators.max(120)]]
+      sessionTimeout: [30, [Validators.required, Validators.min(5), Validators.max(120)]],
+      // Email Configuration
+      smtpHost: [''],
+      smtpPort: [587, [Validators.min(1), Validators.max(65535)]],
+      smtpSecure: [false],
+      smtpUser: [''],
+      smtpPassword: [''],
+      fromEmail: ['', Validators.email],
+      fromName: [''],
+      replyToEmail: ['', Validators.email]
     });
 
     // Listen for date format changes
@@ -167,17 +178,32 @@ export class ConfigNewComponent implements OnInit {
     });
   }
 
-  private loadOptions() {
-    this.dateFormatOptions = this.configService.getDateFormatOptions();
-    this.timeFormatOptions = this.configService.getTimeFormatOptions();
-    this.currencyPositionOptions = this.configService.getCurrencyPositionOptions();
+  private loadOptions(): Promise<void> {
+    return new Promise((resolve) => {
+      this.dateFormatOptions = this.configService.getDateFormatOptions();
+      this.timeFormatOptions = this.configService.getTimeFormatOptions();
+      this.currencyPositionOptions = this.configService.getCurrencyPositionOptions();
 
-    this.configService.getAvailableCurrencies().subscribe(currencies => {
-      this.currencyOptions = currencies;
-    });
+      let currenciesLoaded = false;
+      let timezonesLoaded = false;
 
-    this.configService.getAvailableTimezones().subscribe(timezones => {
-      this.timezoneOptions = timezones;
+      const checkComplete = () => {
+        if (currenciesLoaded && timezonesLoaded) {
+          resolve();
+        }
+      };
+
+      this.configService.getAvailableCurrencies().subscribe(currencies => {
+        this.currencyOptions = currencies;
+        currenciesLoaded = true;
+        checkComplete();
+      });
+
+      this.configService.getAvailableTimezones().subscribe(timezones => {
+        this.timezoneOptions = timezones;
+        timezonesLoaded = true;
+        checkComplete();
+      });
     });
   }
 
@@ -270,7 +296,16 @@ export class ConfigNewComponent implements OnInit {
         thousandSeparator: ',',
         enableNotifications: true,
         autoSave: true,
-        sessionTimeout: 30
+        sessionTimeout: 30,
+        // Email configuration
+        smtpHost: this.config.systemSettings.emailConfig?.smtpHost || '',
+        smtpPort: this.config.systemSettings.emailConfig?.smtpPort || 587,
+        smtpSecure: this.config.systemSettings.emailConfig?.smtpSecure || false,
+        smtpUser: this.config.systemSettings.emailConfig?.smtpUser || '',
+        smtpPassword: this.config.systemSettings.emailConfig?.smtpPassword || '',
+        fromEmail: this.config.systemSettings.emailConfig?.fromEmail || '',
+        fromName: this.config.systemSettings.emailConfig?.fromName || '',
+        replyToEmail: this.config.systemSettings.emailConfig?.replyToEmail || ''
       });
     }
   }
@@ -384,6 +419,16 @@ export class ConfigNewComponent implements OnInit {
         symbol: formValues.currencySymbol,
         position: formValues.currencyPosition,
         decimalPlaces: formValues.currencyDecimalPlaces
+      },
+      emailConfig: {
+        smtpHost: formValues.smtpHost || '',
+        smtpPort: formValues.smtpPort || 587,
+        smtpSecure: formValues.smtpSecure || false,
+        smtpUser: formValues.smtpUser || '',
+        smtpPassword: formValues.smtpPassword || '',
+        fromEmail: formValues.fromEmail || '',
+        fromName: formValues.fromName || '',
+        replyToEmail: formValues.replyToEmail || ''
       }
     };
 

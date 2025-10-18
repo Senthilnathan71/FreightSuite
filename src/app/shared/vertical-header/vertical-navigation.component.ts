@@ -151,9 +151,15 @@ ngOnInit(): void {
 
           localStorage.setItem('selected-company', this.appSettingsService.encrypt(companyToStore));
           localStorage.setItem('selected-branch', this.appSettingsService.encrypt(branchToStore));
+
+          // Load company configuration and store in localStorage
+          this.companySettingsManager.setCurrentCompany(companyToStore.CompanyMasterSid);
         } catch (e) {
           console.error('Error encrypting default company/branch:', e);
         }
+      } else {
+        // Company/branch already stored, just load the config
+        this.companySettingsManager.setCurrentCompany(companyToUse.CompanyMasterSid);
       }
     }
   } else {
@@ -251,6 +257,9 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
     localStorage.setItem('selected-company', this.appSettingsService.encrypt(companyToStore));
     localStorage.setItem('selected-branch', this.appSettingsService.encrypt(branchToStore));
+
+    // Load company configuration and store in localStorage
+    this.companySettingsManager.setCurrentCompany(companyToStore.CompanyMasterSid);
 
     this.selectedBranchCompany = updatedBranchCompany;
   } catch (e) {

@@ -78,6 +78,9 @@ export class CompanySettingsManagerService {
     this.configService.getCompanyConfiguration(companyId).subscribe({
       next: (config) => {
         if (config?.systemSettings) {
+          // Store the complete config in localStorage for quick access
+          localStorage.setItem(`company-config-${companyId}`, JSON.stringify(config));
+
           // Apply date format
           if (config.systemSettings.dateFormat) {
             this.globalDateService.setDateFormat(config.systemSettings.dateFormat);
@@ -169,8 +172,34 @@ export class CompanySettingsManagerService {
 
   /**
    * Get current currency settings (synchronous)
+   * Reads from localStorage if not yet loaded in BehaviorSubject
    */
   getCurrencySettings(): CurrencySettings {
+    // First, try to get from stored company config based on current company
+    const companyId = this.getCurrentCompanyId();
+    if (companyId) {
+      const storedConfig = localStorage.getItem(`company-config-${companyId}`);
+      if (storedConfig) {
+        try {
+          const config = JSON.parse(storedConfig);
+          if (config?.systemSettings?.currency) {
+            const currencySettings: CurrencySettings = {
+              code: config.systemSettings.currency.code || 'USD',
+              symbol: config.systemSettings.currency.symbol || '$',
+              position: config.systemSettings.currency.position || 'before',
+              decimalPlaces: config.systemSettings.currency.decimalPlaces ?? 2
+            };
+            // Update the subject so other subscribers get the latest value
+            this.currencySettingsSubject.next(currencySettings);
+            return currencySettings;
+          }
+        } catch (e) {
+          console.warn('Could not parse stored company config:', e);
+        }
+      }
+    }
+
+    // Fallback: return current BehaviorSubject value
     return this.currencySettingsSubject.value;
   }
 

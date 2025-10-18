@@ -2814,21 +2814,19 @@ openAuditLogs(modal: TemplateRef<any>) {
       this.billingPartyAddress = `${this.billingPartyDetails?.Address1 || ''}`.trim();
     }
 
-    // Set default currency from booking, charge, or company config
-    const defaultCurrency = isRevenue
-      ? firstCharge?.RevenueCurrencyMaster
-      : firstCharge?.CostCurrencyMaster;
-
-    // Get company's home currency from settings
+    // Get company's home currency from settings (FIRST PRIORITY)
     const companyHomeCurrency = this.companySettings.getCurrencySettings();
     const companyCurrency = this.currencyList?.find(c => c?.currencyCode === companyHomeCurrency.code);
 
-    this.invoiceHeaderCurrency = defaultCurrency || companyCurrency || null;
+    // Fallback to charge currency if company currency not found
+    const chargeCurrency = isRevenue
+      ? firstCharge?.RevenueCurrencyMaster
+      : firstCharge?.CostCurrencyMaster;
 
-    // Set default exchange rate
-    this.invoiceHeaderExchangeRate = isRevenue
-      ? (firstCharge?.RevenueExchangeRate || 1)
-      : (firstCharge?.CostExchangeRate || 1);
+    this.invoiceHeaderCurrency = companyCurrency || chargeCurrency || null;
+
+    // Set default exchange rate to 1 (company home currency)
+    this.invoiceHeaderExchangeRate = 1;
 
     console.log('Invoice header initialized:', {
       billingParty: this.billingPartyDetails,
@@ -2974,11 +2972,41 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
   onHeaderCurrencyChange() {
-    // Recalculate exchange rate if needed
+    // Fetch exchange rate from CurrencyExchange table
     if (this.invoiceHeaderCurrency) {
-      // You might want to fetch exchange rate from API here
-      // For now, keep the existing exchange rate
-      this.calculateChargeSelectionTax();
+      // Get company's home currency
+      const companyHomeCurrency = this.companySettings.getCurrencySettings();
+      const selectedCurrencyCode = this.invoiceHeaderCurrency?.currencyCode;
+
+      // If selected currency is same as company currency, exchange rate is 1
+      if (selectedCurrencyCode === companyHomeCurrency.code) {
+        this.invoiceHeaderExchangeRate = 1;
+        this.calculateChargeSelectionTax();
+      } else {
+        // Fetch exchange rate from CurrencyExchange table
+        const payload = {
+          fromCurrencyCode: companyHomeCurrency.code,
+          toCurrencyCode: selectedCurrencyCode,
+          segment: 'revenue' // Use SellRate for revenue charges
+        };
+
+        this.operationService.getExchangeRate(payload).subscribe({
+          next: (response: any) => {
+            if (response?.status && response?.data) {
+              this.invoiceHeaderExchangeRate = Number(response.data) || 1;
+            } else {
+              console.warn('Exchange rate not found, defaulting to 1');
+              this.invoiceHeaderExchangeRate = 1;
+            }
+            this.calculateChargeSelectionTax();
+          },
+          error: (err) => {
+            console.error('Error fetching exchange rate:', err);
+            this.invoiceHeaderExchangeRate = 1;
+            this.calculateChargeSelectionTax();
+          }
+        });
+      }
     }
   }
 

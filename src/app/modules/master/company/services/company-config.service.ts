@@ -43,21 +43,29 @@ export class CompanyConfigService {
   }
 
   /**
-   * Get available currencies
+   * Get available currencies from CurrencyMaster table
    */
-  getAvailableCurrencies(): Observable<{ code: string; name: string; symbol: string }[]> {
-    return of([
-      { code: 'USD', name: 'US Dollar', symbol: '$' },
-      { code: 'EUR', name: 'Euro', symbol: '€' },
-      { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
-      { code: 'GBP', name: 'British Pound', symbol: '£' },
-      { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-      { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-      { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-      { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
-      { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
-      { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' }
-    ]);
+  getAvailableCurrencies(): Observable<any[]> {
+    return this.masterService.getAllCurrencies().pipe(
+      map((currencies: any[]) => {
+        if (!currencies || !Array.isArray(currencies)) {
+          return [];
+        }
+        // Map to the format expected by the component
+        return currencies
+          .filter(c => c.status === 'A') // Only active currencies
+          .map(currency => ({
+            code: currency.currencyCode || currency.CurrencyCode,
+            name: currency.currencyName || currency.CurrencyName,
+            symbol: currency.Symbol || currency.symbol || ''
+          }));
+      }),
+      catchError(error => {
+        console.error('Error fetching currencies:', error);
+        // Return empty array on error
+        return of([]);
+      })
+    );
   }
 
   /**
