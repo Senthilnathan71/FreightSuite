@@ -121,7 +121,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   uploadResult: any = null;
 
   // Voucher generation properties
-  selectedVoucherType: 'Invoice' | 'Vendor-Invoice' | null = null;
+  selectedVoucherType: 'Invoice' | 'Vendor Invoice' | null = null;
   availableBillingParties: any[] = [];
   selectedBillingPartyIndex: number = -1;
   pendingBookingRates: BookingRateDetails[] = [];
@@ -2636,7 +2636,7 @@ ${this.userData['userName']}`;
     });
   }
 
-  selectVoucherType(voucherType: 'Invoice' | 'Vendor-Invoice') {
+  selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice') {
     this.selectedVoucherType = voucherType;
     this.voucherTypeModalRef?.close();
 
@@ -3555,9 +3555,13 @@ ${this.userData['userName']}`;
         // Reload booking data to show updated rates with voucher information
         await this.loadBookingById(this.BookingHeaderSid);
 
-        // Navigate to invoice-entry to view the generated voucher
+        // Navigate to invoice-entry or vendor-invoice-entry based on voucher type
         if (voucherHeaderSid) {
-          this.router.navigate(['/operation/invoice/entry', voucherHeaderSid], {
+          const targetRoute = this.selectedVoucherType === 'Vendor Invoice'
+            ? '/operation/vendor-invoice/entry'
+            : '/operation/invoice/entry';
+
+          this.router.navigate([targetRoute, voucherHeaderSid], {
             queryParams: {
               from: 'booking',
               bookingId: this.BookingHeaderSid

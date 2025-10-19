@@ -665,6 +665,72 @@ sendInvoiceEmail(payload: any) {
   );
 }
 
+// ----- Vendor Invoice Operations ----- //
+
+createVendorInvoice(payload: any) {
+  return this.http.post<{ status: boolean; message: string; data: any }>('vendor-invoice/create', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+getAllVendorInvoices() {
+  return this.http.get<{ status: boolean; data: any[] }>('vendor-invoice').pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+getVendorInvoiceById(VoucherHeaderSid: number) {
+  return this.http.get<{ status: boolean; data: any }>(`vendor-invoice/fetch/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+updateVendorInvoiceById(VoucherHeaderSid: number, payload: any) {
+  return this.http.patch<{ status: boolean; data: any }>(`vendor-invoice/update/${VoucherHeaderSid}`, payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+deleteVendorInvoiceById(VoucherHeaderSid: number) {
+  return this.http.delete<{ status: boolean; data: any }>(`vendor-invoice/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+searchVendorInvoices(payload: any) {
+  return this.http.post<{ status: boolean; data: any }>('vendor-invoice/search-list', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+searchPendingCosts(criteria: any) {
+  return this.http.post<{ status: boolean; data: any[] }>('vendor-invoice/search-pending-costs', criteria).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+getVendorTDSMapping(vendorId: number) {
+  return this.http.get<{ status: boolean; data: any }>(`vendor-invoice/vendor-tds-mapping/${vendorId}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 getCountryById(CountryMasterSid: number) {
   return this.http.get<{ status: boolean; data: any }>(`country/${CountryMasterSid}`).pipe(
     map((resp:any) => {
