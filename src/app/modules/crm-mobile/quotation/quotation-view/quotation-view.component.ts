@@ -176,8 +176,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           sortable: true,
           filterable: true,
           visible: true,
-          template: 'link',
-          width: '140px',
           dataType: 'string'
         },
         {
@@ -223,13 +221,13 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           cellClass: 'vessel-column'
         },
         {
-          key: '',
+          key: 'bookingNo',
           label: 'Booking No',
           sortable: true,
           filterable: true,
           visible: true,
-          dataType: 'string',
-          width: "140px"
+          template: 'link',
+          dataType: 'string'
         },
         {
           key: 'status',
@@ -418,7 +416,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   // List Level
   onQuotationTableActionClick(event: TableEventData) {
-    if (event.action === 'view') {
+    if (event.column?.template === "link") {
+      this.route.navigate(['operation/booking/entry', event.row.bookingHeader?.BookingHeaderSid]);
+    } else if (event.action === 'view') {
       this.route.navigate(['crm/quotation/entry', event.row.QuoteHeaderSid]);
     }
   }

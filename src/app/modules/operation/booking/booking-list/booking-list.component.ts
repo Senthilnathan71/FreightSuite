@@ -320,8 +320,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 dataType: 'string'
             },
             {
-                key: 'milestone',
-                label: 'Milestone',
+                key: 'BookingStatus',
+                label: 'Booking Status',
                 sortable: true,
                 filterable: true,
                 visible: true,

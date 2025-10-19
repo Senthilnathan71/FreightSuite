@@ -1253,7 +1253,7 @@ ${this.userData.userName}`;
           if (resp) {
             this.modalService.openSuccessModal('Enquiry Updated Successfully');
             this.btnDisable = false;
-            this.router.navigate(['crm/enquiry/list']);
+            this.loadEnquiry(this.EnquiryHeaderSid);
           } else {
             this.modalService.openErrorModal('Enquiry Update Failed');
           }
@@ -1279,7 +1279,10 @@ ${this.userData.userName}`;
         if (resp.status) {
           this.modalService.openSuccessModal('Enquiry Created Successfully');
           this.btnDisable = false;
-          this.router.navigate(['crm/enquiry/list']);
+          this.EnquiryHeaderSid = resp?.data?.enquiryHeader?.EnquiryHeaderSid;
+          if(this.EnquiryHeaderSid){
+            this.router.navigate(['crm/enquiry/entry', this.EnquiryHeaderSid]);
+          }
         } else {
           this.modalService.openErrorModal('Enquiry Creation Failed');
         }

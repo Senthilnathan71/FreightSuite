@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, forwardRef, ViewChild, HostListener, ElementRef, AfterViewInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NgbTooltip, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { NgSelectComponent, NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'dofi-searchable-dropdown',
@@ -31,7 +31,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   @Input() bindValue!: string;
   @Input() isLoading: boolean = false;
   @Input() control: FormControl | null = null;
-  @ViewChild('ngSelect', { read: ElementRef }) ngSelectRef: any;
+  @ViewChild('ngSelect', { static: false, read: ElementRef }) ngSelectRef!: ElementRef;
   @Input() width : number[] = [];
   @Output() itemSelected = new EventEmitter<any>();
 
@@ -178,6 +178,18 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     if (dropdownPanel) {
       dropdownPanel.style.width = `${availableWidth}px`;
       // dropdownPanel.style.maxWidth = `${availableWidth}px`;
+    }
+  }
+
+
+  // Focus method using ElementRef
+  focus() {
+    if (this.ngSelectRef?.nativeElement) {
+      // Find the input element inside ng-select and focus it
+      const inputElement = this.ngSelectRef.nativeElement.querySelector('input');
+      if (inputElement) {
+        inputElement.focus();
+      }
     }
   }
 

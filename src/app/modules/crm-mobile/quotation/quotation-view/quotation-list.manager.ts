@@ -48,6 +48,7 @@ export class QuotationListManager {
                         formattedPOD: item.quoteRoute?.[0]?.PortPOD ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOD?.PortName, item.quoteRoute?.[0]?.PortPOD?.PortCode) : '',
                         formattedPOL: item.quoteRoute?.[0]?.PortPOL ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOL?.PortName, item.quoteRoute?.[0]?.PortPOL?.PortCode) : '',
                         QuoteDate: this.datePipe.transform(item?.QuoteDate),
+                        bookingNo : item.bookingHeader?.BookingNo || '',
                         status: item.status === 'A' ? 'Active' : 'Suspended',
                     }));
                     this.totalRecords = response.data.totalCount || 0;

@@ -63,7 +63,7 @@
         }
         @if((hasPermission('Edit') && isEditMode) || !isEditMode){
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
-          [disabled]="disableAllModification">
+          [disabled]="disableAllModification || quotationApproved">
           <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : 'Save'}}
         </button>
         }
@@ -100,14 +100,14 @@
       </div>
     </div>
 
-    <div class="ms-auto" *ngIf="isEditMode && quotationApproved">
+    <div class="ms-auto" *ngIf="isEditMode && quotationApproved && !bookingCreatedAgainstThisQuotation">
       <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" (click)="goForBookingCreation()">
         <i class="fas fa-plus me-1"></i> Create Booking
       </button>
     </div>
     <div *ngIf="selectedTab1 === 'Route Details'" class="d-flex align-items-center gap-1">
       <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button" (click)="addQuoteRoute()"
-        [disabled]="f['EnquirySid'].value || disableAllModification">
+        [disabled]="f['EnquirySid'].value || disableAllModification || quotationApproved">
         <i class="fas fa-plus me-1"></i> Add Route
       </button>
     </div>
@@ -207,7 +207,7 @@
 
             <aside class="col-md-4" *ngIf="!isEditMode && quotationForm.get('LeadOrCustomer')?.value">
               <div class="custom-form-group custom-form-group-select"
-                [class.filled]="!!quotationForm.get('CustomerMasterSid')?.value">
+                [class.filled]="!!quotationForm.get('CustomerBranchSid')?.value">
                 <!-- <ng-select class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                   formControlName="CustomerMasterSid" appendTo="body" (change)="onSelectionChange($event)">
                   <ng-template ng-option-tmp let-item="item" let-index="index">
@@ -218,10 +218,10 @@
                     </div>
                   </ng-template>
                 </ng-select> -->
-                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid"
+                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerBranchSid"
                   placeholder="" [displayFields]="customerLookupConfig.displayFields"
                   [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
-                  bindValue="CustomerMasterSid" (itemSelected)="onSelectionChange($event)">
+                  bindValue="CustomerBranchSid" (itemSelected)="onSelectionChange($event)">
                 </dofi-searchable-dropdown>
                 <!-- <multicolumn-combobox [data]="currencyMaster" [columns]="currencyColumns" [(selectedItem)]="selectedCurrency"
                   label="Select Currency" placeholder="Search by name, email, role, or department..."
@@ -1291,13 +1291,13 @@
                                         </td>
                                         }
                                         <td>
-                                          <div [class.filled]="!!charge.get('RevenueCustomerMasterSid')?.value">
+                                          <div [class.filled]="!!charge.get('RevenueCustomerBranchSid')?.value">
                                             <dofi-searchable-dropdown [items]="customers"
-                                              formControlName="RevenueCustomerMasterSid" placeholder=""
+                                              formControlName="RevenueCustomerBranchSid" placeholder=""
                                               [displayFields]="customerLookupConfig.displayFields"
                                               [displayLabels]="customerLookupConfig.displayLabels"
                                               [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                                              bindValue="CustomerMasterSid">
+                                              bindValue="CustomerBranchSid" (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'party',$event)">
                                             </dofi-searchable-dropdown>
                                           </div>
                                           <!-- <div class="custom-form-group custom-form-group-select">
@@ -1380,12 +1380,15 @@
                                         </td>
                                         }
                                         <td>
-                                          <ng-select [items]="vendorSupplierList" bindLabel="CustomerName"
-                                            bindValue="CustomerMasterSid" formControlName="CostAgentMasterSid"
-                                            appendTo="body"
-                                            (change)="setOrResetValidationForCostAmount(routeIndex,carrierIndex,chargeIndex)"
-                                            >
-                                          </ng-select>
+                                          <div [class.filled]="!!charge.get('CostAgentBranchSid')?.value">
+                                            <dofi-searchable-dropdown [items]="vendorSupplierList"
+                                              formControlName="CostAgentBranchSid" placeholder=""
+                                              [displayFields]="customerLookupConfig.displayFields"
+                                              [displayLabels]="customerLookupConfig.displayLabels"
+                                              [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                                              bindValue="CustomerBranchSid" (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'vendor',$event)">
+                                            </dofi-searchable-dropdown>
+                                          </div>
                                       </tr>
                                     </tbody>
                                   </table>

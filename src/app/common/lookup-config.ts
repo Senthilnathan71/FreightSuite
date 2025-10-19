@@ -53,7 +53,12 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['ImcoName', 'ImcoUn', 'PackingGroup'],
     displayLabels: ['Name', 'UN No', 'Packing Group'],
     labelFields: ['ImcoClass']
-  }
+  },
+  VESSEL_VOYAGE : {
+    displayFields: ['VesselName', 'VoyageNo','ETD','ETA'],
+    displayLabels: ['Vessel Name', 'Voyage No','ETD','ETA'],
+    labelFields: ['VesselName','VoyageNo']
+  },
 } satisfies Record<string, {
   displayFields: string[];
   displayLabels: string[];
