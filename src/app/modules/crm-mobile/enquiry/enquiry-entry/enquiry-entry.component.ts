@@ -43,7 +43,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -62,6 +63,7 @@ import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
     SearchableDropdown,
     NgbTooltip,
     NgxSpinnerModule,
+    CustomDatePipe
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
@@ -73,8 +75,9 @@ import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
 })
 export class EnquiryEntryComponent implements OnInit {
   @ViewChild('enquiryPrint') enquiryPrint!: TemplateRef<any>;
+    @ViewChild('emailModal') emailModalRef: any;
   private destroy$ = new Subject<void>();
-
+  enquiryData:any;
   selectedDepartment: any = '';
   isMobile: boolean = false;
   rateRequestForm!: FormGroup;
@@ -135,7 +138,7 @@ export class EnquiryEntryComponent implements OnInit {
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
-
+  currentDate = new Date()
   modeOfEnquiry = [
     { id: 1, name: "Email" },
     { id: 2, name: "Phone" },
@@ -194,7 +197,7 @@ export class EnquiryEntryComponent implements OnInit {
 
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
+  
 
   /** Flag that decides whether to disable the whole form or not. */
   isEnquiryAuthActionTaken: boolean;
@@ -445,6 +448,8 @@ export class EnquiryEntryComponent implements OnInit {
       UserMasterSid: [null],
       FreightPPCC: ['Prepaid'],
       routes: this.fb.array([]),
+      ContactPerson:[''],
+      ContactNumber:['']
     });
 
     this.addRoute();
@@ -718,6 +723,14 @@ ${this.userData.userName}`;
     return this.rateRequestForm.controls;
   }
 
+    getFormattedPort(PortMasterSid) {
+    if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
+      return '';
+    }
+    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
+    return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
+  }
+
 
   addCargo(routeIndex: number) {
     const cargoForm = this.fb.group({
@@ -862,9 +875,10 @@ ${this.userData.userName}`;
 
   openPrint() {
     this.ngbModal.open(this.enquiryPrint, {
-      size: 'lg',
+      size: 'xl',
       centered: true,
-      backdrop: 'static'
+      backdrop: 'static',
+      scrollable:true
     });
   }
   updateCargoValidators(cargoForm: FormGroup, type: string) {
@@ -931,7 +945,7 @@ ${this.userData.userName}`;
     }
 
     const isCustomer = this.rateRequestForm.get('LeadOrCustomer')?.value;
-    console.log(selectedItem);
+    console.log(selectedItem,"Selcted Values");
     if (isCustomer) {
       this.rateRequestForm.patchValue({
         customerName: selectedItem.CustomerName,
@@ -939,6 +953,8 @@ ${this.userData.userName}`;
         Email: selectedItem.Email,
         CustomerMasterSid: selectedItem.CustomerMasterSid,
         CustomerBranchSid: selectedItem.CustomerBranchSid,
+      ContactPerson:selectedItem.ContactPerson,
+      ContactNumber:selectedItem.ContactNumber
       });
       this.selectedCustomerName = selectedItem.CustomerName;
       // this.getCustomerBranches(selectedItem.CustomerMasterSid);
@@ -948,6 +964,8 @@ ${this.userData.userName}`;
         CustomerAddress: selectedItem.preCustomerAddress1,
         Email: selectedItem.email,
         CustomerBranchSid: null,
+          ContactPerson:selectedItem.ContactPerson,
+      ContactNumber:selectedItem.ContactNumber
       });
       this.selectedCustomerName = selectedItem.preCustomerName;
       this.patchSalespersonOfLead(selectedItem);
@@ -1020,12 +1038,25 @@ ${this.userData.userName}`;
   loadEnquiry(id): void {
     this.leadService.getEnquiryById(id).subscribe((resp: any) => {
       if (resp.status) {
+        this.enquiryData=resp.data;
+        console.log(this.enquiryData,"Enquiry Data")
         this.patchValues(resp.data);
         this.rateRequestData = resp.data;
       }
     });
   }
 
+   formatDate(date: any): string {
+    if (!date) return '-';
+    // Handle NgbDateStruct
+    if (date.year && date.month && date.day) {
+      return `${date.day.toString().padStart(2, '0')}/${date.month.toString().padStart(2, '0')}/${date.year}`;
+    }
+    // Handle Date object or string
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+  }
 
 
   patchValues(response: any) {
@@ -1096,6 +1127,8 @@ ${this.userData.userName}`;
         authorizerStatus: response.authorizerStatus || 'Pending',
         status: response.status === 'A' ? 'Active' : 'Suspended',
         CustomerRef: response.CustomerRef,
+              ContactPerson:response.ContactPerson,
+      ContactNumber:response.ContactNumber
       });
     const disableFields = ['Segment', 'enquiryNo', 'EnquiryDate', 'customerName', 'CustomerMasterSid', 'PreCustomerMasterSid'];
     disableFields.forEach(f => disableFormControl(this.rateRequestForm, f));
@@ -1227,6 +1260,8 @@ ${this.userData.userName}`;
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
         enquiryOther: otherFormValue,
         updatedBy: userEmail,
+        ContactPerson:this.rateRequestForm.value.ContactPerson,
+      ContactNumber:this.rateRequestForm.value.ContactNumber,
         MenuMaster: this.currentMenuId,
         approvalStatusChange: this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
@@ -1271,6 +1306,8 @@ ${this.userData.userName}`;
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,
+                ContactPerson:this.rateRequestForm.value.ContactPerson,
+      ContactNumber:this.rateRequestForm.value.ContactNumber,
       };
       if (this.authRelatedDetails.totalNumberOfAuthorizers === 0) {
         createPayload.authorizerStatus = AuthorizationStatus.Approved;
@@ -1788,6 +1825,105 @@ ${this.userData.userName}`;
       });
   }
 
+
+   async downloadPDF() {
+      const printContent = document.getElementById('printContent');
+      if (!printContent) {
+        this.appSettingsService.showError('Print content not found.');
+        return;
+      }
+  
+      try {
+        this.spinner.show();
+  
+        // Generate PDF using html2canvas and jsPDF
+        const canvas = await html2canvas(printContent, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
+  
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+  
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+  
+        // Add first page
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+  
+        // Add additional pages if content exceeds one page
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+  
+        
+        const EnquiryNumber = this.rateRequestForm.get('EnquiryNumber')?.value || 'Enquiry';
+        const filename = `Enquiry_${EnquiryNumber}.pdf`;
+  
+        // Download the PDF
+        pdf.save(filename);
+  
+        this.spinner.hide();
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+      } catch (error) {
+        this.spinner.hide();
+        console.error('Error generating PDF:', error);
+        this.appSettingsService.showError('Error generating PDF. Please try again.');
+      }
+    }
+
+      async generatePDFBlob(): Promise<Blob | null> {
+        const printContent = document.getElementById('printContent');
+        if (!printContent) {
+          return null;
+        }
+    
+        try {
+          const canvas = await html2canvas(printContent, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          });
+    
+          const imgWidth = 210;
+          const pageHeight = 297;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+    
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png');
+    
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+    
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+    
+          return pdf.output('blob');
+        } catch (error) {
+          console.error('Error generating PDF blob:', error);
+          return null;
+        }
+      }
+
+    getPort(PortMasterSid:number){
+      return getFormattedPort(this.ports,PortMasterSid)
+    }
 
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()

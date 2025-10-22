@@ -43,6 +43,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -2486,56 +2488,55 @@ ${this.userData['userName']}`;
   reportAndEmailModel(content: TemplateRef<any>) {
     this.modalService.open(content, {
       size: 'xl',
-      scrollable: false,
-      windowClass: 'custom-wide-modal'
+      scrollable: true,
     });
   }
 
-  generatePDFBlob(): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-      const element = document.getElementById('pdfContent');
+  // generatePDFBlob(): Promise<Blob> {
+  //   return new Promise((resolve, reject) => {
+  //     const element = document.getElementById('pdfContent');
 
-      const opt: Html2PdfOptions = {
-        margin: 0.5,
-        filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
+  //     const opt: Html2PdfOptions = {
+  //       margin: 0.5,
+  //       filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+  //       image: { type: 'jpeg', quality: 0.98 },
+  //       html2canvas: { scale: 2 },
+  //       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  //     };
 
-      if (!element) return reject('No element found');
+  //     if (!element) return reject('No element found');
 
-      html2pdf()
-        .from(element)
-        .set(opt)
-        .outputPdf('blob')
-        .then((blob: Blob) => resolve(blob))
-        .catch((err: any) => reject(err));
-    });
-  }
+  //     html2pdf()
+  //       .from(element)
+  //       .set(opt)
+  //       .outputPdf('blob')
+  //       .then((blob: Blob) => resolve(blob))
+  //       .catch((err: any) => reject(err));
+  //   });
+  // }
 
-  downloadPDF(): void {
-    this.spinner.show();
-    const element = document.getElementById('pdfContent');
+  // downloadPDF(): void {
+  //   this.spinner.show();
+  //   const element = document.getElementById('pdfContent');
 
 
 
-    const opt: Html2PdfOptions = {
-      margin: 0.5,
-      filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
+  //   const opt: Html2PdfOptions = {
+  //     margin: 0.5,
+  //     filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+  //     image: { type: 'jpeg', quality: 0.98 },
+  //     html2canvas: { scale: 2 },
+  //     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  //   };
 
-    if (!element) {
-      console.error('No element found');
-      return;
-    }
+  //   if (!element) {
+  //     console.error('No element found');
+  //     return;
+  //   }
 
-    html2pdf().from(element).set(opt).save();
-    this.spinner.hide();
-  }
+  //   html2pdf().from(element).set(opt).save();
+  //   this.spinner.hide();
+  // }
 
 
   async sendEmail() {
@@ -3687,4 +3688,99 @@ ${this.userData['userName']}`;
     return this.bookingForm.get('status')?.value;
   }
 
+
+   async downloadPDF() {
+          const printContent = document.getElementById('printContent');
+          if (!printContent) {
+            this.appSettingService.showError('Print content not found.');
+            return;
+          }
+      
+          try {
+            this.spinner.show();
+      
+            // Generate PDF using html2canvas and jsPDF
+            const canvas = await html2canvas(printContent, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#ffffff'
+            });
+      
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 297; // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+      
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgData = canvas.toDataURL('image/png');
+      
+            // Add first page
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+      
+            // Add additional pages if content exceeds one page
+            while (heightLeft > 0) {
+              position = heightLeft - imgHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+            }
+      
+            
+            const BookingNumber = this.bookingForm.get('BookingNumber')?.value || 'Booking';
+            const filename = `Booking_${BookingNumber}.pdf`;
+      
+            // Download the PDF
+            pdf.save(filename);
+      
+            this.spinner.hide();
+            this.appSettingService.showSuccess('PDF downloaded successfully!');
+          } catch (error) {
+            this.spinner.hide();
+            console.error('Error generating PDF:', error);
+            this.appSettingService.showError('Error generating PDF. Please try again.');
+          }
+        }
+    
+          async generatePDFBlob(): Promise<Blob | null> {
+            const printContent = document.getElementById('printContent');
+            if (!printContent) {
+              return null;
+            }
+        
+            try {
+              const canvas = await html2canvas(printContent, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+              });
+        
+              const imgWidth = 210;
+              const pageHeight = 297;
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              let heightLeft = imgHeight;
+              let position = 0;
+        
+              const pdf = new jsPDF('p', 'mm', 'a4');
+              const imgData = canvas.toDataURL('image/png');
+        
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+        
+              while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+              }
+        
+              return pdf.output('blob');
+            } catch (error) {
+              console.error('Error generating PDF blob:', error);
+              return null;
+            }
+          }
 }

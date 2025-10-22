@@ -41,7 +41,8 @@ import html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -553,6 +554,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       QuoteDate: [null],
       EnquirySid: [''],
       AgreedRate : [false],
+      ContactPerson:[''],
+      ContactNumber:['']
     })
     this.addQuoteRoute();
     this.quotationForm.get('EnquirySid')?.disable();
@@ -619,6 +622,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         CustomerAddress: selectedItem.Address,
         Email: selectedItem.Email,
         CustomerBranchSid: selectedItem.CustomerBranchSid,
+        ContactPerson:selectedItem.ContactPerson,
+        ContactNumber:selectedItem.ContactNumber
       });
       this.handleCustomerChangeOnCharges(selectedItem);
     } else {
@@ -627,6 +632,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         CustomerAddress: selectedItem.preCustomerAddress1,
         Email: selectedItem.email,
         CustomerBranchSid: null,
+        ContactPerson:selectedItem.ContactPerson,
+        ContactNumber:selectedItem.ContactNumber
       });
       this.patchSalespersonOfLead(selectedItem.PreCustomerMasterSid);
     }
@@ -1353,6 +1360,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       AgreedRate : response.AgreedRate === "Y",
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
+      ContactPerson:response.ContactPerson,
+      ContactNumber:response.ContactNumber
     })
     this.quotationForm.patchValue({
       PreCustomerMasterSid: response.PreCustomerMasterSid,
@@ -1508,6 +1517,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       CustomerRef: formValue.CustomerRef,
       CustomerAddress: formValue.CustomerAddress,
       Email: formValue.Email,
+      ContactPerson:formValue.ContactPerson,
+      ContactNumber:formValue.ContactNumber,
       SalesmanSid: formValue.SalesmanSid,
       CustomerName: formValue.CustomerName,
       QuoteNumber: formValue.QuoteNumber,
@@ -2762,9 +2773,8 @@ ${this.userData.userName}`;
 
   reportAndEmailModel(content: TemplateRef<any>) {
     this.ngbModal.open(content, {
-      size: 'xl', // or omit this to avoid interference
-      scrollable: false,
-      windowClass: 'custom-wide-modal'
+      size: 'xl',
+      scrollable: true,
     });
   }
 
@@ -2849,46 +2859,141 @@ ${this.userData.userName}`;
     }
   }
 
-  downloadPDF() {
-    const element = document.getElementById('pdfContent');
+  // downloadPDF() {
+  //   const element = document.getElementById('pdfContent');
 
-    if (!element) {
-      console.error('No element found');
-      return;
-    }
+  //   if (!element) {
+  //     console.error('No element found');
+  //     return;
+  //   }
 
-    const opt: Html2PdfOptions = {
-      margin: 0.5,
-      filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
+  //   const opt: Html2PdfOptions = {
+  //     margin: 0.5,
+  //     filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+  //     image: { type: 'jpeg', quality: 0.98 },
+  //     html2canvas: { scale: 2 },
+  //     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  //   };
 
-    html2pdf().from(element).set(opt).save(); // ✅ this triggers download
-  }
+  //   html2pdf().from(element).set(opt).save(); // ✅ this triggers download
+  // }
 
-  generatePDFBlob(): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-      const element = document.getElementById('pdfContent');
+  // generatePDFBlob(): Promise<Blob> {
+  //   return new Promise((resolve, reject) => {
+  //     const element = document.getElementById('pdfContent');
 
-      const opt: Html2PdfOptions = {
-        margin: 0.5,
-        filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-        image: { type: "jpeg", quality: 0.98 }, // ✅ TypeScript now sees it as literal
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
-      };
+  //     const opt: Html2PdfOptions = {
+  //       margin: 0.5,
+  //       filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+  //       image: { type: "jpeg", quality: 0.98 }, // ✅ TypeScript now sees it as literal
+  //       html2canvas: { scale: 2 },
+  //       jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+  //     };
 
 
-      if (!element) return reject('No element found');
+  //     if (!element) return reject('No element found');
 
-      html2pdf().from(element).set(opt).outputPdf('blob')
-        .then((blob: Blob) => resolve(blob))
-        .catch((err: any) => reject(err));
-    });
-  }
+  //     html2pdf().from(element).set(opt).outputPdf('blob')
+  //       .then((blob: Blob) => resolve(blob))
+  //       .catch((err: any) => reject(err));
+  //   });
+  // }
 
+  
+     async downloadPDF() {
+        const printContent = document.getElementById('printContent');
+        if (!printContent) {
+          this.appSettingService.showError('Print content not found.');
+          return;
+        }
+    
+        try {
+          this.spinner.show();
+    
+          // Generate PDF using html2canvas and jsPDF
+          const canvas = await html2canvas(printContent, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          });
+    
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+    
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png');
+    
+          // Add first page
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+    
+          // Add additional pages if content exceeds one page
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+    
+          
+          const QuotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Enquiry';
+          const filename = `Quotation_${QuotationNumber}.pdf`;
+    
+          // Download the PDF
+          pdf.save(filename);
+    
+          this.spinner.hide();
+          this.appSettingService.showSuccess('PDF downloaded successfully!');
+        } catch (error) {
+          this.spinner.hide();
+          console.error('Error generating PDF:', error);
+          this.appSettingService.showError('Error generating PDF. Please try again.');
+        }
+      }
+  
+        async generatePDFBlob(): Promise<Blob | null> {
+          const printContent = document.getElementById('printContent');
+          if (!printContent) {
+            return null;
+          }
+      
+          try {
+            const canvas = await html2canvas(printContent, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#ffffff'
+            });
+      
+            const imgWidth = 210;
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+      
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgData = canvas.toDataURL('image/png');
+      
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+      
+            while (heightLeft > 0) {
+              position = heightLeft - imgHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+            }
+      
+            return pdf.output('blob');
+          } catch (error) {
+            console.error('Error generating PDF blob:', error);
+            return null;
+          }
+        }
   getChargeUOMCodeById(UOMMasterSid) {
     if(!UOMMasterSid || this.chargeUnitMaster.length === 0){
       return '';
