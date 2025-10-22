@@ -189,6 +189,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       } else {
         // New vendor invoice - set default currency
         const currencySettings = this.companySettings.getCurrencySettings();
+        console.log(currencySettings,'currencySettings')
         this.vendorInvoiceForm.patchValue({
           CurrencyCode: currencySettings.code,
           ExchangeRate: 1
@@ -245,7 +246,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
         Percentage: [{ value: 0, disabled: true }],
         TaxableAmt: [{ value: 0, disabled: true }],
         TDSAmt: [{ value: 0, disabled: true }],
-        Reason: ['']
+        Reason: [''],
+        TDSSectionCode:[''],
+        TDSNature:[''],
+        TDSCompanyType:[''],
+        TDSPercent:[''],
+        TDSAccountCode:['']
       }),
 
       // Others
@@ -258,11 +264,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   createDetailGroup(data?: any): FormGroup {
+    console.log(data,'createDetailGroup')
     return this.fb.group({
       Sno: [data?.Sno || this.details.length + 1],
       LedgerMasterSid: [data?.LedgerMasterSid || null],
       ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
-      ChargeDescription: [data?.ChargeDescription || ''],
+      ChargeDescription: [data?.chargeMaster?.chargeName || ''],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
       SACCode: [{ value: data?.SACCode || '', disabled: true }],
       ChargeUOMSid: [data?.ChargeUOMSid || null],
@@ -319,18 +326,21 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   onChargeChange(row: FormGroup, chargeSid: number) {
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
+    console.log(charge,'onChargeChange')
+
+    const uom = this.uomList.find(u=>u.UOMMasterSid === charge.UOM)
     if (charge) {
       row.patchValue({
-        ChargeDescription: charge.ChargeName,
-        SACCode: charge.SACCode || charge.HSNCode || '',
-        Unit: charge.UOMName || '',
-        ChargeUOMSid: charge.ChargeUOMSid
+        ChargeDescription: charge.chargeName,
+        SACCode: charge.HSNSAC || charge.HSNCode || '',
+        Unit: uom.UOMCode || '',
+        ChargeUOMSid: charge.ChargeUOMSid,
       }, { emitEvent: false });
 
       // Fetch HSN/SAC Master ID
       if (charge.SACCode || charge.HSNCode) {
         const hssac = this.hssacList.find(h =>
-          h.HSNCode === (charge.SACCode || charge.HSNCode) ||
+          h.HSSACCode === (charge.SACCode || charge.HSNSAC) ||
           h.SACCode === (charge.SACCode || charge.HSNCode)
         );
         if (hssac) {
@@ -498,6 +508,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     // Find vendor in subledger list
     const vendor = this.subledgerList.find(s => s.SubledgerMasterSid === vendorSid);
 
+    console.log(vendor,'onVendorChange')
     if (vendor) {
       this.vendorInvoiceForm.patchValue({
         PartyName: vendor.SubledgerName,
@@ -712,6 +723,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       next: (response) => {
         this.spinner.hide();
         if (response.status && response.data) {
+          console.log(response.data,'loadVendorInvoiceById')
           this.vendorInvoiceData = response.data;
           this.populateForm(this.vendorInvoiceData);
           this.setFormReadonly();
@@ -735,11 +747,20 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
   }
 
+  formatDateForDisplay(date: string | Date | null): string {
+  if (!date) return '';
+  const d = new Date(date);
+  const day = d.getDate().toString().padStart(2, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
   populateForm(data: any) {
     console.log('populateForm called with data:', data);
-    console.log('VoucherDetail:', data.VoucherDetail);
-    console.log('Is VoucherDetail an array?', Array.isArray(data.VoucherDetail));
 
+    const currency = this.currencyList.find(c=>c.CurrencyMasterSid === data.CurrencyMasterSid)
+    console.log(currency,'currency')
     this.vendorInvoiceForm.patchValue({
       VoucherNumber: data.VoucherNumber,
       VoucherDate: this.formatDateForNgb(data.VoucherDate),
@@ -748,8 +769,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       PartyAddress: data.PartyAddress,
       GSTNo: data.GST_VAT,
       PlaceOfSupply: data.PlaceOfSupply,
-      PostedOn: data.PostDate ? this.formatDateForNgb(data.PostDate) : null,
-      CurrencyCode: data.CurrencyCode,
+      PostedOn: data.PostDate ? this.formatDateForDisplay(data.PostDate) : null,
+      CurrencyCode: data.CurrencyCode || currency.currencyCode,
       ExchangeRate: data.ExchangeRate || 1,
       BillNo: data.DocumentNumber,
       BillDate: data.DocumentDate ? this.formatDateForNgb(data.DocumentDate) : null,
@@ -989,7 +1010,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   getChargeName(chargeMasterSid: number): string {
     if (!chargeMasterSid) return '-';
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeMasterSid);
-    return charge?.ChargeName || charge?.ChargeDescription || '-';
+    return charge?.chargeCode ||  '-';
   }
 
   onSubmit() {
@@ -1070,13 +1091,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   onCurrencyChange(event: any): void {
+    console.log(event,'onCurrencyChange')
     const currencySid = event?.CurrencyMasterSid || event;
     if (!currencySid) return;
 
     const currency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
     if (currency) {
       this.vendorInvoiceForm.patchValue({
-        CurrencyCode: currency.CurrencyCode,
+        CurrencyCode: currency.currencyCode,
         ExchangeRate: currency.ExchangeRate || 1
       });
       this.recalculateAllRows();

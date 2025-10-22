@@ -173,6 +173,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         ...item,
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         BillDate: this.datePipe.transform(item?.BillDate),
+        CurrencyCode: item.currencyMaster.currencyCode,
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
