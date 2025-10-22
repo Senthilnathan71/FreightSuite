@@ -39,10 +39,28 @@ export class AppSettingsService {
 
 
     decrypt(ciphertext: string): any {
-        const bytes = CryptoJS.AES.decrypt(ciphertext, this.secret);
-        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-        return JSON.parse(decrypted);
+  try {
+    if (!ciphertext || !this.secret) {
+      console.error('Decryption failed: missing ciphertext or secret key');
+      return null;
     }
+
+    const bytes = CryptoJS.AES.decrypt(ciphertext, this.secret);
+
+    // Ensure decryption produced a valid result
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+    if (!decrypted) {
+      console.error('Decryption failed: invalid ciphertext or secret mismatch');
+      return null;
+    }
+
+    return JSON.parse(decrypted);
+  } catch (err) {
+    console.error('Error during decryption:', err);
+    return null;
+  }
+}
+
     getUserByToken() {
         return this.http.get('user/sign-in-token').pipe(
             map((resp: any) => {

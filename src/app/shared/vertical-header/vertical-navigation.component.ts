@@ -602,6 +602,21 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   logout() {
     // Clear company settings to prevent API loops during logout
     this.companySettingsManager.clearCompanySettings();
+    // Preserve remembered credentials
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    const rememberedPassword = localStorage.getItem('rememberedPassword');
+
+    // Clear all localStorage data
+    localStorage.clear();
+
+    // Restore remembered credentials
+    if (rememberedEmail) {
+      localStorage.setItem('rememberedEmail', rememberedEmail);
+    }
+    if (rememberedPassword) {
+      localStorage.setItem('rememberedPassword', rememberedPassword);
+    }
+
 
     this.appSettingsService.sessionExpire().then(() => {
       location.href = location.protocol + '//' + location.host + '/auth'
