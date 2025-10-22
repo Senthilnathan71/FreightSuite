@@ -639,16 +639,16 @@
                                     <th>Dept</th>
                                     <th>HBL No</th>
                                     <th>Customer</th>
-                                    <th>Customer Address</th>
+                                    <!-- <th>Customer Address</th> -->
                                     <th>Shipper</th>
-                                    <th>Shipper Address</th>
+                                    <!-- <th>Shipper Address</th> -->
                                     <th>Consignee</th>
-                                    <th>Consignee Address</th>
-                                    <th>Destination Agent</th>
-                                    <th>MBL Date</th>
+                                    <!-- <th>Consignee Address</th> -->
+                                    <th>Dest.Agent</th>
+                                    <!-- <th>MBL Date</th> -->
                                     <th>POL</th>
                                     <th>POD</th>
-                                    <th>Freight PP/CC</th>
+                                    <th>PP/CC</th>
                                 </tr>
                             </thead>
 
@@ -676,13 +676,13 @@
                                     <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
                                     <td>{{shipment.HBLNo || 'N/A'}}</td>
                                     <td>{{shipment.CustomerName}}</td>
-                                    <td>{{shipment.CustomerAddress}}</td>
+                                    <!-- <td>{{shipment.CustomerAddress}}</td> -->
                                     <td>{{shipment.ShipperName}}</td>
-                                    <td>{{shipment.ShipperAddress}}</td>
+                                    <!-- <td>{{shipment.ShipperAddress}}</td> -->
                                     <td>{{shipment.ConsigneeName}}</td>
-                                    <td>{{shipment.ConsigneeAddress}}</td>
+                                    <!-- <td>{{shipment.ConsigneeAddress}}</td> -->
                                     <td>{{getAgentName(shipment.DestinationAgent)}}</td>
-                                    <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td>
+                                    <!-- <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td> -->
                                     <td>{{shipment.POL}}</td>
                                     <td>{{shipment.POD}}</td>
                                     <td>
