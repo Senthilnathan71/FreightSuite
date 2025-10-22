@@ -6,7 +6,8 @@ import {
   TemplateRef,
   ViewChild,
   OnInit,
-  OnDestroy
+  OnDestroy,
+  effect
 } from '@angular/core';
 import {
   AbstractControl,
@@ -62,6 +63,7 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { debounceTime, distinctUntilChanged, switchMap, startWith, takeUntil } from 'rxjs/operators';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-organization-entry',
@@ -113,6 +115,14 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     private casepipe : UpperCasePipe
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
+    effect(()=> {
+          const countryData = this.dropdownStore.countries();
+          const stateData = this.dropdownStore.states();
+          const cityData = this.dropdownStore.cities();
+          this.countryList = countryData;
+          this.stateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
+          this.cityList = (cityData || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
+        })
   }
   private destroy$ = new Subject<void>();
   // Existing properties
@@ -129,6 +139,11 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
 
   isCustomerSaved = false;
   showAdditionalTabs = false;
+  isLoadingStates = false;
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+    stateLookupConfig = DROPDOWN_CONFIGS.STATE;
+    cityLookupConfig = DROPDOWN_CONFIGS.CITY;
+isLoadingCities = false;
   selectedTab = 'Party';
   tabs = [
     { name: 'Party', icon: 'fas fa-user-tie' },
@@ -409,7 +424,9 @@ onCountryChange(): void {
   }
 
   ngOnInit(): void {
-    this.dropdownStore.loadCountries();
+    this.dropdownStore.loadCountries().subscribe(() => {
+      this.dropdownStore.loadStates().subscribe();
+    });
     // ✅ Get current company & branch
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));

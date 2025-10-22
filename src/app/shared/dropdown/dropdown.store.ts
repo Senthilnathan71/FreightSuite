@@ -115,6 +115,27 @@ export class DropdownStore {
     );
   }
 
+  getStateByCountryId(CountryMasterSid: number): Observable<any[]> {
+  // Check if states for this country are already cached
+  const cachedStates = this.states().filter(
+    (state) => state.CountryMasterSid === CountryMasterSid
+  );
+  if (cachedStates.length) return of(cachedStates);
+
+  // Fetch from API if not cached
+  return this.http
+    .post<any>('state/filter', { CountryMasterSid })
+    .pipe(
+      tap((res) => {
+        // Append new states to the cache (don't overwrite existing)
+        const newStates = [...this.states(), ...(res.data || [])];
+        this.states.set(newStates);
+      }),
+      map((res) => res.data || [])
+    );
+}
+
+
   clearCache() {
     this.countries.set([]);
     this.states.set([]);

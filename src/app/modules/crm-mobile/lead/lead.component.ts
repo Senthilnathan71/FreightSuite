@@ -76,6 +76,9 @@ export class LeadComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   userData: any;
+  // Add these properties to your component
+isLoadingStates = false;
+isLoadingCities = false;
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
   leadSourceList = ['Email', 'Advertisement', 'Website', 'Inquiries', 'Referrals', "Trade shows", "Cold calls", "Social media", 'Others']
   statusList = ["Active", "Suspended"];
@@ -190,7 +193,7 @@ MenuMasterSid:any
           this.leadForm.patchValue({
             CountryMasterSid: this.userData.CountryMasterSid
           });
-          this.filterStateByCountryId(this.userData)
+          this.filterStateByCountryId({ CountryMasterSid: this.userData.CountryMasterSid })
         }
       }
 
@@ -446,42 +449,136 @@ MenuMasterSid:any
       this.companyList = companies.data;
       // this.countryList = countries
     })
-    this.dropdownStore.loadCountries()
+    this.dropdownStore.loadCountries().subscribe(() => {
+      this.dropdownStore.loadStates().subscribe();
+    });
   }
 
-  filterStateByCountryId(country) {
-    console.log(country,'country')
-    const countryId = country.CountryMasterSid
-    this.leadService.getStateByCountryId(countryId).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.stateList = resp.data;
-        } else {
-          this.appSettingService.showError('Error Loading States')
-        }
-      },
-      (error) => {
-        console.error('Error Loading States', error)
+  filterStateByCountryId(countryData: any) {
+  console.log(countryData, 'country data');
+  
+  // Clear dependent fields
+  this.leadForm.patchValue({
+    StateMasterSid: null,
+    CityMasterSid: null
+  });
+  
+  // Clear the lists
+  this.stateList = [];
+  this.cityList = [];
+  
+  const countryId = countryData?.CountryMasterSid;
+  
+  if (!countryId) {
+    console.log('No country ID provided');
+    return;
+  }
+
+  // Show loading state
+  this.isLoadingStates = true;
+
+  // Direct API call to get states by country
+  this.leadService.getStateByCountryId(countryId).subscribe({
+    next: (resp: any) => {
+      this.isLoadingStates = false;
+      if (resp.status) {
+        this.stateList = resp.data.map(state => ({
+          ...state,
+          // Ensure consistent property names for dropdown
+          name: state.stateName || state.name,
+          id: state.StateMasterSid || state.id,
+          Country: state.countryMaster?.countryName || state.Country
+        }));
+        console.log('States loaded via API:', this.stateList);
+      } else {
+        this.appSettingService.showError('Error Loading States');
+        this.stateList = [];
       }
-    )
+    },
+    error: (error) => {
+      this.isLoadingStates = false;
+      console.error('Error Loading States via API', error);
+      this.appSettingService.showError('Error Loading States');
+      this.stateList = [];
+    }
+  });
+}
+
+  filterCityByStateId(stateData: any) {
+  console.log(stateData, 'state data');
+  
+  // Clear dependent field
+  this.leadForm.patchValue({
+    CityMasterSid: null
+  });
+  
+  // Clear city list
+  this.cityList = [];
+  
+  const stateId = stateData?.StateMasterSid;
+  
+  if (!stateId) {
+    console.log('No state ID provided');
+    return;
   }
 
-  filterCityByStateId(state) {
+  // Show loading state
+  this.isLoadingCities = true;
 
-    const stateId = state.StateMasterSid
-    this.leadService.getCityByStateId(stateId).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.cityList = resp.data;
-        } else {
-          this.appSettingService.showError('Error Loading City')
-        }
-      },
-      (error) => {
-        console.error('Error Loading City', error)
+  // Direct API call to get cities by state
+  this.leadService.getCityByStateId(stateId).subscribe({
+    next: (resp: any) => {
+      this.isLoadingCities = false;
+      if (resp.status) {
+        this.cityList = resp.data.map(city => ({
+          ...city,
+          // Ensure consistent property names for dropdown
+          name: city.cityName || city.name,
+          id: city.CityMasterSid || city.id,
+          State: city.stateMaster?.stateName || city.State,
+          Country: city.countryMaster?.countryName || city.Country
+        }));
+        console.log('Cities loaded via API:', this.cityList);
+      } else {
+        this.appSettingService.showError('Error Loading Cities');
+        this.cityList = [];
       }
-    )
+    },
+    error: (error) => {
+      this.isLoadingCities = false;
+      console.error('Error Loading Cities via API', error);
+      this.appSettingService.showError('Error Loading Cities');
+      this.cityList = [];
+    }
+  });
+}
+
+  // Add these methods to handle dropdown changes
+onCountryChange(selectedCountry: any) {
+  if (selectedCountry) {
+    this.filterStateByCountryId(selectedCountry);
+  } else {
+    // Clear states and cities if no country selected
+    this.stateList = [];
+    this.cityList = [];
+    this.leadForm.patchValue({
+      StateMasterSid: null,
+      CityMasterSid: null
+    });
   }
+}
+
+onStateChange(selectedState: any) {
+  if (selectedState) {
+    this.filterCityByStateId(selectedState);
+  } else {
+    // Clear cities if no state selected
+    this.cityList = [];
+    this.leadForm.patchValue({
+      CityMasterSid: null
+    });
+  }
+}
 
   // Handle city selection change
   onCityChange(event: any) {

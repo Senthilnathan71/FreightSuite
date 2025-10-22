@@ -245,9 +245,9 @@ export class SailingScheduleEntryComponent implements OnInit {
         CompanyMasterSid: CompanyMasterSid,
         types:['carrier']
     }
-    this.dropdownStore.loadPorts();
-    this.dropdownStore.loadVessels()
-    this.dropdownStore.loadCustomerTypeData(payload)
+    this.dropdownStore.loadPorts().subscribe();
+    this.dropdownStore.loadVessels().subscribe();
+    this.dropdownStore.loadCustomerTypeData(payload).subscribe();
 
     if(this.dropdownStore.ports()){
 
@@ -479,7 +479,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             this.masterService.updateSailingScheduleById(this.VoyageMasterHeaderSid,payload).subscribe(
                 (resp:any)=>{
                     if(resp.status){
-                        this.appSettingService.showSuccess("SailingSchedule successfully updated");
+                        this.appSettingService.showSuccess("Sailing Schedule saved successfully");
                         this.loadScheduleData();
                     } else {
                         this.appSettingService.showError(resp.message || 'Error updating sailing schedule');
