@@ -104,7 +104,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     if (!this.internalControl.value || this.internalControl.value !== item) {
       return this.labelFields.map((field) => item[field]).join(' - ');
     }
-    return this.displayFields.map((field) => item[field]).join(' - ');
+    return this.labelFields.map((field) => item[field]).join(' - ');
   }
 
   getColumnStyle(index: number): any {

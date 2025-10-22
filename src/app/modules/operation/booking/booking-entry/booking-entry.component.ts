@@ -1686,6 +1686,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     console.log(voyage);
     if (!voyage) {
       this.bookingForm.patchValue({
+        VoyageMasterSid : null,
         VoyageNo: null,
         ETA: '',
         ETD: ''
@@ -1693,6 +1694,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       return;
     }
     this.bookingForm.patchValue({
+      VoyageMasterSid : voyage.VoyageMasterSid,
       VoyageNo: voyage.VoyageNo,
       ETA: new Date(voyage.ETA),
       ETD: new Date(voyage.ETD)

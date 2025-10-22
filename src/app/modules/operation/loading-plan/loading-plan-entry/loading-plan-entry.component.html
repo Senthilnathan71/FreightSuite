@@ -1,3 +1,6 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
 <div class="row compact-form">
     @if(screenName === 'Loading Plan'){
     <div class="col-12">
@@ -336,23 +339,27 @@
             <div class="col-12 px-2 bg-white py-1 rounded shadow-sm mt-1">
                 <div class="d-flex justify-content-end mb-1">
                     @if(screenName === "Loading Plan"){
-                    <aside class="col-md-3" *ngIf="selectedBookings.length > 1">
+                    <aside class="col-md-5" *ngIf="multipleVoyageList.length > 1">
                         <div class="custom-form-group custom-form-group-select my-0 mx-2"
-                            [class.filled]="!!selectedVoyage">
-                            <ng-select [items]="multipleVoyageList" bindLabel="vslVoy" placeholder=""
+                            [class.filled]="selectedVoyage">
+                            <!-- <ng-select [items]="multipleVoyageList" bindLabel="vslVoy" placeholder=""
                                 [(ngModel)]="selectedVoyage" [appendTo]="'body'" (change)="handleSelectedVoyage()">
-                            </ng-select>
-                            <label class="input-label">Carrier <span class="text-danger">*</span></label>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="multipleVoyageList" placeholder=""
+                                [displayFields]="vesselVoyageConfig.displayFields" [displayLabels]="vesselVoyageConfig.displayLabels"
+                                [labelFields]="vesselVoyageConfig.labelFields" [(ngModel)]="selectedVoyage" (itemSelected)="handleMultipleVesselChange($event)">
+                            </dofi-searchable-dropdown>
+                            <label class="input-label">Vsl/Voyage <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <div>
-                        <button class="btn btn-sm btn-info" (click)="onClickGenerateJob()"><i
+                        <button class="btn btn-sm btn-info" appPreventMultiClick (click)="onClickGenerateJob()"><i
                                 class="fas fa-briefcase me-1"></i>
                             Generate Job
                         </button>
                     </div>
                     } @else {
-                    <button class="btn btn-sm btn-info" (click)="attachToMasterJob()"><i
+                    <button class="btn btn-sm btn-info" appPreventMultiClick (click)="attachToMasterJob()"><i
                             class="fas fa-briefcase me-1"></i>
                         Attach to Master Job
                     </button>
