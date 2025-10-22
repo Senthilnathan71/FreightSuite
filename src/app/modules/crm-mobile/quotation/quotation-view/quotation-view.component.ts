@@ -154,8 +154,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         { key: 'EnquiryDate', label: 'Enquiry Date', sortable: true, visible: true },
         { key: 'CustomerName', label: 'Customer', sortable: true, visible: true },
         { key: 'departmentName', label: 'Department', sortable: true, visible: true },
-        { key: 'POL', label: 'POL', sortable: true, visible: true },
-        { key: 'POD', label: 'POD', sortable: true, visible: true },
+        { key: 'formattedPOL', label: 'POL', sortable: true, visible: true },
+        { key: 'formattedPOD', label: 'POD', sortable: true, visible: true },
       ],
       actions: [{ icon: 'fas fa-file', label: 'File', action: 'navigate', tooltip: 'Create Quotation' }],
       selectable: false,
@@ -176,8 +176,6 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           sortable: true,
           filterable: true,
           visible: true,
-          template: 'link',
-          width: '140px',
           dataType: 'string'
         },
         {
@@ -206,7 +204,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           dataType: 'string'
         },
         {
-          key: 'POLName',
+          key: 'formattedPOL',
           label: 'POL',
           sortable: true,
           filterable: true,
@@ -214,7 +212,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           dataType: 'string'
         },
         {
-          key: 'PODName',
+          key: 'formattedPOD',
           label: 'POD',
           sortable: true,
           filterable: true,
@@ -223,13 +221,13 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           cellClass: 'vessel-column'
         },
         {
-          key: '',
+          key: 'bookingNo',
           label: 'Booking No',
           sortable: true,
           filterable: true,
           visible: true,
-          dataType: 'string',
-          width: "140px"
+          template: 'link',
+          dataType: 'string'
         },
         {
           key: 'status',
@@ -364,7 +362,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
           ChargeableWeight: cargo.ChargeableWeight,
-          ContainerQty: cargo.Qty
+          ContainerQty: cargo.Qty,
+          ServiceLevel: response.IncoTerms
         };
       });
     });
@@ -377,6 +376,10 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
       Email: response.Email,
       LeadOrCustomer : response.LeadOrCustomer === "C",
       CustomerMasterSid: response.CustomerMasterSid,
+      CustomerBranchSid: response.CustomerBranchSid,
+      CustomerRef: response.CustomerRef,
+      FreightPPCC: response.FreightPPCC,
+      SalesmanSid: response.UserMasterSid,
       PreCustomerMasterSid : response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
       polList: polList,
@@ -413,7 +416,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   // List Level
   onQuotationTableActionClick(event: TableEventData) {
-    if (event.action === 'view') {
+    if (event.column?.template === "link") {
+      this.route.navigate(['operation/booking/entry', event.row.bookingHeader?.BookingHeaderSid]);
+    } else if (event.action === 'view') {
       this.route.navigate(['crm/quotation/entry', event.row.QuoteHeaderSid]);
     }
   }

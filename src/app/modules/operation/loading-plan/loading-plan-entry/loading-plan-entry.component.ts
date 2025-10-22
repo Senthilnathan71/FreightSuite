@@ -18,6 +18,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { Router, RouterModule } from '@angular/router';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-loading-plan-entry',
@@ -31,7 +33,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
     CustomDatePipe,
     RouterModule,
     TextWithNumbersDirective,
-    NgbPaginationModule
+    NgbPaginationModule,
+    SearchableDropdown
   ],
   templateUrl: './loading-plan-entry.component.html',
   styleUrl: './loading-plan-entry.component.scss',
@@ -77,7 +80,8 @@ export class LoadingPlanEntryComponent {
   selectedBookings: any[] = [];
   isLoadChecked = false;
   loadingPlanForm: FormGroup;
-
+ departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
   hasMultipleVoyages : boolean = false;
   multipleVoyageList : any[] = [];
 
@@ -114,44 +118,44 @@ export class LoadingPlanEntryComponent {
     public dropdownStore: DropdownStore
   ) {
     this.masterJobContainers = this.fb.array([]);
-    effect(()=>{
-      const departments = this.dropdownStore.department();
-      const ports = this.dropdownStore.ports();
-      const carriers = this.dropdownStore.customerTypeData();
-      const containerType = this.dropdownStore.containerTypes();
-      const packageType = this.dropdownStore.uomsByType()
+    // effect(()=>{
+    //   const departments = this.dropdownStore.department();
+    //   const ports = this.dropdownStore.ports();
+    //   const carriers = this.dropdownStore.customerTypeData();
+    //   const containerType = this.dropdownStore.containerTypes();
+    //   const packageType = this.dropdownStore.uomsByType()
       
 
-      this.departmentList = departments;
-      this.portList = ports;
-      this.carrierList = carriers;
-      this.containerTypeList = containerType
-      this.packageTypeList = packageType
+    //   this.departmentList = departments;
+    //   this.portList = ports;
+    //   this.carrierList = carriers;
+    //   this.containerTypeList = containerType
+    //   this.packageTypeList = packageType
 
 
-      // Run setup only when all lists are loaded and not empty
-      if (departments?.length && ports?.length) {
-        this.setInitialConfig();
-        if (this.masterJobFormValue.hasValue) {
-          const dept = this.masterJobFormValue.DepartmentMasterSid;
-          let selectedDept = this.departmentList.find(d => d.DepartmentMasterSid === dept);
-          this.selectedPOL = this.portList.find(p => p.PortCode === this.masterJobFormValue.POL);
-          this.selectedPOD = this.portList.find(p => p.PortCode === this.masterJobFormValue.POD);
-          console.log(this.selectedPOL,this.selectedPOD);
-          this.onDeptChange(selectedDept);
-          this.loadingPlanForm.patchValue({
-            dept: this.masterJobFormValue.DepartmentMasterSid,
-            pol: this.masterJobFormValue.POL,
-            pod: this.masterJobFormValue.POD
-          })
-          this.loadingPlanForm.get('dept')?.disable();
-          this.loadingPlanForm.get('pol')?.disable();
-          this.loadingPlanForm.get('pod')?.disable();
-          this.fetchVesselForCondition();
-          console.log(this.selectedPOL,this.selectedPOD);
-        }
-      }
-    })
+    //   // Run setup only when all lists are loaded and not empty
+    //   if (departments?.length && ports?.length) {
+    //     this.setInitialConfig();
+    //     if (this.masterJobFormValue.hasValue) {
+    //       const dept = this.masterJobFormValue.DepartmentMasterSid;
+    //       let selectedDept = this.departmentList.find(d => d.DepartmentMasterSid === dept);
+    //       this.selectedPOL = this.portList.find(p => p.PortCode === this.masterJobFormValue.POL);
+    //       this.selectedPOD = this.portList.find(p => p.PortCode === this.masterJobFormValue.POD);
+    //       console.log(this.selectedPOL,this.selectedPOD);
+    //       this.onDeptChange(selectedDept);
+    //       this.loadingPlanForm.patchValue({
+    //         dept: this.masterJobFormValue.DepartmentMasterSid,
+    //         pol: this.masterJobFormValue.POL,
+    //         pod: this.masterJobFormValue.POD
+    //       })
+    //       this.loadingPlanForm.get('dept')?.disable();
+    //       this.loadingPlanForm.get('pol')?.disable();
+    //       this.loadingPlanForm.get('pod')?.disable();
+    //       this.fetchVesselForCondition();
+    //       console.log(this.selectedPOL,this.selectedPOD);
+    //     }
+    //   }
+    // })
   }
 
   ngOnInit() {
@@ -171,25 +175,75 @@ export class LoadingPlanEntryComponent {
     });
   }
 
-  loadAllLookups() {
-    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-    const activeBranchId = this.currentBranch?.BranchMasterSid;
-    const filterOption = {
-      CompanyMasterSid: activeCompanyId,
-      BranchMasterSid: activeBranchId,
-    }
+ loadAllLookups() {
+  const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+  const activeBranchId = this.currentBranch?.BranchMasterSid;
 
-    const payload={
-      CompanyMasterSid: activeCompanyId,
-      types:['carrier']
-    }
+  const filterOption = {
+    CompanyMasterSid: activeCompanyId,
+    BranchMasterSid: activeBranchId,
+  };
 
-    this.dropdownStore.loadDepartments({CompanyMasterSid : activeCompanyId})
-    this.dropdownStore.loadPorts()
-    this.dropdownStore.loadCustomerTypeData(payload)
-    this.dropdownStore.loadContainerTypes()
-    this.dropdownStore.loadUOMsByType('P')
-  }
+  const payload = {
+    CompanyMasterSid: activeCompanyId,
+    types: ['carrier'],
+  };
+
+  forkJoin({
+    departments: this.dropdownStore.loadDepartments({ CompanyMasterSid: activeCompanyId }),
+    ports: this.dropdownStore.loadPorts(),
+    carriers: this.dropdownStore.loadCustomerTypeData(payload),
+    containerTypes: this.dropdownStore.loadContainerTypes(),
+    uomsByType: this.dropdownStore.loadUOMsByType('P'),
+  }).subscribe(
+    ({ departments, ports, carriers, containerTypes, uomsByType }) => {
+      this.departmentList = departments || [];
+      this.portList = ports || [];
+      this.carrierList = carriers || [];
+      this.containerTypeList = containerTypes || [];
+      this.packageTypeList = uomsByType || [];
+
+      // Proceed only when key lists are loaded
+      if (this.departmentList.length && this.portList.length) {
+        this.setInitialConfig();
+
+        if (this.masterJobFormValue.hasValue) {
+          const dept = this.masterJobFormValue.DepartmentMasterSid;
+          const selectedDept = this.departmentList.find(
+            (d) => d.DepartmentMasterSid === dept
+          );
+
+          this.selectedPOL = this.portList.find(
+            (p) => p.PortCode === this.masterJobFormValue.POL
+          );
+          this.selectedPOD = this.portList.find(
+            (p) => p.PortCode === this.masterJobFormValue.POD
+          );
+
+          console.log(this.selectedPOL, this.selectedPOD);
+
+          this.onDeptChange(selectedDept);
+
+          this.loadingPlanForm.patchValue({
+            dept: this.masterJobFormValue.DepartmentMasterSid,
+            pol: this.masterJobFormValue.POL,
+            pod: this.masterJobFormValue.POD,
+          });
+
+          this.loadingPlanForm.get('dept')?.disable();
+          this.loadingPlanForm.get('pol')?.disable();
+          this.loadingPlanForm.get('pod')?.disable();
+
+          this.fetchVesselForCondition();
+        }
+      }
+    },
+    (error) => {
+      console.error('Error loading dropdowns:', error);
+    }
+  );
+}
+
 
   setInitialConfig(){
     if(this.screenName === 'Loading Plan'){

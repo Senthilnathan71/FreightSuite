@@ -703,7 +703,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   }
 
   getAllSalesman() {
-    return this.http.get<{ data: any[] }>('ff-quotation/salesman').pipe(
+    return this.http.get<{ data: any[] }>('ff-user/salesperson').pipe(
       map((resp) => {
         let response = resp.data;
         return response;

@@ -6,6 +6,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { Router } from '@angular/router';
+import { getConcatenatedPorts } from 'src/app/common/helper';
 
 export class EnquiryListManager {
     // State
@@ -45,8 +46,8 @@ export class EnquiryListManager {
                         EnquiryDate: this.datePipe.transform(item.EnquiryDate),
                         CustomerName : item.CustomerName,
                         departmentName : item.department?.departmentName ?? '',
-                        POL : item.POL?.PortCode ?? '',
-                        POD : item.POD?.PortCode ?? '',
+                        formattedPOL : item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
+                        formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : ''
                     }));
                     this.totalRecords = response.data.totalCount || 0;
                     this.updateSearchParams();

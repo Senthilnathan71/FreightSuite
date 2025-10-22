@@ -41,6 +41,8 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -90,7 +92,8 @@ type Html2PdfOptions = {
     SearchableDropdown,
     SearchableDropdownModal,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    PreventMultiClickDirective
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -115,6 +118,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
   @ViewChild('chargeSelectionModal') chargeSelectionModal!: TemplateRef<any>;
   @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
+  @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
 
   parsedBookings: BookingData[] = [];
   showParsedData = false;
@@ -349,39 +353,14 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   ];
   dataFromQuotation: any
   // Mail content
-  customerLookupConfig = {
-    displayFields: ['CustomerName', 'BranchName', 'Address'],
-    displayLabels: ['Customer', 'Branch', 'Address'],
-    labelFields: ['CustomerName']
-  };
-
-  portLookupConfig = {
-    displayFields: ['PortCode', 'PortName', 'Country'],
-    displayLabels: ['Code', 'Name', 'Country'],
-    labelFields: ['PortName']
-  };
-
-  incoLookupConfig = {
-    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
-    displayLabels: ['Code', 'Name', 'P/C'],
-    labelFields: ['IncoCode']
-  }
-  containerTypeLookupConfig = {
-    displayFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
-    displayLabels: ['Code', 'Name', 'Size'],
-    labelFields: ['ContainerName']
-  }
-  uomLookupConfig = {
-    displayFields: ['UOMCode', 'UOMName'],
-    displayLabels: ['Code', 'Name'],
-    labelFields: ['UOMCode']
-  }
-
-  imcoLookupConfig = {
-    displayFields: ['ImcoName', 'ImcoUn', 'PackingGroup'],
-    displayLabels: ['Name', 'UN No', 'Packing Group'],
-    labelFields: ['ImcoClass']
-  }
+ departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  containerTypeLookupConfig = DROPDOWN_CONFIGS.CONTAINER_TYPE;
+  uomLookupConfig = DROPDOWN_CONFIGS.UOM;
+  imcoLookupConfig = DROPDOWN_CONFIGS.IMCO;
+  vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
 
 
   /**
@@ -555,6 +534,11 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    if (!this.isEditMode) {
+      this.departmentLookup.focus();
+    }
+  }
 
   getCurrentCompanyBranches() {
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
@@ -715,7 +699,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       BookingOthersSid: [null],
       CustomerRefNo: [''],
       YardCFS: [''],
-      ReleaseType: [null],
+      ReleaseType: ['Original'],
       HBLNo: [{ value: '', disabled: true }],
       Forwarder: [null],
       ForwarderAddress: [''],
@@ -878,7 +862,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       shippers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['shipper'] }).pipe(catchError(err => of([]))),
       consignees: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['consignee'] }).pipe(catchError(err => of([]))),
       notify: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['notify'] }).pipe(catchError(err => of([]))),
-      agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['agent'] }).pipe(catchError(err => of([]))),
+      agents: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['vendor', 'transporter', 'agent'] }).pipe(catchError(err => of([]))),
       carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
 
       vessels: this.operationService.getAllVessels().pipe(catchError(err => of([]))),
@@ -1049,6 +1033,16 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       StuffingAt: cargoData?.StuffingAt
     })
     console.log("Patched Cargo", this.cargoForm.value);
+    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
+    if (this.selectedFCLLCL === "LCL" && this.selectedDepartment.ExportImport === "Export") {
+      this.cargoForm.get('StuffingAt')?.setValue('Dock');
+      this.cargoForm.get('StuffingAt')?.disable();
+    } else {
+      this.cargoForm.get('StuffingAt')?.enable();
+    }
+
+    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+    this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
     this.handleCFSOrYard();
     const otherData = response.bookingOthers?.[0];
     this.otherForm.patchValue({
@@ -1750,7 +1744,11 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.headerVesselList = resp.data;
+          this.headerVesselList = resp.data.map(vslVoy =>({
+              ...vslVoy , 
+              ETD : this.datePipe.transform(vslVoy.ETD), 
+              ETA : this.datePipe.transform(vslVoy.ETA)
+          }));
           console.log(this.headerVesselList);
           if (this.headerVesselList.length === 0) {
             this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested route.")

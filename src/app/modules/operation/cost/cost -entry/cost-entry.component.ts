@@ -1596,10 +1596,8 @@ createRateFormGroup(data?: any): FormGroup {
 
   filterDepartmentBasedOnSegment(departmentName: string) {
     if (departmentName) {
-      console.log(departmentName);
       this.filteredChargeList = this.chargeList.filter(charge => {
         const allDepartmentNames = charge.DepartmentMasterSid || [];
-        console.log(allDepartmentNames);
         return allDepartmentNames.includes(departmentName);
       });
     }

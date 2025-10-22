@@ -7,7 +7,7 @@ export const DROPDOWN_CONFIGS = {
   PORT :{
     displayFields : ['PortCode', 'PortName','Country'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['PortCode']
+    labelFields :['PortName','PortCode']
   },
   CHARGE : {
     displayFields : ['chargeCode','chargeName'],
@@ -21,7 +21,7 @@ export const DROPDOWN_CONFIGS = {
   },
   DEPARTMENT : {
     displayFields : ['departmentCode','departmentName','departmentType'],
-    displayLabels : ['Code','Name','type'],
+    displayLabels : ['Code','Name','Type'],
     labelFields :['departmentName']
   },
   COUNTRY: {
@@ -38,6 +38,26 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['CityName', 'State', 'Country'],
     displayLabels: ['City', 'State', 'Country'],
     labelFields: ['CityName']
+  },
+  INCO : {
+    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
+    displayLabels: ['Code', 'Name', 'P/C'],
+    labelFields: ['IncoCode']
+  },
+  CONTAINER_TYPE : {
+    displayFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
+    displayLabels: ['Code', 'Name', 'Size'],
+    labelFields: ['ContainerName']
+  },
+  IMCO : {
+    displayFields: ['ImcoName', 'ImcoUn', 'PackingGroup'],
+    displayLabels: ['Name', 'UN No', 'Packing Group'],
+    labelFields: ['ImcoClass']
+  },
+  VESSEL_VOYAGE : {
+    displayFields: ['VesselName', 'VoyageNo','ETD','ETA'],
+    displayLabels: ['Vessel Name', 'Voyage No','ETD','ETA'],
+    labelFields: ['VesselName','VoyageNo']
   },
 } satisfies Record<string, {
   displayFields: string[];

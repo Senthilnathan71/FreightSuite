@@ -54,7 +54,7 @@
         </button>
       </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" appPreventMultiClick>
           <i class="fas fa-save me-1"></i>
           <span>Save</span>
         </button>
@@ -109,10 +109,15 @@
       <div class="smart-field-group">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
-          <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+          <!-- <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
             class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
             appendTo="body">
-          </ng-select>
+          </ng-select> -->
+          <dofi-searchable-dropdown #departmentLookup [items]="departmentList" formControlName="DepartmentMasterSid" placeholder=""
+            [displayFields]="departmentLookupConfig.displayFields" [displayLabels]="departmentLookupConfig.displayLabels"
+            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+            (itemSelected)="onDeptChange($event)">
+          </dofi-searchable-dropdown>
           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
           @if(bookingForm.get('DepartmentMasterSid')?.touched && bookingForm.get('DepartmentMasterSid')?.invalid){
           <div class="error-message">
@@ -805,11 +810,11 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select " style="margin-top: 12px;"
                       [class.filled]="!!bookingForm.get('VesselName')?.value">
-                      <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
-                        class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
-                        (change)="onVesselChange($event)">
-                      </ng-select> -->
-                      <ng-select class="ng-select" [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName" (change)="onVesselChange($event)" formControlName="VesselName" placeholder="" [appendTo]="'body'">
+                      <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
+                        [displayFields]="vesselVoyageConfig.displayFields" [displayLabels]="vesselVoyageConfig.displayLabels"
+                        [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName" (itemSelected)="onVesselChange($event)">
+                      </dofi-searchable-dropdown>
+                      <!-- <ng-select class="ng-select" [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName" (change)="onVesselChange($event)" formControlName="VesselName" placeholder="" [appendTo]="'body'">
                         <ng-template ng-option-tmp let-item="item">
                           <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
                                         {{item.VesselName}} / {{ item.VoyageNo }}
@@ -824,7 +829,7 @@
                                         </div>
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
                       <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -1177,7 +1182,7 @@
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
                 formControlName="NoofContainers">
-              <label for="text-input" class="input-label">No of Container<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">No. of Container<span class="text-danger"></span></label>
             </div>
           </aside>
           }
@@ -1269,7 +1274,7 @@
               <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
                 formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
                 max="9999999.999">
-              <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">No. of Pkg<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
               cargoForm.get('NoOfPackage')?.invalid) {
@@ -1416,7 +1421,7 @@
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">Extl Pkg
                     <span class="text-danger">*</span>
                   </th>
-                  <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">No of Pkg
+                  <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">No. of Pkg
                     <span class="text-danger">*</span>
                   </th>
                   @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'FCL'){
@@ -1428,7 +1433,7 @@
                   </th>
                   <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">CBM <span class="text-danger">*</span></th>
                 }
-                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Cargo Recd. Date <span class="text-danger">*</span></th>
+                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Cargo Recd. Date <span class="text-danger"></span></th>
                   @if(selectedFCLLCL === 'AIR'){
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Length</th>
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Width</th>
@@ -1820,13 +1825,13 @@
 
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('CargoCurrency')?.value">
-              <!-- <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
+              <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" class="ng-select"
                           placeholder="" formControlName="CargoCurrency" appendTo="body">
-                        </ng-select> -->
-              <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
+                        </ng-select>
+              <!-- <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
                 [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
                 [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyCode'" appendTo="body">
-              </dofi-searchable-dropdown>
+              </dofi-searchable-dropdown> -->
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -2073,7 +2078,7 @@
 
   <!-- Floating Action Button -->
   <div class="floating-actions">
-    <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()">
+    <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()" appPreventMultiClick>
       <i class="fas fa-save"></i>
     </button>
   </div>
@@ -2583,7 +2588,7 @@
           </div>
           @if(selectedFCLLCL === "LCL"){
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Pkg</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
           </div>
           } @else if(selectedFCLLCL === "FCL"){
@@ -2592,7 +2597,7 @@
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
           </div>
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Containers</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
           </div>
           } @else if(selectedFCLLCL === "AIR"){
@@ -2774,7 +2779,7 @@
           </div>
           @if(selectedFCLLCL === "LCL"){
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Pkg</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
           </div>
           } @else if(selectedFCLLCL === "FCL"){
@@ -2783,7 +2788,7 @@
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
           </div>
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Containers</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
           </div>
           } @else if(selectedFCLLCL === "AIR"){

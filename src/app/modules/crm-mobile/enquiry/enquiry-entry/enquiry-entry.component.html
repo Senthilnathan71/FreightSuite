@@ -35,7 +35,7 @@
                         Reset
                     </button>
                     <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
-                        [disabled]="disableAddButtons">
+                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
                         <i class="fas fa-save me-1"></i> {{isEditMode ? 'Save' : "Save"}}
                     </button>
                     <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
@@ -88,7 +88,7 @@
                     Details
                 </button> -->
                         <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"
-                            [disabled]="!(selectedDepartment) || disableAddButtons">
+                            [disabled]="!(selectedDepartment) || isEnquiryAuthActionTaken">
                             <i class="fas fa-plus me-1"></i> New
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
@@ -96,7 +96,7 @@
                         }
                         @if (!isMobile) {
                         <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
-                            [disabled]="!(selectedDepartment) || disableAddButtons">
+                            [disabled]="!(selectedDepartment) || isEnquiryAuthActionTaken">
                             <i class="fas fa-plus me-1"></i>Add
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
@@ -107,7 +107,7 @@
                         }
                     </div>
                 </div>
-                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid" (click)="navigateQuotation()"
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid && quotationCreatedAgainstThisEnquiry" (click)="navigateQuotation()"
                     type="button">
                     <i class="fas fa-plus me-1"></i>
                     Create Quotation
@@ -400,29 +400,15 @@
                             <div class="card mb-0" style="padding-bottom: 2px;">
                                 <div class="card-body py-0">
                                     <div class="row">
-                                        
+                                        @if(!isEditMode){
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                                                <!-- <ng-select class="ng-select" [items]="customers"
-                                                    bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                                    formControlName="CustomerMasterSid" appendTo="body"
-                                                    (change)="onSelectionChange($event)">
-                                                    <ng-template ng-option-tmp let-item="item" let-index="index">
-                                                        <div>
-                                                            <span class="d-block fw-bold">{{ item.CustomerName }}</span>
-                                                            <span class="d-block fw-semibold">{{ item.BranchName
-                                                                }}</span>
-                                                            <small class="d-block">{{ item.Address }}</small>
-                                                        </div>
-                                                    </ng-template>
-                                                </ng-select> -->
-                                                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerMasterSid" placeholder=""
-                               [displayFields]="customerLookupConfig.displayFields" 
-            [displayLabels]="customerLookupConfig.displayLabels"
-            [labelFields]="customerLookupConfig.labelFields"  bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                (itemSelected)="onSelectionChange($event)">
-                            </dofi-searchable-dropdown>
+                                                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerBranchSid" placeholder=""
+                                                    [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                                                    [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerBranchSid"
+                                                    (itemSelected)="onSelectionChange($event)">
+                                                </dofi-searchable-dropdown>
                                                 <label for="customerName" class="input-label">Customer <span
                                                         class="text-danger">*</span></label>
                                                 <small
@@ -448,16 +434,20 @@
                                                 </small>
                                             </div>
                                         </aside>
-
+                                        } @else {
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="customerName" style="background-color: white;cursor: not-allowed;" readonly>
+                                                <label for="customerName" class="input-label">{{rateRequestForm.get('LeadOrCustomer')?.value ? 'Customer Name' :'Lead Name'}} <span class="text-danger">*</span></label>
+                                            </div>
+                                        </aside>
+                                        }
 
                                         <aside class="col-md-6">
                                             <div class=" custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerAddress')?.value">
-                                                <ng-select formControlName="CustomerAddress"
-                                                    (change)="onCustomerAddressChange($event)" class="ng-select"
-                                                    [items]="cusBranchList" bindLabel="Address" bindValue="Address"
-                                                    placeholder="" appendTo="body">
-                                                </ng-select>
+                                                <input type="text" id="cus-address" placeholder=""
+                                                    class="custom-input-field sm" formControlName="CustomerAddress">
                                                 <label class="input-label">Customer Address</label>
                                                 <div *ngIf="f['CustomerAddress'].touched && f['CustomerAddress'].invalid"
                                                     class="error-message">
@@ -488,7 +478,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
                                                     <ng-select formControlName="UserMasterSid" [items]="salesmanList" bindLabel="userName"
-                                                    bindValue="Salesman" appendTo="body">
+                                                    bindValue="UserMasterSid" appendTo="body">
                                                         </ng-select>
                                                 <label for="text-input" class="input-label">Salesman<span
                                                         class="text-danger"></span></label>

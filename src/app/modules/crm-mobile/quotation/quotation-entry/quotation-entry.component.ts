@@ -173,6 +173,9 @@ export class QuotationEntryComponent implements OnInit {
   allowModifyButton : boolean;
   authStateCache : string = "Pending";
   disableAllModification : boolean;
+
+  /** Flag that indicate whether booking is already created against this quotation or not. */
+  bookingCreatedAgainstThisQuotation: boolean;
   
   auditLogs: any[] = []; // Stores audit logs
   leadList : any[] = [];
@@ -334,6 +337,8 @@ patchEnqPageValues(enqData: any) {
     'LeadOrCustomer',
     'PreCustomerMasterSid',
     'CustomerMasterSid',
+    'CustomerBranchSid',
+    'CustomerRef',
     'CustomerName',
     'CustomerAddress',
     'Email',
@@ -596,6 +601,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     if (!selectedItem) {
       this.quotationForm.patchValue({
+        CustomerMasterSid : null,
         CustomerName: '',
         CustomerAddress: null,
         CustomerBranchSid: null,
@@ -608,6 +614,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     const isCustomer = this.quotationForm.get('LeadOrCustomer')?.value;
     if (isCustomer) {
       this.quotationForm.patchValue({
+        CustomerMasterSid : selectedItem.CustomerMasterSid,
         CustomerName: selectedItem.CustomerName,
         CustomerAddress: selectedItem.Address,
         Email: selectedItem.Email,
@@ -1334,6 +1341,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     } else {
       this.f['SegmentType']?.setValue(selectedDept?.departmentType?.toUpperCase());
     }
+    this.f['AgreedRate']?.disable();
     this.f['DepartmentMasterSid']?.disable();
     this.f['LeadOrCustomer']?.disable();
     this.f['CustomerMasterSid']?.disable();
@@ -1445,6 +1453,8 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     console.log("Is it approved Quotation",this.quotationApproved);
     console.log("Only Approved Data",this.selectedItem);
+
+    this.bookingCreatedAgainstThisQuotation = this.selectedItem.BookingHeaderSid;
 
   }
 
@@ -2090,6 +2100,7 @@ private extractCargoData(enquiryCargo: any[]): any {
               return {
                 ...td,
                 selected: true, // <-- Property for checkbox binding
+                TariffDetailSid : td?.TariffDetailSid,
                 ChargeDisplayName: charge?.chargeName,
                 chargeCode: charge?.chargeCode,
                 ChargeUomSid: charge?.ChargeMasterSid,
@@ -2235,33 +2246,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     const chargeLen = this.quoteCharges(routeIndex,carrierIndex).length - 1;
     const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeLen) as FormGroup;
     const rawValue = chargeForm.getRawValue();
-    console.log(rawValue);
-
-    const keyHasDefaultValue = {
-      "Qty" : 1,
-      "RevenuePrepaidCollect" : "Prepaid",
-      "RevenueDrCr" : "C",
-      "CostPrepaidCollect" : "Prepaid",
-      "CostDrCr" : "D",
-    }
-
-    const hasDefaultValue = (key:string) => {
-      return Object.keys(keyHasDefaultValue).includes(key)
-    }
-
-   const isEmpty =  Object.entries(rawValue).every(([key, value]) => {
-      let result:boolean;
-      if(hasDefaultValue(key)){
-        result = keyHasDefaultValue[key] === value;
-      } else {
-        result = value === null || value === undefined || value === '' || value === 0;
-      }
-
-      console.log(key,value,result);
-      return result;
-      
-    });
-    console.log("isEmpty",isEmpty);
+    console.log("rawValue",rawValue);
+    const isEmpty = rawValue.ChargeUomSid === null;
     return isEmpty;
   }
 
@@ -2645,12 +2631,15 @@ ${this.userData.userName}`;
         const chargeArr = this.quoteCharges(routeIndex,carrierIndex);
         chargeArr.controls.forEach((charge:FormGroup,chargeIndex:number)=>{
           const revCusControl = charge.get('RevenueCustomerMasterSid');
+          const revCusBranchControl = charge.get('RevenueCustomerBranchSid');
           if (customer) {
-            if (!revCusControl.value) {
+            if (!revCusBranchControl.value) {
               revCusControl.setValue(customer.CustomerMasterSid);
+              revCusBranchControl.setValue(customer.CustomerBranchSid);
             }
           } else {
             revCusControl.setValue(null);
+            revCusBranchControl.setValue(null);
           }
         });
       })
@@ -3100,6 +3089,11 @@ ${this.userData.userName}`;
 
 
   goForBookingCreation() {
+    const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
+    if(!customerHasBranch){
+      this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+      return;
+    }
     console.log(this.selectedItem, 'this.selectedItem');
     let QuoteData = this.selectedItem;
 
@@ -3126,6 +3120,7 @@ ${this.userData.userName}`;
     const data = {
       quotation: true,
       DepartmentMasterSid: approvedRoute.DepartmentMasterSid || null,
+      IncoTerms : approvedRoute.ServiceLevel,
       CustomerMasterSid: QuoteData.CustomerMasterSid || null,
       CustomerBranchSid: QuoteData.CustomerBranchSid || null,
       CustomerName: QuoteData.CustomerName || "",
@@ -3186,6 +3181,7 @@ ${this.userData.userName}`;
         CostRate: charge.CostRate,
         CostAmount: charge.CostAmount,
         CostLocalAmount: charge.CostLocalAmount,
+        AgentMasterSid: charge.CostAgentMasterSid,
 
         RevenueChargeUomSid: charge.RevenueChargeUomSid,
         RevenuePrepaidCollect: charge.RevenuePrepaidCollect,
@@ -3195,6 +3191,7 @@ ${this.userData.userName}`;
         RevenueRate: charge.RevenueRate,
         RevenueAmount: charge.RevenueAmount,
         RevenueLocalAmount: charge.RevenueLocalAmount,
+        CustomerMasterSid: charge.RevenueCustomerMasterSid,
       }))
     };
 
@@ -3257,6 +3254,25 @@ ${this.userData.userName}`;
       error => {
         console.error('Error fetching salesperson:', error);
       });
+  }
+
+  onChargeCustomerChange(routeIndex: number, carrierIndex: number, chargeIndex: number, type: string, customer: any) {
+    const chargeGroup = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
+    if(!chargeGroup) return;
+    if (!customer) {
+      if (type === 'party') {
+        chargeGroup.get('RevenueCustomerMasterSid')?.setValue(null);
+      } else {
+        chargeGroup.get('CostAgentMasterSid')?.setValue(null);
+      }
+    } else {
+      if (type === 'party') {
+        chargeGroup.get('RevenueCustomerMasterSid')?.setValue(customer.CustomerMasterSid);
+      } else {
+        chargeGroup.get('CostAgentMasterSid')?.setValue(customer.CustomerMasterSid);
+      }
+    }
+
   }
 
 }

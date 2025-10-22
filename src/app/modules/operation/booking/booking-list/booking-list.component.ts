@@ -16,6 +16,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { getConcatenatedPorts } from 'src/app/common/helper';
 @Component({
     selector: 'app-booking-list',
     standalone: true,
@@ -150,8 +151,10 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         if (response.status) {
             this.allItems = response.data.items.map(item => ({
                 ...item,
+                formattedPOL : item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
+                formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : '',
                 Dept: item.departmentMaster?.departmentName,
-                vslvoy: `${item.VesselName} / ${item.VoyageNo}`,
+                vslvoy: item.VesselName && item.VoyageNo ? item.VesselName + ' / ' + item.VoyageNo : '',
                 milestone: item.Milestone?.MilestoneName,
                 salesman: item.salesman?.userName,
                 status: item.status === 'A' ? 'Active' : 'Suspended'
@@ -268,6 +271,14 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 dataType: 'string'
             },
             {
+                key: 'CustomerName',
+                label: 'Customer',
+                sortable: true,
+                filterable: true,
+                visible: true,
+                dataType: 'string'
+            },
+            {
                 key: 'POL',
                 label: 'POL',
                 sortable: true,
@@ -309,8 +320,8 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 dataType: 'string'
             },
             {
-                key: 'milestone',
-                label: 'Milestone',
+                key: 'BookingStatus',
+                label: 'Booking Status',
                 sortable: true,
                 filterable: true,
                 visible: true,
