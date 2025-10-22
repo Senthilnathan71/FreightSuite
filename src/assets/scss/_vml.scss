@@ -2017,7 +2017,7 @@
     background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid #f1f5f9;
+    border: 2px solid #d3d9e4;
     transition: all 0.3s ease;
 
     // &:hover {
@@ -3101,4 +3101,17 @@
 }
 
 
+// input:disabled
+    input:disabled {
+        background-color: #ffffff;
+        color: black;
+        cursor: not-allowed;
+        font-weight: 600;
+    }
 
+    textarea:disabled{
+       background-color: #ffffff;
+        color: black;
+        cursor: not-allowed;
+        font-weight: 600;
+    }

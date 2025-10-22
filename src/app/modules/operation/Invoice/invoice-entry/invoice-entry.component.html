@@ -639,8 +639,8 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="">
-                  <h5 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h5>
+                <div class="text-center">
+                  <h4 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h4>
                   <h5 class="mb-1">{{currentBranch?.branchName || 'Company Branch'}}</h5>
                   <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
                   <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}},
@@ -676,7 +676,7 @@
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>Invoice Date</strong></div>
-                  <div>: {{formatDate(invoiceForm.get('VoucherDate')?.value)}}</div>
+                  <div>: {{formatDate(invoiceForm.get('VoucherDate')?.value) | formatDate}}</div>
                 </div>
                 <div class="d-flex">
                   <div style="width: 180px;"><strong>GST No</strong></div>

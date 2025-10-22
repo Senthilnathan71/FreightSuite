@@ -118,36 +118,36 @@
 
   <div class="modern-table-container" *ngIf="selectedTab === 'Sales and cost'">
 
-    <div class="split-table-container compact-form">
+    <div class="split-table-container compact-form" >
       <!-- Fixed First Half -->
       <div class="table-fixed ">
         <table>
           <thead>
-      <tr class="first-table">
-    <th class=""  style="max-width: 5px;background-color:#005a9e;"></th>
-    <th class="" style="background-color:#005a9e;color: white;">SNo</th>
-    <th class="table-header" >Charge <span class="text-danger">{{hasRequired('ChargeMasterSid') ? '*' : ''}}</span></th>
-    <th class="table-header" >Charge Desc <span class="text-danger">{{hasRequired('ChargeDescription') ? '*' : ''}}</span></th>
-    <th class="tableHeader" style="background-color:#005a9e;color: white;">Unit <span class="text-danger">{{ hasRequired('CostChargeUomSid') ? '*' : ''}}</span></th>
-    <th class="tableHeader"  >No. of Unit <span class="text-danger">{{ hasRequired('NumberOfUnit') ? '*' : ''}}</span></th>
+      <tr class="first-table bg-info">
+    <th class="bg-transparent text-light" ></th>
+    <th class="bg-transparent text-light" >SNo</th>
+    <th class="bg-transparent text-light" >Charge <span class="text-danger">{{hasRequired('ChargeMasterSid') ? '*' : ''}}</span></th>
+    <th class="bg-transparent text-light" >Charge Desc <span class="text-danger">{{hasRequired('ChargeDescription') ? '*' : ''}}</span></th>
+    <th class="bg-transparent text-light dofi-min-w-80"  >Unit <span class="text-danger">{{ hasRequired('CostChargeUomSid') ? '*' : ''}}</span></th>
+    <th class="bg-transparent text-light dofi-min-w-90" >No. of Unit <span class="text-danger">{{ hasRequired('NumberOfUnit') ? '*' : ''}}</span></th>
   </tr>
   
 
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
             <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
-              <td  >
-              
-                  <button class="action-icon delete py-0"
-                    (click)="deleteRate(i,row.value.BookingRatesSid)"
-                    [disabled]="!canEditRate(i)"
-                    title="Delete rate">
-                    <i class="fas fa-trash fs-2"></i>
-                  </button>
-               
-              </td>
+            <td>
+  <!-- Change the delete button condition -->
+  <button class="action-icon delete py-0"
+    (click)="deleteRate(i,row.value.BookingRatesSid)"
+    [disabled]="!canEditRate(i) || rateFormArray.length === 1"
+    [class.disabled]="rateFormArray.length === 1"
+    title="{{ rateFormArray.length === 1 ? 'Cannot delete the only row' : 'Delete rate' }}">
+    <i class="fas fa-trash fs-2" [class.text-muted]="rateFormArray.length === 1"></i>
+  </button>
+</td>
               <td>
-                <div class="custom-form-group dofi-min-w-50 dofi-max-w-50">
+                <div class="custom-form-group dofi-min-w-40">
                   <input type="number" id="text-input" [value]="i+1" class="custom-input-field sm" disabled>
                 </div>
               </td>
@@ -209,40 +209,40 @@
       </div>
 
       <!-- Scrollable Second Half -->
-      <div class="table-scrollable">
+      <div class="table-scrollable ">
         <div  #scrollContainer (scroll)="syncScroll($event)">
           <table>
-            <thead>
+            <thead class="bg-info secondtable">
               <tr>
-                <th  class="table-header text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">Revenue</th>
-                <th  class="table-header text-center"  colspan="10">Cost</th>
+                <th  class="bg-transparent text-light text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">Revenue</th>
+                <th  class="bg-transparent text-light text-center"  colspan="10">Cost</th>
               </tr>
               <tr>
                 <!-- Revenue -->
                 <!-- <th class="table-header">Unit</th> -->
-                <th  class="table-header currHeader" style="border-left: 1px solid white;">Cr/Dr</th>
-                <th class="table-header currHeader">Curr</th>
-                <th class="table-header">Ex Rate <span class="text-danger"></span>
+                <th  class="bg-transparent text-light " style="border-left: 1px solid white;">Cr/Dr</th>
+                <th class="bg-transparent text-light ">Curr</th>
+                <th class="bg-transparent text-light ">Ex Rate <span class="text-danger"></span>
                 </th>
-                <th class="table-header">Per Unit</th>
-                <th class="table-header"> Amt</th>
-                <th class="table-header">Local Amt</th>
-                <th class="table-header">PP/CC</th>
-                <th class="table-header">Billing Party</th>
-                <th class="table-header">Type</th>
-                <th class="table-header" style="border-right: 1px solid white">Voucher No</th>
+                <th class="bg-transparent text-light">Per Unit</th>
+                <th class="bg-transparent text-light "> Amt</th>
+                <th class="bg-transparent text-light ">Local Amt</th>
+                <th class="bg-transparent text-light ">PP/CC</th>
+                <th class="bg-transparent text-light ">Billing Party</th>
+                <th class="bg-transparent text-light ">Type</th>
+                <th class="bg-transparent text-light " style="border-right: 1px solid white">Voucher No</th>
                 <!-- Cost -->
                 <!-- <th style="background-color: #9dd376;" class="table-header">Unit</th> -->
-                <th  class="table-header">Cr/Dr</th>
-                <th  class="table-header">Curr</th>
-                <th  class="table-header">Ex Rate</th>
-                <th  class="table-header">Per Unit</th>
-                <th  class="table-header">Amt</th>
-                <th  class="table-header">Local Amt</th>
-                <th  class="table-header">PP/CC</th>
-                <th  class="table-header">Party</th>
-                <th  class="table-header">Type</th>
-                <th  class="table-header">Voucher No</th>
+                <th  class="bg-transparent text-light ">Cr/Dr</th>
+                <th  class="bg-transparent text-light">Curr</th>
+                <th  class="bg-transparent text-light ">Ex Rate</th>
+                <th class="bg-transparent text-light ">Per Unit</th>
+                <th  class="bg-transparent text-light ">Amt</th>
+                <th  class="bg-transparent text-light ">Local Amt</th>
+                <th  class="bg-transparent text-light ">PP/CC</th>
+                <th  class="bg-transparent text-light ">Party</th>
+                <th  class="bg-transparent text-light ">Type</th>
+                <th  class="bg-transparent text-light ">Voucher No</th>
               </tr>
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
@@ -257,7 +257,7 @@
                   </div>
                 </td> -->
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-60">
                     <ng-select formControlName="RevenueDrCr" appendTo="body">
                       <ng-option value="D">Dr</ng-option>
                       <ng-option value="C">Cr</ng-option>
@@ -276,7 +276,7 @@
   </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-70">
+                  <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueLocalAmount(i)"
@@ -297,7 +297,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="RevenueAmount"
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueLocalAmount(i)"
@@ -309,7 +309,7 @@
                 </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
                       [value]="row.get('RevenueLocalAmount')?.value | numberFormat"
                       readonly>
@@ -339,13 +339,13 @@
                 </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-150">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="row.get('RevenueVoucherType')?.value?.DocumentTypeName || ''"
                       class="custom-input-field sm" readonly>
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-80">
                     <input *ngIf="!row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid"
                       type="text"
                       [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''"
@@ -371,7 +371,7 @@
                   </div>
                 </td> -->
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-30">
                     <ng-select formControlName="CostDrCr" appendTo="body">
                       <ng-option value="D">Dr</ng-option>
                       <ng-option value="C">Cr</ng-option>
@@ -379,7 +379,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-50">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
                       formControlName="CostCurrencyMasterSid"
                       (change)="getCostExchangeRate(i, $event)"
@@ -393,7 +393,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group dofi-min-w-80">
+                  <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="CostExchangeRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostLocalAmount(i)"
@@ -405,7 +405,7 @@
                 </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostRate"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostAmount(i)"
@@ -416,7 +416,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostAmount"
                       class="custom-input-field sm text-end"
                       (input)="calculateCostLocalAmount(i)"
@@ -428,7 +428,7 @@
                 </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-100">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
                       [value]="row.get('CostLocalAmount')?.value | numberFormat"
                       readonly>
@@ -436,7 +436,7 @@
                 </td>
 
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-50">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-40">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
                       appendTo="body" formControlName="CostPrepaidCollect"
                       [disabled]="!canEditRate(i)">
@@ -444,7 +444,7 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-80">
                     <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                       formControlName="AgentSid"
                       [disabled]="!canEditRate(i)" (change)="handleAgentChange(i,$event)" appendTo="body">
@@ -458,7 +458,7 @@
                 </td>
 
                 <td>
-                  <div class="custom-form-group dofi-min-w-150">
+                  <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="row.get('CostVoucherType')?.value?.DocumentTypeName || ''"
                       class="custom-input-field sm" readonly>
                   </div>

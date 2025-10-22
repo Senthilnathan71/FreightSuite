@@ -35,7 +35,7 @@
                         Reset
                     </button>
                     <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
-                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
+                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry" appPreventMultiClick>
                         <i class="fas fa-save me-1"></i> {{isEditMode ? 'Save' : "Save"}}
                     </button>
                     <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
@@ -107,8 +107,8 @@
                         }
                     </div>
                 </div>
-                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid && quotationCreatedAgainstThisEnquiry" (click)="navigateQuotation()"
-                    type="button">
+                <button class="btn btn-info btn-sm" *ngIf="EnquiryHeaderSid && quotationCreatedAgainstThisEnquiry"
+                    (click)="navigateQuotation()" type="button">
                     <i class="fas fa-plus me-1"></i>
                     Create Quotation
                 </button>
@@ -200,32 +200,28 @@
                     </div>
                 </div>
                 } @else { -->
-              <div class="col-md-2">
-    <div class="custom-form-group custom-form-group-select"
-        [class.filled]="!!rateRequestForm.get('Segment')?.value">
-        <dofi-searchable-dropdown 
-            [items]="departments" 
-            formControlName="Segment" 
-            placeholder=""
-            [displayFields]="departmentLookupConfig.displayFields" 
-            [displayLabels]="departmentLookupConfig.displayLabels"
-            [labelFields]="departmentLookupConfig.labelFields" 
-            bindValue="DepartmentMasterSid"
-            (itemSelected)="onSegmentChange($event)">
-        </dofi-searchable-dropdown>
-        <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
-        <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
-            Required
-        </div>
-    </div>
-</div>
-<div class="col-md-2">
-    <div class="custom-form-group">
-        <input type="text" id="dept" class="form-control custom-input-field sm"
-            formControlName="CustomerRef" placeholder="">
-        <label for="dept" class="input-label">Customer Ref</label>
-    </div>
-</div>
+                <div class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                        [class.filled]="!!rateRequestForm.get('Segment')?.value">
+                        <dofi-searchable-dropdown [items]="departments" formControlName="Segment" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onSegmentChange($event)">
+                        </dofi-searchable-dropdown>
+                        <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
+                        <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
+                            Required
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="custom-form-group">
+                        <input type="text" id="dept" class="form-control custom-input-field sm"
+                            formControlName="CustomerRef" placeholder="">
+                        <label for="dept" class="input-label">Customer Ref</label>
+                    </div>
+                </div>
                 <!-- } -->
 
                 @if(isEditMode){
@@ -288,14 +284,14 @@
                 <aside class="col-md-2">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
-                        <ng-select  formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
-                            bindValue="name" placeholder="" appendTo="body" >
+                        <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
+                            bindValue="name" placeholder="" appendTo="body">
                         </ng-select>
                         <label class="input-label">Enquiry Type<span class="text-danger"></span></label>
                     </div>
                 </aside>
 
-                
+
 
                 <div class="col-md-2">
                     <div class=" custom-form-group custom-form-group-select-date">
@@ -304,7 +300,7 @@
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                 #d1="ngbDatepicker" (keydown.arrowDown)="d1.open()" (click)="d1.toggle()"
                                 formControlName="shipmentDate" [minDate]="minExpDate" readonly
-                                [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected"/>
+                                [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected" />
                             <div>
                                 <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
@@ -343,36 +339,24 @@
                                             </div>
                                         </aside> -->
 
-                                        <aside class="col-md-2 mt-0 mt-md-1" *ngIf="!isEditMode">
-                                            <div class="custom-form-group">
-                                            <div class="d-flex align-items-center gap-5">
-                                            <div class="form-check">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="radio"
-                                                    id="Customer"
-                                                    
-                                                    [value]="true"
-                                                    formControlName="LeadOrCustomer"
-                                                />
-                                                <label class="form-check-label" for="flexCheckChecked">Customer</label>
-                                                </div>
-                                                <div class="form-check">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="radio"
-                                                    id="lead"
-                                                  
-                                                    [value]="false"
-                                                    formControlName="LeadOrCustomer"
-                                                />
-                                                <label class="form-check-label" for="leadRadio">Lead</label>
-                                                </div>
+                <aside class="col-md-2 mt-0 mt-md-1" *ngIf="!isEditMode">
+                    <div class="custom-form-group">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="Customer" [value]="true"
+                                    formControlName="LeadOrCustomer" />
+                                <label class="form-check-label" for="flexCheckChecked">Customer</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="lead" [value]="false"
+                                    formControlName="LeadOrCustomer" />
+                                <label class="form-check-label" for="leadRadio">Lead</label>
+                            </div>
 
 
-                                            </div>       
-                                            </div>
-                                            </aside>
+                        </div>
+                    </div>
+                </aside>
 
 
 
@@ -404,9 +388,12 @@
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('CustomerMasterSid')?.value">
-                                                <dofi-searchable-dropdown [items]="customers" formControlName="CustomerBranchSid" placeholder=""
-                                                    [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                                                    [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerBranchSid"
+                                                <dofi-searchable-dropdown [items]="customers"
+                                                    formControlName="CustomerBranchSid" placeholder=""
+                                                    [displayFields]="customerLookupConfig.displayFields"
+                                                    [displayLabels]="customerLookupConfig.displayLabels"
+                                                    [labelFields]="customerLookupConfig.labelFields"
+                                                    bindLabel="CustomerName" bindValue="CustomerBranchSid"
                                                     (itemSelected)="onSelectionChange($event)">
                                                 </dofi-searchable-dropdown>
                                                 <label for="customerName" class="input-label">Customer <span
@@ -437,8 +424,14 @@
                                         } @else {
                                         <aside class="col-md-6">
                                             <div class="custom-form-group">
-                                                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="customerName" style="background-color: white;cursor: not-allowed;" readonly>
-                                                <label for="customerName" class="input-label">{{rateRequestForm.get('LeadOrCustomer')?.value ? 'Customer Name' :'Lead Name'}} <span class="text-danger">*</span></label>
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="form-control custom-input-field sm"
+                                                    formControlName="customerName"
+                                                    style="background-color: white;cursor: not-allowed;" readonly>
+                                                <label for="customerName"
+                                                    class="input-label">{{rateRequestForm.get('LeadOrCustomer')?.value ?
+                                                    'Customer Name' :'Lead Name'}} <span
+                                                        class="text-danger">*</span></label>
                                             </div>
                                         </aside>
                                         }
@@ -463,6 +456,22 @@
                                                         class="text-danger"></span></label>
                                             </div>
                                         </aside>
+                                          <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="contactPerson" placeholder=""
+                                                    class="custom-input-field sm" formControlName="ContactPerson">
+                                                <label for="text-input" class="input-label">Contact Person <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                          <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="phone" placeholder=""
+                                                    class="custom-input-field sm" formControlName="ContactNumber">
+                                                <label for="text-input" class="input-label">Phone <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('ClearanceBy')?.value">
@@ -476,10 +485,11 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
-                                                    <ng-select formControlName="UserMasterSid" [items]="salesmanList" bindLabel="userName"
-                                                    bindValue="UserMasterSid" appendTo="body">
-                                                        </ng-select>
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
+                                                <ng-select formControlName="UserMasterSid" [items]="salesmanList"
+                                                    bindLabel="userName" bindValue="UserMasterSid" appendTo="body">
+                                                </ng-select>
                                                 <label for="text-input" class="input-label">Salesman<span
                                                         class="text-danger"></span></label>
                                             </div>
@@ -515,38 +525,40 @@
                                                         class="text-danger"></span></label>
                                             </div>
                                         </aside>
-                                        
-                @if(isEditMode && isAuthorizedUser && !isApproved){
-                <aside class="col-md-3">
-                    <div class="custom-form-group">
-                        <textarea id="" placeholder="" rows="0" class="form-control input-field sm"
-                            formControlName="AuthorizerRemarks"></textarea>
-                        <label for="text-input" [ngClass]="{
+
+                                        @if(isEditMode && isAuthorizedUser && !isApproved){
+                                        <aside class="col-md-3">
+                                            <div class="custom-form-group">
+                                                <textarea id="" placeholder="" rows="0"
+                                                    class="form-control input-field sm"
+                                                    formControlName="AuthorizerRemarks"></textarea>
+                                                <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !rateRequestForm.get('AuthorizerRemarks')?.value
                               }">Authorizer Remarks </label>
-                    </div>
-                </aside>
-                <aside class="col-md-3">
-                    <div class="custom-form-group custom-form-group-select"
-                        [class.filled]="!!rateRequestForm.get('authorizerStatus')?.value">
-                        <ng-select formControlName="authorizerStatus" class="ng-select" appendTo="body">
-                            <ng-option value="Pending" disabled>Waiting For Approval</ng-option>
-                            <ng-option value="Approved">Approved</ng-option>
-                            <ng-option value="Rejected">Rejected</ng-option>
-                        </ng-select>
-                        <label for="authorizerStatus" class="input-label">Authorize Status <span
-                                class="text-danger">*</span></label>
-                        @if(f['authorizerStatus']?.invalid && f['authorizerStatus']?.touched){
-                        <div class="error-message">
-                            @if(f['authorizerStatus']?.hasError('required')){
-                            <span>Required</span>
-                            }
-                        </div>
-                        }
-                    </div>
-                </aside>
-                }
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-3">
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('authorizerStatus')?.value">
+                                                <ng-select formControlName="authorizerStatus" class="ng-select"
+                                                    appendTo="body">
+                                                    <ng-option value="Pending" disabled>Waiting For Approval</ng-option>
+                                                    <ng-option value="Approved">Approved</ng-option>
+                                                    <ng-option value="Rejected">Rejected</ng-option>
+                                                </ng-select>
+                                                <label for="authorizerStatus" class="input-label">Authorize Status <span
+                                                        class="text-danger">*</span></label>
+                                                @if(f['authorizerStatus']?.invalid && f['authorizerStatus']?.touched){
+                                                <div class="error-message">
+                                                    @if(f['authorizerStatus']?.hasError('required')){
+                                                    <span>Required</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        }
 
                                     </div>
                                 </div>
@@ -584,12 +596,15 @@
                                                     bindValue="CustomerName" bindLabel="CustomerName" placeholder=""
                                                     formControlName="ShipperName" (change)="onShipperChange($event)"
                                                     (clear)="onShipperChange(null)" appendTo="body"></ng-select> -->
-                                                    <dofi-searchable-dropdown [items]="finalShipperList" formControlName="ShipperName" placeholder=""
-                               [displayFields]="customerLookupConfig.displayFields" 
-            [displayLabels]="customerLookupConfig.displayLabels"
-            [labelFields]="customerLookupConfig.labelFields"  bindLabel="CustomerName" bindValue="CustomerName"
-                                (itemSelected)="onShipperChange($event)" (clear)="onShipperChange(null)" appendTo="body" >
-                            </dofi-searchable-dropdown>
+                                                <dofi-searchable-dropdown [items]="finalShipperList"
+                                                    formControlName="ShipperName" placeholder=""
+                                                    [displayFields]="customerLookupConfig.displayFields"
+                                                    [displayLabels]="customerLookupConfig.displayLabels"
+                                                    [labelFields]="customerLookupConfig.labelFields"
+                                                    bindLabel="CustomerName" bindValue="CustomerName"
+                                                    (itemSelected)="onShipperChange($event)"
+                                                    (clear)="onShipperChange(null)" appendTo="body">
+                                                </dofi-searchable-dropdown>
                                                 <label for="text-input" class="input-label">Shipper Name <span
                                                         class="text-danger"></span></label>
                                                 @if(enquiryOtherForm.get('ShipperName')?.invalid &&
@@ -619,10 +634,14 @@
                                                     bindLabel="CustomerName" bindValue="CustomerName" placeholder=""
                                                     formControlName="ConsigneeName" (change)="onConsigneeChange($event)"
                                                     (clear)="onConsigneeChange(null)" appendTo="body"></ng-select> -->
-                                                <dofi-searchable-dropdown [items]="finalConsigneeList" formControlName="ConsigneeName" placeholder="Select Customer"
-                                                    [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                                                    [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName"
-                                                    (itemSelected)="onConsigneeChange($event)" (clear)="onConsigneeChange(null)" appendTo="body" >
+                                                <dofi-searchable-dropdown [items]="finalConsigneeList"
+                                                    formControlName="ConsigneeName" placeholder="Select Customer"
+                                                    [displayFields]="customerLookupConfig.displayFields"
+                                                    [displayLabels]="customerLookupConfig.displayLabels"
+                                                    [labelFields]="customerLookupConfig.labelFields"
+                                                    bindLabel="CustomerName" bindValue="CustomerName"
+                                                    (itemSelected)="onConsigneeChange($event)"
+                                                    (clear)="onConsigneeChange(null)" appendTo="body">
                                                 </dofi-searchable-dropdown>
 
                                                 <label for="text-input" class="input-label">Consignee Name <span
@@ -783,7 +802,7 @@
                                 @if(routes.controls.length > 1){
                                 <button class="btn btn-sm waves-effect waves-light text-danger px-1 py-0"
                                     (click)="removeRoute(routeIndex)" [disabled]="disableAddButtons">
-                                     <i class="fas fa-trash text-danger mx-1"></i>
+                                    <i class="fas fa-trash text-danger mx-1"></i>
                                 </button>
                                 }
                                 <span
@@ -814,12 +833,11 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                             <dofi-searchable-dropdown [items]="ports"
-                                                formControlName="POO" placeholder=""
-                                                [displayFields]="portLookupConfig.displayFields"
+                                            <dofi-searchable-dropdown [items]="ports" formControlName="POO"
+                                                placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                                                bindValue="PortMasterSid" >
+                                                bindValue="PortMasterSid">
                                             </dofi-searchable-dropdown>
                                             <label class="input-label">POO</label>
                                         </div>
@@ -827,7 +845,7 @@
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
-                                          
+
                                             <dofi-searchable-dropdown [items]="filteredPOLPorts[routeIndex]"
                                                 formControlName="POL" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
@@ -849,7 +867,7 @@
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
-                                            
+
                                             <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]"
                                                 formControlName="POD" placeholder=""
                                                 [displayFields]="portLookupConfig.displayFields"
@@ -868,7 +886,7 @@
                                             }
                                         </div>
                                     </aside>
-                                    
+
                                     <div class="col-12 col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
@@ -879,12 +897,11 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                              <dofi-searchable-dropdown [items]="ports"
-                                                formControlName="FDC" placeholder=""
-                                                [displayFields]="portLookupConfig.displayFields"
+                                            <dofi-searchable-dropdown [items]="ports" formControlName="FDC"
+                                                placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                                                bindValue="PortMasterSid" >
+                                                bindValue="PortMasterSid">
                                             </dofi-searchable-dropdown>
                                             <label class="input-label">FPOD</label>
                                         </div>
@@ -1478,17 +1495,18 @@
 
 
 <ng-template #enquiryPrint let-modal>
-    <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info">
+
+    <div class="modal-header  modalHeaderpart d-flex justify-content-between align-items-center">
 
 
-        <h5 class="modal-title mb-0 text-white">Enquiry Preview</h5>
+        <h5 class="modal-title mb-0 text-white">Enquiry</h5>
 
         <div class="d-flex gap-2 align-items-center ">
-            <button type="button" class="btn btn-light-secondary btn-sm">
-                <i class="fas fa-download me-1"></i> Download
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+                <i class="fas fa-download me-1"></i> Download PDF
             </button>
-            <button type="button" class="btn btn-light-secondary btn-sm email-btn">
-                <i class="fas fa-envelope me-1"></i> Email
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" >
+                <i class="fas fa-envelope me-1"></i> Send Email
             </button>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
@@ -1497,138 +1515,147 @@
 
     </div>
 
-    <div class="modal-body p-3">
-        <div style="max-width: 900px; margin: auto; border: 2px solid black; ">
+    <div class="modal-body ">
+            <div id="printContent">
+                  <div class="print-a4">
 
             <!-- Company Info -->
-            <div class="row px-3 pt-1">
+            <div class="row ">
                 <div class="col-md-6 col-12">
                     <div class="d-flex align-items-center gap-4">
-                        <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="100" height="100"
+                        <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="50" height="50"
                             class="img-fluid" alt="">
-                        <h4 style="margin: 0;">DOFI<br>Infosys LLC</h4>
+                        <!-- <h4 style="margin: 0;">DOFI<br>Infosys LLC</h4> -->
                     </div>
                 </div>
                 <div class="col-md-6 col-12">
-                    <div>
-                        <h5 class="mb-1">Freight Ltd.</h5>
-                        <p class="mb-1">42 Skyview Avenue, Logistics Park,</p>
-                        <p class="mb-1">Metro City, Westland 543210, Countryland.</p>
-                        <p class="mb-3">TEL: +123-4567-8900</p>
+                    <div class="text-start">
+                        <h4 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h4>
+                        <h5 class="mb-1">{{currentBranch?.branchName || 'Company Branch'}}</h5>
+                        <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
+                        <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}},
+                            {{currentCompany?.postal_code || currentCompany?.ZipCode || 'Zipcode'}}</p>
+                        <p class="mb-1">TEL: {{currentCompany?.phoneNumber || currentCompany?.Phone || 'Phone'}}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Horizontal Line -->
-            <div style="height: 2px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+            <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
 
             <!-- Title -->
-            <h5 class="text-center fw-bold" style="margin: 0;">ENQUIRY</h5>
-
-            <!-- Horizontal Line -->
-            <div style="height: 2px; background-color: black; width: 100%; margin: 0.3em 0;"></div>
+            <h5 class="text-center fw-bold pb-2" style="margin: 0;">ENQUIRY</h5>
 
             <!-- Enquiry Details -->
-            <div class="row px-3">
+            <div class="row ">
                 <div class="col-12 col-md-6">
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY NUMBER</strong></div>
-                        <div>: BOMFEE2400053</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong> Enquiry Number</strong></div>
+                        <div>: {{ enquiryData?.EnquiryNumber || '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY PARTY NAME</strong></div>
-                        <div>: VisVas Logistics</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Name</strong></div>
+                        <div>: {{ enquiryData?.CustomerName || '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY PARTY ADDRESS</strong></div>
-                        <div>: Thane, Mumbai</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Address </strong></div>
+                        <div>: {{ enquiryData?.CustomerAddress || '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY RECEIVED DATE</strong></div>
-                        <div>: </div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Received Date </strong></div>
+                        <div>: {{ (enquiryData?.EnquiryDate | formatDate) || '-'}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>PORT OF ORIGIN</strong></div>
-                        <div>: NHAVA </div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Port Of Origin</strong></div>
+                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>PORT OF LOADING</strong></div>
-                        <div>: NHAVA </div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Port Of Loading </strong></div>
+                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>JOB TYPE</strong></div>
-                        <div>: FCL EXPORT</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Dept</strong></div>
+                        <div>: {{ enquiryData?.ShipmentType || '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>SHIPPER NAME</strong></div>
-                        <div>: </div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Shipper Name </strong></div>
+                        <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>SHIPPER ADDRESS</strong></div>
-                        <div>: </div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Shipper Address </strong></div>
+                        <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '-' }} </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-6">
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY CREATED BY</strong></div>
-                        <div>: Ebms PC Admin 1</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created By </strong></div>
+                        <div>: {{ enquiryData?.createdBy || '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>ENQUIRY CREATED DATE</strong></div>
-                        <div>: 25/Jul/2025</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created Date</strong></div>
+                        <div>: {{ (enquiryData?.EnquiryDate | formatDate) || '-'}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>CONTACT PERSON / NUMBER</strong></div>
-                        <div>: Mukesh Tiwari </div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Contact / Number</strong></div>
+                        <div>: {{ enquiryData?.ContactPerson || '-' }} / {{ enquiryData?.ContactNumber || '-' }}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>EXPECTED SHIPMENT DATE</strong></div>
-                        <div>: 25/Oct/2025</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Expected Shipment Date</strong></div>
+                        <div>: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || '-'}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>FINAL DESTINATION</strong></div>
-                        <div>: JEBEL ALI(AEJEA)</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Final Destination </strong></div>
+                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>PORT OF DISCHARGE</strong></div>
-                        <div>: JEBEL ALI(AEJEA)</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Port of Discharge </strong></div>
+                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div>
                     </div>
                     <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>INCO TERMS</strong></div>
-                        <div>: Ex Works</div>
+                        <div style="width: 200px; white-space: nowrap;"><strong>Inco Terms</strong></div>
+                        <div>: {{ enquiryData?.IncoTerms || '-' }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Cargo Summary -->
-            <div style="margin-top: 2rem;" class="px-3">
-                <p><strong>Cargo Type : General &nbsp; / Container Type : GP20 &nbsp; / Qty : 2.00 &nbsp; / Gross Weight
-                        :
-                        12000.00 &nbsp; / CBM : 12.000</strong></p>
+            <div style="margin-top: 2rem;">
+                <p><strong>Cargo Type : </strong>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || '-'
+                    }} &nbsp; / <strong>
+                        Container Type :
+                    </strong> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '-' }} &nbsp; /
+                    <strong>Qty</strong>
+                    : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '-' }} &nbsp; / <strong>
+                        Gross Weight
+                    </strong>
+                    :
+                    {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '-' }} &nbsp; /
+                    <strong>CBM</strong> : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '-' }}
+                </p>
             </div>
 
             <!-- Product Table -->
-            <div style="margin-top: 2rem;" class="px-3">
+            <div style="margin-top: 1rem;">
                 <p style="font-weight: bold; margin-bottom: 4px;">Product Details</p>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm" style="margin: 0;">
+                <div class="table-responsive ">
+                    <table class="table tablebordered  table-sm" style="margin: 0;">
                         <thead>
                             <tr>
-                                <th style="border: 2px solid black;">Product Name</th>
-                                <th style="border: 2px solid black;">Pkg Type</th>
-                                <th style="border: 2px solid black;">Qty</th>
-                                <th style="border: 2px solid black;">Gross Wt.</th>
-                                <th style="border: 2px solid black;">CBM</th>
+                                <th>Product Name</th>
+                                <th>Pkg Type</th>
+                                <th>Qty</th>
+                                <th>Gross Wt.</th>
+                                <th>CBM</th>
                             </tr>
-                        </thead>
+                        </thead>  
                         <tbody>
                             <tr>
-                                <td style="border: 2px solid black;">SPECIAL</td>
-                                <td style="border: 2px solid black;">N/A</td>
-                                <td style="border: 2px solid black;">N/A</td>
-                                <td style="border: 2px solid black;"></td>
-                                <td style="border: 2px solid black;"></td>
+                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ProductName || '-' }}</td>
+                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageType || '-' }}</td>
+                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '-' }}</td>
+                                <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '-' }}</td>
+                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '-' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1636,16 +1663,24 @@
             </div>
 
             <!-- Remarks with Bottom Space -->
-            <div style="margin-top: 1.5rem; margin-bottom: 3rem;" class="px-3">
-                <p style="font-weight: bold;">Enquiry Remarks</p>
-                <div style="height: 80px; "></div>
+            <div style="margin-top: 1rem; margin-bottom: 3rem;">
+                <p style="font-weight: bold;"> Remarks  :</p>
+                <div style="height: 80px; "> {{ enquiryData?.Remarks || '-' }}</div>
             </div>
 
-
-            <p class="text-muted text-center  mb-2">
-                Copyright © 2025 DOFI Infosys LLC
-            </p>
+            <footer class="text-center mb-0 px-2">
+                <div class="d-flex justify-content-between">
+                    <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
+                    <span>
+                        This document is computer-generated and does not require a signature.
+                    </span>
+                    <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+                </div>
+            </footer>
 
         </div>
+            </div>
+      
+
     </div>
 </ng-template>

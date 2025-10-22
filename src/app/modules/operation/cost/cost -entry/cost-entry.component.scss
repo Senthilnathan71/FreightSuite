@@ -390,9 +390,9 @@
 
 .split-table-container {
   display: flex;
-  max-height: 300px;
-  font-size: 14px;
 
+  font-size: 14px;
+  
   // Override form group margins inside table cells to prevent row misalignment
   .custom-form-group {
     margin-top: 0 !important;
@@ -424,7 +424,7 @@
 }
 
 .first-table{
-  height: 58px !important;
+  height: 50px !important;
 }
 
 .table-header1 {
@@ -459,7 +459,9 @@ table tbody td {
   overflow-y: hidden;
   flex-grow: 1;
 }
-
+.secondtable{
+  height: 50px !important;
+}
 .scroll-inner {
   overflow-x: scroll;
   cursor: pointer;
