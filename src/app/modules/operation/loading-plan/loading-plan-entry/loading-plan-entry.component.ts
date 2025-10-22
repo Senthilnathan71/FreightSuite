@@ -20,6 +20,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-loading-plan-entry',
@@ -34,10 +36,16 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
     RouterModule,
     TextWithNumbersDirective,
     NgbPaginationModule,
-    SearchableDropdown
+    SearchableDropdown,
+    CustomDatePipe,
+    NgxSpinnerModule,
+    PreventMultiClickDirective
   ],
   templateUrl: './loading-plan-entry.component.html',
   styleUrl: './loading-plan-entry.component.scss',
+  providers: [
+    CustomDatePipe
+  ]
 })
 export class LoadingPlanEntryComponent {
 
@@ -82,6 +90,7 @@ export class LoadingPlanEntryComponent {
   loadingPlanForm: FormGroup;
  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   hasMultipleVoyages : boolean = false;
   multipleVoyageList : any[] = [];
 
@@ -115,7 +124,9 @@ export class LoadingPlanEntryComponent {
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
     private router : Router,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    private datePipe : CustomDatePipe,
+    private spinnerService : NgxSpinnerService
   ) {
     this.masterJobContainers = this.fb.array([]);
     // effect(()=>{
@@ -445,7 +456,13 @@ export class LoadingPlanEntryComponent {
             this.availableBookings = [];
             this.totalLengthOfAvailableBookings = 0;
           } else {
-            this.availableBookings = resp.data;
+            this.availableBookings = (resp.data || []).map(bk =>{
+              return {
+                ...bk,
+                ETA : this.datePipe.transform(bk.ETA),
+                ETD : this.datePipe.transform(bk.ETD)
+              }
+            });
             this.totalLengthOfAvailableBookings = this.availableBookings.length;
           }
           this.updateBookingList();
@@ -480,21 +497,16 @@ export class LoadingPlanEntryComponent {
   }
 
   handleMultipleVoyages() {
-    this.selectedBookings.forEach(b => {
-      b.vslVoy = this.getVesselVoy(b);
-    });
-
     const uniqueVoyages = new Map();
     this.selectedBookings.forEach(b => {
-      // Use VoyageMasterSid as a unique key for the voyage object
       if (b.VoyageMasterSid) {
         uniqueVoyages.set(b.VoyageMasterSid, b);
       }
     });
-
+    
     this.multipleVoyageList = Array.from(uniqueVoyages.values());
     this.hasMultipleVoyages = this.multipleVoyageList.length > 1;
-
+    
     // if the previously selected voyage is not in the new list of unique voyages, reset it
     if (this.selectedVoyage && !this.multipleVoyageList.some(v => v.VoyageMasterSid === this.selectedVoyage.VoyageMasterSid)) {
       this.selectedVoyage = null;
@@ -506,12 +518,15 @@ export class LoadingPlanEntryComponent {
     }
   }
 
-    
-  handleSelectedVoyage() {
-    // if (this.multipleVoyageList.find(vsl => vsl === this.selectedVoyage) === undefined) {
-    //   this.selectedVoyage = null;
-    // }
+  handleMultipleVesselChange(selectedVoyage: any) {
+    if(!selectedVoyage){
+      this.selectedVoyage = null;
+      return;
+    }
+    this.selectedVoyage = selectedVoyage;
+    this.handleMultipleVoyages()
   }
+
 
   calculateTotal() {
     if (this.selectedBookings.length === 0) {
@@ -760,11 +775,7 @@ export class LoadingPlanEntryComponent {
       this.appSettingService.showWarning('Please select at least one booking.');
       return;
     }
-
-    if(this.selectedBookings.length > 1 && !this.selectedVoyage){
-      this.appSettingService.showWarning('Please select a single voyage.');
-      return;
-    }
+    this.spinnerService.show()
     const formValue = this.loadingPlanForm.getRawValue();
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -805,16 +816,19 @@ export class LoadingPlanEntryComponent {
       next: (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess('Master Job generated successfully');
+          this.spinnerService.hide();
           if(resp.data){
             this.router.navigate(['/operation/master-job/entry', resp.data?.newMasterJob?.MasterJobSid]);
           }
         } else {
           this.appSettingService.showError('Error generating master job');
+          this.spinnerService.hide();
         }
       },
       error: (error) => {
         this.appSettingService.showError('Failed to generate master job');
         console.error('Error generating master job:', error);
+        this.spinnerService.hide();
       }
     });
 
@@ -867,6 +881,9 @@ export class LoadingPlanEntryComponent {
   getParseInteger(value:any){
     return value ? parseInt(value).toFixed(3) : '0.000';
   }
+  getParseIntegerNoDecimal(value: any): string {
+    return value ? parseInt(value).toString() : '0';
+}
 
   existInSelected(item){
     return this.selectedBookings.find(b => b.BookingHeaderSid === item.BookingHeaderSid);

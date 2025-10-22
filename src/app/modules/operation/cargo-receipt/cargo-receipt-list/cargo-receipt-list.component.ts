@@ -161,7 +161,7 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
       this.applySorting();
       this.updateHeaderActionState();
     } else {
-      this.appSettingService.showError('Error searching BI clauses.');
+      this.appSettingService.showError('Error searching Cargo.');
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
@@ -169,8 +169,8 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
 
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
-    this.appSettingService.showError('Error searching BI clauses.');
-    console.error('Error searching BI clauses', error);
+    this.appSettingService.showError('Error searching Cargo.');
+    console.error('Error searching Cargo', error);
     super.handleSearchError(error);
   }
 

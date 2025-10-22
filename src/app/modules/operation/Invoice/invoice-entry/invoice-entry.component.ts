@@ -495,8 +495,10 @@ export class InvoiceEntryComponent implements OnInit {
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.invoiceData = resp.data;
+          this.invoiceData['MBLNo'] = resp.data?.MasterNumber;
+          this.invoiceData['HBLNo'] = resp.data?.HouseNumber;
           console.log(this.invoiceData,"InvoiceData")
-          this.patchValues(resp.data);
+          this.patchValues(this.invoiceData);
         } else {
           this.appSettingService.showError('Error loading invoice');
         }

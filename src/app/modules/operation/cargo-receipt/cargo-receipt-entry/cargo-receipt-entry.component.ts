@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModalRef, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -12,6 +12,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { Subject } from 'rxjs';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -23,8 +25,9 @@ import { Subject } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     CustomDatePipe,
-    FormsModule
-  ],
+    FormsModule,
+    SearchableDropdown
+],
   templateUrl: './cargo-receipt-entry.component.html',
   styleUrl: './cargo-receipt-entry.component.scss',
   providers: [
@@ -49,7 +52,8 @@ export class CargoReceiptEntryComponent implements OnInit {
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   currentDate = new Date();
   currentCompany: any;
-  // cfsList:any[] = [];
+  cfsList:any[] = [];
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
 
   constructor(
     private config: NgSelectConfig,
@@ -62,10 +66,10 @@ export class CargoReceiptEntryComponent implements OnInit {
     private datePipe: CustomDatePipe,
     public dropdownStore: DropdownStore
   ) {
-    this.config.notFoundText = 'No items found';
-    this.config.appendTo = 'body';
-    this.config.bindValue = 'CustomerName';
-    this.config.bindLabel = 'CustomerName';
+    effect(() => {
+      const cfsData = this.dropdownStore.customerTypeData();
+      this.cfsList = cfsData
+    })
     this.initForm();
   }
 
@@ -84,17 +88,17 @@ export class CargoReceiptEntryComponent implements OnInit {
 
   initForm() {
     this.cargoForm = this.fb.group({
-      BookingNo: ['', [Validators.required]],
-      BookingDateTime: ['', [Validators.required]],
-      departmentName: ['', [Validators.required]],
-      CustomerName: ['', [Validators.required]],
+      BookingNo: [''],
+      BookingDateTime: [''],
+      departmentName: [''],
+      CustomerName: [''],
       HBLNo: [''],
-      VesselName: ['', [Validators.required]],
-      VoyageNo: ['', [Validators.required]],
-      POO: ['', [Validators.required]],
-      POD: ['', [Validators.required]],
-      POL: ['', [Validators.required]],
-      FPD: ['', [Validators.required]],
+      VesselName: [''],
+      VoyageNo: [''],
+      POO: [''],
+      POD: [''],
+      POL: [''],
+      FPD: [''],
       bookingProducts: this.fb.array([])
     });
   }
@@ -108,7 +112,7 @@ export class CargoReceiptEntryComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       types: ['cFS']
     }
-    this.dropdownStore.loadCustomerTypeData(payload)
+    this.dropdownStore.loadCustomerTypeData(payload).subscribe();
   }
 
 
