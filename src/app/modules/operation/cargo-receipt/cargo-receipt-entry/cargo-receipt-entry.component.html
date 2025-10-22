@@ -204,8 +204,18 @@
                             <td >
                                 <div class="custom-form-group custom-form-group-select mt-0" style="width: 150px;"
                                     [class.filled]="!!cargoForm.get('CFS')?.value">
-                                    <ng-select formControlName="CFS" [items]="dropdownStore.customerTypeData()" bindLabel="CustomerName"
-                                        bindValue="CustomerName" placeholder=""></ng-select>
+                                    <!-- <ng-select formControlName="CFS" [items]="dropdownStore.customerTypeData()" bindLabel="CustomerName"
+                                        bindValue="CustomerName" placeholder=""></ng-select> -->
+                                        <dofi-searchable-dropdown 
+                                            [items]="cfsList" 
+                                            formControlName="CFS" 
+                                            placeholder=""
+                                            [displayFields]="customerLookupConfig.displayFields"
+                                            [displayLabels]="customerLookupConfig.displayLabels"
+                                            [labelFields]="customerLookupConfig.labelFields"
+                                            bindValue="CustomerName"
+                                            >
+                                        </dofi-searchable-dropdown>
                                 </div>
                             </td>
                             <td class="pb-1">
