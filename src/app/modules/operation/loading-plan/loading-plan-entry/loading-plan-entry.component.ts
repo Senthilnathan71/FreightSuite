@@ -881,6 +881,9 @@ export class LoadingPlanEntryComponent {
   getParseInteger(value:any){
     return value ? parseInt(value).toFixed(3) : '0.000';
   }
+  getParseIntegerNoDecimal(value: any): string {
+    return value ? parseInt(value).toString() : '0';
+}
 
   existInSelected(item){
     return this.selectedBookings.find(b => b.BookingHeaderSid === item.BookingHeaderSid);
