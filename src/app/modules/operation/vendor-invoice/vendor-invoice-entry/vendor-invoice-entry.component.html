@@ -12,10 +12,18 @@
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h4 class="page-title mb-0">{{ isEditMode ? 'Edit Vendor Invoice' : 'Create Vendor Invoice' }}</h4>
+        <h4 class="page-title mb-0">{{ isViewMode ? 'View Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' : 'Create Vendor Invoice') }}</h4>
       </div>
       <div class="col-md-8 pb-1">
         <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button
+            *ngIf="isViewMode"
+            type="button"
+            class="btn btn-primary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onPrint()">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+
           <button
             type="button"
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -24,6 +32,7 @@
           </button>
 
           <button
+            *ngIf="!isViewMode"
             type="button"
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onReset()">
@@ -31,6 +40,7 @@
           </button>
 
           <button
+            *ngIf="!isViewMode"
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onSubmit()"
@@ -383,7 +393,7 @@
           </div>
 
           <!-- Search Costs Button -->
-          <div class="col-12 px-0 mt-2">
+          <div class="col-12 px-0 mt-2" *ngIf="!isViewMode">
     <button
       type="button"
       class="btn btn-primary btn-sm"
@@ -403,232 +413,192 @@
   <div class="row bg-white rounded shadow-sm mx-auto mt-1">
     <div class="col-12 py-1 px-0">
       <div class="table-responsive table-borderless">
-        <table class="table table-hover align-middle no-wrap table-sm mb-1">
-          <thead>
-            <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col" width="3%">S.No</th>
-              <th class="bg-transparent text-light" scope="col" width="8%">Charge <span class="text-danger">*</span></th>
-              <th class="bg-transparent text-light" scope="col" width="6%">Charge Code</th>
-              <th class="bg-transparent text-light" scope="col" width="8%">Charge Desc</th>
-              <th class="bg-transparent text-light" scope="col" width="5%">SAC Code</th>
-              <th class="bg-transparent text-light" scope="col" width="4%">Unit</th>
-              <th class="bg-transparent text-light" scope="col" width="5%">No. of Unit</th>
-              <th class="bg-transparent text-light" scope="col" width="4%">Dr/Cr</th>
-              <th class="bg-transparent text-light" scope="col" width="4%">Curr.</th>
-              <th class="bg-transparent text-light" scope="col" width="5%">Ex.Rate</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">Rate</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">Amount</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">Taxable Amt</th>
-              <th class="bg-transparent text-light" scope="col" width="4%">CGST%</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">CGST</th>
-              <th class="bg-transparent text-light" scope="col" width="4%">SGST%</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">SGST</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">Local Amt</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">Master Job</th>
-              <th class="bg-transparent text-light" scope="col" width="6%">House Job</th>
-              <th class="bg-transparent text-light" scope="col" width="3%">Action</th>
+        <table class="table table-hover table-sm mb-0 text-center">
+          <thead class="table-header-booking">
+            <tr class="align-middle bg-info">
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;" *ngIf="!isViewMode"></th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">S.No</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge <span class="text-danger" *ngIf="!isViewMode">*</span></th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Charge Desc</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SAC Code</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable Amt</th>
+
+              <!-- India GST Columns -->
+              <ng-container *ngIf="isIndiaGST">
+                <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
+                <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
+              </ng-container>
+
+              <!-- VAT Column for non-India countries -->
+              <ng-container *ngIf="isVATMode">
+                <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
+              </ng-container>
+
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local Amount</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Master Job</th>
+              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House Job</th>
+            </tr>
+            <tr class="align-middle bg-info">
+              <!-- India GST Sub-headers -->
+              <ng-container *ngIf="isIndiaGST">
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+              </ng-container>
+
+              <!-- VAT Sub-headers -->
+              <ng-container *ngIf="isVATMode">
+                <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+              </ng-container>
             </tr>
           </thead>
           <tbody formArrayName="voucherDetails">
-            <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
-              <!-- S.No -->
-              <td class="text-center" style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="Sno"
-                  class="form-control form-control-sm"
-                  readonly
-                  style="width: 50px;" />
-              </td>
+            <ng-container *ngFor="let row of details.controls; let i = index">
+              <tr [formGroupName]="i">
+                <!-- Delete Button -->
+                <td *ngIf="!isViewMode">
+                  <button type="button" class="btn btn-sm pt-0" (click)="deleteDetailRow(i)">
+                    <i class="fas fa-trash text-danger"></i>
+                  </button>
+                </td>
 
-              <!-- Charge -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <ng-select
-                  [items]="chargeList"
-                  bindLabel="ChargeDescription"
-                  bindValue="ChargeMasterSid"
-                  formControlName="ChargeMasterSid"
-                  (change)="onChargeChange($any(row), $event)"
-                  appendTo="body"
-                  class="ng-select-sm"
-                  placeholder="Select">
-                </ng-select>
-              </td>
+                <!-- S.No -->
+                <td>{{ i + 1 }}</td>
 
-              <!-- Charge Code (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="ChargeCode"
-                  class="form-control form-control-sm"
-                  readonly />
-              </td>
+                <!-- Charge -->
+                <td>
+                  <ng-select *ngIf="!isViewMode" [items]="chargeList" bindLabel="ChargeName"
+                    bindValue="ChargeMasterSid" formControlName="ChargeMasterSid"
+                    (change)="onChargeChange($any(row), $event)" placeholder="" appendTo="body">
+                  </ng-select>
+                  <span *ngIf="isViewMode">{{ getChargeName(row.get('ChargeMasterSid')?.value) }}</span>
+                </td>
 
-              <!-- Charge Description (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="ChargeDescription"
-                  class="form-control form-control-sm"
-                  readonly />
-              </td>
+                <!-- Charge Description -->
+                <td>
+                  <input *ngIf="!isViewMode" class="custom-input-field sm" formControlName="ChargeDescription" readonly>
+                  <span *ngIf="isViewMode">{{ row.get('ChargeDescription')?.value || '-' }}</span>
+                </td>
 
-              <!-- SAC Code (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="SACCode"
-                  class="form-control form-control-sm"
-                  readonly />
-              </td>
+                <!-- SAC Code -->
+                <td>
+                  <span>{{ row.get('SACCode')?.value || '-' }}</span>
+                </td>
 
-              <!-- Unit (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="Unit"
-                  class="form-control form-control-sm"
-                  readonly />
-              </td>
+                <!-- Unit -->
+                <td>
+                  <span>{{ row.get('Unit')?.value || '-' }}</span>
+                </td>
 
-              <!-- Number of Unit -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="NumberOfUnit"
-                  class="form-control form-control-sm text-end"
-                  (blur)="recalculateRow($any(row))"
-                  step="0.01" />
-              </td>
+                <!-- No of Unit -->
+                <td>
+                  <input *ngIf="!isViewMode" type="number" class="custom-input-field sm text-end"
+                    formControlName="NumberOfUnit" (blur)="recalculateRow($any(row))" step="0.01">
+                  <span *ngIf="isViewMode" class="text-end d-block">{{ row.get('NumberOfUnit')?.value | number:'1.2-2' }}</span>
+                </td>
 
-              <!-- Dr/Cr (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="DrCr"
-                  class="form-control form-control-sm"
-                  readonly />
-              </td>
+                <!-- Dr/Cr -->
+                <td>
+                  <span>{{ row.get('DrCr')?.value || '-' }}</span>
+                </td>
 
-              <!-- Currency Code (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="CurrencyCode"
-                  class="form-control form-control-sm"
-                  readonly />
-              </td>
+                <!-- Currency -->
+                <td>
+                  <span>{{ row.get('CurrencyCode')?.value || '-' }}</span>
+                </td>
 
-              <!-- Exchange Rate (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="ExchangeRate"
-                  class="form-control form-control-sm text-end"
-                  readonly
-                  step="0.01" />
-              </td>
+                <!-- Rate -->
+                <td>
+                  <input *ngIf="!isViewMode" type="number" class="custom-input-field sm text-end"
+                    formControlName="Rate" (blur)="recalculateRow($any(row))" step="0.01">
+                  <span *ngIf="isViewMode" class="text-end d-block">{{ row.get('Rate')?.value | number:'1.2-2' }}</span>
+                </td>
 
-              <!-- Rate -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="Rate"
-                  class="form-control form-control-sm text-end"
-                  (blur)="recalculateRow($any(row))"
-                  step="0.01" />
-              </td>
+                <!-- Ex Rate -->
+                <td>
+                  <span class="text-end d-block">{{ row.get('ExchangeRate')?.value | number:'1.3-3' }}</span>
+                </td>
 
-              <!-- Amount (readonly calculated) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="Amount"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                <!-- Amount -->
+                <td>
+                  <span class="text-end d-block">{{ row.get('Amount')?.value | number:'1.2-2' }}</span>
+                </td>
 
-              <!-- Taxable Amount (readonly calculated) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="TaxableAmount"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                <!-- Taxable Amt -->
+                <td>
+                  <span class="text-end d-block">{{ row.get('TaxableAmount')?.value | number:'1.2-2' }}</span>
+                </td>
 
-              <!-- CGST % (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="CGSTPercent"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                <!-- India GST Columns -->
+                <ng-container *ngIf="isIndiaGST">
+                  <!-- CGST Rate -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('CGSTPercentage')?.value || 0 }}%</span>
+                  </td>
+                  <!-- CGST Amount -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('CGST')?.value | number:'1.2-2' }}</span>
+                  </td>
 
-              <!-- CGST Amount (readonly calculated) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="CGSTAmount"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                  <!-- SGST Rate -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('SGSTPercentage')?.value || 0 }}%</span>
+                  </td>
+                  <!-- SGST Amount -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('SGST')?.value | number:'1.2-2' }}</span>
+                  </td>
 
-              <!-- SGST % (readonly) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="SGSTPercent"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                  <!-- IGST Rate -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('IGSTPercentage')?.value || 0 }}%</span>
+                  </td>
+                  <!-- IGST Amount -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('IGST')?.value | number:'1.2-2' }}</span>
+                  </td>
+                </ng-container>
 
-              <!-- SGST Amount (readonly calculated) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="SGSTAmount"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                <!-- VAT Columns for non-India -->
+                <ng-container *ngIf="isVATMode">
+                  <!-- VAT Rate -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('VATPercentage')?.value || 0 }}%</span>
+                  </td>
+                  <!-- VAT Amount -->
+                  <td>
+                    <span class="text-end d-block">{{ row.get('VAT')?.value | number:'1.2-2' }}</span>
+                  </td>
+                </ng-container>
 
-              <!-- Local Amount (readonly calculated) -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="number"
-                  formControlName="LocalAmount"
-                  class="form-control form-control-sm text-end"
-                  readonly />
-              </td>
+                <!-- Local Amount -->
+                <td>
+                  <span class="text-end d-block">{{ row.get('LocalAmount')?.value | number:'1.2-2' }}</span>
+                </td>
 
-              <!-- Master Job -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="JobNo"
-                  class="form-control form-control-sm" />
-              </td>
+                <!-- Master Job -->
+                <td>
+                  <span>{{ row.get('MasterJobSid')?.value || '-' }}</span>
+                </td>
 
-              <!-- House Job -->
-              <td style="padding: 2px; line-height: 1.5;">
-                <input
-                  type="text"
-                  formControlName="HouseJobNo"
-                  class="form-control form-control-sm" />
-              </td>
-
-              <!-- Action -->
-              <td class="text-center" style="padding: 2px; line-height: 1.5;">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
-                  (click)="deleteDetailRow(i)"
-                  [disabled]="details.controls.length === 1">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
+                <!-- House Job -->
+                <td>
+                  <span>{{ row.get('HouseJobSid')?.value || '-' }}</span>
+                </td>
+              </tr>
+            </ng-container>
 
             <tr *ngIf="details.controls.length === 0">
               <td colspan="21" class="text-center text-muted">
@@ -638,15 +608,29 @@
 
             <!-- Total Row -->
             <tr *ngIf="details.controls.length > 0" class="fw-bold bg-light">
+              <td *ngIf="!isViewMode"></td>
               <td colspan="11" class="text-end">Total:</td>
               <td class="text-end">{{ calculateTotalAmount() | number:'1.2-2' }}</td>
               <td class="text-end">{{ calculateTotalTaxableAmount() | number:'1.2-2' }}</td>
-              <td></td>
-              <td class="text-end">{{ calculateTotalCGST() | number:'1.2-2' }}</td>
-              <td></td>
-              <td class="text-end">{{ calculateTotalSGST() | number:'1.2-2' }}</td>
+
+              <!-- India GST Totals -->
+              <ng-container *ngIf="isIndiaGST">
+                <td></td>
+                <td class="text-end">{{ calculateTotalCGST() | number:'1.2-2' }}</td>
+                <td></td>
+                <td class="text-end">{{ calculateTotalSGST() | number:'1.2-2' }}</td>
+                <td></td>
+                <td class="text-end">{{ calculateTotalIGST() | number:'1.2-2' }}</td>
+              </ng-container>
+
+              <!-- VAT Total -->
+              <ng-container *ngIf="isVATMode">
+                <td></td>
+                <td class="text-end">{{ calculateTotalVAT() | number:'1.2-2' }}</td>
+              </ng-container>
+
               <td class="text-end">{{ calculateTotalLocalAmount() | number:'1.2-2' }}</td>
-              <td colspan="3"></td>
+              <td colspan="2"></td>
             </tr>
           </tbody>
         </table>
@@ -746,6 +730,9 @@
   </div>
 
         </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Search Pending Costs Modal -->

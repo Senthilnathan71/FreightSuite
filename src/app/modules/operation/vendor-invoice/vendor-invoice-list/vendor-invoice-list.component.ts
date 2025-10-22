@@ -411,6 +411,10 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   }
 
   viewVendorInvoice(vendorInvoice: any) {
+    this.router.navigate(['/operation/vendor-invoice/view', vendorInvoice.VoucherHeaderSid]);
+  }
+
+  editVendorInvoice(vendorInvoice: any) {
     this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid]);
   }
 

@@ -267,8 +267,17 @@ export const OperationRoutes: Routes = [
         path: 'vendor-invoice/entry/:id',
         component: VendorInvoiceEntryComponent,
         data: {
-          title: 'Vendor Invoice',
+          title: 'Edit Vendor Invoice',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Invoice' }],
+        },
+      },
+      {
+        path: 'vendor-invoice/view/:id',
+        component: VendorInvoiceEntryComponent,
+        data: {
+          title: 'View Vendor Invoice',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Invoice' }],
+          viewMode: true
         },
       },
     ],

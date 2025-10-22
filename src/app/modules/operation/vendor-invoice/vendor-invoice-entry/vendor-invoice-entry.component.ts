@@ -49,7 +49,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   vendorInvoiceData: any;
 
   currUserEmail: string | null = null;
-  get isEditMode() { return !!this.headerId; }
+  isViewMode: boolean = false;
+  get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
   // ViewChild references for modals
   @ViewChild('searchCostsModal') searchCostsModalRef: TemplateRef<any> | undefined;
@@ -174,6 +175,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
     } catch (err) {
       this.currUserEmail = localStorage.getItem('user-email') || null;
     }
+
+    // Check if view mode from route data
+    this.route.data.subscribe(data => {
+      this.isViewMode = data['viewMode'] === true;
+    });
 
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -455,13 +461,25 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   calculateTotalCGST(): number {
     return this.details.controls.reduce((sum, row: any) => {
-      return sum + (Number(row.get('CGSTAmount')?.value) || 0);
+      return sum + (Number(row.get('CGST')?.value) || 0);
     }, 0);
   }
 
   calculateTotalSGST(): number {
     return this.details.controls.reduce((sum, row: any) => {
-      return sum + (Number(row.get('SGSTAmount')?.value) || 0);
+      return sum + (Number(row.get('SGST')?.value) || 0);
+    }, 0);
+  }
+
+  calculateTotalIGST(): number {
+    return this.details.controls.reduce((sum, row: any) => {
+      return sum + (Number(row.get('IGST')?.value) || 0);
+    }, 0);
+  }
+
+  calculateTotalVAT(): number {
+    return this.details.controls.reduce((sum, row: any) => {
+      return sum + (Number(row.get('VAT')?.value) || 0);
     }, 0);
   }
 
@@ -696,6 +714,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         if (response.status && response.data) {
           this.vendorInvoiceData = response.data;
           this.populateForm(this.vendorInvoiceData);
+          this.setFormReadonly();
         } else {
           this.appSettingService.showError('Vendor Invoice not found');
           this.router.navigate(['/operation/vendor-invoice/list']);
@@ -708,6 +727,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
         this.router.navigate(['/operation/vendor-invoice/list']);
       }
     });
+  }
+
+  setFormReadonly() {
+    if (this.isViewMode) {
+      this.vendorInvoiceForm.disable();
+    }
   }
 
   populateForm(data: any) {
@@ -955,6 +980,16 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   onCancel() {
     this.router.navigate(['/operation/vendor-invoice/list']);
+  }
+
+  onPrint() {
+    window.print();
+  }
+
+  getChargeName(chargeMasterSid: number): string {
+    if (!chargeMasterSid) return '-';
+    const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeMasterSid);
+    return charge?.ChargeName || charge?.ChargeDescription || '-';
   }
 
   onSubmit() {
