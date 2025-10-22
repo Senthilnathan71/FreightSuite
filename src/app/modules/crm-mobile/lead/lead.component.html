@@ -306,7 +306,7 @@
             [displayLabels]="countryLookupConfig.displayLabels"
             [labelFields]="countryLookupConfig.labelFields" 
             bindValue="CountryMasterSid"
-            (itemSelected)="filterStateByCountryId($event)">
+            (itemSelected)="onCountryChange($event)">
         </dofi-searchable-dropdown>
         <label for="country" class="input-label">Country <span class="text-danger">*</span></label>
         @if(leadForm.get('CountryMasterSid')?.touched &&
@@ -350,7 +350,7 @@
             [displayLabels]="stateLookupConfig.displayLabels"
             [labelFields]="stateLookupConfig.labelFields" 
             bindValue="StateMasterSid"
-            (itemSelected)="filterCityByStateId($event)">
+            (itemSelected)="onStateChange($event)">
         </dofi-searchable-dropdown>
         <label for="state" class="input-label">State <span class="text-danger">*</span></label>
         @if(leadForm.get('StateMasterSid')?.touched &&
@@ -363,7 +363,7 @@
                             }
     </div>
 </div>
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!leadForm.get('CityMasterSid')?.value">
                             <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid"
@@ -381,7 +381,31 @@
                             }
                         </div>
 
-                    </aside>
+                    </aside> -->
+                    <div class="col-md-3">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!leadForm.get('CityMasterSid')?.value">
+        <dofi-searchable-dropdown 
+            [items]="cityList" 
+            formControlName="CityMasterSid" 
+            placeholder=""
+            [displayFields]="cityLookupConfig.displayFields"
+            [displayLabels]="cityLookupConfig.displayLabels"
+            [labelFields]="cityLookupConfig.labelFields" 
+            bindValue="CityMasterSid"
+            >
+        </dofi-searchable-dropdown>
+        <label for="city" class="input-label">City <span class="text-danger">*</span></label>
+        @if(leadForm.get('CityMasterSid')?.touched &&
+                            leadForm.get('CityMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(leadForm.get('CityMasterSid')?.hasError('required')){
+                                <span>Required</span>
+                                }
+                            </div>
+                            }
+    </div>
+</div>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="ContactPerson" placeholder="" class="custom-input-field sm"

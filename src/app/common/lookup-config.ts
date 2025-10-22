@@ -35,9 +35,9 @@ export const DROPDOWN_CONFIGS = {
     labelFields: ['stateName']
   },
   CITY: {
-    displayFields: ['CityName', 'State', 'Country'],
+    displayFields: ['cityName', 'State', 'Country'],
     displayLabels: ['City', 'State', 'Country'],
-    labelFields: ['CityName']
+    labelFields: ['cityName']
   },
   INCO : {
     displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
