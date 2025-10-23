@@ -42,6 +42,7 @@
     "jquery": "^3.7.1",
     "jspdf": "^3.0.3",
     "ngx-device-detector": "^7.0.0",
+    "ngx-doc-viewer": "^15.0.1",
     "ngx-scrollbar": "^11.0.0",
     "ngx-spinner": "^19.0.0",
     "ngx-toastr": "^19.0.0",

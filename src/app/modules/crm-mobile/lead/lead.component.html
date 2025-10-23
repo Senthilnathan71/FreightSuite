@@ -296,20 +296,14 @@
 
                     </aside> -->
                     <div class="col-md-3">
-    <div class="custom-form-group custom-form-group-select"
-        [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
-        <dofi-searchable-dropdown 
-            [items]="countryList" 
-            formControlName="CountryMasterSid" 
-            placeholder=""
-            [displayFields]="countryLookupConfig.displayFields" 
-            [displayLabels]="countryLookupConfig.displayLabels"
-            [labelFields]="countryLookupConfig.labelFields" 
-            bindValue="CountryMasterSid"
-            (itemSelected)="onCountryChange($event)">
-        </dofi-searchable-dropdown>
-        <label for="country" class="input-label">Country <span class="text-danger">*</span></label>
-        @if(leadForm.get('CountryMasterSid')?.touched &&
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!leadForm.get('CountryMasterSid')?.value">
+                            <dofi-searchable-dropdown [items]="countryList" formControlName="CountryMasterSid" placeholder=""
+                                [displayFields]="countryLookupConfig.displayFields" [displayLabels]="countryLookupConfig.displayLabels"
+                                [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid"
+                                (itemSelected)="onCountryChange($event)">
+                            </dofi-searchable-dropdown>
+                            <label for="country" class="input-label">Country <span class="text-danger">*</span></label>
+                            @if(leadForm.get('CountryMasterSid')?.touched &&
                             leadForm.get('CountryMasterSid')?.invalid){
                             <div class="error-message">
                                 @if(leadForm.get('CountryMasterSid')?.hasError('required')){
@@ -317,8 +311,8 @@
                                 }
                             </div>
                             }
-    </div>
-</div>
+                        </div>
+                    </div>
                     <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!leadForm.get('StateMasterSid')?.value">

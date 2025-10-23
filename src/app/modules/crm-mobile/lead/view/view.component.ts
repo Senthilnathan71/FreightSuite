@@ -282,7 +282,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
       },
       {
         key: 'meetingStatus',
-        label: 'Schedule',
+        label: 'Lead Status',
         sortable: true,
         filterable: true,
         visible: true,

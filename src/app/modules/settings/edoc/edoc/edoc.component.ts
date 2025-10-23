@@ -17,10 +17,11 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { NgxDocViewerModule } from "ngx-doc-viewer";
 @Component({
   selector: 'app-edoc',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDatepickerModule, FeatherModule],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDatepickerModule, FeatherModule, NgxDocViewerModule],
   templateUrl: './edoc.component.html',
   styleUrl: './edoc.component.scss',
   providers: [
@@ -31,7 +32,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 })
 export class EdocComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+    dummyFileUrl: string = '../../../../../assets/pdf-sample_0.pdf'; // place a PDF in src/assets
+
   @Input() screenName: string = "Edoc";
   @Output() closeModal = new EventEmitter<boolean>();
   @Input() dataItems: any[] = [];
@@ -47,7 +49,8 @@ export class EdocComponent implements OnInit, OnDestroy {
   currentBranch: any
   componentData: any
     existingFileName: string | null = null; // ✅ Add this line
-
+firstFile: File | null = null;
+  firstFileUrl: string = '';
   constructor(
     private datePipe: CustomDatePipe,
     private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {

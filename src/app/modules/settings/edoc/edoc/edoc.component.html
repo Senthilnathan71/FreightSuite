@@ -147,17 +147,19 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select-date">
-                                    <div class="input-group ">
+                                    <div class="input-group">
                                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                             #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="ReceivedDate"
                                             [minDate]="minDate" (keydown.arrowDown)="d2.open()" container="body" />
-                                        <button class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button">
-                                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                        <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                                        </button>
                                     </div>
-                                    <label for="" class="input-label"> Received Date <span class="text-danger"></span>
-                                    </label>
+                                    <label for="" class="input-label">Received Date <span
+                                            class="text-danger"></span></label>
                                 </div>
                             </aside>
+
 
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select-date">
@@ -300,3 +302,32 @@
 
     </div>
 </form>
+
+
+<!-- Single Div File Preview -->
+<div class="col-12">
+  <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+
+    <!-- File Preview -->
+    <div class="file-preview mt-3" style="border:1px solid #ddd; padding:10px;">
+      <h5>Preview:</h5>
+
+      <!-- If firstFile exists, preview it -->
+      <ngx-doc-viewer 
+        *ngIf="firstFile" 
+        [url]="firstFileUrl" 
+        viewer="google" 
+        style="width:100%; height:600px;">
+      </ngx-doc-viewer>
+
+      <!-- Otherwise, show dummy PDF -->
+      <ngx-doc-viewer 
+        *ngIf="!firstFile" 
+        [url]="dummyFileUrl" 
+        viewer="google" 
+        style="width:100%; height:600px;">
+      </ngx-doc-viewer>
+    </div>
+
+  </div>
+</div>

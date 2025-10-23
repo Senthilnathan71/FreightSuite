@@ -23,7 +23,6 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { HttpClient } from '@angular/common/http';
-import { CrmMobileModule } from './modules/crm-mobile/crm-mobile.module';
 
 // angular
 import { CalendarModule, DateAdapter } from 'angular-calendar';
@@ -33,7 +32,7 @@ import { HttpInterceptorService } from './core/http.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { DATE_FORMAT_INITIALIZER } from './core/initializers/date-format.initializer';
-import { LeadService } from './modules/crm-mobile/Services/lead.service';
+import { NgxDocViewerModule } from 'ngx-doc-viewer';
 
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -55,6 +54,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppRoutingModule,
     NgScrollbarModule,
     HttpClientModule,
+    NgxDocViewerModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
