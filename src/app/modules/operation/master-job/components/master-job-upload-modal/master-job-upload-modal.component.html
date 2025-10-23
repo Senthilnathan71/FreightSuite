@@ -1,0 +1,179 @@
+<div class="upload-modal-container">
+  <h2 mat-dialog-title>Upload Master Job & House Jobs from Excel</h2>
+
+  <mat-dialog-content class="upload-modal-content">
+    <!-- File Upload Section -->
+    <div class="upload-section" *ngIf="!showPreview">
+      <div class="upload-instructions">
+        <h3>Instructions:</h3>
+        <ol>
+          <li>Download the Excel template if you haven't already</li>
+          <li>Fill in the Master Job details in the "Master Job" sheet</li>
+          <li>Fill in House Job details in the "House Jobs" sheet (at least one required)</li>
+          <li>Upload the completed Excel file</li>
+          <li>Review and edit the data if needed</li>
+          <li>Click "Proceed" to create the jobs</li>
+        </ol>
+      </div>
+
+      <div class="file-upload-box">
+        <input
+          type="file"
+          #fileInput
+          accept=".xlsx,.xls"
+          (change)="onFileSelected($event)"
+          style="display: none"
+        />
+
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="fileInput.click()"
+          [disabled]="isProcessing"
+        >
+          <mat-icon>upload_file</mat-icon>
+          Select Excel File
+        </button>
+
+        <p *ngIf="selectedFile" class="selected-file">
+          Selected: {{ selectedFile.name }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section" *ngIf="showPreview && !hasErrors()">
+      <div class="preview-header">
+        <h3>Review and Edit Data</h3>
+        <button mat-button color="warn" (click)="onReUpload()">
+          <mat-icon>refresh</mat-icon>
+          Upload Different File
+        </button>
+      </div>
+
+      <mat-tab-group>
+        <!-- Master Job Tab -->
+        <mat-tab label="Master Job">
+          <div class="tab-content">
+            <div class="form-section">
+              <form [formGroup]="masterJobForm" *ngIf="masterJobForm">
+                <div class="form-grid">
+                  <mat-form-field
+                    *ngFor="let column of masterJobColumns"
+                    appearance="outline"
+                    class="form-field"
+                  >
+                    <mat-label>{{ column }}</mat-label>
+                    <input
+                      matInput
+                      [formControlName]="column"
+                      [class.error-field]="hasFieldError(column, 'Master Job')"
+                    />
+                    <mat-error *ngIf="hasFieldError(column, 'Master Job')">
+                      {{ getFieldError(column, 'Master Job') }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+              </form>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- House Jobs Tab -->
+        <mat-tab label="House Jobs ({{ houseJobsData.length }})">
+          <div class="tab-content">
+            <div class="house-jobs-container">
+              <form [formGroup]="houseJobsForm" *ngIf="houseJobsForm">
+                <div formArrayName="houseJobs">
+                  <div
+                    *ngFor="let houseJob of houseJobsArray.controls; let i = index"
+                    class="house-job-item"
+                    [formGroupName]="i"
+                  >
+                    <div class="house-job-header">
+                      <h4>House Job {{ i + 1 }}</h4>
+                    </div>
+
+                    <div class="form-grid">
+                      <mat-form-field
+                        *ngFor="let column of houseJobColumns"
+                        appearance="outline"
+                        class="form-field"
+                      >
+                        <mat-label>{{ column }}</mat-label>
+                        <input
+                          matInput
+                          [formControlName]="column"
+                          [class.error-field]="hasFieldError(column, 'House Jobs', i + 2)"
+                        />
+                        <mat-error *ngIf="hasFieldError(column, 'House Jobs', i + 2)">
+                          {{ getFieldError(column, 'House Jobs', i + 2) }}
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+    <!-- Errors Section -->
+    <div class="errors-section" *ngIf="hasErrors()">
+      <div class="error-header">
+        <mat-icon color="warn">error</mat-icon>
+        <h3>Validation Errors ({{ errors.length }})</h3>
+      </div>
+
+      <div class="error-list">
+        <div
+          *ngFor="let error of errors"
+          class="error-item"
+        >
+          <div class="error-details">
+            <strong>{{ error.sheet }}</strong>
+            <span *ngIf="error.row"> - Row {{ error.row }}</span>
+            <span> - {{ error.field }}</span>
+          </div>
+          <div class="error-message">{{ error.message }}</div>
+        </div>
+      </div>
+
+      <div class="error-actions">
+        <p>Please fix the errors in your Excel file and upload again.</p>
+        <button mat-raised-button color="primary" (click)="onReUpload()">
+          <mat-icon>refresh</mat-icon>
+          Upload Corrected File
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" *ngIf="isProcessing">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Processing...</p>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button
+      mat-button
+      (click)="onCancel()"
+      [disabled]="isProcessing"
+    >
+      Cancel
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onProceed()"
+      [disabled]="isProcessing || !showPreview || hasErrors()"
+      *ngIf="showPreview"
+    >
+      <mat-icon>check_circle</mat-icon>
+      Proceed with Job Creation
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -20,6 +20,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { MasterJobUploadModalComponent } from '../components/master-job-upload-modal/master-job-upload-modal.component';
 @Component({
   selector: 'app-master-job-list',
   standalone: true,
@@ -200,6 +201,18 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         condition: this.hasPermission('Add')
       },
       {
+        label: 'Download Template',
+        icon: 'fas fa-download',
+        action: 'download-template',
+        condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Upload Excel',
+        icon: 'fas fa-file-upload',
+        action: 'upload-file',
+        condition: this.hasPermission('Add')
+      },
+      {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
@@ -246,6 +259,12 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     switch (action) {
       case 'create':
         this.navigateToMasterJob()
+        break;
+      case 'download-template':
+        this.downloadTemplate();
+        break;
+      case 'upload-file':
+        this.openUploadModal();
         break;
       case 'report':
         this.report();
@@ -567,6 +586,48 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
 
   navigateToMasterJob() {
     this.router.navigate(['operation/master-job/entry']);
+  }
+
+  downloadTemplate(): void {
+    this.spinner.show();
+    this.operationService.downloadMasterJobTemplate().subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Master_Job_Upload_Template.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.spinner.hide();
+        this.appSettingService.showSuccess('Template downloaded successfully');
+      },
+      error: (error) => {
+        console.error('Error downloading template:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error downloading template');
+      }
+    });
+  }
+
+  openUploadModal(): void {
+    const dialogRef = this.dialog.open(MasterJobUploadModalComponent, {
+      width: '90vw',
+      maxWidth: '1400px',
+      height: '85vh',
+      disableClose: true,
+      data: {
+        currentCompany: this.currentCompany,
+        currentBranch: this.currentBranch,
+        userData: this.userData
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.appSettingService.showSuccess('Master Job and House Jobs created successfully');
+        this.searchMasterjob(); // Refresh the list
+      }
+    });
   }
 
 

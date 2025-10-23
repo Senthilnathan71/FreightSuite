@@ -335,6 +335,32 @@ getShipmentMilestones(payload: any) {
     );
   }
 
+  // Master Job Bulk Upload Operations
+  parseExcelForBulkUpload(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<{ status: boolean; message: string; data: any }>('master-job/bulk-upload/parse', formData).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  processBulkUpload(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('master-job/bulk-upload/process', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  downloadMasterJobTemplate() {
+    return this.http.get('master-job/bulk-upload/template', {
+      responseType: 'blob'
+    });
+  }
+
   //cargo-receipt
   
   getLCLExportBookingById(BookingHeaderSid: number) {
