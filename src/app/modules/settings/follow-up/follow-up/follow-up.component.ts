@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Optional, Output } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -41,10 +41,12 @@ export class FollowUpComponent implements OnInit {
   @Input() parentSubject!: string;    
   @Input() parentMailbody!: string;
   @Input() documentSid!: number;
-  @Input() screenName!: string;
+ @Input() screenName: string = "Follow Up";
 @Input() dataItems: any[] = [];
 @Input() resetTrigger: boolean = false;
 @Input() formData: any;
+  // @Output() closeModal = new EventEmitter<boolean>();
+  @Output() closeModalEvent = new EventEmitter<boolean>();
 @Output() dataEmitter = new EventEmitter<any>();
   today = new Date();
   todayDate = this.toNgbDateStruct(this.today);
@@ -67,7 +69,8 @@ export class FollowUpComponent implements OnInit {
     private fb: FormBuilder,
     // private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
-    private masterService: MasterService
+    private masterService: MasterService,
+     @Optional() public activeModal: NgbActiveModal
   ) {}
 
   ngOnInit(): void {
@@ -241,7 +244,15 @@ private async generatePdfFromHtml(html: string): Promise<File> {
     };
   }
 
-  closeModal(): void {
-    // this.activeModal.dismiss();
+  // closeModal(): void {
+  //   // this.activeModal.dismiss();
+  // }
+
+   closeModal() {
+    if (this.activeModal) {
+      this.activeModal.close();  // Closes Bootstrap modal
+    } else {
+      this.closeModalEvent.emit(true); // Notify parent if no modal
+    }
   }
 }

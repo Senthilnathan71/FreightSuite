@@ -106,7 +106,7 @@ export class EnquiryEntryComponent implements OnInit {
   selectedPort: any;
   quotationEnquiryNumber: any;
   today = this.calendar.getToday();
-  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
+  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day+1);
   disableAddButtons: boolean;
   rateRequestData: any;
   currentMenuId: number;
@@ -138,6 +138,7 @@ export class EnquiryEntryComponent implements OnInit {
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
   currentDate = new Date()
   modeOfEnquiry = [
     { id: 1, name: "Email" },
@@ -399,7 +400,7 @@ export class EnquiryEntryComponent implements OnInit {
       ports: this.dropdownStore.loadPorts().pipe(catchError(() => of([]))),
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(() => of([]))),
       leads: this.leadService.fetchAllLeads(filterOption).pipe(catchError(() => of([]))),
-      incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
+      incos: this.dropdownStore.loadIncos().pipe(catchError(() => of([]))),
       weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.dropdownStore.loadContainerTypes().pipe(catchError(() => of([]))),
@@ -441,7 +442,7 @@ export class EnquiryEntryComponent implements OnInit {
       ClearanceBy: [null],
       TransportBy: [null],
       Remarks: [''],
-      status: [''],
+      status: ['Active'],
       AuthorizerRemarks: [''],
       authorizerStatus: ['Pending'],
       CustomerRef: [''],
@@ -541,7 +542,7 @@ export class EnquiryEntryComponent implements OnInit {
       ShipperAddress: [''],
       ConsigneeName: [null],
       ConsigneeAddress: [''],
-      FreightTerms: [null],
+      FreightTerms: [''],
       AdditionalService: [null],
       PickupAddress: ['']
     })
@@ -555,6 +556,7 @@ export class EnquiryEntryComponent implements OnInit {
     };
     this.dropdownStore.loadCustomerTypeData(payload).subscribe();
     this.dropdownStore.loadDepartments(CompanyMasterSid).subscribe();
+    this.dropdownStore.loadIncos().subscribe();
   }
 
 
@@ -1359,7 +1361,7 @@ ${this.userData.userName}`;
       CustomerRef: "",
       TransportBy: null,
       Remarks: '',
-      status: '',
+      status: 'Active',
       AuthorizerRemarks: '',
       authorizerStatus: 'Pending'
     });
@@ -1559,6 +1561,58 @@ ${this.userData.userName}`;
         : { weightMismatch: true };
     };
   }
+
+  onIncoChange(selectedInco: any): void {
+ 
+  if (!selectedInco) {
+ 
+    return; // Do nothing if incoterm is cleared
+ 
+  }
+ 
+ 
+ 
+  // Find the selected incoterm object
+ 
+  let selectedIncoTerm;
+ 
+  
+ 
+  if (typeof selectedInco === 'object' && selectedInco.IncoName) {
+ 
+    selectedIncoTerm = this.incoList.find(inco => inco.IncoName === selectedInco.IncoName);
+ 
+  } else if (typeof selectedInco === 'string') {
+ 
+    selectedIncoTerm = this.incoList.find(inco => inco.IncoName === selectedInco);
+ 
+  }
+ 
+ 
+ 
+  if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
+ 
+    // Direct mapping since OceanFreight is only Prepaid or Collect
+ 
+    const freightValue = selectedIncoTerm.OceanFreight;
+ 
+    
+ 
+    // Update FreightPPCC field
+ 
+    this.rateRequestForm.patchValue({
+ 
+      FreightPPCC: freightValue
+ 
+    }, { emitEvent: false });
+ 
+    
+ 
+    console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightPPCC set to: ${freightValue}`);
+ 
+  }
+ 
+}
 
   onShipperChange(selectedShipper?: any) {
     if (!selectedShipper) {

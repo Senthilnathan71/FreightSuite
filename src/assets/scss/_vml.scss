@@ -322,6 +322,7 @@
       background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
       font-weight: 600;
       font-size: 0.8rem;
+      
     }
   }
 
@@ -2968,6 +2969,18 @@
 .stat-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 2px solid #f1f5f9;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.stat-item1 {
+  display: flex;
+  
   align-items: center;
   padding: 4px 0;
   border-bottom: 2px solid #f1f5f9;

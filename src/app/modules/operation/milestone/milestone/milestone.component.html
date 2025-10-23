@@ -6,7 +6,7 @@
             </div>
             <div class="toolbar-right">
                  <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)">
-                    <i class="fas fa-plus"></i> Add
+                    <i class="fas fa-plus"></i> Add Milestone
                 </button>
                 <button class="table-action-btn export" (click)="reportMilestones()">
                     <i class="fas fa-download"></i> Export
@@ -18,7 +18,7 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th width="10%">Action</th>
+                        <th width="2%"></th>
                         <th>Sno</th>
                         <th>Milestone</th>
                         <th>Date & Time</th>
@@ -28,10 +28,10 @@
                 </thead>
                 <tbody>
                     <tr class="table-row" *ngFor="let milestone of slicedMilestoneFormArr; let i = index">
-                        <td class="actions-cell">
-                            <div class="action-buttons"> 
+                        <td >
+                            <div > 
                                 <button class="action-icon edit" (click)="openMilestoneModal(milestoneModal,milestone,i)">
-                                    <i class="fas fa-edit"></i>
+                                   <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                 </button>
                                 <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
                                     class="action-icon delete"><i class="fas fa-trash"></i></button> -->
@@ -41,8 +41,8 @@
                         <td>{{ milestone.MilestoneName }}</td>
                         <td>{{ milestone.MilestoneDate | formatDate }}</td>
                         <td>
-                            <div class="form-check form-check-inline p-0 ps-2">
-                                <div class="form-check d-flex align-items-center justify-content-center">
+                            <div class="form-check form-check-inline p-0 ps-2 mt-0">
+                                <div class="form-check d-flex align-items-center justify-content-center mt-0">
                                     <input type="checkbox" id="" class="form-check-input sm"
                                         [checked]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'" disabled>
                                 </div>
@@ -68,8 +68,8 @@
 
 
 <ng-template #milestoneModal let-modal>
-    <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white">Milestone</h5>
+    <div class="modal-header modalHeaderpart ">
+        <h5 class="modal-title ">Milestone</h5>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
