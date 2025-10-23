@@ -79,7 +79,7 @@
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!invoiceForm.get('CustomerMasterSid')?.value">
-                  <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                  <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                     placeholder="" formControlName="CustomerMasterSid" (change)="onCustomerMasterChange($event)"
                     appendTo="body">
                     <ng-template ng-option-tmp let-item="item">
@@ -87,7 +87,13 @@
                         <small>{{ item.CustomerName }}</small>
                       </div>
                     </ng-template>
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid" (itemSelected)="onCustomerMasterChange($event)">
+                      </dofi-searchable-dropdown>
                   <label class="input-label">Customer</label>
                 </div>
               </aside>
@@ -109,6 +115,7 @@
                   <label class="input-label">Customer Address</label>
                 </div>
               </aside>
+              
 
               <!-- 5. Ref No (DocumentNumber) -->
               <aside class="col-md-3">
@@ -163,9 +170,13 @@
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!invoiceForm.get('CurrencyCode')?.value">
-                  <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" placeholder=""
+                  <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" placeholder=""
                     formControlName="CurrencyCode" (change)="recalculateAllRows()">
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
+                [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'" (itemSelected)="recalculateAllRows()">
+              </dofi-searchable-dropdown>
                   <label class="input-label">Currency</label>
                 </div>
               </aside>
@@ -359,10 +370,14 @@
 
                     <!-- Charge -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="chargeList" bindLabel="chargeCode"
+                      <!-- <ng-select *ngIf="!isEditMode" [items]="chargeList" bindLabel="chargeCode"
                         bindValue="ChargeMasterSid" formControlName="ChargeMasterSid"
                         (change)="onDetailChange(i, 'ChargeMasterSid')" placeholder="" appendTo="body">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid" [placeholder]="''"
+                [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
+                [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'" (itemSelected)="onDetailChange(i, 'ChargeMasterSid')">
+              </dofi-searchable-dropdown>
                       <span *ngIf="isEditMode">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span>
                     </td>
 
@@ -375,7 +390,7 @@
 
                     <!-- HSN/SAC -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="hssacList" bindValue="HSSACMasterSid"
+                      <!-- <ng-select *ngIf="!isEditMode" [items]="hssacList" bindValue="HSSACMasterSid"
                         formControlName="HSSACMasterSid" placeholder="" appendTo="body">
                         <ng-template ng-label-tmp let-item="item">
                           {{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode ||
@@ -389,7 +404,11 @@
                               item?.description }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown  [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
+                                            [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
+                                            [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
+                                        </dofi-searchable-dropdown>
                       <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span>
                     </td>
 
@@ -417,9 +436,13 @@
 
                     <!-- Currency -->
                     <td>
-                      <ng-select *ngIf="!isEditMode" [items]="currencyList" bindLabel="currencyCode"
+                      <!-- <ng-select *ngIf="!isEditMode" [items]="currencyList" bindLabel="currencyCode"
                         bindValue="currencyCode" formControlName="CurrencyCode"
-                        (change)="onDetailChange(i,'CurrencyCode')" appendTo="body"></ng-select>
+                        (change)="onDetailChange(i,'CurrencyCode')" appendTo="body"></ng-select> -->
+                        <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
+                [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'" (itemSelected)="onDetailChange(i,'CurrencyCode')">
+              </dofi-searchable-dropdown>
                       <span *ngIf="isEditMode">{{ row.get('CurrencyCode')?.value || '-' }}</span>
                     </td>
 

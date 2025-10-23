@@ -8,6 +8,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-merge-booking',
@@ -16,7 +18,8 @@ import { Router } from '@angular/router';
     NgSelectModule,
     ReactiveFormsModule,
     CommonModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    SearchableDropdown
   ],
   templateUrl: './merge-booking.component.html',
   styleUrls: ['./merge-booking.component.scss']
@@ -45,6 +48,7 @@ export class MergeBookingComponent implements OnInit {
   toTotalRecords: number;
   slicedFromProducts: any[] = [];
   slicedToProducts: any[] = [];
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
 
   constructor(
     private appSettingService: AppSettingsService,
