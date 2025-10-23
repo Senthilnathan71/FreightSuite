@@ -11,6 +11,7 @@ export class DropdownStore {
   ports = signal<any[]>([]);
   cities = signal<any[]>([]);
   department = signal<any[]>([]);
+  incos = signal<any[]>([]);
   customerTypeData = signal<any[]>([]);
   tdsSet = signal<any[]>([]);
   containerTypes = signal<any[]>([]);
@@ -34,6 +35,14 @@ export class DropdownStore {
       map((res) => res.data || [])
     );
   }
+
+  loadIncos(): Observable<any[]> {
+    if (this.incos().length) return of(this.incos());
+    return this.http.get<any>('inco').pipe(
+      tap((res) => this.incos.set(res.data || [])),
+      map((res) => res.data || [])
+    );
+  } 
 
   loadPorts(): Observable<any[]> {
     if (this.ports().length) return of(this.ports());
@@ -115,25 +124,7 @@ export class DropdownStore {
     );
   }
 
-  getStateByCountryId(CountryMasterSid: number): Observable<any[]> {
-  // Check if states for this country are already cached
-  const cachedStates = this.states().filter(
-    (state) => state.CountryMasterSid === CountryMasterSid
-  );
-  if (cachedStates.length) return of(cachedStates);
-
-  // Fetch from API if not cached
-  return this.http
-    .post<any>('state/filter', { CountryMasterSid })
-    .pipe(
-      tap((res) => {
-        // Append new states to the cache (don't overwrite existing)
-        const newStates = [...this.states(), ...(res.data || [])];
-        this.states.set(newStates);
-      }),
-      map((res) => res.data || [])
-    );
-}
+ 
 
 
   clearCache() {

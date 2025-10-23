@@ -47,8 +47,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 })
 export class ChargeEntryComponent implements OnInit {
   tab = [
-  { name: "GST Details", icon: "fas fa-file-invoice" },
-  { name: "TDS Details", icon: "fas fa-percent" }
+  { name: "GST Details"},
+  { name: "TDS Details"}
 ];
 unitQtyOptions = [
   { value: 'Per Cont', name: 'Per Cont' },

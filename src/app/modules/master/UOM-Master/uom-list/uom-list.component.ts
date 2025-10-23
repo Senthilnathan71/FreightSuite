@@ -297,7 +297,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
       },
       {
         key: 'UOMCode',
-        label: 'UOMCode',
+        label: 'UOM Code',
         sortable: true,
         filterable: true,
         visible: true,
@@ -305,7 +305,7 @@ export class UOMListComponent extends BaseListComponent implements OnInit {
       },
       {
         key: 'UOMType',
-        label: 'UOMType',
+        label: 'UOM Type',
         sortable: true,
         filterable: true,
         visible: true,
