@@ -133,7 +133,7 @@ export class CompanyEntryComponent implements OnInit {
 	  CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','Country'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','Country'],
+    labelFields :['currencyCode'],
   };
 	
 
@@ -151,17 +151,6 @@ export class CompanyEntryComponent implements OnInit {
 		private leadService: LeadService,
 		public dropdownStore:DropdownStore
 	) {
-		effect(() => {
-			const currencies = this.dropdownStore.currencies();
-
-			this.currencyResults = currencies.map(c => {
-				return {
-					...c,
-					Country : c.countryMaster?.countryName
-				}
-			})
-			console.log(this.currencyResults);
-		})
 	 }
 
 	// LIFECYCLE HOOK
@@ -304,6 +293,8 @@ export class CompanyEntryComponent implements OnInit {
 			BankAccountNo: ['', [Validators.required]],
 			BeneficiaryName: ['', [Validators.required]],
 			BranchMasterSid: [],
+			PrintOnInvoice : [false],
+            CurrencyMasterSid : [null],
 			status: ['Active'],
 			Remarks: ['']
 		})
@@ -367,6 +358,8 @@ export class CompanyEntryComponent implements OnInit {
 			IFSCCode: [bankData?.IFSCCode || '', [Validators.required]],
 			BankAccountNo: [bankData?.BankAccountNo || '', [Validators.required]],
 			BeneficiaryName: [bankData?.BeneficiaryName || '', [Validators.required]],
+			PrintOnInvoice : [false],
+            CurrencyMasterSid : [null],
 			status: [bankData?.status],
 			Remarks: [bankData?.Remarks || '']
 		});
@@ -452,6 +445,8 @@ export class CompanyEntryComponent implements OnInit {
 								IFSCCode: bank?.IFSCCode,
 								BankAccountNo: bank?.BankAccountNo,
 								BeneficiaryName: bank?.BeneficiaryName,
+								PrintOnInvoice : bank?.PrintOnInvoice === 'Y',
+            					CurrencyMasterSid :bank?.CurrencyMasterSid,
 								status: bank?.status === 'A' ? 'Active' : 'Suspended',
 								Remarks: bank?.Remarks
 							})
@@ -761,6 +756,7 @@ export class CompanyEntryComponent implements OnInit {
 				const bankValue = bankControl.value;
 				return {
 					...bankValue,
+					PrintOnInvoice : bankValue.PrintOnInvoice ? 'Y' : 'N',
 					status: bankValue.status === 'Active' ? 'A' : 'S',
 					...(bankValue.BranchBankSid ? { updatedBy } : { createdBy })
 				};
@@ -857,12 +853,14 @@ export class CompanyEntryComponent implements OnInit {
 
 	loadAllFields() {
 		forkJoin({
-			cities: this.masterService.getAllCity()
-		}).subscribe(({  cities }) => {
-			this.cityResults = cities
+			cities: this.masterService.getAllCity(),
+			countries : this.dropdownStore.loadCountries(),
+			currencies : this.dropdownStore.loadCurrencies()
+		}).subscribe(({  cities , countries , currencies }) => {
+			this.cityResults = cities;
+			this.countryResults = countries;
+			this.currencyResults = (currencies || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
 		});
-		this.dropdownStore.loadCountries();
-		this.dropdownStore.loadCurrencies();
 
 		// this.currencyResults = (this.dropdownStore.currencies() || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
 	}
@@ -1455,6 +1453,35 @@ openAuditLogs(modal: TemplateRef<any>) {
 		const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 		if (!pan) return null;
 		return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
+	}
+
+	checkForBankDuplication() {
+		const bankArr = this.branchBanks(this.currentBranchIndex).getRawValue();
+		const currentCheckBoxValue = Boolean(this.branchBankForm.get('PrintOnInvoice')?.value);
+		const currentCurrencySid = this.branchBankForm.get('CurrencyMasterSid')?.value;
+		const currencyList = this.currencyResults || []; 
+
+		if (currentCheckBoxValue && currentCurrencySid) {
+			const matching = bankArr.find(bnk => bnk.PrintOnInvoice && bnk.CurrencyMasterSid === currentCurrencySid);
+
+			if (matching) {
+				const matchingBankName = matching.BankName || 'Unknown Bank';
+				const currencyName = currencyList.find(c => c.CurrencyMasterSid === currentCurrencySid)?.currencyName || 'Unknown Currency';
+
+				this.branchBankForm.setErrors({
+					currencyDuplication: `Already a bank "${matchingBankName}" having this currency "${currencyName}" as Print on Invoice.`
+				});
+			} else {
+				this.branchBankForm.setErrors(null);
+			}
+		} else {
+			this.branchBankForm.setErrors(null);
+		}
+	}
+
+
+	hasDuplicationError(){
+		return this.branchBankForm.hasError('currencyDuplication');
 	}
 
 	ngOnDestroy(): void {

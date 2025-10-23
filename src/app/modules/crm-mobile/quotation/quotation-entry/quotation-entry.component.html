@@ -350,7 +350,7 @@
                   <ng-option value="Prepaid">Prepaid</ng-option>
                   <ng-option value="Collect">Collect</ng-option>
                 </ng-select>
-                <label for="" class="input-label">FreightPPCC <span class="text-danger"></span></label>
+                <label for="" class="input-label">Freight PP/CC <span class="text-danger"></span></label>
               </div>
             </aside>
 
@@ -431,11 +431,12 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('DepartmentMasterSid')?.value">
-                          <ng-select formControlName="DepartmentMasterSid" [items]="departments"
-                            bindLabel="departmentName" bindValue="DepartmentMasterSid"
-                            (change)="onDeptChange($event,routeIndex)">
-
-                          </ng-select>
+                          <dofi-searchable-dropdown [items]="departments" formControlName="DepartmentMasterSid" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onDeptChange($event,routeIndex)">
+                        </dofi-searchable-dropdown>
                           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                           @if(route.get('DepartmentMasterSid')?.invalid && route.get('DepartmentMasterSid')?.touched){
                           <div class="error-message">
@@ -979,10 +980,12 @@
                                         <aside class="col-md-3">
                                           <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!carrier.get('CarrierMasterSid')?.value">
-                                            <ng-select formControlName="CarrierMasterSid" [items]="carriers"
-                                              bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                              (change)="handleCarrierChange($event,routeIndex,carrierIndex)">
-                                            </ng-select>
+                                            <dofi-searchable-dropdown [items]="carriers" formControlName="CarrierMasterSid" placeholder=""
+                            [displayFields]="customerLookupConfig.displayFields"
+                            [displayLabels]="customerLookupConfig.displayLabels"
+                            [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
+                            (itemSelected)="handleCarrierChange($event,routeIndex,carrierIndex)">
+                        </dofi-searchable-dropdown>
                                             <label for="" class="input-label">Carrier<span
                                                 class="text-danger"></span></label>
                                           </div>
@@ -2517,6 +2520,13 @@
           </div>
 
           <div *ngIf="!tariffLoading && tariffDetails?.length" class="table-responsive w-100">
+                @if(isStandardRate){
+                  <div class="col-12 d-flex justify-content-center">
+                    <div class="alert alert-warning py-1 text-center " style="width: fit-content;" role="alert">
+                      <strong>Warning!</strong> <br>These are standard rates.
+                    </div>
+                  </div>
+                }
             <table class="table table-hover align-middle table-bordered table-sm mb-1 text-center">
               <thead>
                 <tr class="bg-info text-white">
