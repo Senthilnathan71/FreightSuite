@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { Component, effect, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -253,11 +253,8 @@ dataFromEnqPage:any;
     displayLabels : ['Code','Name','Country'],
     labelFields :['currencyCode']
   };
-  incoLookupConfig = {
-    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
-    displayLabels: ['Code', 'Name', 'P/C'],
-    labelFields: ['IncoCode']
-  }
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
 
   // currencyColumns : ComboBoxColumn[] = [
   //   { field: 'currencyCode', header: 'Code', width: '30%' },
@@ -284,7 +281,12 @@ dataFromEnqPage:any;
     private spinner: NgxSpinnerService,
     private datePipe : CustomDatePipe,
     public dropdownStore: DropdownStore
-  ) { }
+  ) { 
+    effect(() =>{
+      const carrierData = this.dropdownStore.customerTypeData();
+      this.carriers = carrierData;
+    })
+  }
 
   // SECTION3 - NGONIT
   ngOnInit(): void {
@@ -294,6 +296,7 @@ dataFromEnqPage:any;
       this.userData = userProfile;
       this.checkPermissions();
     }
+    this.loadAllFields();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
@@ -1279,7 +1282,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
     return forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
-      carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
+      // carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
       leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
@@ -1295,9 +1298,9 @@ private extractCargoData(enquiryCargo: any[]): any {
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ departments , cargoTypes, carriers, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ departments , cargoTypes, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
-      this.carriers = carriers || [];
+      // this.carriers = carriers || [];
       this.leadList = leads.data;
       this.customers = customers || [];
       this.departments = departments || [];
@@ -1316,6 +1319,15 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.imcoList = imcos.data || [];
     })
     );
+  }
+
+  loadAllFields() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      types:['carrier']
+    }
+    this.dropdownStore.loadCustomerTypeData(payload).subscribe();
   }
 
   loadQuotation(id): void {

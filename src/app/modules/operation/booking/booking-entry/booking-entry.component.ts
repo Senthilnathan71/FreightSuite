@@ -168,7 +168,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],
-    labelFields: ['currencyCode', 'currencyName', 'countryName'],
+    labelFields: ['currencyCode'],
   };
 
   modeOfStatus = [
