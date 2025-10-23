@@ -190,18 +190,21 @@
                         </div>
                     </aside>
 
-                    <!-- Salesperson -->
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
-                            <ng-select formControlName="leadAssignTo" bindLabel="userName" bindValue="UserMasterSid">
-                                <ng-option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
-                                    {{ person.userName }}
-                                </ng-option>
-                            </ng-select>
-                            <label class="input-label">Salesperson <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
+                   <!-- Salesperson -->
+<aside class="col-md-4">
+    <div class="custom-form-group custom-form-group-select"
+        [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
+        <ng-select 
+            formControlName="leadAssignTo" 
+            bindLabel="userName" 
+            bindValue="UserMasterSid"
+            [items]="salesPersons"
+            appendTo="body"
+            placeholder="">
+        </ng-select>
+        <label class="input-label">Salesperson <span class="text-danger">*</span></label>
+    </div>
+</aside>
 
                     <!-- Meeting Note -->
                     <aside class="col-md-4">

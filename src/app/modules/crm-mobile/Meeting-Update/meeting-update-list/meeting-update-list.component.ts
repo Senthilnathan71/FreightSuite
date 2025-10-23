@@ -532,7 +532,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     this.initMeetingForm();
     if (meeting) {
       this.meetingData = meeting;
-      const ourSalesperson = this.salesPersons.find(person => person.UserMasterSid === meeting.leadAssignTo);
+      const ourSalesperson = this.salesPersons.find(person => person.UserMasterSid === meeting.leadAssignTo)?.UserMasterSid;
       this.meetingForm.patchValue({
         ...meeting,
         leadAssignTo: ourSalesperson
@@ -595,8 +595,8 @@ private handleMeetingDateChange(newDate: string): void {
     this.meetingForm.get('remarks')?.setValidators([Validators.required]);
     this.meetingForm.get('remarks')?.updateValueAndValidity();
     
-    // Show alert message
-    this.appSettingService.showWarning('Meeting date has been changed. Please select a reason for the change.');
+    
+    
   } else {
     // Date is same as original or no original date - remove required validator
     this.meetingForm.get('remarks')?.clearValidators();
@@ -616,7 +616,7 @@ private handleMeetingDateChange(newDate: string): void {
     // Validate remarks if date changed
     this.meetingForm.get('remarks')?.markAsTouched();
     if (this.meetingForm.get('remarks')?.invalid) {
-      this.appSettingService.showError("Reason is mandatory when meeting date is changed.");
+      this.appSettingService.showError("Please update the reason when the meeting date is changed.");
       return;
     }
   }
@@ -673,7 +673,7 @@ private handleMeetingDateChange(newDate: string): void {
       }
     );
   }
-
+  
   viewMeeting(PreCustomerMeetingSid: number) {
     this.router.navigate(['/crm/calendar/update', PreCustomerMeetingSid]);
   }
