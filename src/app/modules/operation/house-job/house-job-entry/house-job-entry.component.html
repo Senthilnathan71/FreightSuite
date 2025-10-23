@@ -1,7 +1,7 @@
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
-<div class="modern-booking-workspace ">
+<div class="modern-booking-workspace bookingStyle">
   <!-- Smart Header with Dynamic Actions -->
   <div class="smart-header">
     <div class="header-brand">
@@ -12,7 +12,7 @@
         <h1 class="workspace-title">House Job</h1>
       </div>
       @if(isEditMode){
-      <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+      <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
         <i class="fas fs-6 fa-info-circle"></i>
       </a>
       }
@@ -24,37 +24,37 @@
           <i class="fas fa-history fs-2"></i>
           <span>Report</span>
         </button> -->
-        <button class="table-action-btn print">
-          <i class="fas fa-print"></i> Print
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+          <i class="fas fa-print me-1"></i> Print
         </button>
       </div>
       <div class="action-group" *ngIf="!isEditMode">
-        <button class="action-btn action-secondary" (click)="openUploadModal()">
-          <i class="fas fa-upload fs-2"></i>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openUploadModal()">
+          <i class="fas fa-upload  me-1"></i>
           <span>Upload</span>
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode">
-        <button class="action-btn action-secondary" (click)="openAuditLogs(auditLogModal)">
-          <i class="fas fa-history fs-2"></i>
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openAuditLogs(auditLogModal)">
+          <i class="fas fa-history me-1"></i>
           <span>Logs</span>
         </button>
       </div>
       <div class="action-group">
-        <button class="action-btn action-secondary" (click)="navigateBack()">
-          <i class="fas fa-chevron-left fs-2"></i>
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+          <i class="fas fa-chevron-left  me-1"></i>
           <span>Back</span>
         </button>
       </div>
       <div class="action-group">
-        <button class="action-btn action-warning" (click)="resetForm()">
-          <i class="fas fa-sync-alt fs-2"></i>
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+          <i class="fas fa-sync-alt  me-1"></i>
           <span>Reset</span>
         </button>
       </div>
       <div class="action-group primary">
-        <button class="action-btn action-success" (click)="onSubmit()">
-          <i class="fas fa-save fs-2"></i>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+          <i class="fas fa-save  me-1"></i>
           <span>Save</span>
         </button>
       </div>
@@ -64,7 +64,7 @@
   <!-- Smart Quick Form -->
   <div class="quick-form-panel compact-form" [formGroup]="houseJobForm">
 
-    <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
+    <div class="quick-form-grid pb-1" [class.expanded]="isQuickFormExpanded">
 
       <div class="smart-field-group">
         <div class="custom-form-group">
@@ -203,7 +203,7 @@
   <div class="content-workspace">
 
     <!-- Shipment Details Tab -->
-    <div class="workspace-content" [hidden]="selectedTab !== 'Shipment'">
+    <div class="workspace-content1" [hidden]="selectedTab !== 'Shipment'">
       <div class="content-layout">
 
         <!-- Two Column Layout for Party Info and Vessel Details -->
@@ -211,17 +211,17 @@
 
           <!-- Party Information Card - Left Half -->
           <div class="info-card">
-            <div class="card-header">
+            <!-- <div class="card-header">
               <div class="header-content">
                 <h4 class="card-title">
                   <i class="fas fa-users fs-4"></i>
                   Party Information
                 </h4>
-                <!-- <button class="card-action-btn">
+                <button class="card-action-btn">
                   <i class="fas fa-plus"></i>
-                </button> -->
+                </button>
               </div>
-            </div>
+            </div> -->
             <div class="card-body">
               <div class="col-md-12">
 
@@ -546,17 +546,17 @@
 
           <!-- Vessel & Route Card - Right Half -->
           <div class="info-card">
-            <div class="card-header">
+            <!-- <div class="card-header">
               <div class="header-content">
                 <h4 class="card-title">
                   <i class="fas fa-ship fs-4"></i>
                   Vessel & Route
                 </h4>
-                <!-- <div class="card-status">
+                <div class="card-status">
                   <span class="status-badge status-draft">Draft</span>
-                </div> -->
+                </div>
               </div>
-            </div>
+            </div> -->
             <div class="card-body">
               <div class="col-md-12">
                 <div class="row compact-form" [formGroup]="houseJobForm">
@@ -808,7 +808,7 @@
         <div class="info-sidebar">
 
           <!-- Quick Stats -->
-          <div class="stats-widget">
+          <div class="stats-widget border border-top-0">
             <div class="widget-header">
               <h5 class="widget-title">House Summary</h5>
             </div>
@@ -881,7 +881,7 @@
           </div>
 
           <!-- Recent Actions -->
-          <div class="activity-widget">
+          <div class="activity-widget border border-top-0">
             <div class="widget-header">
               <h5 class="widget-title">Recent Activity</h5>
             </div>
@@ -916,6 +916,10 @@
       <!-- <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
         (dataEmitter)="handleRateChange($event)"></app-cost-entry> -->
+           <app-cost-entry #costEntryComponent screenName="Booking" [currencyList]="currencyList"
+        [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
+        [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
+        (dataEmitter)="handleRateChange($event)"></app-cost-entry>
     </div>
 
     <!-- Other Tabs -->
@@ -1101,12 +1105,13 @@
       <div>
         <div class="table-toolbar">
           <div class="toolbar-left">
-            <button class="table-action-btn primary" (click)="openProductModal(productModal)">
-              <i class="fas fa-plus"></i> Add Product
-            </button>
+            
           </div>
 
           <div class="toolbar-right">
+            <button class="table-action-btn primary" (click)="openProductModal(productModal)">
+              <i class="fas fa-plus"></i> Add Product
+            </button>
             <button class="table-action-btn export" (click)="reportProducts()">
               <i class="fas fa-download fs-2"></i>
               Export
@@ -1121,7 +1126,7 @@
           <table class="modern-table">
             <thead>
               <tr>
-                <th width="10%">Action</th>
+                <th width="5%"></th>
                 <th>Commodity</th>
                 <th>Shipping Bill No</th>
                 <th>Date</th>
@@ -1139,13 +1144,13 @@
               <tr class="table-row">
                 <td>
                   <div class="d-flex align-items-center justify-content-center">
-                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                    <a class="text-info " class="link "
                       (click)="openProductModal(productModal,productIndex,product.value)">
-                      <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                      <i-feather class="feather-sm text-info pt-1" name="eye"></i-feather>
                     </a>
-                    <a class="text-danger mx-2 ps-3 border-start"
+                    <a class="text-danger  ps-2"
                       (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
-                      <i-feather name="trash-2" class="feather-sm"></i-feather>
+                       <i class="fas fa-trash text-center fs-2"></i>
                     </a>
                   </div>
                 </td>
@@ -1340,7 +1345,7 @@
 
 
           <div class="col-md-3">
-            <div class=" custom-form-group custom-form-group-select">
+            <div class=" custom-form-group custom-form-group-select-date mb-0">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
@@ -1387,7 +1392,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                 formControlName="CargoValue" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="2"
                 max="9999999.999">
               <label for="text-input" class="input-label">Cargo Value<span class="text-danger"></span></label>
@@ -1412,12 +1417,12 @@
 
 
           <div class="col-md-3">
-            <div class=" custom-form-group custom-form-group-select">
+            <div class=" custom-form-group custom-form-group-select-date">
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="CarrierBookingDate" #d10="ngbDatepicker" (keydown.arrowDown)="d10.open()"
                   (click)="d10.toggle()" container="body">
-                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button"> <i-feather
+                <button class="btn  bi bi-calendar3 " (click)="d10.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span
@@ -1541,6 +1546,12 @@
       <ng-container *ngComponentOutlet="ArApcomponent"></ng-container>
     </div>
 
+     <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
+    <app-follow-up screenName="houseJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
+      [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
+    </app-follow-up>
+  </div>
+
     <!-- <div class="workspace-content" *ngIf="selectedTab === 'Product'">
       <div class="modern-table-container">
         <div>
@@ -1624,7 +1635,7 @@
     </div> -->
 
     <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
-      <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
+      <app-edoc [dataItems]="edocData" screenName="houseJob" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
         (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>
@@ -1636,12 +1647,7 @@
     </app-email-entry>
   </div> -->
 
-  <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
-    <app-follow-up screenName="MasterJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
-      [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
-    </app-follow-up>
-  </div>
-
+ 
 
   <!-- Floating Action Button -->
   <div class="floating-actions">
@@ -1654,16 +1660,16 @@
 
 
 <ng-template #productModal let-modal>
-  <div class="modal-header p-2 bg-info">
+  <div class="modal-header modalHeaderpart">
     <h5 class="modal-title text-white">Add Product</h5>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body">
     <div class="row compact-form" [formGroup]="productForm">
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ProductName')?.value">
           <ng-select [items]="productList" bindLabel="ProductName" bindValue="ProductName" formControlName="ProductName"
-            placeholder="Select Commodity" (change)="handleProductChange($event)">
+            placeholder="" (change)="handleProductChange($event)">
           </ng-select>
           <label for="" class="input-label">Commodity <span class="text-danger"></span></label>
         </div>
@@ -1677,14 +1683,14 @@
           @if(productForm.get('ShippingBillNo')?.touched && productForm.get('ShippingBillNo')?.invalid){
           <div class="error-message">
             @if(productForm.get('ShippingBillNo')?.hasError('required')){
-            <span>Shipping Bill No is required</span>
+            <span> Required</span>
             }
           </div>
           }
         </div>
       </aside>
       <div class="col-md-4">
-        <div class=" custom-form-group custom-form-group-select">
+        <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
               [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
@@ -1699,22 +1705,22 @@
           @if(productForm.get('ShippingBillDate')?.touched && productForm.get('ShippingBillDate')?.invalid){
           <div class="error-message">
             @if(productForm.get('ShippingBillDate')?.hasError('required')){
-            <span>Shipping Bill Date is required</span>
+            <span>Required</span>
             }
           </div>
           }
         </div>
       </div>
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="UOMName" bindValue="UOMName"
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ExternaPkg')?.value">
+          <ng-select [items]="packageTypeList" placeholder="" bindLabel="UOMName" bindValue="UOMName"
             formControlName="ExternaPkg">
           </ng-select>
           <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
           @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
           <div class="error-message">
             @if(productForm.get('ExternaPkg')?.hasError('required')){
-            <span>External Pkg is required</span>
+            <span>Required</span>
             }
           </div>
           }
@@ -1727,7 +1733,7 @@
           @if(productForm.get('ExternlQty')?.touched && productForm.get('ExternlQty')?.invalid){
           <div class="error-message">
             @if(productForm.get('ExternlQty')?.hasError('required')){
-            <span>No. of Pkg is required</span>
+            <span>Required</span>
             }
           </div>
           }
@@ -1743,7 +1749,7 @@
           productForm.get('GrossWeight')?.invalid) {
           <div class="error-message">
             @if (productForm.get('GrossWeight')?.errors?.['required']) {
-            <span>Gross Weight is required</span>
+            <span>Required</span>
             } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
             <span>Gross Weight cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
@@ -1763,7 +1769,7 @@
           productForm.get('NetWeight')?.invalid) {
           <div class="error-message">
             @if (productForm.get('NetWeight')?.errors?.['required']) {
-            <span>Net Wt is required</span>
+            <span>Required</span>
             } @else if (productForm.get('NetWeight')?.errors?.['max']) {
             <span>Net Wt cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
@@ -1784,7 +1790,7 @@
           {
           <div class="error-message">
             @if (productForm.get('Volume')?.errors?.['required']) {
-            <span>CBM is required</span>
+            <span>Required</span>
             } @else if (productForm.get('Volume')?.errors?.['max']) {
             <span>CBM cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('Volume')?.errors?.['decimalPrecision']) {
@@ -1795,7 +1801,7 @@
         </div>
       </aside>
       <div class="col-md-4">
-        <div class=" custom-form-group custom-form-group-select">
+        <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
               #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" container="body"/>
@@ -1817,7 +1823,7 @@
       </aside>
       @if(productForm.get('IsHaz')?.value){
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!productForm.get('ImcoClass')?.value">
           <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
             placeholder="Select IMCO">
           </ng-select>
@@ -1862,17 +1868,17 @@
         </div>
       </aside>
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('UomMasterSid')?.value">
           <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="UomMasterSid"
-            placeholder="Select UOM">
+            placeholder="">
           </ng-select>
           <label for="text-input" class="input-label">Uom <span class="text-danger"></span></label>
         </div>
       </aside>
       }
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-           <ng-select [items]="masterJobContainers" placeholder="Select Container No" bindLabel="ContainerNumber" bindValue="ContainerNumber"
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ContainerNo')?.value">
+           <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber" bindValue="ContainerNumber"
             formControlName="ContainerNo">
           </ng-select>
           <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
@@ -1887,14 +1893,13 @@
   </div>
 </ng-template>
 
-@if(isEditMode){
+<!-- @if(isEditMode){
 <div class="col-12 mt-3">
   <div class="card">
     <div class="card-body">
       <div class="row">
         <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-          <!-- eDoc Button -->
-
+       
           <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
             <i class="fas fa-file-alt me-1"></i> e-Doc
           </button>
@@ -1918,7 +1923,7 @@
     </div>
   </div>
 </div>
-}
+} -->
 
 
 

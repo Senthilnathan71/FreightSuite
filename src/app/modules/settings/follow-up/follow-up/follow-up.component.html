@@ -1,12 +1,21 @@
 <form [formGroup]="followupForm">
     <div class="row compact-form">
+          @if(screenName === 'Follow Up'){
+              <div class="ml-2">
+            <div class="modal-header modalHeaderpart">
+                <h5 class="modal-title ">Follow Up</h5>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="closeModal()"></button>
+            </div>
+        </div>
+        } @else {
         <div class="col-12">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col-md-4 pb-2">
-                    <h4 class="page-title mb-0">Follow Up</h4>
+            <div class="row bg-white pb-1 align-items-center  rounded ">
+                <div class="col-md-4 ">
+                    <h5 class="page-title mb-0">Follow Up</h5>
                     
                 </div>
-                <div class="col-md-8 pb-2">
+                <div class="col-md-8 ">
 
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
@@ -21,12 +30,12 @@
                             <i class="fas fa-save me-1"></i>
                             Save
                         </button>
-                        <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+                        <!-- <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button> -->
                     </div>
                 </div>
             </div>
         </div>
-
+    }
         <div class="col-md-12">
             <div class="card h-100 mb-0">
                 <div class="card-body">
@@ -44,7 +53,7 @@
                             </div>
                         </aside>
                         <div class="col-md-4">
-                            <div class=" custom-form-group custom-form-group-select">
+                            <div class=" custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d15="ngbDatepicker" [minDate]="todayDate" (click)="d15.toggle()" formControlName="FollowupDate" />
@@ -91,7 +100,7 @@
                                         class="text-danger fw-bold"></span></label>
                             </div>
                         </aside>
-                        <aside class="col-md-4 d-flex align-items-center">
+                        <aside class="col-md-2 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
                                     <input type="checkbox" id="Nominated" class="form-check-input sm" formControlName="Public">
@@ -100,17 +109,17 @@
                                 </div>
                             </div>
                         </aside>
-                        <aside class="col-md-4 d-flex align-items-center">
+                        <aside class="col-md-2 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
                                     <input type="checkbox" id="Nominated" class="form-check-input sm" formControlName="sentEmail">
-                                    <label for="sentEmail" class="form-check-label sm">Sent Email Signature <span
+                                    <label for="sentEmail" class="form-check-label sm">Send Email  <span
                                             class="text-danger"></span></label>
                                 </div>
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!followupForm.get('Status')?.value">
                                 <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name" bindValue="name" appendTo="body">
 
                                 </ng-select>

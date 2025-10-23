@@ -91,6 +91,7 @@ export class LoadingPlanEntryComponent {
  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   hasMultipleVoyages : boolean = false;
   multipleVoyageList : any[] = [];
 
@@ -209,7 +210,7 @@ export class LoadingPlanEntryComponent {
   }).subscribe(
     ({ departments, ports, carriers, containerTypes, uomsByType }) => {
       this.departmentList = departments || [];
-      this.portList = ports || [];
+      this.portList = (ports || []).map(p => ({...p,Country:p.countryMaster?.countryName}));
       this.carrierList = carriers || [];
       this.containerTypeList = containerTypes || [];
       this.packageTypeList = uomsByType || [];
@@ -898,7 +899,10 @@ export class LoadingPlanEntryComponent {
     return '';
   }
 
-
+ mathMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+  
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()
     this.destroy$.next();

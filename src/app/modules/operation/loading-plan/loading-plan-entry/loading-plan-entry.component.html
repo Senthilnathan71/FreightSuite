@@ -53,11 +53,17 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!loadingPlanForm.get('dept')?.value">
-                            <ng-select [items]="filteredDepartments" bindLabel="departmentName"
+                            <!-- <ng-select [items]="filteredDepartments" bindLabel="departmentName"
                                 bindValue="DepartmentMasterSid" formControlName="dept" (change)="onDeptChange($event)"
                                 [appendTo]="'body'" placeholder="">
 
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="filteredDepartments" formControlName="dept" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onDeptChange($event)">
+                        </dofi-searchable-dropdown>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('dept')?.touched && loadingPlanForm.get('dept')?.invalid">
@@ -68,9 +74,15 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!loadingPlanForm.get('pol')?.value">
-                            <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode"
+                            <!-- <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode"
                                 formControlName="pol" (change)="handlePOLChange($event)" placeholder=""
-                                [appendTo]="'body'"></ng-select>
+                                [appendTo]="'body'"></ng-select> -->
+                                <dofi-searchable-dropdown [items]="filteredPOL" formControlName="pol" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindValue="PortCode"
+                            (itemSelected)="handlePOLChange($event)">
+                        </dofi-searchable-dropdown>
                             <label class="input-label">POL <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('pol')?.touched && loadingPlanForm.get('pol')?.invalid">
@@ -81,9 +93,15 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!loadingPlanForm.get('pod')?.value">
-                            <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode"
+                            <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode"
                                 formControlName="pod" placeholder="" (change)="handlePODChange($event)"
-                                [appendTo]="'body'"></ng-select>
+                                [appendTo]="'body'"></ng-select> -->
+                                <dofi-searchable-dropdown [items]="filteredPOD" formControlName="pod" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels"
+                            [labelFields]="portLookupConfig.labelFields" bindValue="PortCode"
+                            (itemSelected)="handlePODChange($event)">
+                        </dofi-searchable-dropdown>
                             <label class="input-label">POD <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('pod')?.touched && loadingPlanForm.get('pod')?.invalid">
@@ -95,33 +113,35 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!loadingPlanForm.get('vesselVoyage')?.value">
-                            <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
+                            <dofi-searchable-dropdown [items]="filteredVesselsVoyage" formControlName="vesselVoyage" placeholder=""
+                        [displayFields]="vesselVoyageConfig.displayFields"
+                        [displayLabels]="vesselVoyageConfig.displayLabels"
+                        [labelFields]="vesselVoyageConfig.labelFields" bindValue="VoyageNo"
+                        (itemSelected)="onVesselVoyageChange($event)">
+                      </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
                                 bindValue="VoyageNo" (change)="onVesselVoyageChange($event)"
                                 formControlName="vesselVoyage" placeholder="Select Vessel" [appendTo]="'body'">
                                 <ng-template ng-option-tmp let-item="item">
-                                    <!-- Voyage Number -->
                                     <div
                                         style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
                                         {{item.VesselName}} / {{ item.VoyageNo }}
                                     </div>
 
-                                    <!-- Ports Row -->
                                     <div
                                         style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
 
-                                        <!-- POL Section -->
                                         <div style="flex: 1; text-align: left;">
                                             <div>ETA: {{ item.ETD | formatDate }}</div>
                                         </div>
 
-                                        <!-- POD Section -->
                                         <div style="flex: 1; text-align: right;">
                                             <div>ETD: {{ item.ETA | formatDate }}</div>
                                         </div>
 
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
                             <label class="input-label">Vessel/Voyage <span class="text-danger"></span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('vesselVoyage')?.touched && loadingPlanForm.get('vesselVoyage')?.invalid">
@@ -133,10 +153,17 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!loadingPlanForm.get('carrier')?.value">
-                            <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
+                            <!-- <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
                                 formControlName="carrier" placeholder="" [appendTo]="'body'">
 
-                            </ng-select>
+                            </ng-select> -->
+
+                            <dofi-searchable-dropdown [items]="carrierList" formControlName="carrier" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                        >
+                            </dofi-searchable-dropdown>
                             <label for="" class="input-label">Carrier <span class="text-danger"></span></label>
                         </div>
                     </aside>
@@ -273,55 +300,55 @@
 
             <div class="widget-body row">
                 <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-label fw-bold " style="font-size: 12px;">No of Pkg</div>
-                        <div class="stat-value">
+                    <div class="stat-item1">
+                        <div class="stat-label fw-bold " style="font-size: 12px;width: 150px;">No of Pkg</div>
+                        <div class="stat-value text-end">
                              {{ getParseIntegerNoDecimal(totalPkg) }}
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Gross Weight</div>
+                    <div class="stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">Total Gross Weight</div>
                         <div class="stat-value">{{getParseInteger(totalGrossWeight)}}</div>
                     </div>
                 </div>
 
 
                 <div class="col-md-3">
-                    <div class=" stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Revenue</div>
+                    <div class=" stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">Total Revenue</div>
                         <div class="stat-value">{{getParseInteger(totalRevenue)}}</div>
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class=" stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Cost</div>
+                    <div class=" stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">Total Cost</div>
                         <div class="stat-value">{{getParseInteger(totalCost)}}</div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Net Weight</div>
+                    <div class="stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">Total Net Weight</div>
                         <div class="stat-value">{{getParseInteger(totalNetWeight)}}</div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Volume(CBM)</div>
+                    <div class="stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">Total Volume(CBM)</div>
                         <div class="stat-value">{{getParseInteger(totalVolume)}}</div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">Total Profit</div>
+                    <div class="stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">Total Profit</div>
                         <div class="stat-value">{{getParseInteger(totalGrossProfit)}}</div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-label fw-bold" style="font-size: 12px;">GP%</div>
+                    <div class="stat-item1">
+                        <div class="stat-label fw-bold" style="font-size: 12px;width: 150px;">GP%</div>
                         <div class="stat-value">
                             <span
                                 class="status-badge status-active">{{getParseInteger(totalGrossProfitPercentage)}}</span>
@@ -369,7 +396,7 @@
                     <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                         <thead>
                             <tr class="bg-info">
-                                <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
+                                <th class="bg-transparent text-light" scope="col" width="2%"></th>
                                 <th class="bg-transparent text-light" scope="col">Booking No</th>
                                 <th class="bg-transparent text-light" scope="col">Sales Person</th>
                                 <th class="bg-transparent text-light" scope="col">Customer</th>
@@ -382,7 +409,7 @@
                                 <th class="bg-transparent text-light" scope="col">No of Pkg</th>
                                 <th class="bg-transparent text-light" scope="col">Gr Weight</th>
                                 <th class="bg-transparent text-light" scope="col">Volume</th>
-                                <th class="bg-transparent text-light" scope="col" width="5%">Tick</th>
+                                <th class="bg-transparent text-light" scope="col" width="1%"></th>
 
                             </tr>
                         </thead>
@@ -456,7 +483,13 @@
                 </div>
 
 
-                <div class="mt-2" *ngIf="availableBookings.length > 0">
+                <div class="mt-2 d-flex align-items-center justify-content-between" *ngIf="availableBookings.length > 0">
+                     <div class="text-muted">
+                        Showing {{ (bPage - 1) * bPageSize + 1 }} to
+                        {{ mathMin(bPage * bPageSize, totalLengthOfAvailableBookings) }} of
+                        {{ totalLengthOfAvailableBookings }} entries
+                    </div>
+ 
                     <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfAvailableBookings"
                         [pageSize]="bPageSize" [(page)]="bPage" (pageChange)="updateBookingList()" [rotate]="true"
                         [ellipses]="false" [maxSize]="10">
@@ -474,14 +507,14 @@
 
 
             @if(screenName === 'Loading Plan'){
-            <div class="d-flex justify-content-between align-items-center my-1">
+            <div class="d-flex justify-content-between align-items-center my-1 px-2">
 
                <div>
                <h4 class="page-title mb-0">Contanier</h4>
                </div>
                 <div>
                     <button class="btn btn-sm btn-info " (click)="openContainerModal(containerModal)">
-                        <i class="fas fa-plus me-1"></i> Add
+                        <i class="fas fa-plus me-1 fs-2"></i> Add Contanier
                     </button>
                 </div>
 
@@ -497,7 +530,7 @@
                     <thead>
                         <tr class="bg-info">
 
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="4%"></th>
                             <th class="bg-transparent text-light" scope="col">SNo</th>
                             <th class="bg-transparent text-light" scope="col">Container Type</th>
                             <th class="bg-transparent text-light" scope="col">Container No</th>
@@ -520,14 +553,14 @@
                         <tr>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                                    <a class="text-info mx-2 " class="link"
                                         (click)="openContainerModal(containerModal,container,containerIndex)">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                        <i-feather class="feather-sm text-info fs-2 cursor-pointer" name="eye"></i-feather>
                                     </a>
 
-                                    <a class="text-danger mx-2 ps-3 border-start"
+                                    <a class="text-danger ps-2 pb-1 cursor-pointer"
                                         (click)="deleteContainer(containerIndex)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                         <i class="fas fa-trash text-center fs-2"></i>
                                     </a>
 
                                 </div>
@@ -589,8 +622,13 @@
             </div>
             </div>
 
-            <div class="mt-1" *ngIf="totalLengthOfCollection === 1">
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            <div class="mt-1 d-flex align-items-center justify-content-between" *ngIf="totalLengthOfCollection > 0">
+                 <div class="text-muted">
+                        Showing {{ (page - 1) * pageSize + 1 }} to
+                        {{ mathMin(page * pageSize, totalLengthOfCollection) }} of
+                        {{ totalLengthOfCollection }} entries
+                    </div>
+                <ngb-pagination class="" [collectionSize]="totalLengthOfCollection"
                     [pageSize]="pageSize" [(page)]="page" (pageChange)="updateContainerPagination()" [rotate]="true"
                     [ellipses]="false" [maxSize]="10">
                 </ngb-pagination>
