@@ -113,6 +113,8 @@ export class QuotationEntryComponent implements OnInit {
   isLoading : boolean;
   selectedItem : any;
   quotationApproved : boolean;
+  quoteAuthorized : boolean;
+  isStandardRate : boolean;
   authorizerDetails = {
     isAuthorizer: false,
     isAlreadyApproved: false,
@@ -187,7 +189,7 @@ export class QuotationEntryComponent implements OnInit {
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
-    { id: 3, name: 'Refer' },
+    { id: 3, name: 'Reefer' },
     { id: 4, name: 'Tanker' },
     { id: 5, name: 'OOG' },
   ];
@@ -710,6 +712,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
       this.addQuoteCarrier(this.quoteRoutes.length - 1);
+      routeForm.get('effDate')?.setValue(new Date());
     } else {
       this.filterChargesBySegment(routeIndex,data?.segmentType)
     }
@@ -1360,7 +1363,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     } else {
       this.f['SegmentType']?.setValue(selectedDept?.departmentType?.toUpperCase());
     }
-    this.f['AgreedRate']?.disable();
+    
     this.f['DepartmentMasterSid']?.disable();
     this.f['LeadOrCustomer']?.disable();
     this.f['CustomerMasterSid']?.disable();
@@ -1426,10 +1429,15 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
 
     
+    this.quoteAuthorized = (response.quoteRoute || []).some(route => {
+      return (route?.quoteCarrier || []).some(carrier =>(carrier.ApprovalStatus === "Approved" || carrier.ApprovalStatus === "Rejected"));
+    })
+
     this.quotationApproved = (response.quoteRoute || []).some(route => {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
     })
 
+    
     const { quoteRoute, ...header } = response;
     const approvedRoute = (quoteRoute || []).find(route => {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved");
@@ -1455,11 +1463,12 @@ private extractCargoData(enquiryCargo: any[]): any {
         ...routeDetails,
         quoteCarrier: approvedQuoteCarrier
       };
-
-      this.quotationForm.disable();
       
     }
-
+    
+    if(this.quoteAuthorized){
+      this.quotationForm.disable()
+    }
     console.log("Approved Route:", approvedRoute);
 
     let approvedData = {
@@ -2065,6 +2074,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   getTariffDetails(routeIndex: number, carrierIndex: number, template: TemplateRef<any>) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    this.isStandardRate = false;
 
     if (!this.hasEveryRequiredFieldsFilled(routeIndex)) {
       this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
@@ -2102,7 +2112,7 @@ private extractCargoData(enquiryCargo: any[]): any {
           const response: any[] = resp.data || [];
           const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
           const existingTariffDetailId = existingCharges.map((ch: any) => ch.TariffDetailSid);
-
+          this.isStandardRate = response[0]?.isStandardRate || false;
           this.tariffDetails = response
             .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
             .map((td: any) => {
