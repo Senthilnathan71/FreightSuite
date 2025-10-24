@@ -1630,7 +1630,7 @@ ${this.userData.userName}`;
     if (shipper) {
       // ✅ Auto fill the ShipperAddress from CustomerAddress1
       this.enquiryOtherForm.patchValue({
-        ShipperAddress: shipper.CustomerAddress1 || ''
+        ShipperAddress: shipper.Address || ''
       });
 
       // ✅ Filter consignee list to exclude same shipper
@@ -1655,7 +1655,7 @@ ${this.userData.userName}`;
     if (consignee) {
       // ✅ Auto fill the Consignee Address from CustomerAddress1
       this.enquiryOtherForm.patchValue({
-        ConsigneeAddress: consignee.CustomerAddress1 || ''
+        ConsigneeAddress: consignee.Address || ''
       });
 
       // ✅ Filter shipper list to exclude same consignee
