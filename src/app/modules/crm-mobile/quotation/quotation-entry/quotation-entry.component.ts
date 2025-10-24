@@ -43,6 +43,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -85,7 +86,8 @@ type Html2PdfOptions = {
     CustomDatePipe,
     NgxSpinnerModule,
     FormsModule,
-    NgbTooltip
+    NgbTooltip,
+    PreventMultiClickDirective
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -2804,7 +2806,7 @@ ${this.userData.userName}`;
   async sendEmail() {
     try {
       this.isLoading = true;
-
+      this.spinner.show();
       const pdfBlob = await this.generatePDFBlob();
 
       const formData = new FormData();
@@ -2816,18 +2818,18 @@ ${this.userData.userName}`;
       }
 
       if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
-        const resp: any = await firstValueFrom(
-          this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
-        );
+        // const resp: any = await firstValueFrom(
+        //   this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
+        // );
+        const customerEmail = this.customers.find(cus=> cus.CustomerBranchSid === this.selectedItem?.CustomerBranchSid)?.Email;
+        toEmailSet.add(customerEmail);
 
-        if (resp?.status && resp.data?.Email) {
-          toEmailSet.add(resp.data.Email);
-        }
       }
 
       if (toEmailSet.size === 0) {
         this.appSettingService.showError('To Email is missing.')
         this.isLoading = false;
+        this.spinner.hide();
         return;
       }
 
@@ -2866,16 +2868,19 @@ ${this.userData.userName}`;
       console.log(formData)
       this.leadService.quotationReport(formData).subscribe((resp: any) => {
         this.isLoading = false;
+        this.spinner.hide();
         if (resp?.data) {
           this.toastr.success('Report Email Sent successfully!');
         }
       }, error => {
         this.isLoading = false;
+        this.spinner.hide();
         this.toastr.error('Failed to send email.');
       });
 
     } catch (err) {
       this.isLoading = false;
+      this.spinner.hide();
       console.error('PDF generation error:', err);
       this.toastr.error('Error generating PDF.');
     }
@@ -3400,6 +3405,14 @@ ${this.userData.userName}`;
       }
     }
 
+  }
+
+  getDepartmentName(deptId: number) {
+    if (!deptId || this.departments.length === 0) {
+      return null;
+    } else {
+      return (this.departments.find(dep => dep.DepartmentMasterSid === deptId)?.departmentName);
+    }
   }
 
 }
