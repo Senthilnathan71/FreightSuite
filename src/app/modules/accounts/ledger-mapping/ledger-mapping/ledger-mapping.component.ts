@@ -172,7 +172,7 @@ export class LedgerMappingComponent implements OnInit {
           const data = response.data || response || [];
           const processedData = data.map((item: any) => ({
             ...item,
-            AccrualCOAMasterSid: this.extractCOAId(item.CoaMaster?.COAMasterSid || item.AccrualCOAMasterSid),
+            AccrualCOAMasterSid: this.extractCOAId(item.AccrualCOAMasterSid),
             DrCOAMasterSid: this.extractCOAId(item.DrCOAMasterSid),
             CrCOAMasterSid: this.extractCOAId(item.CrCOAMasterSid),
             canEditAccrualCOA: !item.AccrualCOAMasterSid,
@@ -180,7 +180,7 @@ export class LedgerMappingComponent implements OnInit {
             canEditCreditorCOA: !item.CrCOAMasterSid,
             hasChanges: false,
             departmentName: item.departmentMaster?.departmentName || '',
-            Status: item.Status || 'A'
+            Status: item.Status
           }));
 
           if (this.selectedTab === 'Party') {
@@ -353,7 +353,7 @@ export class LedgerMappingComponent implements OnInit {
       AccrualCOAMasterSid: this.extractCOAId(item.AccrualCOAMasterSid),
       DrCOAMasterSid: this.extractCOAId(item.DrCOAMasterSid),
       CrCOAMasterSid: this.extractCOAId(item.CrCOAMasterSid),
-      Status: item.Status,
+      Status: typeof item.Status === 'object' ? item.Status.id : item.Status, 
       UpdatedBy: this.userData?.userEmail || 'system'
     }));
 
@@ -426,13 +426,13 @@ export class LedgerMappingComponent implements OnInit {
   }
 
   compareWithStatus(item: any, selected: any): boolean {
-    if (!item || !selected) return false;
-    
-    const itemId = typeof item === 'object' ? item.id : item;
-    const selectedId = typeof selected === 'object' ? selected.id : selected;
-    
-    return itemId === selectedId;
-  }
+  if (!item || !selected) return false;
+  
+  const itemId = typeof item === 'object' ? item.id : item;
+  const selectedId = typeof selected === 'object' ? selected.id : selected;
+  
+  return itemId === selectedId;
+}
 
   // Math functions for template
   mathMin(a: number, b: number): number {
