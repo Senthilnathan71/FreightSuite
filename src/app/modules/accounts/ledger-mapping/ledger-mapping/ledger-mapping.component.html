@@ -1,383 +1,347 @@
-<!-- <ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
-</ngx-spinner> -->
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
     <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
-
 <div class="row compact-form">
     <div class="col-12">
-         <app-page-header 
-    [title]="'Subledger Mapping'" [showFavorite]="true" [showSearch]="true" 
-    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
-    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
-    >
-    </app-page-header>
-        <!-- <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col pb-1">
                 <h4 class="page-title mb-0">Subledger Mapping</h4>
             </div>
+
+            <!-- Search Section -->
             <div class="col-md pb-1">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                aria-label="Search input" (keyup.enter)="searchSubledgerMpping()">
-                            <button *ngIf="filterValue"
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control pe-5" 
+                                   placeholder="Search by name..." (keyup.enter)="onSearch()">
+                            <button *ngIf="filterValue" (click)="clearSearch()"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-title="Clear search"
-                                onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                tabindex="0" aria-label="Clear search">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchSubledgerMpping()">
+                            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="onSearch()">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
-
                     </div>
                 </form>
             </div>
 
-
             <div class="col-md-auto pb-1">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="Subledger Mapping" class="mt-1 me-1"></app-favorite-star>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openModal(content)">
-                        <i class="fas fa-plus me-1"></i> Create
+                    
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            [disabled]="!hasChanges() || isSaving" 
+                            (click)="saveChanges()">
+                        <i class="fas fa-save me-1"></i> 
+                        {{ isSaving ? 'Saving...' : 'Save' }}
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="totalLengthOfCollection===0" (click)="report()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  
+                            [disabled]="totalLengthOfCollection === 0" 
+                            (click)="generateReport()">
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="totalLengthOfCollection===0" (click)="resetForm()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  
+                            (click)="resetPage()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                 </form>
             </div>
-
-
-        </div> -->
-    </div>
-     <div class="col-12 px-0">
-        <app-reusable-table #subledgerMappingable [config]="tableConfig" [data]="allSubledagerMapping" [loading]="tableLoading"
-            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
-            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
-            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
-            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
-        </app-reusable-table>
-    </div>
-    <!-- <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                           
-                            <th (click)="sort('COAName')" class="bg-transparent text-light">COA Name
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'COAName' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'COAName' && sortDirection === 'desc' }"></i>
-                            </th>
-                             <th (click)="sort('COACode')" class="bg-transparent text-light">COACode
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'COACode' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'COACode' && sortDirection === 'desc' }"></i>
-                            </th>
-                            <th (click)="sort('Branch')" class="bg-transparent text-light">Branch
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'Branch' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'Branch' && sortDirection === 'desc' }"></i>
-                            </th>
-                            <th (click)="sort('Currency')" class="bg-transparent text-light">Currency
-                                <i class="fas fa-sort ms-1"
-                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'Currency' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'Currency' && sortDirection === 'desc' }"></i>
-                            </th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let item of allSubledagerMapping; let i = index">
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex gap-2 align-items-center justify-content-center">
-                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2" title="Edit"
-                                        (click)="editLedgerMapping(item.SubledgerMasterSid, content)">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" title="Delete"
-                                        (click)="deleteSudledgerMaster(item.SubledgerMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </button>
-                                </div>
-                            </td>
-                            
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{ item.CoaMaster?.LedgerName }}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{ item.CoaMaster?.LedgerCode}}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{ item.CoaMaster?.CompanyMaster?.branchMaster[0]?.branchName
-                                    }}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{ item.CoaMaster?.CurrencyMaster?.currencyName }}</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                @if(item.Status === "A"){
-                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </div>
-                                } @else {
-                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Suspended
-                                </div>
-                                }
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
-                    (pageChange)="updatePaginationData()">
-                </ngb-pagination>
-                 <app-common-pagination
-            [config]="paginationConfig"
-            (pageChange)="onPageChange($event)"
-            (pageSizeChange)="onPageSizeChange($event)">
-        </app-common-pagination>
-            </div>
         </div>
-    </div> -->
-   <!-- No Records
-<div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
-    <div class="text-center ">No Records Found</div>
-</div> -->
+    </div>
 
-    <ng-template #content let-modal>
-
-        <div class="modal-header bg-info text-white p-2">
-            <h5 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Subledger Mapping</h5>
-            <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()">
-                <i class="fas fa-info-circle fs-6"></i>
-            </a>
-
-            <div class="ms-auto d-flex align-items-center">
-                <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
-                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-                        ngbDropdownToggle>
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+    <!-- Tab Navigation -->
+    <div class="col-12">
+        <div class="nav-pills-container">
+            <div class="nav-pills d-flex align-items-center w-100">
+                <div class="pills-left d-flex flex-nowrap" style="flex:1;">
+                    <div class="nav-pill" [class.active]="selectedTab === 'Party'" 
+                         (click)="selectTab('Party')">
+                        <div class="pill-icon"><i class="fas fa-users"></i></div>
+                        <span class="pill-label">Party</span>
+                        <div class="pill-indicator" *ngIf="selectedTab === 'Party'"></div>
+                    </div>
+                    <div class="nav-pill" [class.active]="selectedTab === 'Charge'" 
+                         (click)="selectTab('Charge')">
+                        <div class="pill-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <span class="pill-label">Charge</span>
+                        <div class="pill-indicator" *ngIf="selectedTab === 'Charge'"></div>
                     </div>
                 </div>
-
-                <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="modal.dismiss()"></button>
             </div>
         </div>
-            <!-- <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                (click)="modal.dismiss()"></button>
-        </div> -->
-        <div class="modal-body">
-            <form [formGroup]="ledgerForm">
+    </div>
 
-                <div class="col-12">
-                    <div class="row compact-form">
-                        <!-- SubledgerName -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="Name" placeholder="" class="custom-input-field sm"
-                                    formControlName="SubledgerName">
-                                <label for="Name" class="input-label">Name <span
-                                        class="text-danger fw-bold"></span></label>
-                                <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('SubledgerName')?.touched &&
-                                    ledgerForm.get('SubledgerName')?.invalid)
-                                    {
-                                    <span>Required</span>
-                                    }
-                                </div>
-                            </div>
-                        </aside>
-
-                        <!-- Subledger Type -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('SubledgerType')?.value">
-                                <ng-select [items]="['Customer', 'Charge']" bindLabel="name" bindValue="name"
-                                    formControlName="SubledgerType" (change)="onSubledgerTypeChange($event)">
-                                </ng-select>
-                                <label class="input-label">Subledger Type <span class="text-danger">*</span></label>
-                                <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('subledgerType')?.touched &&
-                                    ledgerForm.get('subledgerType')?.invalid) {
-                                    <span>Required</span>
-                                    }
-                                </div>
-                            </div>
-
-                        </aside>
-                        <!-- subledgerMapping -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('SubledgerMappingSid')?.value">
-                                <ng-select [items]="subledgerMappingOptions" bindLabel="name" bindValue="id"
-                                    formControlName="SubledgerMappingSid">
-                                </ng-select>
-                                <label class="input-label">Subledger Mapping <span class="text-danger">*</span></label>
-                                <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('SubledgerMappingSid')?.touched &&
-                                    ledgerForm.get('SubledgerMappingSid')?.invalid) {
-                                    <span>Required</span>
-                                    }
-                                </div>
-                            </div>
-                        </aside>
-
-
-                        <!-- CoA master -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('COAMasterSid')?.value">
-                                <ng-select [items]="ledgerList" bindLabel="LedgerName" bindValue="COAMasterSid"
-                                    formControlName="COAMasterSid">
-                                </ng-select>
-                                <label class="input-label">COA Master <span class="text-danger"></span></label>
-                                <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('COAmaster')?.touched && ledgerForm.get('COAmaster')?.invalid) {
-                                    <span>Required</span>
-                                    }
-                                </div>
-                            </div>
-                        </aside>
-
-
-                        <!-- Remarks -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="textarea" id="text-input" class="custom-input-field sm"
-                                    formControlName="Remarks" placeholder="">
-                                <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-                        <!-- Status -->
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!ledgerForm.get('Status')?.value">
-                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
-                                    bindValue="id">
-
-                                </ng-select>
-                                <label for="" class="input-label">Status <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
+    <!-- Party Tab Content -->
+    <div class="col-12" [hidden]="selectedTab !== 'Party'">
+        <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="!isLoading">
+            <div class="col-12 p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered mb-0">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" (click)="sort('SubledgerName')">
+                                    Party Name
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SubledgerName',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SubledgerName'
+                                    }"></i>
+                                </th>
+                               
+                                <th class="bg-transparent text-light" (click)="sort('DebtorCOA')">
+                                    Debtor COA
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'DebtorCOA',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'DebtorCOA'
+                                    }"></i>
+                                </th>
+                                <th class="bg-transparent text-light" (click)="sort('CreditorCOA')">
+                                    Creditor COA
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CreditorCOA',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CreditorCOA'
+                                    }"></i>
+                                </th>
+                                 <th class="bg-transparent text-light" (click)="sort('AccrualCOA')">
+                                    Accrual COA
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AccrualCOA',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AccrualCOA'
+                                    }"></i>
+                                </th>
+                                <th class="bg-transparent text-light" (click)="sort('Status')">
+                                    Status
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Status',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Status'
+                                    }"></i>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of getCurrentData(); trackBy: trackBy" [class.table-warning]="item.hasChanges">
+                                <!-- Party Name -->
+                                <td style="padding: 8px;">
+                                    <div class="fw-bold">{{ item.SubledgerName }}</div>
+                                </td>
+                             
+                                
+                                <!-- Debtor COA - Sy Dr -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="getCOAOptions('debtor')" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                        [compareWith]="compareWithCOA" [disabled]="!item.canEditDebtorCOA" [(ngModel)]="item.DrCOAMasterSid"
+                                        (change)="onCOAChange(item, $event, 'debtor')">
+                                        <ng-template ng-label-tmp let-item="item">
+                                            {{ item.LedgerCode }} - {{ item.LedgerName }}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div>
+                                                <strong>{{ item.LedgerCode }}</strong> - {{ item.LedgerName }}
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </td>
+                                
+                                <!-- Creditor COA - Sy Cr -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="getCOAOptions('creditor')" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                        [compareWith]="compareWithCOA" [disabled]="!item.canEditCreditorCOA" [(ngModel)]="item.CrCOAMasterSid"
+                                        (change)="onCOAChange(item, $event, 'creditor')">
+                                        <ng-template ng-label-tmp let-item="item">
+                                            {{ item.LedgerCode }} - {{ item.LedgerName }}
+                                        </ng-template>
+                                    </ng-select>
+                                </td>
+                                
+                                <!-- Accrual COA - Accrual -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="getCOAOptions('accrual')" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                        [compareWith]="compareWithCOA" [disabled]="!item.canEditAccrualCOA" [(ngModel)]="item.AccrualCOAMasterSid"
+                                        (change)="onCOAChange(item, $event, 'accrual')">
+                                        <ng-template ng-label-tmp let-item="item">
+                                            {{ item.LedgerCode }} - {{ item.LedgerName }}
+                                        </ng-template>
+                                    </ng-select>
+                                </td>      
+                                
+                                <!-- Status -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="statusOptions" 
+                                               bindLabel="name" 
+                                               bindValue="id"
+                                               [compareWith]="compareWithStatus"
+                                               [(ngModel)]="item.Status"
+                                               (change)="onStatusChange(item, $event)">
+                                    </ng-select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- No Records -->
+                <div *ngIf="totalLengthOfCollection === 0" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <h5>No Party Records Found</h5>
+                    <p *ngIf="filterValue">Try adjusting your search criteria</p>
+                </div>
+                
+                <!-- Pagination -->
+                <div *ngIf="totalLengthOfCollection > 0" class="d-flex justify-content-between align-items-center mt-2 px-2">
+                    <div class="text-muted">
+                        Showing {{ (page - 1) * pageSize + 1 }} to 
+                        {{ mathMin(page * pageSize, totalLengthOfCollection) }} of 
+                        {{ totalLengthOfCollection }} entries
                     </div>
+                    <ngb-pagination [collectionSize]="totalLengthOfCollection" 
+                                   [(page)]="page" 
+                                   [pageSize]="pageSize"
+                                   (pageChange)="onPageChange($event)"
+                                   [maxSize]="5"
+                                   [rotate]="true"
+                                   [boundaryLinks]="true">
+                    </ngb-pagination>
                 </div>
-
-                   </form>
+            </div>
         </div>
+    </div>
 
-                <div class="modal-footer mt-2  pt-1">
-                     <!-- @if(isEditMode){
-                        <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-                            <i class="fas fa-file-alt me-1"></i> e-Doc
-                        </button>
-                        <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                        </button>
-                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-                            <i class="fas fa-shield-alt me-1"></i> Authorize
-                        </button>
-                        <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
-                            <i class="fas fa-envelope me-1"></i> Email
-                        </button>
-                        } -->
-                    
-                    
- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="reset()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
-
-                    <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
-                        [disabled]="ledgerForm.invalid">
-                        Save
-                    </button>
+    <!-- Charge Tab Content -->
+    <div class="col-12" [hidden]="selectedTab !== 'Charge'">
+        <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="!isLoading">
+            <div class="col-12 p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered mb-0">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" (click)="sort('SubledgerName')">
+                                    Charge Name
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SubledgerName',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SubledgerName'
+                                    }"></i>
+                                </th>
+                                <th class="bg-transparent text-light" (click)="sort('departmentName')">
+                                    Department
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'departmentName',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'departmentName'
+                                    }"></i>
+                                </th>
+                                <th class="bg-transparent text-light" (click)="sort('RevenueCOA')">
+                                    Revenue COA (Creditor)
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'RevenueCOA',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'RevenueCOA'
+                                    }"></i>
+                                </th>
+                                <th class="bg-transparent text-light" (click)="sort('CostCOA')">
+                                    Cost COA (Debtor)
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CostCOA',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CostCOA'
+                                    }"></i>
+                                </th>
+                                <th class="bg-transparent text-light" (click)="sort('Status')">
+                                    Status
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Status',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Status'
+                                    }"></i>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of getCurrentData(); trackBy: trackBy" [class.table-warning]="item.hasChanges">
+                                <!-- Charge Name -->
+                                <td style="padding: 8px;">
+                                    <div class="fw-bold">{{ item.SubledgerName }}</div>
+                                </td>
+                                
+                                <!-- Department -->
+                                <td style="padding: 8px;">
+                                    {{ item.departmentName }}
+                                </td>
+                                <!-- Revenue COA (Creditor) - Revenue -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="getCOAOptions('creditor')" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                        [compareWith]="compareWithCOA" [disabled]="!item.canEditCreditorCOA" [(ngModel)]="item.CrCOAMasterSid"
+                                        (change)="onCOAChange(item, $event, 'creditor')">
+                                        <ng-template ng-label-tmp let-item="item">
+                                            {{ item.LedgerCode }} - {{ item.LedgerName }}
+                                        </ng-template>
+                                    </ng-select>
+                                </td>
+                                
+                                <!-- Cost COA (Debtor) - Cost -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="getCOAOptions('debtor')" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                        [compareWith]="compareWithCOA" [disabled]="!item.canEditDebtorCOA" [(ngModel)]="item.DrCOAMasterSid"
+                                        (change)="onCOAChange(item, $event, 'debtor')">
+                                        <ng-template ng-label-tmp let-item="item">
+                                            {{ item.LedgerCode }} - {{ item.LedgerName }}
+                                        </ng-template>
+                                    </ng-select>
+                                </td>
+                                <!-- Status -->
+                                <td style="padding: 8px;">
+                                    <ng-select [items]="statusOptions" 
+                                               bindLabel="name" 
+                                               bindValue="id"
+                                               [compareWith]="compareWithStatus"
+                                               [(ngModel)]="item.Status"
+                                               (change)="onStatusChange(item, $event)">
+                                    </ng-select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-         
+                
+                <!-- No Records -->
+                <div *ngIf="totalLengthOfCollection === 0" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <h5>No Charge Records Found</h5>
+                    <p *ngIf="filterValue">Try adjusting your search criteria</p>
+                </div>
+                
+                <!-- Pagination -->
+                <div *ngIf="totalLengthOfCollection > 0" class="d-flex justify-content-between align-items-center mt-2 px-2">
+                    <div class="text-muted">
+                        Showing {{ (page - 1) * pageSize + 1 }} to 
+                        {{ mathMin(page * pageSize, totalLengthOfCollection) }} of 
+                        {{ totalLengthOfCollection }} entries
+                    </div>
+                    <ngb-pagination [collectionSize]="totalLengthOfCollection" 
+                                   [(page)]="page" 
+                                   [pageSize]="pageSize"
+                                   (pageChange)="onPageChange($event)"
+                                   [maxSize]="5"
+                                   [rotate]="true"
+                                   [boundaryLinks]="true">
+                    </ngb-pagination>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    </ng-template>
-
-
+    <!-- Loading State -->
+    <div class="col-12" *ngIf="isLoading">
+        <div class="row bg-white py-4 rounded shadow-sm mx-auto">
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 mb-0">Loading data...</p>
+            </div>
+        </div>
+    </div>
 </div>
-
-
-<ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
-</ng-template>
