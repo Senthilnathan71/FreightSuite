@@ -1,9 +1,10 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, ViewChild } from "@angular/core";
 import { StorageMap } from "@ngx-pwa/local-storage";
 import { AppSettingsService } from "./services/app-settings.service";
 import { catchError, from, map, Observable, switchMap, takeUntil, throwError, timeout } from "rxjs";
 import { environment } from '../../environments/environment';
+import { CompanySettingsManagerService } from "./services/company-settings-manager.service";
 
 @Injectable()
 export class HttpInterceptorService implements HttpInterceptor{
@@ -15,7 +16,8 @@ export class HttpInterceptorService implements HttpInterceptor{
 
     constructor(
         private localStorage : StorageMap,
-        private appSettingService : AppSettingsService
+        private appSettingService : AppSettingsService,
+        private companySettingsManager: CompanySettingsManagerService
     ){}
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -90,6 +92,22 @@ export class HttpInterceptorService implements HttpInterceptor{
             this.appSettingService.sessionExpire().then((flag)=>{
                 console.log(flag);
                 if(flag){
+                    // Clear company settings to prevent API loops during logout
+                    this.companySettingsManager.clearCompanySettings();
+                    // Preserve remembered credentials
+                    const rememberedEmail = localStorage.getItem('rememberedEmail');
+                    const rememberedPassword = localStorage.getItem('rememberedPassword');
+
+                    // Clear all localStorage data
+                    localStorage.clear();
+
+                    // Restore remembered credentials
+                    if (rememberedEmail) {
+                    localStorage.setItem('rememberedEmail', rememberedEmail);
+                    }
+                    if (rememberedPassword) {
+                    localStorage.setItem('rememberedPassword', rememberedPassword);
+                    }
                     window.location.href = '/auth/login';
                 }
             })
