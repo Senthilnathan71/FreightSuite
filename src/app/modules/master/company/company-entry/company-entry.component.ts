@@ -464,6 +464,8 @@ export class CompanyEntryComponent implements OnInit {
 
 	openBranchEntryModal(content: TemplateRef<any>, branchIndex?: number) {
 		this.branchFormSubmitted = false;
+		this.bankPage = 1;
+		this.paginatedBanks = [];
 
 		// Initialize branch form (same as before)
 		if (branchIndex === undefined) {
@@ -532,6 +534,7 @@ export class CompanyEntryComponent implements OnInit {
 				this.getStatesByCountry(this.branchData?.CountryMasterSid, true);
 				this.getCitiesByState(this.branchData?.StateMasterSid, true);
 			}
+			this.updateBankPagination(this.currentBranchIndex);
 		}
 
 		if (this.branchModalRef) {
@@ -545,19 +548,20 @@ export class CompanyEntryComponent implements OnInit {
 			backdrop: 'static'
 		});
 
-		// Store subscription to clean up later
-		this.modalDismissSubscription = this.branchModalRef.closed.subscribe((reason) => {
-			if (reason !== 'submitted' && !this.isModalEditMode && this.currentBranchIndex !== null) {
-				this.branches.removeAt(this.currentBranchIndex);
-				this.currentBranchIndex = null;
+		this.modalDismissSubscription = this.branchModalRef.closed.subscribe(
+			(reason) => {
+				if (
+					reason !== 'submitted' &&
+					!this.isModalEditMode &&
+					this.currentBranchIndex !== null
+				) {
+					this.branches.removeAt(this.currentBranchIndex);
+					this.currentBranchIndex = null;
+				}
+				this.cleanupSubscriptions();
+				this.updateBranchPagination();
 			}
-			this.cleanupSubscriptions();
-		});
-
-		this.updateBranchPagination();
-		if (branchIndex !== undefined) {
-			this.updateBankPagination(branchIndex);
-		}
+		);
 	}
 
 	submitBranchForm() {

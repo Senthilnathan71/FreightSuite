@@ -66,6 +66,7 @@ export class InvoiceEntryComponent implements OnInit {
   // lookups
   customerList: any[] = [];
   customerBranchList: any[] = [];
+  bankDetails : any;
   currencyList: any[] = [];
   chargeList: any[] = [];
   hssacList: any[] = [];
@@ -188,6 +189,7 @@ export class InvoiceEntryComponent implements OnInit {
 
     this.invoiceForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
       this.recalculateAllRows();
+      this.getBankDetails();
     });
 
     this.invoiceForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
@@ -302,6 +304,7 @@ export class InvoiceEntryComponent implements OnInit {
         ...c,
         countryName: c?.countryMaster?.countryName || ''  
       }));
+        this.getBankDetails();
       } catch (e) {
         this.currencyList = [];
       }
@@ -1163,7 +1166,7 @@ export class InvoiceEntryComponent implements OnInit {
       );
       if (hssac) {
         const result = hssac?.HSSACCode || hssac?.hssacCode || hssac?.HSNCode || hssac?.hsnCode || hssac?.SACCode || hssac?.sacCode || '-';
-        console.log('DEBUG - getHSSACCode: hssacSid =', hssacSid, ', found in hssacList =', true, ', result =', result);
+        // console.log('DEBUG - getHSSACCode: hssacSid =', hssacSid, ', found in hssacList =', true, ', result =', result);
         return result;
       }
     }
@@ -1177,7 +1180,7 @@ export class InvoiceEntryComponent implements OnInit {
         if (charge?.chargeTaxMaster && Array.isArray(charge.chargeTaxMaster) && charge.chargeTaxMaster.length > 0) {
           const hsnCode = charge.chargeTaxMaster[0]?.HSNCode || charge.chargeTaxMaster[0]?.hsnCode || charge.chargeTaxMaster[0]?.HSSACCode;
           if (hsnCode) {
-            console.log('DEBUG - getHSSACCode: Got HSN from chargeTaxMaster =', hsnCode);
+            // console.log('DEBUG - getHSSACCode: Got HSN from chargeTaxMaster =', hsnCode);
             return hsnCode;
           }
         }
@@ -1514,5 +1517,37 @@ export class InvoiceEntryComponent implements OnInit {
       return 'N/A'
     }
     return (this.customerList.find(cus => cus.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
+  }
+
+  getBankDetails(){
+    console.log('DEBUG - getBankDetails');
+    const currCode = this.invoiceForm.get('CurrencyCode')?.value;
+    const currentBranchId = this.currentBranch?.BranchMasterSid;
+    const currency = this.currencyList.find(c => c.currencyCode === currCode)?.CurrencyMasterSid;
+    console.log('DEBUG - getBankDetails - branch:', currentBranchId);
+    console.log('DEBUG - getBankDetails - currencyCode:', currCode);
+    console.log('DEBUG - getBankDetails - currency:', currency);
+    console.log('DEBUG - getBankDetails - currencyid:', currency);
+    if(!currency || !currentBranchId){
+      this.bankDetails = null;
+      return;
+    }
+    const payload = {
+      BranchMasterSid: currentBranchId,
+      CurrencyMasterSid: currency
+    }
+    this.operationService.getBankDetails(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status && resp.data) {
+          this.bankDetails = resp.data;
+        } else {
+          this.bankDetails = null;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching bank details', err);
+        this.bankDetails = null;
+      }
+    });
   }
 }
