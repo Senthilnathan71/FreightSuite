@@ -294,7 +294,7 @@
                         </aside> -->
                         <aside class="col-md-6">
                             <div class="custom-form-group  custom-form-group-select" [class.filled]="!!cityForm.get('CountryMasterSid')?.value">
-                                <ng-select 
+                                <!-- <ng-select 
                                 formControlName="CountryMasterSid"
                                 [items]="dropdownStore.countries()"
                                 bindLabel="countryName"
@@ -302,7 +302,14 @@
                                 placeholder=""
                                 class="custom-input-field sm p-0"
                                 style="border: none;">
-                                </ng-select>
+                                </ng-select> -->
+                                <dofi-searchable-dropdown [items]="countryList" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
+                        bindValue="CountryMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
 
                                 <label for="text-input" class="input-label">
                                 Country <span class="text-danger fw-bold">*</span>
@@ -341,7 +348,7 @@
 
                         <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!cityForm.get('StateMasterSid')?.value">
-                            <ng-select
+                            <!-- <ng-select
                             formControlName="StateMasterSid"
                             [items]="dropdownStore.states()"
                             bindLabel="stateName"
@@ -350,7 +357,14 @@
                             class="custom-input-field sm p-0"
                             style="border: none;"
                                 >
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="stateList" formControlName="StateMasterSid" placeholder=""
+                        [displayFields]="stateLookupConfig.displayFields"
+                        [displayLabels]="stateLookupConfig.displayLabels"
+                        [labelFields]="stateLookupConfig.labelFields" bindLabel="stateName"
+                        bindValue="StateMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
 
                             <label for="text-input" class="input-label">
                             State <span class="text-danger fw-bold">*</span>

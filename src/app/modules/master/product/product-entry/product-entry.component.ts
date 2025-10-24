@@ -16,11 +16,13 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
     selector: 'app-product-entry',
     standalone: true,
-    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe,CommonModule,NgbDropdownModule],
+    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe,CommonModule,NgbDropdownModule,SearchableDropdown],
     templateUrl: './product-entry.component.html',
     styleUrl: './product-entry.component.scss',
 })
@@ -60,6 +62,8 @@ export class ProductEntryComponent implements OnInit{
     currentMenuPermissions: any = {};
     userData:any;
     currentCompany:any;
+    HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC;
+    uomLookupConfig = DROPDOWN_CONFIGS.UOM;
     constructor(
         private masterService:MasterService,
         private appSettingService:AppSettingsService,

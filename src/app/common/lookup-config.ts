@@ -4,6 +4,11 @@ export const DROPDOWN_CONFIGS = {
     displayLabels: ['Customer','Branch','Address'],
     labelFields: ['CustomerName']
   },
+  ZONE: {
+    displayFields: ['ZoneName', 'ZoneCode'],
+    displayLabels: ['Zone Name', 'Zone Code'],    
+    labelFields: ['ZoneName']
+  },
   PORT :{
     displayFields : ['PortCode', 'PortName','Country'],
     displayLabels : ['Code', 'Name','Country'],
@@ -59,6 +64,11 @@ export const DROPDOWN_CONFIGS = {
     displayLabels: ['Vessel Name', 'Voyage No','ETD','ETA'],
     labelFields: ['VesselName','VoyageNo']
   },
+  HSSAC: {
+    displayFields: ['HSSACCode', 'HSSACName'],
+    displayLabels: ['HSSAC Code', 'HSSAC Name'],  
+    labelFields: ['HSSACCode']
+  }
 } satisfies Record<string, {
   displayFields: string[];
   displayLabels: string[];

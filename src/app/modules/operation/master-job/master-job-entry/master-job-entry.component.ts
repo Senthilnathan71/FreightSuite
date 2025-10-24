@@ -117,7 +117,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
+    labelFields :['currencyCode'],
   };
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
@@ -641,7 +641,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.yardList = yards.data ; 
     
     this.containerTypeList = containerTypes.data ;
-    this.currencyList = currencies.data ;
+    const rawCurrencies: any[] = Array.isArray(currencies)
+    ? currencies
+    : currencies?.data || [];
+    this.currencyList = rawCurrencies.map((c: any) => ({
+      ...c,
+      countryName: c?.countryMaster?.countryName || ''
+    }));
     this.packageTypeList = packageTypes.data ;
     this.filteredDestinationAgents = [...this.agentList];
     this.filteredOriginAgents = [...this.agentList];
@@ -652,7 +658,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.filteredPOL = [...this.filteredPorts];
     this.filteredPOD = [...this.filteredPorts];
   }));
+  
 }
+
+
 
 
   loadMasterJobData(masterJobSid: number): void {
