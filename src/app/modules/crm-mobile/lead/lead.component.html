@@ -696,7 +696,9 @@
                                         <input type="text" id="customer-ref" placeholder=""
                                             class="custom-input-field sm" formControlName="leadFrom"
                                             [textWithNumbers]="20">
-                                        <label for="customer-ref" class="input-label">Lead By</label>
+                                        <label for="customer-ref" class="input-label">Lead By 
+                                            <span class="text-danger">*</span>
+                                        </label>
                                     </div>
                                     @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
                                     <div class="error-message">

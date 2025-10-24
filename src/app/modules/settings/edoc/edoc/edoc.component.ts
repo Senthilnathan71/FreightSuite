@@ -32,7 +32,7 @@ import { NgxDocViewerModule } from "ngx-doc-viewer";
 })
 export class EdocComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-    dummyFileUrl: string = '../../../../../assets/pdf-sample_0.pdf'; // place a PDF in src/assets
+    dummyFileUrl: string = ' assets/pdf-sample_0.pdf'; // place a PDF in src/assets
 
   @Input() screenName: string = "Edoc";
   @Output() closeModal = new EventEmitter<boolean>();
@@ -59,6 +59,8 @@ firstFile: File | null = null;
 
 
   ngOnInit() {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+
     console.log('📂 Edoc modal opened!');
     console.log('📋 Received screenName:', this.screenName);
     console.log('📋 Received formData:', this.formData);
@@ -270,7 +272,7 @@ if (formValue.FollowupDate) {
 
 formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
 
-
+formData.append('CreatedBy',this.userData['userEmail']);
 
   // Append form fields (non-empty values only)
   Object.keys(formValue).forEach(key => {
