@@ -75,25 +75,28 @@ export class ChartAccountEntryComponent implements OnInit {
   ];
 
   modeOfledgertype = [
-    { id: 1, name: 'Bank' },
-    { id: 2, name: 'Cash' },
-    { id: 3, name: 'Depreciation' },
-    { id: 4, name: 'Expenses GST' },
-    { id: 5, name: 'Imprest' },
-    { id: 6, name: 'Income GST' },
-    { id: 7, name: 'Income Tax Payable' },
-    { id: 8, name: 'Income Tax Receivable' },
-    { id: 9, name: 'Input Tax' },
-    { id: 10, name: 'Liabilities' },
-    { id: 11, name: 'Output Tax' },
-    { id: 12, name: 'Sy Cr' },
-    { id: 13, name: 'Sy Dr' }
+    { id: 1, name: 'Accrual'},
+    { id: 2, name: 'Bank' },
+    { id: 3, name: 'Cash' },
+    { id: 4, name: 'Cost' },
+    { id: 5, name: 'Depreciation' },
+    { id: 6, name: 'Expenses GST' },
+    { id: 7, name: 'Imprest' },
+    { id: 8, name: 'Income GST' },
+    { id: 9, name: 'Income Tax Payable' },
+    { id: 10, name: 'Income Tax Receivable' },
+    { id: 11, name: 'Input Tax' },
+    { id: 12, name: 'Liabilities' },
+    { id: 13, name: 'Output Tax' },
+    { id: 14, name: 'Revenue' },
+    { id: 15, name: 'Sy Cr' },
+    { id: 16, name: 'Sy Dr' }
   ];
 
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],
-    labelFields: ['currencyCode', 'currencyName', 'countryName'],
+    labelFields: ['currencyCode'],
   };
 
   auditLogs: any[] = [];
@@ -383,9 +386,8 @@ export class ChartAccountEntryComponent implements OnInit {
             (resp: any) => {
                 if (resp.status) {
                     this.appSettingService.showSuccess("Chart Account Updated Successfully");
-                    if (resp?.data?.COAMasterSid) {
-                        this.route.navigate(['/accounts/chart-accounts/entry', resp?.data?.COAMasterSid]);
-                    }
+                   this.route.navigate(['/accounts/chart-accounts/entry']);
+                    
                     this.resetFormForNewEntry();
                 } else {
                     this.appSettingService.showError(resp.message);
@@ -406,9 +408,8 @@ export class ChartAccountEntryComponent implements OnInit {
             (resp: any) => {
                 if (resp.status) {
                     this.appSettingService.showSuccess(resp.message);
-                    if (resp?.data?.COAMasterSid) {
-                        this.route.navigate(['/accounts/chart-accounts/entry', resp.data.COAMasterSid]);
-                    }
+                   this.route.navigate(['/accounts/chart-accounts/entry']);
+                    
                     this.resetFormForNewEntry();
                 } else {
                     this.appSettingService.showError(resp.message);
