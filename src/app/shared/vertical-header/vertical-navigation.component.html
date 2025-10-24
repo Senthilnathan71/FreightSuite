@@ -208,7 +208,7 @@
         <ng-container *ngIf="menuSearchResults.length > 0; else noMenuResults">
           <button
             *ngFor="let result of menuSearchResults; let i = index"
-            class="dropdown-item"
+            class="dropdown-item custom-dropdown-item"
             [class.active]="i === activeIndex"
             (mousedown)="onClickEvent($event,result)"
             #menuItem
@@ -217,7 +217,7 @@
         </button>
         </ng-container>
         <ng-template #noMenuResults>
-          <div class="dropdown-item text-muted">No results found</div>
+          <div class="dropdown-item text-black">No results found</div>
         </ng-template>
       </div>
     </div>
@@ -235,12 +235,12 @@
 
         <div class="dropdown-menu w-100" style="max-height: 230px;" ngbDropdownMenu>
           <div *ngIf="docSearchResults.length > 0; else noDocResults">
-            <a *ngFor="let result of docSearchResults" class="dropdown-item" href="#" [routerLink]="result.path">
+            <a *ngFor="let result of docSearchResults" class="dropdown-item custom-dropdown-item" href="#" [routerLink]="result.path">
               {{ result.title }}
             </a>
           </div>
           <ng-template #noDocResults>
-            <div class="dropdown-item text-muted">
+            <div class="dropdown-item text-black">
               No documents found
             </div>
           </ng-template>

@@ -7,6 +7,7 @@ import { EdocComponent } from "./edoc/edoc/edoc.component";
 import { EmailEntryComponent } from "./email/email-entry/email-entry.component";
 import { MenuEntryComponent } from "./menu/menu-entry/menu-entry.component";
 import { FollowUpComponent } from "./follow-up/follow-up/follow-up.component";
+import { RolemenuEntryComponent } from "./rolemenu/rolemenu-entry/rolemenu-entry.component";
 
 export const SettingsRoutes: Routes = [
     {
@@ -65,6 +66,14 @@ export const SettingsRoutes: Routes = [
             {
                 path: 'rolemenu',
                 component: RolemenuComponent,
+                data: {
+                    title: 'Role Menu',
+                    urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],
+                },
+            },
+             {
+                path: 'rolemenu/entry',
+                component: RolemenuEntryComponent,
                 data: {
                     title: 'Role Menu',
                     urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],

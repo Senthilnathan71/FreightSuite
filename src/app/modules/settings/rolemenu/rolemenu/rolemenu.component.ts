@@ -26,6 +26,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { Router } from '@angular/router';
 
 @Component({
 	selector: 'app-rolemenu',
@@ -142,6 +143,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 		private settingService: SettingsService,
 		private appSettingService: AppSettingsService,
 		private dialog: MatDialog,
+		private router: Router,
 		private modalService: NgbModal,
 		private excelReportService: ExcelExportService,
 		private fb: FormBuilder,
@@ -273,6 +275,10 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 				console.warn(`Unknown action: ${action}`);
 		}
 	}
+
+	// navigateToCreate() {
+	// 	this.router.navigate(['settings/rolemenu/entry'])
+	// }
 
 
 	private updateHeaderActionState(): void {
@@ -631,7 +637,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	openModal(content: TemplateRef<any>, data?: any) {
 		this.initRoleMenuForm();
 		if (data) {
-			console.log("During model open",data)
+			console.log("During model open", data)
 			this.isEditMode = true;
 			this.roleMenuData = data;
 			const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
