@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, effect, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
@@ -33,6 +33,8 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 @Component({
   selector: 'app-city',
   standalone: true,
@@ -55,7 +57,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
     NgbDropdownModule,
     ReusableTableComponent,
     PageHeaderComponent,
-    ToolsDropdownComponent
+    ToolsDropdownComponent,
+    SearchableDropdown
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -144,6 +147,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+    stateLookupConfig = DROPDOWN_CONFIGS.STATE;
 
   // Alias for compatibility with existing template
   get allCity() { return this.allItems; }
@@ -161,6 +166,12 @@ export class CityComponent extends BaseListComponent implements OnInit {
     public dropdownStore: DropdownStore
   ) {
     super(paginationService);
+    effect(()=> {
+          const countryData = this.dropdownStore.countries();
+          const stateData = this.dropdownStore.states();
+          this.countryList = countryData;
+          this.stateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
+        })
   }
 
   override ngOnInit(): void {
@@ -541,8 +552,8 @@ export class CityComponent extends BaseListComponent implements OnInit {
 
 
   loadCountryAndStateData() {
-    this.dropdownStore.loadStates();
-    this.dropdownStore.loadCountries();
+    this.dropdownStore.loadStates().subscribe();
+    this.dropdownStore.loadCountries().subscribe();
   }
 
   // Method to load the city data

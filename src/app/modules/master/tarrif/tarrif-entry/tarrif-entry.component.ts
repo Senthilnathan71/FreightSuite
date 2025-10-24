@@ -9,7 +9,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -26,6 +26,8 @@ import { Charge } from 'src/app/modules/crm-mobile/Interfaces/charge.interface';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -106,11 +108,14 @@ export class TarrifEntryComponent implements OnInit {
 
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
-
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
   portLookupConfig = {
     displayFields : ['PortCode', 'PortName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['PortCode', 'PortName','countryName']
+    labelFields :['PortCode', 'PortName']
   };
 
   selectedTab = 'Tariff Details';
@@ -136,7 +141,7 @@ export class TarrifEntryComponent implements OnInit {
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
+    labelFields :['currencyCode'],
   };
 
   constructor(
@@ -148,7 +153,8 @@ export class TarrifEntryComponent implements OnInit {
     private fb: FormBuilder,
     private modalService: NgbModal,
     private matdial: MatDialog,
-    private calendar: NgbCalendar
+    private calendar: NgbCalendar,
+    private operationServ: OperationService
   ) { }
 
   ngOnInit(): void {
@@ -417,8 +423,8 @@ export class TarrifEntryComponent implements OnInit {
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   forkJoin({
     ports: this.masterServ.getAllPorts(),
-    agents: this.masterServ.getAllAgents(CompanyMasterSid),
-    carriers: this.masterServ.getAllCarriers(CompanyMasterSid),
+    agents: this.operationServ.getCustomerByItsType({ CompanyMasterSid, types: ['vendor', 'transporter', 'agent'] }).pipe(catchError(err => of([]))),
+    carriers: this.operationServ.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of([]))),
     departments: this.masterServ.getAllDepartments(this.currentCompany?.CompanyMasterSid),
     companies: this.masterServ.getAllCompanies(),
     currencies: this.masterServ.getAllCurrencies(),
@@ -454,8 +460,8 @@ export class TarrifEntryComponent implements OnInit {
 
     this.polList = [...this.filteredPOL];
     this.podList = [...this.filteredPOD];
-    this.agentList = agents;
-    this.carrierList = carriers;
+    this.agentList = agents.data;
+    this.carrierList = carriers.data;
     this.departmentList = departments;
     this.filterChargeBasedOnDept();
     this.companyList = companies;

@@ -94,9 +94,9 @@
   [items]="departments" 
   formControlName="DepartmentMasterSid"
   [placeholder]="''"
-  [displayFields]="[ 'departmentCode','departmentName','departmentType']" 
-  [displayLabels]="[ 'Code','Name', 'Type']"
-  [labelFields]="['departmentCode','departmentName','departmentType']"
+  [displayFields]="departmentLookupConfig.displayFields"
+  [displayLabels]="departmentLookupConfig.displayLabels"
+  [labelFields]="departmentLookupConfig.labelFields"
   [bindValue]="'DepartmentMasterSid'"
   [isLoading]="isDataLoading">
 </dofi-searchable-dropdown>
@@ -334,14 +334,23 @@
                     </aside> -->
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('Carrier')?.value">
-                            <ng-select class="ng-select" formControlName="Carrier" placeholder="">
-                                <!-- <ng-option value="">Select Carrier</ng-option> -->
+                            <!-- <ng-select class="ng-select" formControlName="Carrier" placeholder="">
                                 @for (customer of carrierList; track customer) {
                                 @if(customer.CustomerMasterSid !== tariffHeaderForm.get('AgentSid').value){
                                 <ng-option [value]="customer.CustomerMasterSid">{{ customer.CustomerName }}</ng-option>
                                 }
                                 }
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown 
+  [items]="carrierList" 
+  formControlName="Carrier"
+  [placeholder]="''"
+  [displayFields]="customerLookupConfig.displayFields"
+  [displayLabels]="customerLookupConfig.displayLabels" 
+  [labelFields]="customerLookupConfig.labelFields"
+  [bindValue]="'CustomerMasterSid'"
+  >
+</dofi-searchable-dropdown> 
                             <label for="text-input" class="input-label">Carrier <span
                                     class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('Carrier')?.touched && tariffHeaderForm.get('Carrier')?.errors){
@@ -357,14 +366,23 @@
                     
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('AgentSid')?.value">
-                            <ng-select class="ng-select" formControlName="AgentSid" placeholder="">
-                                <!-- <ng-option value="">Select Agent</ng-option> -->
+                            <!-- <ng-select class="ng-select" formControlName="AgentSid" placeholder="">
                                 @for (customer of agentList; track customer) {
                                 @if(customer.CustomerMasterSid !== tariffHeaderForm.get('Carrier').value){
                                 <ng-option [value]="customer.CustomerMasterSid">{{ customer.CustomerName }}</ng-option>
                                 }
                                 }
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown 
+  [items]="agentList" 
+  formControlName="AgentSid"
+  [placeholder]="''"
+  [displayFields]="customerLookupConfig.displayFields"
+  [displayLabels]="customerLookupConfig.displayLabels" 
+  [labelFields]="customerLookupConfig.labelFields"
+  [bindValue]="'CustomerMasterSid'"
+  >
+</dofi-searchable-dropdown> 
                             <label for="text-input" class="input-label">Agent <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('AgentSid')?.touched && tariffHeaderForm.get('AgentSid')?.errors){
                             <div class="error-message">
@@ -379,8 +397,18 @@
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('IncoTerms')?.value">
-                            <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindValue="IncoName" bindLabel="IncoName" placeholder="">
-                            </ng-select>
+                            <!-- <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindValue="IncoName" bindLabel="IncoName" placeholder="">
+                            </ng-select> -->
+                            <dofi-searchable-dropdown 
+  [items]="incoList" 
+  formControlName="IncoTerms"
+  [placeholder]="''"
+  [displayFields]="incoLookupConfig.displayFields"
+  [displayLabels]="incoLookupConfig.displayLabels" 
+  [labelFields]="incoLookupConfig.labelFields"
+  [bindValue]="'IncoName'"
+  >
+</dofi-searchable-dropdown> 
                             <label for="text-input" class="input-label">Inco Terms <span
                                     class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('IncoTerms')?.touched &&
@@ -685,7 +713,7 @@
                           <aside class="col-md-6 col-lg-4">
   <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailChargeCode')?.value">
     <!-- Replace the existing ng-select with this filtered version -->
-    <ng-select 
+    <!-- <ng-select 
       class="ng-select" 
       formControlName="detailChargeCode"
       [items]="filteredCharges" 
@@ -701,7 +729,17 @@
           No charges available for selected department
         </div>
       </ng-template>
-    </ng-select>
+    </ng-select> -->
+    <dofi-searchable-dropdown
+ [items]="filteredCharges" 
+  formControlName="detailChargeCode"
+  [placeholder]="''"
+[displayFields]="chargeLookupConfig.displayFields"
+  [displayLabels]="chargeLookupConfig.displayLabels"
+  [labelFields]="chargeLookupConfig.labelFields"
+  [bindValue]="'chargeCode'"
+  >
+</dofi-searchable-dropdown>
     <label for="charge" class="input-label">Charge Code <span class="text-danger">*</span></label>
     @if(tariffDetailsForm.get('detailChargeCode')?.touched && tariffDetailsForm.get('detailChargeCode')?.errors){
     <div class="error-message">

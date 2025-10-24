@@ -30,6 +30,8 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 @Component({
   selector: 'app-sector',
   standalone: true,
@@ -49,7 +51,8 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
     NgbDropdownModule,
     ReusableTableComponent,
         PageHeaderComponent,
-    ToolsDropdownComponent
+    ToolsDropdownComponent,
+    SearchableDropdown
   ],
   templateUrl: './sector-list.component.html',
   styleUrl: './sector-list.component.scss',
@@ -85,6 +88,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   TandCList: any[] = [];
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }

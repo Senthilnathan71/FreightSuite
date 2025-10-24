@@ -10,6 +10,9 @@ import { CommonModule } from '@angular/common';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { Search } from 'angular-feather/icons';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-connection',
@@ -21,7 +24,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     CustomDatePipe,
     CommonModule,
     ReactiveFormsModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    SearchableDropdown
   ],
   templateUrl: './connection.component.html',
   styleUrl: './connection.component.scss',
@@ -51,6 +55,8 @@ export class ConnectionComponent implements OnInit {
   connectionForm !: FormGroup;
   currentCompany : any;
   currentBranch : any;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
 
   typeofmodes = [
     { id: 1, name: 'Sea' },

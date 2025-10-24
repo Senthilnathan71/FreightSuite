@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -18,6 +18,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-country-entry',
@@ -60,6 +61,12 @@ export class CountryEntryComponent implements OnInit {
   TandCList: any[];
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  CurrencyLookupConfig = {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
+  };  
+  zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
 
   constructor(
     private fb: FormBuilder,
@@ -71,11 +78,18 @@ export class CountryEntryComponent implements OnInit {
     public dropdownStore: DropdownStore
   ) {
     this.initForm();
+    effect(() => {
+      const currencyData = this.dropdownStore.currencies();
+      this.currencies = (currencyData || []).map(c => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
+    })
   }
 
   ngOnInit(): void {
-    this.dropdownStore.loadZones();
-    this.dropdownStore.loadCurrencies();
+    this.dropdownStore.loadZones().subscribe();
+    this.dropdownStore.loadCurrencies().subscribe();
     // this.loadZones();
     // this.loadCurrencies();
     this.route.params.subscribe(params => {

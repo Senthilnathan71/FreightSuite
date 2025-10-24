@@ -260,15 +260,20 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!sectorForm.get('RegionName')?.value">
-                                <ng-select formControlName="RegionName" [items]="filteredZones" bindLabel="ZoneName"
+                                <!-- <ng-select formControlName="RegionName" [items]="filteredZones" bindLabel="ZoneName"
                                     bindValue="ZoneName" placeholder="" container="body">
-                                    <!-- <ng-template ng-label-tmp let-item="item">
-                                        {{item.ZoneName}} ({{item.ZoneCode}})
-                                    </ng-template> -->
+                                    
                                     <ng-template ng-option-tmp let-item="item">
                                         {{item.ZoneName}} ({{item.ZoneCode}})
                                     </ng-template>
-                                </ng-select>
+                                </ng-select> -->
+                                <dofi-searchable-dropdown [items]="filteredZones" formControlName="RegionName" placeholder=""
+                        [displayFields]="zoneLookupConfig.displayFields"
+                        [displayLabels]="zoneLookupConfig.displayLabels"
+                        [labelFields]="zoneLookupConfig.labelFields" bindLabel="ZoneName"
+                        bindValue="ZoneName"
+                        >
+                      </dofi-searchable-dropdown>
                                 <label class="input-label">Region Name</label>
                             </div>
                         </aside>

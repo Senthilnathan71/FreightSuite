@@ -948,7 +948,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!masterJobForm.get('CFS')?.value">
-                            <ng-select [items]="cfsList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                            <!-- <ng-select [items]="cfsList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                 formControlName="CFS" placeholder="" (change)="onCFSChange($event)" appendTo="body">
                                 <ng-template ng-option-tmp let-item="item">
                                     <div>
@@ -963,7 +963,14 @@
                                         No CFS found
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="cfsList" formControlName="CFS" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid" (itemSelected)="onCFSChange($event)"
+                        >
+                      </dofi-searchable-dropdown>
                             <label class="input-label">CFS</label>
                         </div>
                     </aside>
@@ -1065,7 +1072,7 @@
                         <div class="custom-form-group custom-form-group-select mt-1"
                             [class.filled]="!!masterJobForm.get('CoLoader')?.value"
                             [class.disabled]="masterJobForm.get('CoLoader')?.disabled">
-                            <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
+                            <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
                                 class="ng-select" placeholder="" formControlName="CoLoader" [textWithNumbers]="20"
                                 appendTo="body" [disabled]="masterJobForm.get('CoLoader')?.disabled">
                                 <ng-template ng-option-tmp let-item="item">
@@ -1074,7 +1081,14 @@
                                         <small>{{ item.CustomerAddress1 }}</small>
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="forwarderList" formControlName="CoLoader" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName"
+                        >
+                      </dofi-searchable-dropdown>
                             <label class="input-label">CoLoader</label>
                         </div>
                     </aside>

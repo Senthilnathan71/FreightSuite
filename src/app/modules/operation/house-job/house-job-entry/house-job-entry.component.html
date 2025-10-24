@@ -111,7 +111,7 @@
           @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
           <div class="error-message">
             @if(houseJobForm.get('DepartmentMasterSid')?.hasError('required')){
-            <span>Department name is required</span>
+            <span>Required</span>
             }
           </div>
           }
@@ -230,16 +230,21 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('CustomerMasterSid')?.value">
-                      <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="CustomerMasterSid" placeholder=""
                         appendTo="body" (change)="onCustomerChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindValue="CustomerMasterSid" (itemSelected)="onCustomerChange($event)">
+              </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('CustomerMasterSid')?.touched &&
                       houseJobForm.get('CustomerMasterSid')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('CustomerMasterSid')?.hasError('required')){
-                        <span>Customer name is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -256,7 +261,7 @@
                       @if(houseJobForm.get('CustomerAddress')?.touched && houseJobForm.get('CustomerAddress')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('CustomerAddress')?.hasError('required')){
-                        <span>Customer Address is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -264,7 +269,7 @@
                   </aside>
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value">
-                      <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
+                      <!-- <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ShipperName" placeholder=""
                         (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
                         (clear)="onShipperChange()" appendTo="body">
@@ -274,12 +279,17 @@
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindValue="CustomerName" (itemSelected)="setAddress('ShipperAddress',$event) ; onShipperChange($event)">
+              </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Shipper <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('ShipperName')?.hasError('required')){
-                        <span>Shipper Name is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -297,7 +307,7 @@
                       @if(houseJobForm.get('ShipperAddress')?.touched && houseJobForm.get('ShipperAddress')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('ShipperAddress')?.hasError('required')){
-                        <span>Shipper Address is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -306,7 +316,7 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
-                      <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
+                      <!-- <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ConsigneeName" placeholder=""
                         (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
                         (clear)="onShipperChange()" appendTo="body">
@@ -316,12 +326,17 @@
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindValue="CustomerName" (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)">
+              </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Consignee <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
-                        <span>Consignee Name is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -338,7 +353,7 @@
                       @if(houseJobForm.get('ConsigneeAddress')?.touched && houseJobForm.get('ConsigneeAddress')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('ConsigneeAddress')?.hasError('required')){
-                        <span>Consignee Address is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -347,7 +362,7 @@
 
                   <aside class="col-md-6" [formGroup]="otherForm">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('NotifyParty')?.value">
-                      <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
+                      <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="NotifyParty" placeholder=""
                         (change)="setAddress('NotifyAddress',$event)" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
@@ -356,7 +371,12 @@
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindValue="CustomerName" (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
+              </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -409,9 +429,15 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('CarrierName')?.value">
-                      <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
+                      <!-- <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="CarrierName" placeholder="" appendTo="body">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Carrier Name<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -427,7 +453,7 @@
                   </aside>
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('DestinationAgent')?.value">
-                      <ng-select [items]="deliveryAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      <!-- <ng-select [items]="deliveryAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="DestinationAgent" placeholder=""
                         (change)="setAddress('AgentAddress',$event) ; handleDestAgentChange($event)" appendTo="body">
 
@@ -437,14 +463,20 @@
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="deliveryAgentList" formControlName="DestinationAgent"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid">
+                      </dofi-searchable-dropdown>
 
                       <label for="text-input" class="input-label">Delivery Agent <span
                           class="text-danger">*</span></label>
                       @if(houseJobForm.get('DestinationAgent')?.touched && houseJobForm.get('DestinationAgent')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('DestinationAgent')?.hasError('required')){
-                        <span>Destination Agent is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -452,7 +484,7 @@
                   </aside>
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('AgentName')?.value">
-                      <ng-select [items]="originAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                      <!-- <ng-select [items]="originAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="AgentName" placeholder=""
                         (change)="handleOriginAgentChange($event)" appendTo="body">
 
@@ -462,14 +494,20 @@
                             <small>{{ item.CustomerAddress1 }}</small>
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid">
+                      </dofi-searchable-dropdown>
 
                       <label for="text-input" class="input-label">Origin Agent <span
                           class="text-danger">*</span></label>
                       @if(houseJobForm.get('DestinationAgent')?.touched && houseJobForm.get('DestinationAgent')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('DestinationAgent')?.hasError('required')){
-                        <span>Destination Agent is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -564,24 +602,35 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('POO')?.value">
-                      <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POO" appendTo="body" placeholder="">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredPorts" formControlName="POO" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortName" bindValue="PortCode">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
                     </div>
                   </aside>
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('POL')?.value">
-                      <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POL" appendTo="body" placeholder=""
                         (change)="handlePOLChange($event) ; onVesselChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortName" bindValue="PortCode"
+                        (itemSelected)="handlePOLChange($event) ; onVesselChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('POL')?.touched && houseJobForm.get('POL')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('POL')?.hasError('required')){
-                        <span>POL is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -590,15 +639,21 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select"[class.filled]="!!houseJobForm.get('POD')?.value">
-                      <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredPOD" formControlName="POD" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortName" bindValue="PortCode"
+                        (itemSelected)="handlePODChange($event) ; onVesselChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('POD')?.touched && houseJobForm.get('POD')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('POD')?.hasError('required')){
-                        <span>POD is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -607,10 +662,16 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('FPD')?.value">
-                      <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                      <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="FPD" appendTo="body" placeholder=""
                         (change)="handleFPODChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="filteredPorts" formControlName="FPD" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortName" bindValue="PortCode"
+                        (itemSelected)="handleFPODChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -633,10 +694,16 @@
                   </aside>
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('VesselName')?.value">
-                      <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
+                      <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
                         class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
                         (change)="onVesselChange($event)">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
+                        [displayFields]="vesselVoyageConfig.displayFields"
+                        [displayLabels]="vesselVoyageConfig.displayLabels"
+                        [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName"
+                        (itemSelected)="onVesselChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -722,14 +789,26 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('IncoTerms')?.value">
-                      <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
+                      <!-- <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
                         appendTo="body" formControlName="IncoTerms" placeholder="">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown
+            [items]="incoList"
+            formControlName="IncoTerms"
+            placeholder=""
+            [displayFields]="incoLookupConfig.displayFields"
+            [displayLabels]="incoLookupConfig.displayLabels"
+            [labelFields]="incoLookupConfig.labelFields"
+            bindValue="IncoName"
+            (itemSelected)="onIncoChange($event)"
+            (clear)="onIncoChange(null)"
+            >
+        </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('IncoTerms')?.touched && houseJobForm.get('IncoTerms')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('IncoTerms')?.hasError('required')){
-                        <span>TOS is required</span>
+                        <span>Required</span>
                         }
                       </div>
                       }
@@ -752,7 +831,7 @@
                     </div>
                   </aside> -->
 
-                  <aside class="col-md-6">
+                  <!-- <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('FreightTerms')?.value">
                       <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
                         appendTo="body" placeholder="" formControlName="FreightTerms">
@@ -760,7 +839,17 @@
                       <label for="text-input" class="input-label">Freight PP/CC <span
                           class="text-danger">*</span></label>
                     </div>
-                  </aside>
+                  </aside> -->
+                   <aside class="col-md-6">
+    <div class="custom-form-group">
+        <input type="text"
+            id="freightTerms"
+            class="form-control custom-input-field sm"
+            formControlName="FreightTerms"
+            placeholder="">
+        <label for="freightTerms" class="input-label">Freight PP/CC</label>
+    </div>
+</aside>
 
                   <aside class="col-md-6 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
@@ -1247,7 +1336,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Forwarder')?.value">
-              <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+              <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 placeholder="" (change)="setAddressOthers('ForwarderAddress',$event)"
                 formControlName="Forwarder" [textWithNumbers]="20" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
@@ -1256,7 +1345,13 @@
                     <small>{{ item.CustomerAddress1 }}</small>
                   </div>
                 </ng-template>
-              </ng-select>
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Forwarder"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName" (itemSelected)="setAddressOthers('ForwarderAddress',$event)">
+                      </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Forwarder<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1269,7 +1364,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('NotifyParty')?.value">
-              <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+              <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="NotifyParty" placeholder="" appendTo="body"
                 (change)="setAddressOthers('NotifyPartyAddress',$event)">
                 <ng-template ng-option-tmp let-item="item">
@@ -1278,7 +1373,13 @@
                     <small>{{ item.CustomerAddress1 }}</small>
                   </div>
                 </ng-template>
-              </ng-select>
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName" (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
+                      </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Notify Party<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1291,7 +1392,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Notify2')?.value">
-              <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+              <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="Notify2" placeholder="" appendTo="body"
                 (change)="setAddressOthers('NotifyAddress2',$event)">
                 <ng-template ng-option-tmp let-item="item">
@@ -1300,7 +1401,13 @@
                     <small>{{ item.CustomerAddress1 }}</small>
                   </div>
                 </ng-template>
-              </ng-select>
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify2"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName" (itemSelected)="setAddressOthers('NotifyAddress2',$event)">
+                      </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Notify 2<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1314,7 +1421,7 @@
           @if(b['Coload'].value){
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
-              <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+              <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="Coloader" placeholder="" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -1322,7 +1429,13 @@
                     <small>{{ item.CustomerAddress1 }}</small>
                   </div>
                 </ng-template>
-              </ng-select>
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Coloader"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName">
+                      </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1384,9 +1497,13 @@
 
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('CargoCurrency')?.value">
-              <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
+              <!-- <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
                 placeholder="" formControlName="CargoCurrency" appendTo="body">
-              </ng-select>
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
+                [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyCode'" appendTo="body">
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
           </aside>
