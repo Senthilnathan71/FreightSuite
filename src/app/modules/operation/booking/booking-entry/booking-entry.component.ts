@@ -226,7 +226,6 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   private initialFormValue: string;
   bookingStatusTimeline : any[];
 
-
   bookingForm !: FormGroup;
   modeOfTransport = [
     { id: 1, name: 'Rail' },
@@ -3900,5 +3899,12 @@ ${this.userData['userName']}`;
     this.bookingForm.updateValueAndValidity();
   }
 
+    getDestinationAgent(DestinationAgent: number) {
+    if (!DestinationAgent || this.agentList.length === 0) {
+      return '';
+    } else {
+      return (this.agentList.find(dep => dep.CustomerMasterSid === DestinationAgent)?.CustomerName);
+    }
+  }
           
 }
