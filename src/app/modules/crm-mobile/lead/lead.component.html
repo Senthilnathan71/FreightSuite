@@ -127,9 +127,9 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="customer-ref" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="leadFrom" placeholder="" class="custom-input-field sm"
                                 formControlName="leadFrom" [textWithNumbers]="20">
-                            <label for="customer-ref" class="input-label">Lead By</label>
+                            <label for="leadFrom" class="input-label">Lead By <span class="text-danger">*</span> </label>
                             @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
                             <div class="error-message">
                                 @if(leadForm.get('leadFrom')?.hasError('required')){
@@ -693,10 +693,10 @@
 
                                 <aside class="col-md-3">
                                     <div class="custom-form-group">
-                                        <input type="text" id="customer-ref" placeholder=""
+                                        <input type="text" id="leadFrom" placeholder=""
                                             class="custom-input-field sm" formControlName="leadFrom"
                                             [textWithNumbers]="20">
-                                        <label for="customer-ref" class="input-label">Lead By 
+                                        <label for="leadFrom" class="input-label">Lead By 
                                             <span class="text-danger">*</span>
                                         </label>
                                     </div>
