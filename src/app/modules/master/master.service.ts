@@ -3612,6 +3612,30 @@ getCoaWithSubledger(CompanyMasterSid: number) {
       map((resp) => resp.data)
     );
   }
+  
+getSubledgerMasterByType(subledgerType: string) {
+    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}`).pipe(
+        map((resp: any) => {
+            return resp;
+        })
+    );
+}
+
+bulkUpdateSubledgerMaster(updates: any[]) {
+    return this.http.patch<{ data: any }>('subledgermaster/bulk-update', { updates }).pipe(
+        map((resp: any) => {
+            return resp;
+        })
+    );
+}
+getCOAByLedgerType(LedgerType: string, CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa/ledger-type', {LedgerType,CompanyMasterSid}).pipe(
+        map((resp: any) => {
+            return resp.data;
+        })
+    );
+}
+
   // Charge TDS Master Methods
   getAllChargeTds() {
   return this.http.get<{ data: any[] }>('charge-tds').pipe(

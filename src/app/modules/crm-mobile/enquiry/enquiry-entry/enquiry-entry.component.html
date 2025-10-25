@@ -190,7 +190,7 @@
             <div [ngbNavOutlet]="nav"></div>
         </div> -->
         <ng-template #basicDetailTemplate>
-            <div class="row parent">
+            <div class="row parent py-3">
                 <!-- @if(isEditMode){
                 <div class="col-md-2">
                     <div class="custom-form-group">
@@ -200,7 +200,10 @@
                     </div>
                 </div>
                 } @else { -->
-                <div class="col-md-2">
+                   <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
+
+                 </aside>
+                <div class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('Segment')?.value">
                         <dofi-searchable-dropdown [items]="departments" formControlName="Segment" placeholder=""
@@ -215,16 +218,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="custom-form-group">
-                        <input type="text" id="dept" class="form-control custom-input-field sm"
-                            formControlName="CustomerRef" placeholder="">
-                        <label for="dept" class="input-label">Customer Ref</label>
-                    </div>
-                </div>
+                
                 <!-- } -->
 
-                @if(isEditMode){
+              
                 <!-- <div class="col-md-4">
                     <div class="custom-form-group">
                         <input type="text" id="enquiryBy" class="form-control custom-input-field sm"
@@ -232,7 +229,7 @@
                         <label for="enquiryBy" class="input-label">Customer</label>
                     </div>
                 </div> -->
-                <div class="col-md-2">
+                <div class="col-md-2 mx-md-5">
                     <div class="custom-form-group">
                         <input type="text" id="enquiryNo" class="form-control custom-input-field sm"
                             formControlName="enquiryNo" readonly>
@@ -255,7 +252,9 @@
                         </label>
                     </div>
                 </div>
-                }
+                 <aside class="col-md-2 d-md-block d-none ">
+
+                 </aside>
 
 
 
@@ -280,8 +279,10 @@
 
 
 
+                  <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
 
-                <aside class="col-md-2">
+                 </aside>
+                <aside class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
                         <ng-select formControlName="EnquiryType" [items]="modeOfEnquiry" bindLabel="name"
@@ -293,7 +294,7 @@
 
 
 
-                <div class="col-md-2">
+                <div class="col-md-2 mx-md-5">
                     <div class=" custom-form-group custom-form-group-select-date">
 
                         <div class="input-group">
@@ -302,7 +303,7 @@
                                 formControlName="shipmentDate" [minDate]="minExpDate" readonly
                                 [footerTemplate]="footerTemplateShip" container="body" id="shipmentDateExpected" />
                             <div>
-                                <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                <button class="btn  bi bi-calendar3 me-0 pe-0" (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
 
@@ -339,15 +340,15 @@
                                             </div>
                                         </aside> -->
 
-                <aside class="col-md-2 mt-0 mt-md-1" *ngIf="!isEditMode">
+                <aside class="col-md-2 mt-0 mt-md-1">
                     <div class="custom-form-group">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="form-check">
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="d-flex align-items-center gap-1">
                                 <input class="form-check-input" type="radio" id="Customer" [value]="true"
                                     formControlName="LeadOrCustomer" />
                                 <label class="form-check-label" for="flexCheckChecked">Customer</label>
                             </div>
-                            <div class="form-check">
+                            <div class="d-flex align-items-center gap-1">
                                 <input class="form-check-input" type="radio" id="lead" [value]="false"
                                     formControlName="LeadOrCustomer" />
                                 <label class="form-check-label" for="leadRadio">Lead</label>
@@ -358,7 +359,10 @@
                     </div>
                 </aside>
 
+                
+                  <aside class="col-md-2 d-md-block d-none">
 
+                 </aside>
 
 
 
@@ -378,11 +382,11 @@
 
 
 
-                <div class="col-md-12 mt-3">
+                <div class="col-md-12 mt-4">
                     <div class="row">
                         <div class="col-md-6 pe-md-1 ps-md-1">
-                            <div class="card mb-0" style="padding-bottom: 2px;">
-                                <div class="card-body py-0">
+                            <div class="card mb-0" style="padding-bottom: 1px;">
+                                <div class="card-body pt-0 pb-2">
                                     <div class="row">
                                         @if(!isEditMode){
                                         <aside class="col-md-6" *ngIf="rateRequestForm.get('LeadOrCustomer')?.value">
@@ -567,9 +571,9 @@
 
                         <div class="col-md-6 ps-md-1 mt-1 mt-md-0 pe-md-1">
                             <div class="card mb-0">
-                                <div class="card-body  py-0">
+                                <div class="card-body pt-0 pb-2">
                                     <div class="row">
-                                        <aside class="col-md-6">
+                                        <!-- <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
                                                 <ng-select class="ng-select" formControlName="IncoTerms"
@@ -577,8 +581,43 @@
                                                     placeholder="" appendTo="body"></ng-select>
                                                 <label for="text-input" class="input-label">Inco </label>
                                             </div>
-                                        </aside>
-                                        <aside class="col-md-6">
+                                        </aside> -->
+                                        <div class="col-md-6">
+ 
+    <div class="custom-form-group custom-form-group-select"
+ 
+        [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
+ 
+        <dofi-searchable-dropdown
+ 
+            [items]="incoList"
+ 
+            formControlName="IncoTerms"
+ 
+            placeholder=""
+ 
+            [displayFields]="incoLookupConfig.displayFields"
+ 
+            [displayLabels]="incoLookupConfig.displayLabels"
+ 
+            [labelFields]="incoLookupConfig.labelFields"
+ 
+            bindValue="IncoName"
+ 
+            (itemSelected)="onIncoChange($event)"
+ 
+            (clear)="onIncoChange(null)"
+ 
+            >
+ 
+        </dofi-searchable-dropdown>
+ 
+        <label class="input-label">Inco</label>
+ 
+    </div>
+ 
+</div>
+                                        <!-- <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
                                                 <ng-select formControlName="FreightPPCC" [items]="freightTermsList"
@@ -587,7 +626,19 @@
                                                 </ng-select>
                                                 <label for="freightTerms" class="input-label">Freight Terms</label>
                                             </div>
-                                        </aside>
+                                        </aside> -->
+
+                                        <aside class="col-md-6">
+    <div class="custom-form-group">
+        <input type="text"
+            id="freightTerms"
+            class="form-control custom-input-field sm"
+            formControlName="FreightPPCC"
+            placeholder="">
+        <label for="freightTerms" class="input-label">Freight Terms</label>
+    </div>
+</aside>
+ 
 
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
@@ -635,7 +686,7 @@
                                                     formControlName="ConsigneeName" (change)="onConsigneeChange($event)"
                                                     (clear)="onConsigneeChange(null)" appendTo="body"></ng-select> -->
                                                 <dofi-searchable-dropdown [items]="finalConsigneeList"
-                                                    formControlName="ConsigneeName" placeholder="Select Customer"
+                                                    formControlName="ConsigneeName" placeholder=""
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
                                                     [labelFields]="customerLookupConfig.labelFields"
@@ -666,7 +717,13 @@
                                                 </label>
                                             </div>
                                         </aside>
-
+                                        <div class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="text" id="dept" class="form-control custom-input-field sm"
+                            formControlName="CustomerRef" placeholder="">
+                        <label for="dept" class="input-label">Customer Ref</label>
+                    </div>
+                </div>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group mb-0">
                                                 <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
@@ -674,7 +731,7 @@
                                                 <label for="text-input" class="input-label">Remarks </label>
                                             </div>
                                         </aside>
-                                        @if(EnquiryHeaderSid){
+                                      
                                         <div class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('status')?.value" appendTo="body">
@@ -689,7 +746,7 @@
                                                 </small>
                                             </div>
                                         </div>
-                                        }
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -820,9 +877,9 @@
                                 {{ selectedFCLLCL }}
                             </div>
 
-                            <section class="card-body px-1 py-0 requestLooper">
-                                <div class="row mb-1">
-                                    <div class="col-12 col-md-3">
+                            <section class="card-body px-1 py-2 requestLooper">
+                                <div class="row mb-1 pe-md-5">
+                                    <div class="col-12 col-md-3 ps-md-5">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POO')?.value">
 
@@ -842,7 +899,7 @@
                                             <label class="input-label">POO</label>
                                         </div>
                                     </div>
-                                    <aside class="col-md-3">
+                                    <aside class="col-md-3 ps-md-5">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POL')?.value">
 
@@ -864,7 +921,7 @@
                                             }
                                         </div>
                                     </aside>
-                                    <aside class="col-md-3">
+                                    <aside class="col-md-3 ps-md-5">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('POD')?.value">
 
@@ -887,7 +944,7 @@
                                         </div>
                                     </aside>
 
-                                    <div class="col-12 col-md-3">
+                                    <div class="col-12 col-md-3 ps-md-5">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!routes.at(routeIndex).get('FDC')?.value">
                                             <!-- <ng-select formControlName="FDC" class="ng-select" placeholder=""
@@ -914,7 +971,7 @@
                                         @if(selectedFCLLCL ==='LCL'){
                                         <div formArrayName="cargo" class="table-responsive table-borderless">
                                             <div>
-                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1"
+                                                <table class="table table-hover align-middle no-wrap  table-sm my-1"
                                                     style="min-width: 1200px; width: 100%;">
                                                     <thead>
                                                         <tr class="bg-info  text-center">
@@ -939,10 +996,10 @@
                                                             <td class="bg-transparent text-light  "
                                                                 style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Package Type <span
+                                                                <label for="" class="form-label mb-0">Pkg Type <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 150px;"
+                                                            <td class="bg-transparent text-light " style="width: 90px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Qty <span
                                                                         class="text-danger">*</span></label>
@@ -962,7 +1019,7 @@
                                                                 <label for="" class="form-label mb-0">Net Weight <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 150px;"
+                                                            <td class="bg-transparent text-light " style="width: 160px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">CBM <span
                                                                         class="text-danger">*</span></label>
@@ -1021,7 +1078,7 @@
                                                             <td>
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
-                                                                    [onlyNumbers] appendTo="body">
+                                                                    [onlyNumbers]="5" appendTo="body">
                                                             </td>
                                                             <td>
                                                                 <ng-select name="weightunit"

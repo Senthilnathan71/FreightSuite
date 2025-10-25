@@ -167,12 +167,19 @@
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!countryForm.get('ZoneMasterSid')?.value">
-                  <ng-select [items]="dropdownStore.zone()" bindLabel="ZoneName" bindValue="ZoneMasterSid"
+                  <!-- <ng-select [items]="dropdownStore.zone()" bindLabel="ZoneName" bindValue="ZoneMasterSid"
                     formControlName="ZoneMasterSid" placeholder="" [class.is-invalid]="
         countryForm.get('ZoneMasterSid')?.invalid &&
         (countryForm.get('ZoneMasterSid')?.touched || countryForm.get('ZoneMasterSid')?.dirty)
       ">
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown [items]="dropdownStore.zone()" formControlName="ZoneMasterSid" placeholder=""
+                        [displayFields]="zoneLookupConfig.displayFields"
+                        [displayLabels]="zoneLookupConfig.displayLabels"
+                        [labelFields]="zoneLookupConfig.labelFields" bindLabel="ZoneName"
+                        bindValue="ZoneMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
                   <label for="ZoneMasterSid" class="input-label">
                     Zone <span class="text-danger">*</span>
                   </label>
@@ -219,12 +226,12 @@
                     </ng-template>
                   </ng-select> -->
                   <dofi-searchable-dropdown
- [items]="dropdownStore.currencies()" 
+ [items]="currencies" 
   formControlName="CurrencyMasterSid"
   [placeholder]="''"
-[displayFields]="['currencyCode', 'currencyName']"
-  [displayLabels]="['Code', 'Name']"
-  [labelFields]="['currencyCode','currencyName']"
+[displayFields]="CurrencyLookupConfig.displayFields"
+  [displayLabels]="CurrencyLookupConfig.displayLabels"
+  [labelFields]="CurrencyLookupConfig.labelFields"
   [bindValue]="'CurrencyMasterSid'"
   >
 </dofi-searchable-dropdown>

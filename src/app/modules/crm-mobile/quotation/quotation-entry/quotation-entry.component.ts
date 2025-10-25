@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { Component, effect, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -43,6 +43,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -85,7 +86,8 @@ type Html2PdfOptions = {
     CustomDatePipe,
     NgxSpinnerModule,
     FormsModule,
-    NgbTooltip
+    NgbTooltip,
+    PreventMultiClickDirective
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -113,6 +115,8 @@ export class QuotationEntryComponent implements OnInit {
   isLoading : boolean;
   selectedItem : any;
   quotationApproved : boolean;
+  quoteAuthorized : boolean;
+  isStandardRate : boolean;
   authorizerDetails = {
     isAuthorizer: false,
     isAlreadyApproved: false,
@@ -187,7 +191,7 @@ export class QuotationEntryComponent implements OnInit {
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
-    { id: 3, name: 'Refer' },
+    { id: 3, name: 'Reefer' },
     { id: 4, name: 'Tanker' },
     { id: 5, name: 'OOG' },
   ];
@@ -253,11 +257,8 @@ dataFromEnqPage:any;
     displayLabels : ['Code','Name','Country'],
     labelFields :['currencyCode']
   };
-  incoLookupConfig = {
-    displayFields: ['IncoCode', 'IncoName', 'OceanFreight'],
-    displayLabels: ['Code', 'Name', 'P/C'],
-    labelFields: ['IncoCode']
-  }
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
 
   // currencyColumns : ComboBoxColumn[] = [
   //   { field: 'currencyCode', header: 'Code', width: '30%' },
@@ -284,7 +285,12 @@ dataFromEnqPage:any;
     private spinner: NgxSpinnerService,
     private datePipe : CustomDatePipe,
     public dropdownStore: DropdownStore
-  ) { }
+  ) { 
+    effect(() =>{
+      const carrierData = this.dropdownStore.customerTypeData();
+      this.carriers = carrierData;
+    })
+  }
 
   // SECTION3 - NGONIT
   ngOnInit(): void {
@@ -294,6 +300,7 @@ dataFromEnqPage:any;
       this.userData = userProfile;
       this.checkPermissions();
     }
+    this.loadAllFields();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
@@ -707,6 +714,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
       this.addQuoteCarrier(this.quoteRoutes.length - 1);
+      routeForm.get('effDate')?.setValue(new Date());
     } else {
       this.filterChargesBySegment(routeIndex,data?.segmentType)
     }
@@ -1279,7 +1287,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
     return forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
-      carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
+      // carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
       leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
       customers: this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
@@ -1295,9 +1303,9 @@ private extractCargoData(enquiryCargo: any[]): any {
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ departments , cargoTypes, carriers, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ departments , cargoTypes, leads, customers, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.packageTypes = cargoTypes || [];
-      this.carriers = carriers || [];
+      // this.carriers = carriers || [];
       this.leadList = leads.data;
       this.customers = customers || [];
       this.departments = departments || [];
@@ -1316,6 +1324,15 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.imcoList = imcos.data || [];
     })
     );
+  }
+
+  loadAllFields() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      types:['carrier']
+    }
+    this.dropdownStore.loadCustomerTypeData(payload).subscribe();
   }
 
   loadQuotation(id): void {
@@ -1348,7 +1365,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     } else {
       this.f['SegmentType']?.setValue(selectedDept?.departmentType?.toUpperCase());
     }
-    this.f['AgreedRate']?.disable();
+    
     this.f['DepartmentMasterSid']?.disable();
     this.f['LeadOrCustomer']?.disable();
     this.f['CustomerMasterSid']?.disable();
@@ -1414,10 +1431,15 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
 
     
+    this.quoteAuthorized = (response.quoteRoute || []).some(route => {
+      return (route?.quoteCarrier || []).some(carrier =>(carrier.ApprovalStatus === "Approved" || carrier.ApprovalStatus === "Rejected"));
+    })
+
     this.quotationApproved = (response.quoteRoute || []).some(route => {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
     })
 
+    
     const { quoteRoute, ...header } = response;
     const approvedRoute = (quoteRoute || []).find(route => {
       return (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved");
@@ -1443,11 +1465,12 @@ private extractCargoData(enquiryCargo: any[]): any {
         ...routeDetails,
         quoteCarrier: approvedQuoteCarrier
       };
-
-      this.quotationForm.disable();
       
     }
-
+    
+    if(this.quoteAuthorized){
+      this.quotationForm.disable()
+    }
     console.log("Approved Route:", approvedRoute);
 
     let approvedData = {
@@ -2053,6 +2076,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   getTariffDetails(routeIndex: number, carrierIndex: number, template: TemplateRef<any>) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    this.isStandardRate = false;
 
     if (!this.hasEveryRequiredFieldsFilled(routeIndex)) {
       this.appSettingService.showWarning("Please fill all the required fields to get tariff details.");
@@ -2090,7 +2114,7 @@ private extractCargoData(enquiryCargo: any[]): any {
           const response: any[] = resp.data || [];
           const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
           const existingTariffDetailId = existingCharges.map((ch: any) => ch.TariffDetailSid);
-
+          this.isStandardRate = response[0]?.isStandardRate || false;
           this.tariffDetails = response
             .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
             .map((td: any) => {
@@ -2782,7 +2806,7 @@ ${this.userData.userName}`;
   async sendEmail() {
     try {
       this.isLoading = true;
-
+      this.spinner.show();
       const pdfBlob = await this.generatePDFBlob();
 
       const formData = new FormData();
@@ -2794,18 +2818,18 @@ ${this.userData.userName}`;
       }
 
       if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
-        const resp: any = await firstValueFrom(
-          this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
-        );
+        // const resp: any = await firstValueFrom(
+        //   this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
+        // );
+        const customerEmail = this.customers.find(cus=> cus.CustomerBranchSid === this.selectedItem?.CustomerBranchSid)?.Email;
+        toEmailSet.add(customerEmail);
 
-        if (resp?.status && resp.data?.Email) {
-          toEmailSet.add(resp.data.Email);
-        }
       }
 
       if (toEmailSet.size === 0) {
         this.appSettingService.showError('To Email is missing.')
         this.isLoading = false;
+        this.spinner.hide();
         return;
       }
 
@@ -2844,16 +2868,19 @@ ${this.userData.userName}`;
       console.log(formData)
       this.leadService.quotationReport(formData).subscribe((resp: any) => {
         this.isLoading = false;
+        this.spinner.hide();
         if (resp?.data) {
           this.toastr.success('Report Email Sent successfully!');
         }
       }, error => {
         this.isLoading = false;
+        this.spinner.hide();
         this.toastr.error('Failed to send email.');
       });
 
     } catch (err) {
       this.isLoading = false;
+      this.spinner.hide();
       console.error('PDF generation error:', err);
       this.toastr.error('Error generating PDF.');
     }
@@ -3378,6 +3405,14 @@ ${this.userData.userName}`;
       }
     }
 
+  }
+
+  getDepartmentName(deptId: number) {
+    if (!deptId || this.departments.length === 0) {
+      return null;
+    } else {
+      return (this.departments.find(dep => dep.DepartmentMasterSid === deptId)?.departmentName);
+    }
   }
 
 }

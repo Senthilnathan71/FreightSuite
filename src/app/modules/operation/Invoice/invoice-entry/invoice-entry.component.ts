@@ -24,6 +24,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -39,7 +41,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     FormsModule,
     NgxSpinnerModule,
     NumberFormatPipe,
-    CustomDatePipe
+    CustomDatePipe,
+    SearchableDropdown
   ],
   templateUrl: './invoice-entry.component.html',
   styleUrls: ['./invoice-entry.component.scss'],
@@ -63,6 +66,7 @@ export class InvoiceEntryComponent implements OnInit {
   // lookups
   customerList: any[] = [];
   customerBranchList: any[] = [];
+  bankDetails : any;
   currencyList: any[] = [];
   chargeList: any[] = [];
   hssacList: any[] = [];
@@ -78,7 +82,18 @@ export class InvoiceEntryComponent implements OnInit {
   // master jobs
   masterJobList: any[] = [];
   houseJobListByMasterJob: { [key: number]: any[] } = {};
-
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
+  CurrencyLookupConfig = {
+    displayFields: ['currencyCode', 'currencyName','countryName'],
+    displayLabels: ['Code', 'Name','Country'],
+    labelFields: ['currencyCode'],
+  };
+   HSSACLookupConfig = {
+    displayFields : ['HSSACCode', 'HSSACName'],
+    displayLabels : ['Code', 'Name'],
+    labelFields :['HSSACCode'],
+  };
   // UI state
   selectedTab = 'Invoice';
   selectTab(tab: string): void {
@@ -174,6 +189,7 @@ export class InvoiceEntryComponent implements OnInit {
 
     this.invoiceForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
       this.recalculateAllRows();
+      this.getBankDetails();
     });
 
     this.invoiceForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
@@ -217,6 +233,8 @@ export class InvoiceEntryComponent implements OnInit {
       voucherDetails: this.fb.array([]),
     });
   }
+
+  
 
   async loadLookups() {
     try {
@@ -280,6 +298,13 @@ export class InvoiceEntryComponent implements OnInit {
       try {
         const currencies: any = await firstValueFrom(this.operationService.getAllCurrencies().pipe());
         this.currencyList = (currencies && currencies.data) ? currencies.data : [];
+        const rawCurrencies = currencies.data || currencies || [];
+     
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''  
+      }));
+        this.getBankDetails();
       } catch (e) {
         this.currencyList = [];
       }
@@ -1141,7 +1166,7 @@ export class InvoiceEntryComponent implements OnInit {
       );
       if (hssac) {
         const result = hssac?.HSSACCode || hssac?.hssacCode || hssac?.HSNCode || hssac?.hsnCode || hssac?.SACCode || hssac?.sacCode || '-';
-        console.log('DEBUG - getHSSACCode: hssacSid =', hssacSid, ', found in hssacList =', true, ', result =', result);
+        // console.log('DEBUG - getHSSACCode: hssacSid =', hssacSid, ', found in hssacList =', true, ', result =', result);
         return result;
       }
     }
@@ -1155,7 +1180,7 @@ export class InvoiceEntryComponent implements OnInit {
         if (charge?.chargeTaxMaster && Array.isArray(charge.chargeTaxMaster) && charge.chargeTaxMaster.length > 0) {
           const hsnCode = charge.chargeTaxMaster[0]?.HSNCode || charge.chargeTaxMaster[0]?.hsnCode || charge.chargeTaxMaster[0]?.HSSACCode;
           if (hsnCode) {
-            console.log('DEBUG - getHSSACCode: Got HSN from chargeTaxMaster =', hsnCode);
+            // console.log('DEBUG - getHSSACCode: Got HSN from chargeTaxMaster =', hsnCode);
             return hsnCode;
           }
         }
@@ -1492,5 +1517,37 @@ export class InvoiceEntryComponent implements OnInit {
       return 'N/A'
     }
     return (this.customerList.find(cus => cus.CustomerMasterSid === CustomerMasterSid)?.CustomerName);
+  }
+
+  getBankDetails(){
+    console.log('DEBUG - getBankDetails');
+    const currCode = this.invoiceForm.get('CurrencyCode')?.value;
+    const currentBranchId = this.currentBranch?.BranchMasterSid;
+    const currency = this.currencyList.find(c => c.currencyCode === currCode)?.CurrencyMasterSid;
+    console.log('DEBUG - getBankDetails - branch:', currentBranchId);
+    console.log('DEBUG - getBankDetails - currencyCode:', currCode);
+    console.log('DEBUG - getBankDetails - currency:', currency);
+    console.log('DEBUG - getBankDetails - currencyid:', currency);
+    if(!currency || !currentBranchId){
+      this.bankDetails = null;
+      return;
+    }
+    const payload = {
+      BranchMasterSid: currentBranchId,
+      CurrencyMasterSid: currency
+    }
+    this.operationService.getBankDetails(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status && resp.data) {
+          this.bankDetails = resp.data;
+        } else {
+          this.bankDetails = null;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching bank details', err);
+        this.bankDetails = null;
+      }
+    });
   }
 }

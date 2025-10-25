@@ -350,7 +350,7 @@
                   <ng-option value="Prepaid">Prepaid</ng-option>
                   <ng-option value="Collect">Collect</ng-option>
                 </ng-select>
-                <label for="" class="input-label">FreightPPCC <span class="text-danger"></span></label>
+                <label for="" class="input-label">Freight PP/CC <span class="text-danger"></span></label>
               </div>
             </aside>
 
@@ -431,11 +431,12 @@
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('DepartmentMasterSid')?.value">
-                          <ng-select formControlName="DepartmentMasterSid" [items]="departments"
-                            bindLabel="departmentName" bindValue="DepartmentMasterSid"
-                            (change)="onDeptChange($event,routeIndex)">
-
-                          </ng-select>
+                          <dofi-searchable-dropdown [items]="departments" formControlName="DepartmentMasterSid" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onDeptChange($event,routeIndex)">
+                        </dofi-searchable-dropdown>
                           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                           @if(route.get('DepartmentMasterSid')?.invalid && route.get('DepartmentMasterSid')?.touched){
                           <div class="error-message">
@@ -979,10 +980,12 @@
                                         <aside class="col-md-3">
                                           <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!carrier.get('CarrierMasterSid')?.value">
-                                            <ng-select formControlName="CarrierMasterSid" [items]="carriers"
-                                              bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                              (change)="handleCarrierChange($event,routeIndex,carrierIndex)">
-                                            </ng-select>
+                                            <dofi-searchable-dropdown [items]="carriers" formControlName="CarrierMasterSid" placeholder=""
+                            [displayFields]="customerLookupConfig.displayFields"
+                            [displayLabels]="customerLookupConfig.displayLabels"
+                            [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
+                            (itemSelected)="handleCarrierChange($event,routeIndex,carrierIndex)">
+                        </dofi-searchable-dropdown>
                                             <label for="" class="input-label">Carrier<span
                                                 class="text-danger"></span></label>
                                           </div>
@@ -2517,6 +2520,13 @@
           </div>
 
           <div *ngIf="!tariffLoading && tariffDetails?.length" class="table-responsive w-100">
+                @if(isStandardRate){
+                  <div class="col-12 d-flex justify-content-center">
+                    <div class="alert alert-warning py-1 text-center " style="width: fit-content;" role="alert">
+                      <strong>Warning!</strong> <br>These are standard rates.
+                    </div>
+                  </div>
+                }
             <table class="table table-hover align-middle table-bordered table-sm mb-1 text-center">
               <thead>
                 <tr class="bg-info text-white">
@@ -2671,13 +2681,10 @@
     <h5 class="modal-title text-white mb-0">Quotation</h5>
     <div class="d-flex gap-2 align-items-center">
 
-      <div *ngIf="isLoading" class="spinner-overlay">
-        <div class="spinner"></div>
-      </div>
-    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>
-      <button type="button" class="btn btn-sm btn-success rounded-5 py-0"  (click)="sendEmail()">
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0" appPreventMultiClick  (click)="sendEmail()">
         <i class="fas fa-envelope me-1"></i>Send Email
       </button>
      
@@ -2691,23 +2698,26 @@
        <section>
       <div>
        <div class="row ">
-                <div class="col-md-6 col-12">
-                    <div class="d-flex align-items-center gap-4">
-                        <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="50" height="50"
-                            class="img-fluid" alt="">
-                       <h4>{{currentCompany.companyName }}</h4>
+                <div class="company-header">
+                    <div class="company-logo">
+                      <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg"
+                          alt="Company Logo"
+                          class="img-fluid">
+                          <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                     </div>
-                </div>
-                <div class="col-md-6 col-12">
-                    <div class="text-start">
-                        <h4 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h4>
-                        <h5 class="mb-1">{{currentBranch?.branchName || 'Company Branch'}}</h5>
-                        <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
-                        <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}},
-                            {{currentCompany?.postal_code || currentCompany?.ZipCode || 'Zipcode'}}</p>
-                        <p class="mb-1">TEL: {{currentCompany?.phoneNumber || currentCompany?.Phone || 'Phone'}}</p>
+
+                    <div class="company-info " >
+                      <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                      <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                      <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                      <p class="mb-1">
+                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                      </p>
+                      <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                      <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
                     </div>
-                </div>
+                  </div>
+
             </div>
 
                    <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
@@ -2715,8 +2725,9 @@
         <div class="row mx-auto">
           <div class="col-md-6">
             <section class="d-flex flex-column">
+             <p class="mb-1 col-3 fw-bold">To :</p>
               <aside class="d-flex">
-                <p class="mb-0 col-12 h6 fw-bold">{{this.selectedItem.CustomerName}}</p>
+                <p class="mb-0 col-12 h6 ">{{this.selectedItem.CustomerName}}</p>
               </aside>
               <aside class="d-flex">
                 <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
@@ -2735,7 +2746,7 @@
               </aside>
               <aside class="d-flex gap-3 justify-content-end">
                 <p class="mb-0 col-3 fw-bold">Reference</p>
-                <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
+                <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || ''}}</p>
               </aside>
             </section>
           </div>
@@ -2750,10 +2761,10 @@
               <td colspan="8" >
                 <aside class="d-flex gap-3 justify-content-between">
                   <div>
-                    <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
+                    <p class="mb-0  text-black">{{getDepartmentName(route.DepartmentMasterSid)}} </p>
                   </div>
                   <div>
-                    <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} -
+                    <p class="mb-0  text-black col">{{getFormattedPort(route.POLSid)}} -
                       {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' +
                       getFormattedPort(route.FDPSid) : ''}}.</p>
                   </div>
@@ -2782,24 +2793,28 @@
                 <td>Unit</td>
                 <td >Qty</td>
                 <td >Curr</td>
+                @if(selectedItem.AgreedRate === "Y"){
+                  <td >Ex Rate</td>
+                }
                 <td >Rate</td>
                 <td >Amt</td>
                 @if(selectedItem.AgreedRate === "Y"){
-                <td >Ex Rate</td>
                 <td >Local Amount</td>
                 }
               </tr>
               @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
               <tr >
                 <td >{{charge.ChargeDisplayName}}</td>
-                <td >{{ getChargeUOMCodeById(charge.CostChargeUomSid)}}</td>
+                <td >{{ getChargeUOMCodeById(charge.RevenueChargeUomSid)}}</td>
                 <td >{{charge.Qty}}</td>
-                <td >{{getCurrencyCodeById(charge.CostCurrencyMasterSid)}}</td>
-                <td >{{charge.CostRate}}</td>
-                <td >{{charge.CostAmount}}</td>
+                <td >{{getCurrencyCodeById(charge.RevenueCurrencyMasterSid)}}</td>
                 @if(selectedItem.AgreedRate === "Y"){
-                <td >{{charge.CostExchangeRate}}</td>
-                <td >{{charge.CostLocalAmount}}</td>
+                   <td >{{charge.RevenueExchangeRate}}</td>
+                }
+                <td >{{charge.RevenueRate}}</td>
+                <td >{{charge.RevenueAmount}}</td>
+                @if(selectedItem.AgreedRate === "Y"){
+                <td >{{charge.RevenueLocalAmount}}</td>
                 }
 
               </tr>
@@ -2825,11 +2840,11 @@
      
             <footer class="text-center mb-0 px-2">
                 <div class="d-flex justify-content-between">
-                    <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
+                    <div class=""><span >Printed By :</span> {{userData.userName}} </div>
                     <span>
                         This document is computer-generated and does not require a signature.
                     </span>
-                    <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+                    <div><span >Printed On :</span> {{ currentDate | formatDate }}</div>
                 </div>
             </footer>
     </section>

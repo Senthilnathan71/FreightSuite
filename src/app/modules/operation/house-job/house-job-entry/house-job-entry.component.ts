@@ -35,6 +35,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { BookingUploadComponent } from '../../booking/booking-upload/booking-upload.component';
 import { BookingData } from '../../booking/excel-parser.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -82,7 +84,8 @@ type Html2PdfOptions = {
     NgxSpinnerModule,
     EdocComponent,
     EmailEntryComponent,
-    FollowUpComponent
+    FollowUpComponent,
+    SearchableDropdown
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -172,7 +175,15 @@ export class HouseJobEntryComponent  implements OnInit {
   currentFollowUpFormValue:any;
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  CurrencyLookupConfig = {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
+  };
 
   houseJobForm !: FormGroup;
   modeOfTransport = [
@@ -458,6 +469,28 @@ auditLogs: any[] = []; // Stores audit logs
     })
   }
 
+  onIncoChange(selectedInco: any): void {
+    if (!selectedInco) {
+    return; // Do nothing if incoterm is cleared
+  }
+  // Find the selected incoterm object
+  let selectedIncoTerm;
+  if (typeof selectedInco === 'object' && selectedInco.IncoName) {
+    selectedIncoTerm = this.incoList.find(inco => inco.IncoName === selectedInco.IncoName);
+  } else if (typeof selectedInco === 'string') {
+    selectedIncoTerm = this.incoList.find(inco => inco.IncoName === selectedInco);
+  }
+  if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
+    // Direct mapping since OceanFreight is only Prepaid or Collect
+    const freightValue = selectedIncoTerm.OceanFreight; 
+    // Update FreightTerms field
+    this.houseJobForm.patchValue({
+      FreightTerms: freightValue
+    }, { emitEvent: false });
+    console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms set to: ${freightValue}`);
+  }
+}
+
   // Product Form Initialization
   initProductForm() {
     const isIndianCompany = this.countryOfCompany === 'india';
@@ -694,7 +727,13 @@ loadHeaderLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
     }).subscribe(({ currencies }) => {
-      this.currencyList = currencies.data;
+      const rawCurrencies: any[] = Array.isArray(currencies)
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
     })
   }
 

@@ -967,15 +967,15 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!bookingForm.get('FreightTerms')?.value">
-                      <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
-                        appendTo="body" placeholder="" formControlName="FreightTerms"
-                        (change)="onFreightTermsManualChange()">
-                      </ng-select>
-                      <label for="text-input" class="input-label">Freight PP/CC<span class="text-danger"></span></label>
-                    </div>
-                  </aside>
+    <div class="custom-form-group">
+        <input type="text"
+            id="freightTerms"
+            class="form-control custom-input-field sm"
+            formControlName="FreightTerms"
+            placeholder="">
+        <label for="freightTerms" class="input-label">Freight PP/CC</label>
+    </div>
+</aside>
 
                   <aside class="col-md-3 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
@@ -1097,43 +1097,51 @@
           </div>
 
           <!-- Recent Actions -->
-          <div class="activity-widget  border border-top-0">
+          <div class="activity-widget border border-top-0">
             <div class="widget-header">
               <h5 class="widget-title">Recent Activity</h5>
             </div>
             <div class="widget-body">
-              <div class="activity-item">
+          
+              <!-- ✅ Loop through Booking Status Timeline -->
+              <div class="activity-item" *ngFor="let log of bookingStatusTimeline; let i = index">
                 <div class="activity-icon">
-                  <i class="fas fa-plus"></i>
+                  <i class="fas" [ngClass]="{
+                      'fa-plus': log.status === 'Booked',
+                      'fa-box': log.status === 'Cargo Received',
+                      'fa-ship': log.status === 'Loaded',
+                      'fa-check': log.status === 'Job Closed',
+                      'fa-edit': log.status === 'Stuffed'
+                    }"></i>
                 </div>
                 <div class="activity-content">
-                  <div class="activity-text">Booking created</div>
-                  <div class="activity-time">2 minutes ago</div>
+                  <div class="activity-text">
+                    {{ log.status }}
+                  </div>
+                  <div class="activity-time">
+                    {{ log.at | timeAgo }}
+                  </div>
                 </div>
               </div>
-              <div class="activity-item">
-                <div class="activity-icon">
-                  <i class="fas fa-edit"></i>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-text">Customer updated</div>
-                  <div class="activity-time">5 minutes ago</div>
-                </div>
-              </div>
+          
+              <!-- Your existing input block -->
               <div class="compact-form">
                 <aside class="col-md-12">
                   <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                      [value]="quotationNumber" disabled>
+                      [value]="quotationNumber" disabled />
                     <label for="text-input" [ngClass]="{
                         'input-label': true,
-                         'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
-                      }">Quotation No<span class="text-danger"></span></label>
+                        'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
+                      }">
+                      Quotation No<span class="text-danger"></span>
+                    </label>
                   </div>
                 </aside>
               </div>
             </div>
           </div>
+
 
 
         </div>
@@ -1487,11 +1495,11 @@
                     </button>
                   </td>
                   <td style="padding-top: 3px;">
-                    <dofi-searchable-dropdown-modal [items]="productList" formControlName="ProductName"
+                    <dofi-searchable-dropdown [items]="productList" formControlName="ProductName"
                       [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
                       [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']" [bindValue]="'ProductName'"
                       style="padding: 0;" (itemSelected)="handleProductChange($event,productIndex)">
-                    </dofi-searchable-dropdown-modal>
+                    </dofi-searchable-dropdown>
 
                   </td>
                   <td>
@@ -1510,11 +1518,11 @@
                   </td>
 
                   <td style="padding-top: 3px;">
-                    <dofi-searchable-dropdown-modal [items]="packageTypeList" formControlName="ExternaPkg"
+                    <dofi-searchable-dropdown [items]="packageTypeList" formControlName="ExternaPkg"
                       [placeholder]="''" [displayFields]="uomLookupConfig.displayFields"
                       [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
                       [bindValue]="'UOMCode'" style="padding:0;">
-                    </dofi-searchable-dropdown-modal>
+                    </dofi-searchable-dropdown>
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="ExternlQty" [onlyNumbers]=5 placeholder=""
@@ -1570,11 +1578,11 @@
                   <td style="padding-top: 3px;">
                     <!-- <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="UOMName"
                       bindValue="UOMMasterSid" appendTo="body"></ng-select> -->
-                    <dofi-searchable-dropdown-modal [items]="measurementUnitList" formControlName="UomMasterSid"
+                    <dofi-searchable-dropdown [items]="measurementUnitList" formControlName="UomMasterSid"
                       [placeholder]="''" [displayFields]="uomLookupConfig.displayFields"
                       [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
                       [bindValue]="'UOMCode'" style="padding:0;">
-                    </dofi-searchable-dropdown-modal>
+                    </dofi-searchable-dropdown>
                   </td>
                   }
 
@@ -1587,11 +1595,11 @@
                   </td>
 
                   <td style="padding-top: 3px;">
-                    <dofi-searchable-dropdown-modal [items]="imcoList" formControlName="ImcoClass" [placeholder]="''"
+                    <dofi-searchable-dropdown [items]="imcoList" formControlName="ImcoClass" [placeholder]="''"
                       [displayFields]="imcoLookupConfig.displayFields" [displayLabels]="imcoLookupConfig.displayLabels"
                       [labelFields]="imcoLookupConfig.labelFields" [bindValue]="'ImcoName'" style="padding:0;"
                       (itemSelected)="onImcoChange(productIndex,$event)">
-                    </dofi-searchable-dropdown-modal>
+                    </dofi-searchable-dropdown>
                     <!-- <ng-select class="" [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" appendTo="body"
                       formControlName="ImcoClass" (change)="onImcoChange(productIndex,$event)"></ng-select> -->
                   </td>
@@ -1872,13 +1880,13 @@
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!otherForm.get('CargoCurrency')?.value">
-              <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" class="ng-select"
+              <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" class="ng-select"
                 placeholder="" formControlName="CargoCurrency" appendTo="body">
-              </ng-select>
-              <!-- <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
                 [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
                 [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyCode'" appendTo="body">
-              </dofi-searchable-dropdown> -->
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
           </aside>

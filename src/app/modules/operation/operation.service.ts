@@ -828,4 +828,13 @@ getCountryById(CountryMasterSid: number) {
       })
     );
   }
+
+  getBankDetails(payload) {
+    return this.http.post<{ data: any }>('company/bank-details', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
 }

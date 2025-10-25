@@ -38,9 +38,15 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!bookingForm.get('DepartmentMasterSid')?.value">
-                <ng-select class="ng-select" [items]="departments" bindLabel="departmentName"
+                <!-- <ng-select class="ng-select" [items]="departments" bindLabel="departmentName"
                   bindValue="DepartmentMasterSid" formControlName="DepartmentMasterSid" (change)="onDeptChange($event)">
-                </ng-select>
+                </ng-select> -->
+                <dofi-searchable-dropdown [items]="departments" formControlName="DepartmentMasterSid" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onDeptChange($event)">
+                        </dofi-searchable-dropdown>
                 <label class="input-label">Department<span class="text-danger"></span></label>
               </div>
             </aside>
@@ -99,7 +105,7 @@
           </div>
 
           <!-- Products Section -->
-          <div class="col-12">
+          <div class="col-12" *ngIf="products?.length > 0">
               <div class="col-md-4 d-flex pb-1">
                 <h5 class="page-title mb-0">Product</h5>
               </div>

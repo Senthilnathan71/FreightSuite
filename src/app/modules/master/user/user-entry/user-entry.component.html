@@ -240,10 +240,17 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select"  [class.filled]="!!userForm.get('CountryMasterSid')?.value">
-                            <ng-select formControlName="CountryMasterSid" [items]="dropdownStore.countries()" bindLabel="countryName"
+                            <!-- <ng-select formControlName="CountryMasterSid" [items]="dropdownStore.countries()" bindLabel="countryName"
                                 bindValue="CountryMasterSid" placeholder="">
 
-                            </ng-select>
+                            </ng-select> -->
+                             <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
+                        bindValue="CountryMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
                             <label for="" class="input-label">Country <span class="text-danger"></span></label>
                             @if(userForm.get('CountryMasterSid')?.touched && userForm.get('CountryMasterSid')?.invalid){
                             <div class="error-message">

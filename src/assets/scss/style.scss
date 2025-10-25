@@ -86,3 +86,18 @@
 @import "mode-mobile";
 @import "bootstrap-overwrite";
 @import "compact-form";
+
+
+/* Full screen NgbModal */
+.full-screen-modal .modal-dialog {
+  width: 95vw;   /* Full viewport width */
+  max-width: 95vw;
+  height: 95vh;  /* Full viewport height */
+  margin: auto;          /* ✅ center horizontally & vertically */
+  padding: 0;
+}
+
+.full-screen-modal .modal-content {
+  height: 100%;
+  border-radius: 0; /* optional: remove rounded corners */
+}

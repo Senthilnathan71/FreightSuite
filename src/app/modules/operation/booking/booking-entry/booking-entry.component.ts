@@ -45,6 +45,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -95,7 +96,8 @@ type Html2PdfOptions = {
     SearchableDropdownModal,
     NgxSpinnerModule,
     NgbDropdownModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    TimeAgoPipe
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -168,7 +170,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],
-    labelFields: ['currencyCode', 'currencyName', 'countryName'],
+    labelFields: ['currencyCode'],
   };
 
   modeOfStatus = [
@@ -221,6 +223,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   auditLogModalRef!: NgbModalRef;
   permissions: any[] = [];
   currentMenuPermissions = {};
+  private initialFormValue: string;
+  bookingStatusTimeline : any[];
 
 
   bookingForm !: FormGroup;
@@ -492,18 +496,19 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     this.spinner.show();
     this.loadHeaderMandatoryParts().subscribe(() => {
       this.loadHeaderLookups().subscribe();
-
+      
       if (this.dataFromQuotation?.quotation) {
-
+        
         this.patchValues(this.dataFromQuotation);
         this.minDate = this.today;
       } else {
-
+        
         this.currentRoute.paramMap.subscribe((param) => {
           this.BookingHeaderSid = +param.get('id');
           if (this.BookingHeaderSid) {
             this.isEditMode = true;
             this.loadBookingById(this.BookingHeaderSid);
+            this.getAuditLog();
           } else {
             this.minDate = this.today;
           }
@@ -621,7 +626,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       InternalNote: [''],
       GeneralNote: [''],
       NominatedBy: ['Self'],
-      BookingStatus: 'Pending',
+      BookingStatus: ['Booked'],
       ShipmentNo: ['']
     })
     this.bookingForm.valueChanges.subscribe(() => {
@@ -792,27 +797,36 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     })
 
+    if (data?.CargoRecDate) {
+      ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
+        productForm.get(field)?.disable();
+      })
+    }
     productForm.get('CargoRecDate')?.valueChanges.subscribe(value => {
-      this.changeAuthStateBasedOnDate();
+      if(value){
+        ['ExternlQty','GrossWeight','NetWeight','Volume'].forEach(field => {
+          productForm.get(field)?.disable();
+        })
+      }
     })
 
     return productForm;
   }
 
-  changeAuthStateBasedOnDate() {
-    let atLeastOneHasDate = false;
-    this.bookingProducts.controls.forEach((product: FormGroup, productIndex: number) => {
-      const productDate = product.get('CargoRecDate')?.value;
-      if (productDate) {
-        atLeastOneHasDate = true;
-      }
-    })
-    if (atLeastOneHasDate) {
-      this.b['CargoRecDate']?.disable();
-    } else {
-      this.b['CargoRecDate']?.enable();
-    }
-  }
+  // changeAuthStateBasedOnDate() {
+  //   let atLeastOneHasDate = false;
+  //   this.bookingProducts.controls.forEach((product: FormGroup, productIndex: number) => {
+  //     const productDate = product.get('CargoRecDate')?.value;
+  //     if (productDate) {
+  //       atLeastOneHasDate = true;
+  //     }
+  //   })
+  //   if (atLeastOneHasDate) {
+  //     this.b['CargoRecDate']?.disable();
+  //   } else {
+  //     this.b['CargoRecDate']?.enable();
+  //   }
+  // }
 
   addProduct() {
     const formGroup = this.createBookingProductGroup();
@@ -948,6 +962,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
           this.bookingData = resp.data;
           this.minDate = undefined;
           this.spinner.hide();
+          this.captureInitialFormState();
         }
       }
     )
@@ -1251,6 +1266,13 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     console.log('Submit triggered', this.bookingForm.value);
+    if (this.isEditMode) {
+      const currentFormState = JSON.stringify(this.getCurrentFormState());
+      if (this.initialFormValue === currentFormState) {
+        this.appSettingService.showWarning('No changes are there to save.');
+        return;
+      }
+    }
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
@@ -1264,6 +1286,9 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       console.warn('Rate validation failed — submission stopped');
       return;
     }
+    console.log('Before',this.b['BookingStatus']?.getRawValue());
+    this.updateBookingStatusOnCargoDate();
+    console.log('After',this.b['BookingStatus']?.getRawValue());
     const bookingFormValue = this.bookingForm.getRawValue();
     const cargoFormValue = this.cargoForm.getRawValue();
     const otherFormValue = this.otherForm.getRawValue();
@@ -1316,6 +1341,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       NominatedBy: bookingFormValue.NominatedBy || 'Self',
       FreightTerms: bookingFormValue.FreightTerms || '',
       ShipmentNo: bookingFormValue.ShipmentNo || '',
+      BookingStatus : bookingFormValue.BookingStatus || '',
       bookingCargo: {
         BookingCargoSid: cargoFormValue.BookingCargoSid || null,
         CargoType: cargoFormValue.CargoType || null,
@@ -2336,7 +2362,15 @@ ${this.userData['userName']}`;
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.BookingHeaderSid) return;
+    this.getAuditLog()
+    this.auditLogModalRef = this.modalService.open(modal, {
+      centered: true,
+      scrollable: true,
+      windowClass: 'audit-log-modal'
+    });
+  }
 
+  getAuditLog() {
     this.operationService.getAuditLogsBooking(
       'BookingHeader',
       this.BookingHeaderSid.toString()
@@ -2361,11 +2395,35 @@ ${this.userData['userName']}`;
           }))
           .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
 
-        this.auditLogModalRef = this.modalService.open(modal, {
-          centered: true,
-          scrollable: true,
-          windowClass: 'audit-log-modal'
-        });
+        this.bookingStatusTimeline = logs
+          .filter(log => log.newVal?.BookingStatus)
+          .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime())
+          .map(log => ({
+            status: log.newVal.BookingStatus,
+            at: log.changedAt
+          }));
+
+        // ✅ Check if Cargo Received exists but Booked does not
+        const hasCargoReceived = this.bookingStatusTimeline.some(l => l.status === 'Cargo Received');
+        const hasBooked = this.bookingStatusTimeline.some(l => l.status === 'Booked');
+
+        if (hasCargoReceived && !hasBooked) {
+          const cargoLog = this.bookingStatusTimeline.find(l => l.status === 'Cargo Received');
+
+          // create Booked log 1 second before Cargo Received
+          const bookedDate = new Date(new Date(cargoLog.at).getTime() - 1000).toISOString();
+
+          this.bookingStatusTimeline.push({
+            status: 'Booked',
+            at: bookedDate
+          });
+        }
+
+        // ✅ Resort descending and take latest 3
+        this.bookingStatusTimeline = this.bookingStatusTimeline
+          .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+          .slice(0, 3);
+
       },
       error: err => console.error('Error fetching audit logs:', err)
     });
@@ -3785,4 +3843,62 @@ ${this.userData['userName']}`;
               return null;
             }
           }
+
+  /**
+* Captures the current state of all forms and related data properties.
+* A short delay ensures all data bindings are synchronized before capture.
+*/
+  private captureInitialFormState(): void {
+    // Use a small timeout to ensure the form values are fully settled after patching.
+    setTimeout(() => {
+      this.initialFormValue = JSON.stringify(this.getCurrentFormState());
+    }, 500);
+  }
+
+  /**
+   * Gathers the raw values from all forms and child component outputs
+   * into a single object for state comparison.
+   * @returns A single object representing the current state of the page.
+   */
+  private getCurrentFormState(): any {
+    return {
+      bookingForm: this.bookingForm.getRawValue(),
+      cargoForm: this.cargoForm.getRawValue(),
+      otherForm: this.otherForm.getRawValue(),
+      detailForm: this.detailForm.getRawValue(),
+      connectionResult: this.connectionResult,
+      rateResult: this.rateResult,
+      milestoneResult: this.milestoneResult,
+    };
+  }
+  /**
+ * Updates the booking status based on the presence of Cargo Received Dates in the products.
+ * - If at least one product has a Cargo Received Date and the current status is 'Booking',
+ *   it changes the status to 'Cargo Received'.
+ * - If no products have a Cargo Received Date and the current status is 'Cargo Received',
+ *   it reverts the status back to 'Booking'.
+ */
+  private updateBookingStatusOnCargoDate(): void {
+    // Check if any product in the FormArray has a value for CargoRecDate
+    const atLeastOneHasDate = this.bookingProducts.controls.some(
+      (product) => !!product.get('CargoRecDate')?.value
+    );
+    console.log("atLeastOneHasDate", atLeastOneHasDate);
+    const bookingStatusControl = this.b['BookingStatus'];
+    if (!bookingStatusControl) {
+      return;
+    }
+
+    const currentStatus = bookingStatusControl.value;
+    console.log("currentStatus", currentStatus);
+    if (atLeastOneHasDate && (currentStatus === 'Booked')) {
+      bookingStatusControl.setValue('Cargo Received');
+    } else if (!atLeastOneHasDate && currentStatus === 'Cargo Received') {
+      // Revert the status if all cargo received dates are cleared
+      bookingStatusControl.setValue('Booked');
+    }
+    this.bookingForm.updateValueAndValidity();
+  }
+
+          
 }

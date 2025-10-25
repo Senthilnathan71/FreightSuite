@@ -24,6 +24,8 @@ import { PasswordValidators } from 'src/app/core/ValidationFn/password.validator
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
 	selector: 'app-user-entry',
@@ -38,7 +40,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 		TextWithNumbersDirective,
 		MultiSelectComponent,
 		FormsModule,
-		NgbDropdownModule
+		NgbDropdownModule,
+		SearchableDropdown
 	],
 	templateUrl: './user-entry.component.html',
 	styleUrl: './user-entry.component.scss'
@@ -77,6 +80,7 @@ export class UserEntryComponent implements OnInit {
 	auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   currentCompany: any;
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
 
 
 	constructor(
@@ -372,7 +376,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 				}
 			});
 		})
-		this.dropdownStore.loadCountries()
+		this.dropdownStore.loadCountries().subscribe();
 	}
 
 	// Load Data for Edit Mode

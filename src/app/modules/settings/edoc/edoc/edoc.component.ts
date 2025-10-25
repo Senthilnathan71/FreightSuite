@@ -17,10 +17,14 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { NgxDocViewerModule } from "ngx-doc-viewer";
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import * as XLSX from 'xlsx';
+
 @Component({
   selector: 'app-edoc',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDatepickerModule, FeatherModule],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDatepickerModule, FeatherModule, NgxDocViewerModule],
   templateUrl: './edoc.component.html',
   styleUrl: './edoc.component.scss',
   providers: [
@@ -31,6 +35,9 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 })
 export class EdocComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  dummyFileUrl: string = ' assets/pdf-sample_0.pdf'; // place a PDF in src/assets
+  existingFiles: any[] = []; // Files already in database
+
   
   @Input() screenName: string = "Edoc";
   @Output() closeModal = new EventEmitter<boolean>();
@@ -39,23 +46,30 @@ export class EdocComponent implements OnInit, OnDestroy {
   @Input() formData: any = null;
   @Output() dataEmitter = new EventEmitter<any>();
   attachDocumentSid: any
+  previewFileType: any
   edocform: FormGroup;
   minDate: NgbDateStruct;
-  selectedFiles: File[] | null = null;
+  selectedFiles: File[] = [];
   currentCompany: any
   userData: any;
   currentBranch: any
   componentData: any
-    existingFileName: string | null = null; // ✅ Add this line
-
+  attachedFiles: any[] = [];
+  selectedFile: any = null;
+  selectedFileUrl: SafeResourceUrl | any = '';
+  existingFileName: string = '';
   constructor(
     private datePipe: CustomDatePipe,
+    private sanitizer: DomSanitizer,
+
     private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
     this.minDate = this.toNgbDateStruct(new Date())
   }
 
 
   ngOnInit() {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+
     console.log('📂 Edoc modal opened!');
     console.log('📋 Received screenName:', this.screenName);
     console.log('📋 Received formData:', this.formData);
@@ -73,15 +87,15 @@ export class EdocComponent implements OnInit, OnDestroy {
       Documenttype: ['', Validators.required],
       ReceivedDate: ['', Validators.required],
       SentDate: ['', Validators.required],
-      FollowupRequired: ['N'],
+      FollowupRequired: [false], // ✅ boolean, not 'N'
       FollowupDate: [''],
       FollowupAction: [''],
       EdocRemarks: [''],
       FollowupRemarks: [''],
-  EdocStatus: [Status.Active, Validators.required],      // ✅ Default "A"
+      EdocStatus: [Status.Active, Validators.required],      // ✅ Default "A"
       Public: ['N'],
       sentEmail: ['N'],
-  FollowupStatus: [Status.Active],                       // ✅ Default "A"
+      FollowupStatus: [Status.Active],                       // ✅ Default "A"
       CompanyMasterSid: Number(this.componentData.CompanyMasterSid),
       BranchMasterSid: Number(this.componentData.BranchMasterSid),
       MenuMasterSid: Number(this.componentData.MenuMasterSid),
@@ -110,6 +124,12 @@ export class EdocComponent implements OnInit, OnDestroy {
     });
   }
 
+  onFollowupChange(event: any) {
+    this.edocform.patchValue({
+      FollowupRequired: event.target.checked
+    });
+  }
+
   toggleYN(controlName: string, event: Event): void {
     const input = event.target as HTMLInputElement;
     const isChecked = input.checked;
@@ -119,215 +139,218 @@ export class EdocComponent implements OnInit, OnDestroy {
   }
 
 
-loadEdocData() {
-  const payload = {
-    menuMasterSid: this.componentData.MenuMasterSid,
-    DocumentSid: this.componentData.DocumentSid
-  };
+  // loadEdocData() {
+  //   const payload = {
+  //     menuMasterSid: this.componentData.MenuMasterSid,
+  //     DocumentSid: this.componentData.DocumentSid
+  //   };
 
-  this.commonService.getExistingFile(payload).subscribe((response) => {
-    console.log('🔍 Full API Response:', response);
-    
-    if (response.attachDocument) {
-      const res = response.attachDocument;
-      const followup = response.followupResponse;
-      
-      this.attachDocumentSid = res.AttachDocumentSid;
+  //   this.commonService.getExistingFile(payload).subscribe((response) => {
+  //     console.log('🔍 Full API Response:', response);
 
-      // Extract filename and extension
-      const fullFileName = res.FileName || '';
-      
-      // Store existing filename for display
-      this.existingFileName = fullFileName;
-      
-      const fileExt = fullFileName.includes('.') 
-        ? fullFileName.split('.').pop()?.toLowerCase() 
-        : res.Documenttype || '';
-      
-      const baseFileName = fullFileName.includes('.') 
-        ? fullFileName.substring(0, fullFileName.lastIndexOf('.')) 
-        : fullFileName;
+  //     if (response.attachDocument) {
+  //       const res = response.attachDocument;
+  //       const followup = response.followupResponse;
+
+  //       this.attachDocumentSid = res.AttachDocumentSid;
+
+  //       // Extract filename and extension
+  //       const fullFileName = res.FileName || '';
+
+  //       // Store existing filename for display
+  //       this.existingFileName = fullFileName;
+
+  //       const fileExt = fullFileName.includes('.') 
+  //         ? fullFileName.split('.').pop()?.toLowerCase() 
+  //         : res.Documenttype || '';
+
+  //       const baseFileName = fullFileName.includes('.') 
+  //         ? fullFileName.substring(0, fullFileName.lastIndexOf('.')) 
+  //         : fullFileName;
 
 
-      // Patch main document data
-      // The CustomDateAdapter will automatically convert date strings to NgbDateStruct
-      this.edocform.patchValue({
-        AttachDocmentNo: res.AttachDocmentNo || '',
-        DocumentDate: res.DocumentDate || null,  // Let adapter handle conversion
-        FileName: baseFileName || '',
-        Documenttype: fileExt || '',
-        ReceivedDate: res.ReceivedDate || null,  // Let adapter handle conversion
-        SentDate: res.SentDate || null,          // Let adapter handle conversion
-        FollowupRequired: res.FollowupRequire,
-        EdocRemarks: res.Remarks || '',
-        EdocStatus: res.status || Status.Active,
-        Public: res.Public || 'N',
-        sentEmail: res.sentEmail || 'N',
-      });
+  //       // Patch main document data
+  //       // The CustomDateAdapter will automatically convert date strings to NgbDateStruct
+  //       this.edocform.patchValue({
+  //         AttachDocmentNo: res.AttachDocmentNo || '',
+  //         DocumentDate: res.DocumentDate || null,  // Let adapter handle conversion
+  //         FileName: baseFileName || '',
+  //         Documenttype: fileExt || '',
+  //         ReceivedDate: res.ReceivedDate || null,  // Let adapter handle conversion
+  //         SentDate: res.SentDate || null,          // Let adapter handle conversion
+  //   FollowupRequired: res.FollowupRequire === 'Y',
+  //         EdocRemarks: res.Remarks || '',
+  //         EdocStatus: res.status || Status.Active,
+  //         Public: res.Public || 'N',
+  //         sentEmail: res.sentEmail || 'N',
+  //       });
 
-      // Patch followup data if present
-      if (followup) {
-        this.edocform.patchValue({
-          FollowupDate: followup.FollowupDate || null,  // Let adapter handle conversion
-          FollowupAction: followup.FollowupAction || '',
-          Public: followup.Public || 'N',
-          sentEmail: followup.sentEmail || 'N',
-          FollowupRemarks: followup.Remarks || '',
-          FollowupStatus: followup.Status || Status.Active,
-        });
+  //       // Patch followup data if present
+  //       if (followup) {
+  //         this.edocform.patchValue({
+  //           FollowupDate: followup.FollowupDate || null,  // Let adapter handle conversion
+  //           FollowupAction: followup.FollowupAction || '',
+  //           Public: followup.Public || 'N',
+  //           sentEmail: followup.sentEmail || 'N',
+  //           FollowupRemarks: followup.Remarks || '',
+  //           FollowupStatus: followup.Status || Status.Active,
+  //         });
 
-      } else {
-        // Clear follow-up fields if no record exists
-        this.edocform.patchValue({
-          FollowupDate: null,
-          FollowupAction: '',
-          FollowupRemarks: '',
-          FollowupStatus: Status.Active,
-        });
-        
-        console.log('ℹ️ No followup data found');
+  //       } else {
+  //         // Clear follow-up fields if no record exists
+  //         this.edocform.patchValue({
+  //           FollowupDate: null,
+  //           FollowupAction: '',
+  //           FollowupRemarks: '',
+  //           FollowupStatus: Status.Active,
+  //         });
+
+  //         console.log('ℹ️ No followup data found');
+  //       }
+  //       // Force change detection
+  //       this.edocform.updateValueAndValidity();
+  //     } else {
+  //       console.warn('⚠️ No attachDocument found in response');
+  //     }
+  //   }, (error) => {
+  //     console.error('❌ Error loading Edoc data:', error);
+  //     this.appSettingService.showError('Failed to load document data');
+  //   });
+  // }
+
+  // Helper method to debug form errors
+  getFormErrors(): any {
+    const errors: any = {};
+    Object.keys(this.edocform.controls).forEach(key => {
+      const control = this.edocform.get(key);
+      if (control && control.errors) {
+        errors[key] = control.errors;
       }
-      // Force change detection
-      this.edocform.updateValueAndValidity();
-    } else {
-      console.warn('⚠️ No attachDocument found in response');
-    }
-  }, (error) => {
-    console.error('❌ Error loading Edoc data:', error);
-    this.appSettingService.showError('Failed to load document data');
-  });
-}
-
-// Helper method to debug form errors
-getFormErrors(): any {
-  const errors: any = {};
-  Object.keys(this.edocform.controls).forEach(key => {
-    const control = this.edocform.get(key);
-    if (control && control.errors) {
-      errors[key] = control.errors;
-    }
-  });
-  return errors;
-}
-// Fixed onFileSelect method
-onFileSelect(event: any) {
-  const files = event.target.files;
-
-  if (files && files.length > 0) {
-    this.selectedFiles = Array.from(files);
-    this.existingFileName = null; // ✅ Clear existing file when new files selected
-    
-    const firstFile = this.selectedFiles[0];
-    const fullFileName = firstFile.name;
-    const fileNameOnly = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
-    const extension = fullFileName.split('.').pop()?.toLowerCase();
-
-    console.log('📎 File selected:', {
-      fullFileName,
-      fileNameOnly,
-      extension
     });
-
-    this.edocform.patchValue({
-      FileName: fileNameOnly,
-      Documenttype: extension
-    });
-
-    console.log('✅ File info patched to form');
+    return errors;
   }
-}
+  // Fixed onFileSelect method
+  // onFileSelect(event: any) {
+  //   const files = event.target.files;
+
+  //   if (files && files.length > 0) {
+  //     this.selectedFiles = Array.from(files);
+  //     this.existingFileName = null; // ✅ Clear existing file when new files selected
+
+  //     const firstFile = this.selectedFiles[0];
+  //     const fullFileName = firstFile.name;
+  //     const fileNameOnly = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
+  //     const extension = fullFileName.split('.').pop()?.toLowerCase();
+
+  //     console.log('📎 File selected:', {
+  //       fullFileName,
+  //       fileNameOnly,
+  //       extension
+  //     });
+
+  //     this.edocform.patchValue({
+  //       FileName: fileNameOnly,
+  //       Documenttype: extension
+  //     });
+
+  //     console.log('✅ File info patched to form');
+  //   }
+  // }
 
 
   onSubmit() {
-  const formValue = this.edocform.value;
+    const formValue = this.edocform.value;
 
-  // ✅ CREATE mode (new record)
-  if (!this.attachDocumentSid) {
-    if (!this.selectedFiles || this.selectedFiles.length === 0) {
-      this.appSettingService.showError('Please select at least one file');
-      return;
+    // ✅ CREATE mode (new record)
+    if (!this.attachDocumentSid) {
+      if (!this.selectedFiles || this.selectedFiles.length === 0) {
+        this.appSettingService.showError('Please select at least one file');
+        return;
+      }
     }
-  }
 
 
-  // ✅ Prepare FormData
-  const formData = new FormData();
+    // ✅ Prepare FormData
+    const formData = new FormData();
 
-  // Append selected files (only if new files exist)
-  if (this.selectedFiles && this.selectedFiles.length > 0) {
-    this.selectedFiles.forEach((file) => {
-      formData.append('files', file, file.name);
+    // Append selected files (only if new files exist)
+    // Append NEW files only (existing files stay in database)
+    if (this.selectedFiles && this.selectedFiles.length > 0) {
+      this.selectedFiles.forEach((file) => {
+        formData.append('files', file, file.name);
+      });
+      console.log('📤 Uploading new files:', this.selectedFiles.length);
+    } else {
+      console.log('ℹ️ No new files to upload');
+    }
+    // Convert FollowupDate to ISO string before appending to FormData
+    if (formValue.FollowupDate) {
+      formValue.FollowupDate = this.toUTCISO(formValue.FollowupDate);
+    }
+
+    formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
+
+    formData.append('CreatedBy', this.userData['userEmail']);
+
+    // Append form fields (non-empty values only)
+    Object.keys(formValue).forEach(key => {
+      const value = formValue[key];
+      if (value !== null && value !== undefined && value !== '') {
+        formData.append(key, value);
+      }
     });
-  }
 
-  // Convert FollowupDate to ISO string before appending to FormData
-if (formValue.FollowupDate) {
-  formValue.FollowupDate = this.toUTCISO(formValue.FollowupDate);
-}
+    // Emit to parent (optional)
+    this.dataEmitter.emit({
+      dataItems: [formValue],
+      formData: this.selectedFiles
+    });
 
-formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
+    console.log('Uploading files...');
 
-
-
-  // Append form fields (non-empty values only)
-  Object.keys(formValue).forEach(key => {
-    const value = formValue[key];
-    if (value !== null && value !== undefined && value !== '') {
-      formData.append(key, value);
+    // ✅ Update or Create API call
+    if (this.attachDocumentSid) {
+      // --- Update ---
+      this.commonService.updateEdocById(this.attachDocumentSid, formData).subscribe(
+        (res) => {
+          if (res) {
+            this.appSettingService.showSuccess(res.message || 'Edoc updated successfully');
+            this.closeTemplate()
+            this.resetForm();
+          } else {
+            this.appSettingService.showError(res.message || 'Edoc update failed');
+            this.closeTemplate()
+          }
+        },
+        (error) => {
+          console.error('Upload error:', error);
+          this.appSettingService.showError(error?.error?.message || 'Upload failed');
+        }
+      );
+    } else {
+      // --- Create ---
+      this.commonService.createEdoc(formData).subscribe(
+        (res) => {
+          if (res) {
+            this.appSettingService.showSuccess(res.message || 'Edoc created successfully');
+            this.closeTemplate()
+            this.resetForm();
+          } else {
+            this.appSettingService.showError(res.message || 'Edoc creation failed');
+            this.closeTemplate()
+          }
+        },
+        (error) => {
+          console.error('Upload error:', error);
+          this.appSettingService.showError(error?.error?.message || 'Upload failed');
+        }
+      );
     }
-  });
-
-  // Emit to parent (optional)
-  this.dataEmitter.emit({
-    dataItems: [formValue],
-    formData: this.selectedFiles
-  });
-
-  console.log('Uploading files...');
-
-  // ✅ Update or Create API call
-  if (this.attachDocumentSid) {
-    // --- Update ---
-    this.commonService.updateEdocById(this.attachDocumentSid, formData).subscribe(
-      (res) => {
-        if (res.status) {
-          this.appSettingService.showSuccess(res.message || 'Edoc updated successfully');
-          this.closeTemplate()
-          this.resetForm();
-        } else {
-          this.appSettingService.showError(res.message || 'Edoc update failed');
-          this.closeTemplate()
-        }
-      },
-      (error) => {
-        console.error('Upload error:', error);
-        this.appSettingService.showError(error?.error?.message || 'Upload failed');
-      }
-    );
-  } else {
-    // --- Create ---
-    this.commonService.createEdoc(formData).subscribe(
-      (res) => {
-        if (res.status) {
-          this.appSettingService.showSuccess(res.message || 'Edoc created successfully');
-          this.closeTemplate()
-          this.resetForm();
-        } else {
-          this.appSettingService.showError(res.message || 'Edoc creation failed');
-          this.closeTemplate()
-        }
-      },
-      (error) => {
-        console.error('Upload error:', error);
-        this.appSettingService.showError(error?.error?.message || 'Upload failed');
-      }
-    );
   }
-}
 
 
   resetForm() {
-    this.existingFileName=null
+    this.existingFileName = null
     this.edocform.reset();
   }
 
@@ -340,10 +363,10 @@ formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
   ];
 
   modeOfStatus = [
-  { id: Status.Active, name: 'Active' },
-  { id: Status.Suspended, name: 'Suspended' },
-  { id: Status.Deleted, name: 'Deleted' },
-];
+    { id: Status.Active, name: 'Active' },
+    { id: Status.Suspended, name: 'Suspended' },
+    { id: Status.Deleted, name: 'Deleted' },
+  ];
 
   modeOfAction = [
     { id: '1', name: 'Internal followup' },
@@ -354,85 +377,326 @@ formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
   //   this.activeModal.close();
   // }
 
-// Fixed toNgbDateStruct to handle UTC dates properly
-toNgbDateStruct(dateValue: string | Date | null | undefined): NgbDateStruct | null {
-  if (!dateValue) return null;
+  // Fixed toNgbDateStruct to handle UTC dates properly
+  toNgbDateStruct(dateValue: string | Date | null | undefined): NgbDateStruct | null {
+    if (!dateValue) return null;
 
-  try {
-    let year: number, month: number, day: number;
-    
-    if (typeof dateValue === 'string') {
-      // For ISO string dates like "2025-10-15T00:00:00.000Z"
-      // Parse manually to avoid timezone issues
-      const dateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (dateMatch) {
-        year = parseInt(dateMatch[1], 10);
-        month = parseInt(dateMatch[2], 10);
-        day = parseInt(dateMatch[3], 10);
-      } else {
-        // Fallback to Date parsing
-        const date = new Date(dateValue);
-        if (isNaN(date.getTime())) {
-          console.warn('Invalid date string:', dateValue);
+    try {
+      let year: number, month: number, day: number;
+
+      if (typeof dateValue === 'string') {
+        // For ISO string dates like "2025-10-15T00:00:00.000Z"
+        // Parse manually to avoid timezone issues
+        const dateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+          year = parseInt(dateMatch[1], 10);
+          month = parseInt(dateMatch[2], 10);
+          day = parseInt(dateMatch[3], 10);
+        } else {
+          // Fallback to Date parsing
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) {
+            console.warn('Invalid date string:', dateValue);
+            return null;
+          }
+          year = date.getUTCFullYear();
+          month = date.getUTCMonth() + 1;
+          day = date.getUTCDate();
+        }
+      } else if (dateValue instanceof Date) {
+        if (isNaN(dateValue.getTime())) {
+          console.warn('Invalid Date object:', dateValue);
           return null;
         }
-        year = date.getUTCFullYear();
-        month = date.getUTCMonth() + 1;
-        day = date.getUTCDate();
-      }
-    } else if (dateValue instanceof Date) {
-      if (isNaN(dateValue.getTime())) {
-        console.warn('Invalid Date object:', dateValue);
+        year = dateValue.getUTCFullYear();
+        month = dateValue.getUTCMonth() + 1;
+        day = dateValue.getUTCDate();
+      } else {
+        console.warn('Unexpected date type:', typeof dateValue, dateValue);
         return null;
       }
-      year = dateValue.getUTCFullYear();
-      month = dateValue.getUTCMonth() + 1;
-      day = dateValue.getUTCDate();
-    } else {
-      console.warn('Unexpected date type:', typeof dateValue, dateValue);
+
+      const result = { year, month, day };
+      console.log('📅 Date conversion:', dateValue, '→', result);
+      return result;
+    } catch (error) {
+      console.error('Error converting date:', dateValue, error);
       return null;
     }
+  }
 
-    const result = { year, month, day };
-    console.log('📅 Date conversion:', dateValue, '→', result);
-    return result;
-  } catch (error) {
-    console.error('Error converting date:', dateValue, error);
-    return null;
+  // Additional helper methods for file handling
+  // formatFileSize(bytes: number): string {
+  //   if (bytes === 0) return '0 Bytes';
+  //   const k = 1024;
+  //   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  //   const i = Math.floor(Math.log(bytes) / Math.log(k));
+  //   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  // }
+
+
+// 2️⃣ Load existing files from API
+loadEdocData() {
+  const payload = {
+    menuMasterSid: this.componentData.MenuMasterSid,
+    DocumentSid: this.componentData.DocumentSid
+  };
+
+  this.commonService.getExistingFile(payload).subscribe(
+    (response) => {
+      console.log('🔍 Full API Response:', response);
+
+      if (response.group && response.group.attachFiles) {
+        this.existingFiles = response.group.attachFiles || [];
+      } else if (response.attachDocument) {
+        this.existingFiles = [response.attachDocument];
+      }
+
+      // Optional: load preview for the first file
+      if (this.existingFiles.length > 0) {
+        const firstFile = this.existingFiles[0];
+        this.selectedFile = firstFile;
+        this.attachDocumentSid = firstFile.AttachDocumentSid;
+        this.loadFilePreview(firstFile);
+        this.patchFormData(firstFile,response.group, response.followups?.[0]);
+      }
+    },
+    (error) => {
+      console.error('❌ Error loading Edoc data:', error);
+      this.appSettingService.showError('Failed to load document data');
+    }
+  );
+}
+
+  // Load file preview from server
+  loadFilePreview(file: any) {
+    if (!file) return;
+
+    const filePreviewPayload = {
+      menuMasterSid: this.componentData.MenuMasterSid,
+      documentSid: this.componentData.DocumentSid,
+      fileName: file.FileName
+    };
+
+    const type = this.getFileType(file.FileName);
+    this.previewFileType = type;
+    this.commonService.previewFile(filePreviewPayload).subscribe((res: any | Blob) => {
+    console.log(res)
+
+    if (type === 'excel' || type === 'doc') {
+      // Office files get public URL from backend
+      this.selectedFileUrl = res.url;
+    } else {
+      // PDF, Image, Text: blob
+      const objectUrl = URL.createObjectURL(res as Blob);
+      this.selectedFileUrl = objectUrl;
+    }
+    console.log('✅ File preview loaded:', type);
+  }, (error) => {
+    console.error('❌ Error loading file preview:', error);
+    this.selectedFileUrl = this.dummyFileUrl;
+  });
+  }
+
+  getFileType(fileName: string): 'pdf' | 'excel' |'doc'| 'image' | 'text' | 'other' {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (!ext) return 'other';
+    if (ext === 'pdf') return 'pdf';
+    if (['xls', 'xlsx'].includes(ext)) return 'excel';
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) return 'image';
+    if (['txt', 'log', 'csv'].includes(ext)) return 'text';
+    return 'other';
+  }
+
+
+  // Patch form with file data
+  patchFormData(fileData: any,res, followupData: any) {
+    console.log(followupData)
+    const fullFileName = fileData.FileName || '';
+    const fileExt = fullFileName.includes('.')
+      ? fullFileName.split('.').pop()?.toLowerCase()
+      : fileData.DocumentType || '';
+    const baseFileName = fullFileName.includes('.')
+      ? fullFileName.substring(0, fullFileName.lastIndexOf('.'))
+      : fullFileName;
+
+    // Patch main document data
+    this.edocform.patchValue({
+      AttachDocmentNo: fileData.AttachDocmentNo || '',
+      DocumentDate: fileData.DocumentDate || null,
+      FileName: baseFileName || '',
+      Documenttype: fileExt || '',
+      ReceivedDate: fileData.ReceivedDate || null,
+      SentDate: fileData.SentDate || null,
+      FollowupRequired: fileData.FollowupRequire === 'Y',
+      EdocRemarks: res.Remarks || '',
+      EdocStatus: fileData.status || 'A',
+      Public: fileData.Public || 'N',
+      sentEmail: fileData.sentEmail || 'N',
+    });
+
+    // Patch followup data
+    if (followupData) {
+      this.edocform.patchValue({
+        FollowupDate: followupData.FollowupDate || null,
+        FollowupAction: followupData.FollowupAction || '',
+        Public: followupData.Public || 'N',
+        sentEmail: followupData.sentEmail || 'N',
+        FollowupRemarks: followupData.Remarks || '',
+        FollowupStatus: followupData.Status || 'A',
+      });
+    } else {
+      this.edocform.patchValue({
+        FollowupDate: null,
+        FollowupAction: '',
+        FollowupRemarks: '',
+        FollowupStatus: 'A',
+      });
+    }
+
+    this.edocform.updateValueAndValidity();
+  }
+
+  // Switch between multiple files
+  selectFile(file: any) {
+    this.selectedFile = file;
+    this.attachDocumentSid = file.AttachDocumentSid;
+    this.existingFileName = file.FileName;
+    this.loadFilePreview(file);
+
+    // Optionally update form with selected file's data
+    // this.patchFormData(file, null);
+  }
+
+  // Download file
+  downloadFile(file: any) {
+    const payload = {
+      menuMasterSid: this.componentData.MenuMasterSid,
+      documentSid: this.componentData.DocumentSid,
+      fileName: file.FileName
+    };
+
+    this.commonService.downloadFile(payload).subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.FileName;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      console.log('✅ File downloaded:', file.FileName);
+    }, (error) => {
+      console.error('❌ Download error:', error);
+      this.appSettingService.showError('Failed to download file');
+    });
+  }
+
+  // Get file icon based on extension
+  getFileIcon(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    const iconMap: { [key: string]: string } = {
+      'pdf': 'bi-file-pdf text-danger',
+      'doc': 'bi-file-word text-primary',
+      'docx': 'bi-file-word text-primary',
+      'xls': 'bi-file-excel text-success',
+      'xlsx': 'bi-file-excel text-success',
+      'jpg': 'bi-file-image text-info',
+      'jpeg': 'bi-file-image text-info',
+      'png': 'bi-file-image text-info',
+      'gif': 'bi-file-image text-info',
+      'txt': 'bi-file-text text-secondary',
+      'zip': 'bi-file-zip text-warning',
+      'rar': 'bi-file-zip text-warning',
+    };
+    return iconMap[ext || ''] || 'bi-file-earmark text-secondary';
+  }
+
+  // Handle new file selection - ADD to existing files, don't replace
+ onFileSelect(event: any) {
+  const files = event.target.files;
+
+  if (files && files.length > 0) {
+    const newFiles = Array.from(files) as File[];
+
+    // Avoid duplicates by file name
+    this.selectedFiles = [
+      ...this.selectedFiles,
+      ...newFiles.filter(f => !this.selectedFiles.some(sf => sf.name === f.name))
+    ];
+
+    // Update form with FIRST newly selected file info (optional)
+    const firstNewFile = newFiles[0];
+    const fullFileName = firstNewFile.name;
+    const fileNameOnly = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
+    const extension = fullFileName.split('.').pop()?.toLowerCase();
+
+    if (this.existingFiles.length === 0) {
+      this.edocform.patchValue({
+        FileName: fileNameOnly,
+        Documenttype: extension
+      });
+    }
+
+    event.target.value = ''; // reset input to allow re-selecting the same file
   }
 }
 
-// Additional helper methods for file handling
-formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
+  // Remove a newly selected file (before upload)
+  removeSelectedFile(index: number) {
+    this.selectedFiles.splice(index, 1);
+    console.log('🗑️ Removed selected file. Remaining:', this.selectedFiles.length);
+  }
 
-clearExistingFile(): void {
-  this.existingFileName = null;
-  // User can now select a new file
-  console.log('🗑️ Existing file cleared, ready for new upload');
-}
+  // Remove an existing file from database
+  removeExistingFile(file: any, index: number) {
+    if (confirm(`Are you sure you want to delete "${file.FileName}"?`)) {
+      this.commonService.deleteEdocFile(file.AttachDocumentSid).subscribe(
+        (res) => {
+          if (res.status) {
+            this.existingFiles.splice(index, 1);
+            this.appSettingService.showSuccess('File deleted successfully');
+            console.log('✅ File deleted:', file.FileName);
+          } else {
+            this.appSettingService.showError(res.message || 'Delete failed');
+          }
+        },
+        (error) => {
+          console.error('❌ Delete error:', error);
+          this.appSettingService.showError('Failed to delete file');
+        }
+      );
+    }
+  }
+
+  // Clear all newly selected files (not database files)
+  clearSelectedFiles() {
+    this.selectedFiles = [];
+    console.log('🗑️ All selected files cleared');
+  }
+
+  formatFileSize(bytes: number): string {
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
 
   closeTemplate() {
     this.closeModal.emit(true);
   }
 
   toUTCISO(dateStruct: NgbDateStruct | string | Date | null): string | null {
-  if (!dateStruct) return null;
+    if (!dateStruct) return null;
 
-  if (typeof dateStruct === 'string' || dateStruct instanceof Date) {
-    return new Date(dateStruct).toISOString(); // for Date or string input
+    if (typeof dateStruct === 'string' || dateStruct instanceof Date) {
+      return new Date(dateStruct).toISOString(); // for Date or string input
+    }
+
+    // If NgbDateStruct
+    const { year, month, day } = dateStruct;
+    const date = new Date(Date.UTC(year, month - 1, day)); // UTC midnight
+    return date.toISOString();
   }
-
-  // If NgbDateStruct
-  const { year, month, day } = dateStruct;
-  const date = new Date(Date.UTC(year, month - 1, day)); // UTC midnight
-  return date.toISOString();
-}
 
 
   ngOnDestroy(): void {

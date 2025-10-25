@@ -4,7 +4,8 @@
 
 .table thead th,
 .table th {
-  font-weight: 700;
+  font-weight: 600;
+  // padding: 2px 0px !important;
 }
 
 .no-wrap {
@@ -23,6 +24,7 @@ table.dataTable {
     td {
       border-bottom-color: $border-color;
       text-align: center;
+      
     }
   }
   tbody {

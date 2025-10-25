@@ -206,10 +206,17 @@
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!stateForm.get('CountryMasterSid')?.value">
-                  <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
+                  <!-- <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
                     formControlName="CountryMasterSid" id="CountryMasterSid"
                     [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
-                    placeholder=""></ng-select>
+                    placeholder=""></ng-select> -->
+                    <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
+                        bindValue="CountryMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
                   <label class="input-label">Country <span class="text-danger">*</span></label>
                   <div *ngIf="
         (stateForm.get('CountryMasterSid')?.touched || stateForm.get('CountryMasterSid')?.dirty) &&
@@ -226,12 +233,18 @@
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!stateForm.get('ZoneMasterSid')?.value">
-                  <ng-select formControlName="ZoneMasterSid" class="ng-select">
-                    <!-- <ng-option value="">Select Zone</ng-option> -->
+                  <!-- <ng-select formControlName="ZoneMasterSid" class="ng-select">
                     <ng-option *ngFor="let option of dropdownStore.zone()" [value]="option.ZoneMasterSid" placeholder="">
                       {{ option.ZoneName }}
                     </ng-option>
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown [items]="dropdownStore.zone()" formControlName="ZoneMasterSid" placeholder=""
+                        [displayFields]="zoneLookupConfig.displayFields"
+                        [displayLabels]="zoneLookupConfig.displayLabels"
+                        [labelFields]="zoneLookupConfig.labelFields" bindLabel="option.ZoneMasterSid"
+                        bindValue="ZoneMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
                   <label for="text-input" class="input-label">Zone <span class="text-danger fw-bold">*</span></label>
                   <div *ngIf="
         (stateForm.get('ZoneMasterSid')?.touched || stateForm.get('ZoneMasterSid')?.dirty) &&

@@ -44,6 +44,7 @@ import { ManifestDocumentUploadComponent } from '../../manifest-document-upload/
 import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -116,8 +117,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
+    labelFields :['currencyCode'],
   };
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   
   // Lookup data
   departments: any[] = [];
@@ -602,15 +607,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     vessels: this.operationService.getAllVessels()
       .pipe(catchError(err => of({ data: [] }))),
     // Replace individual API calls with getCustomerByItsType
-    agents: this.operationService.getAllAgents(companySid)
+    agents: this.operationService.getCustomerByItsType({companySid, types: ['vendor', 'transporter', 'agent']})
       .pipe(catchError(err => of([]))),
-    carriers: this.operationService.getAllCarriers(companySid)
+    carriers: this.operationService.getCustomerByItsType({ companySid , types : ['carrier']})
         .pipe(catchError(err => of([]))),
-    forwarders: this.operationService.getCustomerByItsType({ companySid , type : ['forwarder']})
+    forwarders: this.operationService.getCustomerByItsType({ companySid , types : ['forwarder']})
       .pipe(catchError(err => of({ data: [] }))),
-    cfsList: this.operationService.getCustomerByItsType({ companySid , type : ['cFS']})
+    cfsList: this.operationService.getCustomerByItsType({ companySid , types : ['cFS']})
       .pipe(catchError(err => of({ data: [] }))),
-    yards: this.operationService.getCustomerByItsType({ companySid , type : ['yard']}) 
+    yards: this.operationService.getCustomerByItsType({ companySid , types : ['yard']}) 
          .pipe(catchError(err => of({ data: [] }))),
     containerTypes: this.operationService.getAllContainerTypes()
       .pipe(catchError(err => of({ data: [] }))),
@@ -625,29 +630,38 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     containerTypes, currencies, packageTypes, customers 
   }) => {
     this.departments = departments.data || [];
-    this.portList = ports.data || [];
+    this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     this.vesselList = vessels.data || [];
     
     // Update all customer type lists with data from the new API
-    this.agentList = agents || [];
-    this.carrierList = carriers || [];
-    this.forwarderList = forwarders.data || [];
-    this.cfsList = cfsList.data || [];
-    this.yardList = yards.data || []; 
+    this.agentList = agents.data ;
+    this.carrierList = carriers.data;
+    this.forwarderList = forwarders.data;
+    this.cfsList = cfsList.data ;
+    this.yardList = yards.data ; 
     
-    this.containerTypeList = containerTypes.data || [];
-    this.currencyList = currencies.data || [];
-    this.packageTypeList = packageTypes.data || [];
+    this.containerTypeList = containerTypes.data ;
+    const rawCurrencies: any[] = Array.isArray(currencies)
+    ? currencies
+    : currencies?.data || [];
+    this.currencyList = rawCurrencies.map((c: any) => ({
+      ...c,
+      countryName: c?.countryMaster?.countryName || ''
+    }));
+    this.packageTypeList = packageTypes.data ;
     this.filteredDestinationAgents = [...this.agentList];
     this.filteredOriginAgents = [...this.agentList];
-    this.customerList = customers || [];
+    this.customerList = customers.data;
 
     // default filtered ports
     this.filteredPorts = [...this.portList];
     this.filteredPOL = [...this.filteredPorts];
     this.filteredPOD = [...this.filteredPorts];
   }));
+  
 }
+
+
 
 
   loadMasterJobData(masterJobSid: number): void {

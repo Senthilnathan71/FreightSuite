@@ -19,6 +19,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { Subject } from 'rxjs';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -30,7 +32,8 @@ import { Subject } from 'rxjs';
     NgSelectModule,
     DatePipe,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './state-entry.component.html',
   styleUrls: ['./state-entry.component.scss']
@@ -61,8 +64,8 @@ export class StateEntryComponent implements OnInit {
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
-
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+  zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
 
 
   constructor(
@@ -79,8 +82,8 @@ export class StateEntryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.dropdownStore.loadCountries();
-    this.dropdownStore.loadZones();
+    this.dropdownStore.loadCountries().subscribe();
+    this.dropdownStore.loadZones().subscribe();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.stateId = +params['id'];

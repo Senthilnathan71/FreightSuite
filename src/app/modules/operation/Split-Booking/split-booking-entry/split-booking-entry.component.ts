@@ -11,6 +11,8 @@ import { catchError, forkJoin, of } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-split-booking-entry',
@@ -22,7 +24,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
     CommonModule,
     NgbPaginationModule,
     FormsModule,
-    DatePipe
+    DatePipe,
+    SearchableDropdown
   ],
   templateUrl: './split-booking-entry.component.html',
   styleUrls: ['./split-booking-entry.component.scss'],
@@ -48,6 +51,7 @@ export class SplitBookingEntryComponent implements OnInit {
 
   selectedRows: number[] = [];
   selectedIndex: number | null = null;
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
 
   splitType = [
     { name: 'Full', value: 'full' },

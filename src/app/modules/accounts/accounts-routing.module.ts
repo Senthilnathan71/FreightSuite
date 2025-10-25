@@ -14,6 +14,8 @@ import { LedgerMappingComponent } from './ledger-mapping/ledger-mapping/ledger-m
 import { Dashboard1Component } from './dashboard1/dashboard1/dashboard1.component';
 import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
 import { PrintsComponent } from './print-structure/prints/prints.component';
+import { PaymentListComponent } from './payment/payment-list/payment-list.component';
+import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -89,7 +91,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: "modal",
         component: ModalComponent,
         data: {
@@ -123,7 +125,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: "chart-accounts/entry/:id",
         component: ChartAccountEntryComponent,
         data: {
@@ -134,7 +136,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: "supplier-tds/list",
         component: VendorTdsListComponent,
         data: {
@@ -178,7 +180,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: "dashboard1",
         component: Dashboard1Component,
         data: {
@@ -189,7 +191,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: "receipt",
         component: ReceiptEntryComponent,
         data: {
@@ -200,7 +202,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: "print",
         component: PrintsComponent,
         data: {
@@ -208,6 +210,28 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Print" },
+          ],
+        },
+      },
+      {
+        path: "payment/list",
+        component: PaymentListComponent,
+        data: {
+          title: "Payment",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Payment" },
+          ],
+        },
+      },
+      {
+        path: "payment/entry",
+        component: PaymentEntryComponent,
+        data: {
+          title: "Payment",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Payment" },
           ],
         },
       },

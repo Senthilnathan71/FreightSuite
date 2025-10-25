@@ -107,10 +107,16 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('DepartmentMasterSid')?.value">
-                                            <ng-select [items]="departments" bindLabel="departmentName"
+                                            <!-- <ng-select [items]="departments" bindLabel="departmentName"
                                                 bindValue="DepartmentMasterSid" formControlName="DepartmentMasterSid"
                                                 (change)="onDeptChange($event)" appendTo="body">
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="departments" formControlName="DepartmentMasterSid" placeholder=""
+                            [displayFields]="departmentLookupConfig.displayFields"
+                            [displayLabels]="departmentLookupConfig.displayLabels"
+                            [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                            (itemSelected)="onDeptChange($event)">
+                        </dofi-searchable-dropdown>
                                             <label class="input-label">Department <span
                                                     class="text-danger">*</span></label>
                                             @if(masterJobForm.get('DepartmentMasterSid')?.touched &&
@@ -194,7 +200,7 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('DestinationAgent')?.value">
-                                            <ng-select [items]="filteredDestinationAgents" bindLabel="CustomerName"
+                                            <!-- <ng-select [items]="filteredDestinationAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="DestinationAgent"
                                                 placeholder="" (change)="onDestinationAgentChange($event)"
                                                 appendTo="body" >
@@ -204,7 +210,14 @@
                                                         <small>{{ item.CustomerAddress1 }}</small>
                                                     </div>
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="filteredDestinationAgents" formControlName="DestinationAgent" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid" (itemSelected)="onDestinationAgentChange($event)"
+                        >
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">Destination Agent</label>
                                         </div>
                                     </aside>
@@ -312,13 +325,19 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('POO')?.value">
-                                            <ng-select formControlName="POO" [items]="portList"
+                                            <!-- <ng-select formControlName="POO" [items]="portList"
                                                 bindLabel="PortCode" bindValue="PortMasterSid" placeholder=""
                                                 appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortCode" bindValue="PortMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">POO<span class="text-danger"></span></label>
                                         </div>
                                     </aside>
@@ -327,13 +346,19 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('POL')?.value">
-                                            <ng-select [items]="filteredPOL" bindLabel="PortCode"
+                                            <!-- <ng-select [items]="filteredPOL" bindLabel="PortCode"
                                                 bindValue="PortMasterSid" formControlName="POL" placeholder=""
                                                 (change)="handlePOLChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortCode" bindValue="PortMasterSid"
+                        (itemSelected)="handlePOLChange($event)">
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">POL <span class="text-danger">*</span></label>
                                             <div class="error-message"
                                                 *ngIf="masterJobForm.get('POL')?.touched && masterJobForm.get('POL')?.invalid">
@@ -349,13 +374,19 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('POD')?.value">
-                                            <ng-select [items]="filteredPOD" bindLabel="PortCode"
+                                            <!-- <ng-select [items]="filteredPOD" bindLabel="PortCode"
                                                 bindValue="PortMasterSid" formControlName="POD" placeholder=""
                                                 (change)="handlePODChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="filteredPOD" formControlName="POD" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortCode" bindValue="PortMasterSid"
+                        (itemSelected)="handlePODChange($event)">
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">POD <span class="text-danger">*</span></label>
                                             <div class="error-message"
                                                 *ngIf="masterJobForm.get('POD')?.touched && masterJobForm.get('POD')?.invalid">
@@ -371,13 +402,19 @@
                                     <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FPD')?.value">
-                                            <ng-select [items]="portList" bindLabel="PortCode"
+                                            <!-- <ng-select [items]="portList" bindLabel="PortCode"
                                                 bindValue="PortMasterSid" formControlName="FPD" placeholder=""
                                                 (change)="onRouteChange()" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                        [displayFields]="portLookupConfig.displayFields"
+                        [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                        bindLabel="PortCode" bindValue="PortMasterSid"
+                        (itemSelected)="onRouteChange()">
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">FDC <span class="text-danger"></span></label>
                                         </div>
                                     </aside>
@@ -386,10 +423,16 @@
                                     <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('VesselName')?.value">
-                                            <ng-select [items]="headerVesselList" bindLabel="VesselName"
+                                            <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName"
                                                 bindValue="VesselName" formControlName="VesselName" placeholder=""
                                                 (change)="onVesselChange($event)" appendTo="body">
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
+                        [displayFields]="vesselVoyageLookupConfig.displayFields"
+                        [displayLabels]="vesselVoyageLookupConfig.displayLabels"
+                        [labelFields]="vesselVoyageLookupConfig.labelFields" bindValue="VesselName"
+                        (itemSelected)="onVesselChange($event)">
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">Vessel <span class="text-danger"></span></label>
                                         </div>
                                     </aside>
@@ -427,7 +470,7 @@
                                     <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('CarrierName')?.value">
-                                            <ng-select [items]="carrierList" bindLabel="CustomerName"
+                                            <!-- <ng-select [items]="carrierList" bindLabel="CustomerName"
                                                 bindValue="CustomerName" formControlName="CarrierName" placeholder=""
                                                 appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
@@ -436,7 +479,14 @@
                                                         <small>{{ item.CustomerAddress1 }}</small>
                                                     </div>
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName" 
+                        >
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">Carrier<span class="text-danger"></span></label>
                                         </div>
                                     </aside>
@@ -807,7 +857,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!masterJobForm.get('Yard')?.value">
-                            <ng-select [items]="yardList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                            <!-- <ng-select [items]="yardList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                 formControlName="Yard" placeholder="" (change)="onYardChange($event)" appendTo="body">
                                 <ng-template ng-option-tmp let-item="item">
                                     <div>
@@ -822,7 +872,16 @@
                                         No Yard found
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
+
+                            <dofi-searchable-dropdown [items]="yardList" formControlName="Yard" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid" (itemSelected)="onYardChange($event)"
+                        >
+                      </dofi-searchable-dropdown>
+
                             <label class="input-label">Yard</label>
                         </div>
                     </aside>
@@ -866,7 +925,7 @@
                                     <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('OriginAgent')?.value">
-                                            <ng-select [items]="filteredOriginAgents" bindLabel="CustomerName"
+                                            <!-- <ng-select [items]="filteredOriginAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="OriginAgent"
                                                 placeholder="" (change)="onOriginAgentChange($event)" appendTo="body">
                                                 <ng-template ng-option-tmp let-item="item">
@@ -875,14 +934,21 @@
                                                         <small>{{ item.CustomerAddress1 }}</small>
                                                     </div>
                                                 </ng-template>
-                                            </ng-select>
+                                            </ng-select> -->
+                                            <dofi-searchable-dropdown [items]="filteredOriginAgents" formControlName="OriginAgent" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid" (itemSelected)="onOriginAgentChange($event)"
+                        >
+                      </dofi-searchable-dropdown>
                                             <label class="input-label">Origin Agent</label>
                                         </div>
                                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!masterJobForm.get('CFS')?.value">
-                            <ng-select [items]="cfsList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                            <!-- <ng-select [items]="cfsList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                 formControlName="CFS" placeholder="" (change)="onCFSChange($event)" appendTo="body">
                                 <ng-template ng-option-tmp let-item="item">
                                     <div>
@@ -897,7 +963,14 @@
                                         No CFS found
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="cfsList" formControlName="CFS" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid" (itemSelected)="onCFSChange($event)"
+                        >
+                      </dofi-searchable-dropdown>
                             <label class="input-label">CFS</label>
                         </div>
                     </aside>
@@ -999,7 +1072,7 @@
                         <div class="custom-form-group custom-form-group-select mt-1"
                             [class.filled]="!!masterJobForm.get('CoLoader')?.value"
                             [class.disabled]="masterJobForm.get('CoLoader')?.disabled">
-                            <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
+                            <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
                                 class="ng-select" placeholder="" formControlName="CoLoader" [textWithNumbers]="20"
                                 appendTo="body" [disabled]="masterJobForm.get('CoLoader')?.disabled">
                                 <ng-template ng-option-tmp let-item="item">
@@ -1008,7 +1081,14 @@
                                         <small>{{ item.CustomerAddress1 }}</small>
                                     </div>
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="forwarderList" formControlName="CoLoader" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName"
+                        >
+                      </dofi-searchable-dropdown>
                             <label class="input-label">CoLoader</label>
                         </div>
                     </aside>

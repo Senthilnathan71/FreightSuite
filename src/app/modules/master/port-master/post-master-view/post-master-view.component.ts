@@ -222,8 +222,8 @@ hasAnyDropdownPermission(): boolean {
       // this.countryList = countries.data,
         // this.regionList = regions
     });
-    this.dropdownStore.loadCountries();
-    this.dropdownStore.loadZones();
+    this.dropdownStore.loadCountries().subscribe();
+    this.dropdownStore.loadZones().subscribe();
   }
 
   filterStateByCountry(country) {
