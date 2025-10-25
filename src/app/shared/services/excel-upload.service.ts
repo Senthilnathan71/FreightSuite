@@ -81,10 +81,10 @@ export class ExcelUploadService {
           }
 
           // Get first row as master job (only one master job per upload)
-          const masterJob = masterJobData[0];
+          const masterJob = this.mapMasterJobData(masterJobData[0]);
 
-          // All rows are house jobs
-          const houseJobs = houseJobsData;
+          // Map all house jobs
+          const houseJobs = houseJobsData.map(row => this.mapHouseJobData(row));
 
           resolve({ masterJob, houseJobs, errors: [] });
 
@@ -99,6 +99,126 @@ export class ExcelUploadService {
 
       reader.readAsBinaryString(file);
     });
+  }
+
+  /**
+   * Parse date value from Excel
+   */
+  private parseDate(value: any): string | undefined {
+    if (!value) return undefined;
+
+    // If already a Date object
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    // Try to parse string dates
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? undefined : date.toISOString();
+  }
+
+  /**
+   * Parse number value from Excel
+   */
+  private parseNumber(value: any): number | undefined {
+    if (value === null || value === undefined || value === '') return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  }
+
+  /**
+   * Parse integer value from Excel
+   */
+  private parseInt(value: any): number | undefined {
+    if (value === null || value === undefined || value === '') return undefined;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? undefined : num;
+  }
+
+  /**
+   * Map Master Job data from Excel columns to clean property names
+   */
+  private mapMasterJobData(row: any): any {
+    if (!row) return null;
+
+    return {
+      MasterJobDate: this.parseDate(row['Master Job Date']),
+      Department: row['Department'],
+      FreightPPCC: row['Freight PP/CC'],
+      POO: row['POO (Port Code)'],
+      POL: row['POL (Port Code)'],
+      POD: row['POD (Port Code)'],
+      FPD: row['FPD (Port Code)'],
+      POLTerminal: row['POL Terminal'],
+      PODTerminal: row['POD Terminal'],
+      MovementType: row['Movement Type'],
+      ShipmentTerms: row['Shipment Terms'],
+      MBLNo: row['MBL Number'],
+      MBLDate: this.parseDate(row['MBL Date']),
+      BLReleaseType: row['BL Release Type'],
+      NoOfPkg: this.parseInt(row['Number of Packages']),
+      GrossWeight: this.parseNumber(row['Gross Weight']),
+      NetWeight: this.parseNumber(row['Net Weight']),
+      Volume: this.parseNumber(row['Volume (CBM)']),
+      ChargeableWeight: this.parseNumber(row['Chargeable Weight']),
+      CommodityDescription: row['Commodity Description'],
+      MarksandNumber: row['Marks and Number'],
+      Haz: row['Hazardous (Y/N)'],
+      DestinationAgentName: row['Destination Agent Name'],
+      DestinationAgentAddress: row['Destination Agent Address'],
+      VesselName: row['Vessel Name'],
+      VoyageNumber: row['Voyage Number'],
+      CarrierName: row['Carrier Name'],
+      ContainerNumber: row['Container Number'],
+      ContainerType: row['Container Type'],
+      LineSeal: row['Line Seal'],
+      CustomsSeal: row['Customs Seal']
+    };
+  }
+
+  /**
+   * Map House Job data from Excel columns to clean property names
+   */
+  private mapHouseJobData(row: any): any {
+    if (!row) return null;
+
+    return {
+      ShipmentNo: row['Shipment Number'],
+      CustomerName: row['Customer Name'],
+      CustomerAddress: row['Customer Address'],
+      IncoTerms: row['Inco Terms'],
+      ShipperName: row['Shipper Name'],
+      ShipperAddress: row['Shipper Address'],
+      ConsigneeName: row['Consignee Name'],
+      ConsigneeAddress: row['Consignee Address'],
+      POL: row['POL (Port Code)'],
+      POD: row['POD (Port Code)'],
+      FPD: row['FPD (Port Code)'],
+      POO: row['POO (Port Code)'],
+      ETD: this.parseDate(row['ETD']),
+      ETA: this.parseDate(row['ETA']),
+      MovementType: row['Movement Type'],
+      Notify: row['Notify Party'],
+      NotifyAddress: row['Notify Address'],
+      NominatedBy: row['Nominated By'],
+      AgentName: row['Agent Name'],
+      AgentAddress: row['Agent Address'],
+      ShipmentType: row['Shipment Type'],
+      CargoType: row['Cargo Type'],
+      CargoGrossWeight: this.parseNumber(row['Cargo Gross Weight']),
+      CargoNetWeight: this.parseNumber(row['Cargo Net Weight']),
+      CargoVolume: this.parseNumber(row['Cargo Volume']),
+      CargoNoOfPackages: this.parseInt(row['Cargo No of Packages']),
+      ProductName: row['Product Name'],
+      ShippingBillNumber: row['Shipping Bill Number'],
+      CustomerReferenceNumber: row['Customer Reference Number'],
+      CHAName: row['CHA Name'],
+      YardCFS: row['Yard/CFS'],
+      PickupPlace: row['Pickup Place'],
+      DeliveryPlace: row['Delivery Place'],
+      CargoCurrency: row['Cargo Currency'],
+      CargoValue: this.parseNumber(row['Cargo Value'])
+    };
   }
 
   /**
@@ -136,8 +256,8 @@ export class ExcelUploadService {
 
     // Create Master Job sheet
     const masterJobHeaders = [
-      ['Master Job Number', 'Master Job Date', 'Freight PP/CC', 'POO (Port of Origin)', 'POL (Port of Loading)',
-        'POD (Port of Discharge)', 'FPD (Final Place of Delivery)', 'POL Terminal', 'POD Terminal', 'Movement Type',
+      ['Master Job Date', 'Department', 'Freight PP/CC', 'POO (Port Code)', 'POL (Port Code)',
+        'POD (Port Code)', 'FPD (Port Code)', 'POL Terminal', 'POD Terminal', 'Movement Type',
         'Shipment Terms', 'MBL Number', 'MBL Date', 'BL Release Type', 'Number of Packages', 'Gross Weight',
         'Net Weight', 'Volume (CBM)', 'Chargeable Weight', 'Commodity Description', 'Marks and Number',
         'Hazardous (Y/N)', 'Destination Agent Name', 'Destination Agent Address', 'Vessel Name', 'Voyage Number',
@@ -145,7 +265,7 @@ export class ExcelUploadService {
     ];
 
     const masterJobSample = [
-      ['MJ-2025-001', '2025-01-15', 'Prepaid', 'Chennai', 'INMAA1', 'USNYC1', 'New York', 'Terminal 1',
+      ['2025-01-15', 'LCL EXPORT', 'Prepaid', 'INCCU', 'INCCU', 'AEJEA', 'AEJEA', 'Terminal 1',
         'Terminal 2', 'FCL', 'CY/CY', 'MBL123456', '2025-01-20', 'Seaway Bill', '10', '5000', '4800',
         '25.5', '5000', 'Electronic Goods', 'Sample Marks', 'N', 'ABC Logistics', '123 Main St, New York',
         'MSC EMMA', 'V123', 'MSC', 'TCLU1234567', '40HC', 'MSC001', 'CUST001']
@@ -167,8 +287,8 @@ export class ExcelUploadService {
 
     // Create House Jobs sheet
     const houseJobHeaders = [
-      ['Booking Number', 'HBL Number', 'Shipment Number', 'Customer Name', 'Customer Address', 'Inco Terms',
-        'Shipper Name', 'Shipper Address', 'Consignee Name', 'Consignee Address', 'POL', 'POD', 'FPD', 'POO',
+      ['Shipment Number', 'Customer Name', 'Customer Address', 'Inco Terms',
+        'Shipper Name', 'Shipper Address', 'Consignee Name', 'Consignee Address', 'POL (Port Code)', 'POD (Port Code)', 'FPD (Port Code)', 'POO (Port Code)',
         'ETD', 'ETA', 'Movement Type', 'Notify Party', 'Notify Address', 'Nominated By', 'Agent Name',
         'Agent Address', 'Shipment Type', 'Cargo Type', 'Cargo Gross Weight', 'Cargo Net Weight', 'Cargo Volume',
         'Cargo No of Packages', 'Product Name', 'Shipping Bill Number', 'Customer Reference Number', 'CHA Name',
@@ -176,8 +296,8 @@ export class ExcelUploadService {
     ];
 
     const houseJobSample = [
-      ['BK-2025-001', 'HBL-123456', 'SHIP-001', 'ABC Company', '456 Customer St', 'FOB', 'Shipper Inc',
-        '789 Shipper Ave', 'Consignee Ltd', '321 Consignee Rd', 'INMAA1', 'USNYC1', 'New York', 'Chennai',
+      ['SHIP-001', 'ABC Company', '456 Customer St', 'FOB', 'Shipper Inc',
+        '789 Shipper Ave', 'Consignee Ltd', '321 Consignee Rd', 'INCCU', 'AEJEA', 'AEJEA', 'INCCU',
         '2025-01-25', '2025-02-15', 'FCL', 'Notify Party Name', 'Notify Address', 'Customer', 'Agent Company',
         'Agent Address', 'Export', 'General', '2500', '2400', '12.5', '5', 'Electronics', 'SB123456',
         'CREF-001', 'CHA Company', 'Chennai Port', 'Factory Gate', 'Warehouse A', 'USD', '50000']

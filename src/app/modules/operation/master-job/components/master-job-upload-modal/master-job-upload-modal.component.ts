@@ -1,14 +1,7 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { NgbActiveModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExcelUploadService } from 'src/app/shared/services/excel-upload.service';
 import { OperationService } from '../../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -21,19 +14,16 @@ import { NgxSpinnerService } from 'ngx-spinner';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatDialogModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatTabsModule,
-    MatInputModule,
-    MatFormFieldModule
+    NgbNavModule
   ],
   templateUrl: './master-job-upload-modal.component.html',
   styleUrls: ['./master-job-upload-modal.component.scss']
 })
 export class MasterJobUploadModalComponent implements OnInit {
+  @Input() currentCompany: any;
+  @Input() currentBranch: any;
+  @Input() userData: any;
+
   selectedFile: File | null = null;
   masterJobData: any = null;
   houseJobsData: any[] = [];
@@ -52,23 +42,17 @@ export class MasterJobUploadModalComponent implements OnInit {
   houseJobColumns: string[] = [];
   houseJobDisplayColumns: string[] = [];
 
-  currentCompany: any;
-  currentBranch: any;
-  userData: any;
+  // Active tab
+  activeTab = 1;
 
   constructor(
-    public dialogRef: MatDialogRef<MasterJobUploadModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    public activeModal: NgbActiveModal,
     private fb: FormBuilder,
     private excelUploadService: ExcelUploadService,
     private operationService: OperationService,
     private appSettingsService: AppSettingsService,
     private spinner: NgxSpinnerService
-  ) {
-    this.currentCompany = data?.currentCompany;
-    this.currentBranch = data?.currentBranch;
-    this.userData = data?.userData;
-  }
+  ) {}
 
   ngOnInit(): void {
     this.initializeForms();
@@ -238,7 +222,7 @@ export class MasterJobUploadModalComponent implements OnInit {
 
         if (response.status) {
           this.appSettingsService.showSuccess(response.message || 'Master Job and House Jobs created successfully');
-          this.dialogRef.close({ success: true, data: response.data });
+          this.activeModal.close({ success: true, data: response.data });
         } else {
           if (response.data?.errors) {
             this.errors = response.data.errors;
@@ -256,7 +240,7 @@ export class MasterJobUploadModalComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
   }
 
   onReUpload(): void {

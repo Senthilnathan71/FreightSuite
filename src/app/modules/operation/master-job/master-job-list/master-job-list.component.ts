@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
@@ -95,7 +95,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     private operationService: OperationService,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private dialog: MatDialog,
+    private modalService: NgbModal,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
@@ -105,8 +105,8 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   }
 
   override ngOnInit(): void {
-    this.currentCompany = localStorage.getItem('selected-company');
-    this.currentBranch = localStorage.getItem('selected-branch');
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.appSettingService.getUser().subscribe((user) => {
       if (user) {
         this.userData = user;
@@ -519,25 +519,35 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   // }
 
   deleteMasterJob(MasterJobSid: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        this.operationService.deleteMasterJob(MasterJobSid).subscribe({
-          next: (response: any) => {
-            if (response.status) {
-              this.appSettingService.showSuccess('Master Job deleted successfully');
-              this.searchMasterjob();
-            } else {
+    const modalRef = this.modalService.open(DeleteWarningComponent, {
+      centered: true,
+      backdrop: 'static'
+    });
+
+    modalRef.result.then(
+      (result) => {
+        if (result === true) {
+          this.operationService.deleteMasterJob(MasterJobSid).subscribe({
+            next: (response: any) => {
+              if (response.status) {
+                this.appSettingService.showSuccess('Master Job deleted successfully');
+                this.searchMasterjob();
+              } else {
+                this.appSettingService.showError('Error deleting Master Job');
+              }
+            },
+            error: (error) => {
+              console.error('Error deleting Master Job:', error);
               this.appSettingService.showError('Error deleting Master Job');
             }
-          },
-          error: (error) => {
-            console.error('Error deleting Master Job:', error);
-            this.appSettingService.showError('Error deleting Master Job');
-          }
-        });
+          });
+        }
+      },
+      (reason) => {
+        // Modal dismissed
+        console.log('Delete modal dismissed:', reason);
       }
-    });
+    );
   }
 
   // Sorting related Function
@@ -610,24 +620,30 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   }
 
   openUploadModal(): void {
-    const dialogRef = this.dialog.open(MasterJobUploadModalComponent, {
-      width: '90vw',
-      maxWidth: '1400px',
-      height: '85vh',
-      disableClose: true,
-      data: {
-        currentCompany: this.currentCompany,
-        currentBranch: this.currentBranch,
-        userData: this.userData
-      }
+    const modalRef = this.modalService.open(MasterJobUploadModalComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      keyboard: false,
+      centered: false
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && result.success) {
-        this.appSettingService.showSuccess('Master Job and House Jobs created successfully');
-        this.searchMasterjob(); // Refresh the list
+    // Pass data to modal via component instance
+    modalRef.componentInstance.currentCompany = this.currentCompany;
+    modalRef.componentInstance.currentBranch = this.currentBranch;
+    modalRef.componentInstance.userData = this.userData;
+
+    modalRef.result.then(
+      (result) => {
+        if (result && result.success) {
+          this.appSettingService.showSuccess('Master Job and House Jobs created successfully');
+          this.searchMasterjob(); // Refresh the list
+        }
+      },
+      (reason) => {
+        // Modal dismissed (cancelled)
+        console.log('Modal dismissed:', reason);
       }
-    });
+    );
   }
 
 
