@@ -27,6 +27,10 @@ export class MasterJobUploadModalComponent implements OnInit {
   selectedFile: File | null = null;
   masterJobData: any = null;
   houseJobsData: any[] = [];
+  containersData: any[] = [];
+  voyagesData: any[] = [];
+  connectionsData: any[] = [];
+  othersData: any = null;
   errors: any[] = [];
   isProcessing = false;
   showPreview = false;
@@ -104,6 +108,10 @@ export class MasterJobUploadModalComponent implements OnInit {
 
         this.masterJobData = result.masterJob;
         this.houseJobsData = result.houseJobs;
+        this.containersData = result.containers || [];
+        this.voyagesData = result.voyages || [];
+        this.connectionsData = result.connections || [];
+        this.othersData = result.others || null;
 
         // Build forms with the data
         this.buildMasterJobForm();
@@ -200,6 +208,10 @@ export class MasterJobUploadModalComponent implements OnInit {
         DepartmentMasterSid: masterJob.DepartmentMasterSid || 1, // Default department
         CreatedBy: this.userData.userEmail
       },
+      containers: this.containersData || [],
+      voyages: this.voyagesData || [],
+      connections: this.connectionsData || [],
+      others: this.othersData || null,
       houseJobs: houseJobs.map((hj: any) => ({
         ...hj,
         CompanyMasterSid: this.currentCompany.CompanyMasterSid,

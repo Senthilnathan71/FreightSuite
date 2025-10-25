@@ -18,7 +18,15 @@ export class ExcelUploadService {
   /**
    * Read and parse Excel file
    */
-  readExcelFile(file: File): Promise<{ masterJob: any; houseJobs: any[]; errors: ExcelValidationError[] }> {
+  readExcelFile(file: File): Promise<{
+    masterJob: any;
+    containers: any[];
+    voyages: any[];
+    connections: any[];
+    others: any;
+    houseJobs: any[];
+    errors: ExcelValidationError[]
+  }> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
@@ -47,7 +55,7 @@ export class ExcelUploadService {
           }
 
           if (errors.length > 0) {
-            resolve({ masterJob: null, houseJobs: [], errors });
+            resolve({ masterJob: null, containers: [], voyages: [], connections: [], others: null, houseJobs: [], errors });
             return;
           }
 
@@ -76,17 +84,92 @@ export class ExcelUploadService {
           }
 
           if (errors.length > 0) {
-            resolve({ masterJob: null, houseJobs: [], errors });
+            resolve({ masterJob: null, containers: [], voyages: [], connections: [], others: null, houseJobs: [], errors });
             return;
           }
 
           // Get first row as master job (only one master job per upload)
           const masterJob = this.mapMasterJobData(masterJobData[0]);
 
-          // Map all house jobs
-          const houseJobs = houseJobsData.map(row => this.mapHouseJobData(row));
+          // Parse Containers sheet (optional)
+          let containers: any[] = [];
+          if (workbook.SheetNames.includes('Containers')) {
+            const containersSheet = workbook.Sheets['Containers'];
+            const containersData = XLSX.utils.sheet_to_json(containersSheet, { defval: null });
+            containers = containersData.map(row => this.mapContainerData(row));
+          }
 
-          resolve({ masterJob, houseJobs, errors: [] });
+          // Parse Master Voyages sheet (optional)
+          let voyages: any[] = [];
+          if (workbook.SheetNames.includes('Master Voyages')) {
+            const voyagesSheet = workbook.Sheets['Master Voyages'];
+            const voyagesData = XLSX.utils.sheet_to_json(voyagesSheet, { defval: null });
+            voyages = voyagesData.map(row => this.mapMasterVoyageData(row));
+          }
+
+          // Parse Master Connections sheet (optional)
+          let connections: any[] = [];
+          if (workbook.SheetNames.includes('Master Connections')) {
+            const connectionsSheet = workbook.Sheets['Master Connections'];
+            const connectionsData = XLSX.utils.sheet_to_json(connectionsSheet, { defval: null });
+            connections = connectionsData.map(row => this.mapMasterConnectionData(row));
+          }
+
+          // Parse Master Others sheet (optional)
+          let others: any = null;
+          if (workbook.SheetNames.includes('Master Others')) {
+            const othersSheet = workbook.Sheets['Master Others'];
+            const othersData = XLSX.utils.sheet_to_json(othersSheet, { defval: null });
+            if (othersData.length > 0) {
+              others = this.mapMasterOthersData(othersData[0]);
+            }
+          }
+
+          // Parse House Cargo sheet (optional)
+          let houseCargoData: any[] = [];
+          if (workbook.SheetNames.includes('House Cargo')) {
+            const houseCargoSheet = workbook.Sheets['House Cargo'];
+            houseCargoData = XLSX.utils.sheet_to_json(houseCargoSheet, { defval: null });
+          }
+
+          // Parse House Products sheet (optional)
+          let houseProductsData: any[] = [];
+          if (workbook.SheetNames.includes('House Products')) {
+            const houseProductsSheet = workbook.Sheets['House Products'];
+            houseProductsData = XLSX.utils.sheet_to_json(houseProductsSheet, { defval: null });
+          }
+
+          // Parse House Connections sheet (optional)
+          let houseConnectionsData: any[] = [];
+          if (workbook.SheetNames.includes('House Connections')) {
+            const houseConnectionsSheet = workbook.Sheets['House Connections'];
+            houseConnectionsData = XLSX.utils.sheet_to_json(houseConnectionsSheet, { defval: null });
+          }
+
+          // Map house jobs and attach their child data
+          const houseJobs = houseJobsData.map(row => {
+            const houseJob = this.mapHouseJobData(row);
+            const shipmentNo = houseJob.ShipmentNo;
+
+            // Attach cargo data for this shipment
+            houseJob.cargo = houseCargoData
+              .filter(cargoRow => cargoRow['Shipment Number'] === shipmentNo)
+              .map(cargoRow => this.mapHouseCargoData(cargoRow));
+
+            // Attach products data for this shipment
+            houseJob.products = houseProductsData
+              .filter(productRow => productRow['Shipment Number'] === shipmentNo)
+              .map(productRow => this.mapHouseProductData(productRow));
+
+            // Attach connections data for this shipment
+            houseJob.connections = houseConnectionsData
+              .filter(connRow => connRow['Shipment Number'] === shipmentNo)
+              .map(connRow => this.mapHouseConnectionData(connRow));
+
+            return houseJob;
+          });
+
+          resolve({ masterJob, containers, voyages, connections, others, houseJobs, errors: [] });
 
         } catch (error) {
           reject(error);
@@ -222,6 +305,163 @@ export class ExcelUploadService {
   }
 
   /**
+   * Map Container data from Excel columns to clean property names
+   */
+  private mapContainerData(row: any): any {
+    if (!row) return null;
+
+    return {
+      ContainerNumber: row['Container Number'],
+      ContainerType: this.parseInt(row['Container Type']),
+      LineSeal: row['Line Seal'],
+      CustomsSeal: row['Customs Seal'],
+      HsCode: row['HS Code'],
+      CommodityDescription: row['Commodity Description'],
+      PkgType: this.parseInt(row['Package Type']),
+      NoOfPkg: this.parseInt(row['No of Packages']),
+      GrossWeight: this.parseNumber(row['Gross Weight']),
+      NetWeight: this.parseNumber(row['Net Weight']),
+      ChargeableWeight: this.parseNumber(row['Chargeable Weight']),
+      Volume: this.parseNumber(row['Volume (CBM)']),
+      IsSoc: row['Is SOC (Y/N)']
+    };
+  }
+
+  /**
+   * Map Master Voyage data from Excel columns to clean property names
+   */
+  private mapMasterVoyageData(row: any): any {
+    if (!row) return null;
+
+    return {
+      VesselName: row['Vessel Name'],
+      VoyageNo: row['Voyage Number'],
+      ETD: this.parseDate(row['ETD']),
+      ETA: this.parseDate(row['ETA']),
+      ATA: this.parseDate(row['ATA']),
+      ATD: this.parseDate(row['ATD']),
+      DestinationATA: this.parseDate(row['Destination ATA']),
+      CarrierName: row['Carrier Name']
+    };
+  }
+
+  /**
+   * Map Master Connection data from Excel columns to clean property names
+   */
+  private mapMasterConnectionData(row: any): any {
+    if (!row) return null;
+
+    return {
+      Mode: row['Mode'],
+      POL: row['POL (Port Code)'],
+      POD: row['POD (Port Code)'],
+      VesselName: row['Vessel Name'],
+      VoyageNo: row['Voyage Number'],
+      ETD: this.parseDate(row['ETD']),
+      ETA: this.parseDate(row['ETA']),
+      ATD: this.parseDate(row['ATD']),
+      ATA: this.parseDate(row['ATA']),
+      Remarks: row['Remarks']
+    };
+  }
+
+  /**
+   * Map Master Others data from Excel columns to clean property names
+   */
+  private mapMasterOthersData(row: any): any {
+    if (!row) return null;
+
+    return {
+      Yard: row['Yard'],
+      YardAddress: row['Yard Address'],
+      Transporter: row['Transporter'],
+      HandlingInformation: row['Handling Information'],
+      InternalNote: row['Internal Note'],
+      CFS: row['CFS'],
+      CFSAddress: row['CFS Address'],
+      StuffingStartDate: this.parseDate(row['Stuffing Start Date']),
+      StuffingEndDate: this.parseDate(row['Stuffing End Date']),
+      CurrencyCode: row['Currency Code'],
+      SellExchangeRate: this.parseNumber(row['Sell Exchange Rate']),
+      AgentExchangeRate: this.parseNumber(row['Agent Exchange Rate']),
+      Coload: row['Coload (Y/N)'],
+      CoLoader: row['Co Loader'],
+      ExportDoNo: row['Export DO Number'],
+      ExportDoDate: this.parseDate(row['Export DO Date']),
+      SOBDate: this.parseDate(row['SOB Date'])
+    };
+  }
+
+  /**
+   * Map House Cargo data from Excel columns to clean property names
+   */
+  private mapHouseCargoData(row: any): any {
+    if (!row) return null;
+
+    return {
+      ShipmentNo: row['Shipment Number'],
+      CargoType: row['Cargo Type'],
+      GrossWeight: this.parseNumber(row['Gross Weight']),
+      NetWeight: this.parseNumber(row['Net Weight']),
+      Volume: this.parseNumber(row['Volume (CBM)']),
+      ChargeableWeight: this.parseNumber(row['Chargeable Weight']),
+      NoOfPackage: this.parseInt(row['No of Packages']),
+      PackageType: this.parseInt(row['Package Type']),
+      ContainerNumber: row['Container Number'],
+      ContainerType: this.parseInt(row['Container Type']),
+      CommodityDescription: row['Commodity Description'],
+      MarksAndNumber: row['Marks and Number'],
+      FreightAmount: row['Freight Amount']
+    };
+  }
+
+  /**
+   * Map House Product data from Excel columns to clean property names
+   */
+  private mapHouseProductData(row: any): any {
+    if (!row) return null;
+
+    return {
+      ShipmentNo: row['Shipment Number'],
+      ProductName: row['Product Name'],
+      ProductDescription: row['Product Description'],
+      ShippingBillNo: row['Shipping Bill Number'],
+      ShippingBillDate: this.parseDate(row['Shipping Bill Date']),
+      GrossWeight: this.parseNumber(row['Gross Weight']),
+      NetWeight: this.parseNumber(row['Net Weight']),
+      Volume: this.parseNumber(row['Volume (CBM)']),
+      PkgType: this.parseInt(row['Package Type']),
+      NoOfPkg: this.parseInt(row['No of Packages']),
+      ChargeableWeight: this.parseNumber(row['Chargeable Weight']),
+      IsHaz: row['Hazardous (Y/N)'],
+      UnNo: row['UN Number'],
+      ImcoClass: row['IMCO Class'],
+      HsCode: row['HS Code']
+    };
+  }
+
+  /**
+   * Map House Connection data from Excel columns to clean property names
+   */
+  private mapHouseConnectionData(row: any): any {
+    if (!row) return null;
+
+    return {
+      ShipmentNo: row['Shipment Number'],
+      Mode: row['Mode'],
+      POL: row['POL (Port Code)'],
+      POD: row['POD (Port Code)'],
+      VesselName: row['Vessel Name'],
+      VoyageNo: row['Voyage Number'],
+      ETD: this.parseDate(row['ETD']),
+      ETA: this.parseDate(row['ETA']),
+      ATD: this.parseDate(row['ATD']),
+      ATA: this.parseDate(row['ATA']),
+      Remarks: row['Remarks']
+    };
+  }
+
+  /**
    * Validate Excel file structure
    */
   validateExcelStructure(file: File): { valid: boolean; error?: string } {
@@ -309,6 +549,114 @@ export class ExcelUploadService {
     houseJobWs['!cols'] = Array(37).fill({ wch: 18 });
 
     XLSX.utils.book_append_sheet(workbook, houseJobWs, 'House Jobs');
+
+    // Create Containers sheet
+    const containersHeaders = [
+      ['Container Number', 'Container Type', 'Line Seal', 'Customs Seal', 'HS Code',
+        'Commodity Description', 'Package Type', 'No of Packages', 'Gross Weight', 'Net Weight',
+        'Chargeable Weight', 'Volume (CBM)', 'Is SOC (Y/N)']
+    ];
+
+    const containersSample = [
+      ['TCLU1234567', '40', 'MSC001', 'CUST001', '8471.30', 'Electronic Equipment',
+        '10', '100', '5000', '4800', '5000', '25.5', 'N']
+    ];
+
+    const containersWs = XLSX.utils.aoa_to_sheet([...containersHeaders, ...containersSample]);
+    containersWs['!cols'] = Array(13).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, containersWs, 'Containers');
+
+    // Create Master Voyages sheet
+    const masterVoyagesHeaders = [
+      ['Vessel Name', 'Voyage Number', 'ETD', 'ETA', 'ATA', 'ATD', 'Destination ATA', 'Carrier Name']
+    ];
+
+    const masterVoyagesSample = [
+      ['MSC EMMA', 'V123', '2025-01-25', '2025-02-15', '2025-02-16', '2025-01-26', '2025-02-20', 'MSC']
+    ];
+
+    const masterVoyagesWs = XLSX.utils.aoa_to_sheet([...masterVoyagesHeaders, ...masterVoyagesSample]);
+    masterVoyagesWs['!cols'] = Array(8).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, masterVoyagesWs, 'Master Voyages');
+
+    // Create Master Connections sheet
+    const masterConnectionsHeaders = [
+      ['Mode', 'POL (Port Code)', 'POD (Port Code)', 'Vessel Name', 'Voyage Number',
+        'ETD', 'ETA', 'ATD', 'ATA', 'Remarks']
+    ];
+
+    const masterConnectionsSample = [
+      ['Sea', 'INCCU', 'AEJEA', 'MSC EMMA', 'V123', '2025-01-25', '2025-02-15',
+        '2025-01-26', '2025-02-16', 'Direct connection']
+    ];
+
+    const masterConnectionsWs = XLSX.utils.aoa_to_sheet([...masterConnectionsHeaders, ...masterConnectionsSample]);
+    masterConnectionsWs['!cols'] = Array(10).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, masterConnectionsWs, 'Master Connections');
+
+    // Create Master Others sheet
+    const masterOthersHeaders = [
+      ['Yard', 'Yard Address', 'Transporter', 'Handling Information', 'Internal Note', 'CFS', 'CFS Address',
+        'Stuffing Start Date', 'Stuffing End Date', 'Currency Code', 'Sell Exchange Rate', 'Agent Exchange Rate',
+        'Coload (Y/N)', 'Co Loader', 'Export DO Number', 'Export DO Date', 'SOB Date']
+    ];
+
+    const masterOthersSample = [
+      ['Chennai Yard', '123 Yard St, Chennai', 'ABC Transport', 'Handle with care', 'Priority shipment',
+        'Chennai CFS', '456 CFS Ave, Chennai', '2025-01-20', '2025-01-22', 'USD', '83.50', '83.00',
+        'N', '', 'DO123456', '2025-01-18', '2025-01-15']
+    ];
+
+    const masterOthersWs = XLSX.utils.aoa_to_sheet([...masterOthersHeaders, ...masterOthersSample]);
+    masterOthersWs['!cols'] = Array(17).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, masterOthersWs, 'Master Others');
+
+    // Create House Cargo sheet
+    const houseCargoHeaders = [
+      ['Shipment Number', 'Cargo Type', 'Gross Weight', 'Net Weight', 'Volume (CBM)', 'Chargeable Weight',
+        'No of Packages', 'Package Type', 'Container Number', 'Container Type', 'Commodity Description',
+        'Marks and Number', 'Freight Amount']
+    ];
+
+    const houseCargoSample = [
+      ['SHIP-001', 'General', '2500', '2400', '12.5', '2500', '50', '10', 'TCLU1234567', '40',
+        'Electronic Goods', 'Sample Marks', '5000']
+    ];
+
+    const houseCargoWs = XLSX.utils.aoa_to_sheet([...houseCargoHeaders, ...houseCargoSample]);
+    houseCargoWs['!cols'] = Array(13).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, houseCargoWs, 'House Cargo');
+
+    // Create House Products sheet
+    const houseProductsHeaders = [
+      ['Shipment Number', 'Product Name', 'Product Description', 'Shipping Bill Number', 'Shipping Bill Date',
+        'Gross Weight', 'Net Weight', 'Volume (CBM)', 'Package Type', 'No of Packages', 'Chargeable Weight',
+        'Hazardous (Y/N)', 'UN Number', 'IMCO Class', 'HS Code']
+    ];
+
+    const houseProductsSample = [
+      ['SHIP-001', 'Laptops', 'Dell Laptops', 'SB123456', '2025-01-15', '1000', '950', '5.0',
+        '10', '20', '1000', 'N', '', '', '8471.30']
+    ];
+
+    const houseProductsWs = XLSX.utils.aoa_to_sheet([...houseProductsHeaders, ...houseProductsSample]);
+    houseProductsWs['!cols'] = Array(15).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, houseProductsWs, 'House Products');
+
+    // Create House Connections sheet
+    const houseConnectionsHeaders = [
+      ['Shipment Number', 'Mode', 'POL (Port Code)', 'POD (Port Code)', 'Vessel Name', 'Voyage Number',
+        'ETD', 'ETA', 'ATD', 'ATA', 'Remarks']
+    ];
+
+    const houseConnectionsSample = [
+      ['SHIP-001', 'Sea', 'INCCU', 'AEJEA', 'MSC EMMA', 'V123', '2025-01-25', '2025-02-15',
+        '2025-01-26', '2025-02-16', 'Direct route']
+    ];
+
+    const houseConnectionsWs = XLSX.utils.aoa_to_sheet([...houseConnectionsHeaders, ...houseConnectionsSample]);
+    houseConnectionsWs['!cols'] = Array(11).fill({ wch: 18 });
+    XLSX.utils.book_append_sheet(workbook, houseConnectionsWs, 'House Connections');
 
     // Generate and download
     XLSX.writeFile(workbook, 'Master_Job_Upload_Template.xlsx');
