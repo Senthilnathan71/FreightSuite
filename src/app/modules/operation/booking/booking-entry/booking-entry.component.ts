@@ -2875,9 +2875,8 @@ ${this.userData['userName']}`;
 
     // Open charge selection modal with custom extra-wide size
     this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
-      // size: 'xl',
+      size: 'xl',
       // windowClass: 'test-class',
-      fullscreen: true,
       backdrop: 'static',
       keyboard: false,
       scrollable: true

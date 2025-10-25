@@ -3009,24 +3009,24 @@
 
 <!-- Voucher Type Selection Modal -->
 <ng-template #voucherTypeModal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title">Generate Voucher</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-      <span aria-hidden="true">&times;</span>
+  <div class="modal-header bg-info p-1">
+    <h5 class="modal-title text-white">Generate Voucher</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      
     </button>
   </div>
 
-  <div class="modal-body">
-    <div class="text-center mb-4">
+  <div class="modal-body py-1">
+    <div class="text-center mb-1">
       <p class="text-muted">Select the type of voucher you want to generate from the booking rates</p>
     </div>
 
     <div class="row g-3">
       <div class="col-md-6">
         <div class="voucher-type-card" (click)="selectVoucherType('Invoice')">
-          <div class="card h-100 border-2 border-primary voucher-card-hover">
-            <div class="card-body text-center">
-              <div class="voucher-icon mb-3">
+          <div class="card h-100 border-2 border-primary voucher-card-hover cursor-pointer">
+            <div class="card-body text-center py-1">
+              <div class="voucher-icon mb-1">
                 <i class="fas fa-file-invoice fa-3x text-primary"></i>
               </div>
               <h5 class="card-title text-primary">Invoice</h5>
@@ -3043,9 +3043,9 @@
 
       <div class="col-md-6">
         <div class="voucher-type-card" (click)="selectVoucherType('Vendor Invoice')">
-          <div class="card h-100 border-2 border-warning voucher-card-hover">
-            <div class="card-body text-center">
-              <div class="voucher-icon mb-3">
+          <div class="card h-100 border-2 border-warning voucher-card-hover cursor-pointer">
+            <div class="card-body text-center py-1">
+              <div class="voucher-icon mb-1">
                 <i class="fas fa-file-import fa-3x text-warning"></i>
               </div>
               <h5 class="card-title text-warning">Vendor Invoice</h5>
@@ -3061,30 +3061,30 @@
       </div>
     </div>
 
-    <div class="alert alert-info mt-3">
+    <div class="alert alert-info  p-1">
       <i class="fas fa-info-circle me-2"></i>
       <strong>Note:</strong> Only charges without existing vouchers will be included in the generation process.
     </div>
   </div>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('cancel')">
-      <i class="fas fa-times me-1"></i>Cancel
+  <div class="modal-footer py-1">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('cancel')">
+      Cancel
     </button>
   </div>
 </ng-template>
 
 <!-- Billing Party Selection Modal -->
 <ng-template #billingPartyModal let-modal>
-  <div class="modal-header">
+  <div class="modal-header modalHeaderpart">
     <h4 class="modal-title">Select Billing Party</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-      <span aria-hidden="true">&times;</span>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      
     </button>
   </div>
 
   <div class="modal-body">
-    <div class="text-center mb-4">
+    <div class="text-center mb-1">
       <p class="text-muted">Multiple billing parties found. Please select one to proceed with invoice generation.</p>
     </div>
 
@@ -3125,13 +3125,13 @@
     </div>
   </div>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss('cancel')">
-      <i class="fas fa-times me-1"></i>Cancel
+  <div class="modal-footer py-1">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('cancel')">
+      Cancel
     </button>
-    <button type="button" class="btn btn-primary" [disabled]="selectedBillingPartyIndex === -1"
+    <button type="button" class="btn btn-info btn-sm" [disabled]="selectedBillingPartyIndex === -1"
       (click)="proceedWithBillingParty()">
-      <i class="fas fa-arrow-right me-1"></i>
+      
       Proceed with Invoice
     </button>
   </div>
@@ -3139,49 +3139,79 @@
 
 <!-- Charge Selection Modal -->
 <ng-template #chargeSelectionModal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title">Select Charges for {{ selectedVoucherType }}</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="cancelChargeSelection()">
+  <div class="modal-header modalHeaderpart">
+    <h5 class="modal-title">Select Charges for {{ selectedVoucherType }}</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="cancelChargeSelection()">
     </button>
   </div>
 
-  <div class="modal-body">
+  <div class="modal-body py-1 compact-form">
     <!-- Invoice Header Section -->
-    <div class="card border-info mb-3">
-      <div class="card-header bg-light">
-        <h6 class="mb-0 text-info">
-          <i class="fas fa-file-invoice me-2"></i>Invoice Header Information
-        </h6>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
+    <div class="card mb-1">
+      
+      <div class="card-body py-0 mb-1">
+       
+          <div class="col-md-12">
             <div class="row">
               <!-- Billing Party -->
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Billing Party</label>
-                <div class=" bg-light rounded">
-                  <p>{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</p>
+              <div class="col-md-3">
+                <div class="custom-form-group">
+                    <label class="text-input">Billing Party</label>
+                   <p>{{ billingPartyDetails?.CustomerName || billingPartyDetails?.VendorName || '-' }}</p>
                 </div>
+              
               </div>
 
               <!-- Address -->
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Address</label>
-                <div class=" bg-light rounded">
+              <div class="col-md-3">
+                <div class="custom-form-group">
+                   <label class="form-label fw-bold">Address</label>
+                
                   <p class="mb-0 text-truncate" ngbTooltip="{{ billingPartyAddress || '-' }}">{{ billingPartyAddress ||
                     '-' }}</p>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-
-            <div class="row">
-
-
+           
+            <div class="col-md-3">
+              <div class="custom-form-group-select">
+                <label class="">MBL NO </label>
+                    <ng-select >
+                  <ng-template ng-label-tmp let-item="item">
+                    
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                   
+                  </ng-template>
+                </ng-select>
+                
+              </div>
+              </div>
+               <div class="col-md-3">
+                <label class="form-label fw-bold">HBL NO </label>
+                <ng-select >
+                  <ng-template ng-label-tmp let-item="item">
+                    
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                   
+                  </ng-template>
+                </ng-select>
+               
+              </div>
+               <div class="col-md-3">
+                <label class="form-label fw-bold">Job NO </label>
+                <ng-select >
+                  <ng-template ng-label-tmp let-item="item">
+                    
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                   
+                  </ng-template>
+                </ng-select>
+                
+              </div>
               <!-- Billing Currency -->
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label fw-bold">Billing Currency</label>
                 <ng-select [(ngModel)]="invoiceHeaderCurrency" [items]="currencyList" bindLabel="currencyCode"
                   placeholder="Select Currency" (change)="onHeaderCurrencyChange()" [clearable]="false">
@@ -3195,13 +3225,17 @@
               </div>
 
               <!-- Exchange Rate -->
-              <div class="col-md-4">
-                <label class="form-label fw-bold">Exchange Rate</label>
-                <input type="number" class="form-control" [(ngModel)]="invoiceHeaderExchangeRate"
+              <div class="col-md-3">
+                <div class="custom-form-group">
+                <input type="number" class="custom-input-field sm" [(ngModel)]="invoiceHeaderExchangeRate"
                   (ngModelChange)="onHeaderExchangeRateChange()" step="0.0001" min="0"
-                  placeholder="Enter exchange rate">
+                  placeholder="">
+                   <label class="input-label">Exchange Rate</label>
+                </div>
+              
               </div>
-
+          </div>
+          </div>
               <!-- Currency Display -->
               <!-- <div class="col-md-4">
                 <label class="form-label fw-bold">Invoice Currency</label>
@@ -3209,49 +3243,45 @@
                   <strong>{{ invoiceHeaderCurrency?.currencyCode || 'Not Selected' }}</strong>
                 </div>
               </div> -->
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <p class="text-muted mb-0">Select charges to include in the invoice. Deselected charges will remain in booking
-        rates.</p>
-      <div class="btn-group btn-group-sm">
-        <button type="button" class="btn btn-outline-primary" (click)="selectAllCharges()">
-          <i class="fas fa-check-double me-1"></i>Select All
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="badge text-bg-secondary">Select charges to include in the invoice. Deselected charges will remain in booking
+        rates.</span>
+      <div class="d-flex align-items-center gap-1">
+        <button type="button" class="btn btn-info btn-sm" (click)="selectAllCharges()">
+          Select All
         </button>
-        <button type="button" class="btn btn-outline-secondary" (click)="deselectAllCharges()">
-          <i class="fas fa-times me-1"></i>Deselect All
+        <button type="button" class="btn btn-secondary btn-sm" (click)="deselectAllCharges()">
+         Unselect All
         </button>
       </div>
     </div>
 
-    <div class="table-responsive charge-selection-table">
+    <div class="table-responsive table-borderless">
       <table class="table table-sm table-hover">
-        <thead class="table-light sticky-top">
+        <thead class="bg-info">
           <tr>
-            <th width="50">
+            <th width="2%" class="">
               <input type="checkbox" class="form-check-input"
                 [checked]="selectedCharges.size === availableCharges.length"
                 (change)="selectedCharges.size === availableCharges.length ? deselectAllCharges() : selectAllCharges()">
             </th>
-            <th>Charge Code</th>
-            <th>Description</th>
-            <th>HS/SAC</th>
-            <th class="text-center">Qty</th>
-            <th class="text-center">Currency</th>
-               <th class="text-end">Ex.Rate</th>
-            <th class="text-end">Rate</th>
-            <th class="text-end">Amount</th>
+            <th class="bg-transparent text-light">Charge Code</th>
+            <th class="bg-transparent text-light">Description</th>
+            <th class="bg-transparent text-light">HS/SAC</th>
+            <th class="text-center bg-transparent text-light">Qty</th>
+            <th class="text-center bg-transparent text-light">Currency</th>
+               <th class="text-end bg-transparent text-light">Ex.Rate</th>
+            <th class="text-end bg-transparent text-light">Rate</th>
+            <th class="text-end bg-transparent text-light">Amount</th>
          
-            <th class="text-end">Local Amount</th>
+            <th class="text-end bg-transparent text-light">Local Amount</th>
             <!-- <th width="200">Tax Group</th> -->
-            <th class="text-end">Tax %</th>
-            <th class="text-end">Tax Amount</th>
-            <th class="text-end">Total</th>
+            <th class="text-end bg-transparent text-light">Tax %</th>
+            <th class="text-end bg-transparent text-light">Tax Amount</th>
+            <th class="text-end bg-transparent text-light">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -3326,14 +3356,14 @@
     </div>
 
     <!-- Tax Summary -->
-    <div class="card mt-3 border-primary" *ngIf="chargeSelectionTaxResult && selectedCharges.size > 0">
-      <div class="card-header bg-primary text-white">
+    <div class="card mt-1 border-info border-top-0 mb-1 " *ngIf="chargeSelectionTaxResult && selectedCharges.size > 0">
+      <div class="card-header bg-info text-white">
         <h6 class="mb-0">
           <i class="fas fa-calculator me-2"></i>Tax Summary
           <small class="float-end">{{ chargeSelectionTaxResult.type }} Calculation</small>
         </h6>
       </div>
-      <div class="card-body">
+      <div class="card-body p-1">
         <div class="row">
           <div class="col-md-8">
             <table class="table table-sm table-borderless mb-0">
@@ -3359,8 +3389,8 @@
             </table>
           </div>
           <div class="col-md-4">
-            <div class="border rounded p-3 bg-light">
-              <div class="d-flex justify-content-between mb-2">
+            <div class="border rounded p-1 bg-light">
+              <div class="d-flex justify-content-between mb-1">
                 <span>Subtotal:</span>
                 <strong>{{ chargeSelectionTaxResult.subtotal | number:'1.2-2' }}</strong>
               </div>
@@ -3389,14 +3419,14 @@
                 </div>
               </div>
 
-              <hr class="my-2">
-              <div class="d-flex justify-content-between mb-2">
+              <hr class="my-1">
+              <div class="d-flex justify-content-between mb-1">
                 <strong>Grand Total (Local):</strong>
                 <strong class="text-primary">{{ chargeSelectionTaxResult.grandTotal | number:'1.2-2' }}</strong>
               </div>
 
               <!-- Invoice Currency Total -->
-              <div *ngIf="invoiceHeaderCurrency" class="border-top pt-2">
+              <div *ngIf="invoiceHeaderCurrency" class="border-top pt-1">
                 <div class="d-flex justify-content-between">
                   <strong>Total ({{ invoiceHeaderCurrency.currencyCode }}):</strong>
                   <strong class="text-success fs-5">{{ convertToHeaderCurrency(chargeSelectionTaxResult.grandTotal) |
@@ -3410,19 +3440,19 @@
       </div>
     </div>
 
-    <div class="alert alert-warning mt-3" *ngIf="selectedCharges.size === 0">
+    <div class="alert alert-warning mt-1" *ngIf="selectedCharges.size === 0">
       <i class="fas fa-exclamation-triangle me-2"></i>
       <strong>No charges selected.</strong> Please select at least one charge to proceed.
     </div>
   </div>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="cancelChargeSelection()">
-      <i class="fas fa-times me-1"></i>Cancel
+  <div class="modal-footer py-1">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="cancelChargeSelection()">
+      Cancel
     </button>
-    <button type="button" class="btn btn-success" [disabled]="selectedCharges.size === 0"
+    <button type="button" class="btn btn-info btn-sm" [disabled]="selectedCharges.size === 0"
       (click)="proceedWithSelectedCharges()">
-      <i class="fas fa-check me-1"></i>
+     
       Generate Voucher ({{ selectedCharges.size }} charges)
     </button>
   </div>
