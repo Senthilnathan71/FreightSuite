@@ -1187,7 +1187,7 @@ clearCustomerSearch(): void {
     this.masterService.getStateByCountryId(countryId).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.stateList = resp.data;
+          this.stateList = (resp.data || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
           // Update tax field states when country changes
           this.updateTaxIdFieldState();
           this.updateTaxIdFieldValidation();
@@ -1207,8 +1207,8 @@ clearCustomerSearch(): void {
     const branchForm = this.branches.at(branchIndex) as FormGroup;
 
     if (!stateId) {
-      branchForm['cities'] = [];
-      branchForm.get('CustBranchCity')?.setValue('');
+      this.cityList = [];
+      this.cityList.get('CustBranchCity')?.setValue('');
    
       this.generateGST(branchIndex);
       return;
@@ -1218,7 +1218,7 @@ clearCustomerSearch(): void {
       (resp: any) => {
         if (resp.status) {
           // ✅ Store cities in the branch form
-          branchForm['cities'] = resp.data;
+          this.cityList = (resp.data || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
 
           // ✅ Force change detection
           this.cdRef.markForCheck();
@@ -1226,7 +1226,7 @@ clearCustomerSearch(): void {
           console.log(`Loaded ${resp.data.length} cities for branch ${branchIndex}`);
         } else {
           console.error('Error fetching Cities with State Id');
-          branchForm['cities'] = [];
+          this.cityList = (resp.data || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
         }
 
        
@@ -1281,14 +1281,15 @@ clearCustomerSearch(): void {
 
   // Handle state change for specific branch
   onStateChange(branchIndex: number, event: any): void {
-    let stateId: any;
-
-    if (event instanceof Event) {
-      const element = event.target as HTMLSelectElement;
-      stateId = element.value;
-    } else {
-      stateId = event;
-    }
+    let stateId = event.StateMasterSid;
+    console.log("onStateChange",event);
+    console.log("StateId",stateId);
+    // if (event instanceof Event) {
+    //   const element = event.target as HTMLSelectElement;
+    //   stateId = element.value;
+    // } else {
+    //   stateId = event;
+    // }
 
     this.getCitiesByStateIdForBranch(branchIndex, stateId);
   }

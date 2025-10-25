@@ -29,6 +29,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -135,6 +136,9 @@ export class CompanyEntryComponent implements OnInit {
     displayLabels : ['Code', 'Name','Country'],
     labelFields :['currencyCode'],
   };
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+  stateLookupConfig = DROPDOWN_CONFIGS.STATE;
+  cityLookupConfig = DROPDOWN_CONFIGS.CITY;
 	
 
 	// CONSTRUCTOR
@@ -151,6 +155,14 @@ export class CompanyEntryComponent implements OnInit {
 		private leadService: LeadService,
 		public dropdownStore:DropdownStore
 	) {
+		effect(()=>{
+			const countryData = this.dropdownStore.countries();
+      const stateData = this.dropdownStore.states();
+      const cityData = this.dropdownStore.cities();
+      this.countryResults = countryData;
+      this.stateResults= (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
+      this.cityResults = (cityData || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
+		})
 	 }
 
 	// LIFECYCLE HOOK
@@ -980,7 +992,7 @@ export class CompanyEntryComponent implements OnInit {
 		this.masterService.getStateByCountryId(CountryMasterSid).subscribe(
 			(resp: any) => {
 				if (resp.status) {
-					this.stateResults = resp.data;
+					this.stateResults = (resp.data || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
 				} else {
 					console.error('Error loading States with CountryId');
 				}
@@ -988,29 +1000,64 @@ export class CompanyEntryComponent implements OnInit {
 		)
 	}
 
-	getCitiesByState(StateMasterSid, isPatch?: boolean) {
-		this.branchCityList = [];
+	// getCitiesByState(StateMasterSid, isPatch?: boolean) {
+	// 	this.branchCityList = [];
 
-		if (!isPatch && this.branchForm.get('branchCityMasterSid').value) {
-			this.branchForm.get('branchCityMasterSid').reset();
-			this.branchForm.get('branchCityMasterSid').markAsTouched();
-		}
+	// 	if (!isPatch && this.branchForm.get('branchCityMasterSid').value) {
+	// 		this.branchForm.get('branchCityMasterSid').reset();
+	// 		this.branchForm.get('branchCityMasterSid').markAsTouched();
+	// 	}
 
-		if (!StateMasterSid) {
-			return;
-		}
+	// 	if (!StateMasterSid) {
+	// 		return;
+	// 	}
 
-		this.leadService.getCityByStateId(StateMasterSid).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.branchCityList = resp.data
-				} else {
-					console.error('Error loading City with State Id');
-				}
-			}
-		)
+	// 	this.leadService.getCityByStateId(StateMasterSid).subscribe(
+	// 		(resp: any) => {
+	// 			if (resp.status) {
+	// 				this.branchCityList = (resp.data || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
+	// 			} else {
+	// 				console.error('Error loading City with State Id');
+	// 			}
+	// 		}
+	// 	)
 
-	}
+	// }
+	getCitiesByState(state: any, isPatch?: boolean) {
+  this.branchCityList = [];
+
+  if (!isPatch && this.branchForm.get('branchCityMasterSid')?.value) {
+    this.branchForm.get('branchCityMasterSid')?.reset();
+    this.branchForm.get('branchCityMasterSid')?.markAsTouched();
+  }
+
+  // Extract state ID from the parameter
+  let stateId: number;
+  
+  if (typeof state === 'object' && state !== null) {
+    stateId = state.StateMasterSid || state.id || state;
+  } else {
+    stateId = state;
+  }
+
+  if (!stateId) {
+    return;
+  }
+
+  this.leadService.getCityByStateId(stateId).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        this.branchCityList = (resp.data || []).map(c => ({
+          ...c,
+          State: c.stateMaster?.stateName,
+          Country: c.countryMaster?.countryName
+        }));
+      } else {
+        console.error('Error loading City with State Id');
+      }
+    }
+  );
+}
 
 // 	openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.CompanyMasterSid) return;

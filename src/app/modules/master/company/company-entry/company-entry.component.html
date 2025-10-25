@@ -136,9 +136,15 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!companyForm.get('CountryMasterSid')?.value">
-                <ng-select class="ng-select" [items]="dropdownStore.countries()" bindLabel="countryName"
+                <!-- <ng-select class="ng-select" [items]="dropdownStore.countries()" bindLabel="countryName"
                   bindValue="CountryMasterSid" (change)="handlePanControl($event)" (clear)="handlePanControl(-1)"
-                  formControlName="CountryMasterSid" placeholder=""></ng-select>
+                  formControlName="CountryMasterSid" placeholder=""></ng-select> -->
+                  <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid"
+                        (itemSelected)="handlePanControl($event)">                        
+                  </dofi-searchable-dropdown>
                 <!-- <ng-select id="text-input" class="ng-select" placeholder="Select Country"
                   formControlName="CountryMasterSid" (change)="handlePanControl($event)">
                   <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
@@ -1062,13 +1068,18 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!branchForm.get('branchCountryMasterSid')?.value">
-                            <ng-select id="branchCountryMasterSid" class="ng-select" placeholder=""
+                            <!-- <ng-select id="branchCountryMasterSid" class="ng-select" placeholder=""
                               formControlName="branchCountryMasterSid" (change)="getStatesByCountry($event)">
-                              <!-- <ng-option value="">Select Country</ng-option> -->
                               <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
                                 {{ country.countryName }}
                               </ng-option>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="countryResults" formControlName="branchCountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid"
+                        (itemSelected)="getStatesByCountry($event)">                        
+                      </dofi-searchable-dropdown>
                             <label for="branchCountryMasterSid" class="input-label">Country <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchCountryMasterSid')?.touched &&
@@ -1085,13 +1096,18 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!branchForm.get('branchStateMasterSid')?.value">
-                            <ng-select id="branchStateMasterSid" class="ng-select" placeholder=""
+                            <!-- <ng-select id="branchStateMasterSid" class="ng-select" placeholder=""
                               formControlName="branchStateMasterSid" (change)="getCitiesByState($event)">
-                              <!-- <ng-option value="">Select State</ng-option> -->
                               <ng-option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
                                 {{ state.stateName }}
                               </ng-option>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="stateResults" formControlName="branchStateMasterSid" placeholder=""
+                        [displayFields]="stateLookupConfig.displayFields"
+                        [displayLabels]="stateLookupConfig.displayLabels"
+                        [labelFields]="stateLookupConfig.labelFields" bindValue="StateMasterSid"
+                        (itemSelected)="getCitiesByState($event)">                        
+                      </dofi-searchable-dropdown> 
                             <label for="branchStateMasterSid" class="input-label">State <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchStateMasterSid')?.touched &&
@@ -1108,13 +1124,18 @@
                         <aside class="col-md-4 ">
                           <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!branchForm.get('branchCityMasterSid')?.value">
-                            <ng-select id="branchCityMasterSid" class="ng-select" placeholder=""
+                            <!-- <ng-select id="branchCityMasterSid" class="ng-select" placeholder=""
                               formControlName="branchCityMasterSid">
-                              <!-- <ng-option value="">Select City</ng-option> -->
                               <ng-option *ngFor="let city of branchCityList" [value]="city.CityMasterSid">
                                 {{city.cityName}}
                               </ng-option>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="branchCityList" formControlName="branchCityMasterSid" placeholder=""
+                        [displayFields]="cityLookupConfig.displayFields"
+                        [displayLabels]="cityLookupConfig.displayLabels"
+                        [labelFields]="cityLookupConfig.labelFields" bindValue="CityMasterSid"
+                        >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+                      </dofi-searchable-dropdown>             
                             <label for="branchCityMasterSid" class="input-label">City <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchCityMasterSid')?.touched &&
