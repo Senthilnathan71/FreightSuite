@@ -1,0 +1,198 @@
+<!-- Modal Header -->
+<div class="modal-header">
+  <h5 class="modal-title">Upload Master Job & House Jobs from Excel</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()" [disabled]="isProcessing"></button>
+</div>
+
+<!-- Modal Body -->
+<div class="modal-body">
+  <!-- File Upload Section -->
+  <div class="upload-section" *ngIf="!showPreview">
+    <div class="upload-instructions">
+      <h6 class="fw-bold">Instructions:</h6>
+      <ol>
+        <li>Download the Excel template if you haven't already</li>
+        <li>Fill in the Master Job details in the "Master Job" sheet</li>
+        <li>Fill in House Job details in the "House Jobs" sheet (at least one required)</li>
+        <li>Upload the completed Excel file</li>
+        <li>Review and edit the data if needed</li>
+        <li>Click "Proceed" to create the jobs</li>
+      </ol>
+    </div>
+
+    <div class="file-upload-box">
+      <input
+        type="file"
+        #fileInput
+        accept=".xlsx,.xls"
+        (change)="onFileSelected($event)"
+        style="display: none"
+      />
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="fileInput.click()"
+        [disabled]="isProcessing"
+      >
+        <i class="fas fa-upload me-2"></i>
+        Select Excel File
+      </button>
+
+      <p *ngIf="selectedFile" class="selected-file mt-3 mb-0">
+        <i class="fas fa-file-excel me-2"></i>
+        Selected: {{ selectedFile.name }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Preview Section -->
+  <div class="preview-section" *ngIf="showPreview && !hasErrors()">
+    <div class="preview-header">
+      <h6 class="fw-bold mb-0">Review and Edit Data</h6>
+      <button type="button" class="btn btn-outline-danger btn-sm" (click)="onReUpload()">
+        <i class="fas fa-sync-alt me-2"></i>
+        Upload Different File
+      </button>
+    </div>
+
+    <!-- Bootstrap Nav Tabs -->
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mt-3">
+      <!-- Master Job Tab -->
+      <li [ngbNavItem]="1">
+        <button ngbNavLink>Master Job</button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-wrapper">
+            <div class="form-section">
+              <form [formGroup]="masterJobForm" *ngIf="masterJobForm">
+                <div class="row g-3">
+                  <div
+                    *ngFor="let column of masterJobColumns"
+                    class="col-md-6 col-lg-4"
+                  >
+                    <label class="form-label">{{ column }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [formControlName]="column"
+                      [class.is-invalid]="hasFieldError(column, 'Master Job')"
+                    />
+                    <div class="invalid-feedback" *ngIf="hasFieldError(column, 'Master Job')">
+                      {{ getFieldError(column, 'Master Job') }}
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </ng-template>
+      </li>
+
+      <!-- House Jobs Tab -->
+      <li [ngbNavItem]="2">
+        <button ngbNavLink>House Jobs ({{ houseJobsData.length }})</button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-wrapper">
+            <div class="house-jobs-container">
+              <form [formGroup]="houseJobsForm" *ngIf="houseJobsForm">
+                <div formArrayName="houseJobs">
+                  <div
+                    *ngFor="let houseJob of houseJobsArray.controls; let i = index"
+                    class="house-job-item"
+                    [formGroupName]="i"
+                  >
+                    <div class="house-job-header">
+                      <h6 class="mb-0">House Job {{ i + 1 }}</h6>
+                    </div>
+
+                    <div class="row g-3">
+                      <div
+                        *ngFor="let column of houseJobColumns"
+                        class="col-md-6 col-lg-4"
+                      >
+                        <label class="form-label">{{ column }}</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [formControlName]="column"
+                          [class.is-invalid]="hasFieldError(column, 'House Jobs', i + 2)"
+                        />
+                        <div class="invalid-feedback" *ngIf="hasFieldError(column, 'House Jobs', i + 2)">
+                          {{ getFieldError(column, 'House Jobs', i + 2) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+
+    <div [ngbNavOutlet]="nav" class="mt-3"></div>
+  </div>
+
+  <!-- Errors Section -->
+  <div class="errors-section" *ngIf="hasErrors()">
+    <div class="alert alert-warning" role="alert">
+      <div class="d-flex align-items-center mb-3">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <h6 class="mb-0 fw-bold">Validation Errors ({{ errors.length }})</h6>
+      </div>
+
+      <div class="error-list">
+        <div
+          *ngFor="let error of errors"
+          class="error-item"
+        >
+          <div class="error-details">
+            <strong>{{ error.sheet }}</strong>
+            <span *ngIf="error.row"> - Row {{ error.row }}</span>
+            <span> - {{ error.field }}</span>
+          </div>
+          <div class="error-message">{{ error.message }}</div>
+        </div>
+      </div>
+
+      <div class="error-actions text-center mt-3">
+        <p class="mb-2">Please fix the errors in your Excel file and upload again.</p>
+        <button type="button" class="btn btn-primary" (click)="onReUpload()">
+          <i class="fas fa-sync-alt me-2"></i>
+          Upload Corrected File
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isProcessing">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Processing...</p>
+  </div>
+</div>
+
+<!-- Modal Footer -->
+<div class="modal-footer">
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="onCancel()"
+    [disabled]="isProcessing"
+  >
+    Cancel
+  </button>
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="onProceed()"
+    [disabled]="isProcessing || !showPreview || hasErrors()"
+    *ngIf="showPreview"
+  >
+    <i class="fas fa-check-circle me-2"></i>
+    Proceed with Job Creation
+  </button>
+</div>

@@ -53,7 +53,7 @@
                 [routerLink]="sidebarnavItem.class === '' ? [sidebarnavItem.path] : null"
                 [ngClass]="[sidebarnavItem.class]" (click)="addExpandClass(sidebarnavItem.title)"
                 [routerLinkActive]="sidebarnavItem.submenu.length != 0 ? '' : 'active'">
-                <i-feather [name]="sidebarnavItem.icon" [ngClass]="[sidebarnavItem.icon]"></i-feather>
+                <i [ngClass]="[sidebarnavItem.icon]"></i>
                 <span class="hide-menu" style="font-size: 16px;">{{sidebarnavItem.title |translate}}
 
                     @if(sidebarnavItem.label != '') {
@@ -77,7 +77,7 @@
                         [routerLink]="sidebarnavSubItem.submenu.length > 0 ? null : [sidebarnavSubItem.path]"
                         [routerLinkActive]="sidebarnavSubItem.submenu.length > 0 ? '' : 'router-link-active'"
                         [ngClass]="[sidebarnavSubItem.class]" (click)="addActiveClass(sidebarnavSubItem)">
-                        <i-feather [name]="sidebarnavSubItem.icon" [ngClass]="[sidebarnavSubItem.icon]"></i-feather>
+                        <i [ngClass]="[sidebarnavSubItem.icon]"></i>
 
                         <span class="hide-menu">{{sidebarnavSubItem.title| translate}}</span>
                     </a>
@@ -93,7 +93,7 @@
                             <a class="sidebar-link" [routerLink]="[sidebarnavSubsubItem.path]"
                                 [routerLinkActive]="sidebarnavSubsubItem.submenu.length > 0 ? '' : 'router-link-active'"
                                 (click)="addActiveClass(sidebarnavSubsubItem)">
-                                <i-feather [name]="sidebarnavSubsubItem.icon" [ngClass]="[sidebarnavSubsubItem.icon]"></i-feather>
+                                <i [ngClass]="[sidebarnavSubsubItem.icon]"></i>
                                 <span class="hide-menu">{{sidebarnavSubsubItem.title| translate}}</span>
                             </a>
                             }
