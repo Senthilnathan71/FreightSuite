@@ -35,7 +35,7 @@ import * as XLSX from 'xlsx';
 })
 export class EdocComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  dummyFileUrl: string = ' assets/pdf-sample_0.pdf'; // place a PDF in src/assets
+  dummyFileUrl: string = 'assets/pdf-sample_0.pdf'; // place a PDF in src/assets
   existingFiles: any[] = []; // Files already in database
 
   
@@ -480,22 +480,37 @@ loadEdocData() {
 
     const type = this.getFileType(file.FileName);
     this.previewFileType = type;
-    this.commonService.previewFile(filePreviewPayload).subscribe((res: any | Blob) => {
-    console.log(res)
 
+    // For Office files (Excel, Word), expect JSON response with URL
     if (type === 'excel' || type === 'doc') {
-      // Office files get public URL from backend
-      this.selectedFileUrl = res.url;
+      this.commonService.previewFile(filePreviewPayload).subscribe((res: any) => {
+        console.log('📄 Office file response:', res);
+
+        // Backend returns {url: "..."} for Office files
+        if (res && res.url) {
+          this.selectedFileUrl = res.url;
+          console.log('✅ Office file preview URL loaded:', type);
+        } else {
+          console.error('❌ No URL returned for Office file');
+          this.selectedFileUrl = this.dummyFileUrl;
+        }
+      }, (error) => {
+        console.error('❌ Error loading Office file preview:', error);
+        this.selectedFileUrl = this.dummyFileUrl;
+      });
     } else {
-      // PDF, Image, Text: blob
-      const objectUrl = URL.createObjectURL(res as Blob);
-      this.selectedFileUrl = objectUrl;
+      // For PDF, Image, Text: expect Blob
+      this.commonService.previewFile(filePreviewPayload).subscribe((res: Blob) => {
+        console.log('📄 Blob file response:', res);
+
+        const objectUrl = URL.createObjectURL(res);
+        this.selectedFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+        console.log('✅ Blob file preview loaded:', type);
+      }, (error) => {
+        console.error('❌ Error loading file preview:', error);
+        this.selectedFileUrl = this.dummyFileUrl;
+      });
     }
-    console.log('✅ File preview loaded:', type);
-  }, (error) => {
-    console.error('❌ Error loading file preview:', error);
-    this.selectedFileUrl = this.dummyFileUrl;
-  });
   }
 
   getFileType(fileName: string): 'pdf' | 'excel' |'doc'| 'image' | 'text' | 'other' {
@@ -503,6 +518,7 @@ loadEdocData() {
     if (!ext) return 'other';
     if (ext === 'pdf') return 'pdf';
     if (['xls', 'xlsx'].includes(ext)) return 'excel';
+    if (['doc', 'docx'].includes(ext)) return 'doc';
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) return 'image';
     if (['txt', 'log', 'csv'].includes(ext)) return 'text';
     return 'other';
