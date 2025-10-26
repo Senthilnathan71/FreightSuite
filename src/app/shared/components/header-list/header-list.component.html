@@ -41,12 +41,50 @@
         <div class="col-md-auto pb-1" *ngIf="actions.length > 0">
             <div
                 class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                <button *ngFor="let action of actions" type="button"
-                    [class]="'btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 ' + (action.cssClass || '')"
-                    [disabled]="action.disabled" (click)="onActionClick(action.action)"
-                    [style.display]="action.condition === false ? 'none' : 'inline-block'">
-                    <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
-                </button>
+                <ng-container *ngFor="let action of actions">
+                    <!-- Dropdown Button (if action has children) -->
+                    <div *ngIf="action.children && action.children.length > 0 && action.condition !== false"
+                         ngbDropdown container="body" class="d-inline-block">
+                        <button type="button"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                                [id]="'dropdown-' + action.action"
+                                [disabled]="action.disabled"
+                                ngbDropdownToggle>
+                            <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+                        </button>
+                        <div ngbDropdownMenu [attr.aria-labelledby]="'dropdown-' + action.action" class="shadow">
+                            <button *ngFor="let child of action.children"
+                                    class="dropdown-item text-dark"
+                                    ngbDropdownItem
+                                    [disabled]="child.disabled"
+                                    (click)="onActionClick(child.action)">
+                                <i [class]="child.icon + ' me-2'"></i> {{ child.label }}
+                            </button>
+                        </div>
+                        <!-- Info Icon with Tooltip -->
+                        <i *ngIf="action.tooltip"
+                           class="fas fa-info-circle text-info ms-1"
+                           style="cursor: help;"
+                           [ngbTooltip]="action.tooltip"
+                           placement="bottom"></i>
+                    </div>
+
+                    <!-- Regular Button (if action has no children) -->
+                    <button *ngIf="!action.children && action.condition !== false"
+                            type="button"
+                            [class]="'btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 ' + (action.cssClass || '')"
+                            [disabled]="action.disabled"
+                            (click)="onActionClick(action.action)">
+                        <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+                        <!-- Info Icon with Tooltip for regular button -->
+                        <i *ngIf="action.tooltip"
+                           class="fas fa-info-circle text-white-50 ms-1"
+                           style="cursor: help; font-size: 0.85em;"
+                           [ngbTooltip]="action.tooltip"
+                           placement="bottom"
+                           (click)="$event.stopPropagation()"></i>
+                    </button>
+                </ng-container>
             </div>
         </div>
 
