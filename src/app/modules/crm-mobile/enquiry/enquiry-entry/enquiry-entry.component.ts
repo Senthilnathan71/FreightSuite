@@ -1881,6 +1881,7 @@ ${this.userData.userName}`;
 
 
    async downloadPDF() {
+    this.spinner.show();
       const printContent = document.getElementById('printContent');
       if (!printContent) {
         this.appSettingsService.showError('Print content not found.');
@@ -1920,7 +1921,7 @@ ${this.userData.userName}`;
         }
   
         
-        const EnquiryNumber = this.rateRequestForm.get('EnquiryNumber')?.value || 'Enquiry';
+        const EnquiryNumber = this.rateRequestData?.EnquiryNumber;
         const filename = `Enquiry_${EnquiryNumber}.pdf`;
   
         // Download the PDF
@@ -1978,6 +1979,65 @@ ${this.userData.userName}`;
     getPort(PortMasterSid:number){
       return getFormattedPort(this.ports,PortMasterSid)
     }
+
+   getUOMCode(uomId: number): string {
+  if (!uomId) return '';
+  const weightUnit = this.weightUnitList.find(unit => unit.UOMMasterSid === uomId);
+  return weightUnit?.UOMCode || '';
+}
+
+// Add these methods to your EnquiryEntryComponent class
+
+calculateTotalQty(): number {
+  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
+  
+  let total = 0;
+  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
+    total += Number(cargo.Qty) || 0;
+  });
+  return total;
+}
+
+calculateTotalGrossWeight(): number {
+  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
+  
+  let total = 0;
+  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
+    total += Number(cargo.GrossWeight) || 0;
+  });
+  return total;
+}
+
+calculateTotalNetWeight(): number {
+  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
+  
+  let total = 0;
+  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
+    total += Number(cargo.NetWeight) || 0;
+  });
+  return total;
+}
+
+calculateTotalCBM(): number {
+  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
+  
+  let total = 0;
+  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
+    total += Number(cargo.Volume) || 0;
+  });
+  return total;
+}
+
+calculateTotalPackageQty(): number {
+  if (!this.enquiryData?.enquiryRoute?.[0]?.enquiryCargo) return 0;
+  
+  let total = 0;
+  this.enquiryData.enquiryRoute[0].enquiryCargo.forEach((cargo: any) => {
+    total += Number(cargo.PackageQty) || 0;
+  });
+  return total;
+}
+
 
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()
