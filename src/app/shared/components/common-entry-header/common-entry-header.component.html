@@ -8,7 +8,7 @@
         </div>
         <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} {{pageTitle}}</h5>
         @if(isEditMode && showInfoButton){
-        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="onShowInfo()">
+        <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="onShowInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
         }
@@ -18,73 +18,66 @@
     <!-- Right Section: Action Buttons -->
     <div class="col-md-8 pb-1">
       <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-        
+
         <!-- Audit Logs Button -->
         @if(isEditMode && showLogsButton){
-        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                (click)="onOpenAuditLogs(auditLogModal)">
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="onOpenAuditLogs(auditLogModal)">
           <i class="fas fa-history me-1"></i>Logs
         </button>
         }
 
-        <!-- Create New Button -->
+        <!-- Create New Button
         @if(showCreateButton && hasPermission('Add') && isEditMode){
         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                 (click)="onCreateNew()">
           <i class="fas fa-plus me-1"></i>Create
         </button>
-        }
+        } -->
 
         <!-- Back Button -->
-        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                (click)="onGoBack()">
+        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onGoBack()">
           <i class="fas fa-chevron-left me-1"></i>Back
         </button>
 
         <!-- Reset Button -->
         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                (click)="onResetForm()">
+          (click)="onResetForm()">
           <i class="fas fa-sync-alt me-1"></i>Reset
         </button>
 
         <!-- Save Button -->
         @if(showSaveButton && (!isEditMode || (isEditMode && hasPermission('Edit')))){
-        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                (click)="onSaveForm()"
-                [disabled]="formInvalid || (!isEditMode && formPristine)">
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSaveForm()"
+          [disabled]="formInvalid || (!isEditMode && formPristine)">
           <i class="fas fa-save me-1"></i>Save
         </button>
         }
 
         <!-- Dropdown Menu -->
-        @if(hasAnyDropdownPermission){
+        @if(isEditMode && hasAnyDropdownPermission){
         <div ngbDropdown class="d-inline-block">
-          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" 
-                  id="dropdownBasic1" ngbDropdownToggle>
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
             <i class="fas fa-ellipsis-v"></i>
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
             @if(showEdocButton && hasPermission('Edoc')){
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick 
-                    (click)="onOpenEdoc()">
+            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="onOpenEdoc()">
               <i class="fas fa-file-alt me-1"></i> Edoc
             </button>
             }
             @if(showTandCButton && hasPermission('Terms and Condition')){
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick 
-                    (click)="onOpenTandC()">
+            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="onOpenTandC()">
               <i class="fas fa-clipboard me-1"></i> Terms & Condition
             </button>
             }
             @if(showAuthorityButton && hasPermission('Authority')){
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick 
-                    (click)="onOpenAuthority()">
+            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="onOpenAuthority()">
               <i class="fas fa-shield-alt me-1"></i> Authorize
             </button>
             }
             @if(showEmailButton && hasPermission('Email')){
-            <button class="text-dark" ngbDropdownItem appPreventMultiClick 
-                    (click)="onOpenEmail()">
+            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="onOpenEmail()">
               <i class="fas fa-envelope me-1"></i> Email
             </button>
             }
@@ -100,8 +93,7 @@
 <ng-template #auditLogModal let-modal>
   <div class="modal-header bg-info text-white p-2">
     <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" 
-            (click)="modal.dismiss()"></button>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body p-3">
     <ng-content select="[audit-log-content]"></ng-content>
