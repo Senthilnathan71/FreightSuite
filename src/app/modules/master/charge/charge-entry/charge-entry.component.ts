@@ -20,6 +20,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-charge-entry',
@@ -58,11 +59,7 @@ unitQtyOptions = [
   { value: 'Per Shipment', name: 'Per Shipment' },
   { value: 'Per GrossWeight', name: 'Per Gross Weight ' }
 ];
-CurrencyLookupConfig = {
-    displayFields : ['currencyCode', 'currencyName','countryName'],
-    displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode', 'currencyName','countryName'],
-  };
+
 selectedTab = this.tab[0].name;
   chargeForm: FormGroup;
   isEditMode = false;
@@ -100,6 +97,12 @@ selectedTab = this.tab[0].name;
     displayFields : ['HSSACCode', 'HSSACName'],
     displayLabels : ['Code', 'Name'],
     labelFields :['HSSACCode'],
+  };
+  UOMLookupConfig = DROPDOWN_CONFIGS.UOM;
+  CurrencyLookupConfig = {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
   };
 
   constructor(

@@ -150,9 +150,16 @@
                         </aside>
                         <aside class="col-md-12">
                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!documentForm.get('CurrencyCode')?.value">
-                                <ng-select formControlName="CurrencyCode" [items]="currencyList" bindLabel="currencyName"
+                                <!-- <ng-select formControlName="CurrencyCode" [items]="currencyList" bindLabel="currencyName"
                                     bindValue="currencyCode" class="ng-select" placeholder="" [textWithNumbers]="3">
-                                </ng-select>
+                                </ng-select> -->
+                                <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" placeholder=""
+                        [displayFields]="CurrencyLookupConfig.displayFields"
+                        [displayLabels]="CurrencyLookupConfig.displayLabels"
+                        [labelFields]="CurrencyLookupConfig.labelFields" bindLabel="currencyName"
+                        bindValue="currencyCode"
+                        >                           
+                      </dofi-searchable-dropdown>   
                                 <label for="text-input" class="input-label">Currency <span
                                         class="text-danger">*</span></label>
                                 @if(documentForm.get('CurrencyCode').touched && documentForm.get('CurrencyCode').invalid){

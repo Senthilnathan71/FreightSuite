@@ -1,4 +1,4 @@
-import { Component, TemplateRef } from '@angular/core';
+import { Component, effect, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
@@ -24,6 +24,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 
 
@@ -42,7 +44,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
     TextWithNumbersDirective,
     DatePipe,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'
@@ -58,6 +61,9 @@ export class PostMasterViewComponent {
   regionList: any[] = [];
   portData: any;
   userData:any;
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+  stateLookupConfig = DROPDOWN_CONFIGS.STATE;
+  zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   modeOfStatus = [
@@ -79,9 +85,17 @@ export class PostMasterViewComponent {
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal, public dropdownStore:DropdownStore ) {
-    this.config.notFoundText = 'Custom not found';
-    this.config.appendTo = 'body';
-    this.config.bindValue = 'value';
+    // this.config.notFoundText = 'Custom not found';
+    // this.config.appendTo = 'body';
+    // this.config.bindValue = 'value';
+    effect(()=> {
+          const countryData = this.dropdownStore.countries();
+          const stateData = this.dropdownStore.states();
+          const zoneData = this.dropdownStore.zone();
+          this.countryList = countryData;
+          this.filteredStateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
+          this.regionList = zoneData;
+        })
   }
   ngOnInit() {
     this.initPortForm();
@@ -222,7 +236,9 @@ hasAnyDropdownPermission(): boolean {
       // this.countryList = countries.data,
         // this.regionList = regions
     });
-    this.dropdownStore.loadCountries().subscribe();
+    this.dropdownStore.loadCountries().subscribe(() => {
+      this.dropdownStore.loadStates().subscribe();
+    });
     this.dropdownStore.loadZones().subscribe();
   }
 

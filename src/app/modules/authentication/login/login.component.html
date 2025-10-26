@@ -1,4 +1,12 @@
-<div class="auth-wrapper d-flex no-block justify-content-center align-items-center" [ngClass]="{ 'appmode-mobile': isMobile, 'appmode-desktop': !isMobile}">
+<div class="auth-wrapper d-flex no-block justify-content-center align-items-center"
+    [ngClass]="{ 'appmode-mobile': isMobile, 'appmode-desktop': !isMobile}">
+    <!-- Simple Progress Bar -->
+    <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<!-- Simple Progress Bar -->
+
     <div class="auth-box m-3 m-md-0">
         <div id="loginform" [ngClass]="{'d-none': recoverform}">
             <div class="text-center">

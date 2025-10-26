@@ -103,11 +103,19 @@
                                         </aside>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('CountryMasterSid')?.value">
-                                                <ng-select class="ng-select" [items]="dropdownStore.countries()"
+                                                <!-- <ng-select class="ng-select" [items]="dropdownStore.countries()"
                                                     bindLabel="countryName" bindValue="CountryMasterSid"
                                                     formControlName="CountryMasterSid" placeholder=""
                                                     (change)="filterStateByCountry($event)">
-                                                </ng-select>
+                                                </ng-select> -->
+                                                <dofi-searchable-dropdown [items]="countryList" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
+                        bindValue="CountryMasterSid"
+                        (itemSelected)="filterStateByCountry($event)"
+                        >
+                      </dofi-searchable-dropdown>
                                                 <label for="text-input" class="input-label">Country <span
                                                         class="text-danger fw-semibold">*</span></label>
                                                 <div
@@ -121,10 +129,17 @@
                                         </aside>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('StateMasterSid')?.value">
-                                                <ng-select class="ng-select" [items]="filteredStateList"
+                                                <!-- <ng-select class="ng-select" [items]="filteredStateList"
                                                     bindLabel="stateName" bindValue="StateMasterSid"
                                                     formControlName="StateMasterSid" placeholder="">
-                                                </ng-select>
+                                                </ng-select> -->
+                                                <dofi-searchable-dropdown [items]="filteredStateList" formControlName="StateMasterSid" placeholder=""
+                        [displayFields]="stateLookupConfig.displayFields"
+                        [displayLabels]="stateLookupConfig.displayLabels"
+                        [labelFields]="stateLookupConfig.labelFields" bindLabel="stateName"
+                        bindValue="StateMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
 
                                                 <label for="text-input" class="input-label">State</label>
                                             </div>
@@ -137,10 +152,17 @@
                                     <ng-option [value]="region.ZoneMasterSid">{{ region.ZoneName }}</ng-option>
                                     }
                                 </ng-select> -->
-                                                <ng-select formControlName="ZoneMasterSid" [items]="dropdownStore.zone()"
+                                                <!-- <ng-select formControlName="ZoneMasterSid" [items]="dropdownStore.zone()"
                                                     bindLabel="ZoneName" bindValue="ZoneMasterSid" class="ng-select">
 
-                                                </ng-select>
+                                                </ng-select> -->
+                                                <dofi-searchable-dropdown [items]="regionList" formControlName="ZoneMasterSid" placeholder=""
+                        [displayFields]="zoneLookupConfig.displayFields"
+                        [displayLabels]="zoneLookupConfig.displayLabels"
+                        [labelFields]="zoneLookupConfig.labelFields" bindLabel="ZoneName"
+                        bindValue="ZoneMasterSid"
+                        >   
+                      </dofi-searchable-dropdown>
                                                 <label for="text-input" class="input-label">Region</label>
                                                 <div
                                                     *ngIf="portForm.get('ZoneMasterSid')?.touched && portForm.get('ZoneMasterSid')?.invalid">

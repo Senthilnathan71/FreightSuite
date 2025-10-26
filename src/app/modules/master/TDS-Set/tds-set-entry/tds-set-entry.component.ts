@@ -6,7 +6,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin, Subject } from 'rxjs';
+import { catchError, forkJoin, of, Subject } from 'rxjs';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -25,6 +25,9 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -42,7 +45,8 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
         TextWithNumbersDirective,
         DecimalPrecisionDirective,
         CustomDatePipe,
-        NgbDropdownModule
+        NgbDropdownModule,
+        SearchableDropdown
     ],
     templateUrl: './tds-set-entry.component.html',
     styleUrl: './tds-set-entry.component.scss',
@@ -112,6 +116,8 @@ export class TdsSetEntryComponent implements OnInit {
     userData: any;
     currentCompany: any;
     currentBranch: any;
+    countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+    customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
 
     tab = [
         { name: "TDS Detail", icon: "fas fa-file-invoice" },
@@ -138,7 +144,8 @@ export class TdsSetEntryComponent implements OnInit {
         private calendar: NgbCalendar,
         private dialog: MatDialog,
         private settingService: SettingsService,
-        public dropdownStore:DropdownStore
+        public dropdownStore:DropdownStore,
+        private operationService: OperationService
     ) { }
 
     ngOnInit(): void {
@@ -589,19 +596,19 @@ openAuditLogs(modal: TemplateRef<any>) {
     // Helper Functions
 
     loadAllDropdowns() {
-        this.dropdownStore.loadCountries()
+        this.dropdownStore.loadCountries().subscribe();
     }
 
     loadExemptionLookups() {
         const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
             vessels: this.masterService.getAllVessels(),
-            carriers: this.masterService.getAllCarriers(CompanyMasterSid),
-            transporters: this.masterService.getAllTransporters(CompanyMasterSid)
+            carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier'] }).pipe(catchError(err => of({ data: [] }))),
+            transporters: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['transporter'] }).pipe(catchError(err => of({ data: [] })))
         }).subscribe(({ vessels, carriers, transporters }) => {
             this.vesselList = vessels.data,
-                this.carrierList = carriers,
-                this.transporterList = transporters
+                this.carrierList = carriers.data,
+                this.transporterList = transporters.data;
         })
     }
 

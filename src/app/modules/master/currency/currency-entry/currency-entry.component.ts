@@ -18,6 +18,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-currency-entry',
@@ -55,11 +56,12 @@ export class CurrencyEntryComponent implements OnInit {
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-  currencylookupCofig ={
-    displayFields : ['countryCode', 'countryName'],
-    displayLabels : ['Code', 'Name'],
-    labelFields :['countryCode', 'countryName'],
-  }
+  // currencylookupCofig ={
+  //   displayFields : ['countryCode', 'countryName'],
+  //   displayLabels : ['Code', 'Name'],
+  //   labelFields :['countryCode', 'countryName'],
+  // }
+  countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
 
 
   constructor(

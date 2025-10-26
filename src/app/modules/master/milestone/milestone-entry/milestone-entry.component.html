@@ -105,9 +105,16 @@
                       <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('DepartmentMasterSid')?.value">
 
-                          <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+                          <!-- <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
                             formControlName="DepartmentMasterSid" placeholder="Select Department">
-                          </ng-select>
+                          </ng-select> -->
+                          <dofi-searchable-dropdown [items]="departmentList" formControlName="DepartmentMasterSid" placeholder=""
+                        [displayFields]="departmentLookupConfig.displayFields"
+                        [displayLabels]="departmentLookupConfig.displayLabels"
+                        [labelFields]="departmentLookupConfig.labelFields" bindLabel="departmentName"
+                        bindValue="DepartmentMasterSid"
+                        >   
+                      </dofi-searchable-dropdown>
 
                           <label class="input-label">Department <span class="text-danger">*</span></label>
 

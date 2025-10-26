@@ -211,7 +211,7 @@ export class InvoiceEntryComponent implements OnInit {
       HBLNo: [''],
       CurrencyCode: ['', Validators.required],
       ExchangeRate: [1, [Validators.required, Validators.min(0)]],
-      GSTNo: [''],
+      GST_VAT: [''],
       InvoiceType: [null],
       VoucherType: [1],
       Narration: ['hi'],
@@ -432,6 +432,7 @@ export class InvoiceEntryComponent implements OnInit {
       this.invoiceForm.get('PartyName')?.setValue(null);
       this.invoiceForm.get('PartyAddress')?.setValue('');
       this.invoiceForm.get('PartyMasterSid')?.setValue(null);
+      this.invoiceForm.get('GST_VAT')?.setValue('');
       return;
     }
 
@@ -441,6 +442,20 @@ export class InvoiceEntryComponent implements OnInit {
     this.invoiceForm.get('PartyAddress')?.setValue('');
 
     const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
+    if (customer) {
+      this.invoiceForm.get('PartyAddress')?.setValue(customer.Address || customer.CustomerAddress1 || '');
+      const countryCode = customer.CountryMasterSid?.countryCode || 
+                       customer.countryMaster?.countryCode || 
+                       customer.countryCode;
+    
+    if (countryCode === 'IN') {
+      // For India - populate GST No
+      this.invoiceForm.get('GST_VAT')?.setValue(customer.GSTNo || '');
+    } else {
+      // For non-India countries - populate PAN Type
+      this.invoiceForm.get('GST_VAT')?.setValue(customer.PanType || '');
+    }
+    
     if (customer && customer.SubledgerMasterSid) {
       this.invoiceForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
     } else {
@@ -450,6 +465,9 @@ export class InvoiceEntryComponent implements OnInit {
       }
     }
   }
+  }
+
+  
 
   onBranchChange(selectedBranch: any) {
     const branchSid = (typeof selectedBranch === 'object' && selectedBranch !== null)
@@ -568,7 +586,7 @@ export class InvoiceEntryComponent implements OnInit {
       HBLNo: header.HouseJob || header.HBLNo || '',
       CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
       ExchangeRate: header.ExchangeRate || header.ExRate || 1,
-      GSTNo: header.GSTNo || '',
+      GST_VAT: header.GST_VAT || '',
       InvoiceType: header.InvoiceType || null,
       VoucherType: voucherTypeForControl,
       Narration: header.Narration || '',
@@ -1070,6 +1088,7 @@ export class InvoiceEntryComponent implements OnInit {
       VoucherNumber: raw.VoucherNumber || null,
       VoucherDate: voucherDate,
       PostDate: voucherDate,
+      GST_VAT: raw.GST_VAT || undefined,
       PartyMasterSid: partyMasterSid,
       PartyName: normalizedParty.PartyName || raw.PartyName || '',
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
@@ -1550,4 +1569,6 @@ export class InvoiceEntryComponent implements OnInit {
       }
     });
   }
+
+  
 }
