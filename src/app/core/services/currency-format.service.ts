@@ -70,49 +70,36 @@ export class CurrencyFormatService {
   constructor(private configService: CurrencyConfigurationService) {}
 
   /**
-   * Formats an amount based on the currency's specific formatting rules.
-   * 
+   * Formats an amount by rounding it to the currency's specific `amountDecimal` places.
+   *
    * **Processing Steps:**
-   * 1. Resolve currency configuration (from cache or overrides)
-   * 2. Round the value to `roundOffDecimal` places
-   * 3. Truncate the rounded value to `amountDecimal` places
-   * 4. Apply `toFixed()` to ensure consistent string format
-   * 5. Optionally apply currency symbol
-   * 
-   * **Example Calculation (USD: amountDecimal=2, roundOffDecimal=3):**
+   * 1. Resolve the currency configuration (from cache or overrides).
+   * 2. Round the input value to the `amountDecimal` places.
+   * 3. Apply `toFixed()` to ensure the correct number of trailing zeros.
+   * 4. Optionally, apply the currency symbol.
+   *
+   * **Example Calculation (USD: amountDecimal=2):**
    * ```
-   * Input:     1234.5678
-   * Rounded:   1234.568  (to 3 places)
-   * Truncated: 1234.56   (to 2 places, no rounding)
-   * Fixed:     "1234.56" (string with 2 decimals)
-   * Final:     "$1234.56"
+   * Input:      1234.5678
+   * Rounded:    1234.57    (to 2 places)
+   * Fixed:      "1234.57"  (string with 2 decimals)
+   * Final:      "$1234.57"
    * ```
-   * 
+   *
    * @public
-   * @param {FormatInput | FormatInputWithOverrides} input - The value and currency code, with optional overrides
-   * @param {boolean} [withSymbol=true] - Whether to include the currency symbol in the result
-   * @returns {string} The formatted amount as a string
-   * 
+   * @param {FormatInput | FormatInputWithOverrides} input - The value and currency code, with optional overrides.
+   * @param {boolean} [withSymbol=true] - Whether to include the currency symbol in the result.
+   * @returns {string} The formatted amount as a string.
+   *
    * @example
    * // Standard formatting:
    * const result = this.formatAmount({ value: 1234.5678, currencyCode: 'USD' });
-   * // Returns: "$1234.56"
-   * 
+   * // Returns: "$1234.57"
+   *
    * @example
    * // Without symbol:
    * const result = this.formatAmount({ value: 1234.5678, currencyCode: 'USD' }, false);
-   * // Returns: "1234.56"
-   * 
-   * @example
-   * // With overrides:
-   * const result = this.formatAmount({
-   *   value: 1234.5678,
-   *   currencyCode: 'EUR',
-   *   amountDecimal: 3,
-   *   roundOffDecimal: 4,
-   *   symbol: '€'
-   * });
-   * // Returns: "€1234.568"
+   * // Returns: "1234.57"
    */
   public formatAmount(input: FormatInput | FormatInputWithOverrides, withSymbol: boolean = true): string {
     const currency = this.resolveCurrencyConfig(input);
@@ -122,16 +109,13 @@ export class CurrencyFormatService {
       return input.value.toFixed(2); // Fallback to 2 decimal places
     }
 
-    // Step 1: Truncate to roundOffDecimal places
-    // const truncatedValue = this.truncate(input.value, currency.roundOffDecimal);
-
-    // Step 2: Truncate to amountDecimal places
+    // Step 1: Round the value to amountDecimal places.
     const roundedValue = this.round(input.value, currency.amountDecimal);
 
-    // Step 3: Apply toFixed to ensure proper string format (adds trailing zeros)
+    // Step 2: Apply toFixed() to ensure proper string format (adds trailing zeros).
     const formattedValue = roundedValue.toFixed(currency.amountDecimal);
 
-    // Step 4: Apply symbol if requested
+    // Step 3: Apply symbol if requested.
     if (withSymbol) {
       return this.applySymbol(formattedValue, currency);
     }
