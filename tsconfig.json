@@ -23,7 +23,8 @@
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
     "types":[
-      "jquery"
+      "jquery",
+      "node"
     ]
   },
   "angularCompilerOptions": {

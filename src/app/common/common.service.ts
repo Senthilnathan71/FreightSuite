@@ -53,21 +53,11 @@ export class CommonService {
 }
 
 
-// For preview via POST request (not iframe)
-// Returns Blob for PDF/Images/Text, or JSON {url: string} for Office files
-previewFile(payload: { menuMasterSid: number; documentSid: number; fileName: string }): Observable<any> {
+// For preview via POST request
+// Returns Blob for all file types (client-side rendering for Office files)
+previewFile(payload: { menuMasterSid: number; documentSid: number; fileName: string }): Observable<Blob> {
   const url = 'attach-document/preview';
-
-  // Determine file type from fileName
-  const ext = payload.fileName.split('.').pop()?.toLowerCase();
-  const isOfficeFile = ['xls', 'xlsx', 'doc', 'docx'].includes(ext || '');
-
-  // Office files return JSON with URL, others return Blob
-  if (isOfficeFile) {
-    return this.http.post<{ url: string }>(url, payload);
-  } else {
-    return this.http.post(url, payload, { responseType: 'blob' });
-  }
+  return this.http.post(url, payload, { responseType: 'blob' });
 }
 
 deleteEdocFile(attachDocumentSid: number): Observable<any> {

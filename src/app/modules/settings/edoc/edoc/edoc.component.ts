@@ -20,6 +20,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxDocViewerModule } from "ngx-doc-viewer";
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import * as XLSX from 'xlsx';
+import * as mammoth from 'mammoth';
 
 @Component({
   selector: 'app-edoc',
@@ -58,6 +59,12 @@ export class EdocComponent implements OnInit, OnDestroy {
   selectedFile: any = null;
   selectedFileUrl: SafeResourceUrl | any = '';
   existingFileName: string = '';
+
+  // Client-side rendering properties
+  excelData: any[][] = [];  // For Excel sheets
+  excelSheets: string[] = []; // Sheet names
+  activeSheetIndex: number = 0; // Currently displayed sheet
+  wordHtmlContent: string = ''; // For Word documents
   constructor(
     private datePipe: CustomDatePipe,
     private sanitizer: DomSanitizer,
@@ -481,36 +488,114 @@ loadEdocData() {
     const type = this.getFileType(file.FileName);
     this.previewFileType = type;
 
-    // For Office files (Excel, Word), expect JSON response with URL
-    if (type === 'excel' || type === 'doc') {
-      this.commonService.previewFile(filePreviewPayload).subscribe((res: any) => {
-        console.log('📄 Office file response:', res);
+    // Reset previous content
+    this.excelData = [];
+    this.excelSheets = [];
+    this.wordHtmlContent = '';
 
-        // Backend returns {url: "..."} for Office files
-        if (res && res.url) {
-          this.selectedFileUrl = res.url;
-          console.log('✅ Office file preview URL loaded:', type);
-        } else {
-          console.error('❌ No URL returned for Office file');
-          this.selectedFileUrl = this.dummyFileUrl;
-        }
-      }, (error) => {
-        console.error('❌ Error loading Office file preview:', error);
-        this.selectedFileUrl = this.dummyFileUrl;
-      });
-    } else {
-      // For PDF, Image, Text: expect Blob
-      this.commonService.previewFile(filePreviewPayload).subscribe((res: Blob) => {
-        console.log('📄 Blob file response:', res);
+    // All files now return Blob for client-side rendering
+    this.commonService.previewFile(filePreviewPayload).subscribe((res: Blob) => {
+      console.log('📄 File response:', res);
 
+      if (type === 'excel') {
+        // Parse Excel client-side
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          const arrayBuffer = e.target.result;
+          this.parseExcelFile(arrayBuffer);
+        };
+        reader.readAsArrayBuffer(res);
+        console.log('✅ Excel file loaded for parsing');
+
+      } else if (type === 'doc') {
+        // Parse Word client-side
+        const reader = new FileReader();
+        reader.onload = async (e: any) => {
+          const arrayBuffer = e.target.result;
+          await this.parseWordFile(arrayBuffer);
+        };
+        reader.readAsArrayBuffer(res);
+        console.log('✅ Word file loaded for parsing');
+
+      } else {
+        // PDF, Image, Text: use Blob URL
         const objectUrl = URL.createObjectURL(res);
         this.selectedFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
         console.log('✅ Blob file preview loaded:', type);
-      }, (error) => {
-        console.error('❌ Error loading file preview:', error);
-        this.selectedFileUrl = this.dummyFileUrl;
+      }
+
+    }, (error) => {
+      console.error('❌ Error loading file preview:', error);
+      this.selectedFileUrl = this.dummyFileUrl;
+    });
+  }
+
+  // Parse Excel file to HTML table data
+  parseExcelFile(arrayBuffer: ArrayBuffer) {
+    try {
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      this.excelSheets = workbook.SheetNames;
+      this.activeSheetIndex = 0;
+
+      // Parse all sheets
+      const allSheetsData: any = {};
+      workbook.SheetNames.forEach(sheetName => {
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        allSheetsData[sheetName] = jsonData;
       });
+
+      // Load first sheet by default
+      if (this.excelSheets.length > 0) {
+        this.excelData = allSheetsData[this.excelSheets[0]];
+      }
+
+      console.log('✅ Excel file parsed successfully', this.excelSheets.length, 'sheets');
+    } catch (error) {
+      console.error('❌ Error parsing Excel:', error);
+      this.appSettingService.showError('Error parsing Excel file');
     }
+  }
+
+  // Parse Word document to HTML
+  async parseWordFile(arrayBuffer: ArrayBuffer) {
+    try {
+      const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+      this.wordHtmlContent = result.value; // HTML content
+
+      if (result.messages.length > 0) {
+        console.warn('Word conversion warnings:', result.messages);
+      }
+
+      console.log('✅ Word file parsed successfully');
+    } catch (error) {
+      console.error('❌ Error parsing Word:', error);
+      this.appSettingService.showError('Error parsing Word file');
+    }
+  }
+
+  // Switch between Excel sheets
+  switchExcelSheet(sheetIndex: number) {
+    this.activeSheetIndex = sheetIndex;
+    const sheetName = this.excelSheets[sheetIndex];
+
+    // Re-parse the selected sheet (you may want to cache this)
+    const filePreviewPayload = {
+      menuMasterSid: this.componentData.MenuMasterSid,
+      documentSid: this.componentData.DocumentSid,
+      fileName: this.selectedFile.FileName
+    };
+
+    this.commonService.previewFile(filePreviewPayload).subscribe((blob: Blob) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const arrayBuffer = e.target.result;
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const worksheet = workbook.Sheets[sheetName];
+        this.excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      };
+      reader.readAsArrayBuffer(blob);
+    });
   }
 
   getFileType(fileName: string): 'pdf' | 'excel' |'doc'| 'image' | 'text' | 'other' {
