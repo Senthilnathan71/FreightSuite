@@ -550,10 +550,17 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsDetailForm.get('CountryMasterSid')?.value">
-                                    <ng-select class="ng-select" formControlName="CountryMasterSid"
+                                    <!-- <ng-select class="ng-select" formControlName="CountryMasterSid"
                                         [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
                                         placeholder="">
-                                    </ng-select>
+                                    </ng-select> -->
+                                    <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
+                        bindValue="CountryMasterSid"
+                        >   
+                      </dofi-searchable-dropdown>   
                                     <label for="charge" class="input-label">Country <span
                                             class="text-danger"></span></label>
                                     @if(tdsDetailForm.get('CountryMasterSid')?.touched &&
@@ -765,13 +772,20 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsExemptionForm.get('Carrier')?.value">
-                                    <ng-select class="ng-select" formControlName="Carrier" placeholder="">
+                                    <!-- <ng-select class="ng-select" formControlName="Carrier" placeholder="">
                                         @for(item of carrierList;track $index){
                                         @if(item.CustomerMasterSid != tdsExemptionForm.get('Transporter').value){
                                         <ng-option [value]="item.CustomerMasterSid">{{item.CustomerName}}</ng-option>
                                         }
                                         }
-                                    </ng-select>
+                                    </ng-select> -->
+                                    <dofi-searchable-dropdown [items]="carrierList" formControlName="Carrier" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid"
+                        >   
+                      </dofi-searchable-dropdown>
                                     <label for="charge" class="input-label">Carrier <span
                                             class="text-danger">*</span></label>
                                     @if(tdsExemptionForm.get('Carrier')?.touched &&
@@ -787,13 +801,20 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select"
                                     [class.filled]="!!tdsExemptionForm.get('Transporter')?.value">
-                                    <ng-select class="ng-select" formControlName="Transporter" placeholder="">
+                                    <!-- <ng-select class="ng-select" formControlName="Transporter" placeholder="">
                                         @for(item of transporterList;track $index){
                                         @if(item.CustomerMasterSid != tdsExemptionForm.get('Carrier').value){
                                         <ng-option [value]="item.CustomerMasterSid">{{item.CustomerName}}</ng-option>
                                         }
                                         }
-                                    </ng-select>
+                                    </ng-select> -->
+                                    <dofi-searchable-dropdown [items]="transporterList" formControlName="Transporter" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerMasterSid"
+                        >   
+                      </dofi-searchable-dropdown>
                                     <label for="charge" class="input-label">Transporter <span
                                             class="text-danger">*</span></label>
                                     @if(tdsExemptionForm.get('Transporter')?.touched &&

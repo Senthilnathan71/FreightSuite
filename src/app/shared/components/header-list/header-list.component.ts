@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 export interface HeaderAction {
   label: string;
@@ -10,6 +11,8 @@ export interface HeaderAction {
   disabled?: boolean;
   condition?: boolean;
   cssClass?: string;
+  children?: HeaderAction[];  // Support for dropdown items
+  tooltip?: string;            // Tooltip text for info icon
 }
 
 @Component({
@@ -18,7 +21,9 @@ export interface HeaderAction {
   imports: [
     CommonModule,
     FormsModule,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgbDropdownModule,
+    NgbTooltipModule
   ],
   templateUrl:'./header-list.component.html',
   styleUrls: []

@@ -16,6 +16,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
 	selector: 'app-doctype',
@@ -27,7 +28,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 		OnlyTextDirective,
 		OnlyNumbersDirective,
 		TextWithNumbersDirective,
-		NgbDropdownModule
+		NgbDropdownModule,
+		SearchableDropdown
 	],
 	templateUrl: 'doctype.component.html',
 	styleUrl: './doctype.component.scss'
@@ -47,6 +49,11 @@ export class DoctypeComponent implements OnInit {
     currentMenuPermissions: any = {};
 	userData:any;
 	coaList: any[] = [];
+	CurrencyLookupConfig = {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
+  };
 subledgerList: any[] = [];
 currentCompany: any;
 currentBranch: any;
@@ -181,7 +188,10 @@ hasAnyDropdownPermission(): boolean {
         coa: this.masterService.getAllCoa(CompanyMasterSid) // Add this line to fetch COA data
     }).subscribe(({ companies, currencies, coa }) => {
         this.companyList = companies;
-        this.currencyList = currencies;
+        this.currencyList =  this.currencyList = (currencies || []).map(c => ({
+          ...c,
+          countryName: c.countryMaster?.countryName
+        }));
         this.coaList = coa.map(item => ({
             COAMasterSid: item.COAMasterSid,
             LedgerName: item.LedgerName

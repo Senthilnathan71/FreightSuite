@@ -201,16 +201,23 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         condition: this.hasPermission('Add')
       },
       {
-        label: 'Download Template',
-        icon: 'fas fa-download',
-        action: 'download-template',
-        condition: this.hasPermission('Add')
-      },
-      {
-        label: 'Upload Excel',
-        icon: 'fas fa-file-upload',
-        action: 'upload-file',
-        condition: this.hasPermission('Add')
+        label: 'Excel Import',
+        icon: 'fas fa-file-excel',
+        action: 'excel-dropdown',
+        condition: this.hasPermission('Add'),
+        tooltip: 'Import master jobs and house jobs from Excel template. Download the template, fill in your data, and upload to create multiple jobs at once.',
+        children: [
+          {
+            label: 'Download Template',
+            icon: 'fas fa-download',
+            action: 'download-template'
+          },
+          {
+            label: 'Upload Excel',
+            icon: 'fas fa-file-upload',
+            action: 'upload-file'
+          }
+        ]
       },
       {
         label: 'Report',

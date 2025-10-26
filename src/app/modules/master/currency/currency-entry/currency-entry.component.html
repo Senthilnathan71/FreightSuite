@@ -89,9 +89,9 @@
                                 [class.filled]="!!currencyForm.get('CountryMasterSid')?.value">
 
                                 <dofi-searchable-dropdown [items]="countryList" formControlName="CountryMasterSid"
-                                    [placeholder]="''" [displayFields]="currencylookupCofig.displayFields"
-                                    [displayLabels]="currencylookupCofig.displayLabels"
-                                    [labelFields]="currencylookupCofig.labelFields" [bindValue]="'CountryMasterSid'">
+                                    [placeholder]="''" [displayFields]="countryLookupConfig.displayFields"
+                                    [displayLabels]="countryLookupConfig.displayLabels"
+                                    [labelFields]="countryLookupConfig.labelFields" [bindValue]="'CountryMasterSid'">
                                 </dofi-searchable-dropdown>
                                 <label for="text-input" class="input-label">
                                     Country <span class="text-danger fw-bold">*</span>

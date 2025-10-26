@@ -143,9 +143,16 @@
                                 <aside class="col-md-4">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!chargeForm.get('UOM')?.value">
-                                        <ng-select formControlName="UOM" [items]="uomOptions" bindLabel="UOMCode"
+                                        <!-- <ng-select formControlName="UOM" [items]="uomOptions" bindLabel="UOMCode"
                                             bindValue="UOMMasterSid" placeholder="" (change)="onUOMChange()">
-                                        </ng-select>
+                                        </ng-select> -->
+                                        <dofi-searchable-dropdown [items]="uomOptions" formControlName="UOM" placeholder=""
+                        [displayFields]="UOMLookupConfig.displayFields"
+                        [displayLabels]="UOMLookupConfig.displayLabels"
+                        [labelFields]="UOMLookupConfig.labelFields" bindLabel="UOMCode"
+                        bindValue="UOMMasterSid"
+                        >   
+                      </dofi-searchable-dropdown>
                                         <label class="input-label">UOM <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('UOM')?.touched && chargeForm.get('UOM')?.invalid"
                                             class="error-message">
@@ -276,7 +283,7 @@
                                         <thead class="bg-info">
                                             <tr>
                                                 <th class="bg-transparent text-light" width="3%"></th>
-                                                <th class="bg-transparent text-light">HSN/SAC Code</th>
+                                                <th class="bg-transparent text-light">HS/SAC Code</th>
                                                 <th class="bg-transparent text-light">Description</th>
                                                 <th class="bg-transparent text-light">Tax Group</th>
                                                 <th class="bg-transparent text-light">Tax Rate (%)</th>

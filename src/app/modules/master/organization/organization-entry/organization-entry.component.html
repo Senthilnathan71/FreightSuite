@@ -143,12 +143,19 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="customerForm.get('CountryMasterSid')?.value">
-                <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
+                <!-- <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
                   formControlName="CountryMasterSid" placeholder="Country" [searchable]="true" [clearable]="false">
                   <ng-template ng-option-tmp let-item="item">
                     {{ item.countryName }} - {{ item.countryCode }}
                   </ng-template>
-                </ng-select>
+                </ng-select> -->
+                <dofi-searchable-dropdown [items]="countryList" formControlName="CountryMasterSid" placeholder=""
+                        [displayFields]="countryLookupConfig.displayFields"
+                        [displayLabels]="countryLookupConfig.displayLabels"
+                        [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
+                        bindValue="CountryMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
                 <label for="text-input" class="input-label">
                   Country <span class="text-danger">*</span>
                 </label>
@@ -569,13 +576,20 @@
                 <aside class="col-md-4">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('CustBranchState')?.value">
-                    <ng-select id="state_{{branchIndex}}" formControlName="CustBranchState" class=""
+                    <!-- <ng-select id="state_{{branchIndex}}" formControlName="CustBranchState" class=""
                       (change)="onStateChange(branchIndex, $event)" aria-placeholder="">
-                      <!-- <ng-option value="" disabled>Select State</ng-option> -->
                       <ng-option *ngFor="let option of stateList" [value]="option.StateMasterSid">
                         {{option.stateName}} - {{option.stateCode}}
                       </ng-option>
-                    </ng-select>
+                    </ng-select> -->
+                    <dofi-searchable-dropdown [items]="stateList" formControlName="CustBranchState" placeholder=""
+                        [displayFields]="stateLookupConfig.displayFields"
+                        [displayLabels]="stateLookupConfig.displayLabels"
+                        [labelFields]="stateLookupConfig.labelFields" bindLabel="stateName"
+                        bindValue="StateMasterSid"
+                        (itemSelected)="onStateChange(branchIndex, $event)"
+                        >   
+                      </dofi-searchable-dropdown>
                     <label for="state_{{branchIndex}}" class="input-label">State <span
                         class="text-danger">*</span></label>
                     @if (getBranchFormGroup(branch).get('CustBranchState')?.touched &&
@@ -593,13 +607,21 @@
                 <aside class="col-md-4">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('CustBranchCity')?.value">
-                    <ng-select [id]="'city_' + branchIndex" formControlName="CustBranchCity"
+                    <!-- <ng-select [id]="'city_' + branchIndex" formControlName="CustBranchCity"
                       (change)="onCityChange(branchIndex)" aria-placeholder="">
                       <ng-option *ngFor="let city of (branches.at(branchIndex)['cities'] || [])"
                         [value]="city.CityMasterSid">
                         {{ city.cityName }} - {{ city.cityCode }}
                       </ng-option>
-                    </ng-select>
+                    </ng-select> -->
+                    <dofi-searchable-dropdown [items]="cityList" formControlName="CustBranchCity" placeholder=""
+                        [displayFields]="cityLookupConfig.displayFields"
+                        [displayLabels]="cityLookupConfig.displayLabels"
+                        [labelFields]="cityLookupConfig.labelFields" bindLabel="cityName"
+                        bindValue="CityMasterSid"
+                        (itemSelected)="onCityChange(branchIndex)"
+                        >   
+                      </dofi-searchable-dropdown>
                     <label [for]="'city_' + branchIndex" class="input-label">
                       City <span class="text-danger">*</span>
                     </label>

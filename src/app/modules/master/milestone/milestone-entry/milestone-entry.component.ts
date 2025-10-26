@@ -14,6 +14,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -25,7 +27,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     NgSelectModule,
     DatePipe,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']
@@ -56,6 +59,7 @@ export class MilestoneEntryComponent implements OnInit {
   auditLogModalRef!: NgbModalRef;
   currentCompany:any;
   currentBranch:any;
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
