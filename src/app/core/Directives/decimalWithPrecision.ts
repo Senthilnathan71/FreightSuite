@@ -1,135 +1,317 @@
-import { Directive, ElementRef, HostListener, Input, OnInit } from '@angular/core';
+import { 
+  Directive, 
+  ElementRef, 
+  HostListener, 
+  Input, 
+  OnInit, 
+  AfterViewInit, 
+  OnChanges, 
+  OnDestroy, 
+  SimpleChanges, 
+  Optional,
+  Renderer2
+} from '@angular/core';
 import { NgControl } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil, distinctUntilChanged, debounceTime } from 'rxjs/operators';
 
+/**
+ * Industrial-grade directive for decimal precision formatting.
+ * 
+ * Features:
+ * - Always keeps the host input formatted (except during active typing)
+ * - Auto-inserts decimal point when integer limit is reached
+ * - Preserves cursor position during typing
+ * - Handles programmatic FormControl updates
+ * - Prevents circular update loops
+ * - Thread-safe with proper cleanup
+ * 
+ * @example
+ * <input 
+ *   type="text" 
+ *   [formControl]="amount"
+ *   DecimalPrecision
+ *   [DecimalPrecisionBefore]="10"
+ *   [DecimalPrecisionAfter]="2">
+ */
 @Directive({
   standalone: true,
   selector: '[DecimalPrecision]',
 })
-export class DecimalPrecisionDirective implements OnInit {
-  @Input('DecimalPrecisionBefore') beforeDecimal = 10;
-  @Input('DecimalPrecisionAfter') afterDecimal = 2;
+export class DecimalPrecisionDirective implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+  
+  @Input('DecimalPrecisionBefore') beforeDecimal: number = 10;
+  @Input('DecimalPrecisionAfter') afterDecimal: number = 2;
 
   private regex!: RegExp;
-
+  private isTyping: boolean = false;
+  private destroy$ = new Subject<void>();
+  private internalUpdate: boolean = false;
+  private lastKnownValue: string = '';
+  
   constructor(
     private el: ElementRef<HTMLInputElement>,
-    private control: NgControl
+    private renderer: Renderer2,
+    @Optional() private control?: NgControl
   ) {}
 
   ngOnInit(): void {
-    // This regex is the single source of truth for validating the number's structure.
+    this.buildRegex();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['afterDecimal'] || changes['beforeDecimal']) {
+      this.buildRegex();
+      if (!this.isTyping) {
+        this.scheduleFormat();
+      }
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Initial format on load
+    this.scheduleFormat();
+
+    // Subscribe to external FormControl changes
+    if (this.control?.control) {
+      this.control.control.valueChanges
+        .pipe(
+          takeUntil(this.destroy$),
+          distinctUntilChanged(),
+          debounceTime(0)
+        )
+        .subscribe((value) => {
+          // Only react to external changes (not our own updates)
+          if (!this.internalUpdate && !this.isTyping) {
+            this.applyFormatting(value);
+          }
+        });
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  @HostListener('focus')
+  onFocus(): void {
+    this.isTyping = true;
+    // Store the current formatted value when starting to type
+    this.lastKnownValue = this.el.nativeElement.value;
+  }
+
+  @HostListener('blur')
+  onBlur(): void {
+    this.isTyping = false;
+    // Format immediately on blur
+    this.applyFormatting(this.el.nativeElement.value);
+  }
+
+  @HostListener('input', ['$event'])
+  onInput(event: InputEvent): void {
+    if (!this.isTyping) return;
+
+    const input = this.el.nativeElement;
+    const cursorPosition = input.selectionStart || 0;
+    const value = input.value;
+
+    // Sanitize: allow only digits and one decimal point
+    const sanitized = this.sanitizeInput(value);
+
+    // Validate and constrain
+    const validated = this.validateAndConstrain(sanitized);
+
+    // Check if we need to auto-insert decimal point
+    const withAutoDecimal = this.autoInsertDecimalIfNeeded(validated, cursorPosition);
+
+    // Update if changed
+    if (value !== withAutoDecimal.value) {
+      this.setInputValue(withAutoDecimal.value, withAutoDecimal.cursorPosition);
+      this.updateFormControl(withAutoDecimal.value, false);
+    }
+  }
+
+  /**
+   * Auto-inserts decimal point when integer limit is reached.
+   */
+  private autoInsertDecimalIfNeeded(value: string, cursorPosition: number): { value: string, cursorPosition: number } {
+    // Check if value has no decimal point
+    if (!value.includes('.')) {
+      const integerPart = value;
+      
+      // If integer part reaches the limit, auto-insert decimal
+      if (integerPart.length === this.beforeDecimal) {
+        return {
+          value: integerPart + '.',
+          cursorPosition: cursorPosition + 1
+        };
+      }
+    }
+
+    return { value, cursorPosition };
+  }
+
+  /**
+   * Applies full formatting to the input value.
+   * This is called when NOT typing (blur, external updates, init).
+   */
+  private applyFormatting(value: any): void {
+    const formatted = this.formatValue(value);
+    
+    // Prevent unnecessary DOM updates
+    if (this.el.nativeElement.value !== formatted) {
+      this.setInputValue(formatted, formatted.length);
+      this.updateFormControl(formatted, true);
+    }
+  }
+
+  /**
+   * Formats a value to the specified decimal precision.
+   */
+  private formatValue(value: any): string {
+    // Handle null, undefined, empty string
+    if (value === null || value === undefined || value === '') {
+      return this.getDefaultValue();
+    }
+
+    // Convert to number
+    const numValue = typeof value === 'number' ? value : parseFloat(value);
+
+    // Handle NaN
+    if (isNaN(numValue)) {
+      return this.getDefaultValue();
+    }
+
+    // Format with fixed decimal places
+    return numValue.toFixed(this.afterDecimal);
+  }
+
+  /**
+   * Returns the default formatted value (0 with proper precision).
+   */
+  private getDefaultValue(): string {
+    return (0).toFixed(this.afterDecimal);
+  }
+
+  /**
+   * Sanitizes input by removing invalid characters.
+   */
+  private sanitizeInput(value: string): string {
+    // Remove everything except digits and decimal point
+    let sanitized = value.replace(/[^\d.]/g, '');
+
+    // Ensure only one decimal point
+    const parts = sanitized.split('.');
+    if (parts.length > 2) {
+      sanitized = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    return sanitized;
+  }
+
+  /**
+   * Validates and constrains input based on precision rules.
+   */
+  private validateAndConstrain(value: string): string {
+    if (value === '') return '';
+
+    const parts = value.split('.');
+    let integerPart = parts[0] || '';
+    let decimalPart = parts[1];
+
+    // Constrain integer part length
+    if (integerPart.length > this.beforeDecimal) {
+      integerPart = integerPart.slice(0, this.beforeDecimal);
+    }
+
+    // Build result
+    let result = integerPart;
+
+    // Handle decimal part
+    if (parts.length > 1) {
+      result += '.';
+      if (decimalPart !== undefined) {
+        // Constrain decimal part length
+        decimalPart = decimalPart.slice(0, this.afterDecimal);
+        result += decimalPart;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Sets the input value and cursor position.
+   */
+  private setInputValue(value: string, cursorPosition: number): void {
+    const input = this.el.nativeElement;
+    
+    this.renderer.setProperty(input, 'value', value);
+    
+    // Set cursor position (safe bounds)
+    const safePosition = Math.max(0, Math.min(cursorPosition, value.length));
+    
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      if (document.activeElement === input) {
+        input.setSelectionRange(safePosition, safePosition);
+      }
+    });
+  }
+
+  /**
+   * Updates the FormControl value without triggering valueChanges.
+   */
+  private updateFormControl(value: string, parseAsNumber: boolean): void {
+    if (!this.control?.control) return;
+
+    this.internalUpdate = true;
+
+    let controlValue: number | string | null;
+
+    if (parseAsNumber) {
+      // When formatting (blur/external), always store as number
+      const numericValue = value === '' ? 0 : parseFloat(value);
+      controlValue = isNaN(numericValue) ? 0 : numericValue;
+    } else {
+      // When typing, store string to preserve partial input like "12." or "12.0"
+      controlValue = value === '' ? null : value;
+    }
+
+    const currentValue = this.control.control.value;
+
+    // Only update if value actually changed
+    if (currentValue !== controlValue) {
+      this.control.control.setValue(controlValue, { 
+        emitEvent: parseAsNumber,
+        emitModelToViewChange: false 
+      });
+    }
+
+    // Reset flag after micro-task
+    Promise.resolve().then(() => {
+      this.internalUpdate = false;
+    });
+  }
+
+  /**
+   * Schedules formatting in the next tick.
+   */
+  private scheduleFormat(): void {
+    setTimeout(() => {
+      if (!this.isTyping) {
+        this.applyFormatting(this.el.nativeElement.value);
+      }
+    }, 0);
+  }
+
+  /**
+   * Builds the validation regex based on precision settings.
+   */
+  private buildRegex(): void {
     this.regex = new RegExp(
       `^\\d{0,${this.beforeDecimal}}(\\.\\d{0,${this.afterDecimal}})?$`
     );
-  }
-
-  /**
-   * On blur, format the input value to the specified number of decimal places.
-   * This provides the final, clean formatting after the user has finished editing.
-   * Example: '123' becomes '123.00' or '45.6' becomes '45.60'.
-   */
-  @HostListener('blur')
-  onBlur(): void {
-    const currentValue = this.el.nativeElement.value;
-
-    // Only format if there is a value
-    if (currentValue) {
-      const numValue = parseFloat(currentValue);
-      if (!isNaN(numValue)) {
-        const formattedValue = numValue.toFixed(this.afterDecimal);
-        this.updateValue(formattedValue);
-      } else {
-        // Clear out invalid values like a single '.'
-        this.updateValue('');
-      }
-    }
-  }
-
-  /**
-   * The keypress event is used to proactively guide and restrict user input.
-   * It prevents invalid characters from ever being entered.
-   */
-  @HostListener('keypress', ['$event'])
-  onKeyPress(event: KeyboardEvent): void {
-    const { key } = event;
-    const { value, selectionStart, selectionEnd } = this.el.nativeElement;
-
-    if (this.isControlKey(event)) {
-      return; // Allow backspace, arrows, etc.
-    }
-
-    // This is the core logic for automatically inserting a decimal point.
-    // If the integer part is full and the user types another digit,
-    // we insert a '.' before that digit.
-    const integerPart = value.split('.')[0];
-    if (
-      integerPart.length >= this.beforeDecimal &&
-      !value.includes('.') &&
-      /\d/.test(key) &&
-      selectionStart === value.length // Important: only trigger when typing at the end
-    ) {
-      event.preventDefault();
-      const newValue = `${value}.${key}`;
-      if (this.regex.test(newValue)) {
-        this.updateValue(newValue);
-      }
-      return;
-    }
-
-    // Predict the next value and test it against the regex.
-    // If the new value would be invalid, prevent the keypress.
-    const nextValue = `${value.slice(
-      0,
-      selectionStart ?? 0
-    )}${key}${value.slice(selectionEnd ?? 0)}`;
-
-    if (nextValue && !this.regex.test(nextValue)) {
-      event.preventDefault();
-    }
-  }
-
-  /**
-   * The input event handler is a fallback to catch changes that bypass keypress,
-   * such as pasting text. It sanitizes the entire value.
-   */
-  @HostListener('input')
-  onInput(): void {
-    const { value } = this.el.nativeElement;
-
-    // If the value somehow becomes invalid (e.g., from a paste),
-    // we truncate it to a valid format.
-    if (value && !this.regex.test(value)) {
-      const [integerPart, decimalPart] = value.replace(/[^\d.]/g, '').split('.');
-      
-      let newValue = integerPart.slice(0, this.beforeDecimal);
-      
-      if (decimalPart !== undefined) {
-        // Also truncate the decimal part
-        newValue += '.' + decimalPart.slice(0, this.afterDecimal);
-      }
-
-      this.updateValue(newValue);
-    }
-  }
-
-  /**
-   * Helper function to check for allowed non-character keys.
-   */
-  private isControlKey(event: KeyboardEvent): boolean {
-    const controlKeys = [
-      'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
-      'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab', 'Enter'
-    ];
-    return controlKeys.includes(event.key) || event.ctrlKey || event.metaKey;
-  }
-
-  /**
-   * Centralized method to update the input's value and the associated form control.
-   */
-  private updateValue(value: string): void {
-    this.el.nativeElement.value = value;
-    if (this.control?.control) {
-      this.control.control.setValue(value, { emitEvent: false });
-    }
   }
 }

@@ -16,6 +16,8 @@ import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 
 @Component({
   selector: 'app-cost-entry',
@@ -121,6 +123,10 @@ export class CostEntryComponent implements OnInit {
   @Input()
   set currencyList(value: any[]) {
     this._currencyList = value || [];
+     if (this._currencyList.length > 0) {
+      this.currencyConfigService.initializeConfigurations(this._currencyList);
+      console.log(`Initialized currency configurations for ${this._currencyList.length} currencies`);
+    }
   }
   get currencyList(): any[] {
     return this._currencyList;
@@ -206,6 +212,14 @@ export class CostEntryComponent implements OnInit {
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
   private routeBookingHeaderSid: number | null = null;
+  /**
+   * Calculate local amount before round off the Currency Amount
+   * 
+   * Yes, then Multiply "No.of Unit" with "Per Unit Rate"  before round off 99.1881 x 14.7978 =	 
+   * 
+   * No, then	Multiply "No.of Unit" with "Per Unit Rate" then after round off  round( 99.1881,2) x 14.7978 
+   */
+  formatCurrencyAmountBeforeConcludingLocal : boolean = true;
 
   customerLookupConfig = {
     displayFields : ['CustomerName','BranchName', 'Address'],
@@ -230,7 +244,9 @@ export class CostEntryComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private excelExportService: ExcelExportService,
     private datePipe: CustomDatePipe,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private currencyConfigService : CurrencyConfigurationService,
+    private currencyFormatter: CurrencyFormatService
   ) {}
 
   ngOnInit(): void {
@@ -994,13 +1010,22 @@ createRateFormGroup(data?: any): FormGroup {
    */
   calculateCostAmount(index: number) {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-    // Use NumberOfUnit (main field) if CostNumberOfUnit is not set
-    const numberOfUnits = Number(formGroup.get('CostNumberOfUnit')?.value || formGroup.get('NumberOfUnit')?.value || 0);
-    const perUnit = Number(formGroup.get('CostRate')?.value || 0);
+    const CurrencyMasterSid = formGroup.get('CostCurrencyMasterSid')?.value;
+    const noOfUnit = formGroup.get('NumberOfUnit')?.value || 0;
+    const exchangeRate = formGroup.get('CostExchangeRate')?.value || 1;
+    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
+    const perUnit = formGroup.get('CostRate')?.value || 0;
+    const amount = Number(noOfUnit) * Number(perUnit);
+    const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
+    let finalAmount;
+    if (this.formatCurrencyAmountBeforeConcludingLocal) {
+      finalAmount = Number(formattedAmount);
+    } else {
+      finalAmount = Number(amount);
+    }
 
-    const amount = numberOfUnits * perUnit;
     formGroup.patchValue({
-      CostAmount: amount.toFixed(this.digitsAfterDecimal)
+      CostAmount: this.getFormattedAmount(finalAmount, CurrencyMasterSid)
     }, { emitEvent: false });
 
     this.calculateCostLocalAmount(index);
@@ -1011,12 +1036,22 @@ createRateFormGroup(data?: any): FormGroup {
    */
   calculateCostLocalAmount(index: number) {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-    const amount = Number(formGroup.get('CostAmount')?.value || 0);
-    const exchangeRate = Number(formGroup.get('CostExchangeRate')?.value || 1);
 
-    const localAmount = amount * exchangeRate;
+    const CurrencyMasterSid = formGroup.get('CostCurrencyMasterSid')?.value;
+    const noOfUnit = formGroup.get('NumberOfUnit')?.value || 0;
+    const exchangeRate = formGroup.get('CostExchangeRate')?.value || 1;
+    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
+    const perUnit = formGroup.get('CostRate')?.value || 0;
+    const amount = Number(noOfUnit) * Number(perUnit);
+    const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
+    let localAmount;
+    if (this.formatCurrencyAmountBeforeConcludingLocal) {
+      localAmount = Number(formattedAmount) * Number(formattedExchangeRate);
+    } else {
+      localAmount = Number(amount) * Number(formattedExchangeRate);
+    }
     formGroup.patchValue({
-      CostLocalAmount: localAmount.toFixed(this.digitsAfterDecimal)
+      CostLocalAmount: this.getFormattedAmount(localAmount, CurrencyMasterSid)
     }, { emitEvent: false });
   }
 
@@ -1025,15 +1060,21 @@ createRateFormGroup(data?: any): FormGroup {
    */
   calculateRevenueAmount(index: number) {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-    // Use NumberOfUnit (main field) if RevenueNumberOfUnit is not set
-    const numberOfUnits = Number(formGroup.get('RevenueNumberOfUnit')?.value || formGroup.get('NumberOfUnit')?.value || 0);
-    const perUnit = Number(formGroup.get('RevenueRate')?.value || 0);
-
-    const amount = numberOfUnits * perUnit;
+    const CurrencyMasterSid = formGroup.get('RevenueCurrencyMasterSid')?.value;
+    const noOfUnit = formGroup.get('NumberOfUnit')?.value || 0;
+    const exchangeRate = formGroup.get('RevenueExchangeRate')?.value || 1;
+    const perUnit = formGroup.get('RevenueRate')?.value || 0;
+    const amount = Number(noOfUnit) * Number(perUnit);
+    const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
+    let finalAmount;
+    if (this.formatCurrencyAmountBeforeConcludingLocal) {
+      finalAmount = Number(formattedAmount);
+    } else {
+      finalAmount = Number(amount);
+    }
     formGroup.patchValue({
-      RevenueAmount: amount.toFixed(this.digitsAfterDecimal)
+      RevenueAmount: this.getFormattedAmount(finalAmount, formGroup.get('RevenueCurrencyMasterSid')?.value)
     }, { emitEvent: false });
-
     this.calculateRevenueLocalAmount(index);
   }
 
@@ -1042,12 +1083,21 @@ createRateFormGroup(data?: any): FormGroup {
    */
   calculateRevenueLocalAmount(index: number) {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-    const amount = Number(formGroup.get('RevenueAmount')?.value || 0);
-    const exchangeRate = Number(formGroup.get('RevenueExchangeRate')?.value || 1);
-
-    const localAmount = amount * exchangeRate;
+    const CurrencyMasterSid = formGroup.get('RevenueCurrencyMasterSid')?.value;
+    const noOfUnit = formGroup.get('NumberOfUnit')?.value || 0;
+    const exchangeRate = formGroup.get('RevenueExchangeRate')?.value || 1;
+    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
+    const perUnit = formGroup.get('RevenueRate')?.value || 0;
+    const amount = Number(noOfUnit) * Number(perUnit);
+    const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
+    let localAmount;
+    if(this.formatCurrencyAmountBeforeConcludingLocal){
+      localAmount = Number(formattedAmount) * Number(formattedExchangeRate);
+    } else {
+      localAmount = Number(amount) * Number(formattedExchangeRate);
+    }
     formGroup.patchValue({
-      RevenueLocalAmount: localAmount.toFixed(this.digitsAfterDecimal)
+      RevenueLocalAmount: this.getFormattedAmount(localAmount, CurrencyMasterSid)
     }, { emitEvent: false });
   }
 
@@ -1065,7 +1115,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     if (fromCurrencyCode === toCurrencyCode) {
       const formGroup = this.rateFormArray.at(index) as FormGroup;
-      formGroup.patchValue({ CostExchangeRate: '1.00' });
+      formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(1, fromCurrencyCode), });
       this.calculateCostLocalAmount(index);
       return;
     }
@@ -1075,7 +1125,7 @@ createRateFormGroup(data?: any): FormGroup {
       (resp: any) => {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
-          formGroup.patchValue({ CostExchangeRate: Number(resp.data).toFixed(this.digitsAfterDecimal) });
+          formGroup.patchValue({ CostExchangeRate: this.getFormattedExchangeRate(Number(resp.data), fromCurrencyCode), });
           this.calculateCostLocalAmount(index);
         }
       }
@@ -1094,7 +1144,9 @@ createRateFormGroup(data?: any): FormGroup {
 
     if (fromCurrencyCode === toCurrencyCode) {
       const formGroup = this.rateFormArray.at(index) as FormGroup;
-      formGroup.patchValue({ RevenueExchangeRate: '1.00' });
+      formGroup.patchValue({ 
+        RevenueExchangeRate:  this.getFormattedExchangeRate(1, fromCurrencyCode),
+      });
       this.calculateRevenueLocalAmount(index);
       return;
     }
@@ -1104,7 +1156,7 @@ createRateFormGroup(data?: any): FormGroup {
       (resp: any) => {
         if (resp.status && resp.data) {
           const formGroup = this.rateFormArray.at(index) as FormGroup;
-          formGroup.patchValue({ RevenueExchangeRate: Number(resp.data).toFixed(this.digitsAfterDecimal) });
+          formGroup.patchValue({ RevenueExchangeRate: this.getFormattedExchangeRate(Number(resp.data), fromCurrencyCode), });
           this.calculateRevenueLocalAmount(index);
         }
       }
@@ -1147,8 +1199,13 @@ createRateFormGroup(data?: any): FormGroup {
     this.operationService.getExchangeRate(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.rateForm.get('CostExchangeRate')?.setValue(resp.data ? resp.data : '');
-          this.rateForm.get('RevenueExchangeRate')?.setValue(resp.data ? resp.data : '');
+          this.rateForm.get('CostExchangeRate')?.setValue(
+            resp.data ? 
+            this.getFormattedExchangeRate(resp.data,fromCurrency)
+            : '');
+          this.rateForm.get('RevenueExchangeRate')?.setValue(resp.data ? 
+            this.getFormattedExchangeRate(resp.data,fromCurrency)
+            : '');
 
           this.calculateLocalAmount();
         } else {
@@ -1601,6 +1658,66 @@ createRateFormGroup(data?: any): FormGroup {
         return allDepartmentNames.includes(departmentName);
       });
     }
+  }
+
+  /**
+   * Get the number of decimal places allowed for amounts
+   * Used with [decimalDigitsAfter] directive
+   * Example: getAmountDecimalPlaces('USD') returns 2
+   */
+  public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
+    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    if (currency) {
+      const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+      // console.log(config?.amountDecimal);
+      // console.log("Currency",currency);
+      // console.log("Currency Amount Decimal",config.amountDecimal);
+      return config?.amountDecimal;
+    }
+    return 2;
+  }
+
+  /**
+   * Get the number of decimal places allowed for exchange rates
+   * Example: getExchangeRateDecimalPlaces('USD') returns 3
+   */
+  public getExchangeRateDecimalPlaces(CurrencyMasterSid: string): number {
+    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    if (currency) {
+      const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+      // console.log("Currency", currency);
+      // console.log("Currency Exchange Decimal", config?.exchangeDecimal);
+      return config?.exchangeDecimal;
+    }
+    return 2;
+  }
+    /**
+   * Format an amount with currency symbol and comma separators
+   * Example: getFormattedAmount(1234.56, 'USD') returns '$1,234.56'
+   */
+  public getFormattedAmount(amount: number, CurrencyMasterSid: number) {
+    console.log("Inside getFormattedAmount",amount,CurrencyMasterSid);
+    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    console.info("Currency in getFormattedAmount",currency);
+    const input = {
+      value : amount,
+      currencyCode: currency?.currencyCode
+    }
+    console.warn("Before Format",amount);
+    console.warn("After Format",this.currencyFormatter.formatAmount(input,false));
+    return this.currencyFormatter.formatAmount(input,false);
+  }
+
+  /**
+   * Format an exchange rate as a string
+   * Example: getFormattedExchangeRate(1234.5678, 'USD') returns '1234.568'
+   */
+  public getFormattedExchangeRate(rate: number, CurrencyMasterSid: number): number {
+    const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    return this.currencyFormatter.formatExchangeRate({
+      value: rate,
+      currencyCode: currency?.currencyCode
+    });
   }
 
 

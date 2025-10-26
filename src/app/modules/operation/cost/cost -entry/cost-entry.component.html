@@ -199,7 +199,7 @@
                   <input type="text" min="0" formControlName="NumberOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (input)="calculateCostAmount(i); calculateRevenueAmount(i)"
-                    [disabled]="!canEditRate(i)" [onlyNumbers]>
+                    [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
                 </div>
               </td>
             </tr>
@@ -281,7 +281,7 @@
                       class="custom-input-field sm text-end"
                       (input)="calculateRevenueLocalAmount(i)"
                       [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
                       >
                   </div>
                 </td>
@@ -292,7 +292,7 @@
                       (input)="calculateRevenueAmount(i)"
                       [disabled]="!canEditRate(i)"
                       DecimalPrecision [DecimalPrecisionBefore]="6"
-                      [DecimalPrecisionAfter] ="digitsAfterDecimal"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
                       >
                   </div>
                 </td>
@@ -303,7 +303,7 @@
                       (input)="calculateRevenueLocalAmount(i)"
                       [disabled]="!canEditRate(i)"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="digitsAfterDecimal" 
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
                     >
                   </div>
                 </td>
@@ -311,7 +311,9 @@
                 <td>
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
-                      [value]="row.get('RevenueLocalAmount')?.value | numberFormat"
+                      [value]="row.get('RevenueLocalAmount')?.value"
+                      DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
                       readonly>
                   </div>
                 </td>
@@ -399,7 +401,7 @@
                       (input)="calculateCostLocalAmount(i)"
                       [disabled]="!canEditRate(i)"
                       DecimalPrecision [DecimalPrecisionBefore]="4"
-                     [DecimalPrecisionAfter]="digitsAfterDecimal"
+                     [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
                     >
                   </div>
                 </td>
@@ -411,7 +413,7 @@
                       (input)="calculateCostAmount(i)"
                       [disabled]="!canEditRate(i)"
                       DecimalPrecision [DecimalPrecisionBefore]="6"
-                      [DecimalPrecisionAfter]="digitsAfterDecimal" 
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
                     >
                   </div>
                 </td>
@@ -422,7 +424,7 @@
                       (input)="calculateCostLocalAmount(i)"
                       [disabled]="!canEditRate(i)"
                       DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
                       >
                   </div>
                 </td>
@@ -430,7 +432,7 @@
                 <td>
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
-                      [value]="row.get('CostLocalAmount')?.value | numberFormat"
+                      [value]="row.get('CostLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
                       readonly>
                   </div>
                 </td>
