@@ -9,11 +9,12 @@ import { authService } from '../auth.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import * as $ from 'jquery';
 import { FeatherModule } from 'angular-feather';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule, FeatherModule],
+  imports: [RouterModule, CommonModule,NgxSpinnerModule, ReactiveFormsModule, FeatherModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
@@ -33,7 +34,8 @@ export class LoginComponent implements OnInit {
     private authService: authService,
     private appSettingService: AppSettingsService,
     private localStorage: StorageMap,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private spinner: NgxSpinnerService  // Add this
 
   ) { }
 
@@ -73,6 +75,7 @@ export class LoginComponent implements OnInit {
 
     this.isSubmitted = true;
     this.isLoading = true;
+    this.spinner.show()
 
     // Get browser geolocation
     if (navigator.geolocation) {
@@ -114,6 +117,7 @@ export class LoginComponent implements OnInit {
       this.isLoading = false;
 
       if (!resp.status) {
+        this.spinner.hide();
         this.errorMessage = resp.message || "Login failed";
         this.appSettingService.showError(this.errorMessage)
         return;
@@ -128,9 +132,15 @@ export class LoginComponent implements OnInit {
         localStorage.removeItem('rememberedPassword');
       }
 
-      this.router.navigate(['dashboard']);
+      this.router.navigate(['dashboard']).then(() => {
+        this.spinner.hide();
+      });
+    },(error) => {
+      this.spinner.hide(); // Hide spinner on error
+      this.isLoading = false;
+      this.appSettingService.showError('An error occurred during login');
     });
-  }
+   }
 
 
 
@@ -187,10 +197,11 @@ export class LoginComponent implements OnInit {
   sendResetLink() {
     let param = this.forgotPasswordForm.value;
     this.isLoading = true;
+    // this.spinner.show(); // Show spinner
 
     try {
       this.authService.forgotPassword(param).subscribe((resp) => {
-        if (resp.status) {
+         if (resp.status) {
           this.successMessage = resp.message;
           this.appSettingService.showSuccess('Email Sent Successfully');
           this.router.navigate(['auth/login']);
@@ -202,6 +213,7 @@ export class LoginComponent implements OnInit {
         }
       })
     } catch (err) {
+      // this.spinner.hide(); // Hide spinner
       this.errorMessage = "Something went wrong while processing your request. Please try again"
     }
   }

@@ -38,6 +38,7 @@
                         [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry" appPreventMultiClick>
                         <i class="fas fa-save me-1"></i> {{isEditMode ? 'Save' : "Save"}}
                     </button>
+                     @if(isEditMode){
                     <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                             ngbDropdownToggle>
@@ -60,6 +61,7 @@
                                 Agent Email</button>
                         </div>
                     </div>
+                }
                 </div>
             </div>
         </div>
@@ -200,9 +202,9 @@
                     </div>
                 </div>
                 } @else { -->
-                   <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
+                <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
 
-                 </aside>
+                </aside>
                 <div class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('Segment')?.value">
@@ -218,10 +220,10 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- } -->
 
-              
+
                 <!-- <div class="col-md-4">
                     <div class="custom-form-group">
                         <input type="text" id="enquiryBy" class="form-control custom-input-field sm"
@@ -252,9 +254,9 @@
                         </label>
                     </div>
                 </div>
-                 <aside class="col-md-2 d-md-block d-none ">
+                <aside class="col-md-2 d-md-block d-none ">
 
-                 </aside>
+                </aside>
 
 
 
@@ -279,9 +281,9 @@
 
 
 
-                  <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
+                <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
 
-                 </aside>
+                </aside>
                 <aside class="col-md-2 ">
                     <div class="custom-form-group custom-form-group-select"
                         [class.filled]="!!rateRequestForm.get('EnquiryType')?.value">
@@ -359,10 +361,10 @@
                     </div>
                 </aside>
 
-                
-                  <aside class="col-md-2 d-md-block d-none">
 
-                 </aside>
+                <aside class="col-md-2 d-md-block d-none">
+
+                </aside>
 
 
 
@@ -460,7 +462,7 @@
                                                         class="text-danger"></span></label>
                                             </div>
                                         </aside>
-                                          <aside class="col-md-6">
+                                        <aside class="col-md-6">
                                             <div class="custom-form-group">
                                                 <input type="text" id="contactPerson" placeholder=""
                                                     class="custom-input-field sm" formControlName="ContactPerson">
@@ -468,7 +470,7 @@
                                                         class="text-danger"></span></label>
                                             </div>
                                         </aside>
-                                          <aside class="col-md-6">
+                                        <aside class="col-md-6">
                                             <div class="custom-form-group">
                                                 <input type="text" id="phone" placeholder=""
                                                     class="custom-input-field sm" formControlName="ContactNumber">
@@ -583,40 +585,23 @@
                                             </div>
                                         </aside> -->
                                         <div class="col-md-6">
- 
-    <div class="custom-form-group custom-form-group-select"
- 
-        [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
- 
-        <dofi-searchable-dropdown
- 
-            [items]="incoList"
- 
-            formControlName="IncoTerms"
- 
-            placeholder=""
- 
-            [displayFields]="incoLookupConfig.displayFields"
- 
-            [displayLabels]="incoLookupConfig.displayLabels"
- 
-            [labelFields]="incoLookupConfig.labelFields"
- 
-            bindValue="IncoName"
- 
-            (itemSelected)="onIncoChange($event)"
- 
-            (clear)="onIncoChange(null)"
- 
-            >
- 
-        </dofi-searchable-dropdown>
- 
-        <label class="input-label">Inco</label>
- 
-    </div>
- 
-</div>
+
+                                            <div class="custom-form-group custom-form-group-select"
+                                                [class.filled]="!!rateRequestForm.get('IncoTerms')?.value">
+
+                                                <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms"
+                                                    placeholder="" [displayFields]="incoLookupConfig.displayFields"
+                                                    [displayLabels]="incoLookupConfig.displayLabels"
+                                                    [labelFields]="incoLookupConfig.labelFields" bindValue="IncoName"
+                                                    (itemSelected)="onIncoChange($event)" (clear)="onIncoChange(null)">
+
+                                                </dofi-searchable-dropdown>
+
+                                                <label class="input-label">Inco</label>
+
+                                            </div>
+
+                                        </div>
                                         <!-- <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('FreightPPCC')?.value">
@@ -629,16 +614,14 @@
                                         </aside> -->
 
                                         <aside class="col-md-6">
-    <div class="custom-form-group">
-        <input type="text"
-            id="freightTerms"
-            class="form-control custom-input-field sm"
-            formControlName="FreightPPCC"
-            placeholder="">
-        <label for="freightTerms" class="input-label">Freight Terms</label>
-    </div>
-</aside>
- 
+                                            <div class="custom-form-group">
+                                                <input type="text" id="freightTerms"
+                                                    class="form-control custom-input-field sm"
+                                                    formControlName="FreightPPCC" placeholder="">
+                                                <label for="freightTerms" class="input-label">Freight Terms</label>
+                                            </div>
+                                        </aside>
+
 
                                         <aside class="col-md-6" [formGroup]="enquiryOtherForm">
                                             <div class="custom-form-group custom-form-group-select"
@@ -718,12 +701,12 @@
                                             </div>
                                         </aside>
                                         <div class="col-md-6">
-                    <div class="custom-form-group">
-                        <input type="text" id="dept" class="form-control custom-input-field sm"
-                            formControlName="CustomerRef" placeholder="">
-                        <label for="dept" class="input-label">Customer Ref</label>
-                    </div>
-                </div>
+                                            <div class="custom-form-group">
+                                                <input type="text" id="dept" class="form-control custom-input-field sm"
+                                                    formControlName="CustomerRef" placeholder="">
+                                                <label for="dept" class="input-label">Customer Ref</label>
+                                            </div>
+                                        </div>
                                         <aside class="col-md-6">
                                             <div class="custom-form-group mb-0">
                                                 <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
@@ -731,7 +714,7 @@
                                                 <label for="text-input" class="input-label">Remarks </label>
                                             </div>
                                         </aside>
-                                      
+
                                         <div class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!rateRequestForm.get('status')?.value" appendTo="body">
@@ -746,7 +729,7 @@
                                                 </small>
                                             </div>
                                         </div>
-                                        
+
                                     </div>
                                 </div>
                             </div>
@@ -1203,7 +1186,7 @@
                                                         </td> -->
                                                             <td class="bg-transparent text-light text-center dofi-max-w-150"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
-                                                                <label class="form-label mb-0">Terms <span
+                                                                <label class="form-label mb-0">Shipment Terms <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             @if( routeCargo(routeIndex).controls.length > 1){
@@ -1562,7 +1545,7 @@
             <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>
-            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" >
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
                 <i class="fas fa-envelope me-1"></i> Send Email
             </button>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
@@ -1573,171 +1556,265 @@
     </div>
 
     <div class="modal-body ">
-            <div id="printContent">
-                  <div class="print-a4">
+        <div id="printContent">
+            <div class="print-a4">
 
-            <!-- Company Info -->
-            <div class="row ">
-                <div class="col-md-6 col-12">
-                    <div class="d-flex align-items-center gap-4">
-                        <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="50" height="50"
-                            class="img-fluid" alt="">
-                        <!-- <h4 style="margin: 0;">DOFI<br>Infosys LLC</h4> -->
-                    </div>
-                </div>
-                <div class="col-md-6 col-12">
-                    <div class="text-start">
-                        <h4 class="mb-1">{{currentCompany?.companyName || 'Company Name'}}</h4>
-                        <h5 class="mb-1">{{currentBranch?.branchName || 'Company Branch'}}</h5>
-                        <p class="mb-1">{{currentCompany?.addressLine1 || currentCompany?.Address || 'Address'}}</p>
-                        <p class="mb-1">{{currentBranch?.cityMaster?.cityName || currentCompany?.City || 'City'}},
-                            {{currentCompany?.postal_code || currentCompany?.ZipCode || 'Zipcode'}}</p>
-                        <p class="mb-1">TEL: {{currentCompany?.phoneNumber || currentCompany?.Phone || 'Phone'}}</p>
-                    </div>
-                </div>
-            </div>
+                <!-- Company Info -->
+                <div class="row ">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                class="img-fluid">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        </div>
 
-            <!-- Horizontal Line -->
-            <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
-
-            <!-- Title -->
-            <h5 class="text-center fw-bold pb-2" style="margin: 0;">ENQUIRY</h5>
-
-            <!-- Enquiry Details -->
-            <div class="row ">
-                <div class="col-12 col-md-6">
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong> Enquiry Number</strong></div>
-                        <div>: {{ enquiryData?.EnquiryNumber || '-' }}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Name</strong></div>
-                        <div>: {{ enquiryData?.CustomerName || '-' }}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Address </strong></div>
-                        <div>: {{ enquiryData?.CustomerAddress || '-' }}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Received Date </strong></div>
-                        <div>: {{ (enquiryData?.EnquiryDate | formatDate) || '-'}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Port Of Origin</strong></div>
-                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Port Of Loading </strong></div>
-                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Dept</strong></div>
-                        <div>: {{ enquiryData?.ShipmentType || '-' }}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Shipper Name </strong></div>
-                        <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '-' }}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Shipper Address </strong></div>
-                        <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '-' }} </div>
+                        <div class="company-info ">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                            <p class="mb-1">
+                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                            </p>
+                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created By </strong></div>
-                        <div>: {{ enquiryData?.createdBy || '-' }}</div>
+                <!-- Horizontal Line -->
+                <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+                <!-- Title -->
+                <h5 class="text-center fw-bold pb-2" style="margin: 0;">ENQUIRY</h5>
+
+                <!-- Enquiry Details -->
+                <div class="row ">
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong> Enquiry Number</strong></div>
+                            <div>: {{ enquiryData?.EnquiryNumber || '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Name</strong></div>
+                            <div>: {{ enquiryData?.CustomerName || '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Address </strong>
+                            </div>
+                            <div>: {{ enquiryData?.CustomerAddress || '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Received Date </strong>
+                            </div>
+                            <div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Port Of Origin</strong></div>
+                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Port Of Loading </strong></div>
+                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Dept</strong></div>
+                            <div>: {{ enquiryData?.ShipmentType || '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Shipper Name </strong></div>
+                            <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Shipper Address </strong></div>
+                            <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '' }} </div>
+                        </div>
                     </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created Date</strong></div>
-                        <div>: {{ (enquiryData?.EnquiryDate | formatDate) || '-'}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Contact / Number</strong></div>
-                        <div>: {{ enquiryData?.ContactPerson || '-' }} / {{ enquiryData?.ContactNumber || '-' }}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Expected Shipment Date</strong></div>
-                        <div>: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || '-'}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Final Destination </strong></div>
-                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Port of Discharge </strong></div>
-                        <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div>
-                    </div>
-                    <div class="d-flex mb-1">
-                        <div style="width: 200px; white-space: nowrap;"><strong>Inco Terms</strong></div>
-                        <div>: {{ enquiryData?.IncoTerms || '-' }}</div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created By </strong></div>
+                            <div>: {{ enquiryData?.createdBy || '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created Date</strong></div>
+                            <div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Contact / Number</strong></div>
+                            <div>: {{ enquiryData?.ContactPerson || '' }} / {{ enquiryData?.ContactNumber || '' }}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Expected Shipment Date</strong>
+                            </div>
+                            <div>: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || ''}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Final Destination </strong></div>
+                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Port of Discharge </strong></div>
+                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div>
+                        </div>
+                        <div class="d-flex mb-1">
+                            <div style="width: 200px; white-space: nowrap;"><strong>Inco Terms</strong></div>
+                            <div>: {{ enquiryData?.IncoTerms || '' }}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Cargo Summary -->
-            <div style="margin-top: 2rem;">
-                <p><strong>Cargo Type : </strong>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || '-'
+                <!-- Cargo Summary -->
+                <!-- <div style="margin-top: 2rem;">
+                <p><strong>Cargo Type : </strong>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || ''
                     }} &nbsp; / <strong>
                         Container Type :
-                    </strong> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '-' }} &nbsp; /
+                    </strong> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '' }} &nbsp; /
                     <strong>Qty</strong>
-                    : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '-' }} &nbsp; / <strong>
+                    : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '' }} &nbsp; / <strong>
                         Gross Weight
                     </strong>
                     :
-                    {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '-' }} &nbsp; /
-                    <strong>CBM</strong> : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '-' }}
+                    {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' }} &nbsp; /
+                    <strong>CBM</strong> : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' }}
                 </p>
-            </div>
+            </div> -->
 
-            <!-- Product Table -->
-            <div style="margin-top: 1rem;">
-                <p style="font-weight: bold; margin-bottom: 4px;">Product Details</p>
-                <div class="table-responsive ">
-                    <table class="table tablebordered  table-sm" style="margin: 0;">
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Pkg Type</th>
-                                <th>Qty</th>
-                                <th>Gross Wt.</th>
-                                <th>CBM</th>
-                            </tr>
-                        </thead>  
-                        <tbody>
-                            <tr>
-                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ProductName || '-' }}</td>
-                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageType || '-' }}</td>
-                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '-' }}</td>
-                                <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '-' }}</td>
-                                <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '-' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Product Table -->
+                <div style="margin-top: 1rem;">
+                    <p style="font-weight: bold; margin-bottom: 4px;">Product Details</p>
+                    <div class="table-responsive ">
+                        <table class="table tablebordered  table-sm" style="margin: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Cargo Type</th>
+
+                                    <th>Cargo Desc</th>
+
+
+                                    <th>Product Name</th>
+                                    @if(selectedFCLLCL === "AIR"){
+                                    <th>Chargeable Wt</th>
+                                    <th>Length</th>
+                                    <th>Width</th>
+                                    <th>Height</th>
+                                    }
+                                    @if(selectedFCLLCL === "FCL"){
+
+                                    <th>Container Type</th>
+                                    <th>No of Container</th>
+                                    }
+
+                                    @if(selectedFCLLCL === "LCL"){
+                                    <th>Qty</th>
+
+                                    <th>Weight Unit</th>
+                                    <th>Gross Wt.</th>
+                                    <th>Net Weight</th>
+                                    <th>CBM</th>
+                                    }
+                                    @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
+                                    <th>Pkg Type</th>
+                                    <th>Shipment Terms</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || '' }}</td>
+                                    <th>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoDescription || '' }}
+                                    </th>
+                                    <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ProductName || '' }}</td>
+                                    @if(selectedFCLLCL === "AIR"){
+                                    <td class="text-end">{{
+                                        enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ChargeableWeight || '' }}
+                                    </td>
+                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.length ||
+                                        '' }}</td>
+                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.width ||
+                                        '' }}</td>
+                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.height ||
+                                        '' }}</td>
+                                    }
+                                    @if(selectedFCLLCL === "FCL"){
+                                    <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '' }}
+                                    </td>
+                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || ''
+                                        }}</td>
+                                    }
+                                    @if(selectedFCLLCL === "LCL"){
+                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageQty || '' | number:'1.2-2' }}</td>
+                    <td class="text-end">{{ getUOMCode(enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.WeightUnitSid) }}</td>
+                    <td class="text-end"> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.2-2' }}</td>
+                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.2-2' }}</td>
+                    <td class="text-end"> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.2-2' }}</td>
+                    }
+                                    @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
+                                    <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageType || '' }}</td>
+
+                                    <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ShipmentTerms || '' }}
+                                    </td>
+                                    }
+                                </tr>
+                                @if(selectedFCLLCL === "LCL"){
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-end fw-bold">Total </td>
+                                    <td class="text-end fw-bold">{{ calculateTotalPackageQty()| number:'1.2-2' }}</td>
+                                    
+                                    <td></td>
+                                    <td class="text-end fw-bold">{{ calculateTotalGrossWeight() | number:'1.2-2' }}
+                                    </td>
+                                    <td class="text-end fw-bold">{{ calculateTotalNetWeight() | number:'1.2-2' }}
+                                    </td>
+                                    <td class="text-end fw-bold">{{ calculateTotalCBM() | number:'1.2-2' }}</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                }
+
+                                <!-- @if(selectedFCLLCL === "FCL"){
+          <tr>
+            <td></td>
+            <td></td>
+            <td class="text-end fw-semibold">Total Containers :</td>
+            <td></td>
+            <td class="text-end fw-semibold">{{ calculateTotalQty() }}</td>
+            <td colspan="5"></td>
+          </tr>
+        } -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Remarks with Bottom Space -->
-            <div style="margin-top: 1rem; margin-bottom: 3rem;">
-                <p style="font-weight: bold;"> Remarks  :</p>
-                <div style="height: 80px; "> {{ enquiryData?.Remarks || '-' }}</div>
-            </div>
-
-            <footer class="text-center mb-0 px-2">
-                <div class="d-flex justify-content-between">
-                    <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
-                    <span>
-                        This document is computer-generated and does not require a signature.
-                    </span>
-                    <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
+                <!-- Remarks with Bottom Space -->
+                <div style="margin-top: 1rem; margin-bottom: 3rem;">
+                    <p style="font-weight: bold;"> Remarks :</p>
+                    <div style="height: 80px; "> {{ enquiryData?.Remarks || '' }}</div>
                 </div>
-            </footer>
+                <div>
+                    <h6 class="fw-bold">Terms and Conditions:</h6>
+                    <ul>
+                        @for(term of TandCList; track term){
+                        <li>{{ term.TandC }}</li>
+                        }
+                    </ul>
+                </div>
 
+                <footer class="text-center mb-0 px-2">
+                    <div class="d-flex justify-content-between">
+                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                        <span>
+                            This document is computer-generated and does not require a signature.
+                        </span>
+                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                    </div>
+                </footer>
+
+            </div>
         </div>
-            </div>
-      
+
 
     </div>
 </ng-template>
