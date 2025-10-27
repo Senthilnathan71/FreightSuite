@@ -84,6 +84,175 @@
                 </div>
               </form>
             </div>
+
+            <!-- Master Job Child Data Accordions -->
+            <div class="child-data-section mt-4">
+              <h6 class="section-title mb-3">Additional Details</h6>
+
+              <div ngbAccordion>
+                <!-- Containers Section -->
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton>
+                      <i class="fas fa-box me-2"></i>
+                      Containers
+                      <span class="badge bg-primary ms-2">{{ containersArray.length }}</span>
+                    </button>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                      <ng-template>
+                        <div class="child-data-content">
+                          <form [formGroup]="containersForm">
+                            <div formArrayName="containers">
+                              <div *ngFor="let container of containersArray.controls; let i = index"
+                                   class="child-data-item mb-3"
+                                   [formGroupName]="i">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                  <h6 class="mb-0">Container {{ i + 1 }}</h6>
+                                  <button type="button" class="btn btn-sm btn-outline-danger"
+                                          (click)="removeContainer(i)">
+                                    <i class="fas fa-times"></i> Remove
+                                  </button>
+                                </div>
+                                <div class="row g-2">
+                                  <div class="col-md-4" *ngFor="let key of container.value | keyvalue">
+                                    <label class="form-label text-sm">{{ key.key }}</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                           [formControlName]="$any(key.key)" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
+                          <button type="button" class="btn btn-sm btn-outline-primary mt-2"
+                                  (click)="addContainer()">
+                            <i class="fas fa-plus me-1"></i> Add Container
+                          </button>
+                        </div>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Voyages Section -->
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton>
+                      <i class="fas fa-ship me-2"></i>
+                      Voyages
+                      <span class="badge bg-primary ms-2">{{ voyagesArray.length }}</span>
+                    </button>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                      <ng-template>
+                        <div class="child-data-content">
+                          <form [formGroup]="voyagesForm">
+                            <div formArrayName="voyages">
+                              <div *ngFor="let voyage of voyagesArray.controls; let i = index"
+                                   class="child-data-item mb-3"
+                                   [formGroupName]="i">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                  <h6 class="mb-0">Voyage {{ i + 1 }}</h6>
+                                  <button type="button" class="btn btn-sm btn-outline-danger"
+                                          (click)="removeVoyage(i)">
+                                    <i class="fas fa-times"></i> Remove
+                                  </button>
+                                </div>
+                                <div class="row g-2">
+                                  <div class="col-md-4" *ngFor="let key of voyage.value | keyvalue">
+                                    <label class="form-label text-sm">{{ key.key }}</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                           [formControlName]="$any(key.key)" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
+                          <button type="button" class="btn btn-sm btn-outline-primary mt-2"
+                                  (click)="addVoyage()">
+                            <i class="fas fa-plus me-1"></i> Add Voyage
+                          </button>
+                        </div>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Connections Section -->
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton>
+                      <i class="fas fa-route me-2"></i>
+                      Connections
+                      <span class="badge bg-primary ms-2">{{ masterConnectionsArray.length }}</span>
+                    </button>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                      <ng-template>
+                        <div class="child-data-content">
+                          <form [formGroup]="masterConnectionsForm">
+                            <div formArrayName="connections">
+                              <div *ngFor="let connection of masterConnectionsArray.controls; let i = index"
+                                   class="child-data-item mb-3"
+                                   [formGroupName]="i">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                  <h6 class="mb-0">Connection {{ i + 1 }}</h6>
+                                  <button type="button" class="btn btn-sm btn-outline-danger"
+                                          (click)="removeMasterConnection(i)">
+                                    <i class="fas fa-times"></i> Remove
+                                  </button>
+                                </div>
+                                <div class="row g-2">
+                                  <div class="col-md-4" *ngFor="let key of connection.value | keyvalue">
+                                    <label class="form-label text-sm">{{ key.key }}</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                           [formControlName]="$any(key.key)" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
+                          <button type="button" class="btn btn-sm btn-outline-primary mt-2"
+                                  (click)="addMasterConnection()">
+                            <i class="fas fa-plus me-1"></i> Add Connection
+                          </button>
+                        </div>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Others Section -->
+                <div ngbAccordionItem *ngIf="othersData">
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton>
+                      <i class="fas fa-info-circle me-2"></i>
+                      Other Details
+                    </button>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                      <ng-template>
+                        <div class="child-data-content">
+                          <form [formGroup]="othersForm">
+                            <div class="row g-2">
+                              <div class="col-md-4" *ngFor="let key of othersForm.value | keyvalue">
+                                <label class="form-label text-sm">{{ key.key }}</label>
+                                <input type="text" class="form-control form-control-sm"
+                                       [formControlName]="$any(key.key)" />
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </ng-template>
       </li>
@@ -119,6 +288,140 @@
                         />
                         <div class="invalid-feedback" *ngIf="hasFieldError(column, 'House Jobs', i + 2)">
                           {{ getFieldError(column, 'House Jobs', i + 2) }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- House Job Child Data Accordions -->
+                    <div class="house-job-child-data mt-3">
+                      <div ngbAccordion>
+                        <!-- Cargo Section -->
+                        <div ngbAccordionItem>
+                          <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton>
+                              <i class="fas fa-boxes me-2"></i>
+                              Cargo
+                              <span class="badge bg-success ms-2">{{ getHouseJobCargoArray(i).length }}</span>
+                            </button>
+                          </h2>
+                          <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                              <ng-template>
+                                <div class="child-data-content">
+                                  <div [formArrayName]="'cargo'">
+                                    <div *ngFor="let cargo of getHouseJobCargoArray(i).controls; let cargoIdx = index"
+                                         class="child-data-item mb-2"
+                                         [formGroupName]="cargoIdx">
+                                      <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0 text-sm">Cargo {{ cargoIdx + 1 }}</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                (click)="removeHouseJobCargo(i, cargoIdx)">
+                                          <i class="fas fa-times"></i> Remove
+                                        </button>
+                                      </div>
+                                      <div class="row g-2">
+                                        <div class="col-md-4" *ngFor="let key of cargo.value | keyvalue">
+                                          <label class="form-label text-sm">{{ key.key }}</label>
+                                          <input type="text" class="form-control form-control-sm"
+                                                 [formControlName]="$any(key.key)" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button type="button" class="btn btn-sm btn-outline-success mt-2"
+                                          (click)="addHouseJobCargo(i)">
+                                    <i class="fas fa-plus me-1"></i> Add Cargo
+                                  </button>
+                                </div>
+                              </ng-template>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Products Section -->
+                        <div ngbAccordionItem>
+                          <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton>
+                              <i class="fas fa-cube me-2"></i>
+                              Products
+                              <span class="badge bg-success ms-2">{{ getHouseJobProductsArray(i).length }}</span>
+                            </button>
+                          </h2>
+                          <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                              <ng-template>
+                                <div class="child-data-content">
+                                  <div [formArrayName]="'products'">
+                                    <div *ngFor="let product of getHouseJobProductsArray(i).controls; let prodIdx = index"
+                                         class="child-data-item mb-2"
+                                         [formGroupName]="prodIdx">
+                                      <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0 text-sm">Product {{ prodIdx + 1 }}</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                (click)="removeHouseJobProduct(i, prodIdx)">
+                                          <i class="fas fa-times"></i> Remove
+                                        </button>
+                                      </div>
+                                      <div class="row g-2">
+                                        <div class="col-md-4" *ngFor="let key of product.value | keyvalue">
+                                          <label class="form-label text-sm">{{ key.key }}</label>
+                                          <input type="text" class="form-control form-control-sm"
+                                                 [formControlName]="$any(key.key)" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button type="button" class="btn btn-sm btn-outline-success mt-2"
+                                          (click)="addHouseJobProduct(i)">
+                                    <i class="fas fa-plus me-1"></i> Add Product
+                                  </button>
+                                </div>
+                              </ng-template>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Connections Section -->
+                        <div ngbAccordionItem>
+                          <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton>
+                              <i class="fas fa-route me-2"></i>
+                              Connections
+                              <span class="badge bg-success ms-2">{{ getHouseJobConnectionsArray(i).length }}</span>
+                            </button>
+                          </h2>
+                          <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                              <ng-template>
+                                <div class="child-data-content">
+                                  <div [formArrayName]="'connections'">
+                                    <div *ngFor="let connection of getHouseJobConnectionsArray(i).controls; let connIdx = index"
+                                         class="child-data-item mb-2"
+                                         [formGroupName]="connIdx">
+                                      <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0 text-sm">Connection {{ connIdx + 1 }}</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                (click)="removeHouseJobConnection(i, connIdx)">
+                                          <i class="fas fa-times"></i> Remove
+                                        </button>
+                                      </div>
+                                      <div class="row g-2">
+                                        <div class="col-md-4" *ngFor="let key of connection.value | keyvalue">
+                                          <label class="form-label text-sm">{{ key.key }}</label>
+                                          <input type="text" class="form-control form-control-sm"
+                                                 [formControlName]="$any(key.key)" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button type="button" class="btn btn-sm btn-outline-success mt-2"
+                                          (click)="addHouseJobConnection(i)">
+                                    <i class="fas fa-plus me-1"></i> Add Connection
+                                  </button>
+                                </div>
+                              </ng-template>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

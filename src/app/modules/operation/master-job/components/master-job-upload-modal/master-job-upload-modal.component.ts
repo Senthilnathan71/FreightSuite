@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray } from '@angular/forms';
-import { NgbActiveModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbNavModule, NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExcelUploadService } from 'src/app/shared/services/excel-upload.service';
 import { OperationService } from '../../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -14,7 +14,8 @@ import { NgxSpinnerService } from 'ngx-spinner';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NgbNavModule
+    NgbNavModule,
+    NgbAccordionModule
   ],
   templateUrl: './master-job-upload-modal.component.html',
   styleUrls: ['./master-job-upload-modal.component.scss']
@@ -37,6 +38,12 @@ export class MasterJobUploadModalComponent implements OnInit {
 
   masterJobForm!: FormGroup;
   houseJobsForm!: FormGroup;
+
+  // Child data forms for Master Job
+  containersForm!: FormGroup;
+  voyagesForm!: FormGroup;
+  masterConnectionsForm!: FormGroup;
+  othersForm!: FormGroup;
 
   // Master Job table columns
   masterJobColumns: string[] = [];
@@ -67,6 +74,18 @@ export class MasterJobUploadModalComponent implements OnInit {
     this.houseJobsForm = this.fb.group({
       houseJobs: this.fb.array([])
     });
+
+    // Initialize child data forms for Master Job
+    this.containersForm = this.fb.group({
+      containers: this.fb.array([])
+    });
+    this.voyagesForm = this.fb.group({
+      voyages: this.fb.array([])
+    });
+    this.masterConnectionsForm = this.fb.group({
+      connections: this.fb.array([])
+    });
+    this.othersForm = this.fb.group({});
   }
 
   onFileSelected(event: any): void {
@@ -116,6 +135,10 @@ export class MasterJobUploadModalComponent implements OnInit {
         // Build forms with the data
         this.buildMasterJobForm();
         this.buildHouseJobsForm();
+        this.buildContainersForm();
+        this.buildVoyagesForm();
+        this.buildMasterConnectionsForm();
+        this.buildOthersForm();
 
         this.showPreview = true;
         this.isProcessing = false;
@@ -151,9 +174,51 @@ export class MasterJobUploadModalComponent implements OnInit {
     const houseJobsArray = this.fb.array(
       this.houseJobsData.map(houseJob => {
         const houseJobGroup: any = {};
+
+        // Build main house job fields (excluding nested arrays)
         Object.keys(houseJob).forEach(key => {
-          houseJobGroup[key] = [houseJob[key]];
+          if (key !== 'cargo' && key !== 'products' && key !== 'connections') {
+            houseJobGroup[key] = [houseJob[key]];
+          }
         });
+
+        // Build nested cargo array
+        const cargoArray = this.fb.array(
+          (houseJob.cargo || []).map((cargo: any) => {
+            const cargoGroup: any = {};
+            Object.keys(cargo).forEach(key => {
+              cargoGroup[key] = [cargo[key]];
+            });
+            return this.fb.group(cargoGroup);
+          })
+        );
+
+        // Build nested products array
+        const productsArray = this.fb.array(
+          (houseJob.products || []).map((product: any) => {
+            const productGroup: any = {};
+            Object.keys(product).forEach(key => {
+              productGroup[key] = [product[key]];
+            });
+            return this.fb.group(productGroup);
+          })
+        );
+
+        // Build nested connections array
+        const connectionsArray = this.fb.array(
+          (houseJob.connections || []).map((connection: any) => {
+            const connectionGroup: any = {};
+            Object.keys(connection).forEach(key => {
+              connectionGroup[key] = [connection[key]];
+            });
+            return this.fb.group(connectionGroup);
+          })
+        );
+
+        houseJobGroup['cargo'] = cargoArray;
+        houseJobGroup['products'] = productsArray;
+        houseJobGroup['connections'] = connectionsArray;
+
         return this.fb.group(houseJobGroup);
       })
     );
@@ -162,15 +227,238 @@ export class MasterJobUploadModalComponent implements OnInit {
       houseJobs: houseJobsArray
     });
 
-    // Set columns for table display
+    // Set columns for table display (exclude nested arrays)
     if (this.houseJobsData.length > 0) {
-      this.houseJobColumns = Object.keys(this.houseJobsData[0]);
+      this.houseJobColumns = Object.keys(this.houseJobsData[0]).filter(
+        key => key !== 'cargo' && key !== 'products' && key !== 'connections'
+      );
       this.houseJobDisplayColumns = this.houseJobColumns.slice(0, 8); // Show first 8 columns
     }
   }
 
+  buildContainersForm(): void {
+    const containersArray = this.fb.array(
+      this.containersData.map(container => {
+        const containerGroup: any = {};
+        Object.keys(container).forEach(key => {
+          containerGroup[key] = [container[key]];
+        });
+        return this.fb.group(containerGroup);
+      })
+    );
+
+    this.containersForm = this.fb.group({
+      containers: containersArray
+    });
+  }
+
+  buildVoyagesForm(): void {
+    const voyagesArray = this.fb.array(
+      this.voyagesData.map(voyage => {
+        const voyageGroup: any = {};
+        Object.keys(voyage).forEach(key => {
+          voyageGroup[key] = [voyage[key]];
+        });
+        return this.fb.group(voyageGroup);
+      })
+    );
+
+    this.voyagesForm = this.fb.group({
+      voyages: voyagesArray
+    });
+  }
+
+  buildMasterConnectionsForm(): void {
+    const connectionsArray = this.fb.array(
+      this.connectionsData.map(connection => {
+        const connectionGroup: any = {};
+        Object.keys(connection).forEach(key => {
+          connectionGroup[key] = [connection[key]];
+        });
+        return this.fb.group(connectionGroup);
+      })
+    );
+
+    this.masterConnectionsForm = this.fb.group({
+      connections: connectionsArray
+    });
+  }
+
+  buildOthersForm(): void {
+    const formGroup: any = {};
+
+    if (this.othersData) {
+      Object.keys(this.othersData).forEach(key => {
+        formGroup[key] = [this.othersData[key]];
+      });
+    }
+
+    this.othersForm = this.fb.group(formGroup);
+  }
+
   get houseJobsArray(): FormArray {
     return this.houseJobsForm.get('houseJobs') as FormArray;
+  }
+
+  get containersArray(): FormArray {
+    return this.containersForm.get('containers') as FormArray;
+  }
+
+  get voyagesArray(): FormArray {
+    return this.voyagesForm.get('voyages') as FormArray;
+  }
+
+  get masterConnectionsArray(): FormArray {
+    return this.masterConnectionsForm.get('connections') as FormArray;
+  }
+
+  // Helper methods to get house job child arrays
+  getHouseJobCargoArray(houseJobIndex: number): FormArray {
+    return this.houseJobsArray.at(houseJobIndex).get('cargo') as FormArray;
+  }
+
+  getHouseJobProductsArray(houseJobIndex: number): FormArray {
+    return this.houseJobsArray.at(houseJobIndex).get('products') as FormArray;
+  }
+
+  getHouseJobConnectionsArray(houseJobIndex: number): FormArray {
+    return this.houseJobsArray.at(houseJobIndex).get('connections') as FormArray;
+  }
+
+  // Add/Remove methods for Master Job child data
+  addContainer(): void {
+    const containerGroup = this.fb.group({
+      ContainerNumber: [''],
+      ContainerType: [''],
+      LineSeal: [''],
+      CustomsSeal: [''],
+      HsCode: [''],
+      CommodityDescription: [''],
+      PkgType: [''],
+      NoOfPkg: [0],
+      GrossWeight: [0],
+      NetWeight: [0],
+      ChargeableWeight: [0],
+      Volume: [0],
+      IsSoc: ['']
+    });
+    this.containersArray.push(containerGroup);
+  }
+
+  removeContainer(index: number): void {
+    this.containersArray.removeAt(index);
+  }
+
+  addVoyage(): void {
+    const voyageGroup = this.fb.group({
+      VesselName: [''],
+      VoyageNo: [''],
+      ETD: [''],
+      ETA: [''],
+      ATA: [''],
+      ATD: [''],
+      DestinationATA: [''],
+      CarrierName: ['']
+    });
+    this.voyagesArray.push(voyageGroup);
+  }
+
+  removeVoyage(index: number): void {
+    this.voyagesArray.removeAt(index);
+  }
+
+  addMasterConnection(): void {
+    const connectionGroup = this.fb.group({
+      Mode: [''],
+      POL: [''],
+      POD: [''],
+      VesselName: [''],
+      VoyageNo: [''],
+      ETD: [''],
+      ETA: [''],
+      Remarks: ['']
+    });
+    this.masterConnectionsArray.push(connectionGroup);
+  }
+
+  removeMasterConnection(index: number): void {
+    this.masterConnectionsArray.removeAt(index);
+  }
+
+  // Add/Remove methods for House Job child data
+  addHouseJobCargo(houseJobIndex: number): void {
+    const cargoGroup = this.fb.group({
+      CargoType: [''],
+      ContainerType: [''],
+      GrossWeight: [0],
+      NetWeight: [0],
+      Volume: [0],
+      ChargeableWeight: [0],
+      PackageType: [''],
+      NoOfPackage: [0],
+      FreightAmount: [0],
+      ShipmentTerms: [''],
+      FreightTerms: [''],
+      ModeOfTransport: [''],
+      MovementType: [''],
+      NoofContainers: [0],
+      Qty: [0],
+      StuffingAt: [''],
+      CommodityDescription: [''],
+      MarksAndNumber: ['']
+    });
+    this.getHouseJobCargoArray(houseJobIndex).push(cargoGroup);
+  }
+
+  removeHouseJobCargo(houseJobIndex: number, cargoIndex: number): void {
+    this.getHouseJobCargoArray(houseJobIndex).removeAt(cargoIndex);
+  }
+
+  addHouseJobProduct(houseJobIndex: number): void {
+    const productGroup = this.fb.group({
+      ProductName: [''],
+      ProductDescription: [''],
+      ShippingBillNo: [''],
+      ShippingBillDate: [''],
+      ExternaPkg: [''],
+      ExternlQty: [''],
+      GrossWeight: [0],
+      NetWeight: [0],
+      Volume: [0],
+      CargoRecDate: [''],
+      CFS: [''],
+      Height: [0],
+      ImcoClass: [''],
+      IsHaz: ['N'],
+      Length: [0],
+      PkgGroup: [''],
+      UnNo: [''],
+      Width: [0],
+      MarksAndNumber: ['']
+    });
+    this.getHouseJobProductsArray(houseJobIndex).push(productGroup);
+  }
+
+  removeHouseJobProduct(houseJobIndex: number, productIndex: number): void {
+    this.getHouseJobProductsArray(houseJobIndex).removeAt(productIndex);
+  }
+
+  addHouseJobConnection(houseJobIndex: number): void {
+    const connectionGroup = this.fb.group({
+      Mode: [''],
+      POL: [''],
+      POD: [''],
+      VesselName: [''],
+      VoyageNo: [''],
+      ETD: [''],
+      ETA: [''],
+      Remarks: ['']
+    });
+    this.getHouseJobConnectionsArray(houseJobIndex).push(connectionGroup);
+  }
+
+  removeHouseJobConnection(houseJobIndex: number, connectionIndex: number): void {
+    this.getHouseJobConnectionsArray(houseJobIndex).removeAt(connectionIndex);
   }
 
   onProceed(): void {
@@ -182,6 +470,12 @@ export class MasterJobUploadModalComponent implements OnInit {
     // Get form values
     const masterJob = this.masterJobForm.value;
     const houseJobs = this.houseJobsArray.value;
+
+    // Get child data from forms
+    const containers = this.containersArray.value;
+    const voyages = this.voyagesArray.value;
+    const connections = this.masterConnectionsArray.value;
+    const others = this.othersForm.value;
 
     // Validate required fields
     if (!this.currentCompany?.CompanyMasterSid) {
@@ -208,16 +502,17 @@ export class MasterJobUploadModalComponent implements OnInit {
         DepartmentMasterSid: masterJob.DepartmentMasterSid || 1, // Default department
         CreatedBy: this.userData.userEmail
       },
-      containers: this.containersData || [],
-      voyages: this.voyagesData || [],
-      connections: this.connectionsData || [],
-      others: this.othersData || null,
+      containers: containers || [],
+      voyages: voyages || [],
+      connections: connections || [],
+      others: others || null,
       houseJobs: houseJobs.map((hj: any) => ({
         ...hj,
         CompanyMasterSid: this.currentCompany.CompanyMasterSid,
         BranchMasterSid: this.currentBranch.BranchMasterSid,
         DepartmentMasterSid: hj.DepartmentMasterSid || masterJob.DepartmentMasterSid || 1,
         CreatedBy: this.userData.userEmail
+        // cargo, products, and connections are already included in hj from the form value
       })),
       companyMasterSid: this.currentCompany.CompanyMasterSid,
       branchMasterSid: this.currentBranch.BranchMasterSid,
@@ -259,6 +554,10 @@ export class MasterJobUploadModalComponent implements OnInit {
     this.selectedFile = null;
     this.masterJobData = null;
     this.houseJobsData = [];
+    this.containersData = [];
+    this.voyagesData = [];
+    this.connectionsData = [];
+    this.othersData = null;
     this.errors = [];
     this.showPreview = false;
     this.initializeForms();

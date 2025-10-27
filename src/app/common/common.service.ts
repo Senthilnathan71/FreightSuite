@@ -53,12 +53,11 @@ export class CommonService {
 }
 
 
-// For preview via POST request (not iframe)
+// For preview via POST request
+// Returns Blob for all file types (client-side rendering for Office files)
 previewFile(payload: { menuMasterSid: number; documentSid: number; fileName: string }): Observable<Blob> {
   const url = 'attach-document/preview';
-  return this.http.post(url, payload, {
-    responseType: 'blob'
-  });
+  return this.http.post(url, payload, { responseType: 'blob' });
 }
 
 deleteEdocFile(attachDocumentSid: number): Observable<any> {

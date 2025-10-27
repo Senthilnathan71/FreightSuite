@@ -6,7 +6,11 @@
     <div class="col-12">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
             <div class="col pb-1">
-                <h4 class="page-title mb-0">Subledger Mapping</h4>
+                <div class="d-flex align-items-center gap-1">
+                    <h4 class="page-title mb-0">Subledger Mapping</h4>
+                 <app-favorite-star screenName="Subledger Mapping" class="mt-1 me-1"></app-favorite-star>
+                </div>
+                
             </div>
 
             <!-- Search Section -->
@@ -15,7 +19,7 @@
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control pe-5" 
-                                   placeholder="Search by name..." (keyup.enter)="onSearch()">
+                                   placeholder="Search" (keyup.enter)="onSearch()">
                             <button *ngIf="filterValue" (click)="clearSearch()"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                 tabindex="0" aria-label="Clear search">
@@ -34,7 +38,7 @@
 
             <div class="col-md-auto pb-1">
                 <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Subledger Mapping" class="mt-1 me-1"></app-favorite-star>
+                   
                     
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                             [disabled]="!hasChanges() || isSaving" 
@@ -59,7 +63,7 @@
     </div>
 
     <!-- Tab Navigation -->
-    <div class="col-12">
+    <div class="col-12 px-0">
         <div class="nav-pills-container">
             <div class="nav-pills d-flex align-items-center w-100">
                 <div class="pills-left d-flex flex-nowrap" style="flex:1;">
@@ -81,61 +85,99 @@
     </div>
 
     <!-- Party Tab Content -->
-    <div class="col-12" [hidden]="selectedTab !== 'Party'">
-        <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="!isLoading">
+    <div class="col-12 px-0" [hidden]="selectedTab !== 'Party'">
+        <div class="row bg-white p-1 rounded  mx-auto" >
             <div class="col-12 p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle no-wrap table-bordered mb-0">
+                <div class="table-responsive table-borderless">
+                    <table class="table table-hover align-middle no-wrap  mb-0">
                         <thead>
                             <tr class="bg-info">
-                                <th class="bg-transparent text-light" (click)="sort('SubledgerName')">
-                                    Party Name
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                <th class="bg-transparent text-light " (click)="sort('SubledgerName')" style="border-top-left-radius: 10px;">
+                                    <div class="d-flex align-items-center justify-content-between"> 
+                                        <div>
+                                             Party Name
+                                        </div>
+                                        <div>
+                                                <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SubledgerName',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SubledgerName'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
                                 </th>
                                
                                 <th class="bg-transparent text-light" (click)="sort('DebtorCOA')">
-                                    Debtor COA
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                             Debtor COA
+                                        </div>
+                                        <div>
+                                             <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'DebtorCOA',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'DebtorCOA'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                   
+                                   
                                 </th>
                                 <th class="bg-transparent text-light" (click)="sort('CreditorCOA')">
-                                    Creditor COA
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            Creditor COA
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CreditorCOA',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CreditorCOA'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    
                                 </th>
                                  <th class="bg-transparent text-light" (click)="sort('AccrualCOA')">
-                                    Accrual COA
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                             Accrual COA
+                                        </div>
+                                        <div>
+                                              <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AccrualCOA',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AccrualCOA'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                   
+                                  
                                 </th>
-                                <th class="bg-transparent text-light" (click)="sort('Status')">
-                                    Status
+                                <th class="bg-transparent text-light" (click)="sort('Status')" style="border-top-right-radius: 10px;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                              Status
+                                        </div>
+                                        <div>
+                                              
                                     <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Status',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Status'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let item of getCurrentData(); trackBy: trackBy" [class.table-warning]="item.hasChanges">
                                 <!-- Party Name -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" >
                                     <div class="fw-bold">{{ item.SubledgerName }}</div>
                                 </td>
                              
                                 
                                 <!-- Debtor COA - Sy Dr -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('debtor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditDebtorCOA" [(ngModel)]="item.DrCOAMasterSid"
                                         (change)="onCOAChange(item, $event, 'debtor')">
@@ -151,7 +193,7 @@
                                 </td>
                                 
                                 <!-- Creditor COA - Sy Cr -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('creditor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditCreditorCOA" [(ngModel)]="item.CrCOAMasterSid"
                                         (change)="onCOAChange(item, $event, 'creditor')">
@@ -162,7 +204,7 @@
                                 </td>
                                 
                                 <!-- Accrual COA - Accrual -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('accrual')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditAccrualCOA" [(ngModel)]="item.AccrualCOAMasterSid"
                                         (change)="onCOAChange(item, $event, 'accrual')">
@@ -173,7 +215,7 @@
                                 </td>      
                                 
                                 <!-- Status -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-90">
                                     <ng-select [items]="statusOptions" 
                                                bindLabel="name" 
                                                bindValue="id"
@@ -215,63 +257,97 @@
     </div>
 
     <!-- Charge Tab Content -->
-    <div class="col-12" [hidden]="selectedTab !== 'Charge'">
-        <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="!isLoading">
+    <div class="col-12 px-0" [hidden]="selectedTab !== 'Charge'">
+        <div class="row bg-white p-1 rounded  mx-auto" >
             <div class="col-12 p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle no-wrap table-bordered mb-0">
+                <div class="table-responsive table-borderless">
+                    <table class="table table-hover align-middle no-wrap  mb-0">
                         <thead>
                             <tr class="bg-info">
-                                <th class="bg-transparent text-light" (click)="sort('SubledgerName')">
-                                    Charge Name
+                                <th class="bg-transparent text-light" (click)="sort('SubledgerName')" style="border-top-left-radius: 10px;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            Charge Name
+                                        </div>
+                                        <div>                                                 
                                     <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SubledgerName',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SubledgerName'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
                                 </th>
                                 <th class="bg-transparent text-light" (click)="sort('departmentName')">
-                                    Department
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            Department
+                                        </div>
+                                        <div>
+                                                                               
                                     <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'departmentName',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'departmentName'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+ 
                                 </th>
                                 <th class="bg-transparent text-light" (click)="sort('RevenueCOA')">
-                                    Revenue COA (Creditor)
-                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                             Revenue COA (Creditor)
+                                        </div>
+                                        <div>
+                                               <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'RevenueCOA',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'RevenueCOA'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
                                 </th>
                                 <th class="bg-transparent text-light" (click)="sort('CostCOA')">
-                                    Cost COA (Debtor)
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                             Cost COA (Debtor)
+                                        </div>
+                                        <div>
+                                                                               
                                     <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CostCOA',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CostCOA'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
                                 </th>
-                                <th class="bg-transparent text-light" (click)="sort('Status')">
-                                    Status
+                                <th class="bg-transparent text-light" (click)="sort('Status')" style="border-top-right-radius: 10px;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            Status
+                                        </div>
+                                        <div>
+                                                                                
                                     <i class="fas fa-sort ms-1" [ngClass]="{
                                         'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Status',
                                         'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Status'
-                                    }"></i>
+                                    }" style="opacity: 0.7;font-size: 10px;cursor: pointer;"></i>
+                                        </div>
+                                    </div>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let item of getCurrentData(); trackBy: trackBy" [class.table-warning]="item.hasChanges">
                                 <!-- Charge Name -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="fw-bold">{{ item.SubledgerName }}</div>
                                 </td>
                                 
                                 <!-- Department -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     {{ item.departmentName }}
                                 </td>
                                 <!-- Revenue COA (Creditor) - Revenue -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('creditor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditCreditorCOA" [(ngModel)]="item.CrCOAMasterSid"
                                         (change)="onCOAChange(item, $event, 'creditor')">
@@ -282,7 +358,7 @@
                                 </td>
                                 
                                 <!-- Cost COA (Debtor) - Cost -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                     <ng-select [items]="getCOAOptions('debtor')" bindLabel="LedgerName" bindValue="COAMasterSid"
                                         [compareWith]="compareWithCOA" [disabled]="!item.canEditDebtorCOA" [(ngModel)]="item.DrCOAMasterSid"
                                         (change)="onCOAChange(item, $event, 'debtor')">
@@ -292,7 +368,7 @@
                                     </ng-select>
                                 </td>
                                 <!-- Status -->
-                                <td style="padding: 8px;">
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-90">
                                     <ng-select [items]="statusOptions" 
                                                bindLabel="name" 
                                                bindValue="id"
