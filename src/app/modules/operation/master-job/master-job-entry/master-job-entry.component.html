@@ -420,23 +420,22 @@
                                     </aside>
 
                                     <!-- Vessel Field -->
-                                    <aside class="col-md-4 mt-md-1">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!masterJobForm.get('VesselName')?.value">
-                                            <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName"
-                                                bindValue="VesselName" formControlName="VesselName" placeholder=""
-                                                (change)="onVesselChange($event)" appendTo="body">
-                                            </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
-                        [displayFields]="vesselVoyageLookupConfig.displayFields"
-                        [displayLabels]="vesselVoyageLookupConfig.displayLabels"
-                        [labelFields]="vesselVoyageLookupConfig.labelFields" bindValue="VesselName"
-                        (itemSelected)="onVesselChange($event)">
-                      </dofi-searchable-dropdown>
-                                            <label class="input-label">Vessel <span class="text-danger"></span></label>
-                                        </div>
-                                    </aside>
-
+<div class="col-md-3">
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!masterJobForm.get('VesselName')?.value">
+    <dofi-searchable-dropdown 
+      [items]="headerVesselList" 
+      formControlName="VesselName" 
+      placeholder=""
+      [displayFields]="vesselVoyageLookupConfig.displayFields"
+      [displayLabels]="vesselVoyageLookupConfig.displayLabels"
+      [labelFields]="vesselVoyageLookupConfig.labelFields"
+      bindValue="VesselName"
+      (itemSelected)="onVesselChange($event)">
+    </dofi-searchable-dropdown>
+    <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+  </div>
+</div>
                                     <!-- Voyage Field -->
                                     <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
@@ -616,14 +615,16 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="GrossWeight"
-                                                class="custom-input-field sm" step="0.001" min="0">
+                                                class="custom-input-field sm"  DecimalPrecision [DecimalPrecisionBefore]="10"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"step="0.001" min="0">
                                             <label class="input-label">Gross Weight</label>
                                         </div>
                                     </aside>
                                     <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="NetWeight"
-                                                class="custom-input-field sm" step="0.001" min="0">
+                                                class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="10"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999" step="0.001" min="0">
                                             <label class="input-label">Net Weight</label>
                                         </div>
                                     </aside>
@@ -636,7 +637,8 @@
                                     </aside>
                                     <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group">
-                                            <input type="number" formControlName="Volume" class="custom-input-field sm"
+                                            <input type="number" formControlName="Volume"   DecimalPrecision [DecimalPrecisionBefore]="8"
+                [DecimalPrecisionAfter]="3" max="999999.999" class="custom-input-field sm"
                                                 step="0.001" min="0">
                                             <label class="input-label">Volume (CBM)</label>
                                         </div>
@@ -1239,12 +1241,12 @@
         </div>
 
 
-        <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
-            <app-cost-entry screenName="MasterJob" [currencyList]="currencyList" [customerList]="customerList"
-                [dataItems]="rateResult" [resetTrigger]="rateResetTrigger" [formData]="currentRateFormValue"
-                (dataEmitter)="handleRateChange($event)">
-            </app-cost-entry>
-        </div>
+            <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
+                <app-cost-entry screenName="MasterJob" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
+                    [dataItems]="rateResult" [resetTrigger]="rateResetTrigger" [formData]="currentRateFormValue"
+                    (dataEmitter)="handleRateChange($event)">
+                </app-cost-entry>
+            </div>
         <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
             <app-email-entry [dataItems]="emailData" [resetTrigger]="emailResetTrigger"
                 [formData]="currentEmailFormValue" (dataChange)="handleEmailChange($event)">
