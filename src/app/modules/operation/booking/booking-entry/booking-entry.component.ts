@@ -2758,62 +2758,62 @@ ${this.userData['userName']}`;
   }
 
 
-   async downloadPDF() {
-  this.spinner.show();
+  async downloadPDF() {
+    this.spinner.show();
 
-  setTimeout(async () => {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      this.appSettingService.showError('Print content not found.');
-      this.spinner.hide();
-      return;
-    }
-
-    try {
-      // 🧠 Smaller scale = smaller file, but lower quality (1.5 is a good balance)
-      const canvas = await html2canvas(printContent, {
-        scale: 1.5,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-
-      // 🧩 Convert image to JPEG with 0.5 quality (compress)
-      const imgData = canvas.toDataURL('image/jpeg', 0.5); // <-- compressed JPEG
-
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+    setTimeout(async () => {
+      const printContent = document.getElementById('printContent');
+      if (!printContent) {
+        this.appSettingService.showError('Print content not found.');
+        this.spinner.hide();
+        return;
       }
 
-      const BookingNumber = this.bookingForm.get('BookingNumber')?.value || 'Booking';
-      const filename = `Booking_${BookingNumber}.pdf`;
+      try {
+        // 🧠 Smaller scale = smaller file, but lower quality (1.5 is a good balance)
+        const canvas = await html2canvas(printContent, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
 
-      pdf.save(filename);
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
 
-      this.appSettingService.showSuccess('PDF downloaded successfully!');
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      this.appSettingService.showError('Error generating PDF. Please try again.');
-    } finally {
-      this.spinner.hide();
-    }
-  }, 100);
-}
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        // 🧩 Convert image to JPEG with 0.5 quality (compress)
+        const imgData = canvas.toDataURL('image/jpeg', 0.5); // <-- compressed JPEG
+
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        const BookingNumber = this.bookingForm.get('BookingNumber')?.value || 'Booking';
+        const filename = `Booking_${BookingNumber}.pdf`;
+
+        pdf.save(filename);
+
+        this.appSettingService.showSuccess('PDF downloaded successfully!');
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+      } finally {
+        this.spinner.hide();
+      }
+    }, 100);
+  }
 
     
           async generatePDFBlob(): Promise<Blob | null> {
