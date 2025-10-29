@@ -12,8 +12,7 @@ export interface BillingPartyDetails {
 }
 
 export interface BookingRateDetails {
-  BookingRatesSid: number;
-  CostRevenueChargesSid: number;
+  RateSid: number;
   ChargeMasterSid: number;
   ChargeDescription: string;
   RevenueCurrencyMasterSid: number;
@@ -276,15 +275,10 @@ export class TaxCalculationService {
    * Filter charges for pending invoices (no voucher created)
    * Revenue: uses CustomerMasterSid, Cost: uses AgentMasterSid
    */
-  filterPendingCharges(charges: BookingRateDetails[], billingPartySid: number, type: 'revenue' | 'cost' = 'revenue',isBookingScreen: boolean = false): BookingRateDetails[] {
+  filterPendingCharges(charges: BookingRateDetails[], billingPartySid: number, type: 'revenue' | 'cost' = 'revenue'): BookingRateDetails[] {
     return charges.filter((charge: any) => {
-      if(isBookingScreen){
-        const billingPartyField = type === 'revenue' ? charge.CustomerMasterSid : charge.AgentMasterSid;
-        return billingPartyField === billingPartySid;
-      } else{
         const billingPartyField = type === 'revenue' ? charge.RevenueCustomerMasterSid : charge.CostAgentMasterSid;
         return billingPartyField === billingPartySid;
-      }
     });
   }
 
@@ -292,23 +286,14 @@ export class TaxCalculationService {
    * Get unique billing parties from charges
    * Revenue: uses CustomerMasterSid, Cost: uses AgentMasterSid
    */
-  getUniqueBillingParties(charges: BookingRateDetails[], type: 'revenue' | 'cost' = 'revenue',isBookingScreen: boolean = false): number[] {
+  getUniqueBillingParties(charges: BookingRateDetails[], type: 'revenue' | 'cost' = 'revenue'): number[] {
     const uniqueParties = new Set<number>();
-    if(isBookingScreen){
-      charges.forEach((charge: any) => {
-        const billingPartySid = type === 'revenue' ? charge.CustomerMasterSid : charge.AgentMasterSid;
-        if (billingPartySid) {
-          uniqueParties.add(billingPartySid);
-        }
-      });
-    }else{
       charges.forEach((charge: any) => {
         const billingPartySid = type === 'revenue' ? charge.RevenueCustomerMasterSid : charge.CostAgentMasterSid;
         if (billingPartySid) {
           uniqueParties.add(billingPartySid);
         }
       });
-    }
     return Array.from(uniqueParties);
   }
 

@@ -1242,9 +1242,9 @@
 
 
             <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
-                <app-cost-entry screenName="MasterJob" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
-                    [dataItems]="rateResult" [resetTrigger]="rateResetTrigger" [formData]="currentRateFormValue"
-                    (dataEmitter)="handleRateChange($event)">
+                <app-cost-entry #costEntryComponent screenName="MasterJob" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
+                    [dataItems]="masterJobRateArr" [resetTrigger]="rateResetTrigger" [formData]="currentFormValue"
+                    (dataEmitter)="handleRateChange($event)" (reloadParent)="loadMasterJobData($event)">
                 </app-cost-entry>
             </div>
         <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">

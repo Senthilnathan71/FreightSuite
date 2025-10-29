@@ -841,7 +841,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       }
       this.departmentList = departments.data;
       this.customerList = customers;
-      this.countryOfCompany = (userCountry?.data?.countryCode).trim().toLowerCase();
+      this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
       this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     }))
   }
@@ -1090,7 +1090,15 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     }); // for child component
     this.connectionResult = [...this.bookingConnectionsArr]
 
-    this.bookingRateArr = response.bookingRates || [];
+    this.bookingRateArr = (response.bookingRates || []).map(br => ({
+      ...br,
+      RateSid : br.BookingRatesSid,
+      RevenueCustomerMasterSid : br.CustomerMasterSid,
+      RevenueCustomerBranchSid : br.CustomerBranchSid,
+      CostAgentMasterSid : br.AgentMasterSid,
+      CostAgentBranchSid : br.AgentBranchSid,
+      status : br.status  === "A" ? "Active" : "Suspended"
+    }));
     this.rateResult = [...this.bookingRateArr];
     const shipmentTypeValue = response.ShipmentType === "Y" ? true : false;
     if (shipmentTypeValue) {
@@ -2068,7 +2076,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       CompanyMasterSid,
       DepartmentMasterSid,
       BookingNumber,
-      BookingHeaderSid,
+      ParentSid : BookingHeaderSid,
       CustomerMasterSid,
       CustomerBranchSid,
       departmentName,

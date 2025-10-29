@@ -260,6 +260,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   @ViewChild('masterDocumentUploadComponent') MasterDocumentUploadComponent!: TemplateRef<any>;
   selectedTab = 'Master';
   selectedTab1 = 'Product';
+  countryOfCompany : string;
 
   constructor(
     private router: Router, 
@@ -306,20 +307,21 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     });
 
     // Setup form value changes with proper debouncing
-    this.masterJobForm.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.syncFormValueWithConnectionComponent();
-        this.syncFormValueWithRateComponent();
-        this.syncFormValueWithFollowUpComponent();
-        this.syncFormValueWithEdocComponent();
-        this.syncFormValueWithEmailComponent();
-        this.syncFormValueWithContainerActivityComponent();
-      });
+    // this.masterJobForm.valueChanges
+    //   .pipe(
+    //     debounceTime(300),
+    //     distinctUntilChanged(),
+    //     takeUntil(this.destroy$)
+    //   )
+    //   .subscribe(() => {
+    //     this.syncFormValueWithConnectionComponent();
+    //     this.syncFormValueWithRateComponent();
+    //     this.syncFormValueWithFollowUpComponent();
+    //     this.syncFormValueWithEdocComponent();
+    //     this.syncFormValueWithEmailComponent();
+    //     this.syncFormValueWithContainerActivityComponent();
+    //   });
+
   }
 
   ngOnDestroy(): void {
@@ -540,6 +542,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       costRevenueCharges: this.fb.array([]),
       containerActivities: this.fb.array([])
     });
+    this.masterJobForm.valueChanges.subscribe(() => {
+      this.syncFormValueWithRateComponent();
+    });
   }
 
   initContainerForm(): void {
@@ -628,9 +633,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
       .pipe(catchError(err => of([]))),
+    userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
     departments, ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers 
+    containerTypes, currencies, packageTypes, customers,userCountry 
   }) => {
     this.departments = departments.data || [];
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
@@ -643,6 +649,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.cfsList = cfsList.data ;
     this.yardList = yards.data ; 
     
+    this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
+
     this.containerTypeList = containerTypes.data ;
     const rawCurrencies: any[] = Array.isArray(currencies)
     ? currencies
@@ -859,8 +867,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   // Patch cost revenue charges
-    this.masterJobRateArr = data.costRevenueCharges || [];
-    this.masterJobRateArr = [...this.masterJobRateArr];
+    this.masterJobRateArr = (data.costRevenueCharges || []).map(rate => ({
+      ...rate,
+      RateSid : rate.CostRevenueChargesSid,
+      status : rate.status  === "A" ? "Active" : "Suspended"
+    }));
+    this.rateResult = [...this.masterJobRateArr];
 
 
   // Patch container activities
@@ -1561,24 +1573,54 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   syncFormValueWithConnectionComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
+    const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
+    const departmentName = this.selectedDepartment?.departmentName;
     const selectedPOO = this.masterJobForm.get('POO')?.value; // PortMasterSid
     const selectedPOL = this.masterJobForm.get('POL')?.value; // PortMasterSid
     const selectedPOD = this.masterJobForm.get('POD')?.value; // PortMasterSid
     const selectedFPD = this.masterJobForm.get('FPD')?.value; // PortMasterSid
+    const EffectiveDate = this.masterJobForm.get('MasterJobDate')?.value;
+    const ExpiredDate = this.masterJobForm.get('MasterJobDate')?.value;
+    const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
+    const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
+    const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
+    const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
+    const CargoType = this.f['CargoType']?.value;
+    const NetWeight = this.f['NetWeight']?.value;
+    const GrossWeight = this.f['GrossWeight']?.value;
+    const NoofContainers = this.masterJobContainers.length;
+    const Volume = this.f['Volume']?.value;
+    const ChargeableWeight = this.f['ChargeableWeight']?.value;
     const MovementType = this.selectedDepartmentType;
+    // const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
+    // const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    // const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
 
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
+      MasterJobNumber,
+      ParentSid : this.masterJobSid,
+      // CustomerMasterSid,
+      // CustomerBranchSid,
+      departmentName,
       Segment: this.selectedFCLLCL,
-      POO: selectedPOO,
-      POL: selectedPOL,
-      POD: selectedPOD,
-      FPOD: selectedFPD,
-      MovementType
-    };
+      PORSid,
+      POLSid,
+      PODSid,
+      FPODSid,
+      EffectiveDate,
+      ExpiredDate,
+      CargoType,
+      GrossWeight,
+      NetWeight,
+      Volume,
+      NoofContainers,
+      ChargeableWeight,
+      countryOfCompany : this.countryOfCompany
+    }
   }
 
   // Add connection change handler
@@ -1590,42 +1632,59 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   syncFormValueWithRateComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-    const selectedPOO = this.masterJobForm.get('POO')?.value;
-    const selectedPOL = this.masterJobForm.get('POL')?.value;
-    const selectedPOD = this.masterJobForm.get('POD')?.value;
-    const selectedFPD = this.masterJobForm.get('FPD')?.value;
-    const EffectiveDate = this.masterJobForm.get('ETA')?.value;
-    const ExpiredDate = this.masterJobForm.get('ETD')?.value;
-    
-    const POOSid = (this.portList.find(p => p.PortMasterSid === selectedPOO)?.PortMasterSid);
-    const POLSid = (this.portList.find(p => p.PortMasterSid === selectedPOL)?.PortMasterSid);
-    const PODSid = (this.portList.find(p => p.PortMasterSid === selectedPOD)?.PortMasterSid);
-    const FPODSid = (this.portList.find(p => p.PortMasterSid === selectedFPD)?.PortMasterSid);
+    const departmentName = this.selectedDepartment?.departmentName;
+    const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
+    const selectedPOO = this.masterJobForm.get('POO')?.value; // PortMasterSid
+    const selectedPOL = this.masterJobForm.get('POL')?.value; // PortMasterSid
+    const selectedPOD = this.masterJobForm.get('POD')?.value; // PortMasterSid
+    const selectedFPD = this.masterJobForm.get('FPD')?.value; // PortMasterSid
+    const EffectiveDate = this.masterJobForm.get('MasterJobDate')?.value;
+    const ExpiredDate = this.masterJobForm.get('MasterJobDate')?.value;
+    const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
+    const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
+    const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
+    const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
+    const CargoType = this.f['CargoType']?.value;
+    const NetWeight = this.f['NetWeight']?.value;
+    const GrossWeight = this.f['GrossWeight']?.value;
+    const NoofContainers = this.masterJobContainers.length;
+    const Volume = this.f['Volume']?.value;
+    const ChargeableWeight = this.f['ChargeableWeight']?.value;
+    const MovementType = this.selectedDepartmentType;
+    // const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
+    // const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    // const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
 
-    // Add these properties to match booking-entry structure
-    this.currentRateFormValue = {
-        CompanyMasterSid,
-        DepartmentMasterSid,
-        Segment: this.selectedFCLLCL,
-        PORSid: POOSid,  // Changed from POO to match booking
-        POLSid: POLSid,  // Changed from POL to match booking  
-        PODSid: PODSid,  // Changed from POD to match booking
-        FPODSid: FPODSid, // Changed from FPOD to match booking
-        EffectiveDate,
-        ExpiredDate,
-        MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-        departmentName: this.selectedDepartment?.departmentName, // Add this
-        BookingNumber: this.masterJobForm.get('MasterJobNumber')?.value, // Add this for consistency
-        BookingHeaderSid: this.masterJobSid // Add this if needed
-    };
+    this.currentFormValue = {
+      CompanyMasterSid,
+      DepartmentMasterSid,
+      MasterJobNumber,
+      ParentSid : this.masterJobSid,
+      // CustomerMasterSid,
+      // CustomerBranchSid,
+      departmentName,
+      Segment: this.selectedFCLLCL,
+      PORSid,
+      POLSid,
+      PODSid,
+      FPODSid,
+      EffectiveDate,
+      ExpiredDate,
+      CargoType,
+      GrossWeight,
+      NetWeight,
+      Volume,
+      NoofContainers,
+      ChargeableWeight,
+      countryOfCompany : this.countryOfCompany
+    }
 }
   
  handleRateChange(allRates: any[]) {
-  console.log('Rates changed:', allRates);
   if (allRates && allRates.length > 0) {
-    this.masterJobRateArr = [...allRates];
+    this.rateResult = [...allRates];
   }
 }
   

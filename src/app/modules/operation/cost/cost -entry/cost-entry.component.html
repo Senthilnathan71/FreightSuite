@@ -136,8 +136,8 @@
     <th class="bg-transparent text-light" >SNo</th>
     <th class="bg-transparent text-light" >Charge <span class="text-danger">{{hasRequired('ChargeMasterSid') ? '*' : ''}}</span></th>
     <th class="bg-transparent text-light" >Charge Desc <span class="text-danger">{{hasRequired('ChargeDescription') ? '*' : ''}}</span></th>
-    <th class="bg-transparent text-light dofi-min-w-80"  >Unit <span class="text-danger">{{ hasRequired('CostChargeUomSid') ? '*' : ''}}</span></th>
-    <th class="bg-transparent text-light dofi-min-w-90" >No. of Unit <span class="text-danger">{{ hasRequired('NumberOfUnit') ? '*' : ''}}</span></th>
+    <th class="bg-transparent text-light dofi-min-w-80"  >Unit <span class="text-danger">{{ hasRequired('ChargeUomSid') ? '*' : ''}}</span></th>
+    <th class="bg-transparent text-light dofi-min-w-90" >No. of Unit <span class="text-danger">{{ hasRequired('NoOfUnit') ? '*' : ''}}</span></th>
   </tr>
   
 
@@ -147,7 +147,7 @@
             <td>
   <!-- Change the delete button condition -->
   <button class="action-icon delete py-0"
-    (click)="deleteRate(i,row.value.BookingRatesSid)"
+    (click)="deleteRate(i,row.value.RateSid)"
     [disabled]="!canEditRate(i) || rateFormArray.length === 1"
     [class.disabled]="rateFormArray.length === 1"
     title="{{ rateFormArray.length === 1 ? 'Cannot delete the only row' : 'Delete rate' }}">
@@ -191,20 +191,16 @@
 
               <td>
                 <div class="custom-form-group custom-form-group-select dofi-max-w-100">
-                  <!-- <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
-                    formControlName="CostChargeUomSid" bindValue="UOMMasterSid" appendTo="body">
-                  </ng-select> -->
-                  <dofi-searchable-dropdown [items]="uomList" formControlName="CostChargeUomSid" [placeholder]="''"
+                  <dofi-searchable-dropdown [items]="uomList" formControlName="ChargeUomSid" [placeholder]="''"
                         [displayFields]="uomDropdownConfig.displayFields" [displayLabels]="uomDropdownConfig.displayLabels"
-                        [labelFields]="uomDropdownConfig.labelFields" [bindValue]="'UOMMasterSid'" [disabled]="!canEditRate(i)"
-                        (itemSelected)="onChangeUOM($event)" appendTo="body">
+                        [labelFields]="uomDropdownConfig.labelFields" [bindValue]="'UOMMasterSid'" [disabled]="!canEditRate(i)" appendTo="body">
                   </dofi-searchable-dropdown>
 
                 </div>
               </td>
               <td>
                 <div class="custom-form-group ">
-                  <input type="text" min="0" formControlName="NumberOfUnit" id="text-input"
+                  <input type="text" min="0" formControlName="NoOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (input)="calculateCostAmount(i); calculateRevenueAmount(i)"
                     [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
@@ -255,15 +251,6 @@
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
-                <!-- Revenue -->
-                <!-- <td>
-                  <div class="custom-form-group dofi-min-w-100">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event,i)"
-                      formControlName="RevenueChargeUomSid" bindValue="UOMMasterSid"
-                      [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select>
-                  </div>
-                </td> -->
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-60">
                     <ng-select formControlName="RevenueDrCr" appendTo="body">
@@ -336,13 +323,9 @@
 
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                      formControlName="CustomerMasterSid"
-                      [disabled]="!canEditRate(i)" (change)="handleCustomerChange(i,$event)" appendTo="body">
-                    </ng-select> -->
-                    <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid" [placeholder]="''"
+                    <dofi-searchable-dropdown [items]="billingParties" formControlName="RevenueCustomerBranchSid" [placeholder]="''"
                           [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerMasterSid'" [disabled]="!canEditRate(i)"
+                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerBranchSid'" [disabled]="!canEditRate(i)"
                           (itemSelected)="handleCustomerChange(i, $event)" appendTo="body">
                     </dofi-searchable-dropdown>
                   </div>
@@ -369,17 +352,6 @@
                     </a>
                   </div>
                 </td>
-
-                <!-- cost -->
-                <!-- <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <ng-select [items]="uomList" bindLabel="UOMName" (change)="onChangeUOM($event)"
-                      formControlName="CostChargeUomSid"
-                      bindValue="UOMMasterSid"
-                      [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select>
-                  </div>
-                </td> -->
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-30">
                     <ng-select formControlName="CostDrCr" appendTo="body">
@@ -390,11 +362,6 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid"
-                      formControlName="CostCurrencyMasterSid"
-                      (change)="getCostExchangeRate(i, $event)"
-                      [disabled]="!canEditRate(i)" appendTo="body">
-                    </ng-select> -->
                     <dofi-searchable-dropdown [items]="currencyList" formControlName="CostCurrencyMasterSid" [placeholder]="''"
                         [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
                         [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
@@ -459,9 +426,9 @@
                       formControlName="AgentSid"
                       [disabled]="!canEditRate(i)" (change)="handleAgentChange(i,$event)" appendTo="body">
                     </ng-select> -->
-                    <dofi-searchable-dropdown [items]="agentList" formControlName="AgentSid" [placeholder]="''"
+                    <dofi-searchable-dropdown [items]="parties" formControlName="CostAgentBranchSid" [placeholder]="''"
                           [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerMasterSid'" [disabled]="!canEditRate(i)"
+                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerBranchSid'" [disabled]="!canEditRate(i)"
                           (itemSelected)="handleAgentChange(i, $event)" appendTo="body">
                     </dofi-searchable-dropdown>
                   </div>
@@ -748,178 +715,6 @@
   </div>
 </div>
 
-
-<ng-template #rateModal let-modal>
-  <div class="modal-header p-2 bg-info">
-    <h5 class="modal-title text-white">{{currentRateIndex !== -1 ? 'Edit' : 'Add'}} {{selectedTab}}</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close"
-      (click)="modal.dismiss('Cross click')"></button>
-  </div>
-
-  <div class="modal-body">
-    <div class="row compact-form">
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="SerialNumber" DecimalPrecision [DecimalPrecisionBefore]="3" [DecimalPrecisionAfter]="0">
-          <label for="text-input" [ngClass]="{
-                              'input-label': true,
-                              'bg-transparent': !r['SerialNumber']?.getRawValue()
-                          }">Sno <span class="text-danger"></span></label>
-          @if ((r['SerialNumber']?.touched || r['SerialNumber']?.dirty) &&
-          r['SerialNumber']?.invalid) {
-          <div class="error-message">
-            @if (r['SerialNumber']?.errors?.['decimalPrecision']) {
-            <small>Allowed: 3 Digits only</small>
-            }
-          </div>
-          }
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select class="ng-select" [items]="chargeList" formControlName="ChargeMasterSid"
-            bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
-            (change)="onChargeChange($event)">
-          </ng-select>
-          <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
-        </div>
-      </aside>
-
-
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="NumberOfUnit"
-            (input)="calculateLocalAmount() ; calculateAmount()" DecimalPrecision [DecimalPrecisionBefore]="4"
-            [DecimalPrecisionAfter]="3">
-          <label for="text-input" class="input-label">No of Unit <span class="text-danger"></span></label>
-          @if ((r['NumberOfUnit']?.touched || r['NumberOfUnit']?.dirty) &&
-          r['NumberOfUnit']?.invalid) {
-          <div class="error-message">
-            @if (r['NumberOfUnit']?.errors?.['decimalPrecision']) {
-            <span>Allowed: 4 Digits before and 3 digits after points</span>
-            }
-          </div>
-          }
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="drcr" bindLabel="name" bindValue="value" formControlName="DrCr" class="ng-select"
-            placeholder="Select Dr/Cr">
-          </ng-select>
-          <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-            formControlName="CurrencyMasterSid" placeholder="Select Currency" (change)="onCurrencyChange($event)">
-          </ng-select>
-          <label for="" class="input-label">Curr<span class="text-danger"></span></label>
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="ExchangeRate" DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
-          <label for="text-input" class="input-label" [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !r['ExchangeRate']?.getRawValue()
-          }">Ex Rate<span class="text-danger"></span></label>
-          @if ((r['ExchangeRate']?.touched || r['ExchangeRate']?.dirty) &&
-          r['ExchangeRate']?.invalid) {
-          <div class="error-message">
-            @if (r['ExchangeRate']?.errors?.['decimalPrecision']) {
-            <span>Allowed: 12 Digits before and 3 digits after points</span>
-            }
-          </div>
-          }
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Rate"
-            (input)="calculateLocalAmount() ; calculateAmount()" DecimalPrecision [DecimalPrecisionBefore]="12"
-            [DecimalPrecisionAfter]="3">
-          <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
-          @if ((r['Rate']?.touched || r['Rate']?.dirty) &&
-          r['Rate']?.invalid) {
-          <div class="error-message">
-            @if (r['Rate']?.errors?.['decimalPrecision']) {
-            <span>Allowed: 12 Digits before and 3 digits after points</span>
-            }
-          </div>
-          }
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="Amount" DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
-          <label for="text-input" [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !r['Amount']?.getRawValue()
-          }">Amt <span class="text-danger"></span></label>
-          @if ((r['Amount']?.touched || r['Amount']?.dirty) &&
-          r['Amount']?.invalid) {
-          <div class="error-message">
-            @if (r['Amount']?.errors?.['decimalPrecision']) {
-            <span>Allowed: 12 Digits before and 3 digits after points</span>
-            }
-          </div>
-          }
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="LocalAmount" DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
-          <label for="text-input" [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !r['LocalAmount']?.getRawValue()
-          }">Local Amt <span class="text-danger"></span></label>
-          @if ((r['LocalAmount']?.touched || r['LocalAmount']?.dirty) &&
-          r['LocalAmount']?.invalid) {
-          <div class="error-message">
-            @if (r['LocalAmount']?.errors?.['decimalPrecision']) {
-            <span>Allowed: 12 Digits before and 3 digits after points</span>
-            }
-          </div>
-          }
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-            formControlName="CustomerMasterSid" placeholder="">
-          </ng-select>
-          <label for="" class="input-label">Billing <span class="text-danger"></span></label>
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-            formControlName="VoucherHeaderSid">
-          <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
-        </div>
-      </aside>
-      <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="DocumentTypeMasterSid"
-            placeholder="Select Type" formControlName="VoucherTypeSid">
-          </ng-select>
-          <label for="" class="input-label">Type<span class="text-danger"></span></label>
-        </div>
-      </aside>
-    </div>
-  </div>
-
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
-    <button type="button" class=" btn btn-sm btn-info" (click)="onRateSubmit()">Save</button>
-  </div>
-</ng-template>
 <ng-template #tariffDetailsModal let-modal>
   <div class="modal-container">
     <div class="modal-responsive-wrapper">

@@ -109,6 +109,14 @@ export class OperationService {
     );
   }
 
+  deleteCostRevenueCharge(CostRevenueChargesSid: number) {
+    return this.http.delete<{ data: any }>(`ff-booking/rates/${CostRevenueChargesSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   createBookingRate(payload: any) {
     return this.http.post<{ data: any }>('ff-booking/rates/create', payload).pipe(
       map((resp) => {
@@ -140,22 +148,15 @@ export class OperationService {
       })
     );
   }
-
-  getMasterJobRatesWithDetails(MasterJobSid: number) {
-    return this.http.get<{ data: any[] }>(`master-job/rates-with-details/${MasterJobSid}`).pipe(
+  getCostRevenueChargeWithDetails(payload : {ParentSid: number, MenuMasterSid: number,model:string}) {
+    return this.http.post<{ data: any[] }>(`cost-revenue-charges/fetchByMenuAndTransactionSid`,payload).pipe(
       map((resp) => {
         return resp;
       })
     );
   }
 
-  getHouseJobRatesWithDetails(HouseJobSid: number) {
-    return this.http.get<{ data: any[] }>(`house-job/rates-with-details/${HouseJobSid}`).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
+
 
   generateVoucherFromBooking(payload: any) {
     return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-booking', payload).pipe(
@@ -165,17 +166,24 @@ export class OperationService {
     );
   }
 
-  generateMasterJobVoucher(payload: any) {
-    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-master-job', payload).pipe(
+  generateVoucherForJobs(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-job', payload).pipe(
       map((resp) => {
         return resp;
       })
     );
   }
 
-  generateHouseJobVoucher(payload: any) {
-    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-house-job', payload).pipe(
-      map((resp) => {
+  getAllDebtorWithCOAMapped(payload: any) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-debtors',payload).pipe(
+      map((resp:any) => {
+        return resp;
+      })
+    );
+  }
+  getAllCreditorWithCOAMapped(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-creditors',payload).pipe(
+      map((resp:any) => {
         return resp;
       })
     );
