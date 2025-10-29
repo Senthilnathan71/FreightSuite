@@ -45,6 +45,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -247,7 +248,8 @@ export class EnquiryEntryComponent implements OnInit {
     private ngbModal: NgbModal,
     private spinner: NgxSpinnerService,
     private datePipe: CustomDatePipe,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    private pdfService:PdfDownloadService
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -1880,61 +1882,21 @@ ${this.userData.userName}`;
   }
 
 
-   async downloadPDF() {
-    this.spinner.show();
-      const printContent = document.getElementById('printContent');
-      if (!printContent) {
-        this.appSettingsService.showError('Print content not found.');
-        return;
-      }
-  
-      try {
-        this.spinner.show();
-  
-        // Generate PDF using html2canvas and jsPDF
-        const canvas = await html2canvas(printContent, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        });
-  
-        const imgWidth = 210; // A4 width in mm
-        const pageHeight = 297; // A4 height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-  
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
-  
-        // Add first page
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-  
-        // Add additional pages if content exceeds one page
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-  
-        
-        const EnquiryNumber = this.rateRequestData?.EnquiryNumber;
-        const filename = `Enquiry_${EnquiryNumber}.pdf`;
-  
-        // Download the PDF
-        pdf.save(filename);
-  
-        this.spinner.hide();
-        this.appSettingsService.showSuccess('PDF downloaded successfully!');
-      } catch (error) {
-        this.spinner.hide();
-        console.error('Error generating PDF:', error);
-        this.appSettingsService.showError('Error generating PDF. Please try again.');
-      }
-    }
+  async downloadPDF() {
+  this.spinner.show();
+  try {
+    const enquiryNumber = this.rateRequestData?.EnquiryNumber || 'Enquiry';
+    
+    await this.pdfService.downloadBalancedPDF(
+      'printContent',
+      `Enquiry_${enquiryNumber}`,
+      () => this.appSettingsService.showSuccess('PDF downloaded successfully!'),
+      (error) => this.appSettingsService.showError('Error generating PDF. Please try again.')
+    );
+  } finally {
+    this.spinner.hide();
+  }
+}
 
       async generatePDFBlob(): Promise<Blob | null> {
         const printContent = document.getElementById('printContent');

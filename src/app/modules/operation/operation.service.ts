@@ -141,8 +141,40 @@ export class OperationService {
     );
   }
 
+  getMasterJobRatesWithDetails(MasterJobSid: number) {
+    return this.http.get<{ data: any[] }>(`master-job/rates-with-details/${MasterJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getHouseJobRatesWithDetails(HouseJobSid: number) {
+    return this.http.get<{ data: any[] }>(`house-job/rates-with-details/${HouseJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   generateVoucherFromBooking(payload: any) {
     return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-booking', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  generateMasterJobVoucher(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-master-job', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  generateHouseJobVoucher(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-house-job', payload).pipe(
       map((resp) => {
         return resp;
       })

@@ -44,6 +44,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -284,7 +285,8 @@ dataFromEnqPage:any;
     private toastr: ToastrService,
     private spinner: NgxSpinnerService,
     private datePipe : CustomDatePipe,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    private pdfService: PdfDownloadService
   ) { 
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -2886,101 +2888,24 @@ ${this.userData.userName}`;
     }
   }
 
-  // downloadPDF() {
-  //   const element = document.getElementById('pdfContent');
-
-  //   if (!element) {
-  //     console.error('No element found');
-  //     return;
-  //   }
-
-  //   const opt: Html2PdfOptions = {
-  //     margin: 0.5,
-  //     filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-  //     image: { type: 'jpeg', quality: 0.98 },
-  //     html2canvas: { scale: 2 },
-  //     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  //   };
-
-  //   html2pdf().from(element).set(opt).save(); // ✅ this triggers download
-  // }
-
-  // generatePDFBlob(): Promise<Blob> {
-  //   return new Promise((resolve, reject) => {
-  //     const element = document.getElementById('pdfContent');
-
-  //     const opt: Html2PdfOptions = {
-  //       margin: 0.5,
-  //       filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-  //       image: { type: "jpeg", quality: 0.98 }, // ✅ TypeScript now sees it as literal
-  //       html2canvas: { scale: 2 },
-  //       jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
-  //     };
 
 
-  //     if (!element) return reject('No element found');
 
-  //     html2pdf().from(element).set(opt).outputPdf('blob')
-  //       .then((blob: Blob) => resolve(blob))
-  //       .catch((err: any) => reject(err));
-  //   });
-  // }
-
-  
-     async downloadPDF() {
-        const printContent = document.getElementById('printContent');
-        if (!printContent) {
-          this.appSettingService.showError('Print content not found.');
-          return;
-        }
+  async downloadPDF() {
+  this.spinner.show();
+  try {
+    const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
     
-        try {
-          this.spinner.show();
-    
-          // Generate PDF using html2canvas and jsPDF
-          const canvas = await html2canvas(printContent, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-          });
-    
-          const imgWidth = 210; // A4 width in mm
-          const pageHeight = 297; // A4 height in mm
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-          let position = 0;
-    
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const imgData = canvas.toDataURL('image/png');
-    
-          // Add first page
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-    
-          // Add additional pages if content exceeds one page
-          while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-          }
-    
-          
-          const QuotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Enquiry';
-          const filename = `Quotation_${QuotationNumber}.pdf`;
-    
-          // Download the PDF
-          pdf.save(filename);
-    
-          this.spinner.hide();
-          this.appSettingService.showSuccess('PDF downloaded successfully!');
-        } catch (error) {
-          this.spinner.hide();
-          console.error('Error generating PDF:', error);
-          this.appSettingService.showError('Error generating PDF. Please try again.');
-        }
-      }
+    await this.pdfService.downloadBalancedPDF(
+      'printContent',
+      `Quotation_${quotationNumber}`,
+      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    );
+  } finally {
+    this.spinner.hide();
+  }
+}
   
         async generatePDFBlob(): Promise<Blob | null> {
           const printContent = document.getElementById('printContent');
