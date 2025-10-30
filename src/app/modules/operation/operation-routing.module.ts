@@ -23,6 +23,8 @@ import { CargoReceiptEntryComponent } from './cargo-receipt/cargo-receipt-entry/
 import { CargoReceiptListComponent } from './cargo-receipt/cargo-receipt-list/cargo-receipt-list.component';
 import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-entry/vendor-invoice-entry.component';
 import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list/vendor-invoice-list.component';
+import { CreditRequestListComponent } from './credit-request/credit-request-list/credit-request-list.component';
+import { CreditRequestEntryComponent } from './credit-request/credit-request-entry/credit-request-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -280,6 +282,30 @@ export const OperationRoutes: Routes = [
           viewMode: true
         },
       },
+      {
+        path: 'credit-request/list',
+        component: CreditRequestListComponent,
+        data: {
+          title: 'Credit Request',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],
+        }
+      },
+      {
+        path: 'credit-request/entry',
+        component: CreditRequestEntryComponent,
+        data: {
+          title: 'Credit Request',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],
+        }
+      },
+      {
+        path: 'credit-request/entry/:CustomerMasterSid',
+        component: CreditRequestEntryComponent,
+        data: {
+          title: 'Credit Request',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],
+        }
+      }
     ],
   },
   

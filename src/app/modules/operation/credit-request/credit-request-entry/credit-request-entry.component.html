@@ -1,0 +1,311 @@
+<div class="row compact-form">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Credit Request</h5>
+                </div>
+            </div>
+            <div class="col-md-8 pb-1">
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                        (click)="onSubmit()"
+                        [disabled]="btnDisable || cusForm.invalid || creditRequest.controls.length === 0">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 px-0">
+        <form [formGroup]="cusForm">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card h-100 mb-0">
+                        <div class="card-body">
+                            <div class="row pb-2">
+                                <!-- Customer Name -->
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group"
+                                        [class.filled]="!!cusForm.get('CustomerName')?.value">
+                                        <input type="text" id="CustomerName" formControlName="CustomerName"
+                                            class="custom-input-field sm" placeholder="" readonly />
+                                        <label for="CustomerName" class="input-label">Customer</label>
+                                    </div>
+                                </aside>
+
+                                <!-- Country -->
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group"
+                                        [class.filled]="!!cusForm.get('CountryMasterSid')?.value">
+                                        <input type="text" id="CountryMasterSid" formControlName="CountryMasterSid"
+                                            class="custom-input-field sm" placeholder="" readonly />
+                                        <label for="CountryMasterSid" class="input-label">Country</label>
+                                    </div>
+                                </aside>
+
+                                <!-- Status -->
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!cusForm.get('status')?.value">
+                                        <ng-select 
+                                            formControlName="status" 
+                                            [items]="typeofStatus" 
+                                            bindLabel="name"
+                                            bindValue="id" 
+                                            placeholder=""
+                                            [disabled]="!isEditMode">
+                                        </ng-select>
+                                        <label class="input-label">Status</label>
+                                        <div *ngIf="cusForm.get('status')?.touched && cusForm.get('status')?.invalid"
+                                            class="error-message">
+                                            <span *ngIf="cusForm.get('status')?.hasError('required')">Required</span>
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="mx-auto mt-1">
+                    <div class="nav-pills-container">
+                        <div class="nav-pills d-flex align-items-center w-100">
+                            <div class="pills-left d-flex flex-nowrap" style="flex:1;">
+                                <div class="nav-pill" *ngFor="let tab of tabs" 
+                                    [class.active]="selectedTab === tab.name"
+                                    (click)="selectTab(tab.name)">
+                                    <div class="pill-icon">
+                                        <i [class]="tab.icon"></i>
+                                    </div>
+                                    <span class="pill-label">{{ tab.name }}</span>
+                                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+                                </div>
+                            </div>
+                            
+                            <div *ngIf="selectedTab === 'Credit'">
+                                <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addCreditRequestRow()">
+                                    <i class="fas fa-plus"></i> Add Credit
+                                </button>
+                            </div>
+                            
+                            <!-- <div *ngIf="selectedTab === 'KYC'">
+                                <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addKycRow()">
+                                    <i class="fas fa-plus"></i> Add KYC
+                                </button>
+                            </div> -->
+                        </div>
+                    </div>
+
+                    <div class="content-workspace">
+                        <!-- Credit Request Details Tab -->
+                        <div class="workspace-content" *ngIf="selectedTab === 'Credit'">
+                            @if(creditRequest.controls.length === 0) {
+                            <div class="col-12 text-center py-3 text-danger">
+                                At least one credit record is required
+                            </div>
+                            }
+
+                            @if(creditRequest.controls.length > 0) {
+                            <div class="col-12">
+                                <div class="table-responsive table-borderless">
+                                    <table class="table table-hover align-middle no-wrap table-sm">
+                                        <thead class="bg-info">
+                                            <tr>
+                                                <th class="bg-transparent text-light" width="3%"></th>
+                                                <th class="bg-transparent text-light" style="width:120px">Branch</th>
+                                                <th class="bg-transparent text-light" style="width:180px">Department</th>
+                                                <th class="bg-transparent text-light" style="width:120px">Sales Person</th>
+                                                <th class="bg-transparent text-light" style="width:60px">Credit Days</th>
+                                                <th class="bg-transparent text-light" style="width:100px">Credit Limit</th>
+                                                <th class="bg-transparent text-light" style="width:100px">Published Days</th>
+                                                <th class="bg-transparent text-light" style="width:60px">Published Limit</th>
+                                                <th class="bg-transparent text-light dofi-min-w-120" >Effective From</th>
+                                                <th class="bg-transparent text-light dofi-min-w-120" >Effective To</th>
+                                                <th class="bg-transparent text-light">Approval Status</th>
+                                                <th class="bg-transparent text-light" width="8%">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody formArrayName="creditRequest">
+                                            @for (credit of creditRequest.controls; track credit; let i = $index) {
+                                            <tr [formGroupName]="i">
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm border-0"
+                                                        (click)="removeCreditRequestRow(i)"
+                                                        [disabled]="creditRequest.controls.length <= 1">
+                                                        <i class="fas fa-trash text-danger"></i>
+                                                    </button>
+                                                </td>
+                                                
+                                                <!-- Branch -->
+                                                <td>
+                                                    <ng-select 
+                                                        [formControlName]="'CustomerBranchSid'" 
+                                                        [items]="branchList" 
+                                                        bindLabel="name"
+                                                        bindValue="id" 
+                                                        placeholder="" (change)="onBranchSelect($event, i)" appendTo="body">
+                                                    </ng-select>
+                                                    <div *ngIf="credit.get('CustomerBranchSid')?.touched && credit.get('CustomerBranchSid')?.invalid"
+                                                        class="error-message">
+                                                        <span *ngIf="credit.get('CustomerBranchSid')?.hasError('required')">Required</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <!-- Department -->
+                                                <td>
+                                                    <ng-select 
+                                                        [formControlName]="'DepartmentMasterSid'" 
+                                                        [items]="departmentListPerRow[i]" 
+                                                        bindLabel="departmentName"
+                                                        bindValue="DepartmentMasterSid" 
+                                                        placeholder=""
+                                                        (change)="onDepartmentSelect($event, i)"
+                                                        appendTo="body">
+                                                    </ng-select>
+                                                    <div *ngIf="credit.get('DepartmentMasterSid')?.touched && credit.get('DepartmentMasterSid')?.invalid"
+                                                        class="error-message">
+                                                        <span *ngIf="credit.get('DepartmentMasterSid')?.hasError('required')">Required</span>
+                                                    </div>
+                                                </td>
+
+                                                <!-- <td>
+                                                    <div>
+                                                        <multi-select [control]="credit.get('DepartmentMasterSid')"
+                                                        [items]="departmentListPerRow[i]" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+                                                        placeholder="" multiple="true" [displayCount]="1"></multi-select>
+                                                    </div>
+                                                </td> -->
+                                                
+                                                <!-- Sales Person -->
+                                                <td>
+                                                    <ng-select 
+                                                        [formControlName]="'SalesmanSid'" 
+                                                        [items]="salesmanListPerRow[i]" 
+                                                        bindLabel="userName"
+                                                        bindValue="UserMasterSid" 
+                                                        placeholder="Select Sales Person" appendTo="body">
+                                                    </ng-select>
+                                                </td>
+                                                
+                                                <!-- Credit Days -->
+                                                <td>
+                                                    <input type="number" formControlName="CreditDays"
+                                                        class="custom-input-field sm text-end" min="0" />
+                                                    <div *ngIf="credit.get('CreditDays')?.touched && credit.get('CreditDays')?.invalid"
+                                                        class="error-message">
+                                                        <span *ngIf="credit.get('CreditDays')?.hasError('required')">Required</span>
+                                                        <span *ngIf="credit.get('CreditDays')?.hasError('min')">Must be positive</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <!-- Credit Limit -->
+                                                <td>
+                                                    <input type="number" formControlName="CreditLimit"
+                                                        class="custom-input-field sm text-end" min="0" step="0.01" />
+                                                    <div *ngIf="credit.get('CreditLimit')?.touched && credit.get('CreditLimit')?.invalid"
+                                                        class="error-message">
+                                                        <span *ngIf="credit.get('CreditLimit')?.hasError('required')">Required</span>
+                                                        <span *ngIf="credit.get('CreditLimit')?.hasError('min')">Must be positive</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <!-- Published Days -->
+                                                <td>
+                                                    <input type="number" formControlName="PublishedDays"
+                                                        class="custom-input-field sm text-end" min="0" />
+                                                </td>
+                                                
+                                                <!-- Published Limit -->
+                                                <td>
+                                                    <input type="number" formControlName="PublishedLimit"
+                                                        class="custom-input-field sm text-end" min="0" step="0.01" />
+                                                </td>
+                                                
+                                                <!-- Effective From -->
+                                                <!-- <td>
+                                                    <input type="date" formControlName="EffectiveFrom"
+                                                        class="custom-input-field sm" />
+                                                    <div *ngIf="credit.get('EffectiveFrom')?.touched && credit.get('EffectiveFrom')?.invalid"
+                                                        class="error-message">
+                                                        <span *ngIf="credit.get('EffectiveFrom')?.hasError('required')">Required</span>
+                                                    </div>
+                                                </td> -->
+                                                <td>
+                                            <div class="custom-form-group custom-form-group-select-date">
+
+              <div class="input-group">
+                <input class="form-control" placeholder="DD-MMM-YYYY" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                  (click)="d1.toggle()" formControlName="EffectiveFrom" (keydown.arrowDown)="d1.open()" [minDate]="today"   container="body"/>
+                <button class="btn " (click)="d1.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
+              </div>
+
+            </div>
+            </td>
+                                                <!-- Effective To -->
+                                                <!-- <td>
+                                                    <input type="date" formControlName="EffectiveTo"
+                                                        class="custom-input-field sm" />
+                                                </td> -->
+                                                <td>
+                                            <div class="custom-form-group custom-form-group-select-date">
+
+              <div class="input-group">
+                <input class="form-control" placeholder="DD-MMM-YYYY" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                  (click)="d2.toggle()" formControlName="EffectiveTo" (keydown.arrowDown)="d2.open()" [minDate]="today"   container="body"/>
+                <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
+              </div>
+
+            </div>
+            </td>
+                                                <!-- Approval Status -->
+                                                <td>
+                                                    <input type="text" formControlName="ApprovalStatus"
+                                                        class="custom-input-field sm" placeholder="Auto-generated" readonly />
+                                                </td>
+                                                
+                                                <!-- Status -->
+                                                <td>
+                                                    <ng-select 
+                                                        [formControlName]="'Status'" 
+                                                        [items]="typeofStatus" 
+                                                        bindLabel="name"
+                                                        bindValue="id" 
+                                                        placeholder="Select Status"
+                                                        appendTo="body">
+                                                    </ng-select>
+                                                </td>
+                                            </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            }
+                        </div>
+
+                        <!-- KYC Details Tab (Commented as per your TS) -->
+                        <!-- <div class="workspace-content" *ngIf="selectedTab === 'KYC'">
+                            Content for KYC tab would go here when implemented
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
