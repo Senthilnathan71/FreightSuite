@@ -877,4 +877,59 @@ getCountryById(CountryMasterSid: number) {
     );
   }
 
+  searchCreditCustomer(params) {
+    return this.http.post("credit-request/search-list", params).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+  getCustomerById(CustomerMasterSid: number) {
+    return this.http.get<{ data: any }>(`credit-request/fetch/${CustomerMasterSid}`).pipe(
+      map((resp)=> {
+        console.log('getCustomerById response:', resp); 
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getDepartment(payload: any) {
+    return this.http.post(`credit-request/fetch/department`, payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+  getSalesman(payload: any) {
+    return this.http.post(`credit-request/fetch/salesperson`, payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+  createCreditRequest(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>(
+      'credit-request/create',
+      payload
+    ).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateCreditRequest(CustomerCreditRequestSid: number, payload: any) {
+    return this.http.patch<{ status: boolean; message: string; data: any }>(
+      `credit-request/update/${CustomerCreditRequestSid}`,
+      payload
+    ).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 }
