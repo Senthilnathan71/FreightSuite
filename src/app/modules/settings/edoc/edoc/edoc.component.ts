@@ -679,8 +679,12 @@ loadEdocData() {
   }
 
   closeTemplate() {
+  if (this.activeModal) {
+    this.activeModal.close(); 
+  } else {
     this.closeModal.emit(true);
   }
+}
 
   toUTCISO(dateStruct: NgbDateStruct | string | Date | null): string | null {
     if (!dateStruct) return null;

@@ -45,6 +45,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -2460,6 +2461,12 @@ ${this.userData.userName}`;
   }
 
   openEDoc() {
+    // if (!this.tariffData) return;
+    const modalRef = this.ngbModal.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
   }
 
   logFormValue() {

@@ -110,7 +110,7 @@
   justify-content: space-between;
   align-items: center;
   // box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(5, 96, 141, 0.15);
 }
 
 .nav-pills {
@@ -128,7 +128,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 18px;
+  padding: 2px 14px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -150,6 +150,9 @@
     .pill-icon {
       color: white;
     }
+    .pill-label {
+      color: #ffffff;
+    }
   }
 }
 
@@ -157,6 +160,7 @@
   font-size: 12px;
   transition: color 0.2s ease;
   margin-top: 0px;
+  color: #05608d;
 }
 
 .pill-label {
