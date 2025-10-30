@@ -25,6 +25,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -62,7 +63,7 @@ export class SailingScheduleEntryComponent implements OnInit {
 
     VoyageMasterHeaderSid : number | null = null;
     isEditMode = false;
-
+    MenuMasterSid: any;
     vesselList : any[] = [];
     carrierList : any[] = [];
     portList : any[] = [];
@@ -117,7 +118,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         private fb : FormBuilder,
         private calendar: NgbCalendar,  
         private cdr: ChangeDetectorRef,
-        public dropdownStore: DropdownStore
+        public dropdownStore: DropdownStore,
+        private commonService: CommonService
     ){
         effect(()=>{
             const vesselData= this.dropdownStore.vesselData();
@@ -132,6 +134,7 @@ export class SailingScheduleEntryComponent implements OnInit {
     ngOnInit(): void {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.MenuMasterSid =  localStorage.getItem('currentMenuId');
         const userProfile = this.appSettingService.getDecryptedUserProfile();
         if(userProfile){
             this.userData = userProfile;
@@ -626,6 +629,14 @@ export class SailingScheduleEntryComponent implements OnInit {
             centered: true, 
             backdrop: 'static' 
         });
+        const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.VoyageMasterHeaderSid
+  }
+
+      this.commonService.documentData.set(data)
     }
 
     toggleCoLoad(event:any){

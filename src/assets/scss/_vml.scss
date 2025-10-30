@@ -420,6 +420,8 @@
     border-right: 0;
     border-top: 0;
     box-shadow: none;
+    color: black;
+    font-weight: 600;
   }
 
   .custom-input-field {
@@ -429,6 +431,8 @@
     border-right: 0;
     border-top: 0;
     box-shadow: none;
+    color: black;
+    font-weight: 600;
   }
 
 
@@ -440,6 +444,8 @@
       padding: 0x 4px 0px;
       border-right: 0;
       max-height: 10px;
+      color: black;
+    font-weight: 600;
     }
   }
 
@@ -451,6 +457,8 @@
       padding: 6px 4px 0px !important;
       border-right: 0;
       min-height: 23px !important;
+      color: black;
+    font-weight: 600;
     }
   }
 
@@ -466,6 +474,8 @@
     border-right: 0;
     padding: 0px 4px 0px;
     max-height: 28px !important;
+    color: black;
+    font-weight: 600;
   }
 }
 
@@ -1777,7 +1787,7 @@
   /* Compact Header */
   .smart-header {
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    // backdrop-filter: blur(20px);
     border-radius: 8px;
     padding: 4px 12px;
     margin-bottom: 4px;
@@ -3283,6 +3293,7 @@ textarea:disabled {
    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
   /* Hover color */
   color: white;
+    border-radius: 15px;
   /* Text color on hover */
 }
 
