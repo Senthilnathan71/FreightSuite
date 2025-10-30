@@ -63,4 +63,8 @@ previewFile(payload: { menuMasterSid: number; documentSid: number; fileName: str
 deleteEdocFile(attachDocumentSid: number): Observable<any> {
     return this.http.delete(`attach-document/delete/${attachDocumentSid}`);
 }
+
+clearDocumentData(){
+    this.documentData.set([])
+  }
 }

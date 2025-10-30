@@ -774,11 +774,11 @@ openEDoc() {
   modalRef.componentInstance.resetTrigger = false;
 
   const data:any={
-        CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
     BranchMasterSid: this.currentBranch.BranchMasterSid,
     MenuMasterSid : this.MenuMasterSid,
     DocumentSid: this.PreCustomerMasterSid
-      }
+  }
 
       this.commonService.documentData.set(data)
 
@@ -795,6 +795,7 @@ openEDoc() {
 
 
   ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();

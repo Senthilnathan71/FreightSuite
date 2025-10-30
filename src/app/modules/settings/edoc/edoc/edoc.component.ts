@@ -146,85 +146,7 @@ export class EdocComponent implements OnInit, OnDestroy {
   }
 
 
-  // loadEdocData() {
-  //   const payload = {
-  //     menuMasterSid: this.componentData.MenuMasterSid,
-  //     DocumentSid: this.componentData.DocumentSid
-  //   };
-
-  //   this.commonService.getExistingFile(payload).subscribe((response) => {
-  //     console.log('🔍 Full API Response:', response);
-
-  //     if (response.attachDocument) {
-  //       const res = response.attachDocument;
-  //       const followup = response.followupResponse;
-
-  //       this.attachDocumentSid = res.AttachDocumentSid;
-
-  //       // Extract filename and extension
-  //       const fullFileName = res.FileName || '';
-
-  //       // Store existing filename for display
-  //       this.existingFileName = fullFileName;
-
-  //       const fileExt = fullFileName.includes('.') 
-  //         ? fullFileName.split('.').pop()?.toLowerCase() 
-  //         : res.Documenttype || '';
-
-  //       const baseFileName = fullFileName.includes('.') 
-  //         ? fullFileName.substring(0, fullFileName.lastIndexOf('.')) 
-  //         : fullFileName;
-
-
-  //       // Patch main document data
-  //       // The CustomDateAdapter will automatically convert date strings to NgbDateStruct
-  //       this.edocform.patchValue({
-  //         AttachDocmentNo: res.AttachDocmentNo || '',
-  //         DocumentDate: res.DocumentDate || null,  // Let adapter handle conversion
-  //         FileName: baseFileName || '',
-  //         Documenttype: fileExt || '',
-  //         ReceivedDate: res.ReceivedDate || null,  // Let adapter handle conversion
-  //         SentDate: res.SentDate || null,          // Let adapter handle conversion
-  //   FollowupRequired: res.FollowupRequire === 'Y',
-  //         EdocRemarks: res.Remarks || '',
-  //         EdocStatus: res.status || Status.Active,
-  //         Public: res.Public || 'N',
-  //         sentEmail: res.sentEmail || 'N',
-  //       });
-
-  //       // Patch followup data if present
-  //       if (followup) {
-  //         this.edocform.patchValue({
-  //           FollowupDate: followup.FollowupDate || null,  // Let adapter handle conversion
-  //           FollowupAction: followup.FollowupAction || '',
-  //           Public: followup.Public || 'N',
-  //           sentEmail: followup.sentEmail || 'N',
-  //           FollowupRemarks: followup.Remarks || '',
-  //           FollowupStatus: followup.Status || Status.Active,
-  //         });
-
-  //       } else {
-  //         // Clear follow-up fields if no record exists
-  //         this.edocform.patchValue({
-  //           FollowupDate: null,
-  //           FollowupAction: '',
-  //           FollowupRemarks: '',
-  //           FollowupStatus: Status.Active,
-  //         });
-
-  //         console.log('ℹ️ No followup data found');
-  //       }
-  //       // Force change detection
-  //       this.edocform.updateValueAndValidity();
-  //     } else {
-  //       console.warn('⚠️ No attachDocument found in response');
-  //     }
-  //   }, (error) => {
-  //     console.error('❌ Error loading Edoc data:', error);
-  //     this.appSettingService.showError('Failed to load document data');
-  //   });
-  // }
-
+  
   // Helper method to debug form errors
   getFormErrors(): any {
     const errors: any = {};
@@ -236,33 +158,7 @@ export class EdocComponent implements OnInit, OnDestroy {
     });
     return errors;
   }
-  // Fixed onFileSelect method
-  // onFileSelect(event: any) {
-  //   const files = event.target.files;
 
-  //   if (files && files.length > 0) {
-  //     this.selectedFiles = Array.from(files);
-  //     this.existingFileName = null; // ✅ Clear existing file when new files selected
-
-  //     const firstFile = this.selectedFiles[0];
-  //     const fullFileName = firstFile.name;
-  //     const fileNameOnly = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
-  //     const extension = fullFileName.split('.').pop()?.toLowerCase();
-
-  //     console.log('📎 File selected:', {
-  //       fullFileName,
-  //       fileNameOnly,
-  //       extension
-  //     });
-
-  //     this.edocform.patchValue({
-  //       FileName: fileNameOnly,
-  //       Documenttype: extension
-  //     });
-
-  //     console.log('✅ File info patched to form');
-  //   }
-  // }
 
 
   onSubmit() {
@@ -520,7 +416,7 @@ loadEdocData() {
       } else {
         // PDF, Image, Text: use Blob URL
         const objectUrl = URL.createObjectURL(res);
-        this.selectedFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+        this.selectedFileUrl = objectUrl
         console.log('✅ Blob file preview loaded:', type);
       }
 
