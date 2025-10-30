@@ -975,39 +975,18 @@
             <div class="col-md-3">
               <div class="custom-form-group-select">
                 <label class="">MBL NO </label>
-                    <ng-select >
-                  <ng-template ng-label-tmp let-item="item">
-                    
-                  </ng-template>
-                  <ng-template ng-option-tmp let-item="item">
-                   
-                  </ng-template>
-                </ng-select>
+                <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MBLNo || ''"  readonly>
                 
               </div>
               </div>
                <div class="col-md-3">
                 <label class="form-label fw-bold">HBL NO </label>
-                <ng-select >
-                  <ng-template ng-label-tmp let-item="item">
-                    
-                  </ng-template>
-                  <ng-template ng-option-tmp let-item="item">
-                   
-                  </ng-template>
-                </ng-select>
-               
+                
+                <input type="text" class="custom-input-field sm" [value]="parentFormValue?.HBLNo || ''"  readonly>
               </div>
                <div class="col-md-3">
-                <label class="form-label fw-bold">Job NO </label>
-                <ng-select >
-                  <ng-template ng-label-tmp let-item="item">
-                    
-                  </ng-template>
-                  <ng-template ng-option-tmp let-item="item">
-                   
-                  </ng-template>
-                </ng-select>
+                <label class="form-label fw-bold">Job No </label>
+                <input type="text" class="custom-input-field sm" [value]="parentFormValue?.MasterJobNumber || ''"  readonly>
                 
               </div>
               <!-- Billing Currency -->

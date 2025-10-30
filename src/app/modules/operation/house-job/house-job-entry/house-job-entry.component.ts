@@ -898,7 +898,15 @@ loadHeaderLookups() {
     }); // for child component
     this.connectionResult = [...this.bookingConnectionsArr]
 
-    this.bookingRateArr = response.costRevenueCharges || [];
+    this.bookingRateArr = (response.costRevenueCharges || []).map(br => ({
+      ...br,
+      RateSid : br.BookingRatesSid,
+      RevenueCustomerMasterSid : br.CustomerMasterSid,
+      RevenueCustomerBranchSid : br.CustomerBranchSid,
+      CostAgentMasterSid : br.AgentMasterSid,
+      CostAgentBranchSid : br.AgentBranchSid,
+      status : br.status  === "A" ? "Active" : "Suspended"
+    }));
     this.rateResult = [...this.bookingRateArr];
 
   }
@@ -1694,39 +1702,35 @@ loadHeaderLookups() {
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 
-  syncFormValueWithRateComponent(){
+  syncFormValueWithRateComponent() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const DepartmentMasterSid = this.b['DepartmentMasterSid']?.value;
-    const BookingNumber = this.b['BookingNo']?.value;
+    const DepartmentMasterSid = this.houseJobForm.get('DepartmentMasterSid')?.value;
     const departmentName = this.selectedDepartment?.departmentName;
-    const selectedPOO = this.b['POO']?.value;
-    const selectedPOL = this.b['POL']?.value;
-    const selectedPOD = this.b['POD']?.value;
-    const selectedFPD = this.b['FPD']?.value;
-    const EffectiveDate = this.b['BookingDateTime']?.value;
-    const ExpiredDate = this.b['BookingDateTime']?.value;
+    const MasterJobNumber = this.houseJobForm.get('HouseNo')?.value;
+    const MBLNo = this.houseJobForm.get('MBLNo')?.value;
+    const selectedPOO = this.houseJobForm.get('POO')?.value; // PortMasterSid
+    const selectedPOL = this.houseJobForm.get('POL')?.value; // PortMasterSid
+    const selectedPOD = this.houseJobForm.get('POD')?.value; // PortMasterSid
+    const selectedFPD = this.houseJobForm.get('FPD')?.value; // PortMasterSid
+    const EffectiveDate = this.houseJobForm.get('MasterJobDate')?.value;
+    const ExpiredDate = this.houseJobForm.get('MasterJobDate')?.value;
     const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
     const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
     const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
     const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
-    const CargoType = this.c['CargoType']?.value;
-    const NetWeight = this.c['NetWeight']?.value;
-    const GrossWeight = this.c['GrossWeight']?.value;
-    const NoofContainers = this.c['NoofContainers']?.value;
-    const Volume = this.c['Volume']?.value;
-    const ChargeableWeight = this.c['ChargeableWeight']?.value;
-
-    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
-    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
-    const BookingHeaderSid = this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
+    const CargoType = this.cargoForm.get('CargoType')?.value;
+    const NetWeight = this.cargoForm.get('NetWeight')?.value;
+    const GrossWeight =this.cargoForm.get('GrossWeight')?.value;
+    const NoofContainers = this.cargoForm.get('NoofContainers')?.value;
+    const Volume = this.cargoForm.get('Volume')?.value;
+    const ChargeableWeight = this.cargoForm.get('ChargeableWeight')?.value
 
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
-      BookingNumber,
-      BookingHeaderSid,
-      CustomerMasterSid,
-      CustomerBranchSid,
+      MasterJobNumber,
+      ParentSid: this.HouseJobSid,
+      MBLNo,
       departmentName,
       Segment: this.selectedFCLLCL,
       PORSid,
@@ -1740,7 +1744,8 @@ loadHeaderLookups() {
       NetWeight,
       Volume,
       NoofContainers,
-      ChargeableWeight
+      ChargeableWeight,
+      countryOfCompany: this.countryOfCompany
     }
   }
 

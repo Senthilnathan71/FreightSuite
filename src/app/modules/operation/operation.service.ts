@@ -110,7 +110,7 @@ export class OperationService {
   }
 
   deleteCostRevenueCharge(CostRevenueChargesSid: number) {
-    return this.http.delete<{ data: any }>(`ff-booking/rates/${CostRevenueChargesSid}`).pipe(
+    return this.http.delete<{ data: any }>(`operation/common/cost-revenue-charges/${CostRevenueChargesSid}`).pipe(
       map((resp) => {
         return resp;
       })
@@ -148,8 +148,8 @@ export class OperationService {
       })
     );
   }
-  getCostRevenueChargeWithDetails(payload : {ParentSid: number, MenuMasterSid: number,model:string}) {
-    return this.http.post<{ data: any[] }>(`cost-revenue-charges/fetchByMenuAndTransactionSid`,payload).pipe(
+  getCostRevenueChargeWithDetails(payload : {TransactionSid: number, MenuMasterSid: number, modelName: string}) {
+    return this.http.post<{ data: any[] }>(`operation-common/cost-revenue/fetchWithDetails`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -167,7 +167,7 @@ export class OperationService {
   }
 
   generateVoucherForJobs(payload: any) {
-    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-job', payload).pipe(
+    return this.http.post<{ status: boolean; message: string; data: any }>('voucher/generate-from-jobs', payload).pipe(
       map((resp) => {
         return resp;
       })

@@ -22,7 +22,6 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { BookingRateDetails, TaxCalculationService } from '../../services/tax-calculation.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
-import { error } from 'console';
 
 @Component({
   selector: 'app-cost-entry',
@@ -1498,9 +1497,9 @@ createRateFormGroup(data?: any): FormGroup {
         }));
       } else {
         ratesResp = ((await firstValueFrom(this.operationService.getCostRevenueChargeWithDetails({
-          ParentSid: this.routeParentSid,
+          TransactionSid: this.routeParentSid,
           MenuMasterSid: this.currentMenuId,
-          model : this.screenName  // this is the screen name. For houseJob we need this to be "houseJob"
+          modelName : this.screenName  // this is the screen name. For houseJob we need this to be "houseJob"
         }))).data || []).map(rate =>({
           ...rate,
           RateSid : rate.CostRevenueChargesSid,
@@ -1573,16 +1572,9 @@ createRateFormGroup(data?: any): FormGroup {
 
       // Get billing party info based on type
       // Revenue: customerMasterBP, Cost: AgentMaster
-      let billingPartyInfo;
-      if(this.isBooking){
-        billingPartyInfo = isRevenue
+      const billingPartyInfo = isRevenue
           ? firstCharge?.customerMasterBP
           : firstCharge?.AgentMaster;
-      } else {
-        billingPartyInfo = isRevenue
-          ? firstCharge?.revenueCustomerMaster
-          : firstCharge?.costCustomerMaster;
-      }
 
       console.log(`Billing Party ${partySid} (${isRevenue ? 'Revenue' : 'Cost'}):`, {
         billingPartyName: billingPartyInfo?.CustomerName,
@@ -1641,6 +1633,7 @@ createRateFormGroup(data?: any): FormGroup {
   private showChargeSelectionModal(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
     console.log('showChargeSelectionModal called with:', {
       billingPartySid,
+      parentValue : this.parentFormValue,
       chargesCount: pendingCharges.length,
       charges: pendingCharges.map((c: any) => ({
         id: c.RateSid,
@@ -1701,10 +1694,10 @@ createRateFormGroup(data?: any): FormGroup {
     if (isRevenue) {
       this.billingPartyDetails = firstCharge?.customerMasterBP || {};
       const branch = firstCharge?.customerBranch || {};
-      this.billingPartyAddress = `${branch?.BranchAddress || ''}, ${branch?.CityName || ''}, ${branch?.StateName || ''} ${branch?.ZipCode || ''}`.trim();
+      this.billingPartyAddress = `${branch?.Address || ''}, ${branch?.cityMaster?.cityName || ''}, ${branch?.stateMaster?.stateName || ''} ${branch?.Zip_PostBox || ''}`.trim();
     } else {
         this.billingPartyDetails = firstCharge?.AgentMaster || {};
-        this.billingPartyAddress = `${this.billingPartyDetails?.Address1 || ''}`.trim();
+        this.billingPartyAddress = `${this.billingPartyDetails?.Address || ''}`.trim();
     }
 
     // Get company's home currency from settings (FIRST PRIORITY)
@@ -2386,6 +2379,11 @@ createRateFormGroup(data?: any): FormGroup {
         ParentSid : this.getParentSid(),
         companyMasterSid: this.currentCompany?.CompanyMasterSid,
         branchMasterSid: this.currentBranch?.BranchMasterSid,
+        HouseJobSid : this.screenName === "HouseJob" ? this.getParentSid() : null,
+        MasterJobSid : this.screenName === "MasterJob" ? this.getParentSid() : null,
+        HouseNumber : this.parentFormValue.HBLNo,
+        MasterNumber : this.parentFormValue.MBLNo,
+        MenuMasterSid : this.currentMenuId,
         voucherType: this.selectedVoucherType,
         selectedRateIds: Array.from(this.selectedCharges),
         billingPartySid: this.currentBillingPartySid,
@@ -2431,10 +2429,12 @@ createRateFormGroup(data?: any): FormGroup {
             ? '/operation/vendor-invoice/entry'
             : '/operation/invoice/entry';
 
+          const key = `${this.screenName}Id`;
+
           this.router.navigate([targetRoute, voucherHeaderSid], {
             queryParams: {
               from: `${this.screenName}`,
-              bookingId: this.routeParentSid
+              [key]: this.routeParentSid
             }
           });
         }

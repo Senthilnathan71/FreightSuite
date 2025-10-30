@@ -1576,6 +1576,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
+    const MBLNo = this.masterJobForm.get('MBLNo')?.value;
     const departmentName = this.selectedDepartment?.departmentName;
     const selectedPOO = this.masterJobForm.get('POO')?.value; // PortMasterSid
     const selectedPOL = this.masterJobForm.get('POL')?.value; // PortMasterSid
@@ -1605,6 +1606,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
       ParentSid : this.masterJobSid,
       // CustomerMasterSid,
       // CustomerBranchSid,
+      MBLNo,
       departmentName,
       Segment: this.selectedFCLLCL,
       PORSid,
@@ -1632,10 +1634,11 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   syncFormValueWithRateComponent() {
-   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
+    const MBLNo = this.masterJobForm.get('MBLNo')?.value;
     const selectedPOO = this.masterJobForm.get('POO')?.value; // PortMasterSid
     const selectedPOL = this.masterJobForm.get('POL')?.value; // PortMasterSid
     const selectedPOD = this.masterJobForm.get('POD')?.value; // PortMasterSid
@@ -1652,18 +1655,13 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
     const NoofContainers = this.masterJobContainers.length;
     const Volume = this.f['Volume']?.value;
     const ChargeableWeight = this.f['ChargeableWeight']?.value;
-    const MovementType = this.selectedDepartmentType;
-    // const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
-    // const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
-    // const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
 
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
       MasterJobNumber,
-      ParentSid : this.masterJobSid,
-      // CustomerMasterSid,
-      // CustomerBranchSid,
+      ParentSid: this.masterJobSid,
+      MBLNo,
       departmentName,
       Segment: this.selectedFCLLCL,
       PORSid,
@@ -1678,9 +1676,9 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
       Volume,
       NoofContainers,
       ChargeableWeight,
-      countryOfCompany : this.countryOfCompany
+      countryOfCompany: this.countryOfCompany
     }
-}
+  }
   
  handleRateChange(allRates: any[]) {
   if (allRates && allRates.length > 0) {
