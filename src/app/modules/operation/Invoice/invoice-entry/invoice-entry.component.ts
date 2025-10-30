@@ -205,6 +205,7 @@ export class InvoiceEntryComponent implements OnInit {
       PartyMasterSid: [null],
       PartyName: [null, Validators.required],
       PartyAddress: [{ value: '', disabled: true }, Validators.required],
+      CustomerBranchSid: [null],
       DocumentNumber: [''],
       IRNNumber: [''],
       MasterJobSid: [''],
@@ -289,11 +290,11 @@ export class InvoiceEntryComponent implements OnInit {
       }
 
       try {
-        const custResp: any = await firstValueFrom(this.operationService.getAllCustomerRelatedLookups(filterOption));
-        this.customerList = custResp?.customers || [];
-      } catch (e) {
-        this.customerList = [];
-      }
+  const custResp: any = await firstValueFrom(this.operationService.getAllDebtorWithCOAMapped(filterOption));
+  this.customerList = custResp?.data || custResp || [];
+} catch (e) {
+  this.customerList = [];
+}
 
       try {
         const currencies: any = await firstValueFrom(this.operationService.getAllCurrencies().pipe());
@@ -423,81 +424,190 @@ export class InvoiceEntryComponent implements OnInit {
     }
   }
 
-  onCustomerMasterChange(selected: any) {
-    const customerMasterSid = (typeof selected === 'object' && selected !== null)
-      ? (selected.CustomerMasterSid ?? selected)
-      : selected;
-    if (!customerMasterSid) {
-      this.customerBranchList = [];
-      this.invoiceForm.get('PartyName')?.setValue(null);
-      this.invoiceForm.get('PartyAddress')?.setValue('');
-      this.invoiceForm.get('PartyMasterSid')?.setValue(null);
-      this.invoiceForm.get('GST_VAT')?.setValue('');
-      return;
-    }
+ 
+onBranchChange(selectedBranch: any) {
+  const branchSid = (typeof selectedBranch === 'object' && selectedBranch !== null)
+    ? (selectedBranch.CustomerBranchSid ?? selectedBranch)
+    : selectedBranch;
 
-    this.pendingBranchToSelect = null;
-    this.getCustomerBranchByCustomer(Number(customerMasterSid));
-    this.invoiceForm.get('PartyName')?.setValue(null);
+  if (!branchSid) {
+    // Clear all related fields if no branch selected
     this.invoiceForm.get('PartyAddress')?.setValue('');
-
-    const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
-    if (customer) {
-      this.invoiceForm.get('PartyAddress')?.setValue(customer.Address || customer.CustomerAddress1 || '');
-      const countryCode = customer.CountryMasterSid?.countryCode || 
-                       customer.countryMaster?.countryCode || 
-                       customer.countryCode;
-    
-    if (countryCode === 'IN') {
-      // For India - populate GST No
-      this.invoiceForm.get('GST_VAT')?.setValue(customer.GSTNo || '');
-    } else {
-      // For non-India countries - populate PAN Type
-      this.invoiceForm.get('GST_VAT')?.setValue(customer.PanType || '');
-    }
-    
-    if (customer && customer.SubledgerMasterSid) {
-      this.invoiceForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
-    } else {
-      const sub = this.subledgerList.find(s => s.CustomerMasterSid === customerMasterSid);
-      if (sub && sub.SubledgerMasterSid) {
-        this.invoiceForm.get('PartyMasterSid')?.setValue(Number(sub.SubledgerMasterSid));
-      }
-    }
-  }
+    this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
+    this.invoiceForm.get('PartyMasterSid')?.setValue(null);
+    this.invoiceForm.get('GST_VAT')?.setValue('');
+    return;
   }
 
+  // Find the selected branch from customerBranchList
+  const foundBranch = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === Number(branchSid));
   
+  if (foundBranch) {
+    console.log('DEBUG - Found Branch:', foundBranch);
+    
+    // Set CustomerBranchSid
+    this.invoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
 
-  onBranchChange(selectedBranch: any) {
-    const branchSid = (typeof selectedBranch === 'object' && selectedBranch !== null)
-      ? (selectedBranch.CustomerBranchSid ?? selectedBranch)
-      : selectedBranch;
+    // Set PartyAddress - this will go to Address in payload
+    const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
+    this.invoiceForm.get('PartyAddress')?.setValue(address);
 
-    if (!branchSid) {
-      // clear the branch selection & dependent values
-      this.invoiceForm.get('PartyAddress')?.setValue('');
-      this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
-      this.invoiceForm.get('PartyName')?.setValue(null); // set null (not empty string)
-      return;
+    // Set PartyMasterSid (SubledgerMasterSid)
+    if (foundBranch.SubledgerMasterSid) {
+      this.invoiceForm.get('PartyMasterSid')?.setValue(Number(foundBranch.SubledgerMasterSid));
     }
 
-    const found = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === Number(branchSid));
-    if (found) {
-      // IMPORTANT: PartyName holds the CustomerBranchSid (ng-select bindValue), not the display name
-      this.invoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
-      this.invoiceForm.get('PartyName')?.setValue(Number(branchSid)); // set id so ng-select shows it as selected
-      this.invoiceForm.get('PartyAddress')?.setValue(found.Address || found.CustomerAddress1 || '');
+    // Get customer data to get country code and PanType
+    const customerMasterSid = foundBranch.CustomerMasterSid;
+    if (customerMasterSid) {
+      const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
+      if (customer) {
+        console.log('DEBUG - Found Customer:', customer);
+        
+        // Get country code from CUSTOMER
+        const countryCode = this.getCustomerCountryCode(customer);
+        
+        console.log('DEBUG - Customer CountryCode:', countryCode);
+        console.log('DEBUG - Branch GSTNo:', foundBranch.GSTNo); // From branch table
+        console.log('DEBUG - Customer PanType:', customer.PanType); // From customer table
 
-      if (found.SubledgerMasterSid) {
-        this.invoiceForm.get('PartyMasterSid')?.setValue(Number(found.SubledgerMasterSid));
+        // Use branch GSTNo for India, customer PanType for other countries
+        if (countryCode === 'IN') {
+          // For India - populate GST No from BRANCH table
+          this.invoiceForm.get('GST_VAT')?.setValue(foundBranch.GSTNo || '');
+        } else {
+          // For non-India countries - populate PAN Type from CUSTOMER table
+          this.invoiceForm.get('GST_VAT')?.setValue(customer.PanType || '');
+        }
       }
-    } else {
-      // if branch not found in current list, still set the control to the id (so ng-select can show emptiness)
-      this.invoiceForm.get('PartyName')?.setValue(Number(branchSid));
-      this.invoiceForm.get('PartyAddress')?.setValue('');
+    }
+  } else {
+    // If branch not found in current list, clear dependent fields
+    this.invoiceForm.get('PartyAddress')?.setValue('');
+    this.invoiceForm.get('GST_VAT')?.setValue('');
+  }
+}
+
+// Improved helper method to get country code from branch
+private getBranchCountryCode(branch: any): string {
+  console.log('DEBUG - Branch structure for country detection:', branch);
+  
+  // Check if CountryMasterSid exists and has countryCode
+  if (branch.CountryMasterSid && typeof branch.CountryMasterSid === 'object') {
+    const countryCode = branch.CountryMasterSid.countryCode || branch.CountryMasterSid.CountryCode;
+    if (countryCode) {
+      console.log('DEBUG - Extracted countryCode from CountryMasterSid object:', countryCode);
+      return countryCode.toUpperCase();
     }
   }
+  
+  // Check if countryCode exists directly on branch
+  if (branch.countryCode) {
+    console.log('DEBUG - Found countryCode directly on branch:', branch.countryCode);
+    return branch.countryCode.toUpperCase();
+  }
+  
+  // Check if CountryCode exists directly on branch
+  if (branch.CountryCode) {
+    console.log('DEBUG - Found CountryCode directly on branch:', branch.CountryCode);
+    return branch.CountryCode.toUpperCase();
+  }
+  
+  // Final fallback: if branch has GSTNo with value, assume it's India
+  if (branch.GSTNo && branch.GSTNo.trim() !== '') {
+    console.log('DEBUG - Fallback: Using GSTNo to determine country as India');
+    return 'IN';
+  }
+  
+  console.log('DEBUG - No country code detected, defaulting to empty string');
+  return '';
+}
+
+onCustomerMasterChange(selected: any) {
+  const customerMasterSid = (typeof selected === 'object' && selected !== null)
+    ? (selected.CustomerMasterSid ?? selected)
+    : selected;
+  
+  if (!customerMasterSid) {
+    this.customerBranchList = [];
+    this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
+    this.invoiceForm.get('PartyAddress')?.setValue('');
+    this.invoiceForm.get('PartyMasterSid')?.setValue(null);
+    this.invoiceForm.get('GST_VAT')?.setValue('');
+    this.invoiceForm.get('PartyName')?.setValue(''); // Clear PartyName
+    return;
+  }
+
+  // Set PartyName to CustomerName instead of CustomerMasterSid
+  const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
+  if (customer) {
+    console.log('DEBUG - Customer selected:', customer);
+    
+    // Set PartyName to the actual customer name string
+    this.invoiceForm.get('PartyName')?.setValue(customer.CustomerName || '');
+    
+    // Get country code from customer
+    const countryCode = this.getCustomerCountryCode(customer);
+    
+    console.log('DEBUG - Customer CountryCode:', countryCode);
+    console.log('DEBUG - Customer PanType:', customer.PanType);
+
+    if (countryCode !== 'IN') {
+      // For non-India countries - populate PAN Type from CUSTOMER table
+      this.invoiceForm.get('GST_VAT')?.setValue(customer.PanType || '');
+    } else {
+      // For India - clear GST until branch is selected
+      this.invoiceForm.get('GST_VAT')?.setValue('');
+    }
+
+    // Set PartyMasterSid from customer if available
+    if (customer.SubledgerMasterSid) {
+      this.invoiceForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
+    }
+  }
+
+  // Reset branch selection when customer changes
+  this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
+  this.invoiceForm.get('PartyAddress')?.setValue('');
+
+  // Load branches for the selected customer
+  this.getCustomerBranchByCustomer(Number(customerMasterSid));
+}
+
+private getCustomerCountryCode(customer: any): string {
+  console.log('DEBUG - Customer CountryMasterSid structure:', customer.CountryMasterSid);
+  
+  // Check the CountryMasterSid object structure from your customer data
+  if (customer.CountryMasterSid && typeof customer.CountryMasterSid === 'object') {
+    // If CountryMasterSid is an object with countryCode
+    const code = customer.CountryMasterSid.countryCode || customer.CountryMasterSid.CountryCode;
+    console.log('DEBUG - Extracted countryCode from customer:', code);
+    return code || '';
+  }
+  
+  // Fallback: check direct country code fields
+  const countryCode = customer.CountryCode || 
+                     customer.countryCode || 
+                     customer.countryMaster?.countryCode ||
+                     customer.country?.countryCode ||
+                     customer.CountryMaster?.CountryCode ||
+                     '';
+  
+  console.log('DEBUG - Fallback countryCode:', countryCode);
+  
+  // Final fallback: if customer has GSTNo in any branch, assume it's India
+  if (!countryCode) {
+    // Check if this customer has any branches with GSTNo
+    const customerBranches = this.customerBranchList.filter(b => b.CustomerMasterSid === customer.CustomerMasterSid);
+    const hasGSTNo = customerBranches.some(branch => branch.GSTNo);
+    if (hasGSTNo) {
+      return 'IN';
+    }
+  }
+  
+  return countryCode;
+}
+
   getCustomerBranchByCustomer(CustomerMasterSid: number) {
     if (!CustomerMasterSid) {
       this.customerBranchList = [];
@@ -519,7 +629,7 @@ export class InvoiceEntryComponent implements OnInit {
           const branchId = this.pendingBranchToSelect;
           this.pendingBranchToSelect = null;
           const found = this.customerBranchList.find((b: any) => Number(b.CustomerBranchSid) === Number(branchId));
-          this.invoiceForm.get('PartyName')?.setValue(branchId);
+          // this.invoiceForm.get('PartyName')?.setValue(branchId);
           if (found) {
             this.invoiceForm.get('PartyAddress')?.setValue(found.Address || found.CustomerAddress1 || '');
             if (found.SubledgerMasterSid) this.invoiceForm.get('PartyMasterSid')?.setValue(Number(found.SubledgerMasterSid));
@@ -595,14 +705,16 @@ export class InvoiceEntryComponent implements OnInit {
       MBLNo: header.MBLNo || '',
       status: header.status || 'A'
     });
-
+   console.log('DEBUG - header.PartyName:',header.PartyName);
+   console.log(this.invoiceData,'invoiceData');
     const cm = header.CustomerMasterSid || customerMasterSidFromBranch || null;
     const branchSid = header.CustomerBranchSid || header.PartyName || (header.customerBranch ? header.customerBranch.CustomerBranchSid : null) || null;
 
-    if (cm) {
+    
       this.pendingBranchToSelect = branchSid ? Number(branchSid) : null;
       this.getCustomerBranchByCustomer(cm);
-    } else if (branchSid) {
+     if (branchSid) {
+       this.invoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
       this.pendingBranchToSelect = Number(branchSid);
       const currentCustomer = this.invoiceForm.get('CustomerMasterSid')?.value;
       if (currentCustomer) {
@@ -659,6 +771,7 @@ export class InvoiceEntryComponent implements OnInit {
         TaxPercentageIGST: isIGST ? taxPerc1 : 0,
         TaxAmountIGST: isIGST ? taxAmt1 : 0,
         LocalAmount: det.LocalAmount,
+        PartyAmount: det.PartyAmount,
         MasterJobSid: det.MasterJobSid,
         HouseJobSid: det.HouseJobSid
       }));
@@ -720,6 +833,7 @@ export class InvoiceEntryComponent implements OnInit {
       TaxPercentageIGST: [data?.TaxPercentageIGST || 0],
       TaxAmountIGST: [data?.TaxAmountIGST || 0],
       LocalAmount: [data?.LocalAmount || 0],
+      PartyAmount: [data?.PartyAmount || 0],
       MasterJobSid: [data?.MasterJobSid || null],
       HouseJobSid: [data?.HouseJobSid || null]
     });
@@ -760,63 +874,94 @@ export class InvoiceEntryComponent implements OnInit {
   }
 
   recalcRow(index: number) {
-    const row = this.details.at(index);
-    if (!row) return;
-    const val = row.value;
+  const row = this.details.at(index);
+  if (!row) return;
+  const val = row.value;
 
-    const unit = Number(val.NumberOfUnit || 0);
-    const rate = Number(val.Rate || 0);
-    const exRateRow = Number(val.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value || 1);
+  const unit = Number(val.NumberOfUnit || 0);
+  const rate = Number(val.Rate || 0);
+  const exRateRow = Number(val.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value || 1);
 
-    const amount = unit * rate;
-    const localAmount = amount * (exRateRow || 1);
+  const amount = unit * rate;
+  const localAmount = amount * (exRateRow || 1);
 
-    const companyRaw = localStorage.getItem('selected-company');
-    const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
-    const loginBranchState = company?.stateName || company?.branchState || '';
-    const partyBranchId = this.invoiceForm.get('PartyName')?.value;
-    const party = this.customerBranchList.find((b: any) => b.CustomerBranchSid === partyBranchId);
-    const partyState = party?.StateName || party?.stateName || '';
+  const companyRaw = localStorage.getItem('selected-company');
+  const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
+  const loginBranchState = company?.stateName || company?.branchState || '';
+  const partyBranchId = this.invoiceForm.get('PartyName')?.value;
+  const party = this.customerBranchList.find((b: any) => b.CustomerBranchSid === partyBranchId);
+  const partyState = party?.StateName || party?.stateName || '';
 
-    let taxPerc1 = 0, taxAmt1 = 0, taxPerc2 = 0, taxAmt2 = 0, igstPerc = 0, igstAmt = 0;
+  let taxPerc1 = 0, taxAmt1 = 0, taxPerc2 = 0, taxAmt2 = 0, igstPerc = 0, igstAmt = 0;
 
-    if (this.bookingModeCountry === 'india') {
-      const isSameState = loginBranchState && partyState && (String(loginBranchState).trim().toLowerCase() === String(partyState).trim().toLowerCase());
-      const isUnionTerritory = (loginBranchState && String(loginBranchState).toLowerCase().includes('union'));
-      const configuredCGST = Number(row.get('TaxPercentage1')?.value || 0);
-      const configuredSGST = Number(row.get('TaxPercentage2')?.value || 0);
-      const configuredIGST = Number(row.get('TaxPercentageIGST')?.value || 0);
+  if (this.bookingModeCountry === 'india') {
+    const isSameState = loginBranchState && partyState && (String(loginBranchState).trim().toLowerCase() === String(partyState).trim().toLowerCase());
+    const isUnionTerritory = (loginBranchState && String(loginBranchState).toLowerCase().includes('union'));
+    const configuredCGST = Number(row.get('TaxPercentage1')?.value || 0);
+    const configuredSGST = Number(row.get('TaxPercentage2')?.value || 0);
+    const configuredIGST = Number(row.get('TaxPercentageIGST')?.value || 0);
 
-      if (isUnionTerritory) {
-        taxPerc1 = configuredCGST;
-        taxAmt1 = (amount * taxPerc1) / 100;
-        taxPerc2 = configuredSGST;
-        taxAmt2 = (amount * taxPerc2) / 100;
-      } else if (isSameState) {
-        taxPerc1 = configuredCGST;
-        taxAmt1 = (amount * taxPerc1) / 100;
-        taxPerc2 = configuredSGST;
-        taxAmt2 = (amount * taxPerc2) / 100;
-      } else {
-        igstPerc = configuredIGST;
-        igstAmt = (amount * igstPerc) / 100;
-      }
-    } else if (this.bookingModeCountry === 'uae' || this.bookingModeCountry === 'dubai') {
-      const vatPerc = Number(row.get('TaxPercentage1')?.value || row.get('TaxPercentageIGST')?.value || 0);
-      taxPerc1 = vatPerc;
+    if (isUnionTerritory) {
+      taxPerc1 = configuredCGST;
       taxAmt1 = (amount * taxPerc1) / 100;
+      taxPerc2 = configuredSGST;
+      taxAmt2 = (amount * taxPerc2) / 100;
+    } else if (isSameState) {
+      taxPerc1 = configuredCGST;
+      taxAmt1 = (amount * taxPerc1) / 100;
+      taxPerc2 = configuredSGST;
+      taxAmt2 = (amount * taxPerc2) / 100;
+    } else {
+      igstPerc = configuredIGST;
+      igstAmt = (amount * igstPerc) / 100;
     }
-
-    row.get('Amount')?.setValue(this.round(amount));
-    row.get('TaxableAmount')?.setValue(this.round(amount));
-    row.get('TaxPercentage1')?.setValue(this.round(taxPerc1));
-    row.get('TaxAmount1')?.setValue(this.round(taxAmt1));
-    row.get('TaxPercentage2')?.setValue(this.round(taxPerc2));
-    row.get('TaxAmount2')?.setValue(this.round(taxAmt2));
-    row.get('TaxPercentageIGST')?.setValue(this.round(igstPerc));
-    row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
-    row.get('LocalAmount')?.setValue(this.round(localAmount + taxAmt1 + taxAmt2 + igstAmt));
+  } else if (this.bookingModeCountry === 'uae' || this.bookingModeCountry === 'dubai') {
+    const vatPerc = Number(row.get('TaxPercentage1')?.value || row.get('TaxPercentageIGST')?.value || 0);
+    taxPerc1 = vatPerc;
+    taxAmt1 = (amount * taxPerc1) / 100;
   }
+
+  // Calculate total local amount including taxes
+  const totalLocalAmount = localAmount + taxAmt1 + taxAmt2 + igstAmt;
+  
+  // NEW: Calculate PartyAmount based on currency comparison
+  const headerCurrency = this.invoiceForm.get('CurrencyCode')?.value;
+  const detailCurrency = row.get('CurrencyCode')?.value;
+  const headerExchangeRate = Number(this.invoiceForm.get('ExchangeRate')?.value || 1);
+  
+  let partyAmount = 0;
+  
+  if (headerCurrency === detailCurrency) {
+    
+    partyAmount = amount;
+  } else {
+    
+    if (totalLocalAmount !== 0) {
+      partyAmount = totalLocalAmount / headerExchangeRate;
+    } else {
+      partyAmount = 0;
+    }
+  }
+  console.log('DEBUG PartyAmount Calculation:', {
+  headerCurrency,
+  detailCurrency,
+  headerExchangeRate,
+  totalLocalAmount,
+  partyAmount,
+  sameCurrency: headerCurrency === detailCurrency
+});
+
+  row.get('Amount')?.setValue(this.round(amount));
+  row.get('TaxableAmount')?.setValue(this.round(amount));
+  row.get('TaxPercentage1')?.setValue(this.round(taxPerc1));
+  row.get('TaxAmount1')?.setValue(this.round(taxAmt1));
+  row.get('TaxPercentage2')?.setValue(this.round(taxPerc2));
+  row.get('TaxAmount2')?.setValue(this.round(taxAmt2));
+  row.get('TaxPercentageIGST')?.setValue(this.round(igstPerc));
+  row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
+  row.get('LocalAmount')?.setValue(this.round(totalLocalAmount));
+  row.get('PartyAmount')?.setValue(this.round(partyAmount));
+}
 
   recalculateAllRows() {
     for (let i = 0; i < this.details.length; i++) {
@@ -836,7 +981,7 @@ export class InvoiceEntryComponent implements OnInit {
   getTotalCurrencyAmount(): number {
     let total = 0;
     for (let i = 0; i < this.details.length; i++) {
-      const amount = Number(this.details.at(i).get('Amount')?.value || 0);
+      const amount = Number(this.details.at(i).get('PartyAmount')?.value || 0);
       total += amount;
     }
     return this.round(total);
@@ -863,59 +1008,37 @@ export class InvoiceEntryComponent implements OnInit {
     return Math.round((val + Number.EPSILON) * 100) / 100;
   }
 
-  private normalizeParty(raw: any) {
-    const customerMasterSid = raw.CustomerMasterSid != null ? Number(raw.CustomerMasterSid) : null;
-    const partyControl = raw.PartyName;
-    let customerBranchSid: number | null = null;
-    let partyNameStr = '';
-    let partyAddressStr = raw.PartyAddress || '';
+private normalizeParty(raw: any) {
+  const customerMasterSid = raw.CustomerMasterSid != null ? Number(raw.CustomerMasterSid) : null;
+  const partyControl = raw.PartyName; // This now contains the CustomerName string
+  
+  let customerBranchSid: number | null = raw.CustomerBranchSid != null ? Number(raw.CustomerBranchSid) : null;
+  
+  let partyNameStr = partyControl || '';
+  let partyAddressStr = raw.PartyAddress || '';
 
-    if (partyControl == null) {
-      customerBranchSid = null;
-      partyNameStr = raw.PartyName || '';
-    } else if (typeof partyControl === 'object') {
-      customerBranchSid = partyControl.CustomerBranchSid != null ? Number(partyControl.CustomerBranchSid) : null;
-      partyNameStr = partyControl.CustomerBranchName || partyControl.PartyName || partyControl.CustomerBranch || String(customerBranchSid || '');
-      partyAddressStr = partyControl.Address || partyControl.CustomerAddress1 || partyAddressStr;
-    } else {
-      const asNum = Number(partyControl);
-      if (!isNaN(asNum) && String(partyControl).trim() !== '') {
-        customerBranchSid = asNum;
-        const found = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === asNum);
-        if (found) {
-          partyNameStr = found.CustomerBranchName || found.PartyName || found.CustomerAddress1 || '';
-          partyAddressStr = found.Address || found.CustomerAddress1 || partyAddressStr;
-        } else {
-          partyNameStr = String(partyControl);
-        }
-      } else {
-        const found = this.customerBranchList.find(b =>
-          String(b.CustomerBranchName || b.PartyName || '').trim().toLowerCase() === String(partyControl).trim().toLowerCase()
-          || String(b.Address || b.CustomerAddress1 || '').trim().toLowerCase() === String(partyControl).trim().toLowerCase()
-        );
-        if (found) {
-          customerBranchSid = found.CustomerBranchSid ? Number(found.CustomerBranchSid) : null;
-          partyNameStr = found.CustomerBranchName || found.PartyName || partyControl;
-          partyAddressStr = found.Address || found.CustomerAddress1 || partyAddressStr;
-        } else {
-          partyNameStr = String(partyControl);
-        }
-      }
+  // Get address from branch if available
+  if (customerBranchSid) {
+    const foundBranch = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === customerBranchSid);
+    if (foundBranch) {
+      partyAddressStr = foundBranch.Address || foundBranch.CustomerAddress1 || partyAddressStr;
     }
-
-    let partyMasterSid = customerMasterSid;
-    if (!partyMasterSid && customerBranchSid) {
-      const found = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === Number(customerBranchSid));
-      if (found && found.CustomerMasterSid) partyMasterSid = Number(found.CustomerMasterSid);
-    }
-
-    return {
-      PartyMasterSid: partyMasterSid,
-      CustomerBranchSid: customerBranchSid,
-      PartyName: partyNameStr,
-      PartyAddress: partyAddressStr
-    };
   }
+
+  let partyMasterSid = customerMasterSid;
+  if (!partyMasterSid && customerBranchSid) {
+    const found = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === Number(customerBranchSid));
+    if (found && found.CustomerMasterSid) partyMasterSid = Number(found.CustomerMasterSid);
+  }
+
+  return {
+    PartyMasterSid: partyMasterSid,
+    CustomerBranchSid: customerBranchSid,
+    PartyName: partyNameStr, // This is now the actual customer name string
+    PartyAddress: partyAddressStr,
+    CustomerName: partyNameStr // For display purposes
+  };
+}
 
   getCurrencyId(CurrencyCode: string): number | null {
     if(!CurrencyCode || !this.currencyList){
@@ -1067,6 +1190,7 @@ export class InvoiceEntryComponent implements OnInit {
         TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
         TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
         LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
+        PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
         MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
         HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
       };
@@ -1090,7 +1214,7 @@ export class InvoiceEntryComponent implements OnInit {
       PostDate: voucherDate,
       GST_VAT: raw.GST_VAT || undefined,
       PartyMasterSid: partyMasterSid,
-      PartyName: normalizedParty.PartyName || raw.PartyName || '',
+      PartyName: normalizedParty.PartyName || String(raw.PartyName || ''),
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
       CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
       COAMasterSid: raw.COAMasterSid ?? 1,

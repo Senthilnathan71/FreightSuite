@@ -281,10 +281,10 @@ shouldShowGSTFields(branchIndex: number): boolean {
 onCountryChange(): void {
   const isIndia = this.isIndianCountry();
   
-  if (!isIndia) {
-    // Reset PAN Available if not India
-    this.customerForm.get('PanAvailable')?.setValue(false);
-  }
+  // if (!isIndia) {
+  //   // Reset PAN Available if not India
+  //   this.customerForm.get('PanAvailable')?.setValue(false);
+  // }
   
   // Update tax field validation
   this.updateTaxIdFieldValidation();
@@ -1433,7 +1433,7 @@ clearCustomerSearch(): void {
       CountryMasterSid: ['', [Validators.required]],
       CompanyType: [''],
       PanAvailable: [false],
-      PanType: [{ value: '' }, [this.panValidator]],
+      PanType: [''],
       PanName: [''],
       GroupName: [''],
       Website: [''],
@@ -1452,7 +1452,7 @@ clearCustomerSearch(): void {
       AirlineNumber: [''],
       AirlineCode: ['']
     });
-
+ this.setupPanValidation();
   }
 
 
@@ -1771,29 +1771,17 @@ getPanBreakdown(pan: string): any {
   const panNameControl = this.customerForm.get('PanName');
   const companyTypeControl = this.customerForm.get('CompanyType');
 
-  const isIndia = this.isIndianCountry();
   const panAvailable = panAvailableControl?.value;
 
-  // Enable/disable based on country and PAN availability
-  if (isIndia && panAvailable) {
+  // Enable/disable based on PAN availability only
+  if (panAvailable) {
+    companyTypeControl?.enable();
     panTypeControl?.enable();
     panNameControl?.enable();
-    companyTypeControl?.enable();
-    
-    // Add validation
-    companyTypeControl?.setValidators([Validators.required]);
-    panTypeControl?.setValidators([Validators.required, this.panValidator]);
   } else {
-    // panTypeControl?.disable();
-    // panNameControl?.disable();
-    companyTypeControl?.clearValidators();
-    panTypeControl?.clearValidators();
-    
-    // Clear values if not applicable
-    if (!isIndia || !panAvailable) {
-      panTypeControl?.setValue('');
-      panNameControl?.setValue('');
-    }
+    companyTypeControl?.disable();
+    panTypeControl?.disable();
+    panNameControl?.disable();
   }
 
   // Update validation states
@@ -1909,7 +1897,8 @@ loadCustomerData(customerId: number) {
           customerType = {};
         }
       }
-
+      const hasPanOrVat = customerData.PanType || customerData.PanName;
+      const panAvailable = hasPanOrVat ? true : false;
       // Patch main customer form
       this.customerForm.patchValue({
         ...customerData,
@@ -1917,12 +1906,14 @@ loadCustomerData(customerId: number) {
         status: formattedStatus,
         paymentType: customerData.CashCredit,
         KYCSpecified: customerData.RegistrationNo || customerData.CompanyType ? true : false,
-        PanAvailable: customerData.PanType || customerData.PanName ? true : false,
+        PanAvailable: panAvailable,
+        PanType: customerData.PanType || '',
         CustomerType: customerType,
         AirlineNumber: customerData.AirlineNumber || '',
         AirlineCode: customerData.AirlineCode || '',
         PanName: customerData.PanName || ''
       });
+      this.updateTaxIdLabel();
 
       // Handle customer types
       this.selectedStatus = this.modeOfCustomerType
@@ -1935,13 +1926,13 @@ loadCustomerData(customerId: number) {
       // FIX: Set isAirlineSelected based on loaded data
       this.isAirlineSelected = this.selectedStatus.includes('Air Line');
       
-      console.log('Airline fields:', {
-        AirlineNumber: customerData.AirlineNumber,
-        AirlineCode: customerData.AirlineCode,
-        isAirlineSelected: this.isAirlineSelected,
-        selectedStatus: this.selectedStatus
+      console.log('Customer data loaded:', {
+        PanAvailable: panAvailable,
+        PanType: customerData.PanType,
+        PanName: customerData.PanName,
+        Country: customerData.countryMaster?.countryName,
+        isAirlineSelected: this.isAirlineSelected
       });
-
       // Load all data from the single API response
       this.loadAllCustomerDataFromResponse(customerData);
     },
@@ -3354,45 +3345,78 @@ private setupPanValidation(): void {
     .pipe(takeUntil(this.destroy$))
     .subscribe((panAvailable: boolean) => {
       if (panAvailable) {
-        // Enable fields
+        // Enable fields when PAN Available is checked
+        companyTypeControl?.enable();
         panTypeControl?.enable();
         panNameControl?.enable();
         
-        // Add validators
-        companyTypeControl?.setValidators([Validators.required]);
-        panTypeControl?.setValidators([Validators.required, this.panValidator]);
+        // Set appropriate validators based on country
+        this.updatePanTypeValidation();
         
-        // Clear any existing values if CompanyType is not selected
-        if (!companyTypeControl?.value) {
-          panTypeControl?.setValue('');
-          panNameControl?.setValue('');
-          this.showCompanyTypeAlert();
-        }
       } else {
-        // Disable fields and clear validators
-        // panTypeControl?.disable();
-        // panNameControl?.disable();
+        // Remove validators when PAN Available is unchecked
         companyTypeControl?.clearValidators();
         panTypeControl?.clearValidators();
+        panNameControl?.clearValidators();
         
         // Clear values
+        companyTypeControl?.setValue('');
         panTypeControl?.setValue('');
         panNameControl?.setValue('');
+        
+        // Disable fields
+        companyTypeControl?.disable();
+        panTypeControl?.disable();
+        panNameControl?.disable();
       }
       
       // Update validation states
       companyTypeControl?.updateValueAndValidity();
       panTypeControl?.updateValueAndValidity();
+      panNameControl?.updateValueAndValidity();
     });
 
-  // Also validate when CompanyType changes
-  companyTypeControl?.valueChanges
+  // Update validation when country changes
+  this.customerForm.get('CountryMasterSid')?.valueChanges
     .pipe(takeUntil(this.destroy$))
     .subscribe(() => {
-      if (panTypeControl?.value) {
-        panTypeControl.updateValueAndValidity();
+      if (panAvailableControl?.value) {
+        this.updatePanTypeValidation();
       }
     });
+}
+private updatePanTypeValidation(): void {
+  const companyTypeControl = this.customerForm.get('CompanyType');
+  const panTypeControl = this.customerForm.get('PanType');
+  const panNameControl = this.customerForm.get('PanName');
+
+  // Clear existing validators
+  companyTypeControl?.clearValidators();
+  panTypeControl?.clearValidators();
+  panNameControl?.clearValidators();
+
+  // Set appropriate validators based on country
+  if (this.isIndianCountry()) {
+    // For India - PAN validation
+    companyTypeControl?.setValidators([Validators.required]);
+    panTypeControl?.setValidators([Validators.required, this.panValidator]);
+    panNameControl?.setValidators([Validators.required]);
+  } else if (this.isUaeCountry()) {
+    // For UAE - VAT validation
+    companyTypeControl?.setValidators([]); // Company Type not required for VAT
+    panTypeControl?.setValidators([Validators.required, this.vatValidator]);
+    panNameControl?.setValidators([Validators.required]);
+  } else {
+    // For other countries - basic validation
+    companyTypeControl?.setValidators([]);
+    panTypeControl?.setValidators([Validators.required]);
+    panNameControl?.setValidators([Validators.required]);
+  }
+
+  // Update validation states
+  companyTypeControl?.updateValueAndValidity();
+  panTypeControl?.updateValueAndValidity();
+  panNameControl?.updateValueAndValidity();
 }
 
  private showCompanyTypeAlert(): void {

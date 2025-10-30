@@ -8,6 +8,21 @@
 
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+             <!-- Draft Save Button -->
+  <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80" 
+       
+        
+          [disabled]="invoiceForm.invalid">
+    <i class="fas fa-save me-1"></i>  Draft
+  </button>
+
+  <!-- Final Save Button -->
+  <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" 
+          
+         
+          [disabled]="invoiceForm.invalid || details.length === 0">
+    <i class="fas fa-check-circle me-1"></i> Final
+  </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()"
             *ngIf="isEditMode">
             <i class="fas fa-print me-1"></i> Print
@@ -76,34 +91,25 @@
               </aside>
 
               <!-- 3. Customer Name (Customer selection) -->
-              <aside class="col-md-3">
-                <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!invoiceForm.get('CustomerMasterSid')?.value">
-                  <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                    placeholder="" formControlName="CustomerMasterSid" (change)="onCustomerMasterChange($event)"
-                    appendTo="body">
-                    <ng-template ng-option-tmp let-item="item">
-                      <div>
-                        <small>{{ item.CustomerName }}</small>
-                      </div>
-                    </ng-template>
-                  </ng-select> -->
-                  <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerMasterSid" (itemSelected)="onCustomerMasterChange($event)">
-                      </dofi-searchable-dropdown>
-                  <label class="input-label">Customer</label>
-                </div>
-              </aside>
+<aside class="col-md-3">
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!invoiceForm.get('PartyName')?.value">
+    <dofi-searchable-dropdown [items]="customerList" formControlName="PartyName"
+      placeholder="" [displayFields]="customerLookupConfig.displayFields"
+      [displayLabels]="customerLookupConfig.displayLabels"
+      [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+      bindValue="CustomerName" (itemSelected)="onCustomerMasterChange($event)">
+    </dofi-searchable-dropdown>
+    <label class="input-label">Customer</label>
+  </div>
+</aside>
 
               <!-- 4. Customer Address (branch select) -->
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!invoiceForm.get('PartyName')?.value">
                   <ng-select [items]="customerBranchList.length ? customerBranchList : []" bindLabel="Address"
-                    bindValue="CustomerBranchSid" placeholder="" formControlName="PartyName"
+                    bindValue="CustomerBranchSid" placeholder="" formControlName="CustomerBranchSid"
                     (change)="onBranchChange($event)" appendTo="body">
                     <ng-template ng-option-tmp let-item="item">
                       <div>
@@ -115,6 +121,7 @@
                   <label class="input-label">Customer Address</label>
                 </div>
               </aside>
+              
               
 <!-- <aside class="col-md-3">
   <div class="custom-form-group">
@@ -267,7 +274,7 @@
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description
                   </th>
-                  <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">HSN/SAC</th>
+                  <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">HS/SAC</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit
                   </th>
@@ -290,6 +297,7 @@
                   </ng-container>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local Amount
                   </th>
+                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
                 </tr>
@@ -331,7 +339,7 @@
                 [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
                 [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'" (itemSelected)="onDetailChange(i, 'ChargeMasterSid')">
               </dofi-searchable-dropdown>
-                      <span *ngIf="isEditMode">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span>
+                      <!-- <span *ngIf="isEditMode">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span> -->
                     </td>
 
                     <!-- Description -->
@@ -362,7 +370,7 @@
                                             [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
                                             [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
                                         </dofi-searchable-dropdown>
-                      <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span>
+                      <!-- <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span> -->
                     </td>
 
                     <!-- Unit -->
@@ -396,7 +404,7 @@
                 [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
                 [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'" (itemSelected)="onDetailChange(i,'CurrencyCode')">
               </dofi-searchable-dropdown>
-                      <span *ngIf="isEditMode">{{ row.get('CurrencyCode')?.value || '-' }}</span>
+                      <!-- <span *ngIf="isEditMode">{{ row.get('CurrencyCode')?.value || '-' }}</span> -->
                     </td>
 
                     <!-- Rate -->
@@ -497,6 +505,9 @@
                     <td>
                       <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                     </td>
+ <td>
+  <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
+</td> 
 
                     <!-- MasterJobSid column -->
                     <td style="min-width:200px;">
@@ -890,10 +901,12 @@
                     <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
                   </ng-container>
                   <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+                   <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td>
                 </tr>
                 <tr>
                   <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
                   <td><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
+                  <!-- <td><strong>{{getTotalPartyAmount() | number:'1.2-2'}}</strong></td> -->
                 </tr>
               </tbody>
             </table>

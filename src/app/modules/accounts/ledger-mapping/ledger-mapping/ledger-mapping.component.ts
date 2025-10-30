@@ -170,8 +170,10 @@ export class LedgerMappingComponent implements OnInit {
         
         if (response.status) {
           const data = response.data || response || [];
+          const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
           const processedData = data.map((item: any) => ({
             ...item,
+            CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
             AccrualCOAMasterSid: this.extractCOAId(item.AccrualCOAMasterSid),
             DrCOAMasterSid: this.extractCOAId(item.DrCOAMasterSid),
             CrCOAMasterSid: this.extractCOAId(item.CrCOAMasterSid),
@@ -347,8 +349,9 @@ export class LedgerMappingComponent implements OnInit {
 
     this.isSaving = true;
     this.spinner.show();
-
+    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
     const updates = itemsToUpdate.map(item => ({
+       CompanyMasterSid: activeCompanyId,
       SubledgerMasterSid: item.SubledgerMasterSid,
       AccrualCOAMasterSid: this.extractCOAId(item.AccrualCOAMasterSid),
       DrCOAMasterSid: this.extractCOAId(item.DrCOAMasterSid),
