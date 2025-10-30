@@ -19,6 +19,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-entry-header/common-entry-header.component';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -39,6 +40,7 @@ interface IWindow extends Window {
     NgbDropdownModule,
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
+    CommonEntryHeaderComponent
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
@@ -286,13 +288,13 @@ hasAnyDropdownPermission(): boolean {
         Validators.required,
         Validators.maxLength(100)
       ]],
-      Length: [''],
-      Width: [''],
-      Height: [''],
-      MaxVolume: [''],
-      TareWeight: [''],
-      GrossWeight: [''],
-      NoOfTeu: ['', [
+       Length: [null],
+    Width: [null],
+    Height: [null],
+    MaxVolume: [null],
+    TareWeight: [null],
+    GrossWeight: [null],
+      NoOfTeu: [null, [
         Validators.required,
        
       ]],
@@ -301,6 +303,16 @@ hasAnyDropdownPermission(): boolean {
     });
 }
 
+createNewRecord(): void {
+  this.resetForm();
+  this.isEditMode = false;
+  this.ContainerTypeMasterSid = null;
+  this.containerData = null;
+  this.router.navigate(['master/container-type/entry']); 
+}
+navigateToaddNewContainerType() {
+    this.router.navigate(['master/container-type/entry']);
+  }
 resetForm(): void {
    
     this.containertypeForm.get('status')?.disable();
@@ -311,73 +323,88 @@ resetForm(): void {
   }
 
   onSubmit() {
-    if (this.containertypeForm.get('status')?.disabled) {
-      this.containertypeForm.get('status')?.enable();
-    }
-    if (this.containertypeForm.invalid) {
-      this.containertypeForm.markAllAsTouched();
-      this.containertypeForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
-      return;
-    } else {
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail']};
-      const formValue = this.containertypeForm.value;
+  if (this.containertypeForm.get('status')?.disabled) {
+    this.containertypeForm.get('status')?.enable();
+  }
+  if (this.containertypeForm.invalid) {
+    this.containertypeForm.markAllAsTouched();
+    this.containertypeForm.updateValueAndValidity();
+    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    return;
+  } else {
+    let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
+    let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail']};
+    const formValue = this.containertypeForm.value;
 
-      const payload = (this.isEditMode) ? {
-        ...formValue,
-        // CompanyMasterSid: Number(formValue.CompanyMasterSid),
-        ...updatedBy,
-        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
-      } : {
-        ...formValue,
-        // CompanyMasterSid: Number(formValue.CompanyMasterSid),
-        ...createdBy,
-        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S', 
-      };
-
-      console.log('payload', payload);
-
-      if (this.isEditMode) {
-        this.masterService.editContainerTypeById(this.ContainerTypeMasterSid, payload).subscribe(
-          (resp: any) => {
-            console.log(resp.message);
-            if(resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
-              if (this.ContainerTypeMasterSid) {
-            this.loadContainerData(this.ContainerTypeMasterSid);
-          }
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading:', error);
-          }
-        );
+    // Convert numeric fields from string to number
+    const numericFields = ['Length', 'Width', 'Height', 'MaxVolume', 'TareWeight', 'GrossWeight', 'NoOfTeu'];
+    const processedFormValue = { ...formValue };
+    
+    numericFields.forEach(field => {
+      if (processedFormValue[field]) {
+        // Convert to number, handle decimal values for TareWeight and GrossWeight
+        if (field === 'TareWeight' || field === 'GrossWeight') {
+          processedFormValue[field] = parseFloat(processedFormValue[field]);
+        } else {
+          processedFormValue[field] = parseInt(processedFormValue[field], 10);
+        }
       } else {
-        this.masterService.addNewContainerType(payload).subscribe(
-          (resp: any) => {
-            console.log(resp);
-            if (resp.status) {
-              
-              this.loadContainerData(resp.data.ContainerTypeMasterSid);
-              this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading:', error);
-          }
-        );
+        processedFormValue[field] = null; // Set to null if empty
       }
+    });
+
+    const payload = (this.isEditMode) ? {
+      ...processedFormValue,
+      ...updatedBy,
+      status: processedFormValue.status === 'Active' || processedFormValue.status === 'A' ? 'A' : 'S',
+    } : {
+      ...processedFormValue,
+      ...createdBy,
+      status: processedFormValue.status === 'Active' || processedFormValue.status === 'A' ? 'A' : 'S', 
+    };
+
+    console.log('payload', payload);
+
+    if (this.isEditMode) {
+      this.masterService.editContainerTypeById(this.ContainerTypeMasterSid, payload).subscribe(
+        (resp: any) => {
+          console.log(resp.message);
+          if(resp.status) {
+            this.appSettingService.showSuccess('ContainerType is successfully updated');
+            this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
+            if (this.ContainerTypeMasterSid) {
+          this.loadContainerData(this.ContainerTypeMasterSid);
+        }
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading:', error);
+        }
+      );
+    } else {
+      this.masterService.addNewContainerType(payload).subscribe(
+        (resp: any) => {
+          console.log(resp);
+          if (resp.status) {
+            
+            this.loadContainerData(resp.data.ContainerTypeMasterSid);
+            this.appSettingService.showSuccess('New ContainerType is successfully created');
+            this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading:', error);
+        }
+      );
     }
   }
+}
 
   // Mapping for API status to display
   statusMap: { [key: string]: string } = {
