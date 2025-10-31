@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -14,6 +14,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -30,7 +32,8 @@ import { forkJoin } from 'rxjs';
     MultiSelectComponent,
     NgbDropdownModule,
     TextWithNumbersDirective,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    NgbAccordionModule
   ],
   templateUrl: './credit-request-entry.component.html',
   styleUrl: './credit-request-entry.component.scss',
@@ -41,11 +44,7 @@ import { forkJoin } from 'rxjs';
   ]
 })
 export class CreditRequestEntryComponent {
-  tabs = [
-    { name: 'Credit', icon: 'fas fa-file-signature' },
-    { name: 'KYC', icon: 'fas fa-layer-group' },
-  ];
-  selectedTab = this.tabs[0].name;
+  MenuMasterSid: any;
   cusForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
@@ -59,7 +58,6 @@ export class CreditRequestEntryComponent {
   salesmanListPerRow: any[][] = [];
 
   currentMenuId: any;
-  TandCList: any;
 
   branchList: any[] = [];
   departmentList: any[] = [];
@@ -69,8 +67,15 @@ export class CreditRequestEntryComponent {
     { id: 'A', name: "Active" },
     { id: 'S', name: "Suspended" }
   ]
+  docName = [
+    { id: 'Passport', name: "Passport" },
+    { id: 'Driving Licence', name: "Driving Licence" },
+    { id: 'Pan Card', name: "Pan Card" },
+  ]
   currentCompany: any;
   currentBranch: any;
+
+  expandedIndex: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -81,6 +86,7 @@ export class CreditRequestEntryComponent {
     private calendar: NgbCalendar,
     private modalService: NgbModal,
     private datePipe: DatePipe,
+    private commonService: CommonService,
   ) {
     this.initForm();
   }
@@ -88,6 +94,7 @@ export class CreditRequestEntryComponent {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid = localStorage.getItem('currentMenuId');
     this.route.params.subscribe(params => {
       if (params['CustomerMasterSid']) {
         this.customerId = +params['CustomerMasterSid'];
@@ -101,7 +108,6 @@ export class CreditRequestEntryComponent {
       this.userData = userProfile;
       this.checkPermissions();
     }
-    this.loadLookupData();
   }
 
   initForm() {
@@ -110,7 +116,6 @@ export class CreditRequestEntryComponent {
       CountryMasterSid: [''],
       status: [''],
       creditRequest: this.fb.array([]),
-      // kyc: this.fb.array([])
     });
   }
 
@@ -118,52 +123,83 @@ export class CreditRequestEntryComponent {
     return this.cusForm.get('creditRequest') as FormArray;
   }
 
-  // get kyc(): FormArray {
-  //   return this.cusForm.get('kyc') as FormArray;
-  // }
-
-  createCreditRequest(data?:any): FormGroup {
-    return this.fb.group({
+  createCreditRequest(data?: any): FormGroup {
+    const creditForm = this.fb.group({
       CustomerCreditRequestSid: [data?.CustomerCreditRequestSid || null],
-      CustomerBranchSid: [data?.CustomerBranchSid || ''],
-      DepartmentMasterSid: [data?.DepartmentMasterSid || ''],
+      CustomerBranchSid: [data?.CustomerBranchSid || '', Validators.required],
+      DepartmentMasterSid: [data?.DepartmentMasterSid || '', Validators.required],
       SalesmanSid: [data?.SalesmanSid || ''],
-      CreditDays: [data?.CreditDays || 0],
-      CreditLimit: [data?.CreditLimit || 0],
+      CreditDays: [data?.CreditDays || 0, [Validators.required, Validators.min(0)]],
+      CreditLimit: [data?.CreditLimit || 0, [Validators.required, Validators.min(0)]],
       PublishedDays: [data?.PublishedDays || 0],
       PublishedLimit: [data?.PublishedLimit || 0],
-      EffectiveFrom: [data?.EffectiveFrom ? new Date(data?.EffectiveFrom) : null],
-      EffectiveTo: [data?.EffectiveTo ? new Date(data?.EffectiveTo) : null],
+      EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : null, Validators.required],
+      EffectiveTo: [data?.EffectiveTo ? new Date(data.EffectiveTo) : null],
       ApprovalStatus: [data?.ApprovalStatus || 'Pending'], 
-      Status: [data?.Status || ''],
+      Status: [data?.Status || 'A'],
+      customerKyc: this.fb.array([])
     });
+
+    // Add KYC records if available
+    if (data?.customerKyc && data.customerKyc.length > 0) {
+      const kycArray = creditForm.get('customerKyc') as FormArray;
+      data.customerKyc.forEach((kycData: any) => {
+        kycArray.push(this.createKycRow(kycData));
+      });
+    }
+
+    return creditForm;
+  }
+
+  getKycArray(creditIndex: number): FormArray {
+    return this.creditRequest.at(creditIndex).get('customerKyc') as FormArray;
   }
 
   addCreditRequestRow(data?: any) {
-  // Convert API date strings (ISO) to yyyy-MM-dd for HTML <input type="date">
-  const formattedData = data
-    ? {
-        ...data,
-        EffectiveFrom: this.formatDateForInput(data.EffectiveFrom),
-        EffectiveTo: this.formatDateForInput(data.EffectiveTo),
-      }
-    : null;
+    const fg = this.createCreditRequest(data);
+    
+    // Patch Salesman if passed separately
+    if (data?.Salesman) {
+      fg.patchValue({
+        SalesmanSid: data.Salesman,
+      });
+    }
 
-  const fg = this.createCreditRequest(formattedData);
+    this.creditRequest.push(fg);
+    this.expandedIndex = this.creditRequest.length - 1;
+  }
 
-  // Patch Salesman if passed separately
-  if (data?.Salesman) {
-    fg.patchValue({
-      SalesmanSid: data.Salesman,
+  removeCreditRequestRow(index: number) {
+    if (this.creditRequest.length > 1) {
+      this.creditRequest.removeAt(index);
+      this.departmentListPerRow.splice(index, 1);
+      this.salesmanListPerRow.splice(index, 1);
+    }
+  }
+
+  createKycRow(data?: any): FormGroup {
+    return this.fb.group({
+      CustomerKycSid: [data?.CustomerKycSid || null],
+      CustomerCreditRequestSid: [data?.CustomerCreditRequestSid || null],
+      CustomerBranchSid: [data?.CustomerBranchSid || null],
+      KycSno: [data?.KycSno || null],
+      KycDocName: [data?.KycDocName || '', Validators.required],
+      KycDocNumber: [data?.KycDocNumber || '', Validators.required],
+      AttachDocumentSid: [data?.AttachDocumentSid || null],
+      CompanyMasterSid: [data?.CompanyMasterSid || this.currentCompany?.CompanyMasterSid],
+      CustomerMasterSid: [data?.CustomerMasterSid || this.customerId],
     });
   }
 
-  this.creditRequest.push(fg);
-}
+  addKycRow(creditIndex: number, data?: any) {
+    const kycArray = this.getKycArray(creditIndex);
+    const fg = this.createKycRow(data);
+    kycArray.push(fg);
+  }
 
-
-  removeCreditRequestRow(index: number) {
-    this.creditRequest.removeAt(index);
+  removeKycRow(creditIndex: number, kycIndex: number) {
+    const kycArray = this.getKycArray(creditIndex);
+    kycArray.removeAt(kycIndex);
   }
 
   checkPermissions() {
@@ -174,7 +210,7 @@ export class CreditRequestEntryComponent {
         next: (response) => {
           this.currentMenuPermissions = response.data.MenuPermissions || {};
           this.permissions = Object.keys(this.currentMenuPermissions)
-          .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
         }
       });
     }
@@ -184,220 +220,162 @@ export class CreditRequestEntryComponent {
     return this.permissions.includes(permission);
   }
 
-  hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
-  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+  getCustomerById(CustomerMasterSid: number) {
+    this.operationService.getCustomerById(CustomerMasterSid).subscribe({
+      next: (resp: any) => {
+        if (resp.status && resp.data && resp.data.length > 0) {
+          this.customerData = resp.data[0];
+
+          // Prepare branch dropdown
+          this.branchList = this.customerData.CustomerBranch?.map((branch: any) => ({
+            id: branch.CustomerBranchSid,
+            name: branch.BranchName
+          })) || [];
+
+          // Patch customer header
+          this.cusForm.patchValue({
+            CustomerName: this.customerData.CustomerName || '',
+            CountryMasterSid: this.customerData.countryMaster?.countryName || '',
+            status: this.customerData.Status || 'A',
+          });
+          this.cusForm.get('status')?.disable();
+
+          // Clear existing rows
+          this.creditRequest.clear();
+
+          const creditRequests = this.customerData.customerCreditRequest || [];
+
+          if (creditRequests.length > 0) {
+            creditRequests.forEach((req: any, rowIndex: number) => {
+              const fg = this.createCreditRequest(req);
+              this.creditRequest.push(fg);
+
+              // Populate Department dropdown per row
+              const departmentObj = {
+                DepartmentMasterSid: req.DepartmentMasterSid,
+                departmentName: req.department?.departmentName || req.departmentName || ''
+              };
+              this.departmentListPerRow[rowIndex] = [departmentObj];
+
+              // Populate Salesman dropdown per row
+              const salesmanObj = {
+                UserMasterSid: req.salesman?.UserMasterSid || req.SalesmanSid,
+                userName: req.salesman?.userName || req.SalesmanName || ''
+              };
+              this.salesmanListPerRow[rowIndex] = [salesmanObj];
+
+              // Patch selected values
+              fg.patchValue({
+                DepartmentMasterSid: departmentObj.DepartmentMasterSid,
+                SalesmanSid: salesmanObj.UserMasterSid
+              });
+            });
+          } else {
+            this.addCreditRequestRow();
+          }
+        } else {
+          console.warn('Empty customer response:', resp);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching customer by ID', err);
+        this.appSettingService.showError('Failed to fetch customer details.');
+      }
+    });
   }
 
-  loadLookupData() {
-  // 👇 Construct payload exactly as backend expects
-  const payload = {
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-    EffectiveFrom: this.cusForm.get('EffectiveFrom')?.value,
-    CustomerMasterSid: this.cusForm.get('CustomerMasterSid')?.value,
-    CustomerBranchSid: this.cusForm.get('CustomerBranchSid')?.value,
-    DepartmentMasterSid: this.cusForm.get('DepartmentMasterSid')?.value, // needed for salesman only
-  };
+  // private convertToNgbDate(dateString: string): any {
+  //   if (!dateString) return null;
+  //   const date = new Date(dateString);
+  //   return {
+  //     year: date.getFullYear(),
+  //     month: date.getMonth() + 1,
+  //     day: date.getDate()
+  //   };
+  // }
 
-  forkJoin([
-    this.operationService.getDepartment(payload),
-    this.operationService.getSalesman(payload),
-  ]).subscribe({
-    next: ([departments, salesman]) => {
-      // The backend returns arrays directly, not {data: ...}, so handle both
-      this.departmentList = departments?.data || departments;
-      this.salesmanList = (salesman?.data || salesman).map((x: any) => ({
-  UserMasterSid: x.salesman?.UserMasterSid,
-  userName: x.salesman?.userName
-}));
-    },
-    error: (err) => {
-      console.error('Error loading lookup data:', err);
-      this.appSettingService.showError('Failed to load department/salesman data.');
-    }
-  });
-}
-
-
- getCustomerById(CustomerMasterSid: number) {
-  this.operationService.getCustomerById(CustomerMasterSid).subscribe({
-    next: (resp: any) => {
-      if (resp.status && resp.data) {
-        this.customerData = resp.data;
-
-        // 🔹 Prepare branch dropdown
-        this.branchList = this.customerData.CustomerBranch?.map((branch: any) => ({
-          id: branch.CustomerBranchSid,
-          name: branch.BranchName
-        })) || [];
-
-        // 🔹 Patch customer header
-        this.cusForm.patchValue({
-          CustomerName: this.customerData.CustomerName || '',
-          CountryMasterSid: this.customerData.Country || '',
-          status: this.customerData.Status || 'A',
-        });
-        this.cusForm.get('status')?.disable();
-
-        // 🔹 Clear existing rows
-        this.creditRequest.clear();
-
-        const creditRequests = this.customerData.customerCreditRequest || [];
-
-        if (creditRequests.length > 0) {
-          creditRequests.forEach((req: any, rowIndex: number) => {
-           const fg = this.createCreditRequest({
-  ...req,
-  EffectiveFrom: req.EffectiveFrom,
-  EffectiveTo: req.EffectiveTo
-});
-
-            this.creditRequest.push(fg);
-
-            // ✅ Populate Department dropdown per row
-            const departmentObj = {
-              DepartmentMasterSid: req.DepartmentMasterSid,
-              departmentName: req.department?.departmentName || req.departmentName || ''
-            };
-            this.departmentListPerRow[rowIndex] = [departmentObj];
-
-            // ✅ Populate Salesman dropdown per row
-            const salesmanObj = {
-              UserMasterSid: req.salesman?.UserMasterSid || req.SalesmanSid,
-              userName: req.salesman?.userName || req.SalesmanName || ''
-            };
-            this.salesmanListPerRow[rowIndex] = [salesmanObj];
-
-            // ✅ Patch selected department and salesman after dropdowns are set
-            fg.patchValue({
-              DepartmentMasterSid: departmentObj.DepartmentMasterSid,
-              SalesmanSid: salesmanObj.UserMasterSid
-            });
-          });
-        } else {
-          this.addCreditRequestRow();
-        }
-      } else {
-        console.warn('Empty customer response:', resp);
-      }
-    },
-    error: (err) => {
-      console.error('Error fetching customer by ID', err);
-      this.appSettingService.showError('Failed to fetch customer details.');
-    }
-  });
-}
-
-private convertToNgbDate(dateString: string): any {
-  const date = new Date(dateString);
-  return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate()
-  };
-}
-
-private formatDateForInput(dateString: string): string | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+  private convertFromNgbDate(ngbDate: any): string | null {
+    if (!ngbDate) return null;
+    const { year, month, day } = ngbDate;
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
 
   onSubmit() {
-  if (this.cusForm.invalid) {
-    this.markFormGroupTouched(this.cusForm);
-    this.appSettingService.showError('Please fill all required fields before saving');
-    return;
-  }
+    if (this.cusForm.invalid) {
+      this.markFormGroupTouched(this.cusForm);
+      this.appSettingService.showError('Please fill all required fields before saving');
+      return;
+    }
 
-  if (this.creditRequest.controls.length === 0) {
-    this.appSettingService.showError('Please add at least one Credit Request entry before saving');
-    return;
-  }
+    if (this.creditRequest.controls.length === 0) {
+      this.appSettingService.showError('Please add at least one Credit Request entry before saving');
+      return;
+    }
 
-  this.btnDisable = true;
-  this.loading = true;
+    this.btnDisable = true;
+    this.loading = true;
 
-  const currentUserEmail =
-    this.userData?.LoginId || this.appSettingService.userSettingSource.value['userEmail'];
+    const currentUserEmail = this.userData?.LoginId || this.appSettingService.userSettingSource.value['userEmail'];
 
-  // Build full list of request objects
-  const requests = this.creditRequest.getRawValue().map((req) => ({
-    CustomerCreditRequestSid: req.CustomerCreditRequestSid || null,
-    CustomerMasterSid: this.customerId,
-    CustomerBranchSid: req.CustomerBranchSid,
-    DepartmentMasterSid: req.DepartmentMasterSid,
-    SalesmanSid: req.SalesmanSid,
-    CreditDays: req.CreditDays,
-    CreditLimit: req.CreditLimit,
-    PublishedDays: req.PublishedDays,
-    PublishedLimit: req.PublishedLimit,
-    EffectiveFrom: req.EffectiveFrom
-      ? this.datePipe.transform(req.EffectiveFrom, 'yyyy-MM-dd')
-      : null,
-    EffectiveTo: req.EffectiveTo
-      ? this.datePipe.transform(req.EffectiveTo, 'yyyy-MM-dd')
-      : null,
-    ApprovalStatus: req.ApprovalStatus || 'Pending',
-    Status: req.Status || 'A',
-    CreatedBy: currentUserEmail,
-  }));
-
-  // Separate into new and existing entries
-  const createPayload = requests.filter((r) => !r.CustomerCreditRequestSid);
-  const updatePayload = requests.filter((r) => r.CustomerCreditRequestSid);
-
-  const apiCalls = [];
-
-  // 👇 CREATE new entries
-  if (createPayload.length > 0) {
-    apiCalls.push(
-      this.operationService.createCreditRequest({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    // Build payload with nested KYC
+    const payload = this.creditRequest.getRawValue().map((req) => ({
+      CustomerCreditRequestSid: req.CustomerCreditRequestSid || null,
+      CustomerMasterSid: this.customerId,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      CustomerBranchSid: req.CustomerBranchSid,
+      DepartmentMasterSid: req.DepartmentMasterSid,
+      SalesmanSid: req.SalesmanSid,
+      CreditDays: req.CreditDays,
+      CreditLimit: req.CreditLimit,
+      PublishedDays: req.PublishedDays,
+      PublishedLimit: req.PublishedLimit,
+      EffectiveFrom: req.EffectiveFrom,
+      EffectiveTo: req.EffectiveTo,
+      ApprovalStatus: req.ApprovalStatus || 'Pending',
+      Status: req.Status || 'A',
+      CreatedBy: currentUserEmail,
+      UpdatedBy: currentUserEmail,
+      customerKyc: (req.customerKyc || []).map((kyc: any, index: number) => ({
+        CustomerKycSid: kyc.CustomerKycSid || null,
         CustomerMasterSid: this.customerId,
-        customerCreditRequest: createPayload,
-      })
-    );
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        CustomerCreditRequestSid: kyc.CustomerCreditRequestSid || null,
+        CustomerBranchSid: req.CustomerBranchSid,
+        KycSno: index + 1,
+        KycDocName: kyc.KycDocName,
+        KycDocNumber: kyc.KycDocNumber,
+        AttachDocumentSid: kyc.AttachDocumentSid || null,
+        CreatedBy: currentUserEmail,
+        UpdatedBy: currentUserEmail,
+      }))
+    }));
+
+    const apiCall = this.isEditMode 
+      ? this.operationService.updateCreditRequest(payload)
+      : this.operationService.createCreditRequest(payload);
+
+    apiCall.subscribe({
+      next: (response: any) => {
+        this.loading = false;
+        this.btnDisable = false;
+
+        if (response.status) {
+          this.appSettingService.showSuccess(
+            this.isEditMode ? 'Credit Request updated successfully.' : 'Credit Request created successfully.'
+          );
+          this.router.navigate(['/operation/credit-request/list']);
+        } else {
+          this.appSettingService.showError(response.message || 'Failed to save credit request.');
+        }
+      },
+      error: (err) => {
+        console.error('Error saving credit requests:', err);
+        this.appSettingService.showError('Failed to save credit requests.');
+        this.loading = false;
+        this.btnDisable = false;
+      },
+    });
   }
-
-  // 👇 UPDATE existing entries
-  updatePayload.forEach((row) => {
-    apiCalls.push(this.operationService.updateCreditRequest(row.CustomerCreditRequestSid, row));
-  });
-
-  if (apiCalls.length === 0) {
-    this.appSettingService.showInfo('No changes detected to save.');
-    this.loading = false;
-    this.btnDisable = false;
-    return;
-  }
-
-  // Execute all create/update requests together
-  forkJoin(apiCalls).subscribe({
-    next: (responses: any[]) => {
-      this.loading = false;
-      this.btnDisable = false;
-
-      const allSuccess = responses.every((r) => r.status);
-      if (allSuccess) {
-        this.appSettingService.showSuccess('Credit Request saved successfully.');
-        this.router.navigate(['/operation/credit-request/list']);
-      } else {
-        this.appSettingService.showError('Some records failed to save.');
-      }
-    },
-    error: (err) => {
-      console.error('Error saving credit requests:', err);
-      this.appSettingService.showError('Failed to save credit requests.');
-      this.loading = false;
-      this.btnDisable = false;
-    },
-  });
-}
-
 
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach(control => {
@@ -411,8 +389,20 @@ private formatDateForInput(dateString: string): string | null {
       }
     });
   }
-  
-onBranchSelect(branchSid: number, rowIndex: number) {
+
+  getBranchName(branchId: number): string {
+  const branch = this.branchList?.find(b => b.id === branchId);
+  return branch ? branch.name : '';
+}
+
+getDepartmentName(deptId: number, rowIndex: number): string {
+  const deptList = this.departmentListPerRow[rowIndex];
+  const dept = deptList?.find(d => d.DepartmentMasterSid === deptId);
+  return dept ? dept.departmentName : '';
+}
+
+
+  onBranchSelect(branchSid: number, rowIndex: number) {
   if (!branchSid) {
     this.departmentListPerRow[rowIndex] = [];
     this.creditRequest.at(rowIndex).get('DepartmentMasterSid')?.reset();
@@ -442,7 +432,7 @@ onBranchSelect(branchSid: number, rowIndex: number) {
   });
 }
 
-onDepartmentSelect(departmentSid: number, rowIndex: number) {
+   onDepartmentSelect(departmentSid: number, rowIndex: number) {
   const branchSid = this.creditRequest.at(rowIndex).get('CustomerBranchSid')?.value;
 
   // Reset salesman if department or branch not selected
@@ -452,24 +442,33 @@ onDepartmentSelect(departmentSid: number, rowIndex: number) {
     return;
   }
 
-  // ✅ Payload matches your backend expectation
+  // ✅ Payload as expected by backend
   const payload = {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     CustomerMasterSid: this.customerId,
     CustomerBranchSid: branchSid,
-    departmentName: String(departmentSid) // backend wants departmentName as string
+    departmentName: String(departmentSid)
   };
 
   this.operationService.getSalesman(payload).subscribe({
     next: (resp: any) => {
       const salesmen = resp?.data || [];
-      this.salesmanListPerRow[rowIndex] = salesmen.map((s: any) => ({
-        UserMasterSid: s.salesman?.UserMasterSid,
-        userName: s.salesman?.userName
+
+      // ✅ Map correctly — handle API with no ID field
+      this.salesmanListPerRow[rowIndex] = salesmen.map((s: any, i: number) => ({
+        id: i + 1, // temporary ID since API doesn’t return one
+        userName: s.salesman?.userName || 'Unknown'
       }));
 
-      // reset Salesman selection after department change
+      // Reset selection
       this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
+
+      // ✅ Optional: auto-select if only one salesman
+      if (this.salesmanListPerRow[rowIndex].length === 1) {
+        this.creditRequest.at(rowIndex)
+          .get('SalesmanSid')
+          ?.setValue(this.salesmanListPerRow[rowIndex][0].id);
+      }
     },
     error: (err) => {
       console.error('Error loading salesmen:', err);
@@ -481,56 +480,57 @@ onDepartmentSelect(departmentSid: number, rowIndex: number) {
 }
 
 
-
   resetForm() {
-  if (this.isEditMode) {
-    // 🔁 Reload existing data if in edit mode
-    this.getCustomerById(this.customerId);
-  } else {
-    // 🧹 Clear all form arrays and reset values
-    this.creditRequest.clear();
+    if (this.isEditMode) {
+      this.getCustomerById(this.customerId);
+    } else {
+      this.creditRequest.clear();
 
-    this.cusForm.reset({
-      CustomerName: '',
-      CountryMasterSid: null,
-      status: 'A'
+      this.cusForm.reset({
+        CustomerName: '',
+        CountryMasterSid: null,
+        status: 'A'
+      });
+
+      this.cusForm.get('status')?.disable();
+
+      this.branchList = [];
+      this.departmentList = [];
+      this.salesmanList = [];
+      this.customerData = null;
+
+      this.addCreditRequestRow();
+    }
+
+    this.btnDisable = false;
+    this.loading = false;
+  }
+
+  openEDoc(creditIndex: number, kycIndex: number) {
+    const kycArray = this.getKycArray(creditIndex);
+    const kycData = kycArray.at(kycIndex).value;
+
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
     });
 
-    // Disable status for new entry
-    this.cusForm.get('status')?.disable();
+    modalRef.componentInstance.item = kycData;
+    modalRef.componentInstance.idLabel = 'KYC Document'; 
+    modalRef.componentInstance.idValue = kycData?.CustomerKycSid;
+    
+    const data: any = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid,
+      DocumentSid: this.customerId,
+    }
 
-    // Reset dependent lists or selections
-    this.branchList = [];
-    this.departmentList = [];
-    this.salesmanList = [];
-    this.customerData = null;
-
-    // Add one empty credit request row
-    this.addCreditRequestRow();
+    this.commonService.documentData.set(data);
   }
 
-  // Optional: Reset UI state
-  this.btnDisable = false;
-  this.loading = false;
-  this.selectedTab = this.tabs[0].name;
-}
-
-
-clearFormArrays() {
-  // Clear all credit request rows
-  while (this.creditRequest.length !== 0) {
-    this.creditRequest.removeAt(0);
-  }
-
-  // (Optional) If you later add more FormArrays like KYC, clear them here too:
-  // while (this.kyc.length !== 0) {
-  //   this.kyc.removeAt(0);
-  // }
-}
-selectTab(tab: string) {
-  this.selectedTab = tab;
-}
   goBack() {
-    this.router.navigate(['operation/credit-request/list'])
+    this.router.navigate(['operation/credit-request/list']);
   }
 }

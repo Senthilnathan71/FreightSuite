@@ -21,7 +21,7 @@
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                         (click)="onSubmit()"
-                        [disabled]="btnDisable || cusForm.invalid || creditRequest.controls.length === 0">
+                        >
                         <i class="fas fa-save me-1"></i> Save
                     </button>
                 </div>
@@ -33,7 +33,7 @@
         <form [formGroup]="cusForm">
             <div class="row">
                 <div class="col-md-12">
-                    <div class="card h-100 mb-0">
+                    <div class="card h-100 mb-2">
                         <div class="card-body">
                             <div class="row pb-2">
                                 <!-- Customer Name -->
@@ -80,230 +80,287 @@
                     </div>
                 </div>
 
-                <!-- Tab Navigation -->
-                <div class="mx-auto mt-1">
-                    <div class="nav-pills-container">
-                        <div class="nav-pills d-flex align-items-center w-100">
-                            <div class="pills-left d-flex flex-nowrap" style="flex:1;">
-                                <div class="nav-pill" *ngFor="let tab of tabs" 
-                                    [class.active]="selectedTab === tab.name"
-                                    (click)="selectTab(tab.name)">
-                                    <div class="pill-icon">
-                                        <i [class]="tab.icon"></i>
-                                    </div>
-                                    <span class="pill-label">{{ tab.name }}</span>
-                                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
-                                </div>
-                            </div>
-                            
-                            <div *ngIf="selectedTab === 'Credit'">
-                                <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addCreditRequestRow()">
-                                    <i class="fas fa-plus"></i> Add Credit
-                                </button>
-                            </div>
-                            
-                            <!-- <div *ngIf="selectedTab === 'KYC'">
-                                <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addKycRow()">
-                                    <i class="fas fa-plus"></i> Add KYC
-                                </button>
-                            </div> -->
+                <!-- Credit Request Section -->
+                <div class="col-md-12">
+                    <div class="card">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0">
+      <i class="fas fa-file-signature me-2"></i>Credit Request Details
+    </h6>
+    <button type="button" class="btn btn-sm btn-info" (click)="addCreditRequestRow()">
+      <i class="fas fa-plus"></i> Add Credit Request
+    </button>
+  </div>
+
+  <div class="card-body">
+    @if(creditRequest.controls.length === 0) {
+      <div class="col-12 text-center py-3 text-danger">
+        At least one credit request is required
+      </div>
+    }
+
+    @if(creditRequest.controls.length > 0) {
+      <div class="col-12">
+        <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion" formArrayName="creditRequest">
+          @for (credit of creditRequest.controls; track credit; let i = $index) {
+            <div ngbAccordionItem [formGroupName]="i" class="mb-2" [collapsed]="i !== expandedIndex">
+
+              <!-- Header -->
+              <h2 ngbAccordionHeader>
+  <button
+    ngbAccordionButton
+    class="d-flex justify-content-between align-items-center w-100 text-light px-3 py-2 position-relative"
+    style="background-color: #1177aa; border-top-left-radius: 6px; border-top-right-radius: 6px;"
+  >
+    <!-- Left Side (Branch + Department) -->
+    <div class="d-flex align-items-center gap-3">
+      <h6 class="fw-bold mb-0 text-light" style="font-size: 14px;">
+        {{ getBranchName(credit.get('CustomerBranchSid')?.value) || 'N/A' }}
+      </h6>
+      <span style="font-size: 13px; color: rgba(255,255,255,0.8);">
+        {{ getDepartmentName(credit.get('DepartmentMasterSid')?.value, i) || '' }}
+      </span>
+    </div>
+
+    <!-- Right Side (Approval Status) -->
+    <span
+      class="px-2 py-1 rounded text-white"
+      [ngStyle]="{
+        'background-color':
+          credit.get('ApprovalStatus')?.value === 'APPROVED'
+            ? '#28a745'
+            : credit.get('ApprovalStatus')?.value === 'REJECTED'
+            ? '#dc3545'
+            : '#0d6efd',
+        'font-size': '12px',
+        'font-weight': '600',
+        'text-transform': 'uppercase'
+      }"
+    >
+      {{ credit.get('ApprovalStatus')?.value || 'Pending' }}
+    </span>
+  </button>
+</h2>
+
+              <!-- Collapsible content -->
+              <div ngbAccordionCollapse>
+                <div class="p-3 bg-light">
+                  <div class="row">
+
+                    <!-- Branch -->
+                    <aside class="col-md-4 mb-3">
+                      <div class="custom-form-group custom-form-group-select"
+                           [class.filled]="!!credit.get('CustomerBranchSid')?.value">
+                        <ng-select
+                          formControlName="CustomerBranchSid"
+                          [items]="branchList"
+                          bindLabel="name"
+                          bindValue="id"
+                          placeholder=""
+                          (change)="onBranchSelect($event, i)"
+                          appendTo="body">
+                        </ng-select>
+                        <label class="input-label">Branch <span class="text-danger">*</span></label>
+                      </div>
+                    </aside>
+
+                    <!-- Department -->
+                    <aside class="col-md-4 mb-3">
+                      <div class="custom-form-group custom-form-group-select"
+                           [class.filled]="!!credit.get('DepartmentMasterSid')?.value">
+                        <ng-select
+                          formControlName="DepartmentMasterSid"
+                          [items]="departmentListPerRow[i]"
+                          bindLabel="departmentName"
+                          bindValue="DepartmentMasterSid"
+                          placeholder=""
+                          (change)="onDepartmentSelect($event, i)"
+                          appendTo="body">
+                        </ng-select>
+                        <label class="input-label">Department <span class="text-danger">*</span></label>
+                      </div>
+                    </aside>
+
+                    <!-- Sales Person -->
+                    <aside class="col-md-4 mb-3">
+                      <div class="custom-form-group custom-form-group-select"
+                           [class.filled]="!!credit.get('SalesmanSid')?.value">
+                        <ng-select
+                          formControlName="SalesmanSid"
+                          [items]="salesmanListPerRow[i]"
+                          bindLabel="userName"
+                          bindValue="UserMasterSid"
+                          placeholder=""
+                          appendTo="body">
+                        </ng-select>
+                        <label class="input-label">Sales Person</label>
+                      </div>
+                    </aside>
+
+                    <!-- Credit Days -->
+                    <aside class="col-md-3 mb-3">
+                      <div class="custom-form-group"
+                           [class.filled]="credit.get('CreditDays')?.value !== null && credit.get('CreditDays')?.value !== ''">
+                        <input type="number" formControlName="CreditDays"
+                               class="custom-input-field sm" min="0" placeholder="" />
+                        <label class="input-label">Credit Days <span class="text-danger">*</span></label>
+                      </div>
+                    </aside>
+
+                    <!-- Credit Limit -->
+                    <aside class="col-md-3 mb-3">
+                      <div class="custom-form-group"
+                           [class.filled]="credit.get('CreditLimit')?.value !== null && credit.get('CreditLimit')?.value !== ''">
+                        <input type="number" formControlName="CreditLimit"
+                               class="custom-input-field sm" min="0" step="0.01" placeholder="" />
+                        <label class="input-label">Credit Limit <span class="text-danger">*</span></label>
+                      </div>
+                    </aside>
+
+                    <!-- Published Days -->
+                    <aside class="col-md-3 mb-3">
+                      <div class="custom-form-group"
+                           [class.filled]="credit.get('PublishedDays')?.value !== null && credit.get('PublishedDays')?.value !== ''">
+                        <input type="number" formControlName="PublishedDays"
+                               class="custom-input-field sm" min="0" placeholder="" />
+                        <label class="input-label">Published Days</label>
+                      </div>
+                    </aside>
+
+                    <!-- Published Limit -->
+                    <aside class="col-md-3 mb-3">
+                      <div class="custom-form-group"
+                           [class.filled]="credit.get('PublishedLimit')?.value !== null && credit.get('PublishedLimit')?.value !== ''">
+                        <input type="number" formControlName="PublishedLimit"
+                               class="custom-input-field sm" min="0" step="0.01" placeholder="" />
+                        <label class="input-label">Published Limit</label>
+                      </div>
+                    </aside>
+
+                    <!-- Effective From -->
+                    <aside class="col-md-4 mb-3">
+                      <div class="custom-form-group custom-form-group-select-date">
+                        <div class="input-group">
+                          <input class="form-control"
+                                 placeholder="DD-MMM-YYYY"
+                                 ngbDatepicker #d1="ngbDatepicker"
+                                 (click)="d1.toggle()"
+                                 formControlName="EffectiveFrom"
+                                 [minDate]="today" container="body" />
+                          <button class="btn" (click)="d1.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                          </button>
                         </div>
+                        <label class="input-label">Effective From <span class="text-danger">*</span></label>
+                      </div>
+                    </aside>
+
+                    <!-- Effective To -->
+                    <aside class="col-md-4 mb-3">
+                      <div class="custom-form-group custom-form-group-select-date">
+                        <div class="input-group">
+                          <input class="form-control"
+                                 placeholder="DD-MMM-YYYY"
+                                 ngbDatepicker #d2="ngbDatepicker"
+                                 (click)="d2.toggle()"
+                                 formControlName="EffectiveTo"
+                                 [minDate]="today" container="body" />
+                          <button class="btn" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                          </button>
+                        </div>
+                        <label class="input-label">Effective To</label>
+                      </div>
+                    </aside>
+
+                    <!-- Approval Status -->
+                    <aside class="col-md-4 mb-3">
+                      <div class="custom-form-group"
+                           [class.filled]="!!credit.get('ApprovalStatus')?.value">
+                        <input type="text" formControlName="ApprovalStatus"
+                               class="custom-input-field sm" placeholder="" readonly />
+                        <label class="input-label">Approval Status</label>
+                      </div>
+                    </aside>
+
+                    <!-- KYC Section -->
+                    <div class="col-12 mt-3">
+                      <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <h6 class="mb-0">
+                          <i class="fas fa-layer-group me-2"></i>KYC Documents
+                        </h6>
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                (click)="addKycRow(i)">
+                          <i class="fas fa-plus"></i> Add KYC
+                        </button>
+                      </div>
+
+                      <div [formArrayName]="'customerKyc'">
+                        @if(getKycArray(i).controls.length === 0) {
+                          <div class="text-center py-3 text-muted">
+                            <i class="fas fa-folder-open fa-2x mb-2"></i>
+                            <p>No KYC documents added yet</p>
+                          </div>
+                        }
+
+                        @if(getKycArray(i).controls.length > 0) {
+                          <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                              <thead class="bg-light">
+                                <tr>
+                                  <th width="5%">S.No</th>
+                                  <th>Document Name</th>
+                                  <th>Document No.</th>
+                                  <th>E-Doc</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (kyc of getKycArray(i).controls; track kyc; let k = $index) {
+                                  <tr [formGroupName]="k">
+                                    <td class="text-center">{{ k + 1 }}</td>
+                                    <td>
+                                      <ng-select
+                                        formControlName="KycDocName"
+                                        [items]="docName"
+                                        bindLabel="name"
+                                        bindValue="id"
+                                        placeholder="Select Document"
+                                        appendTo="body">
+                                      </ng-select>
+                                    </td>
+                                    <td>
+                                      <input type="text" formControlName="KycDocNumber"
+                                             class="custom-input-field sm"
+                                             placeholder="Enter document number" />
+                                    </td>
+                                    <td>
+                                      <button type="button" class="btn btn-sm btn-outline-primary"
+                                              (click)="openEDoc(i, k)">
+                                        <i class="bi bi-upload"></i> Upload
+                                      </button>
+                                    </td>
+                                    
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+                      </div>
                     </div>
 
-                    <div class="content-workspace">
-                        <!-- Credit Request Details Tab -->
-                        <div class="workspace-content" *ngIf="selectedTab === 'Credit'">
-                            @if(creditRequest.controls.length === 0) {
-                            <div class="col-12 text-center py-3 text-danger">
-                                At least one credit record is required
-                            </div>
-                            }
-
-                            @if(creditRequest.controls.length > 0) {
-                            <div class="col-12">
-                                <div class="table-responsive table-borderless">
-                                    <table class="table table-hover align-middle no-wrap table-sm">
-                                        <thead class="bg-info">
-                                            <tr>
-                                                <th class="bg-transparent text-light" width="3%"></th>
-                                                <th class="bg-transparent text-light" style="width:120px">Branch</th>
-                                                <th class="bg-transparent text-light" style="width:180px">Department</th>
-                                                <th class="bg-transparent text-light" style="width:120px">Sales Person</th>
-                                                <th class="bg-transparent text-light" style="width:60px">Credit Days</th>
-                                                <th class="bg-transparent text-light" style="width:100px">Credit Limit</th>
-                                                <th class="bg-transparent text-light" style="width:100px">Published Days</th>
-                                                <th class="bg-transparent text-light" style="width:60px">Published Limit</th>
-                                                <th class="bg-transparent text-light dofi-min-w-120" >Effective From</th>
-                                                <th class="bg-transparent text-light dofi-min-w-120" >Effective To</th>
-                                                <th class="bg-transparent text-light">Approval Status</th>
-                                                <th class="bg-transparent text-light" width="8%">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody formArrayName="creditRequest">
-                                            @for (credit of creditRequest.controls; track credit; let i = $index) {
-                                            <tr [formGroupName]="i">
-                                                <td class="text-center">
-                                                    <button type="button" class="btn btn-sm border-0"
-                                                        (click)="removeCreditRequestRow(i)"
-                                                        [disabled]="creditRequest.controls.length <= 1">
-                                                        <i class="fas fa-trash text-danger"></i>
-                                                    </button>
-                                                </td>
-                                                
-                                                <!-- Branch -->
-                                                <td>
-                                                    <ng-select 
-                                                        [formControlName]="'CustomerBranchSid'" 
-                                                        [items]="branchList" 
-                                                        bindLabel="name"
-                                                        bindValue="id" 
-                                                        placeholder="" (change)="onBranchSelect($event, i)" appendTo="body">
-                                                    </ng-select>
-                                                    <div *ngIf="credit.get('CustomerBranchSid')?.touched && credit.get('CustomerBranchSid')?.invalid"
-                                                        class="error-message">
-                                                        <span *ngIf="credit.get('CustomerBranchSid')?.hasError('required')">Required</span>
-                                                    </div>
-                                                </td>
-                                                
-                                                <!-- Department -->
-                                                <td>
-                                                    <ng-select 
-                                                        [formControlName]="'DepartmentMasterSid'" 
-                                                        [items]="departmentListPerRow[i]" 
-                                                        bindLabel="departmentName"
-                                                        bindValue="DepartmentMasterSid" 
-                                                        placeholder=""
-                                                        (change)="onDepartmentSelect($event, i)"
-                                                        appendTo="body">
-                                                    </ng-select>
-                                                    <div *ngIf="credit.get('DepartmentMasterSid')?.touched && credit.get('DepartmentMasterSid')?.invalid"
-                                                        class="error-message">
-                                                        <span *ngIf="credit.get('DepartmentMasterSid')?.hasError('required')">Required</span>
-                                                    </div>
-                                                </td>
-
-                                                <!-- <td>
-                                                    <div>
-                                                        <multi-select [control]="credit.get('DepartmentMasterSid')"
-                                                        [items]="departmentListPerRow[i]" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-                                                        placeholder="" multiple="true" [displayCount]="1"></multi-select>
-                                                    </div>
-                                                </td> -->
-                                                
-                                                <!-- Sales Person -->
-                                                <td>
-                                                    <ng-select 
-                                                        [formControlName]="'SalesmanSid'" 
-                                                        [items]="salesmanListPerRow[i]" 
-                                                        bindLabel="userName"
-                                                        bindValue="UserMasterSid" 
-                                                        placeholder="Select Sales Person" appendTo="body">
-                                                    </ng-select>
-                                                </td>
-                                                
-                                                <!-- Credit Days -->
-                                                <td>
-                                                    <input type="number" formControlName="CreditDays"
-                                                        class="custom-input-field sm text-end" min="0" />
-                                                    <div *ngIf="credit.get('CreditDays')?.touched && credit.get('CreditDays')?.invalid"
-                                                        class="error-message">
-                                                        <span *ngIf="credit.get('CreditDays')?.hasError('required')">Required</span>
-                                                        <span *ngIf="credit.get('CreditDays')?.hasError('min')">Must be positive</span>
-                                                    </div>
-                                                </td>
-                                                
-                                                <!-- Credit Limit -->
-                                                <td>
-                                                    <input type="number" formControlName="CreditLimit"
-                                                        class="custom-input-field sm text-end" min="0" step="0.01" />
-                                                    <div *ngIf="credit.get('CreditLimit')?.touched && credit.get('CreditLimit')?.invalid"
-                                                        class="error-message">
-                                                        <span *ngIf="credit.get('CreditLimit')?.hasError('required')">Required</span>
-                                                        <span *ngIf="credit.get('CreditLimit')?.hasError('min')">Must be positive</span>
-                                                    </div>
-                                                </td>
-                                                
-                                                <!-- Published Days -->
-                                                <td>
-                                                    <input type="number" formControlName="PublishedDays"
-                                                        class="custom-input-field sm text-end" min="0" />
-                                                </td>
-                                                
-                                                <!-- Published Limit -->
-                                                <td>
-                                                    <input type="number" formControlName="PublishedLimit"
-                                                        class="custom-input-field sm text-end" min="0" step="0.01" />
-                                                </td>
-                                                
-                                                <!-- Effective From -->
-                                                <!-- <td>
-                                                    <input type="date" formControlName="EffectiveFrom"
-                                                        class="custom-input-field sm" />
-                                                    <div *ngIf="credit.get('EffectiveFrom')?.touched && credit.get('EffectiveFrom')?.invalid"
-                                                        class="error-message">
-                                                        <span *ngIf="credit.get('EffectiveFrom')?.hasError('required')">Required</span>
-                                                    </div>
-                                                </td> -->
-                                                <td>
-                                            <div class="custom-form-group custom-form-group-select-date">
-
-              <div class="input-group">
-                <input class="form-control" placeholder="DD-MMM-YYYY" name="dp" ngbDatepicker #d1="ngbDatepicker"
-                  (click)="d1.toggle()" formControlName="EffectiveFrom" (keydown.arrowDown)="d1.open()" [minDate]="today"   container="body"/>
-                <button class="btn " (click)="d1.toggle()" type="button"> <i-feather name="calendar"
-                    class="feather-sm"></i-feather></button>
+                  </div>
+                </div>
               </div>
 
             </div>
-            </td>
-                                                <!-- Effective To -->
-                                                <!-- <td>
-                                                    <input type="date" formControlName="EffectiveTo"
-                                                        class="custom-input-field sm" />
-                                                </td> -->
-                                                <td>
-                                            <div class="custom-form-group custom-form-group-select-date">
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
 
-              <div class="input-group">
-                <input class="form-control" placeholder="DD-MMM-YYYY" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                  (click)="d2.toggle()" formControlName="EffectiveTo" (keydown.arrowDown)="d2.open()" [minDate]="today"   container="body"/>
-                <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
-                    class="feather-sm"></i-feather></button>
-              </div>
-
-            </div>
-            </td>
-                                                <!-- Approval Status -->
-                                                <td>
-                                                    <input type="text" formControlName="ApprovalStatus"
-                                                        class="custom-input-field sm" placeholder="Auto-generated" readonly />
-                                                </td>
-                                                
-                                                <!-- Status -->
-                                                <td>
-                                                    <ng-select 
-                                                        [formControlName]="'Status'" 
-                                                        [items]="typeofStatus" 
-                                                        bindLabel="name"
-                                                        bindValue="id" 
-                                                        placeholder="Select Status"
-                                                        appendTo="body">
-                                                    </ng-select>
-                                                </td>
-                                            </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            }
-                        </div>
-
-                        <!-- KYC Details Tab (Commented as per your TS) -->
-                        <!-- <div class="workspace-content" *ngIf="selectedTab === 'KYC'">
-                            Content for KYC tab would go here when implemented
-                        </div> -->
-                    </div>
                 </div>
             </div>
         </form>
