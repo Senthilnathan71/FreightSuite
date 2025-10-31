@@ -17,7 +17,7 @@
             (click)="onPrint()">
             <i class="fas fa-print me-1"></i> Print
           </button>
-
+ 
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
@@ -32,6 +32,12 @@
             <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
           </button>
         </div>
+      </div>
+      <div>
+        <button type="button" class="btn btn-primary btn-sm" (click)="openSearchCostsModal()"
+              [disabled]="!vendorInvoiceForm.get('PartyMasterSid')?.value">
+              <i class="fas fa-search me-2"></i>Search Pending Costs
+            </button>
       </div>
     </div>
   </div>
@@ -104,9 +110,9 @@
             <!-- Vendor Selection -->
             <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!vendorInvoiceForm.get('PartyName')?.value">
-                <ng-select [items]="vendorList" bindLabel="PartyName" bindValue="PartyName" formControlName="PartyName"
-                  (change)="onVendorChange($event)" [class.is-invalid]="isFieldInvalid('PartyName')" appendTo="body"
+              [class.filled]="!!vendorInvoiceForm.get('PartyMasterSid')?.value">
+                <ng-select [items]="vendorList" bindLabel="SubledgerName" bindValue="SubledgerName" formControlName="PartyMasterSid"
+                  (change)="onVendorChange($event)" appendTo="body"
                   class="ng-select" placeholder="Select Vendor">
                   <ng-template ng-option-tmp let-item="item">
                     {{ item.SubledgerCode }} - {{ item.SubledgerName }}
@@ -289,10 +295,7 @@
 
           <!-- Search Costs Button -->
           <div class="col-12 px-0 mt-2" *ngIf="!isViewMode">
-            <button type="button" class="btn btn-primary btn-sm" (click)="openSearchCostsModal()"
-              [disabled]="!vendorInvoiceForm.get('PartyMasterSid')?.value">
-              <i class="fas fa-search me-2"></i>Search Pending Costs
-            </button>
+            
             <button type="button" class="btn btn-success btn-sm ms-2" (click)="addDetailRow()">
               <i class="fas fa-plus me-2"></i>Add Row
             </button>
