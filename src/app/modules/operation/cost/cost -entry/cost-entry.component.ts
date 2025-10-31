@@ -1498,7 +1498,7 @@ createRateFormGroup(data?: any): FormGroup {
       } else {
         ratesResp = ((await firstValueFrom(this.operationService.getCostRevenueChargeWithDetails({
           TransactionSid: this.routeParentSid,
-          MenuMasterSid: this.currentMenuId,
+          MenuMasterSid: this.screenName === "HouseJob" ? -1 : this.currentMenuId,
           modelName : this.screenName  // this is the screen name. For houseJob we need this to be "houseJob"
         }))).data || []).map(rate =>({
           ...rate,
@@ -2383,7 +2383,8 @@ createRateFormGroup(data?: any): FormGroup {
         MasterJobSid : this.screenName === "MasterJob" ? this.getParentSid() : null,
         HouseNumber : this.parentFormValue.HBLNo,
         MasterNumber : this.parentFormValue.MBLNo,
-        MenuMasterSid : this.currentMenuId,
+        modelName : this.screenName,
+        MenuMasterSid : this.screenName === "HouseJob" ? -1 : this.currentMenuId,
         voucherType: this.selectedVoucherType,
         selectedRateIds: Array.from(this.selectedCharges),
         billingPartySid: this.currentBillingPartySid,

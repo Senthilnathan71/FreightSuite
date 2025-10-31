@@ -137,7 +137,7 @@
     <th class="bg-transparent text-light" >Charge <span class="text-danger">{{hasRequired('ChargeMasterSid') ? '*' : ''}}</span></th>
     <th class="bg-transparent text-light" >Charge Desc <span class="text-danger">{{hasRequired('ChargeDescription') ? '*' : ''}}</span></th>
     <th class="bg-transparent text-light dofi-min-w-80"  >Unit <span class="text-danger">{{ hasRequired('ChargeUomSid') ? '*' : ''}}</span></th>
-    <th class="bg-transparent text-light dofi-min-w-90" >No. of Unit <span class="text-danger">{{ hasRequired('NoOfUnit') ? '*' : ''}}</span></th>
+    <th class="bg-transparent text-light dofi-min-w-80" >No. of <br> Unit <span class="text-danger">{{ hasRequired('NoOfUnit') ? '*' : ''}}</span></th>
   </tr>
   
 
@@ -207,7 +207,6 @@
                 </div>
               </td>
             </tr>
-
           </tbody>
         </table>
       </div>
@@ -221,28 +220,30 @@
                 <th  class="bg-transparent text-light text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">Revenue</th>
                 <th  class="bg-transparent text-light text-center"  colspan="10">Cost</th>
               </tr>
-              <tr>
+              <tr class="no-wrap">
                 <!-- Revenue -->
                 <!-- <th class="table-header">Unit</th> -->
-                <th  class="bg-transparent text-light " style="border-left: 1px solid white;">Cr/Dr</th>
-                <th class="bg-transparent text-light ">Curr</th>
+                
+                <th class="bg-transparent text-light " style="border-left: 1px solid white;">Curr</th>
                 <th class="bg-transparent text-light ">Ex Rate <span class="text-danger"></span>
                 </th>
                 <th class="bg-transparent text-light">Per Unit</th>
                 <th class="bg-transparent text-light "> Amt</th>
                 <th class="bg-transparent text-light ">Local Amt</th>
+                <th  class="bg-transparent text-light " >Cr/Dr</th>
                 <th class="bg-transparent text-light ">PP/CC</th>
                 <th class="bg-transparent text-light ">Billing Party</th>
                 <th class="bg-transparent text-light ">Type</th>
                 <th class="bg-transparent text-light " style="border-right: 1px solid white">Voucher No</th>
                 <!-- Cost -->
                 <!-- <th style="background-color: #9dd376;" class="table-header">Unit</th> -->
-                <th  class="bg-transparent text-light ">Cr/Dr</th>
+                
                 <th  class="bg-transparent text-light">Curr</th>
                 <th  class="bg-transparent text-light ">Ex Rate</th>
                 <th class="bg-transparent text-light ">Per Unit</th>
                 <th  class="bg-transparent text-light ">Amt</th>
                 <th  class="bg-transparent text-light ">Local Amt</th>
+                <th  class="bg-transparent text-light ">Cr/Dr</th>
                 <th  class="bg-transparent text-light ">PP/CC</th>
                 <th  class="bg-transparent text-light ">Party</th>
                 <th  class="bg-transparent text-light ">Type</th>
@@ -250,7 +251,51 @@
               </tr>
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
+              @if(rateFormArray.length > 0){
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
+              
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid" (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" [disabled]="!canEditRate(i)" appendTo="body"> </ng-select> -->
+                    <dofi-searchable-dropdown [items]="currencyList" formControlName="RevenueCurrencyMasterSid" [placeholder]="''"
+                      [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
+                      (itemSelected)="getRevenueExchangeRate(i, $event)" appendTo="body">
+                    </dofi-searchable-dropdown>
+                  </div>
+                </td>
+              
+                <td>
+                  <div class="custom-form-group dofi-min-w-60">
+                    <input type="text" id="text-input" formControlName="RevenueExchangeRate" class="custom-input-field sm text-end"
+                      (input)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
+                      [DecimalPrecisionBefore]="4"
+                      [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <input type="text" id="text-input" formControlName="RevenueRate" class="custom-input-field sm text-end"
+                      (input)="calculateRevenueAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group dofi-min-w-90">
+                    <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
+                      (input)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
+                      [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
+                  </div>
+                </td>
+              
+                <td>
+                  <div class="custom-form-group dofi-min-w-90">
+                    <input type="text" id="text-input" class="custom-input-field sm text-end"
+                      [value]="row.get('RevenueLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
+                  </div>
+                </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-60">
                     <ng-select formControlName="RevenueDrCr" appendTo="body">
@@ -260,77 +305,23 @@
                   </div>
                 </td>
                 <td>
-  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-    <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid" (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" [disabled]="!canEditRate(i)" appendTo="body"> </ng-select> -->
-    <dofi-searchable-dropdown [items]="currencyList" formControlName="RevenueCurrencyMasterSid" [placeholder]="''"
-      [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
-      (itemSelected)="getRevenueExchangeRate(i, $event)" appendTo="body">
-    </dofi-searchable-dropdown>
-  </div>
-  </td>
-
-                <td>
-                  <div class="custom-form-group dofi-min-w-60">
-                    <input type="text" id="text-input" formControlName="RevenueExchangeRate"
-                      class="custom-input-field sm text-end"
-                      (input)="calculateRevenueLocalAmount(i)"
-                      [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
-                      >
-                  </div>
-                </td>
-                <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <input type="text" id="text-input" formControlName="RevenueRate"
-                      class="custom-input-field sm text-end"
-                      (input)="calculateRevenueAmount(i)"
-                      [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="6"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
-                      >
-                  </div>
-                </td>
-                <td>
-                  <div class="custom-form-group dofi-min-w-90">
-                    <input type="text" id="text-input" formControlName="RevenueAmount"
-                      class="custom-input-field sm text-end"
-                      (input)="calculateRevenueLocalAmount(i)"
-                      [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
-                    >
-                  </div>
-                </td>
-
-                <td>
-                  <div class="custom-form-group dofi-min-w-90">
-                    <input type="text" id="text-input" class="custom-input-field sm text-end"
-                      [value]="row.get('RevenueLocalAmount')?.value"
-                      DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)"
-                      readonly>
-                  </div>
-                </td>
-                <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-40">
-                    <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
-                      appendTo="body" formControlName="RevenuePrepaidCollect"
-                      [disabled]="!canEditRate(i)">
+                    <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body" appendTo="body"
+                      formControlName="RevenuePrepaidCollect" [disabled]="!canEditRate(i)">
                     </ng-select>
                   </div>
                 </td>
-
+              
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <dofi-searchable-dropdown [items]="billingParties" formControlName="RevenueCustomerBranchSid" [placeholder]="''"
-                          [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerBranchSid'" [disabled]="!canEditRate(i)"
-                          (itemSelected)="handleCustomerChange(i, $event)" appendTo="body">
+                      [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                      [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerBranchSid'" [disabled]="!canEditRate(i)"
+                      (itemSelected)="handleCustomerChange(i, $event)" appendTo="body">
                     </dofi-searchable-dropdown>
                   </div>
                 </td>
-
+              
                 <td>
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="row.get('RevenueVoucherType')?.value?.DocumentTypeName || ''"
@@ -338,18 +329,54 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-80">
-                    <input *ngIf="!row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid"
-                      type="text"
-                      [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''"
-                      class="custom-input-field sm"
-                      readonly>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-140">
+                    <input *ngIf="!row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid" type="text"
+                      [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''" class="custom-input-field sm" readonly>
                     <a *ngIf="row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid"
-                       [routerLink]="['/operation/invoice/entry', row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid]"
-                       class="voucher-number-link"
-                       title="View Invoice">
+                      [routerLink]="['/operation/invoice/entry', row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid]"
+                      class="voucher-number-link" title="View Invoice">
                       {{ row.get('RevenueVoucherHeader')?.value?.VoucherNumber }}
                     </a>
+                  </div>
+                </td>
+              
+                <td>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
+                    <dofi-searchable-dropdown [items]="currencyList" formControlName="CostCurrencyMasterSid" [placeholder]="''"
+                      [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                      [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
+                      (itemSelected)="getCostExchangeRate(i, $event)" appendTo="body">
+                    </dofi-searchable-dropdown>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group dofi-min-w-60">
+                    <input type="text" id="text-input" formControlName="CostExchangeRate" class="custom-input-field sm text-end"
+                      (input)="calculateCostLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="4"
+                      [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
+                  </div>
+                </td>
+              
+                <td>
+                  <div class="custom-form-group dofi-min-w-90">
+                    <input type="text" id="text-input" formControlName="CostRate" class="custom-input-field sm text-end"
+                      (input)="calculateCostAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group dofi-min-w-90">
+                    <input type="text" id="text-input" formControlName="CostAmount" class="custom-input-field sm text-end"
+                      (input)="calculateCostLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
+                  </div>
+                </td>
+              
+                <td>
+                  <div class="custom-form-group dofi-min-w-90">
+                    <input type="text" id="text-input" class="custom-input-field sm text-end"
+                      [value]="row.get('CostLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly>
                   </div>
                 </td>
                 <td>
@@ -361,79 +388,26 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-70">
-                    <dofi-searchable-dropdown [items]="currencyList" formControlName="CostCurrencyMasterSid" [placeholder]="''"
-                        [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                        [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" [disabled]="!canEditRate(i)"
-                        (itemSelected)="getCostExchangeRate(i, $event)" appendTo="body">
-                      </dofi-searchable-dropdown>
-                  </div>
-                </td>
-                <td>
-                  <div class="custom-form-group dofi-min-w-60">
-                    <input type="text" id="text-input" formControlName="CostExchangeRate"
-                      class="custom-input-field sm text-end"
-                      (input)="calculateCostLocalAmount(i)"
-                      [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="4"
-                     [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                    >
-                  </div>
-                </td>
-
-                <td>
-                  <div class="custom-form-group dofi-min-w-90">
-                    <input type="text" id="text-input" formControlName="CostRate"
-                      class="custom-input-field sm text-end"
-                      (input)="calculateCostAmount(i)"
-                      [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="6"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                    >
-                  </div>
-                </td>
-                <td>
-                  <div class="custom-form-group dofi-min-w-90">
-                    <input type="text" id="text-input" formControlName="CostAmount"
-                      class="custom-input-field sm text-end"
-                      (input)="calculateCostLocalAmount(i)"
-                      [disabled]="!canEditRate(i)"
-                      DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                      >
-                  </div>
-                </td>
-
-                <td>
-                  <div class="custom-form-group dofi-min-w-90">
-                    <input type="text" id="text-input" class="custom-input-field sm text-end"
-                      [value]="row.get('CostLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                      readonly>
-                  </div>
-                </td>
-
-                <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-40">
-                    <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body"
-                      appendTo="body" formControlName="CostPrepaidCollect"
-                      [disabled]="!canEditRate(i)">
+                    <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body" appendTo="body"
+                      formControlName="CostPrepaidCollect" [disabled]="!canEditRate(i)">
                     </ng-select>
                   </div>
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-80">
                     <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                      formControlName="AgentSid"
-                      [disabled]="!canEditRate(i)" (change)="handleAgentChange(i,$event)" appendTo="body">
-                    </ng-select> -->
+                                    formControlName="AgentSid"
+                                    [disabled]="!canEditRate(i)" (change)="handleAgentChange(i,$event)" appendTo="body">
+                                  </ng-select> -->
                     <dofi-searchable-dropdown [items]="parties" formControlName="CostAgentBranchSid" [placeholder]="''"
-                          [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                          [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerBranchSid'" [disabled]="!canEditRate(i)"
-                          (itemSelected)="handleAgentChange(i, $event)" appendTo="body">
+                      [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                      [labelFields]="customerLookupConfig.labelFields" [bindValue]="'CustomerBranchSid'" [disabled]="!canEditRate(i)"
+                      (itemSelected)="handleAgentChange(i, $event)" appendTo="body">
                     </dofi-searchable-dropdown>
                   </div>
                 </td>
-
+              
                 <td>
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="row.get('CostVoucherType')?.value?.DocumentTypeName || ''"
@@ -441,21 +415,22 @@
                   </div>
                 </td>
                 <td>
-                  <div class="custom-form-group custom-form-group-select dofi-min-w-100">
-                    <input *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
-                      type="text"
-                      [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''"
-                      class="custom-input-field sm"
-                      readonly>
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-140">
+                    <input *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid" type="text"
+                      [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''" class="custom-input-field sm" readonly>
                     <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
-                       [routerLink]="['/operation/invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
-                       class="voucher-number-link"
-                       title="View Vendor Invoice">
+                      [routerLink]="['/operation/invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
+                      class="voucher-number-link" title="View Vendor Invoice">
                       {{ row.get('CostVoucherHeader')?.value?.VoucherNumber }}
                     </a>
                   </div>
                 </td>
               </tr>
+              } @else {
+             <td colspan="21" class="text-center">
+<div>No Record Found</div>
+</td>
+              }
             </tbody>
           </table>
         </div>

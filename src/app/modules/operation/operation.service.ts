@@ -110,7 +110,7 @@ export class OperationService {
   }
 
   deleteCostRevenueCharge(CostRevenueChargesSid: number) {
-    return this.http.delete<{ data: any }>(`operation/common/cost-revenue-charges/${CostRevenueChargesSid}`).pipe(
+    return this.http.delete<{ data: any }>(`operation-common/delete-cost-revenue/${CostRevenueChargesSid}`).pipe(
       map((resp) => {
         return resp;
       })

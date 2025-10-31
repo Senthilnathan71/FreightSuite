@@ -900,11 +900,7 @@ loadHeaderLookups() {
 
     this.bookingRateArr = (response.costRevenueCharges || []).map(br => ({
       ...br,
-      RateSid : br.BookingRatesSid,
-      RevenueCustomerMasterSid : br.CustomerMasterSid,
-      RevenueCustomerBranchSid : br.CustomerBranchSid,
-      CostAgentMasterSid : br.AgentMasterSid,
-      CostAgentBranchSid : br.AgentBranchSid,
+      RateSid : br.CostRevenueChargesSid,
       status : br.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
@@ -1708,6 +1704,7 @@ loadHeaderLookups() {
     const departmentName = this.selectedDepartment?.departmentName;
     const MasterJobNumber = this.houseJobForm.get('HouseNo')?.value;
     const MBLNo = this.houseJobForm.get('MBLNo')?.value;
+    const HBLNo = this.b['HBLNo']?.value;
     const selectedPOO = this.houseJobForm.get('POO')?.value; // PortMasterSid
     const selectedPOL = this.houseJobForm.get('POL')?.value; // PortMasterSid
     const selectedPOD = this.houseJobForm.get('POD')?.value; // PortMasterSid
@@ -1731,6 +1728,7 @@ loadHeaderLookups() {
       MasterJobNumber,
       ParentSid: this.HouseJobSid,
       MBLNo,
+      HBLNo,
       departmentName,
       Segment: this.selectedFCLLCL,
       PORSid,
@@ -1752,7 +1750,7 @@ loadHeaderLookups() {
 
 
   navigateBack() {
-    this.router.navigate(['operation/booking/list']);
+    history.back();
   }
 
   selectedTab = 'Shipment';
