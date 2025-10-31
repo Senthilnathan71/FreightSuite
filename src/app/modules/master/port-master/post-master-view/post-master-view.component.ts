@@ -26,6 +26,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 
 
 
@@ -61,6 +62,9 @@ export class PostMasterViewComponent {
   regionList: any[] = [];
   portData: any;
   userData:any;
+  currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
   stateLookupConfig = DROPDOWN_CONFIGS.STATE;
   zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
@@ -84,7 +88,8 @@ export class PostMasterViewComponent {
   auditLogModalRef!: NgbModalRef;
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal, public dropdownStore:DropdownStore ) {
+    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal, public dropdownStore:DropdownStore,
+  private commonService: CommonService) { 
     // this.config.notFoundText = 'Custom not found';
     // this.config.appendTo = 'body';
     // this.config.bindValue = 'value';
@@ -98,6 +103,9 @@ export class PostMasterViewComponent {
         })
   }
   ngOnInit() {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.initPortForm();
     this.loadAllFields();
       // Enable Save button only if form is valid
@@ -469,8 +477,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.portData;
   modalRef.componentInstance.idLabel = 'Port Id';
   modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
-}
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.idParam
+  }
 
+      this.commonService.documentData.set(data)
+}
+ OnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.idParam) return;
 

@@ -38,6 +38,7 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-hs-sac',
   standalone: true,
@@ -96,6 +97,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month, this.today.day);
   hssacData: any;
+  MenuMasterSid: any;
   currentMenuId: number;
   TandCList: any;
 
@@ -165,7 +167,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     private calendar: NgbCalendar,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -184,6 +187,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     // )
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -853,6 +857,14 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.hssacData;
     modalRef.componentInstance.idLabel = 'HSSAC Id';
     modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
+     const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.HSSACMasterSid
+  }
+
+      this.commonService.documentData.set(data)
   }
 
 

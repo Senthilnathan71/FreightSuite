@@ -16,6 +16,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-documnet-generation-entry',
   standalone: true,
@@ -37,7 +38,8 @@ export class DocumnetGenerationEntryComponent {
     private route: ActivatedRoute,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private commonService: CommonService
   ) {}
 
   DocumentGenerationForm: FormGroup;
@@ -46,6 +48,9 @@ export class DocumnetGenerationEntryComponent {
   documentList: any[] = [];
   DocumentNumberGenerationMasterSid: number;
   documentData: any;
+  currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
 
   // Pagination
   page = 1;
@@ -55,6 +60,9 @@ export class DocumnetGenerationEntryComponent {
   currentMenuId: number;
   TandCList: any;
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.initialForm();
 
     this.route.paramMap.subscribe((params) => {
@@ -262,5 +270,17 @@ export class DocumnetGenerationEntryComponent {
     modalRef.componentInstance.idLabel = 'Document Type Id';
     modalRef.componentInstance.idValue =
       this.documentData?.DocumentNumberGenerationMasterSid;
+      const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.DocumentNumberGenerationMasterSid
+  }
+
+      this.commonService.documentData.set(data)
+}
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ 
   }
 }

@@ -15,6 +15,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -54,6 +55,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   currencies: any[] = []; 
   currentCompany : any;
   currentBranch : any;
+  MenuMasterSid: any;
   constructor(
     private fb: FormBuilder,
     private accountService: AccountsService,
@@ -62,12 +64,14 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     private router: Router,
     private masterService: MasterService,
     private calendar : NgbCalendar,
-    private modalService : NgbModal
+    private modalService : NgbModal,
+    private commonService: CommonService
   ) { }
 
   ngOnInit(): void {
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.initForm();
     this.loadCompaniesAndBranches();
     this.checkEditMode();
@@ -345,7 +349,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.currencyExchangeData;
   modalRef.componentInstance.idLabel = 'Currency Exchange Id';
   modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
+const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.CurrencyExchangeSid
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 
 }

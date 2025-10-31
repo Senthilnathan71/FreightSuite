@@ -30,6 +30,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-package-type-list',
   standalone: true,
@@ -86,6 +87,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   currentMenuPermissions: any = {};
   currentCompany: any;
   currentBranch: any;
+  MenuMasterSid: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -147,7 +149,8 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -155,6 +158,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.userData = this.appSettingService.getDecryptedUserProfile();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
@@ -818,6 +822,14 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
     modalRef.componentInstance.item = this.packageData;
     modalRef.componentInstance.idLabel = 'Package Type Id';
     modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.PackageTypeMasterSid
+  }
+
+      this.commonService.documentData.set(data)
   }
   // clearFilterValue() {
   //   this.filterValue = '';

@@ -30,6 +30,7 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -95,13 +96,15 @@ export class CompanyEntryComponent implements OnInit {
 	permissions: string[] = [];
 	currentMenuPermissions: any = {};
 	userData: any;
+	currentCompany: any;
+    currentBranch: any;
 
 	companyForm!: FormGroup;
 	branchForm!: FormGroup;
 	branchBankForm!: FormGroup;
 	branchList: any[];
 	branchBankList: any;
-
+    MenuMasterSid:any;
 	cityResults: City[];
 	branchCityList: City[] = [];
 	stateResults: State[];
@@ -153,7 +156,9 @@ export class CompanyEntryComponent implements OnInit {
 		private matdial: MatDialog,
 		private cdRef: ChangeDetectorRef,
 		private leadService: LeadService,
-		public dropdownStore:DropdownStore
+		public dropdownStore:DropdownStore,
+		private commonService: CommonService,
+		
 	) {
 		effect(()=>{
 			const countryData = this.dropdownStore.countries();
@@ -170,6 +175,12 @@ export class CompanyEntryComponent implements OnInit {
 	ngOnInit(): void {
 		this.initCompanyForm();
 		this.loadAllFields();
+		this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+		const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+
 
 		// Looking for Company Master Id in Current URL path
 		this.currentRoute.paramMap.subscribe(
@@ -1268,6 +1279,14 @@ openAuditLogs(modal: TemplateRef<any>) {
 		modalRef.componentInstance.item = this.companyData;
 		modalRef.componentInstance.idLabel = 'Company Id';
 		modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+		 const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.CompanyMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 	}
 
 
@@ -1536,6 +1555,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 	}
 
 	ngOnDestroy(): void {
+	this.commonService.clearDocumentData()
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();

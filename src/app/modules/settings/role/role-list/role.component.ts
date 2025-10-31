@@ -29,6 +29,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-role',
   standalone: true,
@@ -112,6 +113,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  MenuMasterSid: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -128,7 +130,8 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -143,6 +146,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     // )
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -752,7 +756,17 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.roleData;
     modalRef.componentInstance.idLabel = 'Role Id';
     modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.RoleMasterSid
   }
 
+      this.commonService.documentData.set(data)
+}
+ OnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 }

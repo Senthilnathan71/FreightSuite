@@ -59,6 +59,7 @@ export class LedgerMappingComponent implements OnInit {
   // User and company data
   userData: any;
   currentCompany: any;
+  
 
   // Pagination
   page = 1;

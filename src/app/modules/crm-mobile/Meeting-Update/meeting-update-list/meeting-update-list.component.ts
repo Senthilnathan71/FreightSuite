@@ -27,6 +27,8 @@ import { TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/a
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -60,6 +62,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   meetingForm: FormGroup;
   salesPersons: any[] = [];
   btnDisable: boolean = false;
+  PreCustomerMeetingSid: number;
+  MenuMasterSid:any
   selectedMeeting: any;
   meetingData: any;
   currentMenuId: number;
@@ -138,7 +142,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     private spinner: NgxSpinnerService,
     private datePipe: CustomDatePipe,
     private excelReportService: ExcelExportService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+     private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -146,6 +151,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.isMobile = this.appService.getDevice();
      const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
@@ -801,6 +807,35 @@ private handleMeetingDateChange(newDate: string): void {
   }
 
   openEDoc() {
-    // Implementation for eDoc
+    console.log('openEDoc');
+    // if (!this.meetingData) return;
+     if (!this.hasPermission('Edoc')) {
+    this.appSettingService.showWarning('You do not have permission to access Edoc.');
+    return;
   }
+   const modalRef = this.modalService.open(EdocComponent, {
+    size: 'xl',
+    centered: true,
+    backdrop: 'static',
+        windowClass: 'full-screen-modal' // ✅ custom class
+
+  });
+    modalRef.componentInstance.screenName = 'Edoc';
+ modalRef.componentInstance.formData = this.meetingData; // or any object
+  modalRef.componentInstance.resetTrigger = false;
+   const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.PreCustomerMeetingSid
+  }
+   this.commonService.documentData.set(data)
+
+
+
+  }
+  OnDestroy(): void {
+    this.commonService.clearDocumentData()
+}
+
 }

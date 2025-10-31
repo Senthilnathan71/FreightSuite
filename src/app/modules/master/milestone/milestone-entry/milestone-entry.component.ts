@@ -16,6 +16,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -59,6 +60,7 @@ export class MilestoneEntryComponent implements OnInit {
   auditLogModalRef!: NgbModalRef;
   currentCompany:any;
   currentBranch:any;
+  MenuMasterSid: any;
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   constructor(
     private fb: FormBuilder,
@@ -66,7 +68,8 @@ export class MilestoneEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private modalService : NgbModal
+    private modalService : NgbModal,
+    private commonService: CommonService
   ) {
     this.initForm();
   }
@@ -74,6 +77,7 @@ export class MilestoneEntryComponent implements OnInit {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
      this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     // this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     // Load departments after setting current company
   console.log('Current Company:', this.currentCompany);
@@ -342,6 +346,14 @@ openEDoc() {
   modalRef.componentInstance.item = this.milestoneData;
   modalRef.componentInstance.idLabel = 'Milestone Id';
   modalRef.componentInstance.idValue = this.milestoneData?.milestoneId;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.milestoneId
+  }
+
+      this.commonService.documentData.set(data)
 }
 
 //  openAuditLogs(modal: TemplateRef<any>) {

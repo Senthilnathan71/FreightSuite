@@ -17,6 +17,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
 }
@@ -53,6 +54,7 @@ export class DepartmentEntryComponent {
   stateList: any
   statusList = ["Active", "Suspended"]
   currentMenuId: any;
+
   TandCList: any[]=[];
   departmentTypeOptions = ['Sea', 'Air', 'Road', 'Transport', 'Others'];
   auditLogs: any[] = []; // Stores audit logs
@@ -62,6 +64,7 @@ export class DepartmentEntryComponent {
   recognition: any;
   isListening = false;
   activeControl: string | null = null;
+  MenuMasterSid: any;
 
   constructor(
     private fb: FormBuilder,
@@ -70,7 +73,8 @@ export class DepartmentEntryComponent {
     private route: ActivatedRoute,
     private router: Router,
     private modalService : NgbModal,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private commonService: CommonService
   ) { 
     const { webkitSpeechRecognition }: IWindow = window as any;
     this.recognition = new webkitSpeechRecognition() || new (window as any).SpeechRecognition();
@@ -209,6 +213,7 @@ export class DepartmentEntryComponent {
   ngOnInit(): void {
      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+       this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.initForm();
     this.getAllDivisions();
     // Subscribe to route params and load lead if ID exists
@@ -549,6 +554,17 @@ openEDoc() {
   modalRef.componentInstance.item = this.departmentData;
   modalRef.componentInstance.idLabel = 'Department Id';
   modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
+   const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.DepartmentMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 }

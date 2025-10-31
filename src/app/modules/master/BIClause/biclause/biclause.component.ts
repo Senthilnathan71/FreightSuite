@@ -33,6 +33,7 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 
 
 @Component({
@@ -78,7 +79,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   currentClauseId: number | null = null;
   userData: any;
   blclauseData: any;
-
+  MenuMasterSid:any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
 
@@ -157,7 +158,8 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService,
   ) {
     super(paginationService);
   }
@@ -174,6 +176,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     this.initForm();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid = this.appSettingService.decrypt(localStorage.getItem('MenuMasterSid'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -756,6 +759,17 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.blclauseData;
     modalRef.componentInstance.idLabel = 'BLClause Id';
     modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.currentClauseId
   }
 
+      this.commonService.documentData.set(data)
+  }
+
+OnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 }

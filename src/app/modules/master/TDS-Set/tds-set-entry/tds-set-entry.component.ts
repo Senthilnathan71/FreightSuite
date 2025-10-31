@@ -28,6 +28,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -70,7 +71,7 @@ export class TdsSetEntryComponent implements OnInit {
     exemptionModalEdit: boolean;
     tdsData: any;
     modalRef: NgbModalRef;
-
+    MenuMasterSid:any;
     tdsDetailList: any[];
     tdsExemptionList: any[];
     countryList: any[];
@@ -145,12 +146,14 @@ export class TdsSetEntryComponent implements OnInit {
         private dialog: MatDialog,
         private settingService: SettingsService,
         public dropdownStore:DropdownStore,
-        private operationService: OperationService
+        private operationService: OperationService,
+        private commonService: CommonService
     ) { }
 
     ngOnInit(): void {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+       this.MenuMasterSid =  localStorage.getItem('currentMenuId');
         this.initTdsForm();
         // this.appSettingService.getUser().subscribe(
         //     (res) => {
@@ -730,6 +733,14 @@ openAuditLogs(modal: TemplateRef<any>) {
             centered: true,
             backdrop: 'static'
         });
+        const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.TDSSetHeaderSid
+  }
+
+      this.commonService.documentData.set(data)
     }
 
     updateDetailsPagination() {
@@ -757,6 +768,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     }
 
     ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();

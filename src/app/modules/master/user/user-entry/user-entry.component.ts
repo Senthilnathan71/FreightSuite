@@ -26,6 +26,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
 	selector: 'app-user-entry',
@@ -80,6 +81,8 @@ export class UserEntryComponent implements OnInit {
 	auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
 
 
@@ -91,12 +94,14 @@ export class UserEntryComponent implements OnInit {
 		private modalService: NgbModal,
 		private fb: FormBuilder,
 		private settingService: SettingsService,
-		public dropdownStore: DropdownStore
+		public dropdownStore: DropdownStore,
+		private commonService: CommonService
 	) { }
 
 	ngOnInit(): void {
 	    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 		this.initUserForm();
 		this.loadAllFields();
 		this.userForm.statusChanges.subscribe(status => {
@@ -760,9 +765,18 @@ openAuditLogs(modal: TemplateRef<any>) {
 		modalRef.componentInstance.item = this.userData;
 		modalRef.componentInstance.idLabel = 'User Id';
 		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+	    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.UserMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 	}
 
 	ngOnDestroy(): void {
+	this.commonService.clearDocumentData()	
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();

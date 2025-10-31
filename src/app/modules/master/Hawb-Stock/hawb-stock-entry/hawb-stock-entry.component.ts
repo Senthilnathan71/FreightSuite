@@ -15,6 +15,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
    selector: 'app-hawb-stock-entry',
@@ -62,6 +63,7 @@ export class HawbStockEntryComponent implements OnInit {
   auditLogModalRef!: NgbModalRef;
   currentCompany: any;
   currentBranch:any;
+  MenuMasterSid: any;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -71,12 +73,14 @@ export class HawbStockEntryComponent implements OnInit {
     private modalService: NgbModal,
     private calendar: NgbCalendar,
     private appSettingService: AppSettingsService,
+    private commonService: CommonService
   ) {}
 
   ngOnInit(): void {
     
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
        this.appSettingService.getUser().subscribe(user => {
     if(user) {
       this.userData = user;
@@ -391,6 +395,14 @@ openEDoc() {
   modalRef.componentInstance.item = this.hawstockData;
   modalRef.componentInstance.idLabel = 'HAWB Stock Id';
   modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.HawbStockSid
+  }
+
+      this.commonService.documentData.set(data)
 }
 
 //  openAuditLogs(modal: TemplateRef<any>) {

@@ -44,6 +44,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-division',
   standalone: true,
@@ -101,6 +102,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  MenuMasterSid: any;
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -163,7 +165,8 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -177,6 +180,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     // });
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -595,6 +599,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
         backdrop: 'static',
       });
     });
+    
   }
 
   updateDivisionById(DivisionMasterSid: number, content: any) {
@@ -1014,6 +1019,14 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.divisionData;
     modalRef.componentInstance.idLabel = 'Division Id';
     modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
+     const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.DivisionMasterSid
+  }
+
+      this.commonService.documentData.set(data)
   }
 
   clearFilterValue() {

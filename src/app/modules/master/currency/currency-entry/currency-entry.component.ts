@@ -19,6 +19,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-currency-entry',
@@ -48,6 +49,9 @@ export class CurrencyEntryComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   countryList: any[] = [];
+  currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
@@ -70,12 +74,16 @@ export class CurrencyEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private modalService : NgbModal
+    private modalService : NgbModal,
+    private commonService: CommonService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.currencyID = +params['id'];
@@ -474,6 +482,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.currencyData;
   modalRef.componentInstance.idLabel = 'Currency Id';
   modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.currencyID
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
+
 
 }

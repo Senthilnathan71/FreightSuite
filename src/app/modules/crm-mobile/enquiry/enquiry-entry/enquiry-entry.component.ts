@@ -46,6 +46,7 @@ import { AuthorizationStatus, getFormattedPort } from 'src/app/common/helper';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -89,6 +90,7 @@ export class EnquiryEntryComponent implements OnInit {
   salesmanList: any[] = [];
   packageTypes: any;
   containerTypes: any;
+  MenuMasterSid:any
   // ports: any
   departments: any[] = [];
   enquiryForm: FormGroup;
@@ -249,7 +251,8 @@ export class EnquiryEntryComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private datePipe: CustomDatePipe,
     public dropdownStore: DropdownStore,
-    private pdfService:PdfDownloadService
+    private pdfService:PdfDownloadService,
+    private commonService: CommonService
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -269,7 +272,7 @@ export class EnquiryEntryComponent implements OnInit {
     this.currentCompany = storedCompany ? this.appSettingsService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingsService.decrypt(storedBranch) : null;
-
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
       // Check for voice enquiry data first
@@ -1731,6 +1734,14 @@ ${this.userData.userName}`;
       centered: true,
       backdrop: 'static'
     });
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.EnquiryHeaderSid
+  }
+
+      this.commonService.documentData.set(data)
   }
 
   private handleVoiceEnquiryData(): void {
@@ -2002,6 +2013,7 @@ calculateTotalPackageQty(): number {
 
 
   ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();

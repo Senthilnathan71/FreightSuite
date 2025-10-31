@@ -21,6 +21,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-year-entry',
@@ -57,6 +58,7 @@ export class YearEntryComponent {
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   companyList: any;
+  MenuMasterSid:any;
   statusList = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
@@ -79,12 +81,14 @@ export class YearEntryComponent {
     private route: ActivatedRoute,
     private router: Router,
     private modalService: NgbModal,
-    private calendar : NgbCalendar
+    private calendar : NgbCalendar,
+    private commonService: CommonService
   ) {  }
   ngOnInit(): void {
      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
       const userProfile = this.appSettingService.getDecryptedUserProfile();
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 		if(userProfile){
 			this.userData = userProfile;
       this.checkPermissions();
@@ -399,7 +403,19 @@ hasAnyDropdownPermission(): boolean {
 			centered: true,
 			backdrop: 'static'
 		});
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.YearMasterSid
+  }
+
+      this.commonService.documentData.set(data)
+
 	}
+  ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
   reset() {
   // If editing, reload the original record from server to restore original values

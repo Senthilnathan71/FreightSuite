@@ -17,6 +17,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 
 @Component({
@@ -67,6 +68,9 @@ export class UnitEntryComponent {
   currentMenuId: number;
   TandCList: any;
    userData: any;
+   currentCompany: any;
+   currentBranch: any;
+   MenuMasterSid: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   constructor(
@@ -76,7 +80,8 @@ export class UnitEntryComponent {
     private router: Router, 
     private appSettingService: AppSettingsService, 
     private masterService: MasterService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private commonService: CommonService,
   ) {
     this.config.notFoundText = 'No items found';
     this.config.appendTo = 'body';
@@ -93,6 +98,9 @@ export class UnitEntryComponent {
   //     this.checkPermissions();
   //   }
   // });
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch')); 
+  this.MenuMasterSid =  localStorage.getItem('currentMenuId');
   const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -340,8 +348,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.unitData;
   modalRef.componentInstance.idLabel = 'Unit Id';
   modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
-}
+ const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.idParam
+  }
 
+      this.commonService.documentData.set(data)
+}
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.idParam) return;
 

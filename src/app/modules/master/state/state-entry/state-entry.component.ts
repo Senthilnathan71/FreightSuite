@@ -21,6 +21,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { Subject } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-state-entry',
@@ -66,6 +67,9 @@ export class StateEntryComponent implements OnInit {
   auditLogModalRef!: NgbModalRef;
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
   zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
+  currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
 
 
   constructor(
@@ -75,13 +79,17 @@ export class StateEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private modalService : NgbModal,
-        public dropdownStore:DropdownStore
+        public dropdownStore:DropdownStore,
+        private commonService: CommonService,
     
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.dropdownStore.loadCountries().subscribe();
     this.dropdownStore.loadZones().subscribe();
     this.route.params.subscribe(params => {
@@ -436,7 +444,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.stateData;
   modalRef.componentInstance.idLabel = 'State Id';
   modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
+const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.stateId
+  }
+
+      this.commonService.documentData.set(data)
 }
+ OnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 ngOnDestroy(): void {
     this.dropdownStore.clearCache()

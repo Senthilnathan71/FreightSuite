@@ -15,6 +15,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-uom-view',
@@ -42,6 +43,9 @@ export class UOMViewComponent {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   userData:any;
+  currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   shipmenttypes = [
@@ -77,13 +81,16 @@ statusOptions = [
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService,private modalService:NgbModal) {
+    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService,private modalService:NgbModal,private commonService: CommonService) {
     this.config.notFoundText = 'Custom not found';
     this.config.appendTo = 'body';
     this.config.bindValue = 'value';
   }
 
   ngOnInit() {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.uomForm = new FormGroup({
       UOMName: new FormControl('', [Validators.required, Validators.maxLength(20)]),
       UOMCode: new FormControl('', [Validators.required, Validators.maxLength(3)]),
@@ -352,7 +359,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.uomData;
   modalRef.componentInstance.idLabel = 'UOM Id';
   modalRef.componentInstance.idValue = this.uomData?.UOMMasterSid;
+const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.idParam
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.idParam) return;

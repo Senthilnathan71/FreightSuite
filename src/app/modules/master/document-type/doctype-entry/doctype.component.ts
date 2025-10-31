@@ -17,6 +17,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
 	selector: 'app-doctype',
@@ -39,7 +40,7 @@ export class DoctypeComponent implements OnInit {
 
 	VoucherTypeMasterSid: number;
 	isEditMode: boolean;
-
+    MenuMasterSid:any;
 	documentForm !: FormGroup;
 	companyList : any[];
 	branchList: any[];
@@ -86,12 +87,14 @@ currentBranch: any;
 		private router: Router,
 		private currentRoute: ActivatedRoute,
 		private modalService: NgbModal,
-		private fb: FormBuilder
+		private fb: FormBuilder,
+		private commonService: CommonService
 	) { }
 
 	ngOnInit() {
 	this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 		this.initDocumentForm();
 		this.loadAllFields();
 		this.currentRoute.paramMap.subscribe(
@@ -534,7 +537,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.documentData;
   modalRef.componentInstance.idLabel = 'Document Type Id';
   modalRef.componentInstance.idValue = this.documentData?.VoucherTypeMasterSid;
+   const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.VoucherTypeMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 
 }

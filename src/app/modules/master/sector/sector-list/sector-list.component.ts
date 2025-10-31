@@ -32,6 +32,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-sector',
   standalone: true,
@@ -97,6 +98,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   tableConfig: TableConfig = {
@@ -153,7 +155,8 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     private userService: authService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -170,6 +173,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     //   });
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -895,7 +899,18 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.sectorData;
     modalRef.componentInstance.idLabel = 'Sector Id';
     modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
+   const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.SectorMasterSid
   }
+
+      this.commonService.documentData.set(data)
+}
+ OnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
   clearFilterValue() {
     this.filterValue = '';

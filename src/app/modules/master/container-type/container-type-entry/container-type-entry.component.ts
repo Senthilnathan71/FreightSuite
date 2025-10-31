@@ -20,6 +20,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-entry-header/common-entry-header.component';
+import { CommonService } from 'src/app/common/common.service';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -54,6 +55,9 @@ export class ContainerTypeEntryComponent {
   btnDisable: boolean = false;
   ContainerTypeMasterSid: number;
   containerData : any;
+  currentCompany: any;
+  currentBranch: any; 
+  MenuMasterSid: any;
     userData:any;
    permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -111,7 +115,8 @@ noOfTeuOptions = [
     private route: ActivatedRoute,
     private router: Router,
     private modalService : NgbModal,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private commonService: CommonService
   ) {
     const { webkitSpeechRecognition }: IWindow = window as any;
     this.recognition = new webkitSpeechRecognition() || new (window as any).SpeechRecognition();
@@ -200,7 +205,9 @@ noOfTeuOptions = [
     this.getAllCompanies()
     this.loadContainerTypes();
     this.initForm();
-
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	  this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.route.paramMap.subscribe(params => {
       this.ContainerTypeMasterSid = +params.get('id');
       if(this.ContainerTypeMasterSid) {
@@ -610,7 +617,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.containerData;
   modalRef.componentInstance.idLabel = 'Container Type Id';
   modalRef.componentInstance.idValue = this.containerData?.ContainerTypeMasterSid;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.ContainerTypeMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 }
+ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 
 }

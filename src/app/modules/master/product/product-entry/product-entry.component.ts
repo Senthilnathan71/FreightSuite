@@ -18,6 +18,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
     selector: 'app-product-entry',
@@ -62,6 +63,8 @@ export class ProductEntryComponent implements OnInit{
     currentMenuPermissions: any = {};
     userData:any;
     currentCompany:any;
+    currentBranch:any;
+    MenuMasterSid: any;
     HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC;
     uomLookupConfig = DROPDOWN_CONFIGS.UOM;
     constructor(
@@ -70,12 +73,14 @@ export class ProductEntryComponent implements OnInit{
         private currentRoute : ActivatedRoute,
         private route:Router,
         private fb:FormBuilder,
-        private modalService : NgbModal
+        private modalService : NgbModal,
+        private commonService: CommonService,
     ){}
 
     ngOnInit(): void {
          this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    // this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
         this.initProductForm();
         this.getAllUom();
         this.getAllHSN();
@@ -359,7 +364,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.productData;
   modalRef.componentInstance.idLabel = 'Product Id';
   modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.ProductMasterSId
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.ProductMasterSId) return;

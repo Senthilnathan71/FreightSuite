@@ -16,6 +16,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-container-activity-entry',
@@ -48,6 +49,9 @@ export class ContainerActivityEntryComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   isLoading: boolean = false;
+  currentCompany: any;
+currentBranch: any;
+MenuMasterSid: any;
   
   // Track original values for comparison
   originalFormValues: any;
@@ -90,14 +94,17 @@ export class ContainerActivityEntryComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private commonService: CommonService
   ) { }
 
   ngOnInit(): void {
     this.getAllCompanies();
     this.loadContainerActivities();
     this.initForm();
-
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+	this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.route.paramMap.subscribe(params => {
       this.ContainerActivityMasterSid = +params.get('id');
       if (this.ContainerActivityMasterSid) {
@@ -658,8 +665,18 @@ export class ContainerActivityEntryComponent implements OnInit {
     modalRef.componentInstance.item = this.containerActivityData;
     modalRef.componentInstance.idLabel = 'Container Activity Id';
     modalRef.componentInstance.idValue = this.containerActivityData?.ContainerActivityMasterSid;
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.ContainerActivityMasterSid
   }
 
+      this.commonService.documentData.set(data)
+  }
+  ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
   // Debug method to check API responses
   private debugResponse(resp: any, method: string) {
     console.log(`${method} Response:`, resp);

@@ -47,6 +47,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { CommonService } from 'src/app/common/common.service';
+import { Menu } from 'angular-feather/icons';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -134,6 +136,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   isPrintLoading: boolean;
   currentCompany: any;
   currentBranch: any;
+  MenuMasterSid: any;
   filterOption: any;
   public rateComponent = CostEntryComponent;
   public ArApcomponent = ArApComponent;
@@ -363,7 +366,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     private spinner: NgxSpinnerService,
     private leadService: LeadService,
     public dropdownStore: DropdownStore,
-    private pdfService:PdfDownloadService
+    private pdfService:PdfDownloadService,
+    private commonService: CommonService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -433,7 +437,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     }
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-
+    this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
     this.currentCompany = (
       (this.userData.userCompanyMaster || [])
@@ -443,7 +447,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
 
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid
     };
 
 
@@ -2267,7 +2272,17 @@ ${this.userData['userName']}`;
       centered: true,
       backdrop: 'static'
     })
+ const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid: this.MenuMasterSid,
+    DocumentSid: this.BookingHeaderSid
   }
+  console.log(this.MenuMasterSid)
+      this.commonService.documentData.set(data)
+}
+
+
 
   async openFollowup() {
     if (!this.bookingHeader) return;
@@ -2661,6 +2676,7 @@ ${this.userData['userName']}`;
 
 
   ngOnDestroy() {
+    this.commonService.clearDocumentData()
     this.dataFromQuotation = null;
     this.dropdownStore.clearCache()
     this.destroy$.next();

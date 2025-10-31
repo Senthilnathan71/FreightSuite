@@ -20,6 +20,7 @@ import { AccountsService } from '../../accounts.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-chart-account-entry',
@@ -38,6 +39,8 @@ export class ChartAccountEntryComponent implements OnInit {
   isEditMode: boolean = false;
   currencyList: any[] = [];
   currentCompany: any;
+  currentBranch: any;
+  MenuMasterSid: any;
   userData: any;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
@@ -111,10 +114,13 @@ export class ChartAccountEntryComponent implements OnInit {
     private modalService: NgbModal,
     private calendar: NgbCalendar,
     private accountService: AccountsService,
+    private commonService: CommonService
   ) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.initForm();
     this.getCurrencies();
     this.setupFormListeners();
@@ -600,9 +606,20 @@ export class ChartAccountEntryComponent implements OnInit {
       backdrop: 'static',
     });
     modalRef.componentInstance.item = this.chartData;
-    modalRef.componentInstance.idLabel = 'Vessel Id';
-    modalRef.componentInstance.idValue = this.chartData?.VesselMasterSid;
+    modalRef.componentInstance.idLabel = 'COA Id';
+    modalRef.componentInstance.idValue = this.chartData?.chartMasterSid;
+ const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.chartMasterSid
   }
+
+      this.commonService.documentData.set(data)
+}
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
   onReset() {
     if (this.isEditMode && this.chartMasterSid) {

@@ -64,6 +64,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { debounceTime, distinctUntilChanged, switchMap, startWith, takeUntil } from 'rxjs/operators';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-organization-entry',
@@ -112,7 +113,8 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     private calendar: NgbCalendar,
     private leadService: LeadService,
     public dropdownStore: DropdownStore,
-    private casepipe : UpperCasePipe
+    private casepipe : UpperCasePipe,
+    private commonService: CommonService
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
     effect(()=> {
@@ -145,6 +147,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     cityLookupConfig = DROPDOWN_CONFIGS.CITY;
 isLoadingCities = false;
   selectedTab = 'Party';
+  MenuMasterSid: any;
   tabs = [
     { name: 'Party', icon: 'fas fa-user-tie' },
     { name: 'Branch', icon: 'fas fa-boxes' },
@@ -430,6 +433,7 @@ onCountryChange(): void {
     // ✅ Get current company & branch
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 
     // ✅ Get logged-in user profile
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -3275,6 +3279,14 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     modalRef.componentInstance.item = this.customerData;
     modalRef.componentInstance.idLabel = 'Customer Id';
     modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+     const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.CustomerMasterSid
+  }
+
+      this.commonService.documentData.set(data)
   }
 
 

@@ -17,6 +17,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
     selector: 'app-imco-entry',
@@ -45,6 +46,9 @@ export class ImcoEntryComponent implements OnInit {
     currentMenuId: number;
     TandCList: any;
     userData:any;
+    currentCompany: any;
+    currentBranch: any;
+    MenuMasterSid: any;
     permissions: string[] = [];
     currentMenuPermissions: any = {};
     auditLogs: any[] = []; // Stores audit logs
@@ -55,10 +59,14 @@ export class ImcoEntryComponent implements OnInit {
         private route: Router,
         private currRoute: ActivatedRoute,
         private appSettingService: AppSettingsService,
-        private modalService : NgbModal
+        private modalService : NgbModal,
+        private commonService: CommonService
     ) { }
 
     ngOnInit() {
+      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+      this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');  
         this.initImcoForm();
         this.currRoute.paramMap.subscribe(
             (param) => {
@@ -301,7 +309,20 @@ openEDoc() {
   modalRef.componentInstance.item = this.imcoData;
   modalRef.componentInstance.idLabel = 'Imco Id';
   modalRef.componentInstance.idValue = this.imcoData?.ImcoMasterSid;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.ImcoMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
+
+
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.ImcoMasterSid) return;
 

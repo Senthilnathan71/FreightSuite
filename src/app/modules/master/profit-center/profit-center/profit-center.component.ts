@@ -33,6 +33,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-profit-center',
   standalone: true,
@@ -85,6 +86,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   isFavorite: boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  MenuMasterSid:any;
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -151,7 +153,8 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     private excelReportService: ExcelExportService,
     private route: ActivatedRoute,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -169,6 +172,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     if (userProfile) {
       this.userData = userProfile;
       this.checkPermissions();
@@ -894,7 +898,18 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.profitCenterData;
     modalRef.componentInstance.idLabel = 'Profit-Center Id';
     modalRef.componentInstance.idValue = this.profitCenterData?.ProfitCenterMasterSid;
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.ProfitCenterMasterSid
   }
+
+      this.commonService.documentData.set(data)
+  }
+  OnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
   clearFilterValue() {
     this.filterValue = '';

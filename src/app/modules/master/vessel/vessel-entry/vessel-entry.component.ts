@@ -17,6 +17,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -48,6 +49,9 @@ export class VesselEntryComponent implements OnInit {
         "Container", "Tank", "Bulk", "General"
     ]
     currentMenuId: number;
+    currentCompany: any;
+    currentBranch: any;
+    MenuMasterSid: any;
     TandCList: any;
     auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
@@ -57,10 +61,14 @@ export class VesselEntryComponent implements OnInit {
         private currRoute: ActivatedRoute,
         private fb: FormBuilder,
         private route: Router,
-        private modalService : NgbModal
+        private modalService : NgbModal,
+        private commonService: CommonService,
     ) { }
 
     ngOnInit() {
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.MenuMasterSid =  localStorage.getItem('currentMenuId');
         this.initForm();
 
         this.currRoute.paramMap.subscribe(
@@ -290,7 +298,18 @@ openEDoc() {
   modalRef.componentInstance.item = this.vesselData;
   modalRef.componentInstance.idLabel = 'Vessel Id';
   modalRef.componentInstance.idValue = this.vesselData?.VesselMasterSid;
+const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.VesselMasterSid
+  }
+
+      this.commonService.documentData.set(data)
 }
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
 // reset() {
 //   this.vesselForm.reset({

@@ -19,6 +19,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-country-entry',
@@ -47,6 +48,9 @@ export class CountryEntryComponent implements OnInit {
   currentMenuPermissions: any = {};
   zones: Zone[] = [];
   currencies: Currency[] = [];
+  currentCompany: any;
+  currentBranch: any; 
+  MenuMasterSid: any;
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
@@ -75,7 +79,8 @@ export class CountryEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private modalService: NgbModal,
-    public dropdownStore: DropdownStore
+    public dropdownStore: DropdownStore,
+    private commonService: CommonService
   ) {
     this.initForm();
     effect(() => {
@@ -88,6 +93,9 @@ export class CountryEntryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch')); 
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.dropdownStore.loadZones().subscribe();
     this.dropdownStore.loadCurrencies().subscribe();
     // this.loadZones();
@@ -402,6 +410,16 @@ export class CountryEntryComponent implements OnInit {
     modalRef.componentInstance.item = this.countryData;
     modalRef.componentInstance.idLabel = 'Country Id';
     modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
+  const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.countryId
   }
 
+      this.commonService.documentData.set(data)
+}
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+}
 }

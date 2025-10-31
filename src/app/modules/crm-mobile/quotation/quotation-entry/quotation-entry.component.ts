@@ -46,6 +46,7 @@ import html2canvas from 'html2canvas';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -110,7 +111,7 @@ export class QuotationEntryComponent implements OnInit {
   @ViewChild('customerCreatedModal') customerCreatedModal!: TemplateRef<any>
   currentDate = new Date()
   selectedCurrency : any;
-
+  MenuMasterSid:any
   actionsDisabled = false;
   approvalDropdownValue = ""
   createdCustomerId : number;
@@ -129,7 +130,7 @@ export class QuotationEntryComponent implements OnInit {
   }
 
   
-
+  tariffData: any;
   QuoteHeaderSid: number;
   currentMenuId: number;
   currentRouteIndex : number;
@@ -287,7 +288,8 @@ dataFromEnqPage:any;
     private spinner: NgxSpinnerService,
     private datePipe : CustomDatePipe,
     public dropdownStore: DropdownStore,
-    private pdfService: PdfDownloadService
+    private pdfService: PdfDownloadService,
+    private commonService: CommonService
   ) { 
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -309,6 +311,7 @@ dataFromEnqPage:any;
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
@@ -2461,12 +2464,24 @@ ${this.userData.userName}`;
   }
 
   openEDoc() {
+    
     // if (!this.tariffData) return;
     const modalRef = this.ngbModal.open(EdocComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
+    modalRef.componentInstance.screenName = 'Edoc';
+ modalRef.componentInstance.formData = this.tariffData; 
+  modalRef.componentInstance.resetTrigger = false;
+
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.QuoteHeaderSid
+  }
+    this.commonService.documentData.set(data)
   }
 
   logFormValue() {
@@ -3148,6 +3163,7 @@ ${this.userData.userName}`;
 
 
   ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
     this.subscription.unsubscribe();
   }
 

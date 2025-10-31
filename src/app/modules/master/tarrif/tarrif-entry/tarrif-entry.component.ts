@@ -28,6 +28,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -104,6 +105,7 @@ export class TarrifEntryComponent implements OnInit {
   currentMenuPermissions: any = {};
   currentCompany: any;
   currentBranch: any;
+  MenuMasterSid: any;
   filteredCharges: any[] = [];
 
   auditLogs: any[] = [];
@@ -154,12 +156,14 @@ export class TarrifEntryComponent implements OnInit {
     private modalService: NgbModal,
     private matdial: MatDialog,
     private calendar: NgbCalendar,
-    private operationServ: OperationService
+    private operationServ: OperationService,
+    private commonService: CommonService
   ) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     this.initHeaderForm();
     this.loadAllFields();
 
@@ -1153,7 +1157,19 @@ filterChargesByDepartment(department: any): void {
   openEDoc() {
     if (!this.tariffData) return;
     this.modalService.open(EdocComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.TariffHeaderSid
   }
+
+      this.commonService.documentData.set(data)
+}
+ ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }  
+  
 
   setChargeDetails(charge?: any) {
   if (!charge) {

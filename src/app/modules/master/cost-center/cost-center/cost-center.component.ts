@@ -33,6 +33,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-cost-center',
   standalone: true,
@@ -89,6 +90,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   loading = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  MenuMasterSid:any
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -154,7 +156,8 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     private excelReportService: ExcelExportService,
     private route: ActivatedRoute,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private commonService: CommonService
   ) {
     super(paginationService);
   }
@@ -172,6 +175,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     // )
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid =  localStorage.getItem('currentMenuId');
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -904,6 +908,16 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.item = this.costCenterData;
     modalRef.componentInstance.idLabel = 'Cost-Center Id';
     modalRef.componentInstance.idValue = this.costCenterData?.CostCenterMasterSid;
+     const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.CostCenterMasterSid
   }
 
+      this.commonService.documentData.set(data)
+  }
+OnDestroy(): void {
+    this.commonService.clearDocumentData()
+}
 }

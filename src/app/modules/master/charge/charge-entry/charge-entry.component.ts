@@ -21,6 +21,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { CommonService } from 'src/app/common/common.service';
 
 @Component({
   selector: 'app-charge-entry',
@@ -72,6 +73,7 @@ selectedTab = this.tab[0].name;
   currentMenuPermissions: any = {};
   currentMenuId: any;
   TandCList: any;
+  MenuMasterSid:any;
   
   // Lookup data
   chargeGroupOptions: any[] = [];
@@ -114,6 +116,7 @@ selectedTab = this.tab[0].name;
     private calendar: NgbCalendar,
     private modalService: NgbModal,
     private datePipe: DatePipe,
+    private commonService: CommonService,
   ) {
     this.initForms();
   }
@@ -121,6 +124,7 @@ selectedTab = this.tab[0].name;
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid = this.appSettingService.decrypt(localStorage.getItem('MenuMasterSid'));
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.chargeID = +params['id'];
@@ -705,7 +709,18 @@ onUOMChange() {
     modalRef.componentInstance.item = this.chargeData;
     modalRef.componentInstance.idLabel = 'Charge Id';
     modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.chargeID
   }
+
+      this.commonService.documentData.set(data)
+  }
+  ngOnDestroy(): void {
+    this.commonService.clearDocumentData()
+ }
 
   onDepartmentChange(selectedNames?: string[]) {
     this.selectedDepartments = selectedNames;

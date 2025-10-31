@@ -14,6 +14,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-mawb-stock',
   standalone: true,
@@ -58,6 +59,7 @@ export class MawbStockComponent implements OnInit{
     auditLogModalRef!: NgbModalRef;
     currentCompany: any;
     currentBranch:any;
+    MenuMasterSid: any;
   constructor(  
     private fb: FormBuilder,
       private masterService: MasterService,
@@ -67,11 +69,13 @@ export class MawbStockComponent implements OnInit{
       private modalService: NgbModal,
       private calendar: NgbCalendar,
       private appSettingService: AppSettingsService,
+      private commonService: CommonService
     ){}
   ngOnInit(): void {
       
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.MenuMasterSid =  localStorage.getItem('currentMenuId');
          this.appSettingService.getUser().subscribe(user => {
       if(user) {
         this.userData = user;
@@ -386,6 +390,14 @@ export class MawbStockComponent implements OnInit{
     modalRef.componentInstance.item = this.mawstockData;
     modalRef.componentInstance.idLabel = 'MAWB Stock Id';
     modalRef.componentInstance.idValue = this.mawstockData?.MawbStockSid;
+    const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid : this.MenuMasterSid,
+    DocumentSid: this.MawbStockSid
+  }
+
+      this.commonService.documentData.set(data)
   }
   
   openAuditLogs(modal: TemplateRef<any>) {
