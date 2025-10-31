@@ -160,7 +160,7 @@ export class ChargeTaxComponent extends BaseListComponent implements OnInit {
     // });
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid = this.appSettingService.decrypt(localStorage.getItem('MenuMasterSid'));
+    this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
