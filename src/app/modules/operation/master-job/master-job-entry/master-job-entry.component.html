@@ -158,7 +158,7 @@
                                                     formControlName="MasterJobDate" ngbDatepicker
                                                     #masterJobDatePicker="ngbDatepicker"
                                                     (click)="masterJobDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3"
+                                                <button class="btn bi bi-calendar3 px-0"
                                                     (click)="masterJobDatePicker.toggle()" type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -255,7 +255,7 @@
                                                     formControlName="MBLDate" ngbDatepicker
                                                     #mblDatePicker="ngbDatepicker" (click)="mblDatePicker.toggle()"
                                                     container="body" />
-                                                <button class="btn bi bi-calendar3" (click)="mblDatePicker.toggle()"
+                                                <button class="btn bi bi-calendar3 px-0" (click)="mblDatePicker.toggle()"
                                                     type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -420,7 +420,7 @@
                                     </aside>
 
                                     <!-- Vessel Field -->
-<div class="col-md-3">
+<div class="col-md-4 mt-md-1">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!masterJobForm.get('VesselName')?.value">
     <dofi-searchable-dropdown 
@@ -497,7 +497,7 @@
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ETD" ngbDatepicker #etdPicker="ngbDatepicker"
                                                     (click)="etdPicker.toggle()" container="body" readonly />
-                                                <button class="btn bi bi-calendar3" (click)="etdPicker.toggle()"
+                                                <button class="btn bi bi-calendar3 px-0" (click)="etdPicker.toggle()"
                                                     type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -513,7 +513,7 @@
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="ETA" ngbDatepicker #etaPicker="ngbDatepicker"
                                                     (click)="etaPicker.toggle()" container="body" readonly />
-                                                <button class="btn bi bi-calendar3" (click)="etaPicker.toggle()"
+                                                <button class="btn bi bi-calendar3 px-0" (click)="etaPicker.toggle()"
                                                     type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -532,7 +532,7 @@
                                                     formControlName="CutOffDate" ngbDatepicker
                                                     #cutOffDatePicker="ngbDatepicker"
                                                     (click)="cutOffDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3" (click)="cutOffDatePicker.toggle()"
+                                                <button class="btn bi bi-calendar3 px-0" (click)="cutOffDatePicker.toggle()"
                                                     type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -593,7 +593,7 @@
                                 </h4>
                             </div>
                         </div> -->
-                        <div class="card-body">
+                        <div class="card-body ">
                             <div class="col-md-12">
                                 <div class="row compact-form" [formGroup]="masterJobForm">
                                     <aside class="col-md-6">
@@ -612,7 +612,7 @@
                                             <label class="input-label">Weight In</label>
                                         </div>
                                     </aside>
-                                    <aside class="col-md-6">
+                                    <aside class="col-md-6 mt-md-1">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="GrossWeight"
                                                 class="custom-input-field sm"  DecimalPrecision [DecimalPrecisionBefore]="10"
@@ -994,7 +994,7 @@
                                     formControlName="StuffingStartDate" ngbDatepicker
                                     #stuffingStartDatePicker="ngbDatepicker" (click)="stuffingStartDatePicker.toggle()"
                                     container="body" />
-                                <button class="btn bi bi-calendar3" (click)="stuffingStartDatePicker.toggle()"
+                                <button class="btn bi bi-calendar3 px-0" (click)="stuffingStartDatePicker.toggle()"
                                     type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
@@ -1010,7 +1010,7 @@
                                     formControlName="StuffingEndDate" ngbDatepicker
                                     #stuffingEndDatePicker="ngbDatepicker" (click)="stuffingEndDatePicker.toggle()"
                                     container="body" />
-                                <button class="btn bi bi-calendar3" (click)="stuffingEndDatePicker.toggle()"
+                                <button class="btn bi bi-calendar3 px-0" (click)="stuffingEndDatePicker.toggle()"
                                     type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
@@ -1113,7 +1113,7 @@
                                                     formControlName="DGBookingDate" ngbDatepicker
                                                     #dgBookingDatePicker="ngbDatepicker"
                                                     (click)="dgBookingDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3"
+                                                <button class="btn bi bi-calendar3 px-0"
                                                     (click)="dgBookingDatePicker.toggle()" type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -1130,7 +1130,7 @@
                                                     formControlName="DGApprovedDate" ngbDatepicker
                                                     #dgApprovedDatePicker="ngbDatepicker"
                                                     (click)="dgApprovedDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3"
+                                                <button class="btn bi bi-calendar3 px-0"
                                                     (click)="dgApprovedDatePicker.toggle()" type="button">
                                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                                 </button>
@@ -1145,7 +1145,7 @@
                                 <input class="form-control" placeholder="dd-mm-yyyy" 
                                     formControlName="ExportDoDate" ngbDatepicker #exportDoDatePicker="ngbDatepicker"
                                     (click)="exportDoDatePicker.toggle()" container="body" />
-                                <button class="btn bi bi-calendar3" (click)="exportDoDatePicker.toggle()" type="button">
+                                <button class="btn bi bi-calendar3 px-0" (click)="exportDoDatePicker.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
@@ -1159,7 +1159,7 @@
                                 <input class="form-control" placeholder="dd-mm-yyyy" formControlName="SOBDate"
                                     ngbDatepicker #sobDatePicker="ngbDatepicker" (click)="sobDatePicker.toggle()"
                                     container="body" />
-                                <button class="btn bi bi-calendar3" (click)="sobDatePicker.toggle()" type="button">
+                                <button class="btn bi bi-calendar3 px-0" (click)="sobDatePicker.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
@@ -1172,7 +1172,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ATA" ngbDatepicker
                                     #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" container="body" />
-                                <button class="btn bi bi-calendar3" (click)="ataPicker.toggle()" type="button">
+                                <button class="btn bi bi-calendar3 px-0" (click)="ataPicker.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
@@ -1186,7 +1186,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ATD" ngbDatepicker
                                     #atdPicker="ngbDatepicker" (click)="atdPicker.toggle()" container="body" />
-                                <button class="btn bi bi-calendar3" (click)="atdPicker.toggle()" type="button">
+                                <button class="btn bi bi-calendar3 px-0" (click)="atdPicker.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
