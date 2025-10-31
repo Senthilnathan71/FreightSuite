@@ -289,4 +289,13 @@ private footerTemplate = `
    onDragOver(event: DragEvent) {
     event.preventDefault();
   }
+
+  ngAfterViewInit() {
+  const textarea = document.querySelector('textarea[formControlName="Mailbody"]') as HTMLTextAreaElement;
+  if (textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  }
+}
+
 }

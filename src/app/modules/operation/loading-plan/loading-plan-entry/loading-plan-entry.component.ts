@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { Component, effect, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -22,7 +22,9 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -48,7 +50,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
   ]
 })
 export class LoadingPlanEntryComponent {
-
+    @ViewChild('loadingPlanPrint') loadingPlanPrint!: TemplateRef<any>;
   private destroy$ = new Subject<void>();
 
   @Input() screenName: string = "Loading Plan";
@@ -62,6 +64,7 @@ export class LoadingPlanEntryComponent {
   @Output() onSubmit = new EventEmitter<any>();
 
   selectedTab = 'Container';
+
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
@@ -117,17 +120,25 @@ export class LoadingPlanEntryComponent {
   totalLengthOfCollection: number = 0;
 
   selectedDepartment: any;
-  
+  showButton:boolean = false;
+  currentDate = new Date()
+  userData: any;
+  agentList:any;
+ loadingPlanData: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private modalService: NgbModal,
+     private ngbModal: NgbModal,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
     private router : Router,
     public dropdownStore: DropdownStore,
     private datePipe : CustomDatePipe,
-    private spinnerService : NgxSpinnerService
+    private spinnerService : NgxSpinnerService,
+    private spinner: NgxSpinnerService,
+    private pdfService:PdfDownloadService,
+
   ) {
     this.masterJobContainers = this.fb.array([]);
     // effect(()=>{
@@ -171,6 +182,7 @@ export class LoadingPlanEntryComponent {
   }
 
   ngOnInit() {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.onInitForm();
@@ -449,6 +461,7 @@ export class LoadingPlanEntryComponent {
       VesselName: vesselName,
       VoyageNo: voyageNo,
     }
+    this.showButton=false;
     this.operationService.getBookingForLoadingPlan(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -456,6 +469,7 @@ export class LoadingPlanEntryComponent {
             this.appSettingService.showWarning('Bookings not found for selected conditions.');
             this.availableBookings = [];
             this.totalLengthOfAvailableBookings = 0;
+            this.loadingPlanData = [];
           } else {
             this.availableBookings = (resp.data || []).map(bk =>{
               return {
@@ -465,11 +479,16 @@ export class LoadingPlanEntryComponent {
               }
             });
             this.totalLengthOfAvailableBookings = this.availableBookings.length;
+            this.loadingPlanData = this.availableBookings;
+            console.log(this.loadingPlanData,"LOADING PLAN")
+             this.showButton=true;
           }
           this.updateBookingList();
         } else {
           this.appSettingService.showError('Error fetching booking.');
           this.availableBookings = [];
+          this.loadingPlanData = [];
+          this.showButton=false;
         }
       }
     )
@@ -909,4 +928,88 @@ export class LoadingPlanEntryComponent {
     this.destroy$.complete();
   }
   
+    openPrint() {
+    this.ngbModal.open(this.loadingPlanPrint, {
+      size: 'xl',
+      centered: true,
+      backdrop: 'static',
+      scrollable:true
+    });
+  }
+
+    async downloadPDF() {
+  this.spinner.show();
+  try {
+    // const enquiryNumber = this.loadingPlanForm?.EnquiryNumber || 'Enquiry';
+    
+    await this.pdfService.downloadBalancedPDF(
+      'printContent',
+      ``,
+      () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+      (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    );
+  } finally {
+    this.spinner.hide();
+  }
+}
+
+      async generatePDFBlob(): Promise<Blob | null> {
+        const printContent = document.getElementById('printContent');
+        if (!printContent) {
+          return null;
+        }
+    
+        try {
+          const canvas = await html2canvas(printContent, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          });
+    
+          const imgWidth = 210;
+          const pageHeight = 297;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+    
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png');
+    
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+    
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+    
+          return pdf.output('blob');
+        } catch (error) {
+          console.error('Error generating PDF blob:', error);
+          return null;
+        }
+      }
+
+get totalPackages(): number {
+  return this.loadingPlanData?.reduce((sum, i) => sum + (+i.NoOfPackage || 0), 0) || 0;
+}
+
+get totalGrossWeight1(): number {
+  return this.loadingPlanData?.reduce((sum, i) => sum + (+i.GrossWeight || 0), 0) || 0;
+}
+
+get totalVolume1(): number {
+  return this.loadingPlanData?.reduce((sum, i) => sum + (+i.Volume || 0), 0) || 0;
+}
+
+getDestinationAgent(id: number): string {
+  if (!id || !this.agentList?.length) return '';
+  const agent = this.agentList.find(a => a.CustomerMasterSid === id);
+  return agent ? agent.CustomerName : '';
+}
+
+
 }

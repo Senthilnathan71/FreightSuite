@@ -56,54 +56,9 @@
 
             <div class="card mb-1">
                 <div class="card-body">
-                    <div class="row">
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select"
-                                [class.filled]="!!roleMenuForm.get('Module')?.value">
-                                <ng-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
-                                    bindValue="ModuleName" (change)="filterMenuByModule($event)" placeholder=""
-                                    formControlName="Module">
-                                </ng-select>
-                                <label for="text-input" class="input-label">Module <span
-                                        class="text-danger">*</span></label>
-                                @if(roleMenuForm['Module']?.touched && roleMenuForm['Module']?.invalid ){
-                                <div class="error-message">
-                                    @if(roleMenuForm['Module']?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(roleMenuForm['Module'].hasError('maxlength')){
-                                    <span>Max 50 Chars</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DisplayName">
-                                <label for="text-input" class="input-label">DisplayName <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select"
-                                [class.filled]="!!roleMenuForm.get('MenuMasterSid')?.value">
-                                <ng-select class="ng-select" [items]="menuList" bindLabel="MenuName"
-                                    bindValue="MenuMasterSid" placeholder="" formControlName="MenuMasterSid"
-                                    (change)="getMenuPermissions($event)" (clear)="clearMenuPermissions()">
-                                </ng-select>
-                                <label for="text-input" class="input-label">Menu <span
-                                        class="text-danger">*</span></label>
-                                @if(roleMenuForm['MenuMasterSid']?.touched && roleMenuForm['MenuMasterSid']?.invalid ){
-                                <div class="error-message">
-                                    @if(roleMenuForm['MenuMasterSid']?.hasError('required')){
-                                    <span>Required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
+                    <div class="row ps-md-5">
+                                  <aside class="col-md-1 d-md-block d-none"></aside>
+                        <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleMenuForm.get('RoleMasterSid')?.value">
                                 <ng-select class="ng-select" [items]="roleList" bindLabel="UserRoleName"
@@ -120,24 +75,30 @@
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Remarks" [textWithNumbers]="100">
-                                <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger"></span></label>
-                                @if(roleMenuForm['Remarks']?.touched && roleMenuForm['Remarks']?.invalid ){
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!roleMenuForm.get('Module')?.value">
+                                <multi-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
+                                    bindValue="ModuleName" (change)="filterMenuByModule($event)" placeholder=""
+                                    formControlName="Module">
+                                </multi-select>
+                                <label for="text-input" class="input-label">Module <span
+                                        class="text-danger">*</span></label>
+                                @if(roleMenuForm['Module']?.touched && roleMenuForm['Module']?.invalid ){
                                 <div class="error-message">
-                                    @if(roleMenuForm['Remarks']?.hasError('required')){
+                                    @if(roleMenuForm['Module']?.hasError('required')){
                                     <span>Required</span>
-                                    } @else if(roleMenuForm['Remarks']?.hasError('maxlength')){
-                                    <span>Max 100 Chars</span>
+                                    } @else if(roleMenuForm['Module'].hasError('maxlength')){
+                                    <span>Max 50 Chars</span>
                                     }
                                 </div>
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-6">
+                       
+             
+                      
+                        <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleMenuForm.get('status')?.value">
                                 @if(isEditMode){
@@ -152,45 +113,48 @@
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
-
+                        <aside class="col-md-2 d-md-block d-none"></aside>
                     </div>
                 </div>
             </div>
 
-            <div class="col-12">
-                <div class="table-responsive table-borderless">
+            <div class="col-12 container " style="padding: 0 160px;">
+                <div class="table-responsive table-borderless ">
                     <table class="table table-hover align-middle no-wrap  table-sm">
                         <thead class="bg-info">
                             <tr>
-                                <th  class="bg-transparent text-light">Menu Name</th>
-                                <th class="bg-transparent text-light">DisplayName</th>
-                                <th class="bg-transparent text-light" style="width: 80px;">Add</th>
-                                <th class="bg-transparent text-light" style="width: 80px;">Modify</th>
-                                <th class="bg-transparent text-light" style="width: 80px;">View</th>
-                                <th class="bg-transparent text-light" style="width: 80px;">Delete</th>
+                                <th  class="bg-transparent text-light" >Menu Name</th>
+                                <th class="bg-transparent text-light" >DisplayName</th>
+                                 <th class="bg-transparent text-light" width="35%"></th>
+                                <th class="bg-transparent text-light" >Add</th>
+                                <th class="bg-transparent text-light" >Modify</th>
+                                <th class="bg-transparent text-light" >View</th>
+                                <th class="bg-transparent text-light" >Delete</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody >
 
                             <tr>
-                                <td>
+                                <td style="width: 150px;"> 
                                     Charge
                                 </td>
-                                <td>
-                                    Charge
+                                <td class="pb-1" style="width: 150px;">
+                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="" >
                                 </td>
-                                <td >
-                                      <input type="checkbox" class="form-check-input">
+                               <td></td>
+                                <td style="width: 50px;">
+                                      <input type="checkbox" class="form-check-input ms-1 cursor-pointer">
                                 </td>
 
-                                <td>
-                                      <input type="checkbox" class="form-check-input">
+                                <td style="width: 50px;">
+                                      <input type="checkbox" class="form-check-input ms-1 cursor-pointer">
                                 </td>
-                                <td>
-                                      <input type="checkbox" class="form-check-input">
+                                <td style="width: 50px;">
+                                      <input type="checkbox" class="form-check-input ms-1 cursor-pointer">
                                 </td>
-                                <td>
-                                      <input type="checkbox" class="form-check-input">
+                                <td style="width: 50px;">
+                                      <input type="checkbox" class="form-check-input ms-2 cursor-pointer">
                                 </td>
                             </tr>
 

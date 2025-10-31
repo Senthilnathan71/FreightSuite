@@ -142,133 +142,137 @@
     </div> -->
 
 
-       <div class="col-12">
-            <div class="row mb-2 align-items-center pt-2 rounded mx-0">
-                <div class="col-md-4 pb-2">
-                    <h4 class="page-title mb-0">Email</h4>
-                </div>
-                <div class="col-md-8 pb-2">
-
-                    <div
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="closeModal()">
-                            <i class="fas fa-chevron-left me-1"></i>
-                            Close
-                        </button>
-
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="resetForm()">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                        <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="saveForm()">
-                <i class="fas fa-paper-plane me-1"></i> Send
-              </button>
-                    </div>
-                </div>
-            </div>
+    <div class="col-12">
+      <div class="row  align-items-center rounded mx-0">
+        <div class="col-md-4 ">
+          <h5 class="page-title mb-0">Email</h5>
         </div>
-    <div class="p-1">
-      <div class="row">
-        <div class="col-md-12">
-          <aside class="col-md-12">
-            <div class="custom-form-group">
-              <input type="text" formControlName="EmailTo" id="description" placeholder=""
-                class="custom-input-field sm">
-              <label for="description" class="input-label">To <span class="text-danger fw-bold">*</span></label>
-            </div>
-          </aside>
+        <div class="col-md-8 pt-1">
 
-          <aside class="col-md-12">
-            <div class="custom-form-group">
-              <input type="text" formControlName="EmailCC" id="" placeholder="" class="custom-input-field sm">
-              <label for="" class="input-label">CC <span class="text-danger fw-bold">*</span></label>
-            </div>
-          </aside>
+          <div
+            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="closeModal()">
+              <i class="fas fa-chevron-left me-1"></i>
+              Close
+            </button>
 
-          <aside class="col-md-12">
-            <div class="custom-form-group">
-              <input type="text" formControlName="EmailBCC" id="" placeholder="" class="custom-input-field sm">
-              <label for="" class="input-label">BCC</label>
-            </div>
-          </aside>
-
-
-        </div>
-
-        <!-- ================= Second Section (Two Columns: 6 + 6) ================= -->
-        <div class="row pe-0">
-          <!-- Attachments -->
-          <aside class="col-md-4">
-            <div class="mb-1">
-              <h6 class="fw-semibold mb-0">Attachments</h6>
-            </div>
-
-            <div class="text-end">
-              <i class="fas fa-plus fs-2 me-2 text-success" style="cursor:pointer;" (click)="fileInput.click()"></i>
-              <i class="fas fa-trash text-danger fs-3" style="cursor:pointer;" (click)="clearFiles()"></i>
-            </div>
-
-            <div class="table-responsive" *ngIf="selectedFiles.length > 0">
-              <table class="table table-bordered align-middle table-sm mb-0">
-                <thead>
-                  <tr class="bg-info">
-                    <th class="bg-transparent text-light">Document Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let file of selectedFiles; let i = index">
-                    <td class="d-flex gap-2">
-                      <p class="pt-1 mb-0">
-                        {{file.name}}
-                      </p>
-                      <div>
-                        <button class="btn btn-sm btn-light-secondary me-2" (click)="downloadFile(file)">
-                          <i class="fas fa-download text-dark"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" (click)="removeFile(i)">
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="border rounded-3 p-4 text-center bg-light" style="border-style: dashed;" (drop)="onDrop($event)"
-              (dragover)="onDragOver($event)">
-              <p class="mb-2 text-muted">Drop files or click to upload</p>
-              <button type="button" class="btn btn-light-secondary btn-sm" (click)="fileInput.click()">
-                <i class="fas fa-upload me-1"></i> Browse
-              </button>
-              <input type="file" class="d-none" multiple #fileInput (change)="onFileChange($event)">
-            </div>
-          </aside>
-
-          <!-- Message -->
-          <aside class="col-md-8 pe-0">
-           
-              <div class="custom-form-group">
-                <input type="text" formControlName="Subject" id="" placeholder="" class="custom-input-field sm">
-                <label for="" class="input-label">Subject <span class="text-danger fw-bold">*</span></label>
-              </div>
-            
-            <div>
-              <label class="form-label fw-semibold">Message</label>
-              <textarea class="form-control shadow-sm" rows="10" style="resize:none;"
-                formControlName="Mailbody"></textarea>
-
-              <div class="text-danger small text-end fs-1"
-                *ngIf="emailForm.get('Mailbody')?.touched && emailForm.get('Mailbody')?.hasError('required')">
-                Message is required
-              </div>
-            </div>
-          </aside>
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="resetForm()">
+              <i class="fas fa-sync-alt me-1"></i>
+              Reset
+            </button>
+            <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="saveForm()">
+              <i class="fas fa-paper-plane me-1"></i> Send
+            </button>
+          </div>
         </div>
       </div>
-
     </div>
+    <div class="row p-1">
+      <div class="col-md-12">
+        <aside class="col-md-12">
+          <div class="custom-form-group">
+            <input type="text" formControlName="EmailTo" id="description" placeholder="" class="custom-input-field sm">
+            <label for="description" class="input-label">To <span class="text-danger fw-bold">*</span></label>
+          </div>
+        </aside>
+
+        <aside class="col-md-12">
+          <div class="custom-form-group">
+            <input type="text" formControlName="EmailCC" id="" placeholder="" class="custom-input-field sm">
+            <label for="" class="input-label">CC <span class="text-danger fw-bold">*</span></label>
+          </div>
+        </aside>
+
+        <aside class="col-md-12">
+          <div class="custom-form-group">
+            <input type="text" formControlName="EmailBCC" id="" placeholder="" class="custom-input-field sm">
+            <label for="" class="input-label">BCC</label>
+          </div>
+        </aside>
+
+
+      </div>
+
+      <!-- ================= Second Section (Two Columns: 6 + 6) ================= -->
+      <div class="row pe-0">
+        <!-- Attachments -->
+        <aside class="col-md-4">
+          <div class="mb-1">
+            <h6 class="fw-semibold mb-0">Attachments</h6>
+          </div>
+
+          <div class="text-end">
+            <i class="fas fa-plus fs-2 me-2 text-success" style="cursor:pointer;" (click)="fileInput.click()"></i>
+            <i class="fas fa-trash text-danger fs-2" style="cursor:pointer;" (click)="clearFiles()"></i>
+          </div>
+
+          <div class="table-responsive" *ngIf="selectedFiles.length > 0">
+            <table class="table table-bordered align-middle table-sm mb-0">
+              <thead>
+                <tr class="bg-info">
+                  <th class="bg-transparent text-light">Document Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let file of selectedFiles; let i = index">
+                  <td class="d-flex gap-2">
+                    <p class="pt-1 mb-0">
+                      {{file.name}}
+                    </p>
+                    <div>
+                      <button class="btn btn-sm" (click)="downloadFile(file)"
+                        style="background:none;border:none;box-shadow:none;">
+                        <i class="fas fa-download text-dark fs-2"></i>
+                      </button>
+
+                      <button class="btn btn-sm" (click)="removeFile(i)"
+                        style="background:none;border:none;box-shadow:none;">
+                        <i class="fas fa-times text-danger fs-2"></i>
+                      </button>
+
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="border rounded-3  text-center bg-light" style="border-style: dashed;" (drop)="onDrop($event)"
+            (dragover)="onDragOver($event)">
+            <p class="mb-1 text-muted">Drop files or click to upload</p>
+            <button type="button" class="btn btn-light-secondary btn-sm mb-1" (click)="fileInput.click()">
+              <i class="fas fa-upload me-1"></i> Browse
+            </button>
+            <input type="file" class="d-none" multiple #fileInput (change)="onFileChange($event)">
+          </div>
+        </aside>
+
+        <!-- Message -->
+        <aside class="col-md-8 pe-0">
+
+          <div class="custom-form-group">
+            <input type="text" formControlName="Subject" id="" placeholder="" class="custom-input-field sm">
+            <label for="" class="input-label">Subject <span class="text-danger fw-bold">*</span></label>
+          </div>
+
+          <div>
+            <label class="form-label fw-semibold">Message</label>
+            <textarea class="form-control shadow-sm" formControlName="Mailbody" rows="3"
+              style="overflow:hidden;resize:none;"
+              oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"></textarea>
+
+
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('Mailbody')?.touched && emailForm.get('Mailbody')?.hasError('required')">
+              Message is required
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+
   </div>
 </div>

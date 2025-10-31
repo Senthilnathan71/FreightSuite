@@ -11,10 +11,11 @@ import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.compon
 import { debounceTime, forkJoin } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 @Component({
   selector: 'app-rolemenu-entry',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, TextWithNumbersDirective, TogglerComponent],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, TextWithNumbersDirective, TogglerComponent,MultiSelectComponent],
   templateUrl: './rolemenu-entry.component.html',
   styles: ``,
 })
