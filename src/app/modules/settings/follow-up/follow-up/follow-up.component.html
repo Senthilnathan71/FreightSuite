@@ -42,16 +42,16 @@
                     <div class="row">
 
 
-                        <aside class="col-md-4 d-flex align-items-center">
+                        <!-- <aside class="col-md-4 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
                                     <input type="checkbox" id="Nominated" class="form-check-input sm"
                                         formControlName="FollowupRequire">
                                     <label for="FollowupRequire" class="form-check-label sm">Followup Required <span
-                                            class="text-danger"></span></label>
+                                            class="text-danger">*</span></label>
                                 </div>
                             </div>
-                        </aside>
+                        </aside> -->
                         <div class="col-md-4">
                             <div class=" custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
@@ -77,8 +77,11 @@
                         </div>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="FollowupAction">
+                                <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="FollowupAction"> -->
+                                     <ng-select formControlName="FollowupAction" [items]="modeOfAction" bindLabel="name"
+                                        bindValue="name">
+                                    </ng-select>
                                 <label for="text-input" class="input-label">Followup Action <span
                                         class="text-danger"></span></label>
 

@@ -371,7 +371,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
         filterable: true,
         visible: true,
         dataType: 'string',
-        template: "link"
+        // template: "link"
       },
       {
         key: 'MasterJobDate',
@@ -425,7 +425,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
       },
       {
         key: 'NoOfHouses',
-        label: '	No of House',
+        label: '	No Of Houses',
         sortable: true,
         filterable: true,
         visible: true,
@@ -433,7 +433,7 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
       },
       {
         key: 'NoOfContainers',
-        label: 'No of Container ',
+        label: 'No Of Containers ',
         sortable: true,
         filterable: true,
         visible: true,

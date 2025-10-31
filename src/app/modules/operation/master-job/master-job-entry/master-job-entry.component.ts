@@ -46,6 +46,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { CommonService } from 'src/app/common/common.service';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -111,6 +112,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   isLoading = false;
   currentCompany: any;
   currentBranch: any;
+  MenuMasterSid: any;
   filterOption: any;
   isEditContainer = false;
   editingContainerIndex: number | null = null;
@@ -195,7 +197,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
-    { name: 'History', icon: 'fas fa-history' },
+    // { name: 'History', icon: 'fas fa-history' },
   ];
 
   tabs1 = [
@@ -208,7 +210,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
-    { name: 'History', icon: 'fas fa-history' },
+    // { name: 'History', icon: 'fas fa-history' },
   ];
 
   modeOfBLReleaseType = [
@@ -272,7 +274,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     private appSettingsService: AppSettingsService,
     private cdr: ChangeDetectorRef,
     private datepipe : CustomDatePipe,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private commonService: CommonService,
   ) {
     this.initForm();
     this.initContainerForm();
@@ -280,13 +283,22 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+     console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
+     const storedMenuId = localStorage.getItem('currentMenuId');
+  console.log('📋 localStorage currentMenuId:', storedMenuId);
+  
+  this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
+  console.log('✅ MenuMasterSid after initialization:', this.MenuMasterSid);
 
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
     };
+      console.log('📋 Filter Option:', this.filterOption);
+  console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
+
 
     // Setup debounced vessel search
     this.setupVesselSearchDebouncing();
@@ -307,20 +319,20 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     });
 
     // Setup form value changes with proper debouncing
-    // this.masterJobForm.valueChanges
-    //   .pipe(
-    //     debounceTime(300),
-    //     distinctUntilChanged(),
-    //     takeUntil(this.destroy$)
-    //   )
-    //   .subscribe(() => {
-    //     this.syncFormValueWithConnectionComponent();
-    //     this.syncFormValueWithRateComponent();
-    //     this.syncFormValueWithFollowUpComponent();
-    //     this.syncFormValueWithEdocComponent();
-    //     this.syncFormValueWithEmailComponent();
-    //     this.syncFormValueWithContainerActivityComponent();
-    //   });
+    this.masterJobForm.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.syncFormValueWithConnectionComponent();
+        this.syncFormValueWithRateComponent();
+        this.syncFormValueWithFollowUpComponent();
+        this.syncFormValueWithEdocComponent();
+        this.syncFormValueWithEmailComponent();
+        this.syncFormValueWithContainerActivityComponent();
+      });
 
   }
 
@@ -471,7 +483,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       MasterJobNumber: [{ value :'' , disabled : true}],
       MasterJobDate: [{value : null, disabled : true}],
       FreightPPCC: ['Prepaid', Validators.required],
-      DestinationAgent: [''],
+      DestinationAgent: [null],
       DestinationAgentAddress: [''],
       MBLNo: [''],
       MBLDate: [null],
@@ -1706,24 +1718,83 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   // Add sync method for Edoc
-  syncFormValueWithEdocComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-    
-    this.currentEdocFormValue = {
-      CompanyMasterSid,
-      DepartmentMasterSid,
-      DocumentSid: this.masterJobSid || 0,
-      MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-    };
+syncFormValueWithEdocComponent() {
+  console.log('🔍 === syncFormValueWithEdocComponent START ===');
+  
+  // Log all relevant properties
+  console.log('📋 Current Component State:');
+  console.log('  - masterJobSid:', this.masterJobSid);
+  console.log('  - MenuMasterSid:', this.MenuMasterSid);
+  console.log('  - currentCompany:', this.currentCompany);
+  console.log('  - currentBranch:', this.currentBranch);
+  console.log('  - isEditMode:', this.isEditMode);
+  
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
+  const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
+  
+  console.log('📊 Form Values:');
+  console.log('  - CompanyMasterSid:', CompanyMasterSid);
+  console.log('  - DepartmentMasterSid:', DepartmentMasterSid);
+  console.log('  - MasterJobNumber:', MasterJobNumber);
+  
+  this.currentEdocFormValue = {
+    CompanyMasterSid,
+    DepartmentMasterSid,
+    DocumentSid: this.masterJobSid || 0,
+    MasterJobNumber: MasterJobNumber,
+  };
+
+  console.log('📄 currentEdocFormValue:', this.currentEdocFormValue);
+
+  const data: any = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    MenuMasterSid: this.MenuMasterSid,
+    DocumentSid: this.masterJobSid,
+  };
+
+  console.log('🚀 Data being set to commonService:');
+  console.log('  - CompanyMasterSid:', data.CompanyMasterSid);
+  console.log('  - BranchMasterSid:', data.BranchMasterSid);
+  console.log('  - MenuMasterSid:', data.MenuMasterSid);
+  console.log('  - DocumentSid:', data.DocumentSid);
+  
+  // Check if any values are null/undefined
+  const missingFields = [];
+  if (!data.CompanyMasterSid) missingFields.push('CompanyMasterSid');
+  if (!data.BranchMasterSid) missingFields.push('BranchMasterSid');
+  if (!data.MenuMasterSid) missingFields.push('MenuMasterSid');
+  if (!data.DocumentSid && data.DocumentSid !== 0) missingFields.push('DocumentSid');
+  
+  if (missingFields.length > 0) {
+    console.warn('⚠️  Missing fields:', missingFields);
+  } else {
+    console.log('✅ All fields are present');
   }
 
-  // Add handler for Edoc data changes
-  handleEdocChange(event: any) {
-    this.edocData = event.dataItems || [];   
-    this.currentEdocFormValue = event.formData; 
-    console.log("Edoc updated:", this.edocData);
-  }
+  console.log('📤 Setting data to commonService.documentData...');
+  this.commonService.documentData.set(data);
+  
+  // Verify the data was set
+  const currentData = this.commonService.documentData();
+  console.log('✅ Data in commonService after set:', currentData);
+  
+  console.log('🔍 === syncFormValueWithEdocComponent END ===');
+}
+
+// Add handler for Edoc data changes
+handleEdocChange(event: any) {
+  console.log('📨 === handleEdocChange START ===');
+  console.log('Event received:', event);
+  
+  this.edocData = event.dataItems || [];   
+  this.currentEdocFormValue = event.formData; 
+  
+  console.log('📊 Updated edocData:', this.edocData);
+  console.log('📊 Updated currentEdocFormValue:', this.currentEdocFormValue);
+  console.log('📨 === handleEdocChange END ===');
+}
 
   // Add sync method for Email component
   syncFormValueWithEmailComponent() {

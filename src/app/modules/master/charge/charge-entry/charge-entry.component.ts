@@ -124,7 +124,7 @@ selectedTab = this.tab[0].name;
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid = this.appSettingService.decrypt(localStorage.getItem('MenuMasterSid'));
+    this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.chargeID = +params['id'];

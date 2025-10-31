@@ -64,6 +64,10 @@ export class FollowUpComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' },
   ];
+  modeOfAction = [
+    { id: '1', name: 'Internal followup' },
+    { id: '2', name: 'External followup' },
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -87,7 +91,7 @@ export class FollowUpComponent implements OnInit {
 
   initForm() {
     this.followupForm = this.fb.group({
-      FollowupRequire: [''], 
+      FollowupRequire: ['Y'], 
       FollowupDate: [, Validators.required], 
       FollowupAction: ['', Validators.required], 
       Remarks: [''], 
