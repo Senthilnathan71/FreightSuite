@@ -645,10 +645,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
       .pipe(catchError(err => of([]))),
-    userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
+    // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
     departments, ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers,userCountry 
+    containerTypes, currencies, packageTypes, customers
   }) => {
     this.departments = departments.data || [];
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
@@ -660,8 +660,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.forwarderList = forwarders.data;
     this.cfsList = cfsList.data ;
     this.yardList = yards.data ; 
-    
-    this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
+     
 
     this.containerTypeList = containerTypes.data ;
     const rawCurrencies: any[] = Array.isArray(currencies)
@@ -1424,6 +1423,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
                 this.isLoading = false;
                 if (response.status) {
                     this.toastr.success('Master Job updated successfully');
+                    this.loadMasterJobData(this.masterJobSid);
                 } else {
                     this.toastr.error(response.message || 'Failed to update Master Job');
                 }
@@ -2086,6 +2086,11 @@ handleEdocChange(event: any) {
       this.appSettingsService.showWarning('Please fill all required fields correctly');
       return;
     }
+
+    const exceptionalBookings = this.attachedBookings.getRawValue()
+      .filter(booking => booking.HouseJobSid === null)
+      .map(bk => bk.BookingHeaderSid);
+
     const modalRef = this.modalService.open(LoadingPlanEntryComponent,{
       size : 'xl',
       backdrop: 'static',
@@ -2100,6 +2105,7 @@ handleEdocChange(event: any) {
       POD : this.getPortCode(value.POD),
       hasValue : true
     }
+    modalRef.componentInstance.exceptionalBookings = exceptionalBookings;
     modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
       if(data){
         this.modalService.dismissAll();
@@ -2164,4 +2170,9 @@ onYardChange(selectedYard: any): void {
     selectedYard.CustomerAddress1 || ''
   );
 }
+
+  navigateToHouse(shipment) {
+    console.log(shipment ,'shipment');
+    this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
+  }
 }

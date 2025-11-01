@@ -3272,6 +3272,8 @@ ${this.userData.userName}`;
         RevenueAmount: charge.RevenueAmount,
         RevenueLocalAmount: charge.RevenueLocalAmount,
         CustomerMasterSid: charge.RevenueCustomerMasterSid,
+        QuoteChargeSid : charge.QuoteChargeSid,
+        TariffDetailSid : charge.TariffDetailSid,
       }))
     };
 

@@ -60,6 +60,7 @@ export class LoadingPlanEntryComponent {
     POL : null,
     POD : null
   };
+  @Input() exceptionalBookings: number[] = [];
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() onSubmit = new EventEmitter<any>();
 
@@ -471,7 +472,7 @@ export class LoadingPlanEntryComponent {
             this.totalLengthOfAvailableBookings = 0;
             this.loadingPlanData = [];
           } else {
-            this.availableBookings = (resp.data || []).map(bk =>{
+            this.availableBookings = (resp.data || []).filter(bk => !this.exceptionalBookings.includes(bk.BookingHeaderSid)).map(bk =>{
               return {
                 ...bk,
                 ETA : this.datePipe.transform(bk.ETA),

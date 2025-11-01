@@ -712,10 +712,13 @@
                                     <td class="actions-cell">
                                         <div class="action-buttons">
 
-                                            <a class="action-icon edit" target="_blank"
+                                            <!-- <a class="action-icon edit" target="_blank"
                                                 [routerLink]="['/operation/house-job/entry',shipment.HouseJobSid]" ngbTooltip="View House Job">
                                                 <i class="fas fa-eye text-info"></i>
-                                            </a>
+                                            </a> -->
+                                            <button class="action-icon delete" (click)="navigateToHouse(shipment)" [disabled]="!shipment.HouseJobSid" ngbTooltip="View House Job">
+                                                 <i class="fas fa-eye text-info"></i>
+                                            </button>
                                             <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
                                             <button class="action-icon delete"
                                                 (click)="detachBooking(shipmentIndex,shipment)" ngbTooltip="Delete"> <i class="fas fa-trash text-danger"></i></button>
