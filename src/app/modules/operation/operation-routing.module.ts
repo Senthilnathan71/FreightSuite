@@ -23,6 +23,8 @@ import { CargoReceiptEntryComponent } from './cargo-receipt/cargo-receipt-entry/
 import { CargoReceiptListComponent } from './cargo-receipt/cargo-receipt-list/cargo-receipt-list.component';
 import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-entry/vendor-invoice-entry.component';
 import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list/vendor-invoice-list.component';
+import { Component } from '@angular/core';
+import { ReportMasterComponent } from './report-master/report-master.component';
 
 
 export const OperationRoutes: Routes = [
@@ -280,6 +282,15 @@ export const OperationRoutes: Routes = [
           viewMode: true
         },
       },
+     {
+       path: 'report-master/entry',
+       component: ReportMasterComponent ,
+       data:{
+          title: 'Report Master',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Report Master' }],
+          viewMode: false
+       }
+     }
     ],
   },
   
