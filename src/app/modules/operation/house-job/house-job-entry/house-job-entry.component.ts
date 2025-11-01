@@ -356,6 +356,9 @@ auditLogs: any[] = []; // Stores audit logs
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+     console.log('📋 localStorage currentCompany:', this.currentCompany);  
+    this.countryOfCompany = this.currentCompany?.CountryName;
+    console.log('📋 countryOfCompany:', this.countryOfCompany);
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
