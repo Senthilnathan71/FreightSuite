@@ -285,6 +285,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
      console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
+    this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
      const storedMenuId = localStorage.getItem('currentMenuId');
   console.log('📋 localStorage currentMenuId:', storedMenuId);
