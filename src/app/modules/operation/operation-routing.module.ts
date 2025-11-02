@@ -26,6 +26,8 @@ import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list
 import { CreditRequestListComponent } from './credit-request/credit-request-list/credit-request-list.component';
 import { CreditRequestEntryComponent } from './credit-request/credit-request-entry/credit-request-entry.component';
 import { ReportMasterComponent } from './report-master/report-master.component';
+import { MawbillListComponent } from './Master-air-waybill/mawbill-list/mawbill-list.component';
+import { MawbillEntryComponent } from './Master-air-waybill/mawbill-entry/mawbill-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -80,7 +82,31 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
         },
       },
-      
+      {
+        path: 'mawbill/entry',
+        component: MawbillEntryComponent,
+        data: {
+          title: 'Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
+        },
+      },
+      {
+        path: 'mawbill/entry/:id',
+        component: MawbillEntryComponent,
+        data: {
+          title: 'Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
+        },
+      },
+
+      {
+        path: 'mawbill/list',
+        component: MawbillListComponent,
+        data: {
+          title: 'Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
+        },
+      },
       {
         path: 'booking-report/list',
         component: ReportComponent,

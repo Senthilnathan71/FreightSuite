@@ -554,6 +554,15 @@ getAllContainerActivities() {
     })
   );
 }
+getDepartmentByType(type: string, CompanyMasterSid: number) {
+    return this.http.post<{ data: any }>(`department/department-type?type=${type}`,{ CompanyMasterSid } 
+    ).pipe(
+        map((resp: any) => {
+            return resp.data || resp; 
+        })
+    );
+}  
+    
 getAllPorts() {
     return this.http.get('port').pipe(
       map((resp: any) => {
