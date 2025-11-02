@@ -25,6 +25,8 @@ import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-ent
 import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list/vendor-invoice-list.component';
 import { CreditRequestListComponent } from './credit-request/credit-request-list/credit-request-list.component';
 import { CreditRequestEntryComponent } from './credit-request/credit-request-entry/credit-request-entry.component';
+import { ServiceJobListComponent } from './service-job/service-job-list/service-job-list.component';
+import { ServiceJobEntryComponent } from './service-job/service-job-entry/service-job-entry.component';
 import { ReportMasterComponent } from './report-master/report-master.component';
 
 
@@ -315,6 +317,30 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Report Master' }],
           viewMode: false
        }
+      },
+      {
+        path: 'service-job/list',
+        component: ServiceJobListComponent,
+        data: {
+          title: 'Service Job',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
+        }
+      },
+      {
+        path: 'service-job/entry',
+        component: ServiceJobEntryComponent,
+        data: {
+          title: 'Service Job',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
+        }
+      },
+      {
+        path: 'service-job/entry/:id',
+        component: ServiceJobEntryComponent,
+        data: {
+          title: 'Service Job',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
+        }
      }
     ],
   },
