@@ -25,6 +25,7 @@ import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-ent
 import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list/vendor-invoice-list.component';
 import { CreditRequestListComponent } from './credit-request/credit-request-list/credit-request-list.component';
 import { CreditRequestEntryComponent } from './credit-request/credit-request-entry/credit-request-entry.component';
+import { ReportMasterComponent } from './report-master/report-master.component';
 
 
 export const OperationRoutes: Routes = [
@@ -305,8 +306,17 @@ export const OperationRoutes: Routes = [
           title: 'Credit Request',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],
         }
-      }
+      },
+     {
+       path: 'report-master/entry',
+       component: ReportMasterComponent ,
+       data:{
+          title: 'Report Master',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Report Master' }],
+          viewMode: false
+       }
+     }
     ],
   },
   
-];
+]
