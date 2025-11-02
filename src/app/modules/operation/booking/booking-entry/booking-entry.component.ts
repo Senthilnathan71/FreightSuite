@@ -165,6 +165,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   selectedFCLLCL: string = "LCL";
   isEditMode: boolean;
   bookingData: any;
+  showGenerateJobButton: boolean = false;
   quotationNumber: any = '';
   departmentList: any[] = [];
   customerList: any[] = [];
@@ -1473,6 +1474,9 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+      this.showGenerateJobButton = 
+    this.selectedFCLLCL === "FCL" && 
+    (department.ExportImport === "Export" || department.ExportImport === "Import");
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock');
       this.cargoForm.get('StuffingAt')?.disable();
@@ -2106,7 +2110,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
   }
-
+  
   selectedTab = 'Shipment';
   isQuickFormExpanded = false;
 
@@ -2903,5 +2907,104 @@ async downloadPDF() {
       return (this.agentList.find(dep => dep.CustomerMasterSid === DestinationAgent)?.CustomerName);
     }
   }
+  onGenerateJob() {
+  if (!this.bookingData || !this.BookingHeaderSid) {
+    this.appSettingService.showWarning('Please save the booking first before generating job.');
+    return;
+  }
+
+  this.spinner.show();
+  
+  // Prepare payload similar to LoadingPlanEntryComponent's onClickGenerateJob method
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  
+  // Get vessel/voyage details
+  const selectedVoyage = this.headerVesselList.find(v => 
+    v.VesselName === this.b['VesselName']?.value && 
+    v.VoyageNo === this.b['VoyageNo']?.value
+  );
+
+  // Prepare booking data for shipment list
+  const shipmentList = [{
+    BookingHeaderSid: this.BookingHeaderSid,
+    HBLNo: this.b['HBLNo']?.value || '',
+  }];
+
+  // Check if hazardous
+  const isHaz = this.c['CargoType']?.value === 'Haz';
+
+  // // Prepare containers array (for FCL bookings)
+  // const masterJobContainers = [];
+  // if (this.selectedFCLLCL === "FCL" && this.c['ContainerType']?.value && this.c['NoofContainers']?.value) {
+  //   // Create container entries based on number of containers
+  //   for (let i = 0; i < this.c['NoofContainers']?.value; i++) {
+  //     masterJobContainers.push({
+  //       ContainerType: this.c['ContainerType']?.value,
+  //       ContainerNumber: '', // Will be filled later
+  //       LineSeal: '',
+  //       CustomsSeal: '',
+  //       HsCode: '',
+  //       CommodityDescription: this.cargoForm.get('CargoType')?.value || '',
+  //       PkgType: null,
+  //       NoOfPkg: this.c['NoOfPackage']?.value || 0,
+  //       GrossWeight: this.c['GrossWeight']?.value || 0,
+  //       NetWeight: this.c['NetWeight']?.value || 0,
+  //       ChargeableWeight: this.c['ChargeableWeight']?.value || 0,
+  //       Volume: this.c['Volume']?.value || 0,
+  //       IsSoc: "N"
+  //     });
+  //   }
+  // }
+
+  // Construct the payload matching LoadingPlanEntryComponent's structure
+  const payload = {
+    CreatedBy: userEmail,
+    MenuMasterSid: currentMenuId,
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,
+    POL: this.b['POL']?.value,
+    POD: this.b['POD']?.value,
+    NoOfPkg: this.c['NoOfPackage']?.value || 0,
+    GrossWeight: this.c['GrossWeight']?.value || 0,
+    NetWeight: this.c['NetWeight']?.value || 0,
+    Volume: this.c['Volume']?.value || 0,
+    Haz: isHaz ? 'Y' : 'N',
+    VoyageMasterSid: selectedVoyage?.VoyageMasterSid || this.b['VoyageMasterSid']?.value,
+    VesselName: this.b['VesselName']?.value || selectedVoyage?.VesselName,
+    VoyageNo: this.b['VoyageNo']?.value || selectedVoyage?.VoyageNo,
+    CarrierName: this.b['CarrierName']?.value,
+    CarrierMasterSid: null, // You may need to map this from carrierList
+    ETD: selectedVoyage?.ETD ? new Date(selectedVoyage.ETD) : (this.b['ETD']?.value ? new Date(this.b['ETD']?.value) : null),
+    ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
+    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : null,
+    shipmentList: shipmentList,
+    // masterJobContainers: masterJobContainers
+  };
+
+  console.log('Generate Job Payload:', payload);
+
+  // Call the same API as LoadingPlanEntryComponent
+  this.operationService.createMasterJob(payload).subscribe({
+    next: (resp: any) => {
+      this.spinner.hide();
+      if (resp.status) {
+        this.appSettingService.showSuccess('Master Job generated successfully from booking');
+        if (resp.data?.newMasterJob?.MasterJobSid) {
+          // Optionally navigate to the master job
+          this.router.navigate(['/operation/master-job/entry', resp.data.newMasterJob.MasterJobSid]);
+        }
+      } else {
+        this.appSettingService.showError('Error generating master job: ' + (resp.message || 'Unknown error'));
+      }
+    },
+    error: (error) => {
+      this.spinner.hide();
+      this.appSettingService.showError('Failed to generate master job');
+      console.error('Error generating master job:', error);
+    }
+  });
+}
           
 }

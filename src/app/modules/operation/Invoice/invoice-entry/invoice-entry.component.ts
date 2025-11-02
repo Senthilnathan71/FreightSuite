@@ -434,7 +434,6 @@ onBranchChange(selectedBranch: any) {
     // Clear all related fields if no branch selected
     this.invoiceForm.get('PartyAddress')?.setValue('');
     this.invoiceForm.get('CustomerBranchSid')?.setValue(null);
-    this.invoiceForm.get('PartyMasterSid')?.setValue(null);
     this.invoiceForm.get('GST_VAT')?.setValue('');
     return;
   }
@@ -452,24 +451,21 @@ onBranchChange(selectedBranch: any) {
     const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
     this.invoiceForm.get('PartyAddress')?.setValue(address);
 
-    // Set PartyMasterSid (SubledgerMasterSid)
-    if (foundBranch.SubledgerMasterSid) {
-      this.invoiceForm.get('PartyMasterSid')?.setValue(Number(foundBranch.SubledgerMasterSid));
-    }
+    // IMPORTANT: DO NOT set PartyMasterSid from branch - it should come from customer
+    // Only set address and GST/VAT information
 
     // Get customer data to get country code and PanType
     const customerMasterSid = foundBranch.CustomerMasterSid;
     if (customerMasterSid) {
       const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
       if (customer) {
-        console.log('DEBUG - Found Customer:', customer);
+        console.log('DEBUG - Found Customer for branch:', customer);
         
         // Get country code from CUSTOMER
         const countryCode = this.getCustomerCountryCode(customer);
         
         console.log('DEBUG - Customer CountryCode:', countryCode);
-        console.log('DEBUG - Branch GSTNo:', foundBranch.GSTNo); // From branch table
-        console.log('DEBUG - Customer PanType:', customer.PanType); // From customer table
+        console.log('DEBUG - Branch GSTNo:', foundBranch.GSTNo);
 
         // Use branch GSTNo for India, customer PanType for other countries
         if (countryCode === 'IN') {
@@ -487,7 +483,6 @@ onBranchChange(selectedBranch: any) {
     this.invoiceForm.get('GST_VAT')?.setValue('');
   }
 }
-
 // Improved helper method to get country code from branch
 private getBranchCountryCode(branch: any): string {
   console.log('DEBUG - Branch structure for country detection:', branch);
@@ -538,7 +533,7 @@ onCustomerMasterChange(selected: any) {
     return;
   }
 
-  // Set PartyName to CustomerName instead of CustomerMasterSid
+  // Find the customer
   const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
   if (customer) {
     console.log('DEBUG - Customer selected:', customer);
@@ -546,6 +541,15 @@ onCustomerMasterChange(selected: any) {
     // Set PartyName to the actual customer name string
     this.invoiceForm.get('PartyName')?.setValue(customer.CustomerName || '');
     
+    // CRITICAL FIX: Set PartyMasterSid from customer's SubledgerMasterSid
+    if (customer.SubledgerMasterSid) {
+      this.invoiceForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
+      console.log('DEBUG - Set PartyMasterSid from customer:', customer.SubledgerMasterSid);
+    } else {
+      console.warn('DEBUG - Customer has no SubledgerMasterSid:', customer);
+      this.invoiceForm.get('PartyMasterSid')?.setValue(null);
+    }
+
     // Get country code from customer
     const countryCode = this.getCustomerCountryCode(customer);
     
@@ -558,11 +562,6 @@ onCustomerMasterChange(selected: any) {
     } else {
       // For India - clear GST until branch is selected
       this.invoiceForm.get('GST_VAT')?.setValue('');
-    }
-
-    // Set PartyMasterSid from customer if available
-    if (customer.SubledgerMasterSid) {
-      this.invoiceForm.get('PartyMasterSid')?.setValue(Number(customer.SubledgerMasterSid));
     }
   }
 
@@ -1025,18 +1024,30 @@ private normalizeParty(raw: any) {
     }
   }
 
-  let partyMasterSid = customerMasterSid;
-  if (!partyMasterSid && customerBranchSid) {
-    const found = this.customerBranchList.find(b => Number(b.CustomerBranchSid) === Number(customerBranchSid));
-    if (found && found.CustomerMasterSid) partyMasterSid = Number(found.CustomerMasterSid);
+  // CRITICAL: PartyMasterSid should come from the form control, not from branch
+  let partyMasterSid = raw.PartyMasterSid != null ? Number(raw.PartyMasterSid) : null;
+  
+  // Fallback: if PartyMasterSid is not set, try to get from customer
+  if (!partyMasterSid && customerMasterSid) {
+    const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
+    if (customer && customer.SubledgerMasterSid) {
+      partyMasterSid = Number(customer.SubledgerMasterSid);
+    }
   }
+
+  console.log('DEBUG - normalizeParty result:', {
+    PartyMasterSid: partyMasterSid,
+    CustomerBranchSid: customerBranchSid,
+    PartyName: partyNameStr,
+    PartyAddress: partyAddressStr
+  });
 
   return {
     PartyMasterSid: partyMasterSid,
     CustomerBranchSid: customerBranchSid,
-    PartyName: partyNameStr, // This is now the actual customer name string
+    PartyName: partyNameStr,
     PartyAddress: partyAddressStr,
-    CustomerName: partyNameStr // For display purposes
+    CustomerName: partyNameStr
   };
 }
 
