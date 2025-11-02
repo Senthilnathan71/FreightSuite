@@ -1,0 +1,296 @@
+<!-- receipt-view.component.html -->
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form" *ngIf="receipt">
+  <div class="col-12 px-0">
+    <!-- Header -->
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-6 d-flex pb-1">
+        <h4 class="page-title mb-0 text-info">Receipt Voucher - {{ receipt.VoucherNumber }}</h4>
+      </div>
+      <div class="col-md-6 pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="editReceipt()">
+            <i class="fas fa-edit me-1"></i>
+            Edit
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="printReceipt()">
+            <i class="fas fa-print me-1"></i>
+            Print
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="exportToPDF()">
+            <i class="fas fa-file-pdf me-1"></i>
+            PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receipt Details Card -->
+    <div class="col-md-12 px-0">
+      <div class="card h-100 mb-0">
+        <div class="card-body py-2">
+          <!-- Tabs -->
+          <ul class="nav nav-tabs mb-3">
+            <li class="nav-item" *ngFor="let tab of tabs">
+              <a class="nav-link" [class.active]="selectedTab === tab.id" (click)="selectTab(tab.id)" style="cursor: pointer;">
+                <i [class]="tab.icon + ' me-1'"></i>
+                {{ tab.label }}
+              </a>
+            </li>
+          </ul>
+
+          <!-- Details Tab -->
+          <div *ngIf="selectedTab === 'details'" class="tab-content">
+            <div class="row">
+              <!-- Header Information -->
+              <div class="col-md-12 mb-3">
+                <h5 class="text-primary border-bottom pb-2">Receipt Information</h5>
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Receipt No:</label>
+                <p class="mb-0">{{ receipt.VoucherNumber }}</p>
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Receipt Date:</label>
+                <p class="mb-0">{{ receipt.VoucherDate }}</p>
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Company:</label>
+                <p class="mb-0">{{ receipt.CompanyName }}</p>
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Branch:</label>
+                <p class="mb-0">{{ receipt.BranchName }}</p>
+              </div>
+
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-bold">Customer:</label>
+                <p class="mb-0">{{ receipt.CustomerName }}</p>
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Payment Mode:</label>
+                <p class="mb-0">{{ receipt.PaymentMode }}</p>
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Status:</label>
+                <p class="mb-0">
+                  <span class="badge" [class.bg-success]="receipt.Status === 'Active'" [class.bg-secondary]="receipt.Status !== 'Active'">
+                    {{ receipt.Status }}
+                  </span>
+                </p>
+              </div>
+
+              <!-- Cheque Details (if applicable) -->
+              <div class="col-md-12 mb-3 mt-2" *ngIf="receipt.ChequeNumber && receipt.ChequeNumber !== 'N/A'">
+                <h5 class="text-primary border-bottom pb-2">Cheque Details</h5>
+              </div>
+
+              <div class="col-md-3 mb-2" *ngIf="receipt.ChequeNumber && receipt.ChequeNumber !== 'N/A'">
+                <label class="form-label fw-bold">Cheque Number:</label>
+                <p class="mb-0">{{ receipt.ChequeNumber }}</p>
+              </div>
+
+              <div class="col-md-3 mb-2" *ngIf="receipt.ChequeDate && receipt.ChequeDate !== 'N/A'">
+                <label class="form-label fw-bold">Cheque Date:</label>
+                <p class="mb-0">{{ receipt.ChequeDate }}</p>
+              </div>
+
+              <div class="col-md-6 mb-2" *ngIf="receipt.BankName && receipt.BankName !== 'N/A'">
+                <label class="form-label fw-bold">Bank Name:</label>
+                <p class="mb-0">{{ receipt.BankName }}</p>
+              </div>
+
+              <!-- Amount Details -->
+              <div class="col-md-12 mb-3 mt-2">
+                <h5 class="text-primary border-bottom pb-2">Amount Details</h5>
+              </div>
+
+              <div class="col-md-4 mb-2">
+                <label class="form-label fw-bold">Total Amount:</label>
+                <p class="mb-0 text-success fs-5">₹ {{ receipt.TotalAmount | number:'1.2-2' }}</p>
+              </div>
+
+              <div class="col-md-4 mb-2" *ngIf="receipt.TDSAmount > 0">
+                <label class="form-label fw-bold">TDS Amount:</label>
+                <p class="mb-0 text-danger fs-5">₹ {{ receipt.TDSAmount | number:'1.2-2' }}</p>
+              </div>
+
+              <div class="col-md-4 mb-2">
+                <label class="form-label fw-bold">Net Amount:</label>
+                <p class="mb-0 text-primary fs-5 fw-bold">₹ {{ receipt.NetAmount | number:'1.2-2' }}</p>
+              </div>
+
+              <!-- Narration -->
+              <div class="col-md-12 mb-2 mt-2" *ngIf="receipt.Narration && receipt.Narration !== 'N/A'">
+                <label class="form-label fw-bold">Narration:</label>
+                <p class="mb-0">{{ receipt.Narration }}</p>
+              </div>
+
+              <!-- Voucher Lines -->
+              <div class="col-md-12 mb-3 mt-3">
+                <h5 class="text-primary border-bottom pb-2">Voucher Entries</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                      <tr>
+                        <th>S.No</th>
+                        <th>Account</th>
+                        <th>Subledger</th>
+                        <th>Dr/Cr</th>
+                        <th class="text-end">Amount</th>
+                        <th>Currency</th>
+                        <th class="text-end">Currency Amount</th>
+                        <th class="text-end">Ex. Rate</th>
+                        <th>Narration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let line of receipt.lines">
+                        <td>{{ line.Sno }}</td>
+                        <td>{{ line.COAName }}</td>
+                        <td>{{ line.SubledgerName || '-' }}</td>
+                        <td>
+                          <span class="badge" [class.bg-success]="line.DrCr === 'D'" [class.bg-danger]="line.DrCr === 'C'">
+                            {{ line.DrCr }}
+                          </span>
+                        </td>
+                        <td class="text-end">{{ line.Amount | number:'1.2-2' }}</td>
+                        <td>{{ line.CurrencyCode }}</td>
+                        <td class="text-end">{{ line.CurrencyAmount | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ line.ExchangeRate | number:'1.3-3' }}</td>
+                        <td>{{ line.Narration || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Audit Information -->
+              <div class="col-md-12 mb-2 mt-3">
+                <h5 class="text-primary border-bottom pb-2">Audit Information</h5>
+              </div>
+
+              <div class="col-md-4 mb-2">
+                <label class="form-label fw-bold">Created By:</label>
+                <p class="mb-0">{{ receipt.CreatedBy }}</p>
+              </div>
+
+              <div class="col-md-4 mb-2">
+                <label class="form-label fw-bold">Created On:</label>
+                <p class="mb-0">{{ receipt.CreatedOn }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matched Invoices Tab -->
+          <div *ngIf="selectedTab === 'vouchers'" class="tab-content">
+            <div class="row">
+              <div class="col-md-12">
+                <h5 class="text-primary border-bottom pb-2 mb-3">Matched Invoices</h5>
+                <div class="table-responsive" *ngIf="receipt.matchedInvoices && receipt.matchedInvoices.length > 0; else noMatchedInvoices">
+                  <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Invoice No</th>
+                        <th>Invoice Date</th>
+                        <th class="text-end">Original Amount</th>
+                        <th class="text-end">Previously Matched</th>
+                        <th class="text-end">Matched Amount</th>
+                        <th class="text-end">Outstanding</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let invoice of receipt.matchedInvoices">
+                        <td>{{ invoice.InvoiceNumber }}</td>
+                        <td>{{ invoice.InvoiceDate }}</td>
+                        <td class="text-end">{{ invoice.OriginalAmount | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ invoice.PreviouslyMatched | number:'1.2-2' }}</td>
+                        <td class="text-end text-success fw-bold">{{ invoice.MatchedAmount | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ invoice.OutstandingAmount | number:'1.2-2' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <ng-template #noMatchedInvoices>
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No invoices matched with this receipt (Advance payment)
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inter-Branch Tab -->
+          <div *ngIf="selectedTab === 'interbranch'" class="tab-content">
+            <div class="row">
+              <div class="col-md-12">
+                <h5 class="text-primary border-bottom pb-2 mb-3">Inter-Branch Journal Voucher</h5>
+                <div *ngIf="receipt.interBranchJV; else noInterBranch">
+                  <div class="row">
+                    <div class="col-md-3 mb-2">
+                      <label class="form-label fw-bold">JV Number:</label>
+                      <p class="mb-0">{{ receipt.interBranchJV.JVNumber }}</p>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <label class="form-label fw-bold">Paying Branch:</label>
+                      <p class="mb-0">{{ receipt.interBranchJV.PayingBranchSid }}</p>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <label class="form-label fw-bold">Receiving Branch:</label>
+                      <p class="mb-0">{{ receipt.interBranchJV.ReceivingBranchSid }}</p>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <label class="form-label fw-bold">Amount:</label>
+                      <p class="mb-0 text-success fs-5">₹ {{ receipt.interBranchJV.Amount | number:'1.2-2' }}</p>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                      <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Automatic inter-branch journal voucher created successfully
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noInterBranch>
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    This is not an inter-branch receipt
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- No Receipt Found -->
+<div class="row" *ngIf="!receipt && !loading">
+  <div class="col-12">
+    <div class="alert alert-warning">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      Receipt not found
+    </div>
+  </div>
+</div>

@@ -12,7 +12,9 @@ import { VendorTdsListComponent } from './vendor-tds/vendor-tds-list/vendor-tds-
 import { VendorTdsEntryComponent } from './vendor-tds/vendor-tds-entry/vendor-tds-entry.component';
 import { LedgerMappingComponent } from './ledger-mapping/ledger-mapping/ledger-mapping.component';
 import { Dashboard1Component } from './dashboard1/dashboard1/dashboard1.component';
+import { ReceiptListComponent } from './receipt/receipt-list/receipt-list.component';
 import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
+import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.component';
 import { PrintsComponent } from './print-structure/prints/prints.component';
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
@@ -192,13 +194,49 @@ export const AccountRoutes: Routes = [
         },
       },
       {
-        path: "receipt",
-        component: ReceiptEntryComponent,
+        path: "receipt/list",
+        component: ReceiptListComponent,
         data: {
-          title: "Receipt",
+          title: "Receipt Voucher",
           urls: [
             { title: "Accounts", url: "/accounts" },
-            { title: "Receipt" },
+            { title: "Receipt Voucher" },
+          ],
+        },
+      },
+      {
+        path: "receipt/entry",
+        component: ReceiptEntryComponent,
+        data: {
+          title: "Add Receipt Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Receipt Voucher", url: "/accounts/receipt/list" },
+            { title: "Add Receipt" },
+          ],
+        },
+      },
+      {
+        path: "receipt/entry/:id",
+        component: ReceiptEntryComponent,
+        data: {
+          title: "Edit Receipt Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Receipt Voucher", url: "/accounts/receipt/list" },
+            { title: "Edit Receipt" },
+          ],
+        },
+      },
+      {
+        path: "receipt/view/:id",
+        component: ReceiptViewComponent,
+        data: {
+          title: "View Receipt Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Receipt Voucher", url: "/accounts/receipt/list" },
+            { title: "View Receipt" },
           ],
         },
       },
