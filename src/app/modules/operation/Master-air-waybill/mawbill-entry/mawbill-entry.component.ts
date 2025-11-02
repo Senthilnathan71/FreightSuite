@@ -48,7 +48,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
 @Component({
-  selector: 'app-master-job-entry',
+  selector: 'app-mawbill-entry',
   standalone: true,
   imports: [
     NgbDatepickerModule,
@@ -80,8 +80,8 @@ import { CommonService } from 'src/app/common/common.service';
      NgbTooltip,
      DecimalPrecisionDirective
   ],
-  templateUrl: './master-job-entry.component.html',
-  styleUrls: ['./master-job-entry.component.scss'],
+   templateUrl: './mawbill-entry.component.html',
+  styleUrl: './mawbill-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
@@ -89,7 +89,7 @@ import { CommonService } from 'src/app/common/common.service';
     CustomDatePipe
   ],
 })
-export class MasterJobEntryComponent implements OnInit, OnDestroy {
+export class MawbillEntryComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private vesselSearchSubject = new Subject<{POL: string | number, POD: string | number, MovementType: string}>();
@@ -188,14 +188,14 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
-    { name: 'Container', icon: 'fas fa-boxes' },
+    // { name: 'Container', icon: 'fas fa-boxes' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
-    { name: 'Mail', icon: 'fas fa-envelope' },
-    { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
+    // { name: 'Mail', icon: 'fas fa-envelope' },
+    // { name: 'Follow Up', icon: 'fas fa-tasks' },
+    // { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     // { name: 'History', icon: 'fas fa-history' },
   ];
@@ -206,9 +206,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
-    { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'Mail', icon: 'fas fa-envelope' },
-    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+    // { name: 'Follow Up', icon: 'fas fa-tasks' },
+    // { name: 'Mail', icon: 'fas fa-envelope' },
+    // { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     // { name: 'History', icon: 'fas fa-history' },
   ];
@@ -329,10 +329,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.syncFormValueWithConnectionComponent();
         this.syncFormValueWithRateComponent();
-        this.syncFormValueWithFollowUpComponent();
+        // this.syncFormValueWithFollowUpComponent();
         this.syncFormValueWithEdocComponent();
-        this.syncFormValueWithEmailComponent();
-        this.syncFormValueWithContainerActivityComponent();
+        // this.syncFormValueWithEmailComponent();
+        // this.syncFormValueWithContainerActivityComponent();
       });
 
   }
@@ -621,13 +621,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   const companySid = this.currentCompany?.CompanyMasterSid;
   
   return forkJoin({
-      seaDepartments: this.operationService.getDepartmentByType('Sea', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    roadDepartments: this.operationService.getDepartmentByType('Road', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    transportDepartments: this.operationService.getDepartmentByType('Transport', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    otherDepartments: this.operationService.getDepartmentByType('Others', companySid)
+     departments: this.operationService.getDepartmentByType('Air', companySid) 
       .pipe(catchError(err => of({ data: [] }))),
     ports: this.operationService.getAllPorts()
       .pipe(catchError(err => of({ data: [] }))),
@@ -654,15 +648,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
-    seaDepartments, roadDepartments, transportDepartments, otherDepartments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
+    departments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
     containerTypes, currencies, packageTypes, customers
   }) => {
-     this.departments = [
-      ...(seaDepartments || []),
-      ...(roadDepartments|| []),
-      ...(transportDepartments || []),
-      ...(otherDepartments || [])
-    ];
+     this.departments = departments || [];
     
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     this.vesselList = vessels.data || [];
@@ -1394,7 +1383,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         // Your existing arrays
         masterJobConnection: this.connectionResult,
         costRevenueCharges: this.rateResult,
-        masterJobContainers: this.formatContainerData(),
+        // masterJobContainers: this.formatContainerData(),
         
         // Format dates
         MasterJobDate: this.formatDate(formValue.MasterJobDate),
@@ -1453,7 +1442,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
                 this.isLoading = false;
                 if (response.status) {
                     this.toastr.success('Master Job created successfully');
-                    this.router.navigate(['/operation/master-job/list']);
+                    this.router.navigate(['/operation/mawbill/list']);
                 } else {
                     this.toastr.error(response.message || 'Failed to create Master Job');
                 }
@@ -1496,18 +1485,18 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
   
   // Helper methods
-  getContainerTypeName(ContainerTypeMasterSid: number): string {
-    const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
-    return containerType ? containerType.ContainerName : 'Unknown';
-  }
+  // getContainerTypeName(ContainerTypeMasterSid: number): string {
+  //   const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
+  //   return containerType ? containerType.ContainerName : 'Unknown';
+  // }
 
-  formatContainerData(): any[] {
-    return this.masterJobContainers.value.map(container => ({
-      ...container,
-      IsSoc: container.IsSoc ? 'Y' : 'N',
-      MasterJobContainerSid: container.MasterJobContainerSid
-    }));
-  }
+  // formatContainerData(): any[] {
+  //   return this.masterJobContainers.value.map(container => ({
+  //     ...container,
+  //     IsSoc: container.IsSoc ? 'Y' : 'N',
+  //     MasterJobContainerSid: container.MasterJobContainerSid
+  //   }));
+  // }
 
   formatDate(date: any): string | null {
     if (!date) return null;
@@ -1712,23 +1701,23 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
 }
   
 
-  syncFormValueWithFollowUpComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
+  // syncFormValueWithFollowUpComponent() {
+  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     
-    this.currentFollowUpFormValue = {
-      CompanyMasterSid,
-      DepartmentMasterSid,
-      DocumentSid: this.masterJobSid || 0, // Use 0 for new records
-      MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-    };
-  }
+  //   this.currentFollowUpFormValue = {
+  //     CompanyMasterSid,
+  //     DepartmentMasterSid,
+  //     DocumentSid: this.masterJobSid || 0, // Use 0 for new records
+  //     MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
+  //   };
+  // }
 
-  handleFollowUpChange(event: any) {
-    console.log('Follow Up Changed:', event);
-    this.followUpData = event.dataItems || [];
-    this.currentFollowUpFormValue = event.formData || null;
-  }
+  // handleFollowUpChange(event: any) {
+  //   console.log('Follow Up Changed:', event);
+  //   this.followUpData = event.dataItems || [];
+  //   this.currentFollowUpFormValue = event.formData || null;
+  // }
 
   // Add sync method for Edoc
 syncFormValueWithEdocComponent() {
@@ -1810,72 +1799,72 @@ handleEdocChange(event: any) {
 }
 
   // Add sync method for Email component
-  syncFormValueWithEmailComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
+  // syncFormValueWithEmailComponent() {
+  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     
-    this.currentEmailFormValue = {
-      CompanyMasterSid,
-      DepartmentMasterSid,
-      DocumentSid: this.masterJobSid || 0,
-      MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-      POL: this.masterJobForm.get('POL')?.value,
-      POD: this.masterJobForm.get('POD')?.value,
-      VesselName: this.masterJobForm.get('VesselName')?.value,
-      VoyageNo: this.masterJobForm.get('VoyageNo')?.value
-    };
-  }
+  //   this.currentEmailFormValue = {
+  //     CompanyMasterSid,
+  //     DepartmentMasterSid,
+  //     DocumentSid: this.masterJobSid || 0,
+  //     MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
+  //     POL: this.masterJobForm.get('POL')?.value,
+  //     POD: this.masterJobForm.get('POD')?.value,
+  //     VesselName: this.masterJobForm.get('VesselName')?.value,
+  //     VoyageNo: this.masterJobForm.get('VoyageNo')?.value
+  //   };
+  // }
 
-  // Add handler for Email data changes
-  handleEmailChange(event: any) {
-    this.emailData = event.dataItems || [];
-    this.currentEmailFormValue = event.formData || null;
-    console.log("Email data updated:", this.emailData);
-  }
+  // // Add handler for Email data changes
+  // handleEmailChange(event: any) {
+  //   this.emailData = event.dataItems || [];
+  //   this.currentEmailFormValue = event.formData || null;
+  //   console.log("Email data updated:", this.emailData);
+  // }
 
-  syncFormValueWithContainerActivityComponent() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
+  // syncFormValueWithContainerActivityComponent() {
+  //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  //   const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     
-    this.currentContainerActivityFormValue = {
-      CompanyMasterSid,
-      DepartmentMasterSid,
-      JobMasterSid: this.masterJobSid || 0, // Use JobMasterSid to match Prisma model
-      MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
-      // Pass the container list so the container activity component can use it
-      masterJobContainers: this.masterJobContainers.value || []
-    };
-  }
+  //   this.currentContainerActivityFormValue = {
+  //     CompanyMasterSid,
+  //     DepartmentMasterSid,
+  //     JobMasterSid: this.masterJobSid || 0, // Use JobMasterSid to match Prisma model
+  //     MasterJobNumber: this.masterJobForm.get('MasterJobNumber')?.value,
+  //     // Pass the container list so the container activity component can use it
+  //     masterJobContainers: this.masterJobContainers.value || []
+  //   };
+  // }
 
-  // Add this handler for container activity data changes
-  handleContainerActivityChange(activities: any[]) {
-    console.log('Container Activities received from component:', activities);
+  // // Add this handler for container activity data changes
+  // handleContainerActivityChange(activities: any[]) {
+  //   console.log('Container Activities received from component:', activities);
     
-    // Ensure we have an array and properly store it
-    this.containerActivityData = Array.isArray(activities) ? [...activities] : [];
+  //   // Ensure we have an array and properly store it
+  //   this.containerActivityData = Array.isArray(activities) ? [...activities] : [];
     
-    // Update the form array as well to keep it in sync
-    const containerActivitiesFormArray = this.containerActivities;
-    containerActivitiesFormArray.clear();
+  //   // Update the form array as well to keep it in sync
+  //   const containerActivitiesFormArray = this.containerActivities;
+  //   containerActivitiesFormArray.clear();
     
-    this.containerActivityData.forEach(activity => {
-      const activityGroup = this.fb.group({
-        ContainerActivitySid: [activity.ContainerActivitySid || null],
-        ContainerNumber: [activity.ContainerNumber || '', Validators.required],
-        ContainerType: [activity.ContainerType || null],
-        ActivityCode: [activity.ActivityCode || '', Validators.required],
-        ActivityName: [activity.ActivityName || ''],
-        ActivityDate: [activity.ActivityDate ? new Date(activity.ActivityDate) : new Date(), Validators.required],
-        ActivityFrom: [activity.ActivityFrom || ''],
-        ActivityTo: [activity.ActivityTo || ''],
-        Remarks: [activity.Remarks || '']
-      });
-      containerActivitiesFormArray.push(activityGroup);
-    });
+  //   this.containerActivityData.forEach(activity => {
+  //     const activityGroup = this.fb.group({
+  //       ContainerActivitySid: [activity.ContainerActivitySid || null],
+  //       ContainerNumber: [activity.ContainerNumber || '', Validators.required],
+  //       ContainerType: [activity.ContainerType || null],
+  //       ActivityCode: [activity.ActivityCode || '', Validators.required],
+  //       ActivityName: [activity.ActivityName || ''],
+  //       ActivityDate: [activity.ActivityDate ? new Date(activity.ActivityDate) : new Date(), Validators.required],
+  //       ActivityFrom: [activity.ActivityFrom || ''],
+  //       ActivityTo: [activity.ActivityTo || ''],
+  //       Remarks: [activity.Remarks || '']
+  //     });
+  //     containerActivitiesFormArray.push(activityGroup);
+  //   });
     
-    console.log('Updated containerActivityData:', this.containerActivityData);
-    console.log('Updated form array length:', containerActivitiesFormArray.length);
-  }
+  //   console.log('Updated containerActivityData:', this.containerActivityData);
+  //   console.log('Updated form array length:', containerActivitiesFormArray.length);
+  // }
 
   // Add this method to your component
   // AuditLogs(modal: TemplateRef<any>) {
@@ -1981,7 +1970,7 @@ handleEdocChange(event: any) {
   }
 
   navigateBack(): void {
-    this.router.navigate(['/operation/master-job/list']);
+    this.router.navigate(['/operation/mawbill/list']);
   }
 
    toggleMinimizeMaximize(){

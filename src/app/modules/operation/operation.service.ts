@@ -285,7 +285,7 @@ export class OperationService {
   
   getAllCurrencies() {
     return this.http.get<{ data: any[] }>('currency').pipe(
-      map((resp) => {
+      map((resp:any) => {
         let response = resp
         return response;
       })
@@ -554,6 +554,15 @@ getAllContainerActivities() {
     })
   );
 }
+getDepartmentByType(type: string, CompanyMasterSid: number) {
+    return this.http.post<{ data: any }>(`department/department-type?type=${type}`,{ CompanyMasterSid } 
+    ).pipe(
+        map((resp: any) => {
+            return resp.data || resp; 
+        })
+    );
+}  
+    
 getAllPorts() {
     return this.http.get('port').pipe(
       map((resp: any) => {
@@ -931,4 +940,37 @@ updateCreditRequest(payload: any) {
     })
   );
 }
+
+  // Service Job related Operations
+  getServiceJobById(HouseJobSid: number) {
+    return this.http.get<{ data: any }>(`service-job/fetch/${HouseJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  createServiceJob(payload: any) {
+    return this.http.post<{ data: any }>('service-job/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateServiceJobById(HouseJobSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`service-job/update/${HouseJobSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  searchServiceJobs(payload: any) {
+    return this.http.post<{ data: any[] }>('service-job/search-list', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 }

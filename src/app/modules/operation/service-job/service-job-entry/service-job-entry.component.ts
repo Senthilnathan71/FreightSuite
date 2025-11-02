@@ -1,0 +1,1266 @@
+import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { catchError, delay, firstValueFrom, forkJoin, of, Subject, tap } from 'rxjs';
+import { OperationService } from '../../operation.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
+import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
+import { ConnectionComponent } from '../../connection/connection/connection.component';
+import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
+
+import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import html2pdf from 'html2pdf.js';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
+import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { CommonService } from 'src/app/common/common.service';
+import { getFormattedPort } from 'src/app/common/helper';
+
+
+@Component({
+  selector: 'app-service-job-entry',
+  standalone: true,
+  imports: [
+    NgSelectModule,
+    NgbDatepickerModule,
+    FeatherModule,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CustomDatePipe,
+    NgbPaginationModule,
+    ConnectionComponent,
+    DecimalPrecisionDirective,
+    OnlyTextDirective,
+    OnlyNumbersDirective,
+    TextWithNumbersDirective,
+    MilestoneComponent,
+    CostEntryComponent,
+    NgComponentOutlet,
+    CostEntryComponent,
+    ArApComponent,
+    NgxSpinnerModule,
+    NgbTooltip,
+    SearchableDropdown,
+    SearchableDropdownModal,
+    NgxSpinnerModule,
+    NgbDropdownModule,
+    PreventMultiClickDirective,
+    TimeAgoPipe
+  ],
+  templateUrl: './service-job-entry.component.html',
+  styleUrl: './service-job-entry.component.scss',
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe
+  ],
+})
+export class ServiceJobEntryComponent implements OnInit, OnDestroy {
+
+
+  /**
+    |--------------------------------------------------
+    |   Section-1 Variable Declaration
+    |--------------------------------------------------
+  */
+
+  private destroy$ = new Subject<void>();
+  @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
+  @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
+
+
+
+
+  //Variable Declaration - Common 
+  serviceJobForm !: FormGroup;
+  detailForm !: FormGroup;
+  userData: any;
+  isPrintLoading: boolean;
+  currentCompany: any;
+  currentBranch: any;
+  countryOfCompany : string;
+  MenuMasterSid: any;
+  filterOption: any;
+  decimalAfterPrecision = 3;
+  public rateComponent = CostEntryComponent;
+  selectTab(tab: string) {
+    if (tab === "Rate") {
+      this.syncFormValueWithRateComponent();
+    }
+    this.selectedTab = tab;
+  }
+
+  modeOfStatus = [
+    { id: 1, name: 'Active' },
+    { id: 2, name: 'Suspended' },
+  ];
+
+  // Variable Declaration - Header Part
+  HouseJobSid: number;
+  currentMenuId: any;
+  selectedDepartment: any;
+  selectedDepartmentType: string;
+  selectedFCLLCL: string = "LCL";
+  isEditMode: boolean;
+  serviceJobData: any;
+  showGenerateJobButton: boolean = false;
+  departmentList: any[] = [];
+  customerList: any[] = [];
+  portList: any[] = [];
+  filteredPorts: any[] = [];
+  filteredPOL: any[] = [];
+  filteredPOD: any[] = [];
+  TandCList: any[] = [];
+  currencyList : any[] = [];
+  houseData: any;
+
+
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
+  permissions: any[] = [];
+  currentMenuPermissions = {};
+
+  private initialFormValue: string;
+  houseStatusTimeline : any[];
+
+
+  // Variable Declaration - Cargo Part
+  containerTypeList: any[] = [];
+  selectedContainerType: any;
+  cargoForm !: FormGroup;
+  freightTermsList = [
+    { id: 1, name: 'Prepaid' },
+    { id: 2, name: 'Collect' }
+  ]
+  stuffingAt = [
+    { id: 1, name: 'Dock' },
+    { id: 2, name: 'Factory' }
+  ]
+  modeOfCargoType = [
+    { id: 1, name: 'General' },
+    { id: 2, name: 'Haz' },
+    { id: 3, name: 'Refer' },
+    { id: 4, name: 'Tanker' },
+    { id: 5, name: 'OOG' },
+  ];
+  // Variable Declaration - Rate Part
+  resetTriggerRate: boolean;
+  serviceJobRateArr : any[] = [];
+  serviceJobRateResults : any[] = [];
+  currentFormValue: any;
+  selectedCustomer : any;
+
+  today: any;
+  minDate: any;
+  currentDate = new Date();
+
+  containerTypeLookupConfig = DROPDOWN_CONFIGS.CONTAINER_TYPE;
+
+
+  modeOfShipmentTerms = [
+    { id: 1, name: 'FCL/FCL' },
+    { id: 2, name: 'FCL/LCL' },
+    { id: 3, name: 'LCL/FCL' },
+    { id: 4, name: 'LCL/LCL' },
+    { id: 5, name: 'LTL' },
+    { id: 6, name: 'FTL' },
+    { id: 7, name: 'FTL HH' },
+  ];
+
+  modeOfMovementType = [
+    { id: 1, name: 'CY-CFS' },
+    { id: 2, name: 'CFS-FO' },
+    { id: 3, name: 'CFS-CY' },
+    { id: 4, name: 'CFS-CFS' },
+    { id: 5, name: 'FO-FI' },
+    { id: 6, name: 'Door-Door' },
+    { id: 7, name: 'CY-Door' },
+    { id: 8, name: 'CY-FO' },
+  ];
+
+  modeOfTransport = [
+    { id: 1, name: 'Rail' },
+    { id: 2, name: 'Road' },
+    { id: 3, name: 'Flight' },
+    { id: 4, name: 'Vessel' },
+  ];
+
+  tabs = [
+    // { name: 'Shipment', icon: 'fas fa-ship' },
+    // { name: 'Cargo', icon: 'fas fa-boxes' },
+    { name: 'Rate', icon: 'fas fa-rupee-sign' }
+  ];
+  // Mail content
+  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  portLookupConfig = DROPDOWN_CONFIGS.PORT;
+
+
+  /**
+    |--------------------------------------------------
+    |   Section-2 : Constructor Part
+    |--------------------------------------------------
+  */
+  constructor(
+    private router: Router,
+    private modalService: NgbModal,
+    private fb: FormBuilder,
+    private operationService: OperationService,
+    private currentRoute: ActivatedRoute,
+    private appSettingService: AppSettingsService,
+    private masterService: MasterService,
+    private calendar: NgbCalendar,
+    private datePipe: CustomDatePipe,
+    private spinner: NgxSpinnerService,
+    private leadService: LeadService,
+    public dropdownStore: DropdownStore,
+    private commonService: CommonService
+  ) {
+    this.today = this.calendar.getToday();
+  }
+
+  /**
+    |--------------------------------------------------
+    |   Section-3 : NgOnInit Part
+    |--------------------------------------------------
+    */
+  
+  ngOnInit(): void {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+    if (this.userData) {
+      this.checkPermissions();
+    }
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid = Number(localStorage.getItem('currentMenuId'));
+    const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+    this.currentCompany = (
+      (this.userData.userCompanyMaster || [])
+        .find(ucm => ucm.CompanyMasterSid === currentCompanyId)?.companyMaster
+    );
+
+
+    this.filterOption = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid
+    };
+
+
+    this.initServiceJobForm();
+    this.initCargoForm();
+
+    this.spinner.show();
+    this.loadHeaderMandatoryParts().subscribe(() => {
+      this.currentRoute.paramMap.subscribe((param) => {
+        this.HouseJobSid = +param.get('id');
+        if (this.HouseJobSid) {
+          this.isEditMode = true;
+          this.loadServiceJobById(this.HouseJobSid);
+          this.getAuditLog();
+        }
+      });
+
+      this.loadCargoLookups();
+      this.spinner.hide();
+    });
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.isEditMode) {
+      this.departmentLookup.focus();
+    }
+  }
+
+
+  checkPermissions() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    if (this.currentMenuId && userRole) {
+      this.leadService
+        .getRoleMenuPermissions(this.currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+          },
+        });
+    }
+  }
+
+  /**
+  |--------------------------------------------------
+  |   Section-4 : Main Functions
+  |--------------------------------------------------
+  */
+
+  // Header Form Initialization
+  initServiceJobForm() {
+    this.serviceJobForm = this.fb.group({
+      DepartmentMasterSid: [null, [Validators.required]],
+      CustomerMasterSid: [null, [Validators.required]],
+      CustomerBranchSid: [''],
+      CustomerName: [''],
+      CustomerAddress: [null, [Validators.required]],
+      ShipmentNo : [{ value: '', disabled: true }],
+      HBLNo: [{ value: '', disabled: true }],
+      MBLNo: [{ value: '', disabled: true }],
+      MBLDate: [{ value: '', disabled: true }],
+      status: ['Active'],
+
+      POL: [null, [Validators.required]],
+      POD: [null, [Validators.required]]
+    })
+    this.serviceJobForm.valueChanges.subscribe(() => {
+      this.syncFormValueWithRateComponent();
+    })
+  }
+
+
+  // Cargo Form Initiation
+  initCargoForm() {
+    this.cargoForm = this.fb.group({
+      BookingCargoSid: [null],
+      CargoType: ['General'],
+      ContainerType: [null],
+      NoofContainers: [''],
+      GrossWeight: [''],
+      NetWeight: [''],
+      Volume: [''],
+      ChargeableWeight: [''],
+      NoOfPackage: [''],
+      ShipmentTerms: [null],
+      MovementType: [null],
+      FreightTerms: [null],
+      ModeOfTransport: [null],
+      StuffingAt: ['Dock']
+    })
+    this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.cargoForm);
+    });
+    this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.cargoForm);
+    });
+    this.cargoForm.valueChanges.subscribe(() => {
+      this.syncFormValueWithRateComponent();
+    })
+  }
+
+
+
+  /**
+   *  Get form Control
+  */
+
+ 
+ get b(): { [key: string]: AbstractControl<any, any> } {
+   return this.serviceJobForm.controls || {}
+ }
+ get c(): { [key: string]: AbstractControl<any, any> } {
+   return this.cargoForm.controls || {}
+ }
+
+
+  /**
+   *  Load Lookups
+  */
+  loadHeaderMandatoryParts() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    return forkJoin({
+      departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
+      customers: this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
+      ports: this.operationService.getAllPorts().pipe(catchError(err => of([]))),
+      userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
+      currencies : this.operationService.getAllCurrencies().pipe(catchError(err => of([]))),
+
+    }).pipe(tap(({
+      departments, customers, ports, userCountry,currencies
+    }) => {
+      if (!this.isEditMode) {
+        this.spinner.hide();
+      }
+      this.departmentList = departments.data;
+      this.customerList = customers;
+      this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
+      this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
+      this.currencyList = (currencies.data || []).map(c => ({ ...c, Country: c?.countryMaster?.countryName }));
+    }))
+  }
+
+
+  loadCargoLookups() {
+    forkJoin({
+      containerTypes: this.operationService.getAllContainerTypes().pipe(catchError(err => of({ data: [] }))),
+    }).subscribe(({ containerTypes }) => {
+      this.containerTypeList = containerTypes.data;
+    })
+  }
+
+
+
+
+  loadServiceJobById(houseJobSid: number) {
+    this.spinner.show();
+    this.operationService.getServiceJobById(houseJobSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.patchValues(resp.data);
+          this.serviceJobData = resp.data;
+          this.minDate = undefined;
+          this.spinner.hide();
+          this.captureInitialFormState();
+        }
+      }
+    )
+  }
+
+  patchValues(response: any) {
+    const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
+    this.onDeptChange(selectedDepartment);
+    this.onCustomerChange(selectedCustomer);
+    this.serviceJobForm.patchValue({
+      DepartmentMasterSid: response.DepartmentMasterSid,
+      CustomerMasterSid: response.CustomerMasterSid,
+      CustomerBranchSid: response.CustomerBranchSid,
+      CustomerName: response.CustomerName,
+      CustomerAddress: response.CustomerAddress,
+      HBLNo: response.HBLNo,
+      MBLNo: response.MBLNo,
+      MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
+      status: response.status === "A" ? "Active" : "Suspended",
+
+      POL: response.POL,
+      POD: response.POD,
+      BookingStatus: response.BookingStatus,
+      ShipmentNo: response.ShipmentNo
+    })
+    this.b['DepartmentMasterSid']?.disable();
+    this.b['CustomerMasterSid']?.disable();
+
+
+
+    const cargoData = response.Cargo[0];
+    this.cargoForm.patchValue({
+      BookingCargoSid: cargoData?.BookingCargoSid,
+      CargoType: cargoData?.CargoType,
+      ContainerType: cargoData?.ContainerType,
+      NoofContainers: cargoData?.NoofContainers,
+      GrossWeight: cargoData?.GrossWeight,
+      NetWeight: cargoData?.NetWeight,
+      Volume: cargoData?.Volume,
+      ChargeableWeight: cargoData?.ChargeableWeight,
+      NoOfPackage: cargoData?.NoOfPackage,
+      ShipmentTerms: cargoData?.ShipmentTerms,
+      MovementType: cargoData?.MovementType,
+      FreightTerms: cargoData?.FreightTerms,
+      ModeOfTransport: cargoData?.ModeOfTransport,
+      StuffingAt: cargoData?.StuffingAt
+    })
+    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
+    
+    this.serviceJobRateArr = (response.costRevenueCharges || []).map(br => ({
+      ...br,
+      RateSid : br.CostRevenueChargesSid,
+      status : br.status  === "A" ? "Active" : "Suspended"
+    }));
+    this.serviceJobRateResults = [...this.serviceJobRateArr];
+
+
+    this.syncFormValueWithRateComponent();
+  }
+
+
+  handleRateChange(allRates: any[]) {
+    console.log(allRates);
+    if (allRates.length > 0) {
+      this.serviceJobRateResults = [...allRates];
+    }
+  }
+
+
+
+
+  onSubmit() {
+    console.log('Submit triggered', this.serviceJobForm.value);
+    if (this.isEditMode) {
+      const currentFormState = JSON.stringify(this.getCurrentFormState());
+      if (this.initialFormValue === currentFormState) {
+        this.appSettingService.showWarning('No changes are there to save.');
+        return;
+      }
+    }
+    if (this.serviceJobForm.invalid) {
+      this.serviceJobForm.markAllAsTouched();
+      this.serviceJobForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
+    }
+
+    const isRateValid = this.costEntryComponent?.validateRateArray?.();
+    console.log(isRateValid);
+    if (!isRateValid) {
+      console.warn('Rate validation failed — submission stopped');
+      return;
+    }
+    const serviceFormValue = this.serviceJobForm.getRawValue();
+    const cargoFormValue = this.cargoForm.getRawValue();
+
+    const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentMasterSid: serviceFormValue.DepartmentMasterSid,
+      POL: serviceFormValue.POL,
+      POD: serviceFormValue.POD,
+      CustomerMasterSid: serviceFormValue.CustomerMasterSid,
+      CustomerBranchSid: serviceFormValue.CustomerBranchSid || null,
+      CustomerName: serviceFormValue.CustomerName,
+      CustomerAddress: serviceFormValue.CustomerAddress,
+      FreightPPCC: cargoFormValue.FreightTerms || "Prepaid",
+      status: serviceFormValue.status === 'Active' ? 'A' : 'S',
+      houseJobCargo: {
+        ...(cargoFormValue.HouseJobCargoSid && { HouseJobCargoSid: cargoFormValue.HouseJobCargoSid }),
+        CargoType: cargoFormValue.CargoType || 'General',
+        GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
+        NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
+        Volume: parseFloat(cargoFormValue.Volume) || 0,
+        ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
+        ContainerType: cargoFormValue.ContainerType || null,
+        PackageType: null,
+        NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
+        FreightAmount: "0",
+        ShipmentTerms: cargoFormValue.ShipmentTerms || "",
+        FreightTerms: cargoFormValue.FreightTerms || "",
+        ModeOfTransport: cargoFormValue.ModeOfTransport || "",
+        MovementType: cargoFormValue.MovementType || "",
+        NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
+        Qty: 0,
+        StuffingAt: cargoFormValue.StuffingAt || 'Dock',
+        WeightUnitSid: null
+      },
+      costRevenueCharges: this.serviceJobRateResults.map(rate => ({
+        RateSid: rate.RateSid || null,
+        ShipmentNo: serviceFormValue.ShipmentNo || "",
+        MasterJobNo: serviceFormValue.MBLNo || "",
+        ChargeMasterSid: rate.ChargeMasterSid,
+        ChargeDescription: rate.ChargeDescription,
+        ChargeUomSid: rate.ChargeUomSid,
+        RevenueChargeUomSid: rate.RevenueChargeUomSid,
+        CostChargeUomSid: rate.CostChargeUomSid,
+        NoOfUnit: parseFloat(rate.NoOfUnit) || 0,
+        RevenueNumberOfUnit: parseFloat(rate.RevenueNumberOfUnit) || 0,
+        CostNumberOfUnit: parseFloat(rate.CostNumberOfUnit) || 0,
+        RevenueCurrencyMasterSid: rate.RevenueCurrencyMasterSid,
+        RevenueExchangeRate: parseFloat(rate.RevenueExchangeRate) || 1,
+        RevenueRate: parseFloat(rate.RevenueRate) || 0,
+        RevenueAmount: rate.RevenueAmount || "0",
+        RevenueLocalAmount: rate.RevenueLocalAmount || "0",
+        RevenueDrCr: rate.RevenueDrCr || "C",
+        RevenueCustomerMasterSid: rate.RevenueCustomerMasterSid,
+        RevenueCustomerBranchSid: rate.RevenueCustomerBranchSid,
+        RevenuePrepaidCollect: rate.RevenuePrepaidCollect,
+        RevenueVoucherHeaderSid: rate.RevenueVoucherHeaderSid || null,
+        RevenueVoucherTypeSid: rate.RevenueVoucherTypeSid || null,
+        RevenueVoucherHeader: rate.RevenueVoucherHeader || null,
+        RevenueVoucherType: rate.RevenueVoucherType || null,
+        CostCurrencyMasterSid: rate.CostCurrencyMasterSid,
+        CostExchangeRate: parseFloat(rate.CostExchangeRate) || 1,
+        CostRate: parseFloat(rate.CostRate) || 0,
+        CostAmount: rate.CostAmount || "0",
+        CostLocalAmount: rate.CostLocalAmount || "0",
+        CostDrCr: rate.CostDrCr || "D",
+        CostAgentMasterSid: rate.CostAgentMasterSid,
+        CostAgentBranchSid: rate.CostAgentBranchSid,
+        CostPrepaidCollect: rate.CostPrepaidCollect,
+        CostVoucherHeaderSid: rate.CostVoucherHeaderSid || null,
+        CostVoucherTypeSid: rate.CostVoucherTypeSid || null,
+        CostVoucherHeader: rate.CostVoucherHeader || null,
+        CostVoucherType: rate.CostVoucherType || null,
+        status: rate.status || "Active",
+        Remarks: rate.Remarks || "",
+        QuoteChargeSid: rate.QuoteChargeSid || null,
+        TariffDetailSid: rate.TariffDetailSid || null,
+        unitQtyBasis: rate.unitQtyBasis || null,
+        _costVoucherHeaderSid: rate._costVoucherHeaderSid || null,
+        _revenueVoucherHeaderSid: rate._revenueVoucherHeaderSid || null
+      })),
+      ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
+    };
+
+    console.log('Final Payload:', payload);
+
+    if (this.isEditMode && this.HouseJobSid) {
+      this.operationService.updateServiceJobById(this.HouseJobSid, payload).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Service Job successfully updated.');
+            this.loadServiceJobById(this.HouseJobSid);
+          } else {
+            this.appSettingService.showError('Error updating Service Job.');
+            console.error(resp.message);
+          }
+        },
+        error: (err) => {
+          this.appSettingService.showError('Failed to update Service Job.');
+          console.error(err);
+        }
+      });
+    } else {
+      this.operationService.createServiceJob(payload).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Service Job successfully created.');
+            const houseId = resp.data?.HouseJobSid;
+            this.router.navigate(['operation/service-job/entry', houseId]);
+          } else {
+            this.appSettingService.showError('Error creating service job.');
+            console.error(resp.message);
+          }
+        },
+        error: (err) => {
+          this.appSettingService.showError('Failed to create service job.');
+          console.error(err);
+        }
+      });
+    }
+  }
+
+  /**
+    |--------------------------------------------------
+    |   Section-5 : Helper Functions
+    |--------------------------------------------------
+  */
+
+  // Header Part Related
+
+  onDeptChange(department) {
+    this.selectedDepartment = department;
+    if (!department) {
+      this.selectedDepartmentType = '';
+      this.selectedFCLLCL = 'LCL';
+      this.filteredPorts = [];
+      this.filteredPOL = [];
+      this.filteredPOD = [];
+      this.b['POL'].setValue(null);
+      this.b['POD'].setValue(null);
+      return;
+    }
+    this.selectedDepartmentType = department.departmentType.toUpperCase();
+    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+
+    this.onRouteChange()
+    this.syncFormValueWithRateComponent();
+  }
+
+  onRouteChange(): void {
+    const polSid = this.b['POL']?.value;
+    const podSid = this.b['POD']?.value;
+    const segment = this.selectedFCLLCL
+
+    this.filteredPorts = this.getFilteredPortsBySegment(segment);
+    this.filteredPOL = this.filteredPorts.filter(port => port.PortCode !== podSid);
+    this.filteredPOD = this.filteredPorts.filter(port => port.PortCode !== polSid);
+    if (polSid && podSid && polSid === podSid) {
+      this.b['POD']?.setErrors({ samePort: true });
+      this.b['POL']?.setErrors({ samePort: true });
+    } else {
+      this.b['POD']?.setErrors(null);
+      this.b['POL']?.setErrors(null);
+    }
+  }
+
+  getFilteredPortsBySegment(segment: string): any[] {
+    if (segment === 'AIR') {
+      return this.portList.filter(port => port.PortType === 'Air');
+    } else if (segment === 'FCL' || segment === 'LCL') {
+      return this.portList.filter(port => port.PortType === 'Sea');
+    }
+    return [];
+  }
+
+
+  onCustomerChange(customer: any) {
+    console.log(customer);
+    if (!customer) {
+      this.b['CustomerName']?.setValue('');
+      this.b['CustomerAddress']?.setValue(null);
+      this.b['CustomerBranchSid']?.setValue(null);
+      this.selectedCustomer = null;
+      return;
+    }
+    this.b['CustomerName']?.setValue(customer.CustomerName);
+    this.b['CustomerAddress']?.setValue(customer.Address);
+    this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
+    this.selectedCustomer = customer;
+  }
+
+
+  handlePOLChange(selectedPort: any) {
+    if (!selectedPort) {
+      this.filteredPOD = [...this.filteredPorts];
+      return;
+    }
+    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
+  }
+
+  handlePODChange(selectedPort: any) {
+    if (!selectedPort) {
+      this.filteredPOL = [...this.filteredPorts];
+      return;
+    }
+    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
+  }
+
+
+  syncFormValueWithRateComponent() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const DepartmentMasterSid = this.b['DepartmentMasterSid']?.value;
+    const departmentName = this.selectedDepartment?.departmentName;
+    const selectedPOL = this.b['POL']?.value;
+    const selectedPOD = this.b['POD']?.value;
+    const MBLNo = this.b['MBLNo']?.value;
+    const HBLNo = this.b['HBLNo']?.value;
+    const EffectiveDate = this.b['MBLDate']?.value;
+    const ExpiredDate = this.b['MBLDate']?.value;
+    const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
+    const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
+    const CargoType = this.c['CargoType']?.value;
+    const NetWeight = this.c['NetWeight']?.value;
+    const GrossWeight = this.c['GrossWeight']?.value;
+    const NoofContainers = this.c['NoofContainers']?.value;
+    const Volume = this.c['Volume']?.value;
+    const ChargeableWeight = this.c['ChargeableWeight']?.value;
+
+    const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
+    const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
+    const HouseJobSid = this.HouseJobSid || this.houseData?.HouseJobSid || this.b['HouseJobSid']?.value;
+
+    this.currentFormValue = {
+      CompanyMasterSid,
+      DepartmentMasterSid,
+      ParentSid : HouseJobSid,
+      CustomerMasterSid,
+      CustomerBranchSid,
+      departmentName,
+      MBLNo,
+      HBLNo,
+      Segment: this.selectedFCLLCL,
+      POLSid,
+      PODSid,
+      EffectiveDate,
+      ExpiredDate,
+      CargoType,
+      GrossWeight,
+      NetWeight,
+      Volume,
+      NoofContainers,
+      ChargeableWeight,
+      countryOfCompany : this.countryOfCompany
+    }
+  }
+
+
+  navigateBack() {
+    history.back();
+  }
+  
+  selectedTab = 'Rate';
+  isQuickFormExpanded = false;
+
+  resetForm() {
+    this.patchValues(this.serviceJobData);
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
+  }
+
+
+
+  showInfo() {
+    if (!this.houseData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.houseData;
+    modalRef.componentInstance.idLabel = 'Booking Id';
+    modalRef.componentInstance.idValue = this.houseData?.BookingHeaderSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.HouseJobSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+  async openEmail() {
+    if (!this.houseData) return;
+
+    try {
+      this.spinner.show();
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Generate PDF blob automatically
+      const pdfBlob = await this.generatePDFBlob();
+      const pdfFileName = (this.houseData?.HouseNo || 'booking') + '.pdf';
+      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+
+      const toEmailSet = new Set<string>();
+      toEmailSet.add(this.selectedCustomer?.Email);
+
+      const toEmail = Array.from(toEmailSet);
+      const ccEmail = [this.userData['userEmail']];
+
+      const POL = this.houseData?.POL;
+      const POD = this.houseData?.POD;
+      const formattedPOL = getFormattedPort(this.portList,POL);
+      const formattedPOD = getFormattedPort(this.portList,POD);
+      const subject = `Booking No.${this.houseData.BookingNo} Date:${this.datePipe.transform(this.houseData?.BookingDateTime)} ${formattedPOL} - ${formattedPOD} confirmation`;
+
+      const mailBody = `Dear Sir/Madam,
+Please find here enclosed the booking details as requested.
+Kindly review the details at your convenience.
+Looking forward to confirm cargo readyness.
+Best Regards,
+${this.userData['userName']}`;
+
+      this.spinner.hide();
+
+      modalRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: ccEmail,
+        EmailBCC: [],
+        Subject: subject,
+        Mailbody: mailBody,
+        attachments: [pdfFile]
+      };
+
+    } catch (error) {
+      this.spinner.hide();
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF for email attachment.');
+    }
+  }
+
+  openAuthority() {
+    if (!this.houseData) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    })
+  }
+  toggleQuickForm() {
+    this.isQuickFormExpanded = !this.isQuickFormExpanded;
+  }
+
+
+  openProfitModal(content: any) {
+    const modalRef = this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+
+    })
+  }
+
+  openEDoc() {
+    if (!this.houseData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    })
+ const data:any={
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch.BranchMasterSid,
+    MenuMasterSid: this.MenuMasterSid,
+    DocumentSid: this.HouseJobSid
+  }
+  console.log(this.MenuMasterSid)
+      this.commonService.documentData.set(data)
+}
+
+
+
+  async openFollowup() {
+    if (!this.houseData) return;
+    const POL = this.houseData?.POL;
+    const POD = this.houseData?.POD;
+    const FPD = this.houseData?.FPD;
+    const formattedPOL = getFormattedPort(this.portList,POL);
+    const formattedPOD = getFormattedPort(this.portList,POL);
+    const resp: any = await firstValueFrom(
+      this.operationService.getCustomerBranchEmail(this.houseData.CustomerBranchSid)
+    );
+    const toEmail = resp?.data?.Email;
+    if (!toEmail) {
+      this.appSettingService.showError('To Email is missing.')
+      return;
+    }
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.houseData?.HouseJobSid;
+    modalRef.componentInstance.parentEmail = toEmail;
+    modalRef.componentInstance.parentSubject = `Booking No.${this.houseData.HouseNo} Date:${this.datePipe.transform(this.houseData?.BookingDateTime)} ${formattedPOL} - ${formattedPOD} confirmation`;
+    modalRef.componentInstance.parentMailbody = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find here enclosed the booking details as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to confirm cargo readyness.</p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userName']}</p>
+      </div>
+    `;
+  }
+
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.HouseJobSid) return;
+    this.getAuditLog()
+    this.auditLogModalRef = this.modalService.open(modal, {
+      centered: true,
+      scrollable: true,
+      windowClass: 'audit-log-modal'
+    });
+  }
+
+  getAuditLog() {
+    this.operationService.getAuditLogsBooking(
+      'HouseJob',
+      this.HouseJobSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+
+        const formatFields = (val: any) => {
+          if (!val) return [];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          if (Object.keys(obj).length === 0) return [];
+          return Object.entries(obj)
+            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
+            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
+        };
+
+        this.auditLogs = logs
+          .map(log => ({
+            ...log,
+            oldValDisplay: formatFields(log.oldVal),
+            newValDisplay: formatFields(log.newVal),
+          }))
+          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+
+        this.houseStatusTimeline = logs
+          .filter(log => log.newVal?.BookingStatus)
+          .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime())
+          .map(log => ({
+            status: log.newVal.BookingStatus,
+            at: log.changedAt
+          }));
+
+        // ✅ Check if Cargo Received exists but Booked does not
+        const hasCargoReceived = this.houseStatusTimeline.some(l => l.status === 'Cargo Received');
+        const hasBooked = this.houseStatusTimeline.some(l => l.status === 'Booked');
+
+        if (hasCargoReceived && !hasBooked) {
+          const cargoLog = this.houseStatusTimeline.find(l => l.status === 'Cargo Received');
+
+          // create Booked log 1 second before Cargo Received
+          const bookedDate = new Date(new Date(cargoLog.at).getTime() - 1000).toISOString();
+
+          this.houseStatusTimeline.push({
+            status: 'Booked',
+            at: bookedDate
+          });
+        }
+
+        // ✅ Resort descending and take latest 3
+        this.houseStatusTimeline = this.houseStatusTimeline
+          .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+          .slice(0, 3);
+
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
+
+  getContainerDisplay(): string {
+    const containerCount = this.c['NoofContainers']?.value;
+    const containerType = this.c['ContainerType']?.value;
+    const containerTypeSize = (this.containerTypeList.find(c => c.ContainerName === containerType)?.ContainerSize);
+    if (containerCount && containerTypeSize) {
+      return `${containerCount} x ${containerTypeSize}`;
+    }
+    return '-';
+  }
+
+  toggleMinimizeMaximize() {
+    toggleFullScreen();
+  }
+
+
+
+  reportAndEmailModel(content: TemplateRef<any>) {
+    this.modalService.open(content, {
+      size: 'xl',
+      scrollable: true,
+    });
+  }
+
+
+  async sendEmail() {
+    try {
+      this.spinner.show();
+      const pdfBlob = await this.generatePDFBlob();
+
+      const formData = new FormData();
+      const toEmailSet = new Set<string>();
+
+      if (this.selectedCustomer?.Email) {
+        toEmailSet.add(this.selectedCustomer.Email);
+      }
+      if (toEmailSet.size === 0 && this.selectedCustomer?.CustomerBranchSid) {
+        const resp: any = await firstValueFrom(
+          this.operationService.getCustomerBranchEmail(this.selectedCustomer.CustomerBranchSid)
+        );
+
+        if (resp?.status && resp.data?.Email) {
+          toEmailSet.add(resp.data.Email);
+        }
+      }
+
+      if (toEmailSet.size === 0) {
+        this.appSettingService.showError('To Email is missing.')
+        this.spinner.hide();
+        return;
+      }
+
+      const toEmail = Array.from(toEmailSet);
+      toEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailTo[]", email);
+        }
+      });
+      const ccEmailSet = new Set<string>([this.userData['userName']]);
+      const ccEmail = Array.from(ccEmailSet);
+
+      ccEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailCC[]", email);
+        }
+      });
+      const POL = this.houseData?.POL;
+      const POD = this.houseData?.POD;
+      const FPD = this.houseData?.FPD;
+      const formattedPOL = getFormattedPort(this.portList,POL);
+      const formattedPOD = getFormattedPort(this.portList,POD);
+      const formattedFPD = getFormattedPort(this.portList,FPD);
+      formData.append('Subject', `Booking No.${this.houseData.BookingNo} Date:${this.datePipe.transform(this.houseData?.BookingDateTime)} ${formattedPOL} - ${formattedPOD} confirmation`);
+      formData.append('Mailbody', `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find here enclosed the booking details as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to confirm cargo readyness.</p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userName']}</p>
+      </div>
+    `);
+      formData.append('file', pdfBlob, (this.houseData?.bookingNumber || 'booking') + '.pdf');
+      console.log(formData)
+      this.operationService.bookingPrint(formData).subscribe((resp: any) => {
+        this.spinner.hide();
+        if (resp?.data) {
+          this.appSettingService.showSuccess('Booking Print Sent successfully!');
+        }
+      }, error => {
+        this.spinner.hide();
+        this.appSettingService.showError('Failed to send email.');
+      });
+    } catch (error) {
+      this.spinner.hide();
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF.');
+    }
+  }
+
+
+  ngOnDestroy() {
+    this.commonService.clearDocumentData()
+    this.dropdownStore.clearCache()
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  existsInList(list: any[], value: any) {
+    if (list) {
+      return list.some(item => item.CustomerName === value);
+    }
+    return null;
+  }
+
+
+  setOrResetWeightError(formGroup: FormGroup) {
+    const grossCtrl = formGroup.get('GrossWeight');
+    const grossValue = formGroup.get('GrossWeight')?.value;
+    const netValue = formGroup.get('NetWeight')?.value;
+
+    if (!grossValue || !netValue) {
+      grossCtrl.setErrors(null);
+      return;
+    }
+    if (grossCtrl) {
+      if (Number(grossValue) <= Number(netValue)) {
+        grossCtrl.setErrors({ grossNotGreater: true });
+      } else {
+        grossCtrl.setErrors(null);
+      }
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
+
+  hasAnyDropdownPermission(): boolean {
+    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+  }
+
+  getBookingStatus() {
+    return this.serviceJobForm.get('status')?.value;
+  }
+
+
+
+    
+          async generatePDFBlob(): Promise<Blob | null> {
+            const printContent = document.getElementById('printContent');
+            if (!printContent) {
+              return null;
+            }
+        
+            try {
+              const canvas = await html2canvas(printContent, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+              });
+        
+              const imgWidth = 210;
+              const pageHeight = 297;
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              let heightLeft = imgHeight;
+              let position = 0;
+        
+              const pdf = new jsPDF('p', 'mm', 'a4');
+              const imgData = canvas.toDataURL('image/png');
+        
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+        
+              while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+              }
+        
+              return pdf.output('blob');
+            } catch (error) {
+              console.error('Error generating PDF blob:', error);
+              return null;
+            }
+          }
+
+  /**
+* Captures the current state of all forms and related data properties.
+* A short delay ensures all data bindings are synchronized before capture.
+*/
+  private captureInitialFormState(): void {
+    // Use a small timeout to ensure the form values are fully settled after patching.
+    setTimeout(() => {
+      this.initialFormValue = JSON.stringify(this.getCurrentFormState());
+    }, 500);
+  }
+
+  /**
+   * Gathers the raw values from all forms and child component outputs
+   * into a single object for state comparison.
+   * @returns A single object representing the current state of the page.
+   */
+  private getCurrentFormState(): any {
+    return {
+      bookingForm: this.serviceJobForm.getRawValue(),
+      cargoForm: this.cargoForm.getRawValue(),
+      rateResult: this.serviceJobRateResults,
+    };
+  }
+       
+}
