@@ -21,9 +21,9 @@
     <div class="header-actions">
       <div class="action-group" *ngIf="showGenerateJobButton && isEditMode && bookingData">
   <button class="btn btn-sm btn-info" 
-          (click)="onGenerateJob()" 
+           (click)="onGenerateJob()" 
           appPreventMultiClick
-          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value">
+          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed'">
     <i class="fas fa-save me-1"></i>
     <span>Generate Job</span>
   </button>

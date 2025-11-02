@@ -2288,91 +2288,136 @@ createRateFormGroup(data?: any): FormGroup {
    * EXWOP: Export without payment (LUT/bond)
    */
   private determineGSTType(selectedCharges: any[]): string | null {
-    // Only determine GST Type for Indian companies
-    if (this.countryOfCompany !== 'india') {
-      return null;
-    }
+  // Get company country from multiple possible sources
+  let companyCountry = '';
+  
+  // Try multiple sources for company country
+  if (this.countryOfCompany) {
+    companyCountry = this.countryOfCompany.toLowerCase();
+  } else if (this.currentCompany?.countryMaster?.countryCode) {
+    companyCountry = this.currentCompany.countryMaster.countryCode.toLowerCase();
+  } else if (this.currentCompany?.Country) {
+    companyCountry = this.currentCompany.Country.toLowerCase();
+  } else if (this.currentBranch?.countryMaster?.countryCode) {
+    companyCountry = this.currentBranch.countryMaster.countryCode.toLowerCase();
+  }
+  
+  // Only determine GST Type for Indian companies
+  if (companyCountry !== 'india' && companyCountry !== 'in') {
+    console.log('Not an Indian company, GST Type not applicable. Country:', companyCountry);
+    return null;
+  }
 
-    // Get first charge for common data
-    const firstCharge = selectedCharges[0];
-    if (!firstCharge) return null;
+  // Get first charge for common data
+  const firstCharge = selectedCharges[0];
+  if (!firstCharge) {
+    console.log('No charges available for GST Type determination');
+    return null;
+  }
 
-    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+  const isRevenue = this.currentVoucherTypeFilter === 'revenue';
 
-    // Get billing party details based on type
-    const billingParty = isRevenue
-      ? (firstCharge?.customerMasterBP || {})
-      : (firstCharge?.AgentMaster || {});
+  // Get billing party details based on type
+  const billingParty = isRevenue
+    ? (firstCharge?.customerMasterBP || {})
+    : (firstCharge?.AgentMaster || {});
 
-    const customerBranch = firstCharge?.customerBranch || {};
+  const customerBranch = firstCharge?.customerBranch || {};
 
-    // Check if this is an export shipment
-    // Get POL and POD from booking form
-    const polData = this.parentFormValue?.POLSid;
-    const podData = this.parentFormValue?.PODSid;
+  // Check if this is an export shipment
+  const isExport = this.checkIfExportShipment();
 
-    // If POL or POD has country information, check if it's export
-    const isExport = this.checkIfExportShipment(polData, podData);
+  console.log('GST Type Determination:', {
+    companyCountry,
+    isExport,
+    billingParty: billingParty?.CustomerName,
+    hasGSTNumber: !!customerBranch?.GSTNo?.trim()
+  });
 
-    if (isExport) {
-      // For export, check if IGST is applied
-      // EXWP: Export with payment (IGST applied)
-      // EXWOP: Export without payment (no IGST)
-      const hasIGST = this.chargeSelectionTaxResult?.totalIGST > 0;
-      return hasIGST ? 'EXWP' : 'EXWOP';
-    }
+  if (isExport) {
+    // For export, check if IGST is applied
+    const hasIGST = this.chargeSelectionTaxResult?.totalIGST > 0;
+    const gstType = hasIGST ? 'EXWP' : 'EXWOP';
+    console.log('Export shipment, GST Type:', gstType);
+    return gstType;
+  }
 
-    // Check if customer has GST number
-    const customerGSTNo = customerBranch?.GSTNo?.trim();
-    const hasGSTNumber = customerGSTNo && customerGSTNo.length > 0;
+  // Check if customer has GST number
+  const customerGSTNo = customerBranch?.GSTNo?.trim();
+  const hasGSTNumber = customerGSTNo && customerGSTNo.length > 0;
 
-    if (hasGSTNumber) {
-      // B2B: Customer has GST number
-      return 'B2B';
+  if (hasGSTNumber) {
+    console.log('B2B: Customer has GST number');
+    return 'B2B';
+  } else {
+    // B2C: Customer does not have GST number
+    const invoiceAmount = this.chargeSelectionTaxResult?.grandTotal || 0;
+    const invoiceAmountInLakhs = invoiceAmount / 100000;
+
+    // Check if same state or different state
+    const companyState = this.currentBranch?.StateName || '';
+    const customerState = customerBranch?.StateName || '';
+    const isSameState = companyState === customerState;
+
+    console.log('B2C Determination:', {
+      invoiceAmount,
+      invoiceAmountInLakhs,
+      companyState,
+      customerState,
+      isSameState
+    });
+
+    if (isSameState && invoiceAmountInLakhs <= 2.5) {
+      console.log('B2CS: Same state, amount <= 2.5 lakh');
+      return 'B2CS';
     } else {
-      // B2C: Customer does not have GST number
-      // Check invoice amount and state
-
-      // Get total invoice amount from tax calculation result
-      const invoiceAmount = this.chargeSelectionTaxResult?.grandTotal || 0;
-      const invoiceAmountInLakhs = invoiceAmount / 100000; // Convert to lakhs
-
-      // Check if same state or different state
-      const companyState = this.currentBranch?.StateName || '';
-      const customerState = customerBranch?.StateName || '';
-      const isSameState = companyState === customerState;
-
-      if (isSameState && invoiceAmountInLakhs <= 2.5) {
-        // B2CS: Same state, amount <= 2.5 lakh
-        return 'B2CS';
-      } else {
-        // B2CL: Different state or amount > 2.5 lakh
-        return 'B2CL';
-      }
+      console.log('B2CL: Different state or amount > 2.5 lakh');
+      return 'B2CL';
     }
   }
+}
 
   /**
    * Check if this is an export shipment based on port countries
    */
-  private checkIfExportShipment(polData: any, podData: any): boolean {
-    // If company country is India, check if either POL or POD is outside India
-    if (this.countryOfCompany !== 'india') {
-      return false;
-    }
-
-    // Check if POL or POD has country information
-    const polCountry = polData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
-                       polData?.Country?.trim()?.toLowerCase() || '';
-    const podCountry = podData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
-                       podData?.Country?.trim()?.toLowerCase() || '';
-
-    // Export if destination is outside India
-    // Import if origin is outside India (but for invoice, we typically generate for exports)
-    const isExport = podCountry && podCountry !== 'india' && podCountry !== 'in';
-
-    return isExport;
+  private checkIfExportShipment(): boolean {
+  // If company country is not India, not an export from India
+  let companyCountry = '';
+  if (this.countryOfCompany) {
+    companyCountry = this.countryOfCompany.toLowerCase();
+  } else if (this.currentCompany?.countryMaster?.countryCode) {
+    companyCountry = this.currentCompany.countryMaster.countryCode.toLowerCase();
   }
+  
+  if (companyCountry !== 'india' && companyCountry !== 'in') {
+    return false;
+  }
+
+  // Check if POL or POD has country information
+  const polData = this.parentFormValue?.POLSid;
+  const podData = this.parentFormValue?.PODSid;
+
+  const polCountry = polData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
+                   polData?.Country?.trim()?.toLowerCase() || 
+                   polData?.country?.trim()?.toLowerCase() || '';
+  
+  const podCountry = podData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
+                   podData?.Country?.trim()?.toLowerCase() ||
+                   podData?.country?.trim()?.toLowerCase() || '';
+
+  console.log('Export Check:', {
+    companyCountry,
+    polCountry,
+    podCountry,
+    parentFormValue: this.parentFormValue
+  });
+
+  // Export if destination is outside India
+  const isExport = podCountry && podCountry !== 'india' && podCountry !== 'in';
+
+  console.log('Is Export:', isExport);
+  return isExport;
+}
 
   getChargeTaxPercentage(charge: any): string {
     // First check if there's a manually selected tax group
@@ -2475,6 +2520,7 @@ createRateFormGroup(data?: any): FormGroup {
       }
       chargeTaxGroups.push(obj);
     });
+    
 
     // Determine GST Type for Indian companies
     const gstType = this.determineGSTType(selectedChargeData);
@@ -2505,11 +2551,12 @@ createRateFormGroup(data?: any): FormGroup {
         GST_VAT: this.billingGST_VAT, // Add GST-VAT to payload
         gstType: gstType
       },
+      
 
       // Charge tax group mappings
       chargeTaxGroups: chargeTaxGroups
     };
-
+    
     // VERIFY GST-VAT PAYLOAD
     console.log('=== GST-VAT PAYLOAD VERIFICATION ===');
     console.log('GST-VAT Value:', this.billingGST_VAT);
@@ -2559,7 +2606,6 @@ createRateFormGroup(data?: any): FormGroup {
     console.error('Error generating voucher:', error);
   }
 }
-
 
   cancelChargeSelection() {
     this.chargeSelectionModalRef?.close();
