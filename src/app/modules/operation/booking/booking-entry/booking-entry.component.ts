@@ -1281,12 +1281,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const isRateValid = this.costEntryComponent?.validateRateArray?.();
-    console.log(isRateValid);
-    if (!isRateValid) {
-      console.warn('Rate validation failed — submission stopped');
-      return;
-    }
+    // const isRateValid = this.costEntryComponent?.validateRateArray?.();
+    // console.log(isRateValid);
+    // if (!isRateValid) {
+    //   console.warn('Rate validation failed — submission stopped');
+    //   return;
+    // }
     console.log('Before',this.b['BookingStatus']?.getRawValue());
     this.updateBookingStatusOnCargoDate();
     console.log('After',this.b['BookingStatus']?.getRawValue());
