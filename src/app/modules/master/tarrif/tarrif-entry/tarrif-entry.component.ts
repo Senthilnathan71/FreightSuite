@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, Input } from '@angular/core';
 import { NgbAlertModule, NgbCalendar, NgbDate, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule, NgbPopoverModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -29,6 +29,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { CommonService } from 'src/app/common/common.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -73,7 +75,7 @@ export class TarrifEntryComponent implements OnInit {
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
   departments: any[] = [];
-
+ 
   active = 1;
   modalRef: NgbModalRef;
   tariffHeaderForm!: FormGroup;
@@ -94,7 +96,7 @@ export class TarrifEntryComponent implements OnInit {
   agentList: any[] = [];
   carrierList: any[] = [];
   companyList: any[] = [];
-  currencyList: any[] = [];
+ 
   incoList: any[] = [];
   isDataLoading: boolean = false;
   tariffData: any;
@@ -145,6 +147,19 @@ export class TarrifEntryComponent implements OnInit {
     displayLabels : ['Code', 'Name','Country'],
     labelFields :['currencyCode'],
   };
+   private _currencyList: any[] = [];
+  @Input()
+set currencyList(value: any[]) {
+  this._currencyList = value || [];
+  if (this._currencyList.length > 0 && this.currencyConfigService) {
+    this.currencyConfigService.initializeConfigurations(this._currencyList);
+    console.log(`Initialized currency configurations for ${this._currencyList.length} currencies`);
+  }
+}
+get currencyList(): any[] {
+  return this._currencyList;
+}
+
 
   constructor(
     private masterServ: MasterService,
@@ -157,7 +172,9 @@ export class TarrifEntryComponent implements OnInit {
     private matdial: MatDialog,
     private calendar: NgbCalendar,
     private operationServ: OperationService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private currencyConfigService: CurrencyConfigurationService,
+  private currencyFormatter: CurrencyFormatService
   ) { }
 
   ngOnInit(): void {
@@ -1301,4 +1318,22 @@ filterChargesByDepartment(department: any): void {
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
+public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
+  const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+  if (currency) {
+    const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+    return config?.amountDecimal || 2;
+  }
+  return 2;
+}
+
+public getFormattedAmount(amount: number, CurrencyMasterSid: number) {
+  const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+  const input = {
+    value: amount,
+    currencyCode: currency?.currencyCode
+  }
+  return this.currencyFormatter.formatAmount(input, false);
+}
+  
 }

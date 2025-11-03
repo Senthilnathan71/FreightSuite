@@ -522,7 +522,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       ATA: [null],
       ATD: [null],
       DestinationATA: [null],
-      CarrierMasterSid: [null],
+      // CarrierMasterSid: [null],
       CarrierName: [''],
       
       // Others fields

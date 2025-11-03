@@ -81,7 +81,7 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
         label: 'View',
         action: 'view',
         tooltip: 'View tarrif',
-        condition: (row: any) => this.hasPermission('View')
+        // condition: (row: any) => this.hasPermission('View')
       },
       {
         icon: 'fas fa-trash',
