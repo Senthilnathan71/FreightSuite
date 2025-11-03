@@ -21,6 +21,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -36,7 +38,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     FormsModule,
     NgxSpinnerModule,
     NumberFormatPipe,
-    CustomDatePipe
+    CustomDatePipe,
+    SearchableDropdown
   ],
   templateUrl: './vendor-invoice-entry.component.html',
   styleUrls: ['./vendor-invoice-entry.component.scss'],
@@ -65,7 +68,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   uomList: any[] = [];
   masterJobList: any[] = [];
   houseJobList: any[] = [];
-
+  customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   userData: any;
   currentDate = new Date();
 
@@ -693,16 +696,18 @@ export class VendorInvoiceEntryComponent implements OnInit {
   // Load lookups
   loadLookups() {
     this.spinner.show();
+      const companyRaw = localStorage.getItem('selected-company');
+      const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
+      const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
 
     Promise.all([
-      firstValueFrom(this.operationService.getAllSuledgermaster()),
+      firstValueFrom(this.operationService.getAllCreditorWithCOAMapped(filterOption)),
       firstValueFrom(this.operationService.getAllCurrencies()),
       firstValueFrom(this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid || 1)),
       firstValueFrom(this.operationService.getAllHssac()),
       firstValueFrom(this.operationService.getAllUom())
-    ]).then(([subledgers, currencies, charges, hssac, uom]) => {
-      this.subledgerList = subledgers.data || [];
-      this.vendorList = this.subledgerList.filter(s => s.SubledgerType === 'Supplier' || s.SubledgerType === 'Vendor');
+    ]).then(([vendors,currencies, charges, hssac, uom]) => {
+      this.vendorList = vendors.data || [];
       this.currencyList = currencies.data || [];
       this.chargeList = charges || [];
       this.hssacList = hssac || [];
