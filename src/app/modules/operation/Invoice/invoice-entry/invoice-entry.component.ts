@@ -84,6 +84,7 @@ export class InvoiceEntryComponent implements OnInit {
   houseJobListByMasterJob: { [key: number]: any[] } = {};
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
+
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName','countryName'],
     displayLabels: ['Code', 'Name','Country'],
@@ -93,6 +94,12 @@ export class InvoiceEntryComponent implements OnInit {
     displayFields : ['HSSACCode', 'HSSACName'],
     displayLabels : ['Code', 'Name'],
     labelFields :['HSSACCode'],
+  };
+  departmentList: any[] = [];
+  departmentLookupConfig = {
+    displayFields: ['departmentCode', 'departmentName'],
+    displayLabels: ['Code', 'Name'],
+    labelFields: ['departmentCode'],
   };
   // UI state
   selectedTab = 'Invoice';
@@ -249,7 +256,12 @@ export class InvoiceEntryComponent implements OnInit {
       // Try to get country from multiple sources
       // Priority: 1. Branch country, 2. Company country, 3. Fetch from backend
       let CountryName = null;
-
+        try {
+        await this.loadDepartments(company?.CompanyMasterSid);
+      } catch (e) {
+        console.error('Error loading departments', e);
+        this.departmentList = [];
+      }
       // Check currentBranch (set in ngOnInit)
       if (this.currentBranch) {
         CountryName = this.currentBranch.countryName
@@ -366,6 +378,37 @@ export class InvoiceEntryComponent implements OnInit {
       this.spinner.hide();
       console.error('Error loading lookups', error);
       this.appSettingService.showError('Error loading lookups.');
+    }
+  }
+
+  async loadDepartments(companyMasterSid: number) {
+    if (!companyMasterSid) {
+      this.departmentList = [];
+      return;
+    }
+
+    try {
+      const departments: any = await firstValueFrom(this.operationService.getAllDepartments(companyMasterSid));
+      
+      // Handle different response formats
+      if (departments && Array.isArray(departments)) {
+        this.departmentList = departments;
+      } else if (departments?.data && Array.isArray(departments.data)) {
+        this.departmentList = departments.data;
+      } else if (departments?.status && Array.isArray(departments.data)) {
+        this.departmentList = departments.data;
+      } else {
+        this.departmentList = departments || [];
+      }
+
+      console.log('DEBUG - Departments loaded:', this.departmentList.length, 'items');
+      if (this.departmentList.length > 0) {
+        console.log('DEBUG - First department item:', this.departmentList[0]);
+      }
+    } catch (error) {
+      console.error('Error loading departments:', error);
+      this.departmentList = [];
+      throw error;
     }
   }
 
@@ -758,6 +801,7 @@ private getCustomerCountryCode(customer: any): string {
         HSSACMasterSid: det.HSSACMasterSid,
         ChargeUOMSid: det.ChargeUOMSid,
         NumberOfUnit: det.NumberOfUnit,
+        DepartmentMasterSid: det.DepartmentMasterSid,
         DrCr: det.DrCr,
         CurrencyCode: det.CurrencyCode || this.invoiceForm.get('CurrencyCode')?.value,
         Rate: det.Rate,
@@ -819,6 +863,7 @@ private getCustomerCountryCode(customer: any): string {
       ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
       ChargeDescription: [data?.ChargeDescription || ''],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
+      DepartmentMasterSid: [data?.DepartmentMasterSid || null],
       ChargeUOMSid: [data?.ChargeUOMSid || null], // will hold the UOM id (UOMMasterSid)
       NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
       DrCr: [data?.DrCr || 'Cr', Validators.required], // Default to Cr for Invoice (revenue)
@@ -838,8 +883,18 @@ private getCustomerCountryCode(customer: any): string {
       MasterJobSid: [data?.MasterJobSid || null],
       HouseJobSid: [data?.HouseJobSid || null]
     });
+    
   }
-
+getDepartmentName(departmentSid: number): string {
+    if (!departmentSid || this.departmentList.length === 0) {
+      return '-';
+    }
+    const department = this.departmentList.find(dept => 
+      dept.DepartmentMasterSid === departmentSid || 
+      dept.departmentMasterSid === departmentSid
+    );
+    return department?.DepartmentName || department?.departmentName || '-';
+  }
   removeDetailRow(index: number) {
     if (this.details.length > index) this.details.removeAt(index);
     this.recalculateAllRows();
@@ -884,6 +939,7 @@ private getCustomerCountryCode(customer: any): string {
   const exRateRow = Number(val.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value || 1);
 
   const amount = unit * rate;
+  const taxableAmount = amount * exRateRow;
   const localAmount = amount * (exRateRow || 1);
 
   const companyRaw = localStorage.getItem('selected-company');
@@ -953,7 +1009,7 @@ private getCustomerCountryCode(customer: any): string {
 });
 
   row.get('Amount')?.setValue(this.round(amount));
-  row.get('TaxableAmount')?.setValue(this.round(amount));
+  row.get('TaxableAmount')?.setValue(this.round(taxableAmount));
   row.get('TaxPercentage1')?.setValue(this.round(taxPerc1));
   row.get('TaxAmount1')?.setValue(this.round(taxAmt1));
   row.get('TaxPercentage2')?.setValue(this.round(taxPerc2));
@@ -1188,6 +1244,7 @@ private normalizeParty(raw: any) {
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
         ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
+        DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
         NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
         DrCr: d.DrCr || 'Dr',
         CurrencyCode: d.CurrencyCode || raw.CurrencyCode,

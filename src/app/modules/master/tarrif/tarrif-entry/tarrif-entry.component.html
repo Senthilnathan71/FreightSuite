@@ -962,24 +962,28 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailSalePerUnitPrice"
-                                        placeholder="" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
-                                    <label for="text-input" class="input-label">Revenue Per Unit Price <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.touched &&
-                                    tariffDetailsForm.get('detailSalePerUnitPrice')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('decimalPrecision')) {
-                                        <span>{{ tariffDetailsForm.get('detailSalePerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+                            <!-- Revenue Per Unit Price Field -->
+<aside class="col-md-6">
+  <div class="custom-form-group">
+    <input type="text" id="text-input" formControlName="detailSalePerUnitPrice"
+           placeholder="" class="custom-input-field sm text-end" 
+           DecimalPrecision 
+           [DecimalPrecisionBefore]="10" 
+           [DecimalPrecisionAfter]="getAmountDecimalPlaces(tariffDetailsForm.get('detailSaleCurrency')?.value)">
+    <label for="text-input" class="input-label">Revenue Per Unit Price <span
+            class="text-danger">*</span></label>
+    @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.touched &&
+    tariffDetailsForm.get('detailSalePerUnitPrice')?.errors){
+    <div class="error-message">
+      @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('required')){
+      <span>Required</span>
+      } @else if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('decimalPrecision')) {
+      <span>{{ tariffDetailsForm.get('detailSalePerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailBuyCurrency')?.value">
                                     <!-- <ng-select class="ng-select" formControlName="detailBuyCurrency"
@@ -1006,24 +1010,28 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailBuyPerUnitPrice"
-                                        placeholder="" class="custom-input-field sm tex text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="5">
-                                    <label for="text-input" class="input-label">Cost Per Unit Price <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.touched &&
-                                    tariffDetailsForm.get('detailBuyPerUnitPrice')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('decimalPrecision')) {
-                                        <span>{{ tariffDetailsForm.get('detailBuyPerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+                            <!-- Cost Per Unit Price Field -->
+<aside class="col-md-3">
+  <div class="custom-form-group">
+    <input type="text" id="text-input" formControlName="detailBuyPerUnitPrice"
+           placeholder="" class="custom-input-field sm text-end" 
+           DecimalPrecision 
+           [DecimalPrecisionBefore]="10" 
+           [DecimalPrecisionAfter]="getAmountDecimalPlaces(tariffDetailsForm.get('detailBuyCurrency')?.value)">
+    <label for="text-input" class="input-label">Cost Per Unit Price <span
+            class="text-danger">*</span></label>
+    @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.touched &&
+    tariffDetailsForm.get('detailBuyPerUnitPrice')?.errors){
+    <div class="error-message">
+      @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('required')){
+      <span>Required</span>
+      } @else if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('decimalPrecision')) {
+      <span>{{ tariffDetailsForm.get('detailBuyPerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailMinSale"

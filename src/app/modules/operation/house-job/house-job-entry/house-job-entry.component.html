@@ -568,7 +568,7 @@
 
                     </div>
                   </div> -->
-                  <aside class="col-md-6" *ngIf="b['ShipmentType']?.value">
+                  <aside class="col-md-6" >
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('NominatedBy')?.value">
                       <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select"
                         appendTo="body" formControlName="NominatedBy" placeholder="">
@@ -852,7 +852,7 @@
 </aside>
 
                   <aside class="col-md-6 d-flex align-items-center mx-0">
-                    <div class="form-check form-check-inline p-0">
+                    <div class="form-check form-check-inline p-0" >
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Coload"
                           (keydown.enter)="toggleHeaderCheckboxes($event,'Coload')">
@@ -860,7 +860,29 @@
                       </div>
                     </div>
                   </aside>
-                  <aside class="col-md-6 d-flex align-items-center mx-0">
+                  @if(b['Coload'].value){
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
+              <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="Coloader" placeholder="" appendTo="body">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.CustomerName }}</strong><br>
+                    <small>{{ item.CustomerAddress1 }}</small>
+                  </div>
+                </ng-template>
+              </ng-select> -->
+              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Coloader"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName">
+                      </dofi-searchable-dropdown>
+              <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          }
+                  <!-- <aside class="col-md-6 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm"
@@ -868,7 +890,7 @@
                         <label for="" class="form-check-label sm">Co Loaded By <span class="text-danger"></span></label>
                       </div>
                     </div>
-                  </aside>
+                  </aside> -->
 
                   <!-- <aside class="col-md-6">
                     <div class="custom-form-group">
@@ -1418,28 +1440,7 @@
               <label for="text-input" class="input-label">Notify Address 2<span class="text-danger"></span></label>
             </div>
           </aside>
-          @if(b['Coload'].value){
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
-              <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                formControlName="Coloader" placeholder="" appendTo="body">
-                <ng-template ng-option-tmp let-item="item">
-                  <div>
-                    <strong>{{ item.CustomerName }}</strong><br>
-                    <small>{{ item.CustomerAddress1 }}</small>
-                  </div>
-                </ng-template>
-              </ng-select> -->
-              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Coloader"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerName">
-                      </dofi-searchable-dropdown>
-              <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
-            </div>
-          </aside>
-          }
+          
           <aside class="col-md-3">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

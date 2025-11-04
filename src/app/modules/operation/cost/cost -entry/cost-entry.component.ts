@@ -2524,7 +2524,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     // Determine GST Type for Indian companies
     const gstType = this.determineGSTType(selectedChargeData);
-
+    const DepartmentMasterSid = this.getDepartmentMasterSid();
     const payload = {
       ParentSid : this.getParentSid(),
       companyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2540,6 +2540,7 @@ createRateFormGroup(data?: any): FormGroup {
       billingPartySid: this.currentBillingPartySid,
       customerBranchSid: billingPartyBranchSid || null,
       createdBy: currUserEmail || 'System',
+      DepartmentMasterSid: DepartmentMasterSid,
 
       // Invoice header information
       invoiceHeader: {
@@ -2612,6 +2613,29 @@ createRateFormGroup(data?: any): FormGroup {
     this.selectedCharges.clear();
     this.availableCharges = [];
   }
+  private getDepartmentMasterSid(): number | null {
+  // Priority 1: Try to get from parent form value
+  if (this.parentFormValue?.DepartmentMasterSid) {
+    return Number(this.parentFormValue.DepartmentMasterSid);
+  }
+
+  // Priority 2: Try to get from departmentName in parent form
+  if (this.parentFormValue?.departmentName) {
+    // If departmentName is a string, you might need to convert it to DepartmentMasterSid
+    // This depends on your data structure - you may need to map department name to ID
+    console.log('Department name found:', this.parentFormValue.departmentName);
+    // You might need to implement a mapping logic here based on your department list
+  }
+
+  // Priority 3: Try to get from current company/branch settings
+  if (this.currentCompany?.DefaultDepartmentSid) {
+    return Number(this.currentCompany.DefaultDepartmentSid);
+  }
+
+  // Priority 4: Return null if not found
+  console.warn('DepartmentMasterSid not found in parent form or company settings');
+  return null;
+}
 
   /**
    * Validates exchange rates for both Cost and Revenue sides.
