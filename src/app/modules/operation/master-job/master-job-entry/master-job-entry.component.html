@@ -19,7 +19,26 @@
                     <span>Logs</span>
                 </button>
             </div>
-            <div class="action-group">
+               <div class="action-group" *ngIf="isEditMode">
+                <div ngbDropdown container="body" class="d-inline-block">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle>
+                         <i class="fas fa-print me-1"></i> Print
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel(preAlertPrint)"
+                            [disabled]="isLoading">Pre Alert</button>
+                        <button class="text-dark" ngbDropdownItem  (click)="reportcargomanifest(cargoPrint)"
+                            [disabled]="isLoading">Cargo Manifest</button>
+                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseLetter(releasePrint)"
+                            [disabled]="isLoading">Release Letter</button>
+                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder(releaseOrderPrint)"
+                            [disabled]="isLoading">Release Order</button>
+                             <button class="text-dark" ngbDropdownItem  (click)="reportjobCard(jobCardPrint)"
+                            [disabled]="isLoading">Job Card</button>
+                    </div>
+                </div>
+            </div>
+            <div class="action-group" *ngIf="!isEditMode">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
                         <i class="fas fa-upload me-1"></i>
@@ -2537,4 +2556,1341 @@
 
 <ng-template #pdfContent let-modal>
 
+</ng-template>
+
+<ng-template #preAlertPrint let-modal>
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+        <h5 class="modal-title text-white mb-0">Pre Alert </h5>
+        <div class="d-flex gap-2 align-items-center">
+
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" >
+                <i class="fas fa-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" >
+                <i class="fas fa-envelope me-1"></i>Send Email
+            </button>
+
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+
+        </div>
+    </div>
+
+
+    <div class="modal-body">
+        <div id="printContent">
+            <div class="print-a4">
+                <div class="row ">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        </div>
+            
+                        <div class="company-info ">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                            <p class="mb-1">
+                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                            </p>
+                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div>
+            
+                <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+                <h5 class="text-center  fw-bold mb-2"> PRE-ALERT</h5>
+            
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex "><strong class="" style="width: 200px;"> MBL </strong>
+                            <p class="mb-0">: {{masterJobData.MBLNo}}</p>
+                        </div>
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">HBL</strong>
+                            <p class="mb-0">: </p>
+                        </div>
+            
+                        <!-- Vessel -->
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Vessel</strong>
+                            <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
+                        </div>
+            
+                        <!-- Voyage -->
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Voyage</strong>
+                            <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                        </div>
+            
+                        <!-- Origin -->
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Port of Origin</strong>
+                            <p class="mb-0">: {{masterJobData.POO}}</p>
+                        </div>
+                         <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Final Destination</strong>
+                            <p class="mb-0">: {{masterJobData.FPD}}</p>
+                        </div>
+                      
+                        <div class="d-flex">
+                            <strong style="width: 200px;" class=" ">Shipper</strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                         <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Consignee</strong>
+                            <p class="mb-0">: </p>
+                        </div>
+            
+                    </div>
+            
+            
+            
+                    <div class="col-md-6">
+                        <!-- ETD -->
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">ETD</strong>
+                            <p class="mb-0">: {{ masterJobData?.voyages?.[0]?.ETD | formatDate }} </p>
+                        </div>
+                           <!-- ETA -->
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">ETA</strong>
+                            <p class="mb-0">: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }} </p>
+                        </div>
+
+                       
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Destination</strong>
+                            <p class="mb-0">: {{masterJobData.DestinationAgentName}}</p>
+                        </div>
+            
+                      
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Agent</strong>
+                            <p class="mb-0">:</p>
+                        </div>
+            
+                      
+                        <div class="d-flex ">
+                            <strong class=" " style="width: 200px;">Carrier Name</strong>
+                            <p class="mb-0">: {{ masterJobData?.voyages?.[0]?.CarrierName }} </p>
+                        </div>
+            
+                    </div>
+            
+            
+                </div>
+            
+                <div class="table-responsive">
+                    <table class="table tablebordered align-middle">
+                        <thead class="">
+                            <tr>
+                                <th>Container No</th>
+                                <th>Seal No</th>
+                                <th>Container Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let container of masterJobData?.containers">
+                                <td>{{ container?.ContainerNumber }}</td>
+                                <td>{{ container?.LineSeal }}</td>
+                                <td>{{ getContainerTypeName(container?.ContainerType) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                            
+                    <div class="table-responsive">
+                    <table class="table tablebordered align-middle">
+                        <thead>
+                        <tr>
+                            <th>Commodity Description</th>
+                            <th>Package Type</th>
+                            <th>No of Pkg</th>
+                            <th>Gross Weight</th>
+                            <th>Volume</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Display all containers -->
+                        <tr *ngFor="let container of masterJobData?.containers">
+                            <td>{{ container.CommodityDescription }}</td>
+                            <td>{{ getPackageTypeName(container.PkgType) }}</td>
+                            <td class="text-end">{{ container.NoOfPkg || 0 }}</td>
+                            <td class="text-end">{{ container.GrossWeight || 0 }}</td>
+                            <td class="text-end">{{ container.Volume || 0 }}</td>
+                        </tr>
+
+                        <!-- Total row -->
+                       <tr class="fw-bold">
+                        
+                        <td rowspan="2" class="text-end">Total</td>
+                        <td></td>
+                        <td class="text-end">{{ totalNoOfPkg }}</td>
+                        <td class="text-end">{{ totalGrossWeight | number:'1.0-3' }}</td>
+                        <td class="text-end">{{ totalVolume | number:'1.0-3' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                <footer class="text-center mb-0 px-2">
+                    <div class="d-flex justify-content-between">
+                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                        <span>
+                            This document is computer-generated and does not require a signature.
+                        </span>
+                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #cargoPrint let-modal>
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+        <h5 class="modal-title text-white mb-0">Pre Alert </h5>
+        <div class="d-flex gap-2 align-items-center">
+
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" >
+                <i class="fas fa-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" >
+                <i class="fas fa-envelope me-1"></i>Send Email
+            </button>
+
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+
+        </div>
+    </div>
+
+
+    <div class="modal-body">
+        <div id="printContent">
+          <div>
+    <div class="print-a4">
+
+        <!-- Company Info -->
+        <div class="row ">
+            <div class="company-header">
+                <div class="company-logo">
+                    <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                </div>
+
+                <div class="company-info ">
+                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                    <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                    <p class="mb-1">
+                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                    </p>
+                    <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                    <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+
+        <h5 class="text-center fw-bold pb-2" style="margin: 0;">Cargo Manifest</h5>
+
+
+        <div class="row ">
+            <div class="col-12 col-md-6">
+                <div class="d-flex mb-1">
+                    <div style="width: 200px; white-space: nowrap;"><strong> Agent </strong></div>
+                    <div>: </div>
+                </div>
+
+
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="d-flex mb-1">
+                    <div style="width: 200px; white-space: nowrap;"><strong>Booking No </strong></div>
+                    <div>: </div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 200px; white-space: nowrap;"><strong>MBL</strong></div>
+                    <div>: </div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 200px; white-space: nowrap;"><strong>Date</strong></div>
+                    <div>: </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <div>
+            <div class="row " style="padding: 0px 10px;">
+                <div class="col-md-6"
+                    style="border-top: 1px solid black;border-bottom: 1px solid black;border-left: 1px solid black;">
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Originating Agent </strong></div>
+                        <div style="min-height: 80px; height: auto;">: </div>
+                    </div>
+                </div>
+                <div class="col-md-6" style="border: 1px solid black;">
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Freight Depot </strong></div>
+                        <div>: </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row " style="padding: 0px 10px;">
+                <div class="col-md-6 "
+                    style="border-top: 1px solid black;border-bottom: 1px solid black;border-left: 1px solid black;">
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Vessel Name </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>POL </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>POD </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ETD </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>ETA </strong></div>
+                        <div>: </div>
+                    </div>
+                </div>
+                <div class="col-md-6" style="border: 1px solid black;">
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Carrier </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Carrier Ref</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Agents Ref </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Packs </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Weight </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 200px; white-space: nowrap;"><strong>Volume </strong></div>
+                        <div>: </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="table-responsive ">
+                <table class="table tablebordered  table-sm" style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th>Container</th>
+                            <th>Seal</th>
+                            <th>Size</th>
+                            <th>Tare Weight</th>
+                            <th>Gross Weight</th>
+                            <th>Volume</th>
+                            <th>Packages</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>78872378</td>
+                            <td>djbdhdbh</td>
+                            <td>dhvdhvdh</td>
+                            <td>djdjbdjbjkd</td>
+                            <td class="text-end">873893</td>
+                            <td class="text-end">38983</td>
+                            <td class="text-end">22</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end fw-bold">Total</td>
+                            <td class="text-end fw-bold">98393</td>
+                            <td class="text-end fw-bold">39889</td>
+                            <td class="text-end fw-bold">39889</td>
+                        </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- <div style="margin-top: 1rem; margin-bottom: 3rem;">
+                            <p style="font-weight: bold;"> Remarks :</p>
+                            <div style="height: 80px; "> {{ enquiryData?.Remarks || '' }}</div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Terms and Conditions:</h6>
+                            <ul>
+                                @for(term of TandCList; track term){
+                                <li>{{ term.TandC }}</li>
+                                }
+                            </ul>
+                        </div> -->
+
+        <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+                <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                <span>
+                    This document is computer-generated and does not require a signature.
+                </span>
+                <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+            <div class="text-end fw-bold mt-2">Page 1 of 2</div>
+        </footer>
+
+    </div>
+    <div class="page-break"></div>
+    <div class="print-a4">
+        <!-- Company Info -->
+        <div class="row ">
+            <div class="company-header">
+                <div class="company-logo">
+                    <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                </div>
+
+                <div class="company-info ">
+                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                    <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                    <p class="mb-1">
+                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                    </p>
+                    <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                    <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                </div>
+            </div>
+        </div>
+        <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <div class="col-md-6">
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Manifest No </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Voyage</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Vessel</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Booking No</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Line</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Manifest Date </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Sailing</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Container </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Type </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>SOC </strong></div>
+                        <div>: </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="col-md-6">
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Load Port </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Discharge Port</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Delivery Port</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>MBL</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>MBL Date </strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>ETD</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>ETA</strong></div>
+                        <div>: </div>
+                    </div>
+                    <div class="d-flex mb-1">
+                        <div style="width: 120px; white-space: nowrap;"><strong>Master PP/CC</strong></div>
+                        <div>: </div>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-1">
+                    <div style="width: 120px; white-space: nowrap;"><strong>Seal </strong></div>
+                    <div>: </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm">
+                <thead>
+                    <tr>
+                        <th>SNo</th>
+                        <th>HBL No</th>
+                        <th>Shipper / Consignee / Notify</th>
+                        <th>Pkg & Desc</th>
+                        <th>Weight (KGS)</th>
+                        <th>Vol (CBM)</th>
+                        <th>FF/PP</th>
+                        <th>Charge Det</th>
+                        <th>AMS Ref No</th>
+                        <th>Service</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>HBL001245</td>
+                        <td>
+                            <strong>Shipper:</strong> ABC Exports Ltd., Mumbai<br>
+                            <strong>Consignee:</strong> Global Traders LLC, Dubai<br>
+                            <strong>Notify:</strong> Same as Consignee
+                        </td>
+                        <td>120 PKGS Plastic Toys</td>
+                        <td class="text-end">8,400</td>
+                        <td class="text-end">12.50</td>
+                        <td>PP</td>
+                        <td>Prepaid Ocean Freight</td>
+                        <td>AMS785469</td>
+                        <td>FCL</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>HBL001246</td>
+                        <td>
+                            <strong>Shipper:</strong> Sun Agro Pvt. Ltd., Chennai<br>
+                            <strong>Consignee:</strong> Green Foods Inc., Singapore<br>
+                            <strong>Notify:</strong> Fresh Imports Pte Ltd., Singapore
+                        </td>
+                        <td>250 Bags Organic Rice</td>
+                        <td class="text-end">12,000</td>
+                        <td class="text-end">18.75</td>
+                        <td>FF</td>
+                        <td>Freight Collect</td>
+                        <td>AMS785470</td>
+                        <td>LCL</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>HBL001247</td>
+                        <td>
+                            <strong>Shipper:</strong> SteelTech Industries, Kolkata<br>
+                            <strong>Consignee:</strong> Euro Metal GmbH, Hamburg<br>
+                            <strong>Notify:</strong> Same as Consignee
+                        </td>
+                        <td>20 Bundles Steel Rods</td>
+                        <td class="text-end">24,500</td>
+                        <td class="text-end">22.10</td>
+                        <td>PP</td>
+                        <td>Prepaid</td>
+                        <td>AMS785471</td>
+                        <td>FCL</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>HBL001248</td>
+                        <td>
+                            <strong>Shipper:</strong> Ocean Textiles Co., Surat<br>
+                            <strong>Consignee:</strong> London Garments Ltd., UK<br>
+                            <strong>Notify:</strong> UK Import Agency Ltd., London
+                        </td>
+                        <td>80 Cartons Cotton Fabrics</td>
+                        <td class="text-end">5,750</td>
+                        <td class="text-end">9.80</td>
+                        <td>FF</td>
+                        <td>Freight Collect</td>
+                        <td>AMS785472</td>
+                        <td>LCL</td>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td>HBL001249</td>
+                        <td>
+                            <strong>Shipper:</strong> FreshGrow Fruits Pvt. Ltd., Cochin<br>
+                            <strong>Consignee:</strong> Kiwi Distributors Ltd., Auckland<br>
+                            <strong>Notify:</strong> NZ Fresh Foods Ltd., Auckland
+                        </td>
+                        <td>200 Crates Fresh Pineapples</td>
+                        <td class="text-end">9,200</td>
+                        <td class="text-end">14.20</td>
+                        <td>PP</td>
+                        <td>Prepaid</td>
+                        <td>AMS785473</td>
+                        <td>Reefer</td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td class="text-end fw-bold">5</td>
+                        <td class="text-end fw-bold">59,850</td>
+                        <td class="text-end fw-bold">77.35</td>
+                        <td colspan="4"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+        <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+                <div><span>Printed By :</span> {{userData.userName}}</div>
+                <span>This document is computer-generated and does not require a signature.</span>
+                <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+            <div class="text-end fw-bold mt-2">Page 2 of 2</div>
+        </footer>
+    </div>
+</div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #releasePrint let-modal>
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+        <h5 class="modal-title text-white mb-0">Release Letter </h5>
+        <div class="d-flex gap-2 align-items-center">
+
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+                <i class="fas fa-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+                <i class="fas fa-envelope me-1"></i>Send Email
+            </button>
+
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+
+        </div>
+    </div>
+
+
+    <div class="modal-body">
+        <div id="printContent">
+            <div class="print-a4">
+            
+                <div class="row ">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        </div>
+            
+                        <div class="company-info ">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                            <p class="mb-1">
+                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                            </p>
+                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Title -->
+                <h5 class="text-center fw-bold  mb-4">RELEASE LETTER</h5>
+            
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Attn </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Shipper </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Vessel </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Voyage </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+            
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Your Booking Ref </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Our Booking Ref </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Port Of Discharge </strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                        <div class="d-flex "><strong class="" style="width: 200px;"> Final Destination</strong>
+                            <p class="mb-0">: </p>
+                        </div>
+                    </div>
+                </div>
+            
+            
+            
+                <!-- Cargo Details -->
+                <h6 class="fw-bold  mt-3 text-center">CARGO DETAILS</h6>
+                <div class="d-flex "><strong class="" style="width: 200px;"> No of Pkgs</strong>
+                    <p class="mb-0">: </p>
+                </div>
+                <div class="d-flex "><strong class="" style="width: 200px;"> Gross Weight</strong>
+                    <p class="mb-0">: </p>
+                </div>
+                <div class="d-flex "><strong class="" style="width: 200px;"> Volume</strong>
+                    <p class="mb-0">: </p>
+                </div>
+            
+            
+                <!-- Instruction -->
+                <p class="mb-2 ">Please release the above mentioned booking to :</p>
+            
+                <!-- Remarks -->
+                <div class="d-flex "><strong class="" style="width: 200px;"> Remarks</strong>
+                    <p class="mb-0">: </p>
+                </div>
+                <div class="d-flex "><strong class="" style="width: 200px;"> Date</strong>
+                    <p class="mb-0">: </p>
+                </div>
+                <div class="d-flex "><strong class="" style="width: 200px;"> CFS</strong>
+                    <p class="mb-0">: </p>
+                </div>
+            
+                <p class="mb-1">YOUR'S SINCERELY</p>
+                <p class="fw-bold mb-4">{{ currentCompany?.companyName || 'Company Name' }}</p>
+            
+                <footer class="text-center mb-0 px-2">
+                    <div class="d-flex justify-content-between">
+                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                        <span>
+                            This document is computer-generated and does not require a signature.
+                        </span>
+                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                    </div>
+                </footer>
+            
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #releaseOrderPrint let-modal>
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+        <h5 class="modal-title text-white mb-0">Release Letter </h5>
+        <div class="d-flex gap-2 align-items-center">
+
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+                <i class="fas fa-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+                <i class="fas fa-envelope me-1"></i>Send Email
+            </button>
+
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+
+        </div>
+    </div>
+
+
+    <div class="modal-body">
+        <div id="printContent">
+          <div class="print-a4">
+
+      <div class="row ">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        </div>
+            
+                        <div class="company-info ">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                            <p class="mb-1">
+                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                            </p>
+                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+    <h5 style="font-weight: bold;" class="text-center my-4">EXPORT RELEASE ORDER</h5>
+
+    <!-- Booking Info -->
+    <div class="row mb-3 ">
+        <div class="col-md-6">
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>BOOKING REF NUMBER</strong></div>
+                <div>: BOMGE2500058</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>SALES PERSON</strong></div>
+                <div>: Abhijit Said</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>ONHIRE REFERENCE NO</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>BROKER</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>CHA</strong></div>
+                <div>: </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>RELEASE ORDER DATE</strong></div>
+                <div>: 20/Jan/2025</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>VALIDITY DATE</strong></div>
+                <div>: </div>
+            </div>
+            <br>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>BOOKING PARTY</strong></div>
+                <div>: SKYBAY SHIPPING </div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>TRANSPORTER</strong></div>
+                <div>: </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transport Plan -->
+    <h5 style="font-weight: bold; " class="text-center my-4">INTENDED TRANSPORT PLAN</h5>
+
+    <div class="row ">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>VESSEL / VOY</strong></div>
+                <div>: BORKUM / 2435</div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>ETA / ETD</strong></div>
+                <div>: 13/Sep/2024 /04/Aug/2024</div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>LIST / VGM CUT OFF</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>PORT CUT OFF</strong></div>
+                <div>: </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>PORT OF ORIGIN</strong></div>
+                <div>: NHAVA</div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>PORT OF LOADING</strong></div>
+                <div>: NHAVA</div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>TRANSHIPMENT PORT</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>PORT OF DISCHARGE</strong></div>
+                <div>: Bahrain(BHBAH)</div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>FINAL PLACE OF DESTINATION</strong></div>
+                <div>: Bahrain(BHBAH)</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Remarks -->
+    <div class="mb-3">
+        <div class="d-flex flex-wrap mb-2">
+            <div style="width: 240px;"><strong>EMPTY PICK UP YARD </strong></div>
+            <div>: 1st print is ok</div>
+        </div>
+        <div class="d-flex flex-wrap mb-2">
+            <div style="width: 240px;"><strong>REMARKS TO YARD </strong></div>
+            <div>: 1st print is ok</div>
+        </div>
+        <div class="d-flex flex-wrap mb-2">
+            <div style="width: 240px;"><strong>REMARKS TO SHIPPER </strong></div>
+            <div>: 1st print is ok</div>
+        </div>
+    </div>
+
+    <!-- Container Table -->
+    <div class="table-responsive ">
+        <table class="table table tablebordered table-sm" >
+            <thead>
+                <tr >
+                    <th >Type/Size</th>
+                    <th >Container No</th>
+                    <th >Qty</th>
+                    <th>Temp</th>
+                    <th >Ventilation</th>
+                    <th >Humidity</th>
+                    <th >Commodity</th>
+                    <th >WT [KGS]</th>
+                    <th >Un No</th>
+                    <th >IMCO</th>
+                    <th >Capacity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td >20GP</td>
+                    <td >TTSU1234567</td>
+                    <td >1</td>
+                    <td >Ambient</td>
+                    <td >Closed</td>
+                    <td >60%</td>
+                    <td >Electronics</td>
+                    <td >8000</td>
+                    <td >UN3481</td>
+                    <td >9</td>
+                    <td >33 CBM</td>
+                </tr>
+                <tr>
+                    <td >20GP</td>
+                    <td >TTSU1234567</td>
+                    <td >1</td>
+                    <td >Ambient</td>
+                    <td >Closed</td>
+                    <td >60%</td>
+                    <td >Electronics</td>
+                    <td >8000</td>
+                    <td >UN3481</td>
+                    <td >9</td>
+                    <td >33 CBM</td>
+                </tr>
+                <tr>
+                    <td >20GP</td>
+                    <td >TTSU1234567</td>
+                    <td >1</td>
+                    <td >Ambient</td>
+                    <td >Closed</td>
+                    <td >60%</td>
+                    <td >Electronics</td>
+                    <td >8000</td>
+                    <td >UN3481</td>
+                    <td >9</td>
+                    <td >33 CBM</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+      <footer class="text-center mb-0 px-2">
+                    <div class="d-flex justify-content-between">
+                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                        <span>
+                            This document is computer-generated and does not require a signature.
+                        </span>
+                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                    </div>
+                </footer>
+  
+
+
+</div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #jobCardPrint let-modal>
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+        <h5 class="modal-title text-white mb-0">Job Card</h5>
+        <div class="d-flex gap-2 align-items-center">
+
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+                <i class="fas fa-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+                <i class="fas fa-envelope me-1"></i>Send Email
+            </button>
+
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+
+        </div>
+    </div>
+
+
+    <div class="modal-body">
+        <div id="printContent">
+    <div class="print-a4">
+        <!-- Company Info -->
+        <div class="row ">
+                <div class="company-header">
+                    <div class="company-logo">
+                        <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    </div>
+    
+                    <div class="company-info ">
+                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                        <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                        <p class="mb-1">
+                            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                        </p>
+                        <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                        <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                    </div>
+                </div>
+            </div> 
+        <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+    
+        <h5 class="text-center fw-bold pb-2" style="margin: 0;">Job Card / Job No - 1234567890</h5>
+    
+        <div class="row mb-0" style="padding: 0 10px;">
+            <div class="col-md-6"
+                style="border-top: 1px solid black; border-left: 1px solid black;border-right: 1px solid black;">
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Client</strong></div>
+                    <div style="min-height: 100px;height: auto;">: </div>
+                </div>
+            </div>
+            <div class="col-md-6" style="border-top: 1px solid black; border-right: 1px solid black;">
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Shipper</strong></div>
+                    <div style="min-height: 100px;height: auto;">: </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-0" style="padding: 0 10px;">
+            <div class="col-md-6"
+                style="border-top: 1px solid black; border-left: 1px solid black;border-right: 1px solid black;">
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Consignee</strong></div>
+                    <div style="min-height: 100px;height: auto;">: </div>
+                </div>
+            </div>
+            <div class="col-md-6" style="border-top: 1px solid black; border-right: 1px solid black;">
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Forwarder</strong></div>
+                    <div style="min-height: 100px;height: auto;">: </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="border: 1px solid black; margin: 0px;">
+            <div class="col-md-6">
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Job No</strong></div>
+                    <div>: MBL998877</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>HBL No</strong></div>
+                    <div>: MSC Horizon / 045E</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Port of Loading</strong></div>
+                    <div>: Mediterranean Shipping Co.</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Port of Discharge</strong></div>
+                    <div>: Rotterdam</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Port of Origin</strong></div>
+                    <div>: Rotterdam</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Final Destination</strong></div>
+                    <div>: PP</div>
+                </div>
+    
+    
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Service Type</strong></div>
+                    <div>: PP</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Sales Person</strong></div>
+                    <div>: PP</div>
+                </div>
+            </div>
+    
+            <div class="col-md-6">
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>MBL No</strong></div>
+                    <div>: Cochin</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Place of Receipt</strong></div>
+                    <div>: Dubai</div>
+                </div>
+    
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Place of Delivery</strong></div>
+                    <div>: Hamburg</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>ETA</strong></div>
+                    <div>: Rotterdam</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>ETD</strong></div>
+                    <div>: PP</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
+                    <div>: Hamburg</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>Carrier</strong></div>
+                    <div>: PP</div>
+                </div>
+                <div class="d-flex mb-1">
+                    <div style="width: 120px;"><strong>PP/CC</strong></div>
+                    <div>: Hamburg</div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="table-responsive">
+            <table class="table table-sm tablebordered table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Container No</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>No of Pkg</th>
+                        <th>G Wt</th>
+                        <th>Vol</th>
+                        <th>Vol Wt</th>
+                        <th>Net Wt</th>
+                    </tr>
+                </thead>
+                <tbody>
+    
+                    <tr>
+                        <td>HBL001201</td>
+                        <td>Mumbai</td>
+                        <td>Rotterdam</td>
+                        <td>ABC001–005</td>
+                        <td class="text-end">80</td>
+                        <td class="text-end">12,500</td>
+                        <td class="text-end">19.20</td>
+                        <td>General Cargo</td>
+                    </tr>
+    
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="4" class="text-end">TOTAL</td>
+                        <td class="text-end">500</td>
+                        <td class="text-end">72,400</td>
+                        <td class="text-end">91.55</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm tablebordered table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Charge</th>
+                        <th>Sales</th>
+                        <th>Cost</th>
+                        <th>GP</th>
+                    </tr>
+                </thead>
+                <tbody>
+    
+                    <tr>
+                        <td>HBL001201</td>
+                        <td class="text-end">80</td>
+                        <td class="text-end">12,500</td>
+                        <td class="text-end">19.20</td>
+                    </tr>
+    
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td class="text-end">TOTAL</td>
+                        <td class="text-end">500</td>
+                        <td class="text-end">72,400</td>
+                        <td class="text-end">91.55</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm tablebordered table-hover mb-1">
+                <thead class="table-light">
+                    <tr>
+                        <th>Charge</th>
+                        <th>Unit</th>
+                        <th>Curr</th>
+                        <th>Ex Rate</th>
+                        <th>Sales/Unit</th>
+                        <th>Local Amt</th>
+                        <th>Cost Curr</th>
+                        <th>Cost Ex Rate</th>
+                        <th>Cost/Unit</th>
+                        <th>Cost Local Amt</th>
+    
+                    </tr>
+                </thead>
+                <tbody>
+    
+                    <tr>
+                        <td>HBL001201</td>
+                        <td class="text-end">80</td>
+                        <td class="text-end">12,500</td>
+                        <td class="text-end">19.20</td>
+                        <td>HBL001201</td>
+                        <td class="text-end">80</td>
+                        <td class="text-end">12,500</td>
+                        <td class="text-end">19.20</td>
+                        <td>HBL001201</td>
+                        <td class="text-end">80</td>
+    
+                    </tr>
+    
+                </tbody>
+    
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="text-center mb-0 fw-bold">Revenue</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm tablebordered table-hover my-1">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sales Organization</th>
+                                <th>Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>HBL001201</td>
+                                <td class="text-end">80</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5 class="text-center mb-0 fw-bold">Expense</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm tablebordered table-hover my-1">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cost Organization</th>
+                                <th>Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>HBL001201</td>
+                                <td class="text-end">80</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+          <div><span>Printed By:</span> {{userData.userName}}</div>
+          <span>This document is computer-generated and does not require a signature.</span>
+          <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+        </div>
+        </footer>
+    </div>
+        </div>
+    </div>
 </ng-template>

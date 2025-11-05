@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -85,7 +85,8 @@ type Html2PdfOptions = {
     EdocComponent,
     EmailEntryComponent,
     FollowUpComponent,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -2264,4 +2265,32 @@ ${this.userData['userName']}`;
     this.followUpData = event.dataItems || [];
     this.currentFollowUpFormValue = event.formData || null;
   }
+
+     reportDeliveryOrder(content: TemplateRef<any>) {
+        this.modalService.open(content, {
+          size: 'xl',
+          scrollable: true,
+        });
+      }
+
+         reportCargoArrival(content: TemplateRef<any>) {
+        this.modalService.open(content, {
+          size: 'xl',
+          scrollable: true,
+        });
+      }
+
+       reportBill(content: TemplateRef<any>) {
+        this.modalService.open(content, {
+          size: 'xl',
+          scrollable: true,
+        });
+      }
+
+        reportShipmentProfit(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
 }
