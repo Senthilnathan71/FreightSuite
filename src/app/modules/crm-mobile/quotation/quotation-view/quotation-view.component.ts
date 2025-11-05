@@ -378,6 +378,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
       CustomerMasterSid: response.CustomerMasterSid,
       CustomerBranchSid: response.CustomerBranchSid,
       CustomerRef: response.CustomerRef,
+      ContactNumber: response.ContactNumber,
+      ContactPerson: response.ContactPerson,
       FreightPPCC: response.FreightPPCC,
       SalesmanSid: response.UserMasterSid,
       PreCustomerMasterSid : response.PreCustomerMasterSid,

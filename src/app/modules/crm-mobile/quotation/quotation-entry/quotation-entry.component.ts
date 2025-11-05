@@ -355,6 +355,8 @@ patchEnqPageValues(enqData: any) {
     'CustomerRef',
     'CustomerName',
     'CustomerAddress',
+    'ContactPerson',
+    'ContactNumber',
     'Email',
     'FreightPPCC',
     'SalesmanSid'
@@ -595,6 +597,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       CustomerAddress: null,
       CustomerBranchSid: null,
       Email: null,
+      ContactNumber: null,
+      ContactPerson: null,
     });
     this.cusBranchList = [];
 
@@ -622,6 +626,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         CustomerAddress: null,
         CustomerBranchSid: null,
         Email: null,
+        ContactNumber: null,
+        ContactPerson: null,
       });
       this.cusBranchList = [];
       return;
@@ -645,8 +651,8 @@ private extractCargoData(enquiryCargo: any[]): any {
         CustomerAddress: selectedItem.preCustomerAddress1,
         Email: selectedItem.email,
         CustomerBranchSid: null,
-        ContactPerson:selectedItem.ContactPerson,
-        ContactNumber:selectedItem.ContactNumber
+        ContactPerson:selectedItem.contactPerson,
+        ContactNumber:selectedItem.phone
       });
       this.patchSalespersonOfLead(selectedItem.PreCustomerMasterSid);
     }
@@ -672,7 +678,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       PORSid: [data?.PORSid ?? null],
       POLSid: [data?.POLSid ?? null, [Validators.required]],
       PODSid: [data?.PODSid ?? null, [Validators.required]],
-      FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null, Validators.required],
+      FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null],
       effDate: [new Date(data?.effDate) || null, [Validators.required]],
       expDate: [new Date(data?.expdate) || '', [Validators.required]],
       TransitDays: [data?.TransitDays || ''],
@@ -1393,6 +1399,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       CustomerAddress: response.CustomerAddress,
       CustomerBranchSid: response.CustomerBranchSid,
       Email: response.Email,
+      ContactPerson:response.ContactPerson,
+      ContactNumber:response.ContactNumber
     });
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();

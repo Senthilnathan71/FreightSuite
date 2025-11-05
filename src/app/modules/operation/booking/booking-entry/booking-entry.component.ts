@@ -588,7 +588,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       isNotifyFreeText: [false],
       Notify: [null],
       NotifyAddress: [''],
-      DestinationAgent: [null, [Validators.required]],
+      DestinationAgent: [null],
       AgentAddress: [''],
       isCarrierFreeText: [false],
       CarrierName: [null],
@@ -599,6 +599,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       status: ['Active'],
 
       VesselName: [null],
+      isVesselFreeText: [false],
+      isVoyageFreeText: [false],
       VoyageMasterSid: [null],
       VoyageNo: [{ value: null, disabled: true }],
       ETA: [{ value: '', disabled: true }],
@@ -2766,6 +2768,13 @@ ${this.userData['userName']}`;
     }
     if (response?.CarrierName && !this.existsInList(this.carrierList, response.CarrierName)) {
       this.bookingForm.patchValue({ isCarrierFreeText: true });
+    }
+    if (response?.VesselName && !this.existsInList(this.vesselList, response.VesselName)) {
+      this.bookingForm.patchValue({ isVesselFreeText: true });
+    }
+    
+    if (response?.VoyageNo && !this.existsInList(this.voyageList, response.VoyageNo)) {
+      this.bookingForm.patchValue({ isVoyageFreeText: true });
     }
   }
 

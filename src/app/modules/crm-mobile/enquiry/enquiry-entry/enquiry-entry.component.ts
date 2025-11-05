@@ -971,8 +971,8 @@ ${this.userData.userName}`;
         CustomerAddress: selectedItem.preCustomerAddress1,
         Email: selectedItem.email,
         CustomerBranchSid: null,
-          ContactPerson:selectedItem.ContactPerson,
-      ContactNumber:selectedItem.ContactNumber
+          ContactPerson:selectedItem.contactPerson,
+      ContactNumber:selectedItem.phone,
       });
       this.selectedCustomerName = selectedItem.preCustomerName;
       this.patchSalespersonOfLead(selectedItem);

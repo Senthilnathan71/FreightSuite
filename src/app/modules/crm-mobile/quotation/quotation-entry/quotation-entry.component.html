@@ -23,7 +23,7 @@
           <i class="fas fa-history me-1"></i>Logs
         </button>
 
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="quotationApproved"
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
           (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print me-1"></i> Print
         </button>
@@ -527,14 +527,7 @@
                             [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
                             bindValue="PortMasterSid">
                           </dofi-searchable-dropdown>
-                          <label for="" class="input-label">FPOD <span class="text-danger">*</span></label>
-                          @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
-                          <div class="error-message">
-                            @if(route.get('FPODSid')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
+                          <label for="" class="input-label">FPOD</label>
                         </div>
                       </aside>
 
@@ -1709,14 +1702,8 @@
                             bindValue="PortMasterSid">
 
                           </ng-select>
-                          <label for="" class="input-label">FPOD <span class="text-danger">*</span></label>
-                          @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
-                          <div class="error-message">
-                            @if(route.get('FPODSid')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
+                          <label for="" class="input-label">FPOD</label>
+                          
                         </div>
                       </aside>
 
@@ -2771,6 +2758,7 @@
                 </aside>
               </td>
             </tr>
+            @for(carrier of route.quoteCarrier; track carrier){
             <tbody>
               <tr>
                 <td colspan="8" class="p-0" >
@@ -2822,7 +2810,10 @@
 
 
             </tbody>
+          }
           </table>
+          </aside>
+        }
 
           <div class="mt-3">
             <h6 class="fw-bold">Terms and Conditions:</h6>
@@ -2832,9 +2823,6 @@
               }
             </ul>
           </div>
-
-        </aside>
-        }
       </div>
 
      
