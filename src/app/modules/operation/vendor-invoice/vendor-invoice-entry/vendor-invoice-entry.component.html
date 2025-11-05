@@ -121,9 +121,10 @@
                 <dofi-searchable-dropdown [items]="vendorList" formControlName="PartyMasterSid" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields"
                   [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
-                  bindValue="SubledgerName" bindLabel="SubledgerName"
-                  (itemSelected)="onVendorChange($event)">                  
+                  bindValue="CustomerName" bindLabel="CustomerName"
+                  (itemSelected)="onVendorChange($event);onVendorSelect($event)">                  
                 </dofi-searchable-dropdown>
+                
                 <label for="PartyName" class="input-label">
                   Vendor <span class="text-danger">*</span>
                 </label>
@@ -147,14 +148,15 @@
             <!-- Vendor Address (readonly) -->
             <aside class="col-md-3">
               <div class="custom-form-group">
-                <textarea id="PartyAddress" formControlName="PartyAddress" placeholder="" class="custom-input-field sm"
-                  rows="1" readonly></textarea>
+                <input type="text" formControlName="PartyAddress" placeholder="" class="custom-input-field sm"
+                  readonly />
                 <label for="PartyAddress" class="input-label">Address</label>
               </div>
             </aside>
 
 
             <!-- GST No (readonly) -->
+
             <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="GSTNo" formControlName="GSTNo" placeholder="" class="custom-input-field sm"

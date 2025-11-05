@@ -61,6 +61,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // Lookups
   vendorList: any[] = [];
+  vendorBranchList: any[] = [];
   currencyList: any[] = [];
   chargeList: any[] = [];
   hssacList: any[] = [];
@@ -82,9 +83,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
     { name: 'Others', icon: 'fas fa-ellipsis-h' }
   ];
 
-  ModeofStatus = [
-    { id: 'A', name: 'Active' },
-    { id: 'S', name: 'Suspended' },
+  invoiceType = [
+    { id: 'R', name: 'Regular' },
+    { id: 'RE', name: 'Reimbursement' },
+    { id: 'ZREV', name: 'Zero Rate/Export Invoice' },
+    { id: 'BOS', name: 'Bill Of Supply' },
+    { id: 'SOA', name: 'SOA' },
   ];
 
   statusList = [
@@ -94,9 +98,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   isSaving: boolean = false;
 
-  invoiceTypes = [
+  gstType = [
     { id: 'B2B', name: 'B2B - Business to Business' },
-    { id: 'EXWP', name: 'EXWP - Export with Payment' },
+    { id: 'B2CS', name: 'B2CS - Business to Customer(Small)' },
+    { id: 'B2CL', name: 'B2CL - Business to Customer(Large)' },
+    { id: 'EXWP', name: 'EXWP - Export With Payment of Tax' },
+    { id: 'EXWOP', name: 'EXWOP - Export Without Payment of Tax' },
   ];
 
   searchTypes = [
@@ -502,6 +509,83 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }, 0);
   }
 
+  onVendorBranchChange(vendorBranch: any) {
+    const branch = (typeof vendorBranch === 'object' && vendorBranch !== null)
+    ? (vendorBranch.CustomerBranchSid ?? vendorBranch)
+    : vendorBranch;
+    if (!branch) {
+      this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
+      this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(null);
+      this.vendorInvoiceForm.get('GSTNo')?.setValue('');
+      return;
+    }
+
+    const foundBranch = this.vendorBranchList.find(b => Number(b.CustomerBranchSid) === Number(branch));
+
+    if (foundBranch) {
+      console.log('DEBUG - Found Branch:', foundBranch);
+      this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(Number(branch));
+
+      const address = foundBranch.Address|| foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
+      this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
+
+      const customerMaster = foundBranch.CustomerMasterSid;
+      if(customerMaster) {
+        const customer = this.vendorList.find(c => c.CustomerMasterSid === customerMaster);
+        if(customer) {
+          console.log('DEBUG - Found Customer for branch:', customer);
+
+          const countryCode = this.getCustomerCountryCode(customer);
+
+          console.log('DEBUG - Customer CountryCode:', countryCode);
+          console.log('DEBUG - Branch GSTNo:', foundBranch.GSTNo);
+          
+          if (countryCode === 'IN') {
+            this.vendorInvoiceForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
+          } else {
+            this.vendorInvoiceForm.get('GSTNo')?.setValue(customer.PanType || '');
+          }
+        }
+      }
+    } else {
+      this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
+      this.vendorInvoiceForm.get('GSTNo')?.setValue('');
+    }
+  }
+
+  private getCustomerCountryCode(customer: any): string {
+  console.log('DEBUG - Customer CountryMasterSid structure:', customer.CountryMasterSid);
+  
+  // Check the CountryMasterSid object structure from your customer data
+  if (customer.CountryMasterSid && typeof customer.CountryMasterSid === 'object') {
+    // If CountryMasterSid is an object with countryCode
+    const code = customer.CountryMasterSid.countryCode || customer.CountryMasterSid.CountryCode;
+    console.log('DEBUG - Extracted countryCode from customer:', code);
+    return code || '';
+  }
+  
+  // Fallback: check direct country code fields
+  const countryCode = customer.CountryCode || 
+                     customer.countryCode || 
+                     customer.countryMaster?.countryCode ||
+                     customer.country?.countryCode ||
+                     customer.CountryMaster?.CountryCode ||
+                     '';
+  
+  console.log('DEBUG - Fallback countryCode:', countryCode);
+  
+  // Final fallback: if customer has GSTNo in any branch, assume it's India
+  if (!countryCode) {
+    // Check if this customer has any branches with GSTNo
+    const customerBranches = this.vendorBranchList.filter(b => b.CustomerMasterSid === customer.CustomerMasterSid);
+    const hasGSTNo = customerBranches.some(branch => branch.GSTNo);
+    if (hasGSTNo) {
+      return 'IN';
+    }
+  }
+  
+  return countryCode;
+}
   // Vendor selection
   onVendorChange(vendorSid: number) {
     if (!vendorSid) return;
@@ -541,6 +625,18 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
 
     this.spinner.hide();
+  }
+
+  onVendorSelect(vendor: any) {
+    const vendors = (typeof vendor === 'object' && vendor !==null)
+    ? (vendor.vendors ?? vendor)
+    : vendor;
+    if (!vendor) {
+      this.vendorList = [];
+      this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
+      return;
+    }
+    this.vendorInvoiceForm.get('PartyAddress')?.setValue(vendor.Address || '');
   }
 
   loadVendorTDS(vendorSid: number) {
@@ -708,6 +804,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       firstValueFrom(this.operationService.getAllUom())
     ]).then(([vendors,currencies, charges, hssac, uom]) => {
       this.vendorList = vendors.data || [];
+      this.subledgerList = vendors.data || [];
       this.currencyList = currencies.data || [];
       this.chargeList = charges || [];
       this.hssacList = hssac || [];
