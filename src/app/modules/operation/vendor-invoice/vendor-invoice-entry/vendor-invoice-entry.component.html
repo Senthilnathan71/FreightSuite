@@ -109,16 +109,16 @@
 
            <aside class="col-md-3">
   <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorInvoiceForm.get('PartyMasterSid')?.value">
+    [class.filled]="!!vendorInvoiceForm.get('PartyName')?.value">
     <dofi-searchable-dropdown 
       [items]="vendorList" 
-      formControlName="PartyMasterSid"
+      formControlName="PartyName"
       placeholder="" 
       [displayFields]="customerLookupConfig.displayFields"
       [displayLabels]="customerLookupConfig.displayLabels"
       [labelFields]="customerLookupConfig.labelFields" 
       bindLabel="CustomerName"
-      bindValue="CustomerMasterSid" 
+      bindValue="CustomerName" 
       (itemSelected)="onVendorChange($event)">
     </dofi-searchable-dropdown>
     <label class="input-label">Vendor <span class="text-danger"></span></label>
@@ -144,17 +144,27 @@
 <aside class="col-md-3">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!vendorInvoiceForm.get('CustomerBranchSid')?.value">
-    <ng-select [items]="vendorBranchList.length ? vendorBranchList : []" bindLabel="Address"
-      bindValue="CustomerBranchSid" placeholder="" formControlName="CustomerBranchSid"
-      (change)="onVendorBranchChange($event)" appendTo="body">
-      <ng-template ng-option-tmp let-item="item">
-        <div>
-          <strong>{{ item.CustomerName }}</strong><br>
-          <small>{{ item.Address }}</small>
-        </div>
-      </ng-template>
-    </ng-select>
-    <label class="input-label">Vendor Address</label>
+    <ng-select 
+  [items]="vendorBranchList"
+  bindLabel="Address"
+  bindValue="CustomerBranchSid"
+  formControlName="CustomerBranchSid"
+  (change)="onVendorBranchChange($event)"
+  [appendTo]="'body'">
+  <ng-template ng-option-tmp let-item="item">
+    <div>
+      <strong>{{ item.CustomerName }}</strong><br>
+      <small>{{ item.Address }}</small>
+    </div>
+  </ng-template>
+</ng-select>
+
+<!-- Display selected address below the dropdown -->
+<!-- <div *ngIf="vendorInvoiceForm.get('PartyAddress').value">
+  <label>Vendor Address:</label>
+  <div>{{ vendorInvoiceForm.get('PartyAddress').value }}</div>
+</div> -->
+<label class="input-label">Vendor Address <span class="text-danger"></span></label>
   </div>
 </aside>
 
@@ -343,7 +353,7 @@
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">HS/SAC</th>
+            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
@@ -412,10 +422,13 @@
 
               <!-- HSN/SAC -->
               <td>
-                <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
+                <!-- <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid" [placeholder]="''"
                   [displayFields]="HSSACLookupConfig.displayFields" [displayLabels]="HSSACLookupConfig.displayLabels"
                   [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'" appendTo="body">
-                </dofi-searchable-dropdown>
+                </dofi-searchable-dropdown> -->
+                <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
+                  placeholder="" formControlName="HSSACMasterSid" appendTo="body">
+                </ng-select>
               </td>
 
               <!-- Unit -->

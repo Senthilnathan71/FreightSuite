@@ -100,6 +100,7 @@ masterJobLookupConfig = {
 };
   userData: any;
   currentDate = new Date();
+  private pendingBranchToSelect: number | null = null;
 
   // UI state
   selectedTab = 'VendorInvoice';
@@ -263,8 +264,8 @@ gstTypes = [
       // Header
       VoucherNumber: [{ value: '', disabled: true }],
       VoucherDate: [this.formatDateForNgb(new Date()), Validators.required],
-      PartyMasterSid: [null, Validators.required], // Vendor
-      PartyName: [{ value: '', disabled: true }],
+      PartyMasterSid: [null], // Vendor
+      PartyName:  ['', Validators.required],
       PartyAddress: [{ value: '', disabled: true }],
       GSTNo: [{ value: '', disabled: true }],
       PlaceOfSupply: [{ value: '', disabled: true }],
@@ -338,7 +339,9 @@ gstTypes = [
     PartyAmount: [data?.PartyAmount || 0],
     MasterJobSid: [data?.MasterJobSid || null],
     HouseJobSid: [data?.HouseJobSid || null],
-    DepartmentMasterSid: [data?.DepartmentMasterSid || null]
+    DepartmentMasterSid: [data?.DepartmentMasterSid || null],
+    LedgerMasterSid: [data?.LedgerMasterSid || null],
+    COAMasterSid: [data?.COAMasterSid || null]
   });
 }
 getDepartmentName(departmentSid: number): string {
@@ -357,20 +360,40 @@ onDetailChange(index: number, field?: string) {
   } else if (field === 'ChargeMasterSid') {
     const chargeSid = this.details.at(index).get('ChargeMasterSid')?.value;
     const selectedCharge = this.chargeList?.find((c: any) => c.ChargeMasterSid === chargeSid);
+    
     if (selectedCharge) {
       const description = selectedCharge.ChargeDescription || selectedCharge.chargeName || selectedCharge.ChargeName || '';
       let hssacId = selectedCharge.HSSACMasterSid ?? selectedCharge.HSSACMasterSid ?? null;
-      if (!hssacId && Array.isArray(selectedCharge.chargeTaxMaster) && selectedCharge.chargeTaxMaster.length > 0) {
-        const firstTax = selectedCharge.chargeTaxMaster[0];
-        hssacId = firstTax?.ChargeTaxMasterSid ?? firstTax?.chargeTaxMasterSid ?? null;
+      
+      // Auto-set HSN/SAC code from ChargeTaxMaster
+      if (!hssacId && Array.isArray(selectedCharge.ChargeTaxMaster) && selectedCharge.ChargeTaxMaster.length > 0) {
+        const firstTax = selectedCharge.ChargeTaxMaster[0];
+        const hsnCode = firstTax?.HSNCode;
+        
+        // Find matching HSSAC from hssacList using HSNCode
+        if (hsnCode) {
+          const matchingHssac = this.hssacList.find(h => 
+            h.HSSACCode === hsnCode || h.HSNCode === hsnCode
+          );
+          if (matchingHssac) {
+            hssacId = matchingHssac.HSSACMasterSid;
+          }
+        }
       }
+      
       const chargeUomId = selectedCharge.ChargeUOMSid ?? selectedCharge.UOM ?? selectedCharge.UOMMasterSid ?? null;
+
+      // Auto-set LedgerMasterSid and COAMasterSid
+      const ledgerMasterSid = selectedCharge.SubledgerMasterSid || null;
+      const coaMasterSid = selectedCharge.DrCOAMappedId || null;
 
       this.details.at(index).patchValue({
         ChargeDescription: description,
         HSSACMasterSid: hssacId || null,
         ChargeUOMSid: chargeUomId || null,
-        Rate: selectedCharge.DefaultRate || selectedCharge.Rate || this.details.at(index).get('Rate')?.value || 0
+        Rate: selectedCharge.DefaultRate || selectedCharge.Rate || this.details.at(index).get('Rate')?.value || 0,
+        LedgerMasterSid: ledgerMasterSid,
+        COAMasterSid: coaMasterSid
       });
 
       this.recalcRow(index);
@@ -388,7 +411,7 @@ recalcRow(index: number) {
 
   // Calculate basic amounts
   const amount = unit * rate;
-  const taxableAmount = amount;
+  const taxableAmount = exRate*(unit * rate);
   const localAmount = amount * exRate;
 
   // Get GST Type and determine tax applicability
@@ -714,7 +737,7 @@ onVendorChange(selected: any) {
     this.vendorBranchList = [];
     this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(null);
     this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
-    this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(null);
+    this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(null); // Clear PartyMasterSid
     this.vendorInvoiceForm.get('GSTNo')?.setValue('');
     this.vendorInvoiceForm.get('PartyName')?.setValue('');
     this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
@@ -725,13 +748,19 @@ onVendorChange(selected: any) {
 
   const vendor = this.vendorList.find(v => v.CustomerMasterSid === vendorMasterSid);
   if (vendor) {
+    // Set PartyName to vendor name
     this.vendorInvoiceForm.get('PartyName')?.setValue(vendor.CustomerName || '');
     
+    // CRITICAL: Set PartyMasterSid from vendor's SubledgerMasterSid
     if (vendor.SubledgerMasterSid) {
       this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(Number(vendor.SubledgerMasterSid));
+      console.log('DEBUG - Set PartyMasterSid from vendor:', vendor.SubledgerMasterSid);
+    } else {
+      console.warn('DEBUG - Vendor has no SubledgerMasterSid:', vendor);
+      this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(null);
     }
 
-    // Enhanced Invoice Type determination
+    // Rest of your existing code for GST, InvoiceType, etc...
     const countryCode = this.getCustomerCountryCode(vendor);
     console.log('Vendor Country Code:', countryCode);
     
@@ -750,6 +779,7 @@ onVendorChange(selected: any) {
     this.loadVendorTDS(vendorMasterSid);
   }
 
+  // Reset branch selection when vendor changes
   this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(null);
   this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
   this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
@@ -773,6 +803,7 @@ onVendorBranchChange(selectedBranch: any) {
   const foundBranch = this.vendorBranchList.find(b => Number(b.CustomerBranchSid) === Number(branchSid));
   
   if (foundBranch) {
+    // Set address from branch
     const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
     this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
 
@@ -792,13 +823,13 @@ onVendorBranchChange(selectedBranch: any) {
     
     // If no state found, try to get city or use empty
     if (!placeOfSupply) {
-      // You might need to load cities similarly if needed
       placeOfSupply = foundBranch.City || foundBranch.city || '';
     }
 
     console.log('Setting Place of Supply:', placeOfSupply);
     this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
 
+    // Set GST No based on country
     const vendorMasterSid = foundBranch.CustomerMasterSid;
     if (vendorMasterSid) {
       const vendor = this.vendorList.find(v => v.CustomerMasterSid === vendorMasterSid);
@@ -819,7 +850,6 @@ onVendorBranchChange(selectedBranch: any) {
     this.vendorInvoiceForm.get('GSTNo')?.setValue('');
     this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
   }
-  
 }
 
 getStateNameFromVendor(vendorMasterSid: number): string {
@@ -1010,10 +1040,48 @@ getVendorBranchByVendor(CustomerMasterSid: number) {
     this.vendorBranchList = [];
     return;
   }
+  
   this.operationService.getCustomerBranchByCustomer(CustomerMasterSid).subscribe({
     next: (resp: any) => {
       if (resp?.status && resp.data) {
         this.vendorBranchList = Array.isArray(resp.data) ? resp.data : resp.data;
+        
+        // Auto-select the branch if there's a pending selection
+        if (this.pendingBranchToSelect) {
+          const branchId = this.pendingBranchToSelect;
+          this.pendingBranchToSelect = null;
+          const foundBranch = this.vendorBranchList.find((b: any) => 
+            Number(b.CustomerBranchSid) === Number(branchId)
+          );
+          if (foundBranch) {
+            // Set address from the found branch
+            const address = foundBranch.Address || foundBranch.CustomerAddress1 || '';
+            this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
+            
+            // Also set Place of Supply if needed
+            let placeOfSupply = '';
+            const stateMasterSid = foundBranch.StateMasterSid;
+            
+            if (stateMasterSid && this.stateList.length > 0) {
+              const state = this.stateList.find(s => 
+                s.StateMasterSid === stateMasterSid || 
+                s.stateMasterSid === stateMasterSid
+              );
+              if (state) {
+                placeOfSupply = state.stateName || state.StateName || '';
+              }
+            }
+            
+            if (!placeOfSupply) {
+              placeOfSupply = foundBranch.City || foundBranch.city || '';
+            }
+
+            this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
+            
+            // Auto-determine GST Type
+            this.determineGSTType(placeOfSupply);
+          }
+        }
       } else if (Array.isArray(resp)) {
         this.vendorBranchList = resp;
       } else if (resp?.data) {
@@ -1224,7 +1292,7 @@ private getCustomerCountryCode(vendor: any): string {
     Promise.all([
       firstValueFrom(this.operationService.getAllCreditorWithCOAMapped(filterOption)),
       firstValueFrom(this.operationService.getAllCurrencies()),
-      firstValueFrom(this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid || 1)),
+      firstValueFrom(this.operationService.getAllMappedChargeDebtors(filterOption)),
       firstValueFrom(this.operationService.getAllHssac()),
       firstValueFrom(this.operationService.getAllUom()),
       firstValueFrom(this.operationService.getAllState()),
@@ -1232,7 +1300,7 @@ private getCustomerCountryCode(vendor: any): string {
       this.vendorList = vendors.data || [];
       this.subledgerList = vendors.data || [];
       this.currencyList = currencies.data || [];
-      this.chargeList = charges || [];
+      this.chargeList = charges.data || [];
       this.hssacList = hssac || [];
       this.uomList = uom.data || [];
        this.stateList = states?.data || states || [];
@@ -1357,9 +1425,11 @@ getMasterJobNumber(jobSid: number): string {
 }
 
   populateForm(data: any) {
+    
     console.log('populateForm called with data:', data);
 
     const currency = this.currencyList.find(c=>c.CurrencyMasterSid === data.CurrencyMasterSid)
+    
     console.log(currency,'currency')
     this.vendorInvoiceForm.patchValue({
       VoucherNumber: data.VoucherNumber,
@@ -1386,6 +1456,33 @@ getMasterJobNumber(jobSid: number): string {
       HouseJobSid: data.HouseJobSid,
       Status: data.Status
     });
+    // CRITICAL: Extract customer/vendor master SID and branch SID for address patching
+  const customerMasterSidFromBranch = data?.customerBranch?.CustomerMasterSid
+    || data?.CustomerBranch?.CustomerMasterSid
+    || null;
+
+  const cm = data.CustomerMasterSid || customerMasterSidFromBranch || null;
+  const branchSid = data.CustomerBranchSid || data.PartyName 
+    || (data.customerBranch ? data.customerBranch.CustomerBranchSid : null) 
+    || null;
+
+  // Set pending branch to select and load vendor branches
+  this.pendingBranchToSelect = branchSid ? Number(branchSid) : null;
+  
+  if (cm) {
+    this.getVendorBranchByVendor(cm);
+  }
+  
+  if (branchSid) {
+    this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
+    this.pendingBranchToSelect = Number(branchSid);
+    
+    // Load branches for the current vendor
+    const currentVendor = this.vendorInvoiceForm.get('PartyMasterSid')?.value;
+    if (currentVendor) {
+      this.getVendorBranchByVendor(Number(currentVendor));
+    }
+  }
 
     // Populate details
     this.details.clear();
@@ -1779,4 +1876,5 @@ getMasterJobNumber(jobSid: number): string {
   if (this.details.length > index) this.details.removeAt(index);
   this.recalculateAllRows();
 }
+
 }
