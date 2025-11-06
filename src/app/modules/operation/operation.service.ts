@@ -5,6 +5,7 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
 import { Vessel } from "../crm-mobile/Interfaces/vessel.interface";
 import { Uom } from "../crm-mobile/Interfaces/uom.interface";
 import { HSSAC } from "../crm-mobile/Interfaces/hs-sac.interfaces";
+import { State } from "../crm-mobile/Interfaces/state.interface";
 
 @Injectable({
   providedIn: 'root',
@@ -839,6 +840,14 @@ getCountryById(CountryMasterSid: number) {
   }
   getAllUom() {
     return this.http.get('uom').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  getAllState() {
+    return this.http.get<State>('state').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
