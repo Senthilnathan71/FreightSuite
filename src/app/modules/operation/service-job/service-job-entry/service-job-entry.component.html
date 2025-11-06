@@ -1,0 +1,638 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+<div class="modern-booking-workspace bookingStyle px-0">
+  <!-- Smart Header with Dynamic Actions -->
+  <div class="smart-header">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <i class="fas fa-anchor"></i>
+      </div>
+      <div class="brand-content">
+        <h1 class="workspace-title">Service Job</h1>
+      </div>
+      @if(isEditMode){
+      <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+        <i class="fas fs-6 fa-info-circle"></i>
+      </a>
+      }
+    </div>
+
+    <div class="header-actions">
+      <div class="action-group" *ngIf="isEditMode">
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="openAuditLogs(auditLogModal)">
+          <i class="fas fa-history  me-1"></i>
+          <span>Logs</span>
+        </button>
+      </div>
+      <div class="action-group">
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+          <i class="fas fa-chevron-left me-1"></i>
+          <span>Back</span>
+        </button>
+      </div>
+      <div class="action-group">
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+          <i class="fas fa-sync-alt me-1"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+      <div class="action-group primary">
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" appPreventMultiClick>
+          <i class="fas fa-save me-1"></i>
+          <span>Save</span>
+        </button>
+      </div>
+      <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+          <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+          <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+          <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Quick Form -->
+  <div class="content-workspace" [formGroup]="serviceJobForm">
+    <div class="workspace-content">
+      <!-- <div class="content-layout"> -->
+      <div class="row">
+        <div class="col-12">
+          <div class="row compact-form" [formGroup]="serviceJobForm">
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!serviceJobForm.get('DepartmentMasterSid')?.value">
+                <dofi-searchable-dropdown #departmentLookup [items]="departmentList"
+                  formControlName="DepartmentMasterSid" placeholder=""
+                  [displayFields]="departmentLookupConfig.displayFields"
+                  [displayLabels]="departmentLookupConfig.displayLabels"
+                  [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
+                  (itemSelected)="onDeptChange($event)">
+                </dofi-searchable-dropdown>
+                <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+                @if(serviceJobForm.get('DepartmentMasterSid')?.touched &&
+                serviceJobForm.get('DepartmentMasterSid')?.invalid){
+                <div class="error-message">
+                  @if(serviceJobForm.get('DepartmentMasterSid')?.hasError('required')){
+                  <span>Required</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="HBLNo">
+                <label for="text-input" [ngClass]="{
+              'input-label': true,
+              'bg-transparent': !b['HBLNo']?.getRawValue()
+             }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+              </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="MBLNo">
+                <label for="text-input" [ngClass]="{
+                          'input-label': true,
+                          'bg-transparent': !b['MBLNo']?.getRawValue()
+                        }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
+                    class="text-danger"></span></label>
+              </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class=" custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate" ngbDatepicker
+                    #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
+                    container="body" />
+                  <button class="btn  bi bi-calendar3 px-0" (click)="d2.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                </div>
+                <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' :
+                  'MBL Date' }} <span class="text-danger"></span>
+                </label>
+
+              </div>
+            </aside>
+            
+            
+
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!serviceJobForm.get('CustomerMasterSid')?.value">
+                <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
+                  [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                  bindLabel="CustomerName" bindValue="CustomerMasterSid" (itemSelected)="onCustomerChange($event)">
+                </dofi-searchable-dropdown>
+                <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
+                @if(serviceJobForm.get('CustomerMasterSid')?.touched &&
+                serviceJobForm.get('CustomerMasterSid')?.invalid){
+                <div class="error-message">
+                  @if(serviceJobForm.get('CustomerMasterSid')?.hasError('required')){
+                  <span>Required</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group" style="margin-top: 8px;">
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="ShipmentNo">
+                <label for="text-input" [ngClass]="{
+            'input-label': true,
+            'bg-transparent': !b['ShipmentNo']?.getRawValue()
+             }">Reference No <span class="text-danger"></span></label>
+              </div>
+            </aside>
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!serviceJobForm.get('POL')?.value">
+                <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode"
+                  (itemSelected)="handlePOLChange($event)">
+                </dofi-searchable-dropdown>
+                <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
+                @if(serviceJobForm.get('POL')?.touched && serviceJobForm.get('POL')?.invalid){
+                <div class="error-message">
+                  @if(serviceJobForm.get('POL')?.hasError('required')){
+                  <span>Required</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!serviceJobForm.get('POD')?.value">
+                <dofi-searchable-dropdown [items]="filteredPOD" formControlName="POD" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindLabel="PortCode" bindValue="PortCode"
+                  (itemSelected)="handlePODChange($event)">
+                </dofi-searchable-dropdown>
+                <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
+                @if(serviceJobForm.get('POD')?.touched && serviceJobForm.get('POD')?.invalid){
+                <div class="error-message">
+                  @if(serviceJobForm.get('POD')?.hasError('required')){
+                  <span>Required</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+
+
+            <div class="col-md-3">
+              <aside>
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!serviceJobForm.get('status')?.value">
+                  @if(isEditMode){
+                  <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body">
+                    <ng-option value="Active">Active</ng-option>
+                    <ng-option value="Suspended">Suspended</ng-option>
+                  </ng-select>
+                  } @else {
+                  <input type="text" name="status" class="form-control custom-input-field sm" value="Active"
+                    id="text-input" disabled>
+                  }
+                  <label for="text-input" [ngClass]="{
+                'input-label': true,
+                'bg-transparent': !b['status']?.value
+              }">Status <span class="text-danger"></span></label>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Navigation Pills -->
+  <div class="nav-pills-container">
+    <div class="nav-pills">
+      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+        (click)="selectTab(tab.name)">
+        <div class="pill-icon">
+          <i [class]="tab.icon"></i>
+        </div>
+        <span class="pill-label">{{ tab.name }}</span>
+        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <button class="nav-action-btn" (click)="toggleMinimizeMaximize()">
+        <i class="fas fa-expand"></i>
+      </button>
+      <button class="nav-action-btn">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dynamic Content Area -->
+  <div class="content-workspace">
+
+    <!-- Shipment Details Tab -->
+    <div class="workspace-content1" *ngIf="selectedTab === 'Shipment'">
+      <div class="content-layout">
+
+        <div class="two-column-layout">
+
+
+          <!-- Vessel & Route Card - Right Half -->
+          <div class="info-card ">
+            <div class="card-body  py-1">
+              <div class="col-md-12">
+                <div class="row compact-form" [formGroup]="serviceJobForm">
+
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar Information -->
+        <div class="info-sidebar">
+
+          <!-- Quick Stats -->
+          <div class="stats-widget  border border-top-0">
+            <div class="widget-header">
+              <h5 class="widget-title">Booking Summary</h5>
+            </div>
+            @if(selectedFCLLCL === "FCL"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">Containers</div>
+                <div class="stat-value">
+                  {{getContainerDisplay()}}
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Gross Weight</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Volume</div>
+                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                  <span class="status-badge status-active">{{getBookingStatus() || ''}}</span>
+                </div>
+              </div>
+            </div>
+            } @else if(selectedFCLLCL === "LCL"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">GW</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">NW</div>
+                <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">CBM</div>
+                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Char W</div>
+                <div class="stat-value">
+                  <span class="status-badge status-active">-</span>
+                </div>
+              </div>
+            </div>
+            } @else if(selectedFCLLCL === "AIR"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">Chargeable Weight</div>
+                <div class="stat-value">{{c['ChargeableWeight']?.value ? c['ChargeableWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Gross Weight</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Volume</div>
+                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                  <span class="status-badge status-active">{{b['status']?.value}}</span>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Recent Actions -->
+          <div class="activity-widget border border-top-0">
+            <div class="widget-header">
+              <h5 class="widget-title">Recent Activity</h5>
+            </div>
+            <div class="widget-body">
+
+              <!-- ✅ Loop through Booking Status Timeline -->
+              <div class="activity-item" *ngFor="let log of houseStatusTimeline; let i = index">
+                <div class="activity-icon">
+                  <i class="fas" [ngClass]="{
+                      'fa-plus': log.status === 'Booked',
+                      'fa-box': log.status === 'Cargo Received',
+                      'fa-ship': log.status === 'Loaded',
+                      'fa-check': log.status === 'Job Closed',
+                      'fa-edit': log.status === 'Stuffed'
+                    }"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">
+                    {{ log.status }}
+                  </div>
+                  <div class="activity-time">
+                    {{ log.at | timeAgo }}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
+      <div class="empty-state d-none">
+        <div class="empty-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <h3 class="empty-title">Cargo Details</h3>
+        <p class="empty-description">Configure cargo information, container details, and package specifications.</p>
+        <button class="empty-action-btn">
+          <i class="fas fa-plus"></i>Add Cargo Details
+        </button>
+      </div>
+      <div class="col-md-12">
+        <div class="row compact-form px-md-5" [formGroup]="cargoForm">
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('CargoType')?.value">
+              <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
+                formControlName="CargoType" placeholder="" appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">Cargo Type<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          @if(selectedFCLLCL === "FCL"){
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ContainerType')?.value">
+              <dofi-searchable-dropdown [items]="containerTypeList" formControlName="ContainerType" placeholder=""
+                [displayFields]="containerTypeLookupConfig.displayFields"
+                [displayLabels]="containerTypeLookupConfig.displayLabels"
+                [labelFields]="containerTypeLookupConfig.labelFields" bindLabel="ContainerName"
+                bindValue="ContainerTypeMasterSid">
+              </dofi-searchable-dropdown>
+              <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
+                formControlName="NoofContainers">
+              <label for="text-input" class="input-label">No. of Container<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          }
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
+                formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+              <label for="text-input" class="input-label">
+                Gross Weight
+              </label>
+
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('GrossWeight')?.touched || cargoForm.get('GrossWeight')?.dirty) &&
+              cargoForm.get('GrossWeight')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('GrossWeight')?.errors?.['grossNotGreater']) {
+                <span>Gross Weight should be greater than Net Weight</span>
+                } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+
+
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
+                (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()"
+                (input)="cargoForm.get('GrossWeight')?.updateValueAndValidity()">
+              <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
+              cargoForm.get('NetWeight')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('NetWeight')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+              <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('Volume')?.touched || cargoForm.get('Volume')?.dirty) &&
+              cargoForm.get('Volume')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('Volume')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('Volume')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          @if(selectedFCLLCL === "AIR") {
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+              <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
+              cargoForm.get('ChargeableWeight')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('ChargeableWeight')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('ChargeableWeight')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          }
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
+                max="9999999.999">
+              <label for="text-input" class="input-label">No. of Pkg<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
+              cargoForm.get('NoOfPackage')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('NoOfPackage')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 10 digits Number Only</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+
+
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('MovementType')?.value">
+              <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="MovementType" appendTo="body">
+              </ng-select>
+              <label for="" class="input-label">Movement Type <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
+              <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" placeholder=""
+                formControlName="ModeOfTransport" appendTo="body">
+
+              </ng-select>
+              <label for="" class="input-label">Mode of Transport <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('StuffingAt')?.value">
+              <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="StuffingAt" appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">Stuffing at<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
+              <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
+                appendTo="body" placeholder="" formControlName="ShipmentTerms">
+              </ng-select>
+              <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Charges Tab -->
+    <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
+
+
+      <app-cost-entry #costEntryComponent screenName="ServiceJob" [currencyList]="currencyList" [dataItems]="serviceJobRateArr"
+        [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
+        (reloadParent)="loadServiceJobById($event)"></app-cost-entry>
+    </div>
+
+    <!-- Other Tabs -->
+
+
+
+    <!-- Floating Action Button -->
+    <!-- <div class="floating-actions">
+      <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()" appPreventMultiClick>
+        <i class="fas fa-save"></i>
+      </button>
+    </div> -->
+
+  </div>
+  <ng-template #auditLogModal let-modal>
+    <div class="modal-header bg-info text-white p-2">
+      <h5 class="modal-title mb-0">Audit Logs</h5>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+      <div class="table-responsive">
+        <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Changed At</th>
+              <th>Changed By</th>
+              <th>Operation</th>
+              <th class="text-center">Old Value</th>
+              <th class="text-center">New Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of auditLogs">
+              <td>{{ log.changedAt | date:'medium' }}</td>
+              <td>{{ log.changedBy || '-' }}</td>
+              <td>{{ log.operation }}</td>
+              <td class="bg-light-danger">
+                <ul>
+                  <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                </ul>
+              </td>
+              <td class="bg-light-success">
+                <ul>
+                  <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                </ul>
+              </td>
+            </tr>
+            <tr *ngIf="auditLogs.length === 0">
+              <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
+  </ng-template>

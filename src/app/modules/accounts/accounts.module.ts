@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AccountRoutes } from './accounts-routing.module';
 import { OutstandingService } from './services/outstanding.service';
 import { ReceiptService } from './services/receipt.service';
+import { VoucherPostingService } from './services/voucher-posting.service';
 
 @NgModule({
   declarations: [],
@@ -13,7 +14,9 @@ import { ReceiptService } from './services/receipt.service';
   ],
   providers: [
     OutstandingService,
-    ReceiptService
+    ReceiptService,
+    VoucherPostingService
   ]
 })
+
 export class AccountsModule { }

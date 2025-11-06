@@ -89,14 +89,14 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         tooltip: 'View ',
         // condition: (row: any) => this.hasPermission('View')
       },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete ',
-        class: "text-danger",
-        // condition: (row: any) => this.hasPermission('Delete')
-      }
+      // {
+      //   icon: 'fas fa-trash',
+      //   label: 'Delete',
+      //   action: 'delete',
+      //   tooltip: 'Delete ',
+      //   class: "text-danger",
+      //   // condition: (row: any) => this.hasPermission('Delete')
+      // }
     ],
     selectable: false,
     multiSelect: false,
@@ -326,7 +326,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       // },
         {
         key: 'MasterNumber',
-        label: 'INR No',
+        label: 'Job No  ',
         sortable: true,
         filterable: true,
         visible: true,

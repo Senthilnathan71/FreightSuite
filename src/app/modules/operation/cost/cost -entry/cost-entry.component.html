@@ -102,7 +102,7 @@
             <button class="btn btn-sm btn-info" (click)="addRateRow()">
               <i class="fas fa-plus"></i> Add Charge
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.BookingHeaderSid">
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
 
@@ -946,6 +946,15 @@
                     '-' }}</p>
                 </div>
               </div>
+              
+              <!-- GST-VAT -->
+               <div class="col-md-3">
+                 <div class="custom-form-group">
+                    <label class="form-label fw-bold">GST-VAT</label>
+                    <p class="mb-0 text-truncate" ngbTooltip="{{ billingGST_VAT || '-' }}">
+      {{ billingGST_VAT || '-' }} 
+                 </div>
+               </div>
            
             <div class="col-md-3">
               <div class="custom-form-group-select">

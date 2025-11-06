@@ -63,13 +63,48 @@ export class CreditRequestEntryComponent {
   departmentList: any[] = [];
   salesmanList: any[] = [];
   today = this.calendar.getToday();
+    // Approval Status Variables
+  approvalDropdownValue = "";
+  authStateCache: string = "Pending";
+  disableAllModification: boolean = false;
+  isAuthorizedUser: boolean = false;
+  creditRequestAuthorized: boolean = false;
+  creditRequestApproved: boolean = false;
+  
+  authorizerDetails = {
+    isAuthorizer: false,
+    isAlreadyApproved: false,
+    canAuthorize: false,
+    AuthorityLevel: null,
+    AuthorityDetailSid: null,
+    ApprovedBy: ''
+  };
+  allApprovalStatus = [
+    { value : "Pending" , name :"Waiting for Approval"},
+    { value : "WaitingForFinalApproval" , name :"Waiting for Final Approval"},
+    { value : "WaitingForCustomerApproval" , name :"Waiting for Customer Approval"},
+    { value : "Approved" , name :"Approved"},
+    { value : "Counter" , name :"Counter"},
+    { value : "Rejected" , name : "Rejected"}
+  ]
+
+  approvalStatus = [
+    { value : "Pending" , name :"Waiting for Approval"},
+    { value : "Approved" , name :"Approved"},
+    { value : "Rejected" , name : "Rejected"},
+    {value : "Counter", name : "Counter"}
+  ]
   typeofStatus = [
     { id: 'A', name: "Active" },
     { id: 'S', name: "Suspended" }
   ]
   docName = [
     { id: 'Passport', name: "Passport" },
-    { id: 'Driving Licence', name: "Driving Licence" },
+    { id: 'Trade License', name: "Trade License" },
+    { id: 'VAT Certificate', name: "VAT Certificate" },
+    { id: 'GST Certificate ', name: "GST Certificate " },
+    { id: 'Aadhar', name: "Aadhar" },
+    { id: 'Bank Report', name: "Bank Report" },
     { id: 'Pan Card', name: "Pan Card" },
   ]
   currentCompany: any;
@@ -126,8 +161,8 @@ export class CreditRequestEntryComponent {
   createCreditRequest(data?: any): FormGroup {
     const creditForm = this.fb.group({
       CustomerCreditRequestSid: [data?.CustomerCreditRequestSid || null],
-      CustomerBranchSid: [data?.CustomerBranchSid || '', Validators.required],
-      DepartmentMasterSid: [data?.DepartmentMasterSid || '', Validators.required],
+      CustomerBranchSid: [data?.CustomerBranchSid || ''],
+      DepartmentMasterSid: [data?.DepartmentMasterSid || ''],
       SalesmanSid: [data?.SalesmanSid || ''],
       CreditDays: [data?.CreditDays || 0, [Validators.required, Validators.min(0)]],
       CreditLimit: [data?.CreditLimit || 0, [Validators.required, Validators.min(0)]],
@@ -139,7 +174,6 @@ export class CreditRequestEntryComponent {
       Status: [data?.Status || 'A'],
       customerKyc: this.fb.array([])
     });
-
     // Add KYC records if available
     if (data?.customerKyc && data.customerKyc.length > 0) {
       const kycArray = creditForm.get('customerKyc') as FormArray;
@@ -312,6 +346,37 @@ export class CreditRequestEntryComponent {
       return;
     }
 
+     const creditRequests = this.creditRequest.getRawValue();
+     if (!this.isEditMode) {
+    for (let i = 0; i < creditRequests.length; i++) {
+      const current = creditRequests[i];
+      for (let j = 0; j < creditRequests.length; j++) {
+        if (i !== j) {
+          const other = creditRequests[j];
+
+          if (
+            current.CustomerBranchSid === other.CustomerBranchSid &&
+            current.DepartmentMasterSid === other.DepartmentMasterSid
+          ) {
+            const curFrom = new Date(current.EffectiveFrom);
+            const othTo = other.EffectiveTo ? new Date(other.EffectiveTo) : null;
+            const othStatus = other.Status;
+
+            const isAllowed =
+              (othStatus === 'S') ||
+              (othTo && curFrom > othTo);
+
+            if (!isAllowed) {
+              this.appSettingService.showError(
+                `Existing Branch & Department not allowed.`
+              );
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
     this.btnDisable = true;
     this.loading = true;
 
@@ -509,7 +574,7 @@ getDepartmentName(deptId: number, rowIndex: number): string {
   openEDoc(creditIndex: number, kycIndex: number) {
     const kycArray = this.getKycArray(creditIndex);
     const kycData = kycArray.at(kycIndex).value;
-
+    const creditRequest = this.creditRequest.at(creditIndex).value;
     const modalRef = this.modalService.open(EdocComponent, { 
       size: 'lg', 
       centered: true, 
@@ -524,11 +589,13 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
       BranchMasterSid: this.currentBranch.BranchMasterSid,
       MenuMasterSid: this.MenuMasterSid,
-      DocumentSid: this.customerId,
+      DocumentSid: creditRequest.CustomerCreditRequestSid,
     }
 
     this.commonService.documentData.set(data);
   }
+
+  
 
   goBack() {
     this.router.navigate(['operation/credit-request/list']);

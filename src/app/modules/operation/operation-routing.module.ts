@@ -25,6 +25,11 @@ import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-ent
 import { VendorInvoiceListComponent } from './vendor-invoice/vendor-invoice-list/vendor-invoice-list.component';
 import { CreditRequestListComponent } from './credit-request/credit-request-list/credit-request-list.component';
 import { CreditRequestEntryComponent } from './credit-request/credit-request-entry/credit-request-entry.component';
+import { ServiceJobListComponent } from './service-job/service-job-list/service-job-list.component';
+import { ServiceJobEntryComponent } from './service-job/service-job-entry/service-job-entry.component';
+import { ReportMasterComponent } from './report-master/report-master.component';
+import { MawbillListComponent } from './Master-air-waybill/mawbill-list/mawbill-list.component';
+import { MawbillEntryComponent } from './Master-air-waybill/mawbill-entry/mawbill-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -79,7 +84,31 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
         },
       },
-      
+      {
+        path: 'mawbill/entry',
+        component: MawbillEntryComponent,
+        data: {
+          title: 'Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
+        },
+      },
+      {
+        path: 'mawbill/entry/:id',
+        component: MawbillEntryComponent,
+        data: {
+          title: 'Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
+        },
+      },
+
+      {
+        path: 'mawbill/list',
+        component: MawbillListComponent,
+        data: {
+          title: 'Master Air Waybill',
+          urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
+        },
+      },
       {
         path: 'booking-report/list',
         component: ReportComponent,
@@ -305,8 +334,41 @@ export const OperationRoutes: Routes = [
           title: 'Credit Request',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],
         }
-      }
+      },
+     {
+       path: 'report-master/entry',
+       component: ReportMasterComponent ,
+       data:{
+          title: 'Report Master',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Report Master' }],
+          viewMode: false
+       }
+      },
+      {
+        path: 'service-job/list',
+        component: ServiceJobListComponent,
+        data: {
+          title: 'Service Job',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
+        }
+      },
+      {
+        path: 'service-job/entry',
+        component: ServiceJobEntryComponent,
+        data: {
+          title: 'Service Job',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
+        }
+      },
+      {
+        path: 'service-job/entry/:id',
+        component: ServiceJobEntryComponent,
+        data: {
+          title: 'Service Job',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
+        }
+     }
     ],
   },
   
-];
+]

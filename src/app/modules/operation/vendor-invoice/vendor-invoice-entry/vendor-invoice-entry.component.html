@@ -111,13 +111,19 @@
             <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!vendorInvoiceForm.get('PartyMasterSid')?.value">
-                <ng-select [items]="vendorList" bindLabel="SubledgerName" bindValue="SubledgerName" formControlName="PartyMasterSid"
+                <!-- <ng-select [items]="vendorList" bindLabel="SubledgerName" bindValue="SubledgerName" formControlName="PartyMasterSid"
                   (change)="onVendorChange($event)" appendTo="body"
                   class="ng-select" placeholder="Select Vendor">
                   <ng-template ng-option-tmp let-item="item">
                     {{ item.SubledgerCode }} - {{ item.SubledgerName }}
                   </ng-template>
-                </ng-select>
+                </ng-select> -->
+                <dofi-searchable-dropdown [items]="vendorList" formControlName="PartyMasterSid" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
+                  [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                  bindValue="SubledgerName" bindLabel="SubledgerName"
+                  (itemSelected)="onVendorChange($event)">                  
+                </dofi-searchable-dropdown>
                 <label for="PartyName" class="input-label">
                   Vendor <span class="text-danger">*</span>
                 </label>

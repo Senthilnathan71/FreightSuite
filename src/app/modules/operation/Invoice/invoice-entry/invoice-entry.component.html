@@ -205,11 +205,17 @@
               <!-- 11. GST No (GSTNo) -->
               <aside class="col-md-3">
   <div class="custom-form-group">
-    <input type="text" class="custom-input-field sm" formControlName="GST_VAT" placeholder="" >
+    <input type="text" class="custom-input-field sm" formControlName="GST_VAT" placeholder="" readonly>
     <label class="input-label">GST No / VAT</label>
   </div>
 </aside>
-
+ <!-- 11. GSTType -->
+              <aside class="col-md-3">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" >
+    <label class="input-label">GST Type</label>
+  </div>
+</aside>
               <!-- 12. Invoice Type -->
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"
@@ -300,6 +306,7 @@
                    <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
                   <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
+                  <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Department</th>
                 </tr>
                 <tr class="align-middle bg-info">
                   <!-- India GST Sub-headers -->
@@ -544,7 +551,21 @@
                       <span *ngIf="isEditMode">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
                         row.get('MasterJobSid')?.value) }}</span>
                     </td>
-
+                     <!-- Department Column -->
+<td style="min-width:200px;">
+  <dofi-searchable-dropdown 
+    *ngIf="!isEditMode"
+    [items]="departmentList" 
+    formControlName="DepartmentMasterSid" 
+    [placeholder]="''"
+    [displayFields]="departmentLookupConfig.displayFields" 
+    [displayLabels]="departmentLookupConfig.displayLabels"
+    [labelFields]="departmentLookupConfig.labelFields" 
+    [bindValue]="'DepartmentMasterSid'"
+    appendTo="body">
+  </dofi-searchable-dropdown>
+  <span *ngIf="isEditMode">{{ getDepartmentName(row.get('DepartmentMasterSid')?.value) }}</span>
+</td>
 
                   </tr>
                 </ng-container>

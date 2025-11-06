@@ -261,6 +261,7 @@ export class CostEntryComponent implements OnInit {
   invoiceHeaderExchangeRate: number = 1;
   billingPartyDetails: any = null;
   billingPartyAddress: string = '';
+  billingGST_VAT: string = '';
   taxGroupList: any[] = [];
   chargeTaxGroupMap: Map<number, any> = new Map(); // Map of BookingRatesSid to selected tax group
   /**
@@ -302,7 +303,7 @@ export class CostEntryComponent implements OnInit {
     private companySettings: CompanySettingsManagerService,
     private masterService: MasterService,
     private router : Router,
-  ) {}
+  ) { this.initRateForm();}
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -324,12 +325,13 @@ export class CostEntryComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentCompany?.BranchMasterSid,
     }
-    this.initRateForm();
+    // this.initRateForm();
     this.loadRateLookups();
 
     this.rateFormArray.valueChanges.subscribe(() => {
-    this.dataEmitter.emit(this.rateFormArray.getRawValue());
-    this.calculateProfit();
+    this.validateExchangeRates();
+  this.dataEmitter.emit(this.rateFormArray.getRawValue());
+  this.calculateProfit();
   });
 
     // If dataItems was set before ngOnInit, process them now
@@ -411,6 +413,13 @@ export class CostEntryComponent implements OnInit {
     console.log(this.rateFormArray.getRawValue())
     if (!this.rateFormArray || this.rateFormArray.length === 0) {
       this.appSettingService.showWarning('No rate entries found.');
+      this.validationResult.emit(false);
+      return false;
+    }
+    if (this.rateFormArray.invalid) {
+      this.rateFormArray.markAllAsTouched();
+      this.rateFormArray.updateValueAndValidity();
+      this.appSettingService.showError("Please fill all the required fields correctly");
       this.validationResult.emit(false);
       return false;
     }
@@ -595,8 +604,9 @@ createRateFormGroup(data?: any): FormGroup {
     Remarks : [data?.Remarks ?? ''],
     
     // Below are some helping fields
-    QuoteChargeSid : [null],
-    TariffDetailSid : [null],
+    QuoteChargeSid : [data?.QuoteChargeSid ?? null],
+    TariffDetailSid : [data?.TariffDetailSid ?? null],
+    BookingRateSid : [data?.RateSid ?? null],
     unitQtyBasis: [data?.UnitQty || null],  // Store unit quantity basis for taking no of unit from parent
     _costVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null], // Store actual IDs separately for validation
     _revenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null] // Store actual IDs separately for validation
@@ -1298,21 +1308,21 @@ createRateFormGroup(data?: any): FormGroup {
 
   applyTariff(detail) {
     console.log(detail);
-
-    if(this.rateFormArray.length === 0){
-      this.rateFormArray.push(this.addRateRow(detail));
-      return;
-    }
-    if(this.checkIfLastChargeEmpty()){
-      const rateGroup = this.rateFormArray.at(this.rateFormArray.length - 1);
-      rateGroup.patchValue(detail);
+ 
+    if (this.rateFormArray.length === 0) {
+      this.addRateRow(detail);
     } else {
-      this.rateFormArray.push(this.addRateRow(detail));
+      if (this.checkIfLastChargeEmpty()) {
+        const rateGroup = this.rateFormArray.at(this.rateFormArray.length - 1);
+        rateGroup.patchValue(detail);
+      } else {
+        this.addRateRow(detail);
+      }
     }
+ 
     this.calculateProfit();
     this.modalService.dismissAll();
   }
-
   checkIfLastChargeEmpty(){
     if(this.rateFormArray.length === 0){
       return true;
@@ -1364,15 +1374,65 @@ createRateFormGroup(data?: any): FormGroup {
       title: companyName
     });
   }
+ handleCustomerBranchChange(rateIndex: number, customerBranch: any) {
+  const formGroup = this.rateFormArray.at(rateIndex) as FormGroup;
+  
+  if (!customerBranch) {
+    formGroup.get('RevenueCustomerBranchSid')?.setValue(null);
+    this.billingGST_VAT = '';
+    return;
+  }
 
+  formGroup.get('RevenueCustomerBranchSid')?.setValue(customerBranch.CustomerBranchSid);
+  
+  // Get the customer master data from the branch
+  const customerMaster = customerBranch.revenueCustomerMaster;
+  
+  if (customerMaster && customerMaster.countryMaster) {
+    const countryCode = customerMaster.countryMaster.countryCode;
+    
+    if (countryCode === 'IN') {
+      // For India - use GSTNo from branch
+      this.billingGST_VAT = customerBranch.GSTNo || '';
+      console.log('GST-VAT set from branch GSTNo:', this.billingGST_VAT);
+    } else {
+      // For other countries - use PanType from customer master
+      this.billingGST_VAT = customerMaster.PanType || '';
+      console.log('GST-VAT set from customer PanType:', this.billingGST_VAT);
+    }
+  } else {
+    this.billingGST_VAT = '';
+    console.log('No country master found for customer');
+  }
+}
 
   handleCustomerChange(rateIndex:number , customer: any) {
     const formGroup = this.rateFormArray.at(rateIndex) as FormGroup;
     if (!customer || customer === undefined) {
       formGroup.get('RevenueCustomerMasterSid')?.setValue(null);
+      formGroup.get('RevenueCustomerBranchSid')?.setValue(null);
+    this.billingGST_VAT = '';
       return;
     }
     formGroup.get('RevenueCustomerMasterSid')?.setValue(customer.CustomerMasterSid);
+    if (customer.revenueCustomerBranch && customer.revenueCustomerBranch.length > 0) {
+    // You might want to show branch selection or use the first branch
+    const firstBranch = customer.revenueCustomerBranch[0];
+    this.handleCustomerBranchChange(rateIndex, firstBranch);
+  } else {
+    // Apply logic directly to customer master if no branches
+    if (customer.countryMaster) {
+      const countryCode = customer.countryMaster.countryCode;
+      
+      if (countryCode === 'IN') {
+        // For India customers without branches, you might not have GSTNo
+        this.billingGST_VAT = customer.GSTNo || '';
+      } else {
+        // For other countries - use PanType from customer master
+        this.billingGST_VAT = customer.PanType || '';
+      }
+    }
+  }
   }
 
   handleAgentChange(rateIndex:number , agent: any) {
@@ -1697,8 +1757,10 @@ createRateFormGroup(data?: any): FormGroup {
       this.billingPartyAddress = `${branch?.Address || ''}, ${branch?.cityMaster?.cityName || ''}, ${branch?.stateMaster?.stateName || ''} ${branch?.Zip_PostBox || ''}`.trim();
     } else {
         this.billingPartyDetails = firstCharge?.AgentMaster || {};
-        this.billingPartyAddress = `${this.billingPartyDetails?.Address || ''}`.trim();
-    }
+         const branch = firstCharge?.AgentBranch || {};
+         this.billingPartyAddress = `${branch?.Address || ''}, ${branch?.cityMaster?.cityName || ''}, ${branch?.stateMaster?.stateName || ''} ${branch?.Zip_PostBox || ''}`.trim();
+  }
+  this.setGstVatForBillingParty(firstCharge, isRevenue);
 
     // Get company's home currency from settings (FIRST PRIORITY)
     const companyHomeCurrency = this.companySettings.getCurrencySettings();
@@ -1721,6 +1783,53 @@ createRateFormGroup(data?: any): FormGroup {
       exchangeRate: this.invoiceHeaderExchangeRate
     });
   }
+  private setGstVatForBillingParty(charge: any, isRevenue: boolean) {
+  if (isRevenue) {
+    // For Revenue (Invoice) - use customer data
+    const customerMaster = charge?.customerMasterBP;
+    const customerBranch = charge?.customerBranch;
+
+    if (customerMaster && customerMaster.countryMaster) {
+      const countryCode = customerMaster.countryMaster.countryCode;
+      
+      if (countryCode === 'IN') {
+        // For India - use GSTNo from branch
+        this.billingGST_VAT = customerBranch?.GSTNo || '';
+      } else {
+        // For other countries - use PanType from customer master
+        this.billingGST_VAT = customerMaster?.PanType || '';
+      }
+    } else {
+      this.billingGST_VAT = '';
+    }
+  } else {
+    // For Cost (Vendor Invoice) - use agent data
+    const agentMaster = charge?.AgentMaster;
+    const agentBranch = charge?.AgentBranch;
+
+    if (agentMaster && agentMaster.countryMaster) {
+      const countryCode = agentMaster.countryMaster.countryCode;
+      
+      if (countryCode === 'IN') {
+        // For India - use GSTNo from branch
+        this.billingGST_VAT = agentBranch?.GSTNo || '';
+      } else {
+        // For other countries - use PanType from agent master
+        this.billingGST_VAT = agentMaster?.PanType || '';
+      }
+    } else {
+      this.billingGST_VAT = '';
+    }
+  }
+
+  console.log('GST-VAT set:', {
+    isRevenue,
+    countryCode: isRevenue ? charge?.customerMasterBP?.countryMaster?.countryCode : charge?.AgentMaster?.countryMaster?.countryCode,
+    GST_VAT: this.billingGST_VAT,
+    hasGSTNo: isRevenue ? !!charge?.customerBranch?.GSTNo : !!charge?.AgentBranch?.GSTNo,
+    hasPanType: isRevenue ? !!charge?.customerMasterBP?.PanType : !!charge?.AgentMaster?.PanType
+  });
+}
 
   private loadTaxGroups() {
     const params = {
@@ -2179,91 +2288,136 @@ createRateFormGroup(data?: any): FormGroup {
    * EXWOP: Export without payment (LUT/bond)
    */
   private determineGSTType(selectedCharges: any[]): string | null {
-    // Only determine GST Type for Indian companies
-    if (this.countryOfCompany !== 'india') {
-      return null;
-    }
+  // Get company country from multiple possible sources
+  let companyCountry = '';
+  
+  // Try multiple sources for company country
+  if (this.countryOfCompany) {
+    companyCountry = this.countryOfCompany.toLowerCase();
+  } else if (this.currentCompany?.countryMaster?.countryCode) {
+    companyCountry = this.currentCompany.countryMaster.countryCode.toLowerCase();
+  } else if (this.currentCompany?.Country) {
+    companyCountry = this.currentCompany.Country.toLowerCase();
+  } else if (this.currentBranch?.countryMaster?.countryCode) {
+    companyCountry = this.currentBranch.countryMaster.countryCode.toLowerCase();
+  }
+  
+  // Only determine GST Type for Indian companies
+  if (companyCountry !== 'india' && companyCountry !== 'in') {
+    console.log('Not an Indian company, GST Type not applicable. Country:', companyCountry);
+    return null;
+  }
 
-    // Get first charge for common data
-    const firstCharge = selectedCharges[0];
-    if (!firstCharge) return null;
+  // Get first charge for common data
+  const firstCharge = selectedCharges[0];
+  if (!firstCharge) {
+    console.log('No charges available for GST Type determination');
+    return null;
+  }
 
-    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+  const isRevenue = this.currentVoucherTypeFilter === 'revenue';
 
-    // Get billing party details based on type
-    const billingParty = isRevenue
-      ? (firstCharge?.customerMasterBP || {})
-      : (firstCharge?.AgentMaster || {});
+  // Get billing party details based on type
+  const billingParty = isRevenue
+    ? (firstCharge?.customerMasterBP || {})
+    : (firstCharge?.AgentMaster || {});
 
-    const customerBranch = firstCharge?.customerBranch || {};
+  const customerBranch = firstCharge?.customerBranch || {};
 
-    // Check if this is an export shipment
-    // Get POL and POD from booking form
-    const polData = this.parentFormValue?.POLSid;
-    const podData = this.parentFormValue?.PODSid;
+  // Check if this is an export shipment
+  const isExport = this.checkIfExportShipment();
 
-    // If POL or POD has country information, check if it's export
-    const isExport = this.checkIfExportShipment(polData, podData);
+  console.log('GST Type Determination:', {
+    companyCountry,
+    isExport,
+    billingParty: billingParty?.CustomerName,
+    hasGSTNumber: !!customerBranch?.GSTNo?.trim()
+  });
 
-    if (isExport) {
-      // For export, check if IGST is applied
-      // EXWP: Export with payment (IGST applied)
-      // EXWOP: Export without payment (no IGST)
-      const hasIGST = this.chargeSelectionTaxResult?.totalIGST > 0;
-      return hasIGST ? 'EXWP' : 'EXWOP';
-    }
+  if (isExport) {
+    // For export, check if IGST is applied
+    const hasIGST = this.chargeSelectionTaxResult?.totalIGST > 0;
+    const gstType = hasIGST ? 'EXWP' : 'EXWOP';
+    console.log('Export shipment, GST Type:', gstType);
+    return gstType;
+  }
 
-    // Check if customer has GST number
-    const customerGSTNo = customerBranch?.GSTNo?.trim();
-    const hasGSTNumber = customerGSTNo && customerGSTNo.length > 0;
+  // Check if customer has GST number
+  const customerGSTNo = customerBranch?.GSTNo?.trim();
+  const hasGSTNumber = customerGSTNo && customerGSTNo.length > 0;
 
-    if (hasGSTNumber) {
-      // B2B: Customer has GST number
-      return 'B2B';
+  if (hasGSTNumber) {
+    console.log('B2B: Customer has GST number');
+    return 'B2B';
+  } else {
+    // B2C: Customer does not have GST number
+    const invoiceAmount = this.chargeSelectionTaxResult?.grandTotal || 0;
+    const invoiceAmountInLakhs = invoiceAmount / 100000;
+
+    // Check if same state or different state
+    const companyState = this.currentBranch?.StateName || '';
+    const customerState = customerBranch?.StateName || '';
+    const isSameState = companyState === customerState;
+
+    console.log('B2C Determination:', {
+      invoiceAmount,
+      invoiceAmountInLakhs,
+      companyState,
+      customerState,
+      isSameState
+    });
+
+    if (isSameState && invoiceAmountInLakhs <= 2.5) {
+      console.log('B2CS: Same state, amount <= 2.5 lakh');
+      return 'B2CS';
     } else {
-      // B2C: Customer does not have GST number
-      // Check invoice amount and state
-
-      // Get total invoice amount from tax calculation result
-      const invoiceAmount = this.chargeSelectionTaxResult?.grandTotal || 0;
-      const invoiceAmountInLakhs = invoiceAmount / 100000; // Convert to lakhs
-
-      // Check if same state or different state
-      const companyState = this.currentBranch?.StateName || '';
-      const customerState = customerBranch?.StateName || '';
-      const isSameState = companyState === customerState;
-
-      if (isSameState && invoiceAmountInLakhs <= 2.5) {
-        // B2CS: Same state, amount <= 2.5 lakh
-        return 'B2CS';
-      } else {
-        // B2CL: Different state or amount > 2.5 lakh
-        return 'B2CL';
-      }
+      console.log('B2CL: Different state or amount > 2.5 lakh');
+      return 'B2CL';
     }
   }
+}
 
   /**
    * Check if this is an export shipment based on port countries
    */
-  private checkIfExportShipment(polData: any, podData: any): boolean {
-    // If company country is India, check if either POL or POD is outside India
-    if (this.countryOfCompany !== 'india') {
-      return false;
-    }
-
-    // Check if POL or POD has country information
-    const polCountry = polData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
-                       polData?.Country?.trim()?.toLowerCase() || '';
-    const podCountry = podData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
-                       podData?.Country?.trim()?.toLowerCase() || '';
-
-    // Export if destination is outside India
-    // Import if origin is outside India (but for invoice, we typically generate for exports)
-    const isExport = podCountry && podCountry !== 'india' && podCountry !== 'in';
-
-    return isExport;
+  private checkIfExportShipment(): boolean {
+  // If company country is not India, not an export from India
+  let companyCountry = '';
+  if (this.countryOfCompany) {
+    companyCountry = this.countryOfCompany.toLowerCase();
+  } else if (this.currentCompany?.countryMaster?.countryCode) {
+    companyCountry = this.currentCompany.countryMaster.countryCode.toLowerCase();
   }
+  
+  if (companyCountry !== 'india' && companyCountry !== 'in') {
+    return false;
+  }
+
+  // Check if POL or POD has country information
+  const polData = this.parentFormValue?.POLSid;
+  const podData = this.parentFormValue?.PODSid;
+
+  const polCountry = polData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
+                   polData?.Country?.trim()?.toLowerCase() || 
+                   polData?.country?.trim()?.toLowerCase() || '';
+  
+  const podCountry = podData?.countryMaster?.countryCode?.trim()?.toLowerCase() ||
+                   podData?.Country?.trim()?.toLowerCase() ||
+                   podData?.country?.trim()?.toLowerCase() || '';
+
+  console.log('Export Check:', {
+    companyCountry,
+    polCountry,
+    podCountry,
+    parentFormValue: this.parentFormValue
+  });
+
+  // Export if destination is outside India
+  const isExport = podCountry && podCountry !== 'india' && podCountry !== 'in';
+
+  console.log('Is Export:', isExport);
+  return isExport;
+}
 
   getChargeTaxPercentage(charge: any): string {
     // First check if there's a manually selected tax group
@@ -2328,129 +2482,225 @@ createRateFormGroup(data?: any): FormGroup {
     return lineItem?.totalTaxAmount || 0;
   }
 
-  async proceedWithSelectedCharges() {
-    if (this.selectedCharges.size === 0) {
-      this.appSettingService.showWarning('Please select at least one charge');
-      return;
-    }
-    try {
-      const selectedChargeData = this.availableCharges.filter(c => this.selectedCharges.has(c.RateSid));
+ async proceedWithSelectedCharges() {
+  if (this.selectedCharges.size === 0) {
+    this.appSettingService.showWarning('Please select at least one charge');
+    return;
+  }
+  try {
+    const selectedChargeData = this.availableCharges.filter(c => this.selectedCharges.has(c.RateSid));
 
-      // Close modal
-      this.chargeSelectionModalRef?.close();
+    // Close modal
+    this.chargeSelectionModalRef?.close();
 
-      this.appSettingService.showInfo('Generating voucher...');
+    this.appSettingService.showInfo('Generating voucher...');
 
-      const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+    const isRevenue = this.currentVoucherTypeFilter === 'revenue';
 
-      // Get billing party branch based on type
-      // Revenue: CustomerBranchSid, Cost: AgentBranchSid
-      const billingPartyBranchSid = isRevenue
-          ? selectedChargeData[0]?.RevenueCustomerBranchSid
-          : selectedChargeData[0]?.CostAgentBranchSid;
+    // Get billing party branch based on type
+    const billingPartyBranchSid = isRevenue
+        ? selectedChargeData[0]?.RevenueCustomerBranchSid
+        : selectedChargeData[0]?.CostAgentBranchSid;
 
-      // Prepare payload for voucher generation
-      // voucherTypeMasterSid will be found dynamically in backend based on voucherType + company + branch
-      const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
 
-      // Prepare charge tax group mappings
-      const chargeTaxGroups: any[] = [];
-      this.chargeTaxGroupMap.forEach((taxGroup, chargeId) => {
-        // Find the charge to check if it's inter-state
-        const charge = selectedChargeData.find(c => c.RateSid === chargeId);
-        const isInterState = charge ? this.checkIfInterState(charge) : false;
+    // Prepare charge tax group mappings
+    const chargeTaxGroups: any[] = [];
+    this.chargeTaxGroupMap.forEach((taxGroup, chargeId) => {
+      const charge = selectedChargeData.find(c => c.RateSid === chargeId);
+      const isInterState = charge ? this.checkIfInterState(charge) : false;
 
-        const obj = {
-          RateSid : chargeId,
-          taxMasterSid: taxGroup.TaxMasterSid,
-          taxName: taxGroup.TaxName,
-          taxRate: taxGroup.TaxRate,
-          taxType: taxGroup.TaxType,
-          isInterState: isInterState  // Add inter-state flag
-        }
+      const obj = {
+        RateSid : chargeId,
+        taxMasterSid: taxGroup.TaxMasterSid,
+        taxName: taxGroup.TaxName,
+        taxRate: taxGroup.TaxRate,
+        taxType: taxGroup.TaxType,
+        isInterState: isInterState
+      }
+      chargeTaxGroups.push(obj);
+    });
+    
 
-        chargeTaxGroups.push(obj);
-      });
+    // Determine GST Type for Indian companies
+    const gstType = this.determineGSTType(selectedChargeData);
+    const DepartmentMasterSid = this.getDepartmentMasterSid();
+    const payload = {
+      ParentSid : this.getParentSid(),
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      HouseJobSid : this.screenName === "HouseJob" ? this.getParentSid() : null,
+      MasterJobSid : this.screenName === "MasterJob" ? this.getParentSid() : null,
+      HouseNumber : this.parentFormValue.HBLNo,
+      MasterNumber : this.parentFormValue.MBLNo,
+      modelName : this.screenName,
+      MenuMasterSid : this.screenName === "HouseJob" ? -1 : this.currentMenuId,
+      voucherType: this.selectedVoucherType,
+      selectedRateIds: Array.from(this.selectedCharges),
+      billingPartySid: this.currentBillingPartySid,
+      customerBranchSid: billingPartyBranchSid || null,
+      createdBy: currUserEmail || 'System',
+      DepartmentMasterSid: DepartmentMasterSid,
 
-      // Determine GST Type for Indian companies
-      const gstType = this.determineGSTType(selectedChargeData);
-
-      const payload = {
-        ParentSid : this.getParentSid(),
-        companyMasterSid: this.currentCompany?.CompanyMasterSid,
-        branchMasterSid: this.currentBranch?.BranchMasterSid,
-        HouseJobSid : this.screenName === "HouseJob" ? this.getParentSid() : null,
-        MasterJobSid : this.screenName === "MasterJob" ? this.getParentSid() : null,
-        HouseNumber : this.parentFormValue.HBLNo,
-        MasterNumber : this.parentFormValue.MBLNo,
-        modelName : this.screenName,
-        MenuMasterSid : this.screenName === "HouseJob" ? -1 : this.currentMenuId,
-        voucherType: this.selectedVoucherType,
-        selectedRateIds: Array.from(this.selectedCharges),
-        billingPartySid: this.currentBillingPartySid,
-        customerBranchSid: billingPartyBranchSid || null,
-        createdBy: currUserEmail || 'System',
-
-        // Invoice header information
-        invoiceHeader: {
-          currencyMasterSid: this.invoiceHeaderCurrency?.CurrencyMasterSid,
-          currencyCode: this.invoiceHeaderCurrency?.currencyCode,
-          exchangeRate: this.invoiceHeaderExchangeRate,
-          billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
-          billingPartyAddress: this.billingPartyAddress,
-          gstType: gstType  // Add GST Type to invoice header
-        },
-
-        // Charge tax group mappings
-        chargeTaxGroups: chargeTaxGroups
-      };
-
+      // Invoice header information
+      invoiceHeader: {
+        currencyMasterSid: this.invoiceHeaderCurrency?.CurrencyMasterSid,
+        currencyCode: this.invoiceHeaderCurrency?.currencyCode,
+        exchangeRate: this.invoiceHeaderExchangeRate,
+        billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
+        billingPartyAddress: this.billingPartyAddress,
+        GST_VAT: this.billingGST_VAT, // Add GST-VAT to payload
+        gstType: gstType
+      },
       
 
-      // Generate voucher via API
-      let result;
-      if(this.isBooking){
-        result = await firstValueFrom(this.operationService.generateVoucherFromBooking(payload));
-      } else {
-        result = await firstValueFrom(this.operationService.generateVoucherForJobs(payload));
-      }
+      // Charge tax group mappings
+      chargeTaxGroups: chargeTaxGroups
+    };
+    
+    // VERIFY GST-VAT PAYLOAD
+    console.log('=== GST-VAT PAYLOAD VERIFICATION ===');
+    console.log('GST-VAT Value:', this.billingGST_VAT);
+    console.log('Billing Party Name:', this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName);
+    console.log('Billing Party Address:', this.billingPartyAddress);
+    console.log('Voucher Type:', this.selectedVoucherType);
+    console.log('Full invoiceHeader:', payload.invoiceHeader);
+    console.log('=== END GST-VAT VERIFICATION ===');
 
-      if (result?.status) {
-        const voucherNumber = result.data?.voucherHeader?.VoucherNumber || 'N/A';
-        const voucherHeaderSid = result.data?.voucherHeader?.VoucherHeaderSid;
+    console.log('Voucher generation payload:', payload);
 
-        this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${voucherNumber}`);
-
-        // Reload booking data to show updated rates with voucher information
-        // await this.loadBookingById(this.BookingHeaderSid);
-        await this.reloadParent.emit(this.routeParentSid);
-        // Navigate to invoice-entry or vendor-invoice-entry based on voucher type
-        if (voucherHeaderSid) {
-          const targetRoute = this.selectedVoucherType === 'Vendor Invoice'
-            ? '/operation/vendor-invoice/entry'
-            : '/operation/invoice/entry';
-
-          const key = `${this.screenName}Id`;
-
-          this.router.navigate([targetRoute, voucherHeaderSid], {
-            queryParams: {
-              from: `${this.screenName}`,
-              [key]: this.routeParentSid
-            }
-          });
-        }
-      } else {
-        this.appSettingService.showError('Failed to generate voucher: ' + (result?.message || 'Unknown error'));
-      }
-    } catch (error: any) {
-      this.appSettingService.showError('Error generating voucher: ' + (error?.error?.message || error.message || 'Unknown error'));
-      console.error('Error generating voucher:', error);
+    // Generate voucher via API
+    let result;
+    if(this.isBooking){
+      result = await firstValueFrom(this.operationService.generateVoucherFromBooking(payload));
+    } else {
+      result = await firstValueFrom(this.operationService.generateVoucherForJobs(payload));
     }
+
+    if (result?.status) {
+      const voucherNumber = result.data?.voucherHeader?.VoucherNumber || 'N/A';
+      const voucherHeaderSid = result.data?.voucherHeader?.VoucherHeaderSid;
+
+      this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${voucherNumber}`);
+
+      await this.reloadParent.emit(this.routeParentSid);
+      
+      if (voucherHeaderSid) {
+        const targetRoute = this.selectedVoucherType === 'Vendor Invoice'
+          ? '/operation/vendor-invoice/entry'
+          : '/operation/invoice/entry';
+
+        const key = `${this.screenName}Id`;
+
+        this.router.navigate([targetRoute, voucherHeaderSid], {
+          queryParams: {
+            from: `${this.screenName}`,
+            [key]: this.routeParentSid
+          }
+        });
+      }
+    } else {
+      this.appSettingService.showError('Failed to generate voucher: ' + (result?.message || 'Unknown error'));
+    }
+  } catch (error: any) {
+    this.appSettingService.showError('Error generating voucher: ' + (error?.error?.message || error.message || 'Unknown error'));
+    console.error('Error generating voucher:', error);
   }
+}
 
   cancelChargeSelection() {
     this.chargeSelectionModalRef?.close();
     this.selectedCharges.clear();
     this.availableCharges = [];
+  }
+  private getDepartmentMasterSid(): number | null {
+  // Priority 1: Try to get from parent form value
+  if (this.parentFormValue?.DepartmentMasterSid) {
+    return Number(this.parentFormValue.DepartmentMasterSid);
+  }
+
+  // Priority 2: Try to get from departmentName in parent form
+  if (this.parentFormValue?.departmentName) {
+    // If departmentName is a string, you might need to convert it to DepartmentMasterSid
+    // This depends on your data structure - you may need to map department name to ID
+    console.log('Department name found:', this.parentFormValue.departmentName);
+    // You might need to implement a mapping logic here based on your department list
+  }
+
+  // Priority 3: Try to get from current company/branch settings
+  if (this.currentCompany?.DefaultDepartmentSid) {
+    return Number(this.currentCompany.DefaultDepartmentSid);
+  }
+
+  // Priority 4: Return null if not found
+  console.warn('DepartmentMasterSid not found in parent form or company settings');
+  return null;
+}
+
+  /**
+   * Validates exchange rates for both Cost and Revenue sides.
+   * Sets an error directly on the conflicting ExchangeRate form controls.
+   */
+  validateExchangeRates() {
+    const costRateMap = new Map<number, { rate: number, control: FormGroup }>();
+    const revenueRateMap = new Map<number, { rate: number, control: FormGroup }>();
+    const controls = this.rateFormArray.controls as FormGroup[];
+ 
+    // 1. First, clear any previous mismatch errors from all relevant controls
+    controls.forEach(group => {
+      const costControl = group.get('CostExchangeRate');
+      if (costControl?.hasError('exchangeRateMismatch')) {
+        delete costControl.errors['exchangeRateMismatch'];
+        costControl.updateValueAndValidity({ emitEvent: false });
+      }
+ 
+      const revenueControl = group.get('RevenueExchangeRate');
+      if (revenueControl?.hasError('exchangeRateMismatch')) {
+        delete revenueControl.errors['exchangeRateMismatch'];
+        revenueControl.updateValueAndValidity({ emitEvent: false });
+      }
+    });
+ 
+    // 2. Iterate to find and set new errors on conflicting controls
+    controls.forEach(group => {
+      // --- Validate Cost Side ---
+      const costCurrencyId = group.get('CostCurrencyMasterSid')?.value;
+      const costExchangeRate = group.get('CostExchangeRate')?.value;
+      const costControl = group.get('CostExchangeRate');
+ 
+      if (costCurrencyId && costExchangeRate !== null && costExchangeRate !== undefined && costControl) {
+        if (costRateMap.has(costCurrencyId)) {
+          const storedEntry = costRateMap.get(costCurrencyId)!;
+          if (storedEntry.rate !== costExchangeRate) {
+            // Mismatch found. Set error on the current control and the first one.
+            costControl.setErrors({ ...costControl.errors, exchangeRateMismatch: true });
+            const firstControl = storedEntry.control.get('CostExchangeRate');
+            firstControl?.setErrors({ ...firstControl.errors, exchangeRateMismatch: true });
+          }
+        } else {
+          costRateMap.set(costCurrencyId, { rate: costExchangeRate, control: group });
+        }
+      }
+ 
+      // --- Validate Revenue Side ---
+      const revenueCurrencyId = group.get('RevenueCurrencyMasterSid')?.value;
+      const revenueExchangeRate = group.get('RevenueExchangeRate')?.value;
+      const revenueControl = group.get('RevenueExchangeRate');
+ 
+      if (revenueCurrencyId && revenueExchangeRate !== null && revenueExchangeRate !== undefined && revenueControl) {
+        if (revenueRateMap.has(revenueCurrencyId)) {
+          const storedEntry = revenueRateMap.get(revenueCurrencyId)!;
+          if (storedEntry.rate !== revenueExchangeRate) {
+            // Mismatch found. Set error on the current control and the first one.
+            revenueControl.setErrors({ ...revenueControl.errors, exchangeRateMismatch: true });
+            const firstControl = storedEntry.control.get('RevenueExchangeRate');
+            firstControl?.setErrors({ ...firstControl.errors, exchangeRateMismatch: true });
+          }
+        } else {
+          revenueRateMap.set(revenueCurrencyId, { rate: revenueExchangeRate, control: group });
+        }
+      }
+    });
+ 
   }
 }

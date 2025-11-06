@@ -164,7 +164,10 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   selectedDepartmentType: string;
   selectedFCLLCL: string = "LCL";
   isEditMode: boolean;
+  isJobGenerated: boolean = false;
+  isGeneratingJob: boolean = false;
   bookingData: any;
+  showGenerateJobButton: boolean = false;
   quotationNumber: any = '';
   departmentList: any[] = [];
   customerList: any[] = [];
@@ -515,10 +518,20 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
         this.autoSetFreightTerms(incoTerm);
       });
+      this.bookingForm.get('BookingStatus')?.valueChanges.subscribe((status) => {
+      this.updateGenerateJobButtonVisibility();
+    });
 
       this.spinner.hide();
     });
   }
+
+  private updateGenerateJobButtonVisibility(): void {
+  const isFCLDepartment = this.selectedFCLLCL === "FCL";
+  const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
+  
+  this.showGenerateJobButton = isFCLDepartment && !isStuffedStatus;
+}
 
   ngAfterViewInit(): void {
     if (!this.isEditMode) {
@@ -1268,12 +1281,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const isRateValid = this.costEntryComponent?.validateRateArray?.();
-    console.log(isRateValid);
-    if (!isRateValid) {
-      console.warn('Rate validation failed — submission stopped');
-      return;
-    }
+    // const isRateValid = this.costEntryComponent?.validateRateArray?.();
+    // console.log(isRateValid);
+    // if (!isRateValid) {
+    //   console.warn('Rate validation failed — submission stopped');
+    //   return;
+    // }
     console.log('Before',this.b['BookingStatus']?.getRawValue());
     this.updateBookingStatusOnCargoDate();
     console.log('After',this.b['BookingStatus']?.getRawValue());
@@ -1473,6 +1486,10 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+    const isFCLDepartment = this.selectedFCLLCL === "FCL";
+  const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
+  
+  this.showGenerateJobButton = isFCLDepartment && !isStuffedStatus;
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock');
       this.cargoForm.get('StuffingAt')?.disable();
@@ -2106,7 +2123,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
   }
-
+  
   selectedTab = 'Shipment';
   isQuickFormExpanded = false;
 
@@ -2903,5 +2920,108 @@ async downloadPDF() {
       return (this.agentList.find(dep => dep.CustomerMasterSid === DestinationAgent)?.CustomerName);
     }
   }
-          
+  onGenerateJob() {
+  if (!this.bookingData || !this.BookingHeaderSid) {
+    this.appSettingService.showWarning('Please save the booking first before generating job.');
+    return;
+  }
+
+  // Check if BookingStatus is Stuffed
+  if (this.b['BookingStatus']?.value === 'Stuffed') {
+    this.appSettingService.showWarning('Cannot generate job for Stuffed booking.');
+    return;
+  }
+
+  this.spinner.show();
+  
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+  
+  const selectedVoyage = this.headerVesselList.find(v => 
+    v.VesselName === this.b['VesselName']?.value && 
+    v.VoyageNo === this.b['VoyageNo']?.value
+  );
+
+  const shipmentList = [{
+    BookingHeaderSid: this.BookingHeaderSid,
+    HBLNo: this.b['HBLNo']?.value || '',
+  }];
+
+  const isHaz = this.c['CargoType']?.value === 'Haz';
+
+  const masterJobContainers = [];
+  if (this.selectedFCLLCL === "FCL" && this.c['ContainerType']?.value && this.c['NoofContainers']?.value) {
+    for (let i = 0; i < this.c['NoofContainers']?.value; i++) {
+      masterJobContainers.push({
+        ContainerType: this.c['ContainerType']?.value,
+        ContainerNumber: '',
+        LineSeal: '',
+        CustomsSeal: '',
+        HsCode: '',
+        CommodityDescription: this.cargoForm.get('CargoType')?.value || '',
+        PkgType: null,
+        NoOfPkg: this.c['NoOfPackage']?.value || 0,
+        GrossWeight: this.c['GrossWeight']?.value || 0,
+        NetWeight: this.c['NetWeight']?.value || 0,
+        ChargeableWeight: this.c['ChargeableWeight']?.value || 0,
+        Volume: this.c['Volume']?.value || 0,
+        IsSoc: "N"
+      });
+    }
+  }
+
+  const payload = {
+    CreatedBy: userEmail,
+    MenuMasterSid: currentMenuId,
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,
+    POL: this.b['POL']?.value,
+    POD: this.b['POD']?.value,
+    NoOfPkg: this.c['NoOfPackage']?.value || 0,
+    GrossWeight: this.c['GrossWeight']?.value || 0,
+    NetWeight: this.c['NetWeight']?.value || 0,
+    Volume: this.c['Volume']?.value || 0,
+    Haz: isHaz ? 'Y' : 'N',
+    VoyageMasterSid: selectedVoyage?.VoyageMasterSid || this.b['VoyageMasterSid']?.value,
+    VesselName: this.b['VesselName']?.value || selectedVoyage?.VesselName,
+    VoyageNo: this.b['VoyageNo']?.value || selectedVoyage?.VoyageNo,
+    CarrierName: this.b['CarrierName']?.value,
+    CarrierMasterSid: null,
+    ETD: selectedVoyage?.ETD ? new Date(selectedVoyage.ETD) : (this.b['ETD']?.value ? new Date(this.b['ETD']?.value) : null),
+    ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
+    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : null,
+    shipmentList: shipmentList,
+    masterJobContainers: masterJobContainers
+  };
+
+  console.log('Generate Job Payload:', payload);
+
+  this.operationService.createMasterJob(payload).subscribe({
+    next: (resp: any) => {
+      if (resp.status) {
+        const masterJobSid = resp.data?.newMasterJob?.MasterJobSid;
+        
+        // Save MasterJobSid to HBL
+        // if (masterJobSid) {
+        //   this.saveMasterJobSidToHBL(masterJobSid);
+        // }
+        
+        this.appSettingService.showSuccess('Master Job generated successfully from booking');
+        if (masterJobSid) {
+          this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+        }
+      } else {
+        this.appSettingService.showError('Error generating master job: ' + (resp.message || 'Unknown error'));
+      }
+      this.spinner.hide();
+    },
+    error: (error) => {
+      this.spinner.hide();
+      this.appSettingService.showError('Failed to generate master job');
+      console.error('Error generating master job:', error);
+    }
+  });
+}     
+     
 }
