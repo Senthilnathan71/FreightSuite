@@ -969,6 +969,10 @@
                 <div class="stat-label">Volume</div>
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
               </div>
+               <div class="stat-item">
+                <div class="stat-label">Volumetric</div>
+                <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
+              </div>
               <div class="stat-item">
                 <div class="stat-label">Status</div>
                 <div class="stat-value">
@@ -989,6 +993,10 @@
               <div class="stat-item">
                 <div class="stat-label">Volume</div>
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+               <div class="stat-item">
+                <div class="stat-label">Volumetric</div>
+                <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Status</div>
@@ -1146,6 +1154,25 @@
             </div>
           </aside>
           @if(selectedFCLLCL === "AIR") {
+                        <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="Volumetric" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+              <label for="text-input" class="input-label">Volumetric<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('Volumetric')?.touched || cargoForm.get('Volumetric')?.dirty) &&
+              cargoForm.get('Volumetric')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('Volumetric')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('Volumetric')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -1252,9 +1279,16 @@
                 <th>Date</th>
                 <th>External Pkg</th>
                 <th>No of Pkg</th>
+                @if(selectedFCLLCL === "AIR"){
+                  <th>UOM</th>
+                  <th>Length</th>
+                  <th>Width</th>
+                  <th>Height</th>
+                  <th>Volumetric</th>
+                }
+                <th>CBM</th>
                 <th>Gross Weight</th>
                 <th>Net Wt</th>
-                <th>CBM</th>
                 <th>Cargo Received Date</th>
                 <th>Container No.</th>
               </tr>
@@ -1279,6 +1313,13 @@
                 <td>{{product.value.ShippingBillDate | formatDate}}</td>
                 <td>{{product.value.ExternaPkg}}</td>
                 <td>{{product.value.ExternlQty}}</td>
+                @if(selectedFCLLCL === "AIR"){
+                  <td>{{product.value.UomMasterSid}}</td>
+                  <td>{{product.value.Length}}</td>
+                  <td>{{product.value.Width}}</td>
+                  <td>{{product.value.Height}}</td>
+                  <td>{{product.value.Volumetric}}</td>
+                }
                 <td>{{product.value.GrossWeight}}</td>
                 <td>{{product.value.NetWeight}}</td>
                 <td>{{product.value.Volume}}</td>
@@ -1996,10 +2037,24 @@
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('UomMasterSid')?.value">
-          <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="UomMasterSid"
+          <ng-select [items]="measurementUnitList" bindLabel="name" bindValue="id" formControlName="UomMasterSid"
             placeholder="">
           </ng-select>
           <label for="text-input" class="input-label">Uom <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volumetric"
+            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal" max="9999999.999">
+          <label for="text-input" class="input-label">Volumetric <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
+            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal" max="9999999.999">
+          <label for="text-input" class="input-label">Volume <span class="text-danger"></span></label>
         </div>
       </aside>
       }
