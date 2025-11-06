@@ -592,15 +592,8 @@
                         style="width : 100%;">
                       </dofi-searchable-dropdown>
 
-                      <label for="text-input" class="input-label">Destination Agent <span
-                          class="text-danger">*</span></label>
-                      @if(bookingForm.get('AgentName')?.touched && bookingForm.get('AgentName')?.invalid){
-                      <div class="error-message">
-                        @if(bookingForm.get('AgentName')?.hasError('required')){
-                        <span>Required</span>
-                        }
-                      </div>
-                      }
+                      <label for="text-input" class="input-label">Destination Agent </label>
+                      
                     </div>
                   </aside>
 
@@ -837,83 +830,91 @@
                       <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
                     </div>
                   </aside>
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select " style="margin-top: 12px;"
-                      [class.filled]="!!bookingForm.get('VesselName')?.value">
-                      <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
-                        [displayFields]="vesselVoyageConfig.displayFields"
-                        [displayLabels]="vesselVoyageConfig.displayLabels"
-                        [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName"
-                        (itemSelected)="onVesselChange($event)">
-                      </dofi-searchable-dropdown>
-                      <!-- <ng-select class="ng-select" [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName" (change)="onVesselChange($event)" formControlName="VesselName" placeholder="" [appendTo]="'body'">
-                        <ng-template ng-option-tmp let-item="item">
-                          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
-                                        {{item.VesselName}} / {{ item.VoyageNo }}
-                                    </div>
-                                    <div
-                                        style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
-                                        <div style="flex: 1; text-align: left;">
-                                            <div>ETA: {{ item.ETD | formatDate }}</div>
-                                        </div>
-                                        <div style="flex: 1; text-align: right;">
-                                            <div>ETD: {{ item.ETA | formatDate }}</div>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select> -->
-                      <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
-                    </div>
-                  </aside>
-                  <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select " style="margin-top: 12px;"
-                      [class.filled]="!!bookingForm.get('VoyageNo')?.value">
-                      <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                        appendTo="body" formControlName="VoyageNo" placeholder="" (change)="onVoyageChange($event)">
-                        <ng-template ng-option-tmp let-item="item">
-                          <!-- Voyage Number -->
-                          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
-                            {{ item.VoyageNo }}
-                          </div>
+                  <!-- Vessel Name -->
+<aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select mt-2"
+    [class.filled]="!!bookingForm.get('VesselName')?.value">
 
-                          <!-- Ports Row -->
-                          <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
+    <!-- Dropdown Mode -->
+    <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+      <dofi-searchable-dropdown
+        [items]="headerVesselList"
+        formControlName="VesselName"
+        placeholder=""
+        [displayFields]="vesselVoyageConfig.displayFields"
+        [displayLabels]="vesselVoyageConfig.displayLabels"
+        [labelFields]="vesselVoyageConfig.labelFields"
+        bindValue="VesselName"
+        (itemSelected)="onVesselChange($event)"
+        style="width: 100%;">
+      </dofi-searchable-dropdown>
 
-                            <!-- POL Section -->
-                            <div style="flex: 1; text-align: left;">
-                              <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
-                              <div>ETA: {{ item?.ETD | formatDate }}</div>
-                              <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
-                            </div>
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
 
-                            <!-- POD Section -->
-                            <div style="flex: 1; text-align: right;">
-                              <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
-                              <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
-                              <div>ETD: {{ item?.ETA | formatDate }}</div>
-                            </div>
+    <!-- Manual Text Input -->
+    <div class="input-group" *ngIf="this.b['isVesselFreeText']?.value">
+      <input type="text" formControlName="VesselName" placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
 
-                          </div>
-                        </ng-template>
+    <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+  </div>
+</aside>
 
-                      </ng-select>
-                      <!-- <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageMasterHeaderSid" class="ng-select"
-                        appendTo="body" formControlName="VoyageNo" placeholder="Select Voyage No" (change)="onVoyageChange($event)">
-                  
-                        <ng-template ng-option-tmp let-item="item">
-                          <div>
-                            <strong>{{ item.VoyageNo }}</strong>
-                          </div>
-                  
-                          <div *ngIf="item.POL && item.POD" style="font-size: 12px;">
-                            ETA: {{ item.POL.ETA | date:'dd-MMM-yyyy' }} |
-                            ETD: {{ item.POD.ETD | date:'dd-MMM-yyyy' }}
-                          </div>
-                        </ng-template>
-                      </ng-select>   -->
-                      <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                    </div>
-                  </aside>
+<!-- Voyage No -->
+<aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select mt-2"
+    [class.filled]="!!bookingForm.get('VoyageNo')?.value">
+
+    <!-- Dropdown Mode -->
+    <div class="d-flex align-items-center" *ngIf="!this.b['isVoyageFreeText']?.value">
+      <ng-select
+        [items]="voyageList"
+        bindLabel="VoyageNo"
+        bindValue="VoyageNo"
+        class="ng-select"
+        appendTo="body"
+        formControlName="VoyageNo"
+        placeholder=""
+        (change)="onVoyageChange($event)"
+        style="width: 100%;">
+        <ng-template ng-option-tmp let-item="item">
+          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
+            {{ item.VoyageNo }}
+          </div>
+          <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
+            <div style="flex: 1; text-align: left;">ETA: {{ item?.ETD | formatDate }}</div>
+            <div style="flex: 1; text-align: right;">ETD: {{ item?.ETA | formatDate }}</div>
+          </div>
+        </ng-template>
+      </ng-select>
+
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+      </button>
+    </div>
+
+    <!-- Manual Text Input -->
+    <div class="input-group" *ngIf="this.b['isVoyageFreeText']?.value">
+      <input type="text" formControlName="VoyageNo" placeholder="" class="form-control" />
+      <button class="btn bi bi-calendar3" type="button"
+        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+        <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+      </button>
+    </div>
+
+    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+  </div>
+</aside>
+
                   <div class="col-md-6">
                     <div class=" custom-form-group custom-form-group-select-date " style="margin-top: 12px;">
                       <div class="input-group">

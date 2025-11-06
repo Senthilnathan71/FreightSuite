@@ -3213,14 +3213,8 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     this.customerName = '';
   }
 
-
-
-
-
-
-
   goBack() {
-    this.router.navigate([`master/organization/list`]);
+    history.back();
   }
 
   openAuditLogs(modal: TemplateRef<any>) {
