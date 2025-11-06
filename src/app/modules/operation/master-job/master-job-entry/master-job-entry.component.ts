@@ -2183,6 +2183,8 @@ onCFSChange(selectedCFS: any): void {
     selectedCFS.CustomerAddress1 || ''
   );
 }
+
+
 onYardChange(selectedYard: any): void {
   if (!selectedYard) {
     this.masterJobForm.get('YardAddress')?.setValue('');
@@ -2199,6 +2201,12 @@ onYardChange(selectedYard: any): void {
     console.log(shipment ,'shipment');
     this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
   }
+ getCfsValue(cfsSid: number): string {
+  if (!cfsSid || this.cfsList.length === 0) return '';
+  // Look for CFS by CustomerMasterSid instead of CfsMasterSid
+  const cfs = this.cfsList.find(c => c.CustomerMasterSid === cfsSid);
+  return cfs ? cfs.CustomerName : ''; 
+}
 get totalNoOfPkg(): number {
   return this.masterJobContainers.value.reduce((sum, c) => {
     const value = Number(c.NoOfPkg) || 0;
@@ -2216,6 +2224,22 @@ get totalGrossWeight(): number {
 get totalVolume(): number {
   return this.masterJobContainers.value.reduce((sum, c) => {
     const value = Number(c.Volume) || 0;
+    return sum + value;
+  }, 0);
+}
+
+
+get totalNetWeight(): number {
+  return this.masterJobContainers.value.reduce((sum, c) => {
+    const value = Number(c.NetWeight) || 0;
+    return sum + value;
+  }, 0);
+}
+
+
+get totalChargeableWeight(): number {
+  return this.masterJobContainers.value.reduce((sum, c) => {
+    const value = Number(c.ChargeableWeight) || 0;
     return sum + value;
   }, 0);
 }

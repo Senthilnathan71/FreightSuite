@@ -263,7 +263,7 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	onActionTriggered(action: string): void {
 		switch (action) {
 			case 'create':
-				this.openModal(this.content);
+				this.navigateToCreate();
 				break;
 			case 'report':
 				this.report();
@@ -276,9 +276,9 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 		}
 	}
 
-	// navigateToCreate() {
-	// 	this.router.navigate(['settings/rolemenu/entry'])
-	// }
+	navigateToCreate() {
+		this.router.navigate(['settings/rolemenu/entry'])
+	}
 
 
 	private updateHeaderActionState(): void {
@@ -311,6 +311,14 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 			{
 				key: 'MenuName',
 				label: 'Menu Name ',
+				sortable: true,
+				filterable: true,
+				visible: true,
+				dataType: 'string'
+			},
+			{
+				key: 'Module',
+				label: 'Module',
 				sortable: true,
 				filterable: true,
 				visible: true,
