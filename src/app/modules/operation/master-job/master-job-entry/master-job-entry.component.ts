@@ -185,7 +185,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   page = 1;
   pageSize = 5;
   totalLengthOfAttachedBookings : number = 0;
-  
+  userData: any;
+  currentDate = new Date();
+  masterJobData : any;
+
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Container', icon: 'fas fa-boxes' },
@@ -284,6 +287,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
      console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
+      this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
@@ -705,6 +709,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status && response.data) {
           const data = response.data;
+         this.masterJobData = response.data;
+         console.log("Master Job Data", this.masterJobData);
           console.log('API Response Data:', data); 
         console.log('Others Data:', data.others); 
         console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
@@ -973,10 +979,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     );
   }
 
+  // getPackageTypeName(pkgTypeSid: number): string {
+  //   const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+  //   return packageType ? packageType.UOMName : 'Unknown';
+  // }
   getPackageTypeName(pkgTypeSid: number): string {
-    const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
-    return packageType ? packageType.UOMName : 'Unknown';
-  }
+  if (!pkgTypeSid) return 'Unknown';
+  const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+  return packageType ? packageType.UOMName : 'Unknown';
+}
 
   setAddress(controlName: string, item: any) {
     this.masterJobForm.get(controlName)?.setValue(item ? item.CustomerAddress1 : '');
@@ -2188,4 +2199,60 @@ onYardChange(selectedYard: any): void {
     console.log(shipment ,'shipment');
     this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
   }
+get totalNoOfPkg(): number {
+  return this.masterJobContainers.value.reduce((sum, c) => {
+    const value = Number(c.NoOfPkg) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get totalGrossWeight(): number {
+  return this.masterJobContainers.value.reduce((sum, c) => {
+    const value = Number(c.GrossWeight) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get totalVolume(): number {
+  return this.masterJobContainers.value.reduce((sum, c) => {
+    const value = Number(c.Volume) || 0;
+    return sum + value;
+  }, 0);
+}
+
+
+    reportPreAlertModel(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+
+     reportcargomanifest(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+     reportreleaseLetter(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+
+    
+     reportreleaseOrder(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+
+     reportjobCard(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
 }
