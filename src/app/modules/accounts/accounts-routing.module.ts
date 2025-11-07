@@ -18,6 +18,8 @@ import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.compon
 import { PrintsComponent } from './print-structure/prints/prints.component';
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
+import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-list/journal-voucher-list.component';
+import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -262,6 +264,7 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
+
       {
         path: "payment/entry",
         component: PaymentEntryComponent,
@@ -273,6 +276,31 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
+
+       {
+        path: "journal-voucher/list",
+        component: JournalVoucherListComponent,
+        data: {
+          title: "Journal-Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Journal-Voucher" },
+          ],
+        },
+      },
+
+       {
+        path: "journal-voucher/entry",
+        component: JournalVoucherEntryComponent,
+        data: {
+          title: "Journal-Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Journal-Voucher" },
+          ],
+        },
+      },
+
     ]
   }
 ]
