@@ -752,6 +752,7 @@ private getCustomerCountryCode(customer: any): string {
    console.log('DEBUG - header.PartyName:',header.PartyName);
    console.log(this.invoiceData,'invoiceData');
     const cm = header.CustomerMasterSid || customerMasterSidFromBranch || null;
+    console.log('DEBUG - cm:',cm);
     const branchSid = header.CustomerBranchSid || header.PartyName || (header.customerBranch ? header.customerBranch.CustomerBranchSid : null) || null;
 
     

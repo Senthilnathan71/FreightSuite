@@ -142,6 +142,7 @@ gstTypes = [
   ];
 
   searchTypes = [
+    { id: 'Customer', name: 'Customer' },
     { id: 'Master Job', name: 'Master Job' },
     { id: 'House Job', name: 'House Job' },
     { id: 'MBL No', name: 'MBL No' },
@@ -411,7 +412,7 @@ recalcRow(index: number) {
 
   // Calculate basic amounts
   const amount = unit * rate;
-  const taxableAmount = exRate*(unit * rate);
+  const taxableAmount = amount * exRate;
   const localAmount = amount * exRate;
 
   // Get GST Type and determine tax applicability
@@ -494,6 +495,7 @@ recalcRow(index: number) {
   this.updateBillAmount();
   this.calculateTDS();
 }
+
 
 updateBillAmount() {
   const totalLocalAmount = this.calculateTotalLocalAmount();
@@ -1190,41 +1192,51 @@ private getCustomerCountryCode(vendor: any): string {
   }
 
   searchPendingCostsAction() {
-    if (!this.searchValue.trim()) {
-      this.appSettingService.showWarning('Please enter a search value');
-      return;
-    }
-
-    this.searchResultsLoading = true;
-    const criteria = {
-      searchType: this.searchType,
-      searchValue: this.searchValue.trim(),
-      vendorSid: this.vendorInvoiceForm.get('PartyMasterSid')?.value,
-      source: 'booking' // or 'housejob' depending on context
-    };
-
-    this.operationService.searchPendingCosts(criteria).subscribe({
-      next: (response) => {
-        this.searchResultsLoading = false;
-        this.searchPerformed = true;
-        if (response.status && response.data) {
-          this.pendingCosts = response.data;
-          if (this.pendingCosts.length === 0) {
-            this.appSettingService.showInfo('No pending costs found');
-          }
-        } else {
-          this.appSettingService.showError('No pending costs found');
-          this.pendingCosts = [];
-        }
-      },
-      error: (error) => {
-        this.searchResultsLoading = false;
-        this.searchPerformed = true;
-        this.appSettingService.showError('Error searching pending costs');
-        console.error('Error:', error);
-      }
-    });
+  if (!this.searchValue.trim()) {
+    this.appSettingService.showWarning('Please enter a search value');
+    return;
   }
+
+  this.searchResultsLoading = true;
+  
+  const payload = {
+    searchType: this.searchType,
+    searchValue: this.searchValue.trim(),
+    // vendorSid: this.vendorInvoiceForm.get('PartyMasterSid')?.value,
+    companyMasterSid: this.currentCompany?.CompanyMasterSid,
+    branchMasterSid: this.currentBranch?.BranchMasterSid
+  };
+
+  console.log('Frontend - Sending payload:', payload);
+
+  this.operationService.searchPendingCosts(payload).subscribe({
+    next: (response) => {
+      this.searchResultsLoading = false;
+      this.searchPerformed = true;
+      
+      console.log('Frontend - Received response:', response);
+      
+      if (response.status && response.data) {
+        this.pendingCosts = response.data.items || response.data;
+        if (this.pendingCosts.length === 0) {
+          this.appSettingService.showInfo('No pending costs found');
+        } else {
+          this.appSettingService.showSuccess(`Found ${this.pendingCosts.length} pending costs`);
+        }
+      } else {
+        this.appSettingService.showError(response.message || 'No pending costs found');
+        this.pendingCosts = [];
+      }
+    },
+    error: (error) => {
+      this.searchResultsLoading = false;
+      this.searchPerformed = true;
+      this.appSettingService.showError('Error searching pending costs');
+      console.error('Error:', error);
+    }
+  });
+}
+
 
   toggleCostSelection(costSid: number) {
     if (this.selectedCosts.has(costSid)) {
@@ -1233,49 +1245,53 @@ private getCustomerCountryCode(vendor: any): string {
       this.selectedCosts.add(costSid);
     }
   }
+addSelectedCosts() {
+  const selectedCostItems = this.pendingCosts.filter(cost => cost.selected);
+  
+  if (selectedCostItems.length === 0) {
+    this.appSettingService.showWarning('Please select at least one cost');
+    return;
+  }
 
-  addSelectedCosts() {
-    if (this.selectedCosts.size === 0) {
-      this.appSettingService.showWarning('Please select at least one cost');
-      return;
-    }
+  selectedCostItems.forEach(cost => {
+    const detailRow = this.createDetailGroup({
+      ChargeMasterSid: cost.ChargeMasterSid,
+      ChargeDescription: cost.ChargeDescription,
+      NumberOfUnit: cost.NumberOfUnit || 1,
+      Rate: cost.Rate || cost.CostAmount || 0,
+      CurrencyCode: cost.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value,
+      ExchangeRate: cost.CostExchangeRate || cost.ExchangeRate || 1,
+      MasterJobSid: cost.MasterJobSid,
+      HouseJobSid: cost.HouseJobSid,
+      HSSACMasterSid: cost.HSSACMasterSid,
+      ChargeUOMSid: cost.ChargeUOMSid,
 
-    const selectedCostItems = this.pendingCosts.filter(c => this.selectedCosts.has(c.BookingRatesSid || c.CostRevenueChargesSid));
-
-    selectedCostItems.forEach(cost => {
-      const detailRow = this.createDetailGroup({
-        ChargeMasterSid: cost.ChargeMasterSid,
-        ChargeDescription: cost.ChargeDescription,
-        NumberOfUnit: cost.NumberOfUnit || 1,
-        Rate: cost.CostAmount || cost.Rate || 0,
-        CurrencyCode: cost.costCurrencyMaster?.currencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value,
-        ExchangeRate: cost.CostExchangeRate || 1,
-        MasterJobSid: cost.MasterJobSid,
-        HouseJobSid: cost.HouseJobSid
-      });
-
-      this.details.push(detailRow);
-      this.subscribeToRowChanges(detailRow);
     });
 
-    this.renumberRows();
-    this.recalculateAllRows();
-    this.searchCostsModalInstance?.close();
-    this.appSettingService.showSuccess(`${this.selectedCosts.size} cost(s) added successfully`);
-  }
+    this.details.push(detailRow);
+    this.subscribeToRowChanges(detailRow);
+  });
 
-  getSelectedCosts(): any[] {
-    return this.pendingCosts.filter(c => c.selected);
-  }
+  this.renumberRows();
+  this.recalculateAllRows();
+  this.searchCostsModalInstance?.close();
+  this.appSettingService.showSuccess(`${selectedCostItems.length} cost(s) added successfully`);
+}
 
-  toggleSelectAll(event: any): void {
-    const checked = event.target.checked;
-    this.pendingCosts.forEach(cost => cost.selected = checked);
-  }
+ toggleSelectAll(event: any): void {
+  const checked = event.target.checked;
+  this.pendingCosts.forEach(cost => cost.selected = checked);
+}
 
-  isAllSelected(): boolean {
-    return this.pendingCosts.length > 0 && this.pendingCosts.every(c => c.selected);
-  }
+// Fix the isAllSelected method
+isAllSelected(): boolean {
+  return this.pendingCosts.length > 0 && this.pendingCosts.every(c => c.selected);
+}
+
+// Fix the getSelectedCosts method
+getSelectedCosts(): any[] {
+  return this.pendingCosts.filter(cost => cost.selected);
+}
 
   closeSearchCostsModal() {
     this.searchCostsModalInstance?.close();
@@ -1429,15 +1445,19 @@ getMasterJobNumber(jobSid: number): string {
     console.log('populateForm called with data:', data);
 
     const currency = this.currencyList.find(c=>c.CurrencyMasterSid === data.CurrencyMasterSid)
+    const customerMasterSidFromBranch = data?.customerBranch?.CustomerMasterSid
+      || data?.CustomerBranch?.CustomerMasterSid
+      || null;
     
     console.log(currency,'currency')
     this.vendorInvoiceForm.patchValue({
       VoucherNumber: data.VoucherNumber,
       VoucherDate: this.formatDateForNgb(data.VoucherDate),
+      CustomerMasterSid: data.CustomerMasterSid || customerMasterSidFromBranch || null,
       PartyMasterSid: data.PartyMasterSid,
       PartyName: data.PartyName,
       PartyAddress: data.PartyAddress,
-      CustomerBranchSid: data.CustomerBranchSid,
+      CustomerBranchSid: data.CustomerBranchSid || customerMasterSidFromBranch || null,
       GSTNo: data.GST_VAT,
       PlaceOfSupply: data.PlaceOfSupply,
       PostedOn: data.PostDate ? this.formatDateForDisplay(data.PostDate) : null,
@@ -1456,33 +1476,35 @@ getMasterJobNumber(jobSid: number): string {
       HouseJobSid: data.HouseJobSid,
       Status: data.Status
     });
-    // CRITICAL: Extract customer/vendor master SID and branch SID for address patching
-  const customerMasterSidFromBranch = data?.customerBranch?.CustomerMasterSid
-    || data?.CustomerBranch?.CustomerMasterSid
-    || null;
-
-  const cm = data.CustomerMasterSid || customerMasterSidFromBranch || null;
-  const branchSid = data.CustomerBranchSid || data.PartyName 
-    || (data.customerBranch ? data.customerBranch.CustomerBranchSid : null) 
-    || null;
-
-  // Set pending branch to select and load vendor branches
-  this.pendingBranchToSelect = branchSid ? Number(branchSid) : null;
-  
-  if (cm) {
+    console.log('DEBUG - data.PartyName:', data.PartyName);
+    console.log('DEBUG - data.PartyAddress:', data.PartyAddress);
+    console.log('DEBUG - data.CustomerBranchSid:', data.CustomerBranchSid);
+    const cm = data.CustomerMasterSid || customerMasterSidFromBranch || null;
+    console.log('DEBUG - cm:', cm);
+    const branchSid = data.CustomerBranchSid || data.PartyName || (data.customerBranch ? data.customerBranch.CustomerBranchSid : null) || null;
+    console.log('DEBUG - branchSid:', branchSid);
+    this.pendingBranchToSelect = branchSid ? Number(branchSid) : null;
     this.getVendorBranchByVendor(cm);
-  }
-  
-  if (branchSid) {
-    this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
-    this.pendingBranchToSelect = Number(branchSid);
-    
-    // Load branches for the current vendor
-    const currentVendor = this.vendorInvoiceForm.get('PartyMasterSid')?.value;
-    if (currentVendor) {
-      this.getVendorBranchByVendor(Number(currentVendor));
+    console.log('DEBUG - pendingBranchToSelect:', this.pendingBranchToSelect);
+    if(branchSid){
+      this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
+      this.pendingBranchToSelect = Number(branchSid);
+      console.log('DEBUG - pendingBranchToSelect:', this.pendingBranchToSelect);
+      const currentVendor = this.vendorInvoiceForm.get('CustomerMasterSid')?.value;
+      if (currentVendor) {
+        this.getVendorBranchByVendor(Number(currentVendor));
+      } else {
+       const found = this.vendorBranchList.find(b => 
+          Number(b.CustomerBranchSid) === Number(branchSid) || 
+          Number(b.CustomerName) === Number(branchSid)
+        );
+        if (found) {
+          this.vendorInvoiceForm.get('PartyName')?.setValue(Number(branchSid));
+          this.vendorInvoiceForm.get('PartyAddress')?.setValue(found.Address);
+        }
+      }
     }
-  }
+    
 
     // Populate details
     this.details.clear();
