@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, effect, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -25,7 +25,7 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from 'src/app/modules/master/master.service';
-import { take } from 'rxjs';
+import { forkJoin, take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -48,6 +48,10 @@ import { Observable } from 'rxjs';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -74,6 +78,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
     CommonPaginationComponent,
     ReusableTableComponent,
     PageHeaderComponent,
+    SearchableDropdown
   ],
 
   templateUrl: './tax-group-list.component.html',
@@ -115,7 +120,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   loading = true;
   permissions: string[] = [];
 	currentMenuPermissions: any = {};
-
+  countryResults: Country[];
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -166,11 +171,16 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     private calendar: NgbCalendar,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    private datePipe: CustomDatePipe
+    private datePipe: CustomDatePipe,
+     public dropdownStore: DropdownStore,
   ) {
     super(paginationService);
+      effect(() => {
+      const countryData = this.dropdownStore.countries();
+      this.countryResults = countryData;
+    });
   }
-
+ countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
   modeofTaxType = [
     { id: 1, name: 'Input' },
     { id: 2, name: 'Output' },
@@ -186,6 +196,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     this.initializeTableConfig();
     this.initializeHeaderActions();
     this.checkPermissions();
+    this.loadAllFields();
   }
 
     checkPermissions() {
@@ -370,7 +381,14 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   // Table configuration
   private initializeTableConfig(): void {
     this.tableConfig.columns = [
-
+       {
+        key: '',
+        label: 'Tax Group',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
       {
         key: 'TaxName',
         label: 'Tax Name',
@@ -403,10 +421,25 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string'
       },
-
+       {
+        key: '',
+        label: 'Category',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
       {
         key: 'TaxRate',
         label: 'Tax Rate',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+      {
+        key: '',
+        label: 'Country',
         sortable: true,
         filterable: true,
         visible: true,
@@ -678,6 +711,17 @@ viewTax(content: any, row: any) {
       );
     }
   }
+
+    loadAllFields() {
+        forkJoin({
+          countries : this.dropdownStore.loadCountries(),
+     
+        }).subscribe(({  countries  }) => {
+     this.countryResults = countries;
+        });
+    
+        // this.currencyResults = (this.dropdownStore.currencies() || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
+      }
 
   // loadTaxGroups(): void {
   //   this.masterService.getAllTax().subscribe({

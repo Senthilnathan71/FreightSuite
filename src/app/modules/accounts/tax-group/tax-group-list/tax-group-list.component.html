@@ -7,17 +7,15 @@
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner> -->
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
-    <p style="color: white;" class="m-0">Loading...</p>
+  <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
 <div class="row compact-form">
   <div class="col-12">
-      <app-page-header 
-    [title]="'Tax Group'" [showFavorite]="true" [showSearch]="true" 
-    [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
-    (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
-    >
+    <app-page-header [title]="'Tax Master'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
+      [searchButtonText]="'Search'" [(searchValue)]="filterValue" [actions]="headerActions"
+      (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
+      (actionTriggered)="onActionTriggered($event)">
     </app-page-header>
     <!-- <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm">
       <div class="col pb-1">
@@ -72,15 +70,15 @@
     </div> -->
   </div>
 
-    <!-- Reusable Table Component -->
-    <div class="col-12 px-0">
-        <app-reusable-table #taxGroupTable [config]="tableConfig" [data]="allTaxGroup" [loading]="tableLoading"
-            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
-            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
-            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
-            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
-        </app-reusable-table>
-    </div>
+  <!-- Reusable Table Component -->
+  <div class="col-12 px-0">
+    <app-reusable-table #taxGroupTable [config]="tableConfig" [data]="allTaxGroup" [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+      (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+  </div>
 
 
 
@@ -189,7 +187,7 @@
   </div> -->
 
   <!-- No Records -->
-<!-- <div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
+  <!-- <div class="col-12 my-3" *ngIf="totalLengthOfCollection === 0">
     <div class="text-center ">No Records Found</div>
 </div> -->
 
@@ -197,7 +195,7 @@
   <ng-template #content let-modal>
     <div class="modal-header p-2 bg-info">
       <h4 class="modal-title text-white">
-        {{ isEditMode ? 'Edit' : 'Add' }} Tax Group
+        {{ isEditMode ? 'Edit' : 'Add' }} Tax Master
       </h4>
       <!-- @if(isEditMode){
       <a class="text-white ps-2 w-2 h-2 pt-1" (click)="showInfo()">
@@ -207,29 +205,41 @@
       <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div> -->
 
-    <a *ngIf="isEditMode" class="text-white ps-2 crusor-pointer" (click)="showInfo()">
-                <i class="fas fa-info-circle fs-6"></i>
-            </a>
+      <a *ngIf="isEditMode" class="text-white ps-2 crusor-pointer" (click)="showInfo()">
+        <i class="fas fa-info-circle fs-6"></i>
+      </a>
 
-            <div class="ms-auto d-flex align-items-center">
-                <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
-                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-                        ngbDropdownToggle>
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                </div>
-
-                <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="modal.dismiss()"></button>
-            </div>
+      <div class="ms-auto d-flex align-items-center">
+        <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block me-2">
+          <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+          <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+          <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+          <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
         </div>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+    </div>
     <div class="modal-body">
       <form [formGroup]="taxGroupForm">
         <div class="row compact-form">
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <input type="number" formControlName="" class="custom-input-field sm" placeholder="" />
+              <label class="input-label">Tax Group <span class="text-danger">*</span></label>
+              <!-- <div class="error-message"
+                *ngIf="taxGroupForm.get('TaxRate')?.touched && taxGroupForm.get('TaxRate')?.invalid">
+                <span>Required</span>
+              </div> -->
+            </div>
+          </aside>
           <!-- Tax Name -->
           <aside class="col-md-6">
             <div class="custom-form-group">
@@ -256,7 +266,8 @@
 
           <!-- Tax Type -->
           <aside class="col-md-6">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!taxGroupForm.get('TaxType')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!taxGroupForm.get('TaxType')?.value">
               <ng-select formControlName="TaxType" [items]="modeofTaxType" bindLabel="name"
                 bindValue="name"></ng-select>
               <label class="input-label">Tax Type <span class="text-danger">*</span></label>
@@ -288,32 +299,36 @@
           </aside> -->
 
           <aside class="col-md-6">
-          <div class="custom-form-group custom-form-group-select-date">
-            <div class="input-group">
-              <input 
-                class="form-control mb-0" 
-               placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                  #effectiveDate="ngbDatepicker" (click)="effectiveDate.toggle()" formControlName="EffectiveFrom" [minDate]="minDate"
-                  readonly 
-              />
+            <div class="custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  #effectiveDate="ngbDatepicker" (click)="effectiveDate.toggle()" formControlName="EffectiveFrom"
+                  [minDate]="minDate" readonly />
 
-              <button 
-                class="btn  bi bi-calendar3" 
-                (click)="effectiveDate.toggle()" 
-                type="button">
-                <i-feather name="calendar" class="feather-sm"></i-feather>
-              </button>
+                <button class="btn  bi bi-calendar3" (click)="effectiveDate.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+
+              <label class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
+              <div class="error-message pe-4 pb-2"
+                *ngIf="taxGroupForm.get('EffectiveFrom')?.touched && taxGroupForm.get('EffectiveFrom')?.invalid">
+                <span>Required</span>
+              </div>
+
             </div>
+          </aside>
 
-             <label class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
-                <div class="error-message pe-4 pb-2"
-                  *ngIf="taxGroupForm.get('EffectiveFrom')?.touched && taxGroupForm.get('EffectiveFrom')?.invalid">
-                  <span>Required</span>
-                </div>
-           
-          </div>
-        </aside>
-
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name"></ng-select>
+              <label class="input-label">Category <span class="text-danger">*</span></label>
+              <!-- <div class="error-message"
+                *ngIf="taxGroupForm.get('TaxType')?.touched && taxGroupForm.get('TaxType')?.invalid">
+                <span>Required</span>
+              </div> -->
+            </div>
+          </aside>
 
 
 
@@ -346,12 +361,24 @@
               <label class="input-label">Tax Reason</label>
             </div>
           </aside>
-        </div>
-      </form>
-    </div>
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select">
 
-    <div class="modal-footer">
-      <!-- @if(isEditMode){
+              <dofi-searchable-dropdown [items]="dropdownStore.countries()" formControlName="CountryMasterSid" placeholder=""
+                [displayFields]="countryLookupConfig.displayFields" [displayLabels]="countryLookupConfig.displayLabels"
+                [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName" bindValue="CountryMasterSid">
+              </dofi-searchable-dropdown>
+              <label for="text-input" class="input-label">
+                Country <span class="text-danger">*</span>
+              </label>
+            </div>
+          </aside>
+        </div>
+          </form>
+</div>
+
+<div class="modal-footer">
+  <!-- @if(isEditMode){
       <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
       </button>
@@ -367,17 +394,16 @@
       </button>
 
       } -->
-      <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-      <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
-      <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()" [disabled]="taxGroupForm.invalid">
-      Save
-      </button>
-    </div>
-  </ng-template>
+  <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+  <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+    <i class="fas fa-sync-alt me-1"></i>
+    Reset
+  </button>
+  <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()" [disabled]="taxGroupForm.invalid">
+    Save
+  </button>
+</div>
+</ng-template>
 
 
 </div>
