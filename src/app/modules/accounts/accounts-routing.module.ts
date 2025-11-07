@@ -18,6 +18,7 @@ import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.compon
 import { PrintsComponent } from './print-structure/prints/prints.component';
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
+import { PaymentViewComponent } from './payment/payment-view/payment-view.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -255,10 +256,10 @@ export const AccountRoutes: Routes = [
         path: "payment/list",
         component: PaymentListComponent,
         data: {
-          title: "Payment",
+          title: "Payment Voucher",
           urls: [
             { title: "Accounts", url: "/accounts" },
-            { title: "Payment" },
+            { title: "Payment Voucher" },
           ],
         },
       },
@@ -266,10 +267,35 @@ export const AccountRoutes: Routes = [
         path: "payment/entry",
         component: PaymentEntryComponent,
         data: {
-          title: "Payment",
+          title: "Add Payment Voucher",
           urls: [
             { title: "Accounts", url: "/accounts" },
-            { title: "Payment" },
+            { title: "Payment Voucher", url: "/accounts/payment/list" },
+            { title: "Add Payment" },
+          ],
+        },
+      },
+      {
+        path: "payment/entry/:id",
+        component: PaymentEntryComponent,
+        data: {
+          title: "Edit Payment Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Payment Voucher", url: "/accounts/payment/list" },
+            { title: "Edit Payment" },
+          ],
+        },
+      },
+      {
+        path: "payment/view/:id",
+        component: PaymentViewComponent,
+        data: {
+          title: "View Payment Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Payment Voucher", url: "/accounts/payment/list" },
+            { title: "View Payment" },
           ],
         },
       },

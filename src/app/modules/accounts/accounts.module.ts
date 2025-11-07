@@ -5,6 +5,7 @@ import { AccountRoutes } from './accounts-routing.module';
 import { OutstandingService } from './services/outstanding.service';
 import { ReceiptService } from './services/receipt.service';
 import { VoucherPostingService } from './services/voucher-posting.service';
+import { PaymentService } from './services/payment.service';
 
 @NgModule({
   declarations: [],
@@ -15,7 +16,8 @@ import { VoucherPostingService } from './services/voucher-posting.service';
   providers: [
     OutstandingService,
     ReceiptService,
-    VoucherPostingService
+    VoucherPostingService,
+    PaymentService
   ]
 })
 
