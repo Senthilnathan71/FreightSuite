@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { map } from "rxjs";
+import { map ,Observable} from "rxjs";
 import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.metadata";
 import { Vessel } from "../crm-mobile/Interfaces/vessel.interface";
 import { Uom } from "../crm-mobile/Interfaces/uom.interface";
@@ -798,13 +798,28 @@ searchVendorInvoices(payload: any) {
   );
 }
 
-searchPendingCosts(criteria: any) {
-  return this.http.post<{ status: boolean; data: any[] }>('vendor-invoice/search-pending-costs', criteria).pipe(
+searchPendingCosts(criteria: {
+  searchType: string;
+  searchValue: string;
+  vendorSid?: number;
+  companyMasterSid: number;
+  branchMasterSid: number;
+}): Observable<any> {
+  return this.http.post<any>('vendor-invoice/search-pending-costs', criteria).pipe(
     map((resp) => {
       return resp;
     })
   );
 }
+
+ 
+// searchPendingCostsForVendorInvoice(payload: any) {
+//   return this.http.post<{ status: boolean; data: any[] }>('vendor-invoice/search-pending-costs-advanced', payload).pipe(
+//     map((resp) => {
+//       return resp;
+//     })
+//   );
+// } 
 
 getVendorTDSMapping(vendorId: number) {
   return this.http.get<{ status: boolean; data: any }>(`vendor-invoice/vendor-tds-mapping/${vendorId}`).pipe(
