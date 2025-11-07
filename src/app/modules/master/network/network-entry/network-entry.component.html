@@ -1,0 +1,145 @@
+<div class="row compact-form">
+    <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
+                     <i class="fas fa-globe"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info"> Network</h5>
+                    <!-- @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                    } -->
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                    <div class="d-flex gap-2 col-12 px-0 pb-1 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="" type="text" class="form-control pe-5" placeholder="Search"
+                             aria-label="Search input">
+                            <button
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-md-0 mt-1">
+                            <button type="submit"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            
+            <div class="col-md pb-1">
+                <div class="d-flex justify-content-end gap-2">
+
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                    <!-- <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                            ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem
+                                appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms &
+                                Condition</button>
+                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem
+                                appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i>
+                                Authorize</button>
+                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem
+                                appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i>
+                                Email</button>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="d-flex justify-content-end mt-2">
+        <button type="button" class="btn btn-sm btn-info" (click)="addNetwork()">
+            <i class="fas fa-plus"></i> Add Network
+        </button>
+    </div>
+
+    <div class="col-12 mt-1" [formGroup]="networkForm">
+        <div class="table-responsive table-borderless">
+            <table class="table table-hover align-middle no-wrap table-sm">
+                <thead class="bg-info">
+                    <tr>
+                        <th class="bg-transparent text-light" width="3%"></th>
+                        <th class="bg-transparent text-light">Network Name</th>
+                        <th class="bg-transparent text-light">Country</th>
+                        <th class="bg-transparent text-light">Network Type</th>
+                        <th class="bg-transparent text-light" width="8%">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody formArrayName="networks">
+                    <tr *ngFor="let network of networkArray.controls; let i = index" [formGroupName]="i">
+
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm border-0" (click)="removeNetwork(i)">
+                                <i class="fas fa-trash text-danger"></i>
+                            </button>
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="name" class="form-control pt-2" />
+                        </td>
+
+                        <td>
+                            <dofi-searchable-dropdown [items]="dropdownStore.countries()"
+                                formControlName="CountryMasterSid" placeholder=""
+                                [displayFields]="countryLookupConfig.displayFields"
+                                [displayLabels]="countryLookupConfig.displayLabels"
+                                [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid">
+                            </dofi-searchable-dropdown>
+                        </td>
+
+                        <td>
+                            <ng-select [items]="networkType" bindLabel="name" bindValue="id" formControlName="type"
+                                appendTo="body"></ng-select>
+                        </td>
+
+                        <td>
+                            <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="status"
+                                appendTo="body"></ng-select>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="networkArray.length === 0">
+                        <td colspan="5" class="text-center text-muted">No records found</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

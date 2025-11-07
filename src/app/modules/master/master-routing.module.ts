@@ -77,6 +77,7 @@ import { ReportMasterListComponent } from './report-master/report-master-list/re
 import { SailingScheduleListComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
 import { MawbStockListComponent } from './Mawb-stock/mawb-stock-list/mawb-stock-list.component';
 import { MawbStockComponent } from './Mawb-stock/mawb-stock/mawb-stock.component';
+import { NetworkEntryComponent } from './network/network-entry/network-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1194,4 +1195,15 @@ export const MasterRoutes: Routes = [
     }
   },
 
+    {
+    path: 'network/entry',
+    component: NetworkEntryComponent,
+    data: {
+      title: 'Network',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Network' },
+      ]
+    }
+  },
 ];
