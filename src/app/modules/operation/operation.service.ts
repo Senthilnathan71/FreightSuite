@@ -189,6 +189,13 @@ export class OperationService {
       })
     );
   }
+   getAllMappedChargeDebtors(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-charge-debtors',payload).pipe(
+      map((resp:any) => {
+        return resp;
+      })
+    );
+  }
 
   getBookingByBookingNumber(BookingNumber: string) {
     return this.http.get<{ data: any }>(`house-job/shiping_Ins/fetch/${BookingNumber}`).pipe(
