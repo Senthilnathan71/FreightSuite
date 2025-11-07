@@ -187,7 +187,7 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
-        BLNumber: `${item.MasterBillNumber}-${item.MAWBSerial}-${item.NumberofMAWB}`,
+        BLNumber: item.MasterBillNumber,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
       }));

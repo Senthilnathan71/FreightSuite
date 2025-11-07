@@ -234,7 +234,7 @@
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="MBLNo" class="custom-input-field sm"
                                                 [textWithNumbers]="20" placeholder="">
-                                            <label class="input-label">MBL NO </label>
+                                            <label class="input-label">MAWB </label>
                                             @if(masterJobForm.get('MBLNo')?.touched &&
                                             masterJobForm.get('MBLNo')?.invalid){
                                             <div class="error-message">
@@ -332,7 +332,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POO" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"
@@ -409,7 +409,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredPOD" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"
@@ -420,7 +420,7 @@
                                     </aside>
 
                                     <!-- Vessel Field -->
-<div class="col-md-4 mt-md-1">
+<!-- <div class="col-md-4 mt-md-1">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!masterJobForm.get('VesselName')?.value">
     <dofi-searchable-dropdown 
@@ -435,9 +435,21 @@
     </dofi-searchable-dropdown>
     <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
   </div>
-</div>
+</div> -->
+<aside class="col-md-4 mt-md-1">
+    <div class="custom-form-group">
+        <input type="text" formControlName="VesselName" placeholder="" class="custom-input-field sm" />
+        <label for="text-input" class="input-label">Airline <span class="text-danger"></span></label>
+    </div>
+</aside>
+<aside class="col-md-4 mt-md-1">
+    <div class="custom-form-group">
+        <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
+        <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
+    </div>
+</aside>
                                     <!-- Voyage Field -->
-                                    <aside class="col-md-4 mt-md-1">
+                                    <!-- <aside class="col-md-4 mt-md-1">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('VoyageNo')?.value">
                                             <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
@@ -450,11 +462,9 @@
                                                     </div>
                                                     <div
                                                         style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
-                                                        <!-- POL Section -->
                                                         <div style="flex: 1; text-align: left;">
                                                             <div>ETD: {{ item.POL?.ETD | formatDate }}</div>
                                                         </div>
-                                                        <!-- POD Section -->
                                                         <div style="flex: 1; text-align: right;">
                                                             <div>ETA: {{ item.POD?.ETA | formatDate }}</div>
                                                         </div>
@@ -463,7 +473,7 @@
                                             </ng-select>
                                             <label class="input-label">Voyage <span class="text-danger"></span></label>
                                         </div>
-                                    </aside>
+                                    </aside> -->
 
                                     <!-- Carrier Field -->
                                     <aside class="col-md-4 mt-md-1">
@@ -689,7 +699,7 @@
                                     <th>Booking No</th>
                                     <!-- <th>Booking Date</th> -->
                                     <th>Dept</th>
-                                    <th>HBL No</th>
+                                    <th>HAWB</th>
                                     <th>Customer</th>
                                     <!-- <th>Customer Address</th> -->
                                     <th>Shipper</th>
@@ -859,9 +869,9 @@
 
 
                     <!-- Yard Field -->
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!masterJobForm.get('Yard')?.value">
+                            [class.filled]="!!masterJobForm.get('Yard')?.value"> -->
                             <!-- <ng-select [items]="yardList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                 formControlName="Yard" placeholder="" (change)="onYardChange($event)" appendTo="body">
                                 <ng-template ng-option-tmp let-item="item">
@@ -878,7 +888,7 @@
                                     </div>
                                 </ng-template>
                             </ng-select> -->
-
+<!-- 
                             <dofi-searchable-dropdown [items]="yardList" formControlName="Yard" placeholder=""
                         [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
@@ -889,16 +899,16 @@
 
                             <label class="input-label">Yard</label>
                         </div>
-                    </aside>
+                    </aside> -->
 
                     <!-- Yard Address Field - Auto-populated -->
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="YardAddress" class="custom-input-field sm"
                                 [textWithNumbers]="200" placeholder="" readonly>
                             <label class="input-label">Yard Address</label>
                         </div>
-                    </aside>
+                    </aside> -->
 
 
                     <!-- Rest of your Others tab fields remain the same -->
@@ -1062,7 +1072,7 @@
                                             </div>
                                         </div>
                                     </aside>
-                    <aside class="col-md-3 d-flex align-items-center">
+                    <!-- <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
                                 <input type="checkbox" id="coloadCheckbox" placeholder="" formControlName="Coload"
@@ -1070,13 +1080,13 @@
                                 <label for="coloadCheckbox" class="form-check-label sm">Coload</label>
                             </div>
                         </div>
-                    </aside>
+                    </aside> -->
 
                     <!-- CoLoader Field - Conditionally enabled/disabled -->
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select mt-1"
                             [class.filled]="!!masterJobForm.get('CoLoader')?.value"
-                            [class.disabled]="masterJobForm.get('CoLoader')?.disabled">
+                            [class.disabled]="masterJobForm.get('CoLoader')?.disabled"> -->
                             <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
                                 class="ng-select" placeholder="" formControlName="CoLoader" [textWithNumbers]="20"
                                 appendTo="body" [disabled]="masterJobForm.get('CoLoader')?.disabled">
@@ -1087,7 +1097,7 @@
                                     </div>
                                 </ng-template>
                             </ng-select> -->
-                            <dofi-searchable-dropdown [items]="forwarderList" formControlName="CoLoader" placeholder=""
+                            <!-- <dofi-searchable-dropdown [items]="forwarderList" formControlName="CoLoader" placeholder=""
                         [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
@@ -1096,7 +1106,7 @@
                       </dofi-searchable-dropdown>
                             <label class="input-label">CoLoader</label>
                         </div>
-                    </aside>
+                    </aside> -->
                   
                     <aside class="col-md-3">
                         <div class="custom-form-group">

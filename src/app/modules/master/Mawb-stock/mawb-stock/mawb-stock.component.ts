@@ -123,10 +123,17 @@ export class MawbStockComponent implements OnInit{
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
   
-  get BLNumber(): string {
+ get BLNumber(): string {
+  if (this.isEditMode) {
+    // In edit mode, just return the stored MasterBillNumber
+    return this.mawbForm.get('MasterBillNumber')?.value || '';
+  }
+  
+  // In create mode, format it
   const airwayBill = this.mawbForm.get('MasterBillNumber')?.value || '';
   const hawbSerial = this.mawbForm.get('MAWBSerial')?.value || '';
   const noOfHawb = this.mawbForm.get('NumberofMAWB')?.value || '';
+  
   if (!airwayBill && !hawbSerial && !noOfHawb) return '';
   return `${airwayBill}-${hawbSerial}-${noOfHawb}`;
 }
@@ -207,40 +214,51 @@ export class MawbStockComponent implements OnInit{
     }
   
     loadMawbData(id: number): void {
-    this.masterService.fetchMawbStockById(id).subscribe(
-      (data: any) => {
-        const mawbData = data.data;
-        const receivedDate = mawbData.ReceivedDate ? new Date(mawbData.ReceivedDate) : this.todayDate;
-  
-        // First patch common fields except branch
-        this.mawbForm.patchValue({
-          AirwayBillType: mawbData.AirwayBillType,
-          MasterBillNumber: mawbData.MasterBillNumber,
-          Agent: mawbData.Agent,
-          MAWBSerial: mawbData.MAWBSerial,
-          NumberofMAWB: mawbData.NumberofMAWB,
-          ReceivedDate: receivedDate,
-          StockStatus: mawbData.StockStatus,
-          status: mawbData.status === 'A' ? 'Active' : 'Suspended',
-          CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-          BranchMasterSid : this.currentBranch?. BranchMasterSid,
-        });
-  
-        // Ensure branches are loaded first, then patch BranchMasterSid
-        try {
-          this.generatedAWBList = mawbData.AWBList ? JSON.parse(mawbData.AWBList) : [];
-        } catch (e) {
-          console.warn("Invalid AWBList JSON:", mawbData.AWBList);
-          this.generatedAWBList = [];
-        }
-  
-        this.mawstockData = mawbData;
-      },
-      error => {
-        this.appSettingsService.showError('Error loading MAWB data.');
+  this.masterService.fetchMawbStockById(id).subscribe(
+    (data: any) => {
+      const mawbData = data.data;
+      const receivedDate = mawbData.ReceivedDate ? new Date(mawbData.ReceivedDate) : this.todayDate;
+
+      // Parse the MasterBillNumber to extract parts
+      // Format: EA123-20-002 (baseAWB-serial-number)
+      const masterBillParts = mawbData.MasterBillNumber ? mawbData.MasterBillNumber.split('-') : [];
+      
+      let baseAWB = '';
+      let serial = '';
+      let numberPart = '';
+      
+      if (masterBillParts.length >= 3) {
+        // Reconstruct: everything except last 2 parts is baseAWB
+        baseAWB = masterBillParts.slice(0, -2).join('-');
+        serial = masterBillParts[masterBillParts.length - 2];
+        numberPart = masterBillParts[masterBillParts.length - 1];
+      } else {
+        // Fallback: use stored values as-is
+        baseAWB = mawbData.MasterBillNumber;
+        serial = mawbData.MAWBSerial;
+        numberPart = mawbData.NumberofMAWB;
       }
-    );
-  }
+
+      this.mawbForm.patchValue({
+        AirwayBillType: mawbData.AirwayBillType,
+        MasterBillNumber: mawbData.MasterBillNumber, // Keep the full formatted value
+        Agent: mawbData.Agent,
+        MAWBSerial: serial, // Extracted serial
+        NumberofMAWB: numberPart, // Extracted number
+        ReceivedDate: receivedDate,
+        StockStatus: mawbData.StockStatus,
+        status: mawbData.status === 'A' ? 'Active' : 'Suspended',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      });
+
+      this.mawstockData = mawbData;
+    },
+    error => {
+      this.appSettingsService.showError('Error loading MAWB data.');
+    }
+  );
+}
   
   
     preparePayload(): any {

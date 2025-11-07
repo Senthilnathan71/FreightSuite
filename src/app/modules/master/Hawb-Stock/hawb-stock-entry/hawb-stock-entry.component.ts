@@ -129,6 +129,10 @@ hasAnyDropdownPermission(): boolean {
     }
 
 get BLNumber(): string {
+  if (this.isEditMode) {
+    // In edit mode, just return the stored AirwayBillNumber  
+    return this.hawbForm.get('AirwayBillNumber')?.value || '';
+  }
   const airwayBill = this.hawbForm.get('AirwayBillNumber')?.value || '';
   const hawbSerial = this.hawbForm.get('HAWBSerial')?.value || '';
   const noOfHawb = this.hawbForm.get('NumberofHAWB')?.value || '';
@@ -216,29 +220,36 @@ generateAWB(): void {
     (data: any) => {
       const hawbData = data.data;
       const receivedDate = hawbData.ReceivedDate ? new Date(hawbData.ReceivedDate) : this.todayDate;
-
+      const airBillParts = hawbData.AirwayBillNumber ? hawbData.AirwayBillNumber.split('-') : [];
+      
+      let baseAWB = '';
+      let serial = '';
+      let numberPart = '';
+      
+      if (airBillParts.length >= 3) {
+        // Reconstruct: everything except last 2 parts is baseAWB
+        baseAWB = airBillParts.slice(0, -2).join('-');
+        serial = airBillParts[airBillParts.length - 2];
+        numberPart = airBillParts[airBillParts.length - 1];
+      } else {
+        // Fallback: use stored values as-is
+        baseAWB = hawbData.AirwayBillNumber;
+        serial = hawbData.HAWBSerial;
+        numberPart = hawbData.NumberofHAWB;
+      }
       // First patch common fields except branch
       this.hawbForm.patchValue({
         AirwayBillType: hawbData.AirwayBillType,
         AirwayBillNumber: hawbData.AirwayBillNumber,
         Agent: hawbData.Agent,
-        HAWBSerial: hawbData.HAWBSerial,
-        NumberofHAWB: hawbData.NumberofHAWB,
+        HAWBSerial: serial,
+        NumberofHAWB: numberPart,
         ReceivedDate: receivedDate,
         StockStatus: hawbData.StockStatus,
         status: hawbData.status === 'A' ? 'Active' : 'Suspended',
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			  BranchMasterSid : this.currentBranch?. BranchMasterSid,
       });
-
-      // Ensure branches are loaded first, then patch BranchMasterSid
-      try {
-        this.generatedAWBList = hawbData.AWBList ? JSON.parse(hawbData.AWBList) : [];
-      } catch (e) {
-        console.warn("Invalid AWBList JSON:", hawbData.AWBList);
-        this.generatedAWBList = [];
-      }
-
       this.hawstockData = hawbData;
     },
     error => {
