@@ -202,9 +202,9 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   decimalAfterPrecision = 3;
   currentCompanyBranches: any[] = [];
   measurementUnitList =[
-    { id: 1, name: 'Meter' },
-    { id: 2, name: 'Centimeter' },
-    { id: 3, name: 'Inch'}
+    { id: 1, name: 'm' },
+    { id: 2, name: 'cm' },
+    { id: 3, name: 'inch'}
   ]
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;

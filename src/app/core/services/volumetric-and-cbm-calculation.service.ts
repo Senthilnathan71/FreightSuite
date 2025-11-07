@@ -74,7 +74,12 @@ export class VolumetricAndCbmCalculationService {
         volumeInCubicCm = qty * len * wdt * hgt;
         break;
       case 3: // Inches - Convert to centimeters (1 inch = 2.54 cm)
-        volumeInCubicCm = qty * ((len * 2.54) * (wdt * 2.54) * (hgt * 2.54));
+        // volumeInCubicCm = qty * ((len * 2.54) * (wdt * 2.54) * (hgt * 2.54));
+        const pkg = qty;
+        const lenInCm = len * 2.54;
+        const wdtInCm = wdt * 2.54;
+        const hgtInCm = hgt * 2.54;
+        volumeInCubicCm = pkg * (lenInCm * wdtInCm * hgtInCm);
         break;
       default:
         volumeInCubicCm = 0;
