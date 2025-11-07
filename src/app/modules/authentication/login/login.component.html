@@ -11,7 +11,7 @@
         <div id="loginform" [ngClass]="{'d-none': recoverform}">
             <div class="text-center">
                 <span class="db"><img src="assets/images/logos/xtreme-dark-icon.svg" alt="logo" /></span>
-                <h5 class="font-medium mb-4">Sign In to Freight Forwarding</h5>
+                <h5 class="font-medium mb-4">Sign In to Bluefin</h5>
             </div>
             <!-- Form -->
             <div class="row">
@@ -40,6 +40,15 @@
                                 <i-feather class="feather-sm" name="eye-off"></i-feather>
                                 }
                             </span>
+                        </div>
+                         <!-- Financial Year Dropdown -->
+                        <div class="input-group mb-2">
+                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                            <select formControlName="yearMasterSid" class="form-select"
+                                [ngClass]="{'is-invalid': loginform.controls['yearMasterSid'].invalid && (loginform.controls['yearMasterSid'].touched || loginform.controls['yearMasterSid'].dirty)}">
+                                <option value="" disabled>Select Financial Year</option>
+                                <option *ngFor="let year of financialYears" [value]="year.YearMasterSid">{{ year.YearName }}</option>
+                            </select>
                         </div>
                         <!-- <div class="input-group mb-2"> 
                                 <span class="input-group-text" id="basic-addon2"><i class="ti-lock"></i></span>

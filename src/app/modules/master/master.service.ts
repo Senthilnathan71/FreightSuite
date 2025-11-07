@@ -2963,6 +2963,24 @@ getFieldConfiguration() {
     )
   }
 
+  getYearMasterByUserId(email: string) {
+    return this.http.get<{ data: any[] }>(`year/user/${email}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getFinancialYearsByCompany(companyId: number) {
+    return this.http.get<{ data: any[] }>(`year/company/${companyId}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAuditLogsYear(tableName: string, recordId?: string) {
     let url = `year/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;

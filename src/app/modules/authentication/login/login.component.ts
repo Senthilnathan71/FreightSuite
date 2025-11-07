@@ -10,6 +10,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import * as $ from 'jquery';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { MasterService } from '../../master/master.service';
 
 @Component({
   selector: 'app-login',
@@ -28,10 +30,13 @@ export class LoginComponent implements OnInit {
   token: any
   passwordView: boolean;
   successMessage: any;
+  financialYears: any[] = [];
+  private unsubscribe$ = new Subject<void>();
   constructor(
     private appService: AppService,
     private router: Router,
     private authService: authService,
+    private masterService : MasterService,
     private appSettingService: AppSettingsService,
     private localStorage: StorageMap,
     private formBuilder: FormBuilder,
@@ -44,12 +49,15 @@ export class LoginComponent implements OnInit {
     this.loginform = this.formBuilder.group({
       email: ["", [this.emailValidator]],
       password: ["", Validators.required],
+      yearMasterSid: ["", Validators.required],
       rememberMe: [false]
     });
 
     this.forgotPasswordForm = this.formBuilder.group({
       email: ["", [this.emailValidator]],
     });
+
+    this.onEmailChange();
 
     // Auto-fill credentials if saved in localStorage
     const savedEmail = localStorage.getItem('rememberedEmail');
@@ -61,12 +69,59 @@ export class LoginComponent implements OnInit {
         email: savedEmail,
         password: decryptedPass,
         rememberMe: true
-      });
+      },{ emitEvent: false });
+
+      if (this.loginform.get('email')?.valid) {
+        this.getFinancialYears(savedEmail);
+      }
     }
   }
 
 
+  onEmailChange(): void {
+    this.loginform.get('email')?.valueChanges.pipe(
+      debounceTime(500), // Wait for 500ms pause in events
+      distinctUntilChanged(), // Only emit if value is different from last
+      takeUntil(this.unsubscribe$) // Unsubscribe on component destruction
+    ).subscribe(email => {
+      if (this.loginform.get('email')?.valid) {
+        this.getFinancialYears(email);
+      } else {
+        this.financialYears = []; // Clear dropdown if email is invalid
+        this.loginform.get('yearMasterSid')?.reset("");
+      }
+    });
+  }
 
+  getFinancialYears(email: string): void {
+    this.masterService.getYearMasterByUserId(email).subscribe((resp: any) => {
+      if (resp.status && resp.data) {
+        this.financialYears = resp.data;
+        // if there's only one financial year, pre-select it.
+        if (this.financialYears.length === 1) {
+            this.loginform.get('yearMasterSid')?.setValue(this.financialYears[0].YearMasterSid);
+        }
+        const storedYearId = localStorage.getItem('current-year-id');
+        const storedIdExistInResponse = this.financialYears.find(fy => fy.YearMasterSid === +storedYearId);
+        if (storedYearId && storedIdExistInResponse) {
+          this.loginform.get('yearMasterSid')?.setValue(storedYearId);
+        } else {
+          const currentYear = this.financialYears.find(fy => fy.CurrentYear === 'Y');
+          if (currentYear) {
+            this.loginform.get('yearMasterSid')?.setValue(currentYear.YearMasterSid);
+          }
+        }
+      } else {
+        this.financialYears = [];
+        this.loginform.get('yearMasterSid')?.reset("");
+      }
+    }, (error) => {
+      console.error("Error fetching financial years:", error);
+      this.financialYears = [];
+      this.loginform.get('yearMasterSid')?.reset("");
+      this.appSettingService.showError('An error occurred while fetching financial years.');
+    });
+  }
 
   login() {
     if (this.loginform.invalid) {
@@ -122,7 +177,7 @@ export class LoginComponent implements OnInit {
         this.appSettingService.showError(this.errorMessage)
         return;
       }
-
+      localStorage.setItem('current-year-id', this.loginform.get('yearMasterSid')?.value);
       if (this.loginform.get('rememberMe')?.value) {
         localStorage.setItem('rememberedEmail', param.email);
         const encryptedPass = this.appSettingService.encrypt(param.password);
@@ -254,6 +309,10 @@ export class LoginComponent implements OnInit {
     input.type = 'password'; // Hide password on mouseup or mouseleave
   }
 
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
 }
 
 var regexPatterns = {
