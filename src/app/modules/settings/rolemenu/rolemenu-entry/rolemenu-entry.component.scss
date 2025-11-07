@@ -1,0 +1,26 @@
+/* Ensure ng-select expands properly inside table cells */
+.table td .ng-select {
+  width: 100%;
+  min-width: 150px;
+  height: auto;
+}
+
+.ng-select .ng-select-container {
+  min-height: 34px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+/* Prevent dropdown from being cut off */
+.table-responsive {
+  overflow: visible !important;
+}
+
+/* Optional: Adjust dropdown style to align better visually */
+.ng-dropdown-panel {
+  z-index: 9999 !important;
+  position: absolute !important;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}

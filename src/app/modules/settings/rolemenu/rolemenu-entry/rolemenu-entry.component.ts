@@ -17,7 +17,7 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgSelectModule, TextWithNumbersDirective, TogglerComponent,MultiSelectComponent],
   templateUrl: './rolemenu-entry.component.html',
-  styles: ``,
+  styleUrls: ['./rolemenu-entry.component.scss'],
 })
 export class RolemenuEntryComponent implements OnInit {
   roleMenuForm!: FormGroup;
@@ -34,6 +34,7 @@ export class RolemenuEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   userData: any;
+  selectedModuleMenuList:any
 
   modeOfStatus = [
     { value: 'A', name: "Active" },
@@ -77,9 +78,9 @@ export class RolemenuEntryComponent implements OnInit {
       Remarks: [''],
       MenuPermissions: [{}],
       status: ['Active'],
-      InsertRole: [true],
-      ViewRole: [true],
-      UpdateRole: [true],
+      InsertRole: [false],
+      ViewRole: [false],
+      UpdateRole: [false],
       DeleteRole: [false]
     });
   }
@@ -126,18 +127,52 @@ export class RolemenuEntryComponent implements OnInit {
 			}
 		}
 	}
-  filterMenuByModule(selectedModule: any) {
-    if (!selectedModule) {
-      this.menuList = [];
-      this.selectedPermission = [];
-      return;
-    }
+  // filterMenuByModule(selectedModule: any) {
+  //   if (!selectedModule) {
+  //     this.menuList = [];
+  //     this.selectedPermission = [];
+  //     return;
+  //   }
 
-    this.settingService.getMenuByModuleId(selectedModule.ModuleMasterSid).subscribe(
-      (resp: any) => this.menuList = resp || [],
-      (err) => console.error('Error loading menus', err)
-    );
+  //   this.settingService.getMenuByModuleId(selectedModule.ModuleMasterSid).subscribe(
+  //     (resp: any) => this.menuList = resp || [],
+  //     (err) => console.error('Error loading menus', err)
+  //   );
+  // }
+
+
+filterMenuByModule(selectedModules: any) {
+  console.log('Selected modules:', selectedModules);
+
+  // Case 1: If nothing selected
+  if (!selectedModules || selectedModules.length === 0) {
+    this.menuList = [];
+    this.selectedPermission = [];
+    this.clearMenuPermissions();
+    this.roleMenuForm.patchValue({ MenuMasterSid: null });
+    return;
   }
+
+  // ✅ Extract only the IDs
+  const moduleIds = selectedModules.map((m: any) => m.ModuleMasterSid);
+
+  console.log('moduleIds:', moduleIds);
+
+  // ✅ Send to backend in correct structure
+  this.settingService.getMenusByModuleIds( moduleIds ).subscribe(
+    (resp: any) => {
+      this.menuList = resp || [];
+      const currentMenuSid = this.roleMenuForm.get('MenuMasterSid')?.value;
+      if (currentMenuSid && !this.menuList.some(m => m.MenuMasterSid === currentMenuSid)) {
+        this.roleMenuForm.patchValue({ MenuMasterSid: null });
+        this.clearMenuPermissions();
+      }
+    },
+    (err) => console.error('Error loading menus', err)
+  );
+}
+
+
 
   getMenuPermissions(menu: any) {
     this.settingService.getMenuPermissions(menu.MenuMasterSid).subscribe(
@@ -179,10 +214,10 @@ export class RolemenuEntryComponent implements OnInit {
     const payload = {
       ...formValue,
       status: formValue.status === 'Active' ? 'A' : 'S',
-      InsertRole: formValue.InsertRole ? 'Y' : 'N',
-      ViewRole: formValue.ViewRole ? 'Y' : 'N',
-      UpdateRole: formValue.UpdateRole ? 'Y' : 'N',
-      DeleteRole: formValue.DeleteRole ? 'Y' : 'N',
+      InsertRole: formValue.InsertRole ===true ? 'Y' : 'N',
+      ViewRole: formValue.ViewRole===true ? 'Y' : 'N',
+      UpdateRole: formValue.UpdateRole===true ? 'Y' : 'N',
+      DeleteRole: formValue.DeleteRole=== true ? 'Y' : 'N',
       ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
     };
 
