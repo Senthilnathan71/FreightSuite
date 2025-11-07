@@ -33,11 +33,12 @@
         <form [formGroup]="cusForm">
             <div class="row">
                 <div class="col-md-12">
-                    <div class="card h-100 mb-2">
+                    <div class="card h-100 mb-0">
                         <div class="card-body">
-                            <div class="row pb-2">
+                            <div class="row ">
+                              <aside class="col-md-1 d-md-block d-none "></aside>
                                 <!-- Customer Name -->
-                                <aside class="col-md-4">
+                                <aside class="col-md-3 ms-md-4">
                                     <div class="custom-form-group"
                                         [class.filled]="!!cusForm.get('CustomerName')?.value">
                                         <input type="text" id="CustomerName" formControlName="CustomerName"
@@ -47,7 +48,7 @@
                                 </aside>
 
                                 <!-- Country -->
-                                <aside class="col-md-4">
+                                <aside class="col-md-3">
                                     <div class="custom-form-group"
                                         [class.filled]="!!cusForm.get('CountryMasterSid')?.value">
                                         <input type="text" id="CountryMasterSid" formControlName="CountryMasterSid"
@@ -57,7 +58,7 @@
                                 </aside>
 
                                 <!-- Status -->
-                                <aside class="col-md-4">
+                                <aside class="col-md-3">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!cusForm.get('status')?.value">
                                         <ng-select 
@@ -75,24 +76,25 @@
                                         </div>
                                     </div>
                                 </aside>
+                                <aside class="col-md-2 d-md-block d-none"></aside>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Credit Request Section -->
-                <div class="col-md-12">
+                <div class="col-md-12 mt-1">
                     <div class="card">
-  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+  <div class="bg-info d-flex justify-content-between align-items-center  text-white p-1 " style="border-radius: 5px 5px 0px 0px;" >
     <h6 class="mb-0">
-      <i class="fas fa-file-signature me-2"></i>Credit Request Details
+      <i class="fas fa-file-signature me-1"></i>Credit Request Details
     </h6>
-    <button type="button" class="btn btn-sm btn-info" (click)="addCreditRequestRow()">
+    <button type="button" class="btn btn-sm btn-secondary" (click)="addCreditRequestRow()">
       <i class="fas fa-plus"></i> Add Credit Request
     </button>
   </div>
 
-  <div class="card-body">
+  <div class="card-body p-1">
     @if(creditRequest.controls.length === 0) {
       <div class="col-12 text-center py-3 text-danger">
         At least one credit request is required
@@ -109,7 +111,7 @@
               <h2 ngbAccordionHeader>
   <button
     ngbAccordionButton
-    class="d-flex justify-content-between align-items-center w-100 text-light px-3 py-2 position-relative"
+    class="d-flex justify-content-between align-items-center w-100 text-light px-3 py-1 position-relative"
     style="background-color: #1177aa; border-top-left-radius: 6px; border-top-right-radius: 6px;"
   >
     <!-- Left Side (Branch + Department) -->
@@ -144,7 +146,7 @@
 
               <!-- Collapsible content -->
               <div ngbAccordionCollapse>
-                <div class="p-3 bg-light">
+                <div class="card-body p-1">
                   <div class="row">
 
                     <!-- Branch -->
@@ -310,12 +312,12 @@
                                     </div>
                                 </aside>
                     <!-- KYC Section -->
-                    <div class="col-12 mt-3">
-                      <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div class="col-12 mt-1" style="width: 80%; margin: 0 auto;">
+                      <div class="d-flex justify-content-between align-items-center  pb-1 border-bottom">
                         <h6 class="mb-0">
                           <i class="fas fa-layer-group me-2"></i>KYC Documents
                         </h6>
-                        <button type="button" class="btn btn-sm btn-outline-info"
+                        <button type="button" class="btn btn-sm btn-info"
                                 (click)="addKycRow(i)">
                           <i class="fas fa-plus"></i> Add KYC
                         </button>
@@ -323,21 +325,21 @@
 
                       <div [formArrayName]="'customerKyc'">
                         @if(getKycArray(i).controls.length === 0) {
-                          <div class="text-center py-3 text-muted">
-                            <i class="fas fa-folder-open fa-2x mb-2"></i>
-                            <p>No KYC documents added yet</p>
+                          <div class="text-center py-2 text-muted">
+                            <i class="fas fa-folder-open fa-2x mb-1"></i>
+                            <p class="mb-0">No KYC documents added yet</p>
                           </div>
                         }
 
                         @if(getKycArray(i).controls.length > 0) {
-                          <div class="table-responsive">
+                          <div class="table-responsive table-borderless pt-1" >
                             <table class="table table-hover table-sm">
-                              <thead class="bg-light">
+                              <thead class="bg-info">
                                 <tr>
-                                  <th width="5%">S.No</th>
-                                  <th width>Document Name</th>
-                                  <th>Document No.</th>
-                                  <th>E-Doc</th>
+                                  <th width="2%" class="bg-transparent text-light">S.No</th>
+                                  <th width class="bg-transparent text-light">Document Name</th>
+                                  <th class="bg-transparent text-light">Document No.</th>
+                                  <th class="bg-transparent text-light"  width="8%">E-Doc</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -350,19 +352,19 @@
                                         [items]="docName"
                                         bindLabel="name"
                                         bindValue="id"
-                                        placeholder="Select Document"
+                                        placeholder=""
                                         appendTo="body">
                                       </ng-select>
                                     </td>
                                     <td>
                                       <input type="text" formControlName="KycDocNumber"
                                              class="custom-input-field sm"
-                                             placeholder="Enter document number" />
+                                             placeholder="" />
                                     </td>
                                     <td>
-                                      <button type="button" class="btn btn-sm btn-outline-primary"
+                                      <button type="button" class="btn btn-sm btn-secondary dofi-min-w-80"
                                               (click)="openEDoc(i, k)">
-                                        <i class="bi bi-upload"></i> Upload
+                                        <i class="fas fa-upload me-1"></i> Upload
                                       </button>
                                     </td>
                                     

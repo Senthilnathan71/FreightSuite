@@ -16,17 +16,16 @@
         <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
           <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
             <div class="form-outline flex-grow-1 position-relative">
-              <input name="filterValue" type="text" [(ngModel)]="filterValue"
-                     class="form-control pe-5" placeholder="Search">
+              <input name="filterValue" type="text" [(ngModel)]="filterValue" class="form-control pe-5"
+                placeholder="Search" (keyup.enter)="search()">
               <button *ngIf="filterValue"
-                      class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                      (click)="filterValue = ''"
-                      tabindex="0" aria-label="Clear search">
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                (click)="clearSearch()" tabindex="0" aria-label="Clear search">
                 <i class="fas fa-times"></i>
               </button>
             </div>
             <div class="mt-md-0 mt-1">
-              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
                 <i class="fas fa-search me-1"></i> Search
               </button>
             </div>
@@ -45,95 +44,100 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()">
             <i class="fas fa-file-alt me-1"></i> Report
           </button>
 
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-            <i class="fas fa-save me-1"></i> Save
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveChanges()"
+            [disabled]="!hasChanges() || isSaving">
+            <i class="fas fa-save me-1"></i> {{ isSaving ? 'Saving...' : 'Save' }}
           </button>
         </form>
       </div>
     </div>
   </div>
 
-  <div class="row bg-white mx-auto rounded  py-1" style="width: 88%;"> 
-    <div class="col-12 p-0">
-      <div class="table-responsive table-borderless">
+  <div class="row bg-white mx-auto rounded  py-1">
+    <div class="col-12 p-0" style="width: 80%; margin: 0 auto;">
+      <div class="table-responsive table-borderless" >
         <table class="table table-hover align-middle no-wrap mb-0">
           <thead>
             <tr class="bg-info">
-                 <th class="bg-transparent text-light text-center" style="border-top-left-radius: 10px;"  width="2%">
-                
+              <th class="bg-transparent text-light text-center" style="border-top-left-radius: 10px;" width="2%">
               </th>
-              <th class="bg-transparent text-light"  width="35%">
+              <th class="bg-transparent text-light" width="35%">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>Tax Group</div>
+                  <div>
+                    <i class="{{ getSortIcon('name') }} ms-1" style="opacity: 0.7;font-size: 10px;cursor: pointer;"
+                      (click)="sort('name')"></i>
+                  </div>
                 </div>
               </th>
               <th class="bg-transparent text-light" width="25%">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>Tax %</div>
+                  <div>
+                    <i class="{{ getSortIcon('taxPercent') }} ms-1"
+                      style="opacity: 0.7;font-size: 10px;cursor: pointer;" (click)="sort('taxPercent')"></i>
+                  </div>
                 </div>
               </th>
               <th class="bg-transparent text-light" width="25%" style="border-top-right-radius: 10px;">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>Status</div>
+                  <div>
+                    <i class="{{ getSortIcon('status') }} ms-1" style="opacity: 0.7;font-size: 10px;cursor: pointer;"
+                      (click)="sort('status')"></i>
+                  </div>
                 </div>
               </th>
-             
             </tr>
           </thead>
 
           <tbody>
-            <tr *ngFor="let group of taxGroups; let i = index">
-                 <td class="text-center" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <button type="button" class="btn btn-sm py-0" (click)="deleteRow(i)">
+            <tr *ngFor="let group of getCurrentData(); let i = index"
+              [style.border-left]="(group.hasChanges && group.TaxGroupMasterSid !== undefined) ? '3px solid #ffc107' : ''">
+              <td class="text-center " style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                <button type="button" class="btn btn-sm py-0" (click)="deleteRow(i)" placement="top"
+                  ngbTooltip="Delete">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
               </td>
-              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <input type="text" class="custom-input-field sm" [(ngModel)]="group.name" placeholder="">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="pe-5">
+                <input type="text" class="custom-input-field sm" [ngModel]="group.name"
+                  (ngModelChange)="onNameChange(group, $event)" placeholder="">
               </td>
-              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <input type="number" class="custom-input-field sm" [(ngModel)]="group.taxPercent" placeholder="">
+              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="pe-5">
+                <input type="number" class="custom-input-field sm" [ngModel]="group.taxPercent"
+                  (ngModelChange)="onTaxPercentChange(group, $event)" placeholder="" min="0" max="100">
               </td>
-              <td class="dofi-max-w-90" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                <ng-select [items]="statusOptions"
-                           bindLabel="name"
-                           bindValue="id"
-                           [(ngModel)]="group.status"
-                           placeholder=""
-                           appendTo="body">
+              <td class="dofi-max-w-90" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="pe-5">
+                <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" [ngModel]="group.status"
+                  (ngModelChange)="onStatusChange(group, $event)" placeholder="" appendTo="body">
                 </ng-select>
               </td>
-             
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- No Data Message -->
-      <div *ngIf="taxGroups.length === 0" class="text-center text-muted py-2">
+      <div *ngIf="filteredTaxGroups.length === 0" class="text-center text-muted py-2">
         <i class="fas fa-inbox fa-3x"></i>
         <p>No Records Found</p>
         <p *ngIf="filterValue">Try adjusting your search criteria</p>
       </div>
 
       <!-- Pagination -->
-      <div *ngIf="taxGroups.length > 0" class="d-flex justify-content-between align-items-center mt-2 px-2">
+      <div *ngIf="filteredTaxGroups.length > 0" class="d-flex justify-content-between align-items-center mt-1">
         <div class="text-muted">
           Showing {{ (page - 1) * pageSize + 1 }} to
-          {{ mathMin(page * pageSize, taxGroups.length) }} of
-          {{ taxGroups.length }} entries
+          {{ mathMin(page * pageSize, totalLengthOfCollection) }} of
+          {{ totalLengthOfCollection }} entries
         </div>
-        <ngb-pagination [collectionSize]="taxGroups.length"
-                        [(page)]="page"
-                        [pageSize]="pageSize"
-                        (pageChange)="onPageChange($event)"
-                        [maxSize]="5"
-                        [rotate]="true"
-                        [boundaryLinks]="true">
+        <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" size="sm">
         </ngb-pagination>
       </div>
     </div>
