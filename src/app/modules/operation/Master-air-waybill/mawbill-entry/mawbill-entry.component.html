@@ -233,7 +233,7 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="MBLNo" class="custom-input-field sm"
-                                                [textWithNumbers]="20" placeholder="">
+                                                [textWithNumbers]="20" placeholder="" >
                                             <label class="input-label">MAWB </label>
                                             @if(masterJobForm.get('MBLNo')?.touched &&
                                             masterJobForm.get('MBLNo')?.invalid){
@@ -563,7 +563,7 @@
 
 
                                     <!-- Shipment Terms Field - Updated to Dropdown -->
-                                    <aside class="col-md-4">
+                                    <!-- <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('ShipmentTerms')?.value">
                                             <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="id"
@@ -572,7 +572,7 @@
                                             <label class="input-label">Shipment Terms<span
                                                     class="text-danger"></span></label>
                                         </div>
-                                    </aside>
+                                    </aside> -->
                                     
                                     <aside class="col-md-8">
                                         <div class="custom-form-group mt-1">
@@ -1208,7 +1208,7 @@
                     </div>
 
                     <!-- Movement Type Field -->
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!masterJobForm.get('MovementType')?.value">
                             <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="id"
@@ -1216,7 +1216,7 @@
                             </ng-select>
                             <label class="input-label">Movement Type<span class="text-danger"></span></label>
                         </div>
-                    </aside>
+                    </aside> -->
                      <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('Status')?.value">

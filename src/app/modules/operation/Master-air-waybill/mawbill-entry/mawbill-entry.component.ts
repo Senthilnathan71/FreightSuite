@@ -168,6 +168,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   currentFollowUpFormValue: any = null;
   edocData: any[] = [];
   edocResetTrigger = false;
+  isAirDepartment: boolean = false;
   minStartDate: any;
   currentEdocFormValue: any = null;
   emailData: any[] = [];
@@ -971,11 +972,12 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.masterJobForm.get(controlName)?.setValue(item ? item.CustomerAddress1 : '');
   }
 
-  onDeptChange(department: any) {
+  onDeptChange(department: any, isEditMode = false) {
     this.selectedDepartment = department;
     if (!department) {
       this.selectedDepartmentType = '';
       this.selectedFCLLCL = 'LCL';
+      this.isAirDepartment = false;
       this.filteredPorts = [];
       this.masterJobForm.get('POO')?.setValue(null);
       this.masterJobForm.get('POL')?.setValue(null);
@@ -984,12 +986,31 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       this.masterJobForm.get('ETA')?.setValue('');
       this.masterJobForm.get('ETD')?.setValue('');
       this.masterJobForm.get('MovementType')?.setValue(null);
+      this.masterJobForm.get('MBLNo')?.enable(); 
       return;
     }
     
     this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? 
       (department.FCLLCL?.toUpperCase() || "LCL") : "AIR";
+
+      this.isAirDepartment = this.selectedDepartmentType === "AIR";
+      const mblNoControl = this.masterJobForm.get('MBLNo');
+      if (this.isAirDepartment) {
+      // For Air department, disable MBLNo field and clear it
+      mblNoControl?.disable();
+       if (!isEditMode && !this.masterJobForm.get('MBLNo')?.value) {
+      mblNoControl?.setValue('');
+    }
+      mblNoControl?.clearValidators();
+      
+    } else {
+      // For other departments, enable MBLNo field
+      mblNoControl?.enable();
+      // Don't add validators here as MBLNo is optional
+    }
+    
+    mblNoControl?.updateValueAndValidity();
     
     // Filter ports based on department type
     this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
@@ -1140,7 +1161,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
         }));
         
         if (this.headerVesselList.length === 0) {
-          this.toastr.warning("No Vessel/Voyage has been scheduled for the requested route.");
+          this.toastr.warning("No Airline has been scheduled for the requested route.");
         }
       } else {
         this.toastr.error("Error loading Vessel");
@@ -1337,7 +1358,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         return port ? port.PortCode : portSid?.toString().substring(0, 100);
     };
 
-    const formValue = this.masterJobForm.value;
+    const formValue = this.masterJobForm.getRawValue();
 
     // Create the others object from form values
     const othersData = {
@@ -1371,7 +1392,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         
         // Add the others data as a separate object
         others: othersData,
-        
+         MBLNo: this.isAirDepartment ? undefined : formValue.MBLNo,
         // Ensure other string fields don't exceed limits
         DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
         POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
@@ -1424,7 +1445,13 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             next: (response: any) => {
                 this.isLoading = false;
                 if (response.status) {
-                    this.toastr.success('Master Job updated successfully');
+                    if (this.isAirDepartment && response.newMasterJob?.MBLNo) {
+                        this.toastr.success(
+                            `Master Job updated successfully. MAWB: ${response.newMasterJob.MBLNo}`
+                        );
+                    } else {
+                        this.toastr.success('Master Job updated successfully');
+                    }
                     this.loadMasterJobData(this.masterJobSid);
                 } else {
                     this.toastr.error(response.message || 'Failed to update Master Job');
@@ -1432,7 +1459,13 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             },
             error: (error) => {
                 this.isLoading = false;
-                this.toastr.error('Failed to update Master Job');
+                if (error.error?.message?.includes('No free MAWB stock available')) {
+                    this.toastr.error(
+                        'No free MAWB stock available for Air department.'
+                    );
+                } else {
+                    this.toastr.error('Failed to update Master Job');
+                }
                 console.error('Error updating master job:', error);
             }
         });
@@ -1441,7 +1474,15 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             next: (response: any) => {
                 this.isLoading = false;
                 if (response.status) {
-                    this.toastr.success('Master Job created successfully');
+                   if (this.isAirDepartment && response.newMasterJob?.MBLNo) {
+                        this.toastr.success(
+                            `Master Job created successfully. MAWB: ${response.newMasterJob.MBLNo}`,
+                            'Success',
+                            { timeOut: 5000 }
+                        );
+                    } else {
+                        this.toastr.success('Master Job created successfully');
+                    }
                     this.router.navigate(['/operation/mawbill/list']);
                 } else {
                     this.toastr.error(response.message || 'Failed to create Master Job');
@@ -1449,7 +1490,13 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
             },
             error: (error) => {
                 this.isLoading = false;
-                this.toastr.error('Failed to create Master Job');
+                 if (error.error?.message?.includes('No free MAWB stock available')) {
+                    this.toastr.error(
+                        'No free MAWB stock available for Air department'
+                    );
+                } else {
+                    this.toastr.error('Failed to create Master Job');
+                }
                 console.error('Error creating master job:', error);
             }
         });

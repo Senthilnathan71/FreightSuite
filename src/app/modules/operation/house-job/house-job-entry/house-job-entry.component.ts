@@ -525,14 +525,28 @@ auditLogs: any[] = []; // Stores audit logs
   } else if (typeof selectedInco === 'string') {
     selectedIncoTerm = this.incoList.find(inco => inco.IncoName === selectedInco);
   }
-  if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
-    // Direct mapping since OceanFreight is only Prepaid or Collect
-    const freightValue = selectedIncoTerm.OceanFreight; 
-    // Update FreightTerms field
-    this.houseJobForm.patchValue({
-      FreightTerms: freightValue
-    }, { emitEvent: false });
-    console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms set to: ${freightValue}`);
+  if (this.selectedDepartmentType === "AIR") {
+    if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
+      const freightValue = selectedIncoTerm.OceanFreight;
+      
+      // Only update FreightTerms if it's not "Collect" (keep as Prepaid for AIR)
+      if (freightValue !== 'Collect') {
+        this.houseJobForm.patchValue({
+          FreightTerms: freightValue
+        }, { emitEvent: false });
+      }
+      // If it's Collect, don't change from Prepaid (default for AIR)
+      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms remains as: ${this.b['FreightTerms']?.value}`);
+    }
+  } else {
+    // For non-AIR departments, use the original logic
+    if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
+      const freightValue = selectedIncoTerm.OceanFreight;
+      this.houseJobForm.patchValue({
+        FreightTerms: freightValue
+      }, { emitEvent: false });
+      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms set to: ${freightValue}`);
+    }
   }
 }
 
@@ -1442,6 +1456,18 @@ loadHeaderLookups() {
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+    if (this.selectedDepartmentType === "AIR") {
+    // Set IncoTerms to CIF
+    this.b['IncoTerms']?.setValue('CIF');
+    
+    // Set FreightTerms to Prepaid
+    this.b['FreightTerms']?.setValue('Prepaid');
+    
+    // Set Mode of Transport to Flight
+    this.c['ModeOfTransport']?.setValue('Flight');
+  } else {
+    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+  }
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock');
       this.cargoForm.get('StuffingAt')?.disable();

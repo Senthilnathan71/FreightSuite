@@ -161,7 +161,8 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
+      sortDirection: this.sortDirection,
+      departmentType: 'Air'
     };
   }
 
@@ -341,7 +342,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
       },
       {
         key: 'MBLNo',
-        label: 'MBL No',
+        label: 'MAWB',
         sortable: true,
         filterable: true,
         visible: true,

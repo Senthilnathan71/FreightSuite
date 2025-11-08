@@ -317,12 +317,18 @@ export class ConnectionComponent implements OnInit {
       this.filteredPorts = [];
       this.filteredPOL = [];
       this.filteredPOD = [];
-      this.connectionForm.reset({
-        status: 'Active'
-      })
+      this.connectionForm.patchValue({
+      VesselName: null,
+      VoyageNo: null,
+      status: 'Active'
+    });
       return;
     }
     this.selectedMode = mode.name
+      this.connectionForm.patchValue({
+    VesselName: null,
+    VoyageNo: null
+  });
     this.onRouteChange()
   }
 
@@ -377,6 +383,10 @@ export class ConnectionComponent implements OnInit {
   }
 
   getVesselBasedOnPorts() {
+    if (this.isAirMode()) {
+    this.filteredVesselList = [];
+    return;
+  }
     const POL = this.c['POL']?.value;
     const POD = this.c['POD']?.value;
     const MovementType = this.selectedMode;
@@ -400,6 +410,10 @@ export class ConnectionComponent implements OnInit {
   }
 
   onVesselChange(vessel: any) {
+      if (this.isAirMode()) {
+    // For Air mode, just update the form value, no need to fetch voyages
+    return;
+  }
     console.log(vessel);
     if (!vessel) {
       this.voyageList = [];
@@ -412,6 +426,10 @@ export class ConnectionComponent implements OnInit {
   }
 
   getVoyageForPortsAndVessels() {
+    if (this.isAirMode()) {
+    this.voyageList = [];
+    return;
+  }
     const POL = this.c['POL']?.value;
     const POD = this.c['POD']?.value;
     const MovementType = this.selectedMode;
@@ -437,6 +455,10 @@ export class ConnectionComponent implements OnInit {
 
 
   onVoyageChange(voyage: any) {
+      if (this.isAirMode()) {
+    // For Air mode, don't auto-populate dates from voyage
+    return;
+  }
     if (!voyage) {
       this.c['ETA'].setValue('');
       this.c['ETD'].setValue('');
@@ -551,13 +573,33 @@ export class ConnectionComponent implements OnInit {
     return ngbDate;
   }
 
+  isAirMode(): boolean {
+  return this.selectedMode?.toLowerCase() === 'air';
+}
+
+  getVesselLabel(): string {
+  if (this.selectedMode?.toLowerCase() === 'air') {
+    return 'Airline';
+  }
+  return 'Vsl';
+}
+
+getVoyageLabel(): string {
+  if (this.selectedMode?.toLowerCase() === 'air') {
+    return 'Airline No';
+  }
+  return 'Voy';
+}
+
   reportConnections(): void {
     const allConnections = this.slicedConnectionFormArr;
 
-    const formattedData = allConnections.map(connection => ({
+    const formattedData = allConnections.map(connection => {
+      const isAirMode = connection.Mode?.toLowerCase() === 'air';
+      const data: any = {
       Mode: connection.Mode || '',
-      VesselName: connection.VesselName || '',
-      VoyageNo: connection.VoyageNo || '',
+      [isAirMode ? 'Airline' : 'VesselName']: connection.VesselName || '',
+      [isAirMode ? 'AirlineNo' : 'VoyageNo']: connection.VoyageNo || '',
       POL: connection.POL || '',
       POD: connection.POD || '',
       ETD: this.datePipe.transform(connection.ETD) || '',
@@ -565,15 +607,29 @@ export class ConnectionComponent implements OnInit {
       ATD: this.datePipe.transform(connection.ATD) || '',
       ATA: this.datePipe.transform(connection.ATA) || '',
       Status: connection.status || ''
-    }));
+      };
+      if (isAirMode) {
+      data['Airline'] = data.VesselName;
+      data['AirlineNo'] = data.VoyageNo;
+      delete data.VesselName;
+      delete data.VoyageNo;
+    }
+
+    if (this.screenName !== 'Booking') {
+      data.ATD = this.datePipe.transform(connection.ATD) || '';
+      data.ATA = this.datePipe.transform(connection.ATA) || '';
+    }
+
+    return data;
+    });
 
     const companyName = this.currentCompany?.companyName ?? 'Company';
 
 
     const headers = [
       { key: 'Mode', label: 'Mode' },
-      { key: 'VesselName', label: 'Vessel' },
-      { key: 'VoyageNo', label: 'Voyage' },
+      { key: this.selectedMode?.toLowerCase() === 'air' ? 'Airline' : 'VesselName', label: this.getVesselLabel()},
+      { key: this.selectedMode?.toLowerCase() === 'air' ? 'AirlineNo' : 'VoyageNo', label: this.getVoyageLabel() },
       { key: 'POL', label: 'POL' },
       { key: 'POD', label: 'POD' },
       { key: 'ETD', label: 'ETD' },
