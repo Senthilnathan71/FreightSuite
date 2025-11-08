@@ -20,6 +20,7 @@ import { PaymentListComponent } from './payment/payment-list/payment-list.compon
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-list/journal-voucher-list.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
+import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -297,6 +298,18 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Journal-Voucher" },
+          ],
+        },
+      },
+
+         {
+        path: "voucher-matching/entry",
+        component:VoucherMatchingEntryComponent,
+        data: {
+          title: "Voucher-Matching",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher-Matching" },
           ],
         },
       },

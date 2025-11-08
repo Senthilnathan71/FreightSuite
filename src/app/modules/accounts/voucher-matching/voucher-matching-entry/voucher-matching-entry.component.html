@@ -6,7 +6,7 @@
                     <div class="brand-icon">
                         <i class="fas fa-file-invoice"></i>
                     </div>
-                    <h5 class="page-title mb-0 text-info">Joural Voucher</h5>
+                    <h5 class="page-title mb-0 text-info">Voucher Matching</h5>
                 </div>
             </div>
             <div class="col-md-8 pb-1">
@@ -60,7 +60,7 @@
                         <aside class="col-md-2 pe-md-2">
                             <div class="custom-form-group">
                                 <input type="text" formControlName="" class="custom-input-field sm" placeholder="" />
-                                <label class="input-label">Voucher No. <span class="text-danger"></span></label>
+                                <label class="input-label">Matching No. <span class="text-danger"></span></label>
                             </div>
                         </aside>
 
@@ -75,15 +75,23 @@
                                     </button>
                                 </div>
 
-                                <label class="input-label" for="dp">Voucher Date <span
+                                <label class="input-label" for="dp">Matching Date <span
                                         class="text-danger">*</span></label>
                             </div>
                         </aside>
 
-                        <aside class="col-md-2">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="" class="custom-input-field sm" placeholder="" />
-                                <label class="input-label">Posted On <span class="text-danger"></span></label>
+                          <aside class="col-md-2 mx-5">
+                            <div class="custom-form-group custom-form-group-select-date">
+                                <div class="input-group">
+                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                        #d2="ngbDatepicker" (click)="d2.toggle()" readonly formControlName="" />
+
+                                    <button class="btn  bi bi-calendar3" (click)="d2.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                                <label class="input-label" for="dp">Posted Date <span
+                                        class="text-danger">*</span></label>
                             </div>
                         </aside>
 
@@ -104,20 +112,19 @@
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder="">
                                 </ng-select>
-                                <label class="input-label">Posted Status <span class="text-danger"></span></label>
+                                <label class="input-label">Ledger <span class="text-danger"></span></label>
                             </div>
                         </aside>
 
                         <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group">
-                                <textarea formControlName="Remarks" class="custom-input-field sm" rows="1"
-                                    placeholder="" maxlength="100"></textarea>
-                                <label class="input-label">Remarks</label>
-
+                             <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder="">
+                                </ng-select>
+                                <label class="input-label"> Subledger <span class="text-danger"></span></label>
                             </div>
                         </aside>
 
-                        <aside class="col-md-2">
+                        <aside class="col-md-2 mx-5">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="" [items]='status' bindLabel="name" bindValue="name"
                                     placeholder="">
@@ -138,9 +145,6 @@
 
                             </div>
                         </aside> 
-                        
-                     
-                        
                     </div>
                 </form>
             </div>
@@ -156,26 +160,39 @@
 
     <div class="col-12 mt-1">
         <div class="table-responsive table-borderless">
-            <table class="table table-hover align-middle no-wrap table-sm ">
+            <table class="table table-hover align-middle no-wrap table-sm mb-0 ">
                 <thead class="bg-info">
                     <tr>
-                        <th class="bg-transparent text-light" width="3%"></th>
-                        <th class="bg-transparent text-light">Subledger</th>
-                        <th class="bg-transparent text-light">Ledger <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Curr. <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Ex.Rate <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Curr.Amt <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Local Amt <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Narration <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Dept</th>
-                        <th class="bg-transparent text-light">Charge</th>
-                        <th class="bg-transparent text-light">House Job</th>
-                        <th class="bg-transparent text-light">Master Job</th>
+                        <th class="" width="3%"></th>
+                        <th class="" style="min-width:100px"></th>
+                        <th class="" style="min-width:100px"></th>
+                        <th colspan="8" class="matching-header bg-warning text-center fw-bold" style="color: black;">OS Vouchers</th>  
+                        <th colspan="4" class="matching-header  text-center fw-bold" style="color: black; background-color: rgb(211, 74, 74)">Matching</th>  
+                        <th class="" style="min-width:100px"></th>
+                        <th class="" style="min-width:100px"></th>
+                    </tr>
+                    <tr>
+                        <th  class="bg-transparent text-light" width="3%"></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ledger</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Voucher No. <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2"style="min-width:100px">Voucher Type <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Voucher Date <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Dr/Cr <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ex.Rate <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2"style="min-width:100px">Curr.Amt <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Local Amt <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">OS Curr.Amt <span class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr.</th> 
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ex.Rate</th> 
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr Amt</th> 
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Local Amt</th> 
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">TDS Amt</th> 
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Balance</th> 
                     </tr>
                 </thead>
 
-                <tbody formArrayName="networks">
+                <tbody>
                     <tr>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm border-0">
@@ -198,69 +215,89 @@
                         </td> -->
 
 
-                         <td width="10%">
+                        <td>
+                            <input type="text" formControlName="" class="form-control" />
+                        </td>
+
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="" class="form-control" />
+                        </td>
+
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                        </td>
+
+                        
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                        </td>
+
+                         <td>
+                            <input type="text" formControlName="" class="form-control" />
+                        </td>
+
+                        
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                        </td>
+
+                         <td>
+                            <input type="text" formControlName="" class="form-control" />
+                        </td>
+
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                        </td>
+
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                        </td>
+                        
+                         <td>
+                            <input type="text" formControlName="" class="form-control" />
+                        </td>
+
+                         <td>
                             <ng-select  bindLabel="name" bindValue="id" formControlName=""
                             appendTo="body"></ng-select>
                         </td>
 
-
-                        <td width="7%">
+                        <td>
                             <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
                         </td>
 
-                        <td width="6%">
+                        <td>
                             <input type="text" formControlName="" class="form-control" />
                         </td>
 
-                        <td width="7%">
+                        <td>
                             <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="6%">
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                        <td width="5%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="10%">
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                        <td width="7%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="7%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="7%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="7%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
-                        </td>
+                        </td>       
                     </tr>
 
                     <tr class="pt-2">
-                        <td colspan="13" class="pt-1">
-                            <div class="d-flex align-items-center gap-5 justify-content-center">
-                                <div class="d-flex align-items-center">
-                                    <strong>Total Dr :</strong>
-                                    <p class="mb-0"></p>
+                        <td colspan="17" class="pt-1">
+                            <div class="d-flex align-items-center gap-5 justify-content-center align-items-end">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <strong>Total :</strong>
+                                    <p class="mb-0">xxx</p>
+                                    <p class="mb-0">xxx</p>
+                                    <p class="mb-0">xxx</p>
+                                    <p class="mb-0">xxx</p>
                                 </div>
-                                <div class="d-flex align-items-center">
+                                <!-- <div class="d-flex align-items-center">
                                     <strong>Total Cr :</strong>
                                     <p class="mb-0"></p>
-                                </div>
+                                </div> -->
                             </div>
                         </td>
                     </tr>
+
+                    
 
                     <!-- <tr *ngIf="networkArray.length === 0">
                         <td colspan="5" class="text-center text-muted">No records found</td>

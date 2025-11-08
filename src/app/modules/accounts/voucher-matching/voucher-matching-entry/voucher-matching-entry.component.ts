@@ -5,14 +5,14 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 
 @Component({
-  selector: 'app-journal-voucher-entry',
+  selector: 'app-voucher-matching-entry',
   standalone: true,
   imports: [NgbDatepickerModule, FeatherModule, NgSelectModule],
-  templateUrl: './journal-voucher-entry.component.html',
-  styles: ``,
+  templateUrl: './voucher-matching-entry.component.html',
+  styles: ``
 })
-export class JournalVoucherEntryComponent {
-  constructor(private router: Router) {}
+export class VoucherMatchingEntryComponent {
+ constructor(private router: Router) {}
   status = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' },
