@@ -55,6 +55,14 @@ export class AccountsService {
     );
   }
 
+  getExchangeRate(payload) {
+    return this.http.post<{ data: any }>('currency-exchange/exchange-rate', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    )
+  }
+
   deleteCurrencyExchangeById(id: number) {
     return this.http.delete<{ data: any }>(`currency-exchange/delete/${id}`).pipe(
       map((resp) => {
@@ -194,6 +202,20 @@ export class AccountsService {
     )
   }
 
+  getAllCreditorWithCOAMapped(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-creditors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
 
+  getAllMappedChargeDebtors(payload) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-charge-debtors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
   
 }

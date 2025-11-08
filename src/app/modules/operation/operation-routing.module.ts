@@ -16,9 +16,6 @@ import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booki
 import { ShipmentInstructionComponent } from './shipment-instruction/shipment-instruction/shipment-instruction.component';
 import { HouseJobEntryComponent } from './house-job/house-job-entry/house-job-entry.component';
 import { OperationReportComponent } from './operation-report/operation-report/operation-report.component';
-import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
-import { ReceiptListComponent } from './receipt/receipt-list/receipt-list.component';
-import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.component';
 import { CargoReceiptEntryComponent } from './cargo-receipt/cargo-receipt-entry/cargo-receipt-entry.component';
 import { CargoReceiptListComponent } from './cargo-receipt/cargo-receipt-list/cargo-receipt-list.component';
 import { VendorInvoiceEntryComponent } from './vendor-invoice/vendor-invoice-entry/vendor-invoice-entry.component';
@@ -164,30 +161,6 @@ export const OperationRoutes: Routes = [
           title: 'Invoice',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
         },
-      },
-      {
-        path:'receipt/entry',
-        component: ReceiptEntryComponent,
-        data: {
-          title: 'Receipt Entry',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Receipt Entry' }],
-        }
-      },
-      {
-        path:"receipt/list",
-        component: ReceiptListComponent,
-        data: {
-          title: 'Receipt List',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Receipt List' }],
-        }
-      },
-      {
-        path:'receipt/view',
-        component: ReceiptViewComponent,
-        data: {
-          title: 'Receipt View',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Receipt View' }],
-        }
       },
       {
         path: 'invoice/new',

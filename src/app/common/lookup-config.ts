@@ -68,6 +68,11 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['HSSACCode', 'HSSACName'],
     displayLabels: ['HSSAC Code', 'HSSAC Name'],  
     labelFields: ['HSSACCode']
+  },
+  CURRENCY : {
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
   }
 } satisfies Record<string, {
   displayFields: string[];

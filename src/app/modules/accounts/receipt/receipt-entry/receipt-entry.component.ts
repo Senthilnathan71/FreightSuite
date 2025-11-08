@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
@@ -16,6 +16,13 @@ import {
   SearchOutstandingRequest,
   ReceiptFormData,
 } from '../../models/receipt.model';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
+import { catchError, forkJoin, of } from 'rxjs';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { AccountsService } from '../../accounts.service';
 
 /**
  * Receipt Entry Component
@@ -29,36 +36,48 @@ import {
 @Component({
   selector: 'app-receipt-entry',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgbDatepickerModule, FeatherModule, NgSelectComponent],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    NgbDatepickerModule, 
+    FeatherModule, 
+    NgSelectComponent,
+    NgxSpinnerModule,
+    FormsModule,
+    SearchableDropdown
+  ],
   templateUrl: './receipt-entry.component.html',
   styleUrl: './receipt-entry.component.scss',
 })
 export class ReceiptEntryComponent implements OnInit {
-  receiptForm!: FormGroup;
+  headerId : number;
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
   selectedTab = 'Detail';
-  isEditMode = false;
   isSaving = false;
+  isViewMode: boolean = false;
+  currentCompany : any;
+  currentBranch : any;
+  userData: any;
+  
+  receiptForm!: FormGroup;
+  partyList : any[] = [];
+  currencyList: any[] = [];
 
-  // Master data
-  companySid = 1; // TODO: Get from session/auth
-  branchSid = 1; // TODO: Get from session/auth
+  CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
+
+  outstandingInvoices: OutstandingInvoice[] = [];
+  selectedInvoices: OutstandingInvoice[] = [];
   paymentModes: { value: string; label: string}[] = [];
 
   // Outstanding invoices
-  outstandingInvoices: OutstandingInvoice[] = [];
-  selectedInvoices: OutstandingInvoice[] = [];
 
-  // Search modes
-  ModeofSearch = [
-    { id: 1, name: 'House No' },
-    { id: 2, name: 'HBL No' },
-    { id: 3, name: 'Master No' },
-    { id: 4, name: 'MBL No' },
-    { id: 5, name: 'HAWB' },
-    { id: 6, name: 'MAWB' },
-    { id: 7, name: 'Party' },
-    { id: 8, name: 'Invoice' },
-  ];
+  get isEditMode() { return !!this.headerId && !this.isViewMode; }
+
+  @ViewChild('searchModal') searchModal!: TemplateRef<any>;
+
+
 
   // Tabs configuration
   tabs = [
@@ -67,6 +86,23 @@ export class ReceiptEntryComponent implements OnInit {
     { name: 'Interbranch', icon: 'fas fa-flag-checkered' },
   ];
 
+  modalSearchType = [
+    { id: 1, name: "House No" },
+    { id: 2, name: "HBL No" },
+    { id: 3, name: "Master No" },
+    { id: 4, name: "MBL No" },
+    { id: 5, name: "HAWB" },
+    { id: 6, name: "MAWB" },
+    { id: 7, name: "Party" },
+    { id: 8, name: "Invoice" }
+  ]
+
+  searchType: string = 'House No';
+  searchValue: string = '';
+  allPendingCosts: any[] = [];
+  selectedCosts: any[] = [];
+  
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -74,18 +110,34 @@ export class ReceiptEntryComponent implements OnInit {
     private modalService: NgbModal,
     private toastr: ToastrService,
     private receiptService: ReceiptService,
+    private appSettingService: AppSettingsService,
+    private dropdownStore: DropdownStore,
+    private accountService : AccountsService,
     private outstandingService: OutstandingService,
+    private spinner : NgxSpinnerService,
   ) {}
 
   ngOnInit(): void {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentCompany =  ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+
+    console.log("USER DATA",this.userData);
+    console.log("CURRENT COMPANY",this.currentCompany);
+    console.log("CURRENT BRANCH",this.currentBranch);
+
     this.initializeForm();
     this.loadPaymentModes();
     this.setupFormListeners();
+    this.loadAllLookups();
 
     // Check if editing existing receipt
     const receiptId = this.route.snapshot.params['id'];
     if (receiptId) {
-      this.isEditMode = true;
+      this.headerId = Number(receiptId);
       this.loadReceipt(receiptId);
     } else {
       // Initialize with default values
@@ -94,18 +146,51 @@ export class ReceiptEntryComponent implements OnInit {
     }
   }
 
+  loadAllLookups(){
+    const filterOption = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid
+    }
+    forkJoin({
+      parties : this.accountService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(err => of([]))),
+      currencies : this.dropdownStore.loadCurrencies().pipe(catchError(err => of([]))),
+    }).subscribe(({ parties, currencies }) => {
+      this.partyList = parties.data;
+      this.currencyList = currencies;
+    })
+  }
+
   /**
    * Initialize the receipt form with validation
    */
   private initializeForm(): void {
+    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     this.receiptForm = this.fb.group({
       // Header section
-      CompanyMasterSid: [this.companySid, Validators.required],
-      BranchMasterSid: [this.branchSid, Validators.required],
-      LedgerMasterSid: [null, Validators.required],
+      CompanyMasterSid: [this.CompanyMasterSid, Validators.required],
+      BranchMasterSid: [this.BranchMasterSid, Validators.required],
       CustomerName: [''],
       VoucherDate: [new Date(), Validators.required],
-      VoucherNumber: [{ value: '', disabled: true }], // Auto-generated
+      VoucherNumber: [{ value: '', disabled: true }], 
+      // Auto-generated
+      MultiLocation : [false],
+      CashOrBank : [false],
+      
+      // Currency
+      CurrencyMasterSid: [companyCurrency || null],
+      CurrencyCode: ['INR'],
+      ExchangeRate: [1, [Validators.required, Validators.min(0)]],
+      
+      // Party related info
+      PartyMasterSid : [null,[Validators.required]],
+      PartyName : [''],
+      PartyAddress : [''],
+      CustomerBranchSid : [null],
+      COAMasterSid : [null,[Validators.required]],
+      LedgerMasterSid: [null, [Validators.required]],
+      GST_VAT : [''],
+      
+
       PaymentMode: [PaymentMode.NEFT, Validators.required],
       ChequeNumber: [''],
       ChequeDate: [null],
@@ -113,10 +198,6 @@ export class ReceiptEntryComponent implements OnInit {
       Narration: [''],
       Remarks: [''],
 
-      // Currency
-      CurrencyMasterSid: [null],
-      CurrencyCode: ['INR'],
-      ExchangeRate: [1, [Validators.required, Validators.min(0)]],
 
       // TDS
       HasTDS: [false],
@@ -287,7 +368,7 @@ export class ReceiptEntryComponent implements OnInit {
 
     try {
       // Use receipt service which calls outstanding service
-      const invoices = await this.receiptService.getCustomerOutstanding(this.companySid, customerSid).toPromise();
+      const invoices = await this.receiptService.getCustomerOutstanding(this.CompanyMasterSid, customerSid).toPromise();
 
       if (invoices && invoices.length > 0) {
         this.outstandingInvoices = invoices;
@@ -521,5 +602,106 @@ export class ReceiptEntryComponent implements OnInit {
       return field.hasError(errorType) && (field.dirty || field.touched);
     }
     return field.invalid && (field.dirty || field.touched);
+  }
+
+  onCurrencyChange(selected: any) {
+    if(!selected){
+      this.receiptForm.patchValue({
+        CurrencyCode : null
+      })
+      return;
+    } else {
+      this.receiptForm.patchValue({
+        CurrencyCode : selected.currencyCode
+      })
+    }
+    this.patchCurrencyExchangeRate();
+  }
+
+  patchCurrencyExchangeRate(){
+    const currencySid = this.receiptForm.get('CurrencyMasterSid')?.value;
+    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
+    console.log('Entered patchCurrencyExchangeRate',{
+      FromCurrencyId : currencySid,
+      toCurrencyId : companyCurrency
+    });
+
+    if (currencySid === companyCurrency && currencySid !== null) {
+      this.receiptForm.patchValue({
+        ExchangeRate: 1
+      })
+      return;
+    }
+
+    const fromCurrencyCode = this.receiptForm.get('CurrencyCode')?.value;
+    const toCurrencyCode = this.currencyList.find(c => c.CurrencyMasterSid === companyCurrency)?.currencyCode;
+    if(!fromCurrencyCode || !toCurrencyCode){
+      return;
+    }
+    console.log('FINDING CURRENCY EXCHANGE',{
+      fromCurrencyCode : fromCurrencyCode,
+      toCurrencyCode : toCurrencyCode
+    })
+    const payload = {
+      fromCurrencyCode,
+      toCurrencyCode,
+      segment: 'revenue'
+    };
+    this.accountService.getExchangeRate(payload).subscribe(
+      (resp: any) => {
+        if (resp?.status && resp.data) {
+          console.log('PATCHING EXCHANGE RATE',resp.data);
+          this.receiptForm.patchValue({
+            ExchangeRate: resp.data
+          })
+        }
+      }
+    )
+  }
+
+  onPartyChange(party:any){
+    if(!party){
+      this.receiptForm.patchValue({
+        PartyMasterSid : null,
+        PartyName : '',
+        PartyAddress : '',
+        CustomerBranchSid : null,
+        COAMasterSid : null,
+        LedgerMasterSid : null,
+        GST_VAT : ''
+      })
+      return;
+    }
+    this.receiptForm.patchValue({
+      PartyMasterSid : party.CustomerMasterSid,
+      PartyName : party.CustomerName,
+      PartyAddress : party.Address,
+      CustomerBranchSid : party.CustomerBranchSid,
+      COAMasterSid : party.COAMasterSid,
+      LedgerMasterSid : party.LedgerMasterSid,
+      GST_VAT : party.GST_VAT
+    })
+  }
+
+  openSearchModal() {
+    if (!this.searchModal) {
+      this.appSettingService.showError('Search modal template not found');
+      return;
+    }
+
+    this.searchType = 'House No';
+    this.searchValue = '';
+    this.allPendingCosts = [];
+    this.selectedCosts = [];
+
+    this.modalService.open(this.searchModal, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+  }
+  closeSearchModal() {
+    this.modalService.dismissAll();
+    this.selectedCosts = [];
   }
 }
