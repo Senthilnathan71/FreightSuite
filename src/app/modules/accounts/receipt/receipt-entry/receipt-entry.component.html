@@ -1,8 +1,11 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
 <div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h5 class="page-title mb-0 text-info">Receipt</h5>
+                <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' : 'Create Receipt') }}</h5>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -26,21 +29,26 @@
 
                 </div>
             </div>
-        </div>
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" (click)="openSearchModal()" [disabled]="receiptForm.get('LedgerMasterSid')?.value">
+                        <i class="fas fa-search me-2"></i>Search for OS
+                    </button>
+                </div>
+        </div>   
     </div>
 
     <div class="col-md-12">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
-                <div class="row">
-                    <aside class="col-md-3">
+                <div class="row" [formGroup]="receiptForm">
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="ModeofSearch" bindLabel="name" bindValue="name">
 
                             </ng-select>
                             <label for="" class="input-label">Search Type <span class="text-danger"></span></label>
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -50,10 +58,10 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select" [class.filled]="!!receiptForm.get('VoucherDate')?.value">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
+                                    #d1="ngbDatepicker" formControlName="VoucherDate" (click)="d1.toggle()" />
                                 <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -65,8 +73,17 @@
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="MultiLocation">
                                 <label for="" class="form-check-label sm">Multi Location <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0 mt-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="CashOrBank">
+                                <label for="" class="form-check-label sm">Cash or Bank <span
                                         class="text-danger"></span></label>
                             </div>
                         </div>
@@ -78,17 +95,17 @@
                             <label for="text-input" class="input-label">Bank <span class="text-danger">*</span></label>
                         </div>
                     </aside>
+                    
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">GST No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!receiptForm.get('CurrencyMasterSid')?.value">
+                            <dofi-searchable-dropdown 
+                                [items]="currencyList" formControlName="CurrencyMasterSid"[placeholder]="''"
+                                [displayFields]="CurrencyLookupConfig.displayFields" 
+                                [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                [labelFields]="CurrencyLookupConfig.labelFields" 
+                                [bindValue]="'CurrencyMasterSid'"
+                                (itemSelected)="onCurrencyChange($event)">
+                            </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">Currency <span
                                     class="text-danger">*</span></label>
                         </div>
@@ -96,7 +113,20 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="ExchangeRate">
+                            <label for="text-input" class="input-label">Ex Rate <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!receiptForm.get('CustomerBranchSid')?.value">
+                            <dofi-searchable-dropdown [items]="partyList" formControlName="CustomerBranchSid" placeholder=""
+                            [displayFields]="CustomerLookupConfig.displayFields" 
+                            [displayLabels]="CustomerLookupConfig.displayLabels"
+                            [labelFields]="CustomerLookupConfig.labelFields" 
+                            bindLabel="CustomerName" bindValue="CustomerBranchSid"
+                            (itemSelected)="onPartyChange($event)">
+                            </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
                         </div>
                     </aside>
@@ -108,14 +138,7 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Ex Rate <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
+                    
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
@@ -123,6 +146,13 @@
                                 formControlName="">
                             <label for="text-input" class="input-label">Address <span
                                     class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">GST No <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -588,4 +618,43 @@
         <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
         <button class="btn btn-sm btn-info">Save</button>
     </div>
+</ng-template>
+<ng-template #searchModal let-modal>
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">Search and Select Pending Costs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeSearchModal()"></button>
+  </div>
+  <div class="modal-body">
+    <!-- Search Criteria -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <label class="form-label">Search By</label>
+        <select class="form-select form-select-sm" [(ngModel)]="searchType">
+          <option *ngFor="let item of modalSearchType" [value]="item.name">{{item.name}}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Search Value</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="searchValue"
+          placeholder="Enter search value" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <button type="button" class="btn btn-primary btn-sm w-100" >
+            Get OS
+        </button>
+      </div>
+    </div>
+  </div>
+ 
+
+ 
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeSearchModal()">Close</button>
+    <button type="button" class="btn btn-primary">
+      <i class="fas fa-plus me-2"></i>
+      Add Selected Costs 
+    </button>
+    
+  </div>
 </ng-template>

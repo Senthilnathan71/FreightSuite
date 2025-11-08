@@ -26,7 +26,7 @@ import { OutstandingService } from './outstanding.service';
   providedIn: 'root',
 })
 export class ReceiptService {
-  private readonly baseUrl = '/api/accounts/receipt';
+  private readonly baseUrl = 'accounts/receipt';
 
   constructor(
     private http: HttpClient,
@@ -74,6 +74,24 @@ export class ReceiptService {
           return response.data;
         }),
         catchError((error) => this.handleError(error, 'searchOutstandingInvoices')),
+      );
+  }
+
+
+  searchReceipts(payload: any){
+    return this.http
+      .post<ApiResponse<any[]>>(`${this.baseUrl}/search-list`, payload)
+      .pipe(
+        tap((response) => {
+          console.log('Receipts retrieved:', response);
+        }),
+        map((response) => {
+          if (!response.status) {
+            throw new Error(response.message || 'Failed to search receipts');
+          }
+          return response;
+        }),
+        catchError((error) => this.handleError(error, 'searchReceipts')),
       );
   }
 
