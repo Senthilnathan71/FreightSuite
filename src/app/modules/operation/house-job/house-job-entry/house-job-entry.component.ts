@@ -243,9 +243,9 @@ auditLogs: any[] = []; // Stores audit logs
   imcoList: any[] = [];
   uomList: any[] = [];
     measurementUnitList =[
-    { id: 1, name: 'Meter' },
-    { id: 2, name: 'Centimeter' },
-    { id: 3, name: 'Inch'}
+    { id: 1, name: 'm' },
+    { id: 2, name: 'cm' },
+    { id: 3, name: 'inch'}
   ]
   otherForm !: FormGroup;
 
@@ -576,12 +576,19 @@ auditLogs: any[] = []; // Stores audit logs
     });
   });
 }
+
+getUomName(uomId: number): string {
+  const uom = this.measurementUnitList.find(item => item.id === uomId);
+  return uom ? uom.name : '-';
+}
+
 private calculateCBM() {
   const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
   const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
   const height = this.parseFloatSafe(this.productForm.get('Height')?.value);
   const uomMasterSid = this.productForm.get('UomMasterSid')?.value;
+  
   
   // Calculate immediately if we have at least some values
   if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
@@ -1881,7 +1888,7 @@ loadHeaderLookups() {
     this.c['NetWeight']?.disable();
     this.c['Volume']?.setValue(totalVolume);
     this.c['Volume']?.disable();
-        this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
+    this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
     this.c['Volumetric']?.disable();
     this.calculateChargeableWeight();
   }

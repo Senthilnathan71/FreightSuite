@@ -1,5 +1,5 @@
 <div class="row compact-form">
-  
+
   <div class="col-12 px-0">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
@@ -19,8 +19,8 @@
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="save()">
             <i class="fas fa-save me-1"></i> Save
           </button>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100"
-                  (click)="openPreviewModal()" [disabled]="!selectedReportId">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="openPreviewModal()"
+            [disabled]="!selectedReportId">
             <i class="fas fa-eye me-1"></i> Preview
           </button>
         </div>
@@ -28,7 +28,7 @@
     </div>
   </div>
 
-  
+
   <div class="col-md-12 px-0">
     <div class="card h-100 mb-0">
       <div class="card-body pb-2">
@@ -36,7 +36,7 @@
           <div class="row">
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="reportName">
+                <input type="text" class="custom-input-field sm" formControlName="reportName" placeholder=" ">
                 <label class="input-label">Report Name <span class="text-danger">*</span></label>
                 <div class="text-danger" *ngIf="form.get('reportName')?.hasError('duplicate')">
                   Report Name already exists
@@ -45,7 +45,7 @@
             </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="displayName">
+                <input type="text" class="custom-input-field sm" formControlName="displayName" placeholder=" ">
                 <label class="input-label">Report Display Name <span class="text-danger">*</span></label>
                 <div class="text-danger" *ngIf="form.get('displayName')?.hasError('duplicate')">
                   Display Name already exists
@@ -53,95 +53,113 @@
               </div>
             </aside>
             <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!form.get('menuId')?.value">
                 <ng-select formControlName="menuId" [items]="menus" bindLabel="name" bindValue="id"></ng-select>
                 <label class="input-label">Report Menu <span class="text-danger">*</span></label>
               </div>
             </aside>
 
-            <aside class="col-md-4">
-              <div class="custom-form-group custom-form-group-select">
+            <aside class="col-md-4  ">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!form.get('formats')?.value">
                 <ng-select formControlName="formats" [items]="formatsOptions" [multiple]="true"></ng-select>
                 <label class="input-label">Report Format <span class="text-danger">*</span></label>
               </div>
             </aside>
 
-            <aside class="col-md-8">
-              <div class="custom-form-group custom-form-group-select">
-                <ng-select formControlName="excludedCompanyIds" [items]="companies" [multiple]="true"
-                           bindLabel="name" bindValue="id"></ng-select>
+            <aside class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!form.get('excludedCompanyIds')?.value">
+                <ng-select formControlName="excludedCompanyIds" [items]="companies" [multiple]="true" bindLabel="name"
+                  bindValue="id"></ng-select>
                 <label class="input-label">Excluded Companies</label>
               </div>
             </aside>
 
-            <aside class="col-md-12">
+            <aside class="col-md-4">
               <div class="custom-form-group">
-                <textarea class="custom-input-field sm" rows="3" formControlName="query"></textarea>
+                <textarea class="custom-input-field sm" rows="1" formControlName="query"></textarea>
                 <label class="input-label">Query <span class="text-danger">*</span></label>
               </div>
             </aside>
           </div>
 
-          
-          <div class="row mt-2">
+
+          <div class="row">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <div class="fw-semibold">Parameters</div>
-              <button type="button" class="btn btn-outline-info btn-sm" (click)="addParameter()">Add</button>
+              <button type="button" class="btn btn-info btn-sm d-flex gap-1" (click)="addParameter()">
+                <i class="fas fa-plus mt-1"></i> Add Parameters
+              </button>
             </div>
 
             <div formArrayName="parameters">
-              <div class="row g-2 mb-2" *ngFor="let p of parameters.controls; let i = index" [formGroupName]="i">
-                <div class="col-md-3">
-                  <div class="custom-form-group">
-                    <input class="custom-input-field sm" formControlName="name">
-                    <label class="input-label">Parameter</label>
+              <!-- If parameters exist -->
+              <ng-container *ngIf="parameters && parameters.length > 0; else noRecords">
+                <div class="row d-flex justify-content-center" *ngFor="let p of parameters.controls; let i = index"
+                  [formGroupName]="i">
+                  <div class="col-md-auto mt-2">
+                    <button type="button" class="btn btn-sm" (click)="removeParameter(i)">
+                      <i class="fas fa-trash text-danger"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="custom-form-group">
+                      <input class="custom-input-field sm" formControlName="name" placeholder=" ">
+                      <label class="input-label">Parameter</label>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!p.get('fieldType')?.value">
+                      <ng-select formControlName="fieldType"
+                        [items]="['string','date','number','dropdown','lookup']"></ng-select>
+                      <label class="input-label">Field Type</label>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="custom-form-group">
+                      <input class="custom-input-field sm" formControlName="value" placeholder=" ">
+                      <label class="input-label">Parameter Value</label>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="custom-form-group">
+                      <input class="custom-input-field sm" formControlName="lookupKey" placeholder=" ">
+                      <label class="input-label">Lookup Key</label>
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-3">
-                  <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="fieldType" [items]="['string','date','number','dropdown','lookup']"></ng-select>
-                    <label class="input-label">Field Type</label>
-                  </div>
+              </ng-container>
+
+              <!-- No records message -->
+              <ng-template #noRecords>
+                <div class="text-center mt-3">
+                  <p class="text-muted mb-0">No records found</p>
                 </div>
-                <div class="col-md-3">
-                  <div class="custom-form-group">
-                    <input class="custom-input-field sm" formControlName="value">
-                    <label class="input-label">Parameter Value</label>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="custom-form-group">
-                    <input class="custom-input-field sm" formControlName="lookupKey">
-                    <label class="input-label">Lookup Key</label>
-                  </div>
-                </div>
-                <div class="col-md-1 d-flex align-items-center">
-                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeParameter(i)">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
+              </ng-template>
             </div>
           </div>
+
         </form>
       </div>
     </div>
   </div>
 
-  
+
+
   <div class="col-md-12 px-0 mt-2">
     <div class="card h-100 mb-0">
       <div class="card-body pb-0">
-        <div class="row">
+        <div class="row" [formGroup]="form">
           <aside class="col-md-4">
-            <div class="custom-form-group custom-form-group-select">
-              <ng-select [items]="ModeofModules" bindLabel="name" bindValue="id"></ng-select>
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!form.get('Module')?.value">
+              <ng-select [items]="ModeofModules" bindLabel="name" bindValue="id" formControlName="Module"></ng-select>
               <label class="input-label">Module</label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" class="custom-input-field sm">
+              <input type="text" class="custom-input-field sm" placeholder=" ">
               <label class="input-label">Search Report Name</label>
             </div>
           </aside>
@@ -157,20 +175,20 @@
               <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                   <thead>
-                  <tr class="bg-info">
-                    <th class="bg-transparent text-light text-center" width="10%">View</th>
-                    <th class="bg-transparent text-light text-center">Report Name</th>
-                  </tr>
+                    <tr class="bg-info">
+                      <th class="bg-transparent text-light text-center" width="10%">View</th>
+                      <th class="bg-transparent text-light text-center">Report Name</th>
+                    </tr>
                   </thead>
                   <tbody>
-                  <tr *ngFor="let report of reports">
-                    <td class="text-center">
-                      <input type="radio" name="reportRadio" [value]="report.id"
-                             [checked]="selectedReportId === report.id"
-                             (change)="selectReport(report.id)" class="cursor-pointer"/>
-                    </td>
-                    <td>{{ report.name }}</td>
-                  </tr>
+                    <tr *ngFor="let report of reports">
+                      <td class="text-center">
+                        <input type="radio" name="reportRadio" [value]="report.id"
+                          [checked]="selectedReportId === report.id" (change)="selectReport(report.id)"
+                          class="cursor-pointer" />
+                      </td>
+                      <td>{{ report.name }}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -180,16 +198,16 @@
               <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                   <thead>
-                  <tr class="bg-info">
-                    <th class="bg-transparent text-light text-center">Parameter Name</th>
-                    <th class="bg-transparent text-light text-center">Value</th>
-                  </tr>
+                    <tr class="bg-info">
+                      <th class="bg-transparent text-light text-center">Parameter Name</th>
+                      <th class="bg-transparent text-light text-center">Value</th>
+                    </tr>
                   </thead>
                   <tbody>
-                  <tr *ngFor="let param of selectedReportParameters">
-                    <td>{{ param.name }}</td>
-                    <td><a href="#">{{ param.value }}</a></td>
-                  </tr>
+                    <tr *ngFor="let param of selectedReportParameters">
+                      <td>{{ param.name }}</td>
+                      <td><a href="#">{{ param.value }}</a></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -197,14 +215,14 @@
           </div>
 
           <ng-template #noData>
-            <div class="alert alert-info mb-0">No reports yet. Fill the form above and click Save to add one.</div>
+            <!-- <div class="alert alert-info mb-0">No reports yet. Fill the form above and click Save to add one.</div> -->
           </ng-template>
         </div>
       </div>
     </div>
   </div>
 
-  
+
   <ng-template #previewModal let-modal>
     <div class="modal-header p-2 bg-info text-white">
       <h5 class="modal-title">Preview</h5>
@@ -213,7 +231,9 @@
     <div class="modal-body">
       <div class="d-flex align-items-center mb-3">
         <img src="assets/logo/dofi-logo.svg" width="80" height="80" class="img-fluid me-3" alt="Logo">
-        <div><h4 class="mb-0 fw-semibold text-info">Dofi <br>Infosys</h4></div>
+        <div>
+          <h4 class="mb-0 fw-semibold text-info">Dofi <br>Infosys</h4>
+        </div>
       </div>
 
       <div class="mb-3 border-bottom">
@@ -232,8 +252,10 @@
         <form class="row gx-2 gy-2 align-items-center compact-form">
           <div class="col-md-9">
             <div class="position-relative">
-              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" aria-label="Search input">
-              <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-3 text-secondary p-0">
+              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                aria-label="Search input">
+              <button type="button"
+                class="btn position-absolute top-50 end-0 translate-middle-y me-3 text-secondary p-0">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -257,16 +279,20 @@
       <div class="table-responsive">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
           <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light">VAT %</th>
-            <th class="bg-transparent text-light">VAT</th>
-          </tr>
+            <tr class="bg-info">
+              <th class="bg-transparent text-light">VAT %</th>
+              <th class="bg-transparent text-light">VAT</th>
+            </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let _ of [0,1,2]">
-            <td><div class="text-truncate">RO</div></td>
-            <td><div class="text-truncate">OMR</div></td>
-          </tr>
+            <tr *ngFor="let _ of [0,1,2]">
+              <td>
+                <div class="text-truncate">RO</div>
+              </td>
+              <td>
+                <div class="text-truncate">OMR</div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

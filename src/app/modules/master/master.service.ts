@@ -2963,6 +2963,24 @@ getFieldConfiguration() {
     )
   }
 
+  getYearMasterByUserId(email: string) {
+    return this.http.get<{ data: any[] }>(`year/user/${email}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getFinancialYearsByCompany(companyId: number) {
+    return this.http.get<{ data: any[] }>(`year/company/${companyId}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAuditLogsYear(tableName: string, recordId?: string) {
     let url = `year/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
@@ -3923,6 +3941,61 @@ createReportMaster(payload: any) {
     return this.http.get<{ data: any }>(url).pipe(
       map((resp) => resp.data)
     );
+  }
+
+  //Tax-Group
+  getAllTaxGroup(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<{ data: any[] }>('tax-group', { CompanyMasterSid, BranchMasterSid }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewTaxGroup(payload) {
+    return this.http.post<{ data: any }>('tax-group/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTaxGroupById(TaxGroupSid) {
+    return this.http.get<{ data: any }>(`tax-group/fetch/${TaxGroupSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateTaxGroupById(TaxGroupSid, payload) {
+    return this.http.patch<{ data: any }>(`tax-group/update/${TaxGroupSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteTaxGroupById(TaxGroupSid) {
+    return this.http.delete<{ data: any }>(`tax-group/delete/${TaxGroupSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchTaxGroupMaster(payload) {
+    return this.http.post<{ data: any[] }>('tax-group/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
   }
 
 }

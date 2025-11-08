@@ -190,7 +190,7 @@ export class HawbStockListComponent extends BaseListComponent implements OnInit 
       this.allItems = response.data.items.map(item => ({
         ...item,
         // Display-only concatenated BL Number
-        BLNumber: `${item.AirwayBillNumber}-${item.HAWBSerial}-${item.NumberofHAWB}`,
+        BLNumber: item.AirwayBillNumber,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         ReceivedDate: this.datePipe.transform(item?.ReceivedDate)
       }));

@@ -78,6 +78,7 @@ import { SailingScheduleListComponent } from './SailingSchedule/sailing-schedule
 import { MawbStockListComponent } from './Mawb-stock/mawb-stock-list/mawb-stock-list.component';
 import { MawbStockComponent } from './Mawb-stock/mawb-stock/mawb-stock.component';
 import { NetworkEntryComponent } from './network/network-entry/network-entry.component';
+import { TaxGroupComponent } from './tax-group/tax-group/tax-group.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1206,4 +1207,16 @@ export const MasterRoutes: Routes = [
       ]
     }
   },
+      {
+    path: 'tax-group/entry',
+    component: TaxGroupComponent,
+    data: {
+      title: 'Tax Group',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Tax Group ' },
+      ]
+    }
+  },
+
 ];
