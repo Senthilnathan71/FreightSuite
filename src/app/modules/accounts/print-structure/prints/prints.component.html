@@ -5291,3 +5291,249 @@
     </footer> -->
 
 </div>
+
+
+<!-- ========================   Accounts Report  ================================================ -->
+
+<!--  -->
+
+<!-- Top N Customer -->
+
+<div class="print-a4">
+
+    <!-- Company Info -->
+    <!-- <div class="row">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                class="img-fluid">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        </div>
+
+                        <div class="company-info ">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                            <p class="mb-1">
+                                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                            </p>
+                            <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                            <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div> -->
+
+    <!-- Horizontal Line -->
+    <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div>
+
+
+    <!-- Title -->
+    <h5 class="text-center fw-bold py-2 " style="margin: 0;">Top N Customer</h5>
+
+    <div style="margin-top: 0.5rem;">
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0;">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>GP</th>
+                        <th>Revenue</th>
+                        <th>Volume</th>
+                        <th>Weight</th>
+                        <th>Volume Weight</th>
+                        <th>Chargeable Weight</th>
+                        <th>No of House</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ABC Logistics</td>
+                        <td>$1,250</td>
+                        <td>$12,500</td>
+                        <td>45 m³</td>
+                        <td>12,300 kg</td>
+                        <td>10,500 kg</td>
+                        <td>12,300 kg</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td>Global Freight Co.</td>
+                        <td>$980</td>
+                        <td>$9,800</td>
+                        <td>38 m³</td>
+                        <td>9,200 kg</td>
+                        <td>8,700 kg</td>
+                        <td>9,200 kg</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td>Skyline Traders</td>
+                        <td>$1,540</td>
+                        <td>$15,400</td>
+                        <td>60 m³</td>
+                        <td>15,600 kg</td>
+                        <td>14,000 kg</td>
+                        <td>15,600 kg</td>
+                        <td>12</td>
+                    </tr>
+                    <tr>
+                        <td>NextMove Cargo</td>
+                        <td>$870</td>
+                        <td>$8,700</td>
+                        <td>30 m³</td>
+                        <td>7,900 kg</td>
+                        <td>7,200 kg</td>
+                        <td>7,900 kg</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td>TransWorld Express</td>
+                        <td>$1,120</td>
+                        <td>$11,200</td>
+                        <td>50 m³</td>
+                        <td>13,000 kg</td>
+                        <td>11,800 kg</td>
+                        <td>13,000 kg</td>
+                        <td>9</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer class="text-center mb-0 px-2">
+        <!-- <div class="d-flex justify-content-between">
+                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                        <span>
+                            This document is computer-generated and does not require a signature.
+                        </span>
+                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                    </div> -->
+    </footer>
+
+</div>
+
+
+
+
+
+
+<!-- ==============================   Operation Report   ================================================ -->
+
+
+<!--  Container Wise KPI Report -->
+<div class="print-a4">
+
+    <!-- Company Info -->
+    <!-- <div class="row">
+        <div class="company-header">
+            <div class="company-logo">
+                <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            </div>
+
+            <div class="company-info ">
+                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                <p class="mb-1">
+                    {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                </p>
+                <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Horizontal Line -->
+    <div style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div>
+
+
+    <!-- Title -->
+    <h5 class="text-center fw-bold py-2 " style="margin: 0;">Container Wise KPI Report</h5>
+
+    <div style="margin-top: 0.5rem;">
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0;">
+                <thead>
+                    <tr>
+                        <th>Booking Ref</th>
+                        <th>Freight Amount (SGD)</th>
+                        <th>Report Month</th>
+                        <th>Vessel Name</th>
+                        <th>Shipment Count</th>
+                        <th>MBL</th>
+                        <th>HBL</th>
+                        <th>Shipment Type</th>
+                        <th>Consignee Name</th>
+                        <th>Destination of Country</th>
+                        <th>Port of Discharge</th>
+                        <th>Final Destination</th>
+                        <th>DG Declaration on by container level</th>
+                        <th>Container No</th>
+                        <th>Container Type</th>
+                        <th>Volume</th>
+                        <th>Weight</th>
+                        <th>Booking Date</th>
+                        <th>ETA POL Date</th>
+                        <th>ETD POL Date</th>
+                        <th>ATD POL Date</th>
+                        <th>ETA Destination</th>
+                        <th>ATA Destination</th>
+                        <th>Freight Term</th>
+                        <th>Booking Confirmation Date</th>
+                        <th>DG Application on Received Date</th>
+                        <th>DG Approval Date</th>
+                        <th>BL Issued Date</th>
+                        <th>Tax Invoice Release Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ABC Logistics</td>
+                        <td>$1,250</td>
+                        <td>$12,500</td>
+                        <td>45 m³</td>
+                        <td>12,300 kg</td>
+                        <td>10,500 kg</td>
+                        <td>12,300 kg</td>
+                        <td>8</td>
+
+                        <td>Global Freight Co.</td>
+                        <td>$980</td>
+                        <td>$9,800</td>
+                        <td>38 m³</td>
+                        <td>9,200 kg</td>
+                        <td>8,700 kg</td>
+                        <td>9,200 kg</td>
+                        <td>5</td>
+
+                        <td>Skyline Traders</td>
+                        <td>$1,540</td>
+                        <td>$15,400</td>
+                        <td>60 m³</td>
+                        <td>15,600 kg</td>
+                        <td>14,000 kg</td>
+                        <td>15,600 kg</td>
+                        <td>12</td>
+                        <td>NextMove Cargo</td>
+                        <td>$870</td>
+                        <td>$8,700</td>
+                        <td>30 m³</td>
+                        <td>7,900 kg</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer class="text-center mb-0 px-2">
+        <!-- <div class="d-flex justify-content-between">
+            <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+            <span>
+                This document is computer-generated and does not require a signature.
+            </span>
+            <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+        </div> -->
+    </footer>
+
+</div>
+

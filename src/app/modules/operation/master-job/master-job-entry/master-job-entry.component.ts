@@ -145,7 +145,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   cfsList: any[] = [];
   yardList: any[] = [];
   decimalAfterPrecision = 3;
-  
+  chargeList:any[]=[];
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
   packageTypeList: any[] = [];
@@ -656,10 +656,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
       .pipe(catchError(err => of([]))),
+      charges: this.operationService.getAllCharges(companySid)
+      .pipe(catchError(err => of([]))),
     // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
     seaDepartments, roadDepartments, transportDepartments, otherDepartments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers
+    containerTypes, currencies, packageTypes, customers,charges
   }) => {
      this.departments = [
       ...(seaDepartments || []),
@@ -677,7 +679,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.forwarderList = forwarders.data;
     this.cfsList = cfsList.data ;
     this.yardList = yards.data ; 
-     
+    this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
 
     this.containerTypeList = containerTypes.data ;
     const rawCurrencies: any[] = Array.isArray(currencies)
@@ -2244,6 +2246,52 @@ get totalChargeableWeight(): number {
   }, 0);
 }
 
+// Charge 
+
+getChargeName(ChargeMasterSid: number): string {
+  if (!ChargeMasterSid || !this.chargeList || this.chargeList.length === 0) {
+    return 'N/A';
+  }
+  const charge = this.chargeList.find(c => c.ChargeMasterSid === ChargeMasterSid);
+  return charge ? (charge.chargeCode || charge.ChargeCode || 'N/A') : 'N/A';
+}
+  // getChargeName(ChargeMasterSid) {
+  //   console.log(this.getChargeName,"CHARGE ")
+  //   if (!ChargeMasterSid || this.chargeList.length === 0) {
+  //     return '';
+  //   }
+  //   return (this.chargeList.find(charge => charge.ChargeMasterSid === ChargeMasterSid)?.chargeCode);
+  // }
+
+// Add this method to your component
+getCurrencyName(CurrencyMasterSid: number): string {
+  console.log('🔍 getCurrencyName called with:', CurrencyMasterSid);
+  console.log('📋 currencyList:', this.currencyList);
+  
+  if (!CurrencyMasterSid || !this.currencyList || this.currencyList.length === 0) {
+    return 'N/A';
+  }
+  
+  const currency = this.currencyList.find(c => c.CurrencyMasterSid === CurrencyMasterSid);
+  return currency ? (currency.currencyCode || currency.CurrencyCode || 'N/A') : 'N/A';
+}
+
+
+getAgentBranchName(AgentSid: number): string {
+  console.log('🔍 Looking up AgentBranchSid:', AgentSid);
+  
+  if (!AgentSid || !this.agentList || this.agentList.length === 0) {
+    return 'N/A';
+  }
+  
+  const agent = this.agentList.find(a => a.CustomerMasterSid === AgentSid);
+  
+  if (agent) {
+    return agent.CustomerName || agent.customerName || 'N/A';
+  }
+  
+  return 'N/A';
+}
 
     reportPreAlertModel(content: TemplateRef<any>) {
       this.modalService.open(content, {
