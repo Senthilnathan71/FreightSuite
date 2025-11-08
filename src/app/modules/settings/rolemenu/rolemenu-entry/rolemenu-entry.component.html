@@ -35,17 +35,6 @@
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-                    <!-- <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
@@ -75,35 +64,15 @@
                                 }
                             </div>
                         </aside>
-                        <!-- <aside class="col-md-3">
-                            <div class="custom-form-group custom-form-group-select"
-                                [class.filled]="!!roleMenuForm.get('Module')?.value">
-                                <multi-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
-                                    bindValue="ModuleName" (change)="filterMenuByModule($event)" placeholder=""
-                                    formControlName="Module">
-                                </multi-select>
-                                <label for="text-input" class="input-label">Module <span
-                                        class="text-danger">*</span></label>
-                                @if(roleMenuForm['Module']?.touched && roleMenuForm['Module']?.invalid ){
-                                <div class="error-message">
-                                    @if(roleMenuForm['Module']?.hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(roleMenuForm['Module'].hasError('maxlength')){
-                                    <span>Max 50 Chars</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside> -->
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleMenuForm.get('Module')?.value">
                                 <!-- Changed from multi-select to ng-select -->
                                 <ng-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
-                                    bindValue="ModuleMasterSid" 
+                                    bindValue="ModuleName" 
                                     (change)="filterMenuByModule($event)" 
                                     placeholder=""
-                                    formControlName="Module" multiple="true">
+                                    formControlName="Module">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Module <span
                                         class="text-danger">*</span></label>
@@ -172,11 +141,11 @@
 
                                 <td style="width: 50px;">
                                     <input type="checkbox" class="form-check-input ms-1 cursor-pointer"
-                                        formControlName="ViewRole">
+                                        formControlName="UpdateRole">
                                 </td>
                                 <td style="width: 50px;">
                                     <input type="checkbox" class="form-check-input ms-1 cursor-pointer"
-                                        formControlName="UpdateRole">
+                                        formControlName="ViewRole">
                                 </td>
                                 <td style="width: 50px;">
                                     <input type="checkbox" class="form-check-input ms-2 cursor-pointer"
@@ -190,17 +159,11 @@
             </div>
 
 
-            <section class="card-body pb-0" *ngIf="roleMenuForm.get('MenuMasterSid')?.value">
+            <!-- <section class="card-body pb-0" *ngIf="roleMenuForm.get('MenuMasterSid')?.value">
                 <section>
                     <h6 class="card-title">Role Access Permissions</h6>
                     <section class="row">
                         <div class="text-center">
-                            <!-- <div class="d-flex justify-content-center align-items-center" style="min-height: 100px;">
-                                            <div class="spinner-border spinner-border-sm text-info me-2" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <span class="loading-text">Loading Permissions</span>
-                                        </div> -->
                         </div>
                     </section>
                     <section class="row">
@@ -220,7 +183,7 @@
                         }
                     </section>
                 </section>
-            </section>
+            </section> -->
 
         </div>
     </form>

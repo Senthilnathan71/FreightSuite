@@ -299,8 +299,8 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 
 
 	viewRolemen(item: any, content: any): void {
-		// this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
-		this.openModal(content, item)
+		this.router.navigate(['/settings/rolemenu/entry', item.RoleMenuMasterSid]);
+		// this.openModal(content, item)
 		console.log(this.viewRolemen, "Edit")
 	}
 
