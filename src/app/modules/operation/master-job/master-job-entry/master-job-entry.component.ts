@@ -127,6 +127,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  profitSummary : any;
+  customerWiseSummary : any;
   
   // Lookup data
   departments: any[] = [];
@@ -905,6 +907,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       status : rate.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.masterJobRateArr];
+    this.calculateChargeWiseProfit();
+    this.calculateCustomerWiseAmount();
+    console.log("CUSTOMER WISE SUMMARY",this.customerWiseSummary);
 
 
   // Patch container activities
@@ -2246,6 +2251,40 @@ get totalChargeableWeight(): number {
   }, 0);
 }
 
+
+get totalSales() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalSales) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get totalCost() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalCost) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get profit() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.profit) || 0;
+    return sum + value;
+  }, 0);
+}
+
 // Charge 
 
 getChargeName(ChargeMasterSid: number): string {
@@ -2327,4 +2366,119 @@ getAgentBranchName(AgentSid: number): string {
         scrollable: true,
       });
     }
+    
+  calculateChargeWiseProfit() {
+    this.profitSummary = [];
+    const rateFormValue = this.rateResult|| [];
+    const data = [...rateFormValue];
+
+    data.forEach(item => {
+      console.log(item);
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+      const chargeName = charge ? charge.chargeName : "Unknown";
+
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
+
+      // if (item.CostRevenue === "Cost") {
+        existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
+
+      // if (item.CostRevenue === "Revenue") {
+        existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
+
+    this.profitSummary.forEach(p => {
+      let profit: number;
+      let profitPercent: number;
+
+      if (p.totalSales > p.totalCost) {
+        profit = p.totalSales - p.totalCost;
+        profitPercent = p.totalSales !== 0 ? (profit / p.totalSales) * 100 : 0;
+      } else {
+        profit = -(p.totalCost - p.totalSales);
+        profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
+      }
+
+      p.profit = profit.toFixed(2);
+      p.profitPercent = profitPercent.toFixed(2) + "%";
+      p.totalSales = p.totalSales.toFixed(2);
+      p.totalCost = p.totalCost.toFixed(2);
+    });
+
+    console.log(this.profitSummary);
+  }
+
+  calculateCustomerWiseAmount() {
+    this.customerWiseSummary = {};
+    const data = this.rateResult || [];
+
+    const costHmap = new Map<number, CustomerProfit>();
+    const revenueHmap = new Map<number, CustomerProfit>();
+
+    // --- COST SUMMARY ---
+    data.forEach(item => {
+      const costAmt = parseFloat(item.CostLocalAmount) || 0;
+      const customerName = item.costCustomerMaster?.CustomerName || "Unknown";
+      const customerId = item.costCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = costHmap.get(customerId);
+      const amtChange = item.CostDrCr === "D" ? costAmt : -costAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        costHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- REVENUE SUMMARY ---
+    data.forEach(item => {
+      const revenueAmt = parseFloat(item.RevenueLocalAmount) || 0;
+      const customerName = item.revenueCustomerMaster?.CustomerName || "Unknown";
+      const customerId = item.revenueCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = revenueHmap.get(customerId);
+      const amtChange = item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        revenueHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- LOGS & ASSIGNMENT ---
+    console.log("Cost Summary:", costHmap);
+    console.log("Revenue Summary:", revenueHmap);
+
+    this.customerWiseSummary = {
+      cost: Array.from(costHmap.values()),
+      revenue: Array.from(revenueHmap.values())
+    };
+  }
+
+}
+interface CustomerProfit {
+  CustomerName : string,
+  Amount : number
 }

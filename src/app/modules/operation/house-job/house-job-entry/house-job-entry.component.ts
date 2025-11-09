@@ -270,7 +270,7 @@ auditLogs: any[] = []; // Stores audit logs
   today : any;
   minDate : any;
   currentDate = new Date();
-
+  housejobData:any;
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
     { id: 2, name: 'FCL' },
@@ -982,6 +982,8 @@ loadHeaderLookups() {
           // this.resetForm();
           this.patchValues(resp.data);
           this.bookingData = resp.data;
+          this.housejobData=resp.data;
+          console.log("House Job",this.housejobData)
           this.minDate = undefined;
         }
       }

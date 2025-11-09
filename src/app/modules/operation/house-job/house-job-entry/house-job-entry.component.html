@@ -884,7 +884,7 @@
                     </div>
                   </aside>
                   @if(b['Coload'].value){
-          <aside class="col-md-3">
+          <aside class="col-md-6" [formGroup]="otherForm">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
               <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="Coloader" placeholder="" appendTo="body">
@@ -1614,6 +1614,7 @@
 
             </div>
           </div>
+          @if(selectedDepartmentType === "SEA") {
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">
               <div class="form-check d-flex align-items-center">
@@ -1631,6 +1632,7 @@
               </div>
             </div>
           </aside>
+        }
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-3">
             <div class="custom-form-group">
@@ -3070,7 +3072,7 @@
                   </div>
                   <div class="d-flex mb-1">
                     <strong style="width: 200px;">Shipment</strong>
-                    <span>: S003030</span>
+                    <span>: </span>
                   </div>
                 </div>
               </div>
@@ -3111,7 +3113,7 @@
                 <div class="col-12">
                   <div class="d-flex mb-1 flex-wrap">
                     <strong style="width: 250px;">RELEASE TYPE</strong>
-                    <span>: Draft</span>
+                    <span>: </span>
                   </div>
                   <div class="d-flex mb-1 flex-wrap">
                     <strong style="width: 250px;">ORDER NUMBERS / REFERENCE</strong>
@@ -3127,7 +3129,7 @@
                   </div>
                   <div class="d-flex mb-1 flex-wrap">
                     <strong style="width: 250px;">HBL</strong>
-                    <span>: DESG003030</span>
+                    <span>: </span>
                   </div>
                 </div>
               </div>
@@ -3151,9 +3153,9 @@
                       <td>–</td>
                       <td>–</td>
                       <td>-</td>
-                      <td>7237.000 KG(s)</td>
-                      <td>15.125 M3</td>
-                      <td>11 PALLETS</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
                     </tr>
                   </tbody>
                 </table>
@@ -3162,7 +3164,7 @@
               <!-- Description -->
               <div class="mb-3">
                 <strong>MARKS AND NUMBERS / GOODS DESCRIPTION:</strong><br />
-                SPARE PARTS
+               
               </div>
             
               <!-- Charges -->
@@ -3181,19 +3183,19 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <td>FREIGHT CHARGES</td>
-                      <td>USD</td>
-                      <td>40.00</td>
-                      <td>15.13</td>
-                      <td>605.00</td>
-                      <td>0.00</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             
-              <p><strong>Dollar Six Hundred Five Only</strong></p>
-              <p><strong>TOTAL: 605.00</strong></p>
+              <p><strong></strong></p>
+              <p><strong>TOTAL: </strong></p>
             
               <div class="mt-4">
                 <strong>Sea Delivery Order terms</strong><br />

@@ -23,8 +23,8 @@
             (actionTriggered)="onHeaderAction($event)">
         </app-page-header>
 
-        <div class="col-12 px-0">
-            <app-reusable-table
+        <div class="col-md-12 px-0">
+             <app-reusable-table
                 #vendorInvoiceTable
                 [config]="tableConfig"
                 [data]="allVendorInvoice"
@@ -38,6 +38,8 @@
                 (pageChange)="onPageChange($event)"
                 (pageSizeChange)="onPageSizeChange($event)">
             </app-reusable-table>
+       
         </div>
+           
     </div>
 </div>
