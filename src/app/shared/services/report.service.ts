@@ -261,14 +261,28 @@ export class ReportService {
     // Build recipient list from report data
     const recipients = this.extractEmailRecipients(reportData);
 
+    // Flatten reportData for template processing
+    // Email templates expect flat structure like {jobNumber}, but data is nested
+    const flattenedData = {
+      // Spread masterJob fields to top level
+      ...(reportData.masterJob || {}),
+      // Spread company fields (prefixed to avoid conflicts)
+      companyName: reportData.company?.name || '',
+      companyBranch: reportData.company?.branchName || '',
+      // Format dates to readable strings
+      etd: reportData.masterJob?.etd ? new Date(reportData.masterJob.etd).toLocaleDateString() : '',
+      eta: reportData.masterJob?.eta ? new Date(reportData.masterJob.eta).toLocaleDateString() : '',
+      mblDate: reportData.masterJob?.mblDate ? new Date(reportData.masterJob.mblDate).toLocaleDateString() : '',
+    };
+
     // Process subject template
     const subject = config.emailSubjectTemplate
-      ? this.reportRegistry.processTemplate(config.emailSubjectTemplate, reportData)
+      ? this.reportRegistry.processTemplate(config.emailSubjectTemplate, flattenedData)
       : `${config.title} - ${this.extractPrimaryIdentifier(reportData)}`;
 
     // Process body template
     const body = config.emailBodyTemplate
-      ? this.reportRegistry.processTemplate(config.emailBodyTemplate, reportData)
+      ? this.reportRegistry.processTemplate(config.emailBodyTemplate, flattenedData)
       : this.buildDefaultEmailBody(config, reportData);
 
     return {
@@ -294,7 +308,7 @@ export class ReportService {
 
     // Open EmailEntryComponent
     const modalRef = this.modalService.open(EmailEntryComponent, {
-      size: 'lg',
+      size: 'xl',
       centered: true,
       backdrop: 'static'
     });
