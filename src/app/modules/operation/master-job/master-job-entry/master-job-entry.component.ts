@@ -47,6 +47,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
+import { ReportService } from 'src/app/shared/services/report.service';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -90,6 +91,7 @@ import { CommonService } from 'src/app/common/common.service';
   ],
 })
 export class MasterJobEntryComponent implements OnInit, OnDestroy {
+  
 
   private destroy$ = new Subject<void>();
   private vesselSearchSubject = new Subject<{POL: string | number, POD: string | number, MovementType: string}>();
@@ -268,7 +270,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   countryOfCompany : string;
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -279,6 +281,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     private datepipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
     private commonService: CommonService,
+    private reportService: ReportService,
   ) {
     this.initForm();
     this.initContainerForm();
@@ -2183,8 +2186,6 @@ onCFSChange(selectedCFS: any): void {
     selectedCFS.CustomerAddress1 || ''
   );
 }
-
-
 onYardChange(selectedYard: any): void {
   if (!selectedYard) {
     this.masterJobForm.get('YardAddress')?.setValue('');
@@ -2201,12 +2202,6 @@ onYardChange(selectedYard: any): void {
     console.log(shipment ,'shipment');
     this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
   }
- getCfsValue(cfsSid: number): string {
-  if (!cfsSid || this.cfsList.length === 0) return '';
-  // Look for CFS by CustomerMasterSid instead of CfsMasterSid
-  const cfs = this.cfsList.find(c => c.CustomerMasterSid === cfsSid);
-  return cfs ? cfs.CustomerName : ''; 
-}
 get totalNoOfPkg(): number {
   return this.masterJobContainers.value.reduce((sum, c) => {
     const value = Number(c.NoOfPkg) || 0;
@@ -2224,22 +2219,6 @@ get totalGrossWeight(): number {
 get totalVolume(): number {
   return this.masterJobContainers.value.reduce((sum, c) => {
     const value = Number(c.Volume) || 0;
-    return sum + value;
-  }, 0);
-}
-
-
-get totalNetWeight(): number {
-  return this.masterJobContainers.value.reduce((sum, c) => {
-    const value = Number(c.NetWeight) || 0;
-    return sum + value;
-  }, 0);
-}
-
-
-get totalChargeableWeight(): number {
-  return this.masterJobContainers.value.reduce((sum, c) => {
-    const value = Number(c.ChargeableWeight) || 0;
     return sum + value;
   }, 0);
 }
@@ -2279,4 +2258,21 @@ get totalChargeableWeight(): number {
         scrollable: true,
       });
     }
+
+  /**
+   * Open report modal using the generic report system
+   * @param reportType Report type ID (e.g., 'master-job-pre-alert')
+   */
+  openReport(reportType: string): void {
+    // const masterJobSid = this.masterJobForm.get('MasterJobSid')?.value;
+    const masterJobSid = this.masterJobSid;
+    
+    
+    if (!masterJobSid) {
+      this.toastr.error('Please save the master job first before generating reports', 'Error');
+      return;
+    }
+
+    this.reportService.openReportModal(reportType, masterJobSid);
+  }
 }

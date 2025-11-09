@@ -1,0 +1,208 @@
+.report-footer {
+  margin-top: 2rem;
+  page-break-inside: avoid;
+
+  .footer-border {
+    margin-bottom: 1rem;
+    height: 2px;
+    background: linear-gradient(to right, #17a2b8, #0d6efd);
+    border-radius: 2px;
+  }
+
+  .terms-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-left: 3px solid #17a2b8;
+    border-radius: 4px;
+
+    .terms-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #495057;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .terms-text {
+      font-size: 0.75rem;
+      color: #6c757d;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .notes-section {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+    border-radius: 4px;
+
+    .notes-text {
+      font-size: 0.8125rem;
+      color: #856404;
+      margin: 0;
+
+      strong {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .signature-section {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 3rem;
+
+    .signature-box {
+      text-align: center;
+      min-width: 200px;
+
+      .signature-line {
+        border-top: 1px solid #000;
+        margin-bottom: 0.5rem;
+        min-height: 60px;
+      }
+
+      .signature-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #495057;
+        margin: 0;
+      }
+    }
+  }
+
+  .footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 0.5rem;
+
+    .print-info,
+    .page-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .info-item {
+      font-size: 0.75rem;
+      color: #6c757d;
+      display: inline-flex;
+      align-items: center;
+
+      i {
+        color: #17a2b8;
+        font-size: 0.7rem;
+      }
+
+      strong {
+        margin-right: 0.25rem;
+        color: #495057;
+      }
+    }
+  }
+
+  .tagline-section {
+    text-align: center;
+    margin: 1rem 0 0.5rem;
+
+    .tagline-text {
+      font-size: 0.8125rem;
+      font-style: italic;
+      color: #17a2b8;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  .system-info {
+    text-align: center;
+    margin-top: 0.5rem;
+
+    .system-text {
+      font-size: 0.7rem;
+      color: #adb5bd;
+      margin: 0;
+      font-style: italic;
+    }
+  }
+}
+
+// Print-specific styles
+@media print {
+  .report-footer {
+    margin-top: 1.5rem;
+
+    .footer-border {
+      height: 1px;
+    }
+
+    .terms-section,
+    .notes-section {
+      padding: 0.5rem;
+      background-color: transparent !important;
+      border-left-width: 2px;
+
+      .terms-title,
+      .notes-text {
+        font-size: 0.7rem;
+      }
+    }
+
+    .signature-section {
+      margin: 1.5rem 0;
+
+      .signature-box {
+        min-width: 150px;
+
+        .signature-line {
+          min-height: 40px;
+        }
+      }
+    }
+
+    .footer-info {
+      padding: 0.5rem 0;
+
+      .info-item {
+        font-size: 0.65rem;
+      }
+    }
+
+    .tagline-section,
+    .system-info {
+      .tagline-text,
+      .system-text {
+        font-size: 0.65rem;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .report-footer {
+    .signature-section {
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .footer-info {
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-start;
+
+      .print-info,
+      .page-info {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+    }
+  }
+}

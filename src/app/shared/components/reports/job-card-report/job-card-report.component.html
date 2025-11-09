@@ -1,0 +1,217 @@
+<div class="print-a4">
+  <app-report-header
+    [companyName]="company.name"
+    [branchName]="company.branchName"
+    [address]="company.address"
+    [logoUrl]="company.logoUrl"
+    [phone]="company.phone"
+    [email]="company.email"
+    [gst]="company.gst">
+  </app-report-header>
+
+  <h4 class="report-title text-center fw-bold">JOB CARD</h4>
+
+  <div class="job-header">
+    <div class="row">
+      <div class="col-4">
+        <p class="job-number">Job No: <span>{{ masterJob.jobNumber }}</span></p>
+      </div>
+      <div class="col-4 text-center">
+        <p class="job-date">Date: <span>{{ masterJob.jobDate | formatDate:'dd-MMM-yyyy' }}</span></p>
+      </div>
+      <div class="col-4 text-end">
+        <p class="job-status"><span class="badge bg-info">Active</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-content">
+    <h6 class="section-title">Shipment Details</h6>
+    <div class="row">
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">MBL Number:</span>
+            <span class="value fw-bold">{{ masterJob.mblNumber }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Vessel:</span>
+            <span class="value">{{ masterJob.vesselName }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Voyage:</span>
+            <span class="value">{{ masterJob.voyageNumber }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Service Type:</span>
+            <span class="value">{{ masterJob.serviceType }}</span>
+          </p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">Port of Loading:</span>
+            <span class="value">{{ masterJob.pol }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Port of Discharge:</span>
+            <span class="value">{{ masterJob.pod }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">ETD:</span>
+            <span class="value">{{ masterJob.etd | formatDate:'dd-MMM-yyyy' }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">ETA:</span>
+            <span class="value">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-content mt-3">
+    <h6 class="section-title">Party Details</h6>
+    <div class="row">
+      <div class="col-4">
+        <div class="party-card">
+          <div class="party-header">Customer</div>
+          <div class="party-name">{{ masterJob.customerName }}</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="party-card">
+          <div class="party-header">Shipper</div>
+          <div class="party-name">{{ masterJob.shipperName }}</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="party-card">
+          <div class="party-header">Consignee</div>
+          <div class="party-name">{{ masterJob.consigneeName }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-content mt-3">
+    <h6 class="section-title">Container Details ({{ containerCount }} Containers)</h6>
+    <table class="table table-bordered table-sm">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 20%">Container No</th>
+          <th style="width: 12%">Type</th>
+          <th style="width: 12%">Seal No</th>
+          <th style="width: 13%" class="text-end">Weight (KG)</th>
+          <th style="width: 13%" class="text-end">CBM</th>
+          <th style="width: 10%" class="text-end">Packages</th>
+          <th style="width: 15%">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let container of containers; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="fw-bold">{{ container.containerNumber }}</td>
+          <td>{{ container.containerType }}</td>
+          <td>{{ container.sealNumber }}</td>
+          <td class="text-end">{{ container.weight | number:'1.2-2' }}</td>
+          <td class="text-end">{{ container.cbm | number:'1.2-2' }}</td>
+          <td class="text-end">{{ container.packages }}</td>
+          <td>
+            <span class="badge bg-success" *ngIf="container.status === 'Loaded'">Loaded</span>
+            <span class="badge bg-warning" *ngIf="container.status === 'Empty'">Empty</span>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot class="table-secondary">
+        <tr>
+          <th colspan="4" class="text-end">Total:</th>
+          <th class="text-end">{{ totalWeight | number:'1.2-2' }}</th>
+          <th class="text-end">{{ totalCBM | number:'1.2-2' }}</th>
+          <th class="text-end">{{ totalPackages }}</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="section-content mt-3" *ngIf="houseJobs.length > 0">
+    <h6 class="section-title">House Job Details ({{ houseJobs.length }} HBL)</h6>
+    <table class="table table-bordered table-sm">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 15%">HBL No</th>
+          <th style="width: 25%">Consignee</th>
+          <th style="width: 20%">Commodity</th>
+          <th style="width: 12%" class="text-end">Packages</th>
+          <th style="width: 12%" class="text-end">Weight</th>
+          <th style="width: 11%" class="text-end">CBM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let house of houseJobs; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="fw-bold">{{ house.hblNumber }}</td>
+          <td>{{ house.consigneeName }}</td>
+          <td>{{ house.commodity }}</td>
+          <td class="text-end">{{ house.packages }}</td>
+          <td class="text-end">{{ house.weight | number:'1.2-2' }}</td>
+          <td class="text-end">{{ house.cbm | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-content mt-3">
+    <h6 class="section-title">Cargo Information</h6>
+    <div class="cargo-info">
+      <p><strong>Commodity:</strong> {{ masterJob.commodity }}</p>
+      <p *ngIf="masterJob.remarks"><strong>Remarks:</strong> {{ masterJob.remarks }}</p>
+    </div>
+  </div>
+
+  <div class="section-content mt-3">
+    <h6 class="section-title">Status Checklist</h6>
+    <div class="checklist">
+      <div class="row">
+        <div class="col-6">
+          <div class="check-item">
+            <i class="fas fa-square"></i> Booking Confirmed
+          </div>
+          <div class="check-item">
+            <i class="fas fa-square"></i> Documentation Complete
+          </div>
+          <div class="check-item">
+            <i class="fas fa-square"></i> Cargo Loaded
+          </div>
+          <div class="check-item">
+            <i class="fas fa-square"></i> Vessel Departed
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="check-item">
+            <i class="fas fa-square"></i> Vessel Arrived
+          </div>
+          <div class="check-item">
+            <i class="fas fa-square"></i> Customs Clearance
+          </div>
+          <div class="check-item">
+            <i class="fas fa-square"></i> Cargo Released
+          </div>
+          <div class="check-item">
+            <i class="fas fa-square"></i> Delivery Complete
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-report-footer
+    [printedBy]="printInfo.printedBy"
+    [printedOn]="printInfo.printedOn"
+    [showSignature]="false">
+  </app-report-footer>
+</div>
