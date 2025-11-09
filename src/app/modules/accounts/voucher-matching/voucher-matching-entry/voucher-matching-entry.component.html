@@ -1,4 +1,4 @@
-<div class="row compact-form">
+<div class="row compact-form" [formGroup]="form">
     <div class="col-12 px-0">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-1">
@@ -52,9 +52,7 @@
                 <form>
                     <div class="row">
                         <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
-                            <div class="custom-form-group">
 
-                            </div>
                         </aside>
 
                         <aside class="col-md-2 pe-md-2">
@@ -80,7 +78,7 @@
                             </div>
                         </aside>
 
-                          <aside class="col-md-2 mx-5">
+                        <aside class="col-md-2 mx-5">
                             <div class="custom-form-group custom-form-group-select-date">
                                 <div class="input-group">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -97,17 +95,13 @@
 
 
                         <aside class="col-md-2  d-md-block d-none">
-                            <div class="custom-form-group">
 
-                            </div>
                         </aside>
 
                         <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
-                            <div class="custom-form-group">
 
-                            </div>
-                        </aside>  
-                        
+                        </aside>
+
                         <aside class="col-md-2">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder="">
@@ -117,12 +111,20 @@
                         </aside>
 
                         <aside class="col-md-2 mx-5">
-                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder="">
-                                </ng-select>
-                                <label class="input-label"> Subledger <span class="text-danger"></span></label>
+                            <div class="custom-form-group custom-form-group-select">
+                                <label class="input-label">Subledger <span class="text-danger"></span></label>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <ng-select formControlName="subledger" bindLabel="name" bindValue="name"
+                                        placeholder="" class="flex-grow-1"></ng-select>
+
+                                    <button type="button" class="btn btn-info btn-sm dofi-min-w-50 dofi-max-w-50">
+                                        Get
+                                    </button>
+                                </div>
                             </div>
                         </aside>
+
 
                         <aside class="col-md-2 mx-5">
                             <div class="custom-form-group custom-form-group-select">
@@ -139,12 +141,12 @@
                             </div>
                         </aside>
 
-                        
+
                         <aside class="col-md-2 ">
                             <div class="custom-form-group">
 
                             </div>
-                        </aside> 
+                        </aside>
                     </div>
                 </form>
             </div>
@@ -153,12 +155,12 @@
 
 
     <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-sm btn-info">
+        <button type="button" class="btn btn-sm btn-info" (click)="addDetails()">
             <i class="fas fa-plus"></i> Add Details
         </button>
     </div>
 
-    <div class="col-12 mt-1">
+    <div class="col-12 mt-1" formArrayName="voucherMatching">
         <div class="table-responsive table-borderless">
             <table class="table table-hover align-middle no-wrap table-sm mb-0 ">
                 <thead class="bg-info">
@@ -166,43 +168,59 @@
                         <th class="" width="3%"></th>
                         <th class="" style="min-width:100px"></th>
                         <th class="" style="min-width:100px"></th>
-                        <th colspan="8" class="matching-header bg-warning text-center fw-bold" style="color: black;">OS Vouchers</th>  
-                        <th colspan="4" class="matching-header  text-center fw-bold" style="color: black; background-color: rgb(211, 74, 74)">Matching</th>  
+                        <th class="" style="min-width:100px"></th>
+                        <th colspan="9" class="matching-header bg-warning text-center fw-bold" style="color: black;">OS
+                            Vouchers</th>
+                        <th colspan="4" class="matching-header  text-center fw-bold"
+                            style="color: black; background-color: rgb(211, 74, 74)">Matching</th>
                         <th class="" style="min-width:100px"></th>
                         <th class="" style="min-width:100px"></th>
                     </tr>
                     <tr>
-                        <th  class="bg-transparent text-light" width="3%"></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ledger</th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Voucher No. <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2"style="min-width:100px">Voucher Type <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Voucher Date <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Dr/Cr <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ex.Rate <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2"style="min-width:100px">Curr.Amt <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Local Amt <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">OS Curr.Amt <span class="text-danger"></span></th>
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr.</th> 
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ex.Rate</th> 
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr Amt</th> 
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Local Amt</th> 
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">TDS Amt</th> 
-                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Balance</th> 
+                        <th class="bg-transparent text-light" width="3%"></th>
+                        <th class="bg-transparent text-light" rowspan="4" style="min-width:140px">Branch</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:140px">Ledger</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:80px">Voucher No. <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Voucher Type <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Voucher Date <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:80px">Dr/Cr <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:80px">Curr. <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ex.Rate <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr.Amt <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Local Amt <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">OS Curr.Amt <span
+                                class="text-danger"></span></th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">OS Local Amt</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr.</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Ex.Rate</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Curr Amt</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Local Amt</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">TDS Amt</th>
+                        <th class="bg-transparent text-light" rowspan="2" style="min-width:100px">Balance</th>
                     </tr>
+
+
                 </thead>
 
                 <tbody>
-                    <tr>
+                    <tr *ngFor="let row of voucherMatching.controls; let i = index" [formGroupName]="i">
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm border-0">
+                            <button type="button" class="btn btn-sm border-0 " (click)="deleteRow(i)">
                                 <i class="fas fa-trash text-danger"></i>
                             </button>
                         </td>
 
-                         <td width="10%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
+                        <td>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="branch"
+                                appendTo="body"></ng-select>
                         </td>
 
                         <!-- <td>
@@ -216,70 +234,83 @@
 
 
                         <td>
-                            <input type="text" formControlName="" class="form-control" />
+                            <ng-select bindLabel="name" bindValue="id" formControlName="ledger"
+                                appendTo="body"></ng-select>
                         </td>
 
                         <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                            <input type="text" formControlName="voucherNo" class="form-control" />
                         </td>
 
                         <td>
-                            <input type="text" formControlName="" class="form-control" />
+                            <input type="text" formControlName="voucherType" class="form-control" />
                         </td>
 
                         <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="voucherDate"
+                                appendTo="body"></ng-select>
                         </td>
 
-                        
-                        <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                         <td>
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                        
-                        <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                         <td>
-                            <input type="text" formControlName="" class="form-control" />
+                        <td style="width: 73%;">
+                            <ng-select bindLabel="name" bindValue="id" formControlName="drcr"
+                                appendTo="body"></ng-select>
                         </td>
 
                         <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                            <ng-select bindLabel="name" bindValue="id" formControlName="curr"
+                                appendTo="body"></ng-select>
                         </td>
 
                         <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-                        
-                         <td>
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                         <td>
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
+                            <input type="text" formControlName="exRate" class="form-control" />
                         </td>
 
                         <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
+                            <input type="text" formControlName="currAmt" class="form-control" />
                         </td>
 
                         <td>
-                            <input type="text" formControlName="" class="form-control" />
+                            <input type="text" formControlName="localAmt" class="form-control" />
                         </td>
 
                         <td>
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>       
+                            <input type="text" formControlName="oscurrAmt" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="oslocalAmt" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="curr" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="exRate" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="currAmt" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="localAmt" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="tdsAmt" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input type="text" formControlName="balance" class="form-control" />
+                        </td>
+
                     </tr>
 
-                    <tr class="pt-2">
+
+
+
+                    <!-- <tr class="pt-2">
                         <td colspan="17" class="pt-1">
                             <div class="d-flex align-items-center gap-5 justify-content-center align-items-end">
                                 <div class="d-flex align-items-center justify-content-between">
@@ -289,15 +320,10 @@
                                     <p class="mb-0">xxx</p>
                                     <p class="mb-0">xxx</p>
                                 </div>
-                                <!-- <div class="d-flex align-items-center">
-                                    <strong>Total Cr :</strong>
-                                    <p class="mb-0"></p>
-                                </div> -->
+                               
                             </div>
                         </td>
-                    </tr>
-
-                    
+                    </tr> -->
 
                     <!-- <tr *ngIf="networkArray.length === 0">
                         <td colspan="5" class="text-center text-muted">No records found</td>

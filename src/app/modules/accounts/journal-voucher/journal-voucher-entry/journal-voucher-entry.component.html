@@ -1,4 +1,4 @@
-<div class="row compact-form">
+<div class="row compact-form" [formGroup]="form">
     <div class="col-12 px-0">
         <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-1">
@@ -6,7 +6,7 @@
                     <div class="brand-icon">
                         <i class="fas fa-file-invoice"></i>
                     </div>
-                    <h5 class="page-title mb-0 text-info">Joural Voucher</h5>
+                    <h5 class="page-title mb-0 text-info">Journal Voucher</h5>
                 </div>
             </div>
             <div class="col-md-8 pb-1">
@@ -46,229 +46,180 @@
         </div>
     </div>
 
+    <!-- Voucher Details -->
     <div class="col-12 px-0">
         <div class="card mb-1">
             <div class="card-body py-1">
-                <form>
-                    <div class="row">
-                        <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
-                            <div class="custom-form-group">
+                <div class="row">
+                    <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5"></aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="voucherNo" class="custom-input-field sm"
+                                placeholder="" />
+                            <label class="input-label">Voucher No.</label>
+                        </div>
+                    </aside>
 
+                    <aside class="col-md-2 mx-5">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d2="ngbDatepicker" (click)="d2.toggle()" readonly formControlName="voucherDate" />
+                                <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
                             </div>
-                        </aside>
+                            <label class="input-label" for="dp">Voucher Date <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
 
-                        <aside class="col-md-2 pe-md-2">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="" class="custom-input-field sm" placeholder="" />
-                                <label class="input-label">Voucher No. <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group custom-form-group-select-date">
-                                <div class="input-group">
-                                    <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d2="ngbDatepicker" (click)="d2.toggle()" readonly formControlName="" />
-
-                                    <button class="btn  bi bi-calendar3" (click)="d2.toggle()" type="button">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather>
-                                    </button>
-                                </div>
-
-                                <label class="input-label" for="dp">Voucher Date <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="" class="custom-input-field sm" placeholder="" />
-                                <label class="input-label">Posted On <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="postedOn" class="custom-input-field sm"
+                                placeholder="" />
+                            <label class="input-label">Posted On</label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-2 d-md-block d-none "></aside>
+                    <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5"></aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="postedStatus" bindLabel="name" bindValue="id" placeholder="">
+                            </ng-select>
+                            <label class="input-label">Posted Status</label>
+                        </div>
+                    </aside>
 
 
-                        <aside class="col-md-2  d-md-block d-none">
-                            <div class="custom-form-group">
+                    <aside class="col-md-2 mx-5">
+                        <div class="custom-form-group">
+                            <textarea formControlName="remarks" class="custom-input-field sm" rows="1" placeholder=""
+                                maxlength="100"></textarea>
+                            <label class="input-label">Remarks</label>
+                        </div>
+                    </aside>
 
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5">
-                            <div class="custom-form-group">
-
-                            </div>
-                        </aside>  
-                        
-                        <aside class="col-md-2">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="" bindLabel="name" bindValue="name" placeholder="">
-                                </ng-select>
-                                <label class="input-label">Posted Status <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2 mx-5">
-                            <div class="custom-form-group">
-                                <textarea formControlName="Remarks" class="custom-input-field sm" rows="1"
-                                    placeholder="" maxlength="100"></textarea>
-                                <label class="input-label">Remarks</label>
-
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="" [items]='status' bindLabel="name" bindValue="name"
-                                    placeholder="">
-                                </ng-select>
-                                <label class="input-label"> Status <span class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-2 d-md-block d-none">
-                            <div class="custom-form-group">
-
-                            </div>
-                        </aside>
-
-                        
-                        <aside class="col-md-2 ">
-                            <div class="custom-form-group">
-
-                            </div>
-                        </aside> 
-                        
-                     
-                        
-                    </div>
-                </form>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="status" [items]="status" bindLabel="name" bindValue="id"
+                                placeholder="">
+                            </ng-select>
+                            <label class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-2 d-md-block d-none"></aside>
+                </div>
             </div>
         </div>
     </div>
 
-
-    <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-sm btn-info">
+    <!-- Journal Details -->
+    <div class="d-flex justify-content-end mb-1">
+        <button type="button" class="btn btn-sm btn-info" (click)="addDetails()">
             <i class="fas fa-plus"></i> Add Details
         </button>
     </div>
 
-    <div class="col-12 mt-1">
-        <div class="table-responsive table-borderless">
-            <table class="table table-hover align-middle no-wrap table-sm ">
+    <div class="bg-white">
+            <div class="split-table-container d-flex" formArrayName="journal">
+        <!-- Fixed Left Table -->
+        <div class="table-fixed table-borderless" style="flex: 0 0 auto; max-width: 950px; overflow: hidden;">
+            <table class="table table-hover align-middle no-wrap table-sm mb-0">
                 <thead class="bg-info">
                     <tr>
                         <th class="bg-transparent text-light" width="3%"></th>
-                        <th class="bg-transparent text-light">Subledger</th>
-                        <th class="bg-transparent text-light">Ledger <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Curr. <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Ex.Rate <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Curr.Amt <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Local Amt <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Narration <span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light">Dept</th>
-                        <th class="bg-transparent text-light">Charge</th>
-                        <th class="bg-transparent text-light">House Job</th>
-                        <th class="bg-transparent text-light">Master Job</th>
+                        <th class="bg-transparent text-light" style="min-width:160px">Subledger</th>
+                        <th class="bg-transparent text-light" style="min-width:160px">Ledger <span
+                                class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
+                                class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light" style="min-width:px">Ex.Rate <span
+                                class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light" style="min-width:px">Curr.Amt <span
+                                class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light" style="min-width:px">Local Amt <span
+                                class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light" style="min-width:80px">Dr/Cr <span
+                                class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light" style="min-width:100px">Narration <span
+                                class="text-danger">*</span></th>
                     </tr>
                 </thead>
 
-                <tbody formArrayName="networks">
-                    <tr>
+                <tbody>
+                    <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm border-0">
+                            <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
                                 <i class="fas fa-trash text-danger"></i>
                             </button>
                         </td>
 
-                         <td width="10%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
-                        </td>
-
-                        <!-- <td>
-                            <dofi-searchable-dropdown [items]="dropdownStore.countries()"
-                                formControlName="CountryMasterSid" placeholder=""
-                                [displayFields]="countryLookupConfig.displayFields"
-                                [displayLabels]="countryLookupConfig.displayLabels"
-                                [labelFields]="countryLookupConfig.labelFields" bindValue="CountryMasterSid">
-                            </dofi-searchable-dropdown>
-                        </td> -->
-
-
-                         <td width="10%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
-                        </td>
-
-
-                        <td width="7%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="6%">
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                        <td width="7%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="6%">
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                        <td width="5%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="10%">
-                            <input type="text" formControlName="" class="form-control" />
-                        </td>
-
-                        <td width="7%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="7%">
-                            <ng-select bindLabel="name" bindValue="id" formControlName="" appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="7%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
-                        </td>
-
-                        <td width="7%">
-                            <ng-select  bindLabel="name" bindValue="id" formControlName=""
-                            appendTo="body"></ng-select>
-                        </td>
+                        <td><ng-select formControlName="subledger" appendTo="body"></ng-select></td>
+                        <td><ng-select formControlName="ledger" appendTo="body"></ng-select></td>
+                        <td><ng-select formControlName="currency" appendTo="body"></ng-select></td>
+                        <td><input type="text" formControlName="exRate" class="form-control" /></td>
+                        <td><input type="text" formControlName="currAmt" class="form-control" /></td>
+                        <td><input type="text" formControlName="localAmt" class="form-control" /></td>
+                        <td><ng-select formControlName="drCr" appendTo="body"></ng-select></td>
+                        <td><input type="text" formControlName="narration" class="form-control" /></td>
                     </tr>
+                </tbody>
+               
+            </table>
+        </div>
 
-                    <tr class="pt-2">
-                        <td colspan="13" class="pt-1">
-                            <div class="d-flex align-items-center gap-5 justify-content-center">
-                                <div class="d-flex align-items-center">
-                                    <strong>Total Dr :</strong>
-                                    <p class="mb-0"></p>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <strong>Total Cr :</strong>
-                                    <p class="mb-0"></p>
-                                </div>
-                            </div>
-                        </td>
+
+
+
+        <!-- Scrollable Right Table -->
+        <div class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
+            <table class="table table-hover align-middle no-wrap table-sm pt-3 mb-0">
+                <thead class="bg-info">
+                    <tr>
+                        <th class="bg-transparent text-light" style="min-width:130px">Dept</th>
+                        <th class="bg-transparent text-light" style="min-width:100px">Charge</th>
+                        <th class="bg-transparent text-light" style="min-width:110px">HS/SAC</th>
+                        <th class="bg-transparent text-light" style="min-width:110px">House Job</th>
+                        <th class="bg-transparent text-light" style="min-width:110px">Master Job</th>
+                        <th class="bg-transparent text-light" style="min-width:70px">Tax%</th>
+                        <th class="bg-transparent text-light" style="min-width:70px">Tax Amt</th>
+                        <th class="bg-transparent text-light" style="min-width:90px">Cost Center</th>
+                        <th class="bg-transparent text-light" style="min-width:90px">Profit Center</th>
                     </tr>
+                </thead>
 
-                    <!-- <tr *ngIf="networkArray.length === 0">
-                        <td colspan="5" class="text-center text-muted">No records found</td>
-                    </tr> -->
-
+                <tbody>
+                    <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
+                        <td><ng-select formControlName="dept" appendTo="body"></ng-select></td>
+                        <td><ng-select formControlName="charge" appendTo="body"></ng-select></td>
+                        <td><input type="text" formControlName="hssac" class="form-control" /></td>
+                        <td><ng-select formControlName="houseJob" appendTo="body"></ng-select></td>
+                        <td><ng-select formControlName="masterJob" appendTo="body"></ng-select></td>
+                        <td><input type="text" formControlName="tax" class="form-control" /></td>
+                        <td><input type="text" formControlName="taxAmt" class="form-control" /></td>
+                        <td><input type="text" formControlName="costCenter" class="form-control" /></td>
+                        <td><input type="text" formControlName="profitCenter" class="form-control" /></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+
     </div>
+    </div>
+
+
+      <div class="d-flex justify-content-center align-items-center gap-3 bg-white ">
+                <div class="d-flex justify-content-center gap-3">
+                    <strong class="fw-bold">Total Dr:  </strong>
+                    <p class="mb-0">xxx</p>
+                </div>
+                <div class="d-flex justify-content-center gap-3">
+                    <strong class="fw-bold">Total Cr:  </strong>
+                    <p class="mb-0">xxx</p>
+                </div>
+            </div>
+
+          
+
 
 </div>
