@@ -1173,7 +1173,8 @@ private getCustomerCountryCode(vendor: any): string {
   this.searchCostsModalInstance = this.modalService.open(this.searchCostsModalRef, {
     size: 'lg',
     backdrop: 'static',
-    keyboard: false
+    keyboard: false,
+    centered:true,
   });
 }
 
