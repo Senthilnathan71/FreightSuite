@@ -1,49 +1,55 @@
-<div class="row">
+<div class="row ">
   <!-- Header Section -->
-  <div class="col-12">
-    <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm mx-0">
-      <div class="col-md d-flex gap-3 pb-2">
+  <div class="col-12 compact-form">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
             <i class="fas fa-file-contract"></i>
           </div>
           <h5 class="page-title mb-0 text-info">Shipment Instruction (BL Format)</h5>
         </div>
-        <!-- Search HBL -->
-        <div class="input-group dofi-max-w-450" *ngIf="showShipmentInstruction">
-          <input type="text" class="form-control rounded-start-pill" placeholder="Enter HBL Number"
-            [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
-          <button class="btn btn-info rounded-end-pill" type="button" (click)="searchShipment()">
-            <i class="fas fa-search me-1"></i>
-          </button>
-        </div>
-        <!-- Search HBL -->
       </div>
-      <div class="col-md-auto ms-auto pb-2">
-        <div
-          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()">
-            <i class="fas fa-chevron-left me-1"></i>
-            Back
-          </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
-          <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
-            class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
-            <i class="fas fa-edit me-1"></i>
-            Edit
-          </button>
-          <button *ngIf="showShipmentInstruction && isEditMode" type="button"
-            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()">
-            <i class="fas fa-save me-1"></i>
-            Save
-          </button>
+
+      <div class="col-md-4 pb-1 ">
+          <!-- Search HBL -->
+          <div *ngIf="showShipmentInstruction"   class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control" placeholder="Enter HBL Number" [(ngModel)]="searchHbl"
+              (keyup.enter)="searchShipment()">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" fdprocessedid="4bbi3"><i
+                class="fas fa-search me-1"></i> Search </button>
+          </div>
+        
+      </div>
+
+      <div class="col-md-4">
+        <div>
+          <div
+            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="resetForm()">
+              <i class="fas fa-chevron-left me-1"></i>
+              Back
+            </button>
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="resetForm()">
+              <i class="fas fa-sync-alt me-1"></i>
+              Reset
+            </button>
+            <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
+              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
+              <i class="fas fa-edit me-1"></i>
+              Edit
+            </button>
+            <button *ngIf="showShipmentInstruction && isEditMode" type="button"
+              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()">
+              <i class="fas fa-save me-1"></i>
+              Save
+            </button>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -64,7 +70,8 @@
 
           <!-- Search Input -->
           <div class="d-flex justify-content-center gap-2 mb-5">
-            <input type="text" class="form-control w-auto" placeholder="e.g. BL1234567" aria-label="BL number search" [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
+            <input type="text" class="form-control w-auto" placeholder="e.g. BL1234567" aria-label="BL number search"
+              [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
             <button type="submit" class="btn btn-info" (click)="searchShipment()">Search</button>
           </div>
 
@@ -145,7 +152,7 @@
     <div class="card h-100 mb-0">
       <div class="card-body">
         <!-- BL Header -->
-        <div class="bl-container border container" [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
+        <div class="bl-container border " [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
           <!-- Top Section -->
           <div class="row g-0">
             <!-- Left Column -->
