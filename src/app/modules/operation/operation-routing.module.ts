@@ -27,6 +27,8 @@ import { ServiceJobEntryComponent } from './service-job/service-job-entry/servic
 import { ReportMasterComponent } from './report-master/report-master.component';
 import { MawbillListComponent } from './Master-air-waybill/mawbill-list/mawbill-list.component';
 import { MawbillEntryComponent } from './Master-air-waybill/mawbill-entry/mawbill-entry.component';
+import { CreditNoteEntryComponent } from './credit-note/credit-note-entry/credit-note-entry.component';
+import { CreditNoteListComponent } from './credit-note/credit-note-list/credit-note-list.component';
 
 
 export const OperationRoutes: Routes = [
@@ -168,6 +170,30 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Generate Invoice',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Generate Invoice' }],
+        },
+      },
+      {
+        path: 'credit-note/list',
+        component: CreditNoteListComponent,
+        data: {
+          title: 'Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
+        },
+      },
+      {
+        path: 'credit-note/entry',
+        component: CreditNoteEntryComponent,
+        data: {
+          title: 'Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
+        },
+      },
+      {
+        path: 'credit-note/entry/:id',
+        component: CreditNoteEntryComponent,
+        data: {
+          title: 'Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
         },
       },
         {
