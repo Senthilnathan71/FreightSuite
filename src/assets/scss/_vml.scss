@@ -817,10 +817,11 @@
 
   /* Compact Content Layout */
   .content-layout {
-    gap: 12px;
+    // display: grid;
+    // grid-template-columns: 1fr 160px;
+    gap: 6px;
     height: 100%;
   }
-
   .main-content-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -875,7 +876,32 @@
     transition: all 0.3s ease;
   }
 
+  .first-two-cards {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+}
 
+.first-two-cards .first-fixed {
+  flex: 0 0 450px;
+  max-width: 450px;
+}
+
+.first-two-cards .second-flex {
+  flex: 1 1 auto; 
+  min-width: 0;   
+}
+
+@media (max-width: 991.98px) {
+ 
+
+  .first-two-cards .first-fixed,
+  .first-two-cards .second-flex {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
 
 
 

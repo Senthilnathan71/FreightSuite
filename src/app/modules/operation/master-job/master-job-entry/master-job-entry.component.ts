@@ -396,7 +396,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
   uploadPDF() {
     this.modalService.open(MasterDocumentUploadComponent,{
-      size: 'lg',
+      size: 'xl',
       backdrop: 'static',
       centered: true,
     });

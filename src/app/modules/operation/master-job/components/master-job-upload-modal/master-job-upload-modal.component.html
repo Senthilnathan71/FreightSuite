@@ -1,7 +1,7 @@
 <!-- Modal Header -->
-<div class="modal-header">
-  <h5 class="modal-title">Upload Master Job & House Jobs from Excel</h5>
-  <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()" [disabled]="isProcessing"></button>
+<div class="modal-header modalHeaderpart p-1">
+  <h5 class="modal-title text-white">Upload Master Job & House Jobs from Excel</h5>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="onCancel()" [disabled]="isProcessing"></button>
 </div>
 
 <!-- Modal Body -->
@@ -31,15 +31,15 @@
 
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn btn-info btn-sm"
         (click)="fileInput.click()"
         [disabled]="isProcessing"
       >
-        <i class="fas fa-upload me-2"></i>
+        <i class="fas fa-upload me-1"></i>
         Select Excel File
       </button>
 
-      <p *ngIf="selectedFile" class="selected-file mt-3 mb-0">
+      <p *ngIf="selectedFile" class="selected-file  mb-0">
         <i class="fas fa-file-excel me-2"></i>
         Selected: {{ selectedFile.name }}
       </p>
@@ -51,50 +51,53 @@
     <div class="preview-header">
       <h6 class="fw-bold mb-0">Review and Edit Data</h6>
       <button type="button" class="btn btn-outline-danger btn-sm" (click)="onReUpload()">
-        <i class="fas fa-sync-alt me-2"></i>
+        <i class="fas fa-sync-alt me-1"></i>
         Upload Different File
       </button>
     </div>
 
     <!-- Bootstrap Nav Tabs -->
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mt-3">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs ">
       <!-- Master Job Tab -->
       <li [ngbNavItem]="1">
         <button ngbNavLink>Master Job</button>
         <ng-template ngbNavContent>
-          <div class="tab-content-wrapper">
+          <div class="tab-content-wrapper ">
             <div class="form-section">
               <form [formGroup]="masterJobForm" *ngIf="masterJobForm">
-                <div class="row g-3">
+                <div class="row  compact-form">
                   <div
                     *ngFor="let column of masterJobColumns"
-                    class="col-md-6 col-lg-4"
+                    class="col-md-3"
                   >
-                    <label class="form-label">{{ column }}</label>
+                  <div class="custom-form-group">
+                      
                     <input
                       type="text"
-                      class="form-control"
+                      class="custom-input-field sm"
                       [formControlName]="column"
                       [class.is-invalid]="hasFieldError(column, 'Master Job')"
                     />
+                    <label class="input-label">{{ column }}</label>
                     <div class="invalid-feedback" *ngIf="hasFieldError(column, 'Master Job')">
                       {{ getFieldError(column, 'Master Job') }}
                     </div>
+                  </div>
                   </div>
                 </div>
               </form>
             </div>
 
             <!-- Master Job Child Data Accordions -->
-            <div class="child-data-section mt-4">
-              <h6 class="section-title mb-3">Additional Details</h6>
+            <div class="child-data-section mt-1">
+              <h6 class="section-title ">Additional Details</h6>
 
               <div ngbAccordion>
                 <!-- Containers Section -->
                 <div ngbAccordionItem>
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton>
-                      <i class="fas fa-box me-2"></i>
+                      <i class="fas fa-box me-1"></i>
                       Containers
                       <span class="badge bg-primary ms-2">{{ containersArray.length }}</span>
                     </button>
@@ -106,29 +109,35 @@
                           <form [formGroup]="containersForm">
                             <div formArrayName="containers">
                               <div *ngFor="let container of containersArray.controls; let i = index"
-                                   class="child-data-item mb-3"
+                                   class="child-data-item"
                                    [formGroupName]="i">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                  <h6 class="mb-0">Container {{ i + 1 }}</h6>
-                                  <button type="button" class="btn btn-sm btn-outline-danger"
+                                <div class="d-flex justify-content-between align-items-center ">
+                                  <h6 class="mb-0 text-black">Container {{ i + 1 }}</h6>
+                                  <div>
+                                    <button type="button" class="btn btn-sm btn-info "
+                                  (click)="addContainer()">
+                            <i class="fas fa-plus me-1"></i> Add Container
+                          </button>
+                                  <button type="button" class="btn btn-sm "
                                           (click)="removeContainer(i)">
-                                    <i class="fas fa-times"></i> Remove
+                                    <i class="fas fa-trash me-1 text-danger"></i> 
                                   </button>
+                                  </div>
+                                   
                                 </div>
-                                <div class="row g-2">
-                                  <div class="col-md-4" *ngFor="let key of container.value | keyvalue">
-                                    <label class="form-label text-sm">{{ key.key }}</label>
-                                    <input type="text" class="form-control form-control-sm"
-                                           [formControlName]="$any(key.key)" />
+                                <div class="row compact-form">
+                                  <div class="col-md-3" *ngFor="let key of container.value | keyvalue">
+                                  <div class="custom-form-group">
+                                    <input type="text" class="custom-input-field sm"
+                                    [formControlName]="$any(key.key)" />
+                                    <label class="input-label ">{{ key.key }}</label>
+                                  </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </form>
-                          <button type="button" class="btn btn-sm btn-outline-primary mt-2"
-                                  (click)="addContainer()">
-                            <i class="fas fa-plus me-1"></i> Add Container
-                          </button>
+                         
                         </div>
                       </ng-template>
                     </div>
@@ -274,21 +283,23 @@
                       <h6 class="mb-0">House Job {{ i + 1 }}</h6>
                     </div>
 
-                    <div class="row g-3">
+                    <div class="row compact-form">
                       <div
                         *ngFor="let column of houseJobColumns"
-                        class="col-md-6 col-lg-4"
+                        class="col-md-3"
                       >
-                        <label class="form-label">{{ column }}</label>
+                       <div class="custom-form-group">
                         <input
-                          type="text"
-                          class="form-control"
-                          [formControlName]="column"
-                          [class.is-invalid]="hasFieldError(column, 'House Jobs', i + 2)"
+                        type="text"
+                        class="custom-input-field sm"
+                        [formControlName]="column"
+                        [class.is-invalid]="hasFieldError(column, 'House Jobs', i + 2)"
                         />
+                        <label class="input-label">{{ column }}</label>
                         <div class="invalid-feedback" *ngIf="hasFieldError(column, 'House Jobs', i + 2)">
                           {{ getFieldError(column, 'House Jobs', i + 2) }}
                         </div>
+                      </div>
                       </div>
                     </div>
 

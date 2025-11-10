@@ -308,7 +308,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value" style="margin-top: 10px;">
+                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value" >
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ShipperAddress">
                       <label for="text-input" class="input-label">Shipper Address <span
@@ -354,7 +354,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group"  [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value" style="margin-top: 10px;">
+                    <div class="custom-form-group"  [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value" >
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
@@ -391,7 +391,7 @@
                   </aside>
 
                   <aside class="col-md-6" [formGroup]="otherForm">
-                    <div class="custom-form-group" [class.filled]="!!otherForm.get('NotifyPartyAddress')?.value" style="margin-top: 10px;">
+                    <div class="custom-form-group" [class.filled]="!!otherForm.get('NotifyPartyAddress')?.value" >
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NotifyPartyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
@@ -649,7 +649,7 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"[class.filled]="!!houseJobForm.get('POD')?.value">
+                    <div class="custom-form-group custom-form-group-select"[class.filled]="!!houseJobForm.get('POD')?.value" style="margin-top: 10px;">
                       <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
@@ -785,7 +785,7 @@
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
                           container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
                           (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" />
-                        <button class="btn  bi bi-calendar3 " (click)="d5.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 px-0" (click)="d5.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
                       <label for="shipmentDateExpected" class="input-label">ETD <span class="text-danger"></span>
@@ -799,7 +799,7 @@
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
                           container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
                           (keydown.arrowDown)="d4.open()" (click)="d4.toggle()" />
-                        <button class="btn bi bi-calendar3 " (click)="d4.toggle()" type="button">
+                        <button class="btn bi bi-calendar3 px-0" (click)="d4.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
                       <label for="shipmentDateExpected" class="input-label">ETA <span class="text-danger"></span>
@@ -811,7 +811,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('IncoTerms')?.value">
+                    <div class="custom-form-group custom-form-group-select mt-1" [class.filled]="!!houseJobForm.get('IncoTerms')?.value">
                       <!-- <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
                         appendTo="body" formControlName="IncoTerms" placeholder="">
                       </ng-select> -->
@@ -864,7 +864,7 @@
                     </div>
                   </aside> -->
                    <aside class="col-md-6">
-    <div class="custom-form-group">
+    <div class="custom-form-group mt-1">
         <input type="text"
             id="freightTerms"
             class="form-control custom-input-field sm"
@@ -1077,9 +1077,9 @@
         </button>
       </div>
       <div class="col-md-12">
-        <div class="row compact-form" [formGroup]="cargoForm">
+        <div class="row compact-form px-md-5" [formGroup]="cargoForm">
 
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('CargoType')?.value">
               <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
                 formControlName="CargoType" placeholder="" appendTo="body">
@@ -1088,7 +1088,7 @@
             </div>
           </aside>
           @if(selectedFCLLCL === "FCL"){
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ContainerType')?.value">
               <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                 class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
@@ -1097,7 +1097,7 @@
               <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
                 formControlName="NoofContainers">
@@ -1105,7 +1105,7 @@
             </div>
           </aside>
           }
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
                 formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
@@ -1129,7 +1129,7 @@
           </aside>
 
 
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
@@ -1148,7 +1148,7 @@
               }
             </div>
           </aside>
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
@@ -1168,7 +1168,7 @@
             </div>
           </aside>
           @if(selectedFCLLCL === "AIR") {
-                        <aside class="col-md-4">
+                        <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="Volumetric" DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1187,7 +1187,7 @@
               }
             </div>
           </aside>
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                 formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1207,7 +1207,7 @@
             </div>
           </aside>
           }
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
                 formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
@@ -1225,7 +1225,7 @@
             </div>
           </aside>
           @if(selectedDepartmentType === "SEA"){
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('MovementType')?.value">
               <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
                 placeholder="" formControlName="MovementType" appendTo="body">
@@ -1234,7 +1234,7 @@
             </div>
           </aside>
           }
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
               <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name"
                 placeholder="" formControlName="ModeOfTransport" appendTo="body">
@@ -1243,7 +1243,7 @@
               <label for="" class="input-label">Mode of Transport <span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('StuffingAt')?.value">
               <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select"
                 placeholder="" formControlName="StuffingAt" (change)="handleCFSOrYard()
@@ -1253,7 +1253,7 @@
             </div>
           </aside>
           @if(selectedDepartmentType === "SEA"){
-          <aside class="col-md-4">
+          <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
               <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
                 appendTo="body" placeholder="" formControlName="ShipmentTerms">
@@ -1529,7 +1529,7 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
                   (click)="d3.toggle()" container="body">
-                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
+                <button class="btn  bi bi-calendar3 px-0" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
                     class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Delivery Date <span class="text-danger"></span>
@@ -1605,7 +1605,7 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="CarrierBookingDate" #d10="ngbDatepicker" (keydown.arrowDown)="d10.open()"
                   (click)="d10.toggle()" container="body">
-                <button class="btn  bi bi-calendar3 " (click)="d10.toggle()" type="button"> <i-feather
+                <button class="btn  bi bi-calendar3 px-0" (click)="d10.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span
@@ -1647,7 +1647,7 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()"
                   (click)="d7.toggle()" container="body" />
-                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather name="calendar"
+                <button class="btn  bi bi-calendar3 px-0" (click)="d7.toggle()" type="button"> <i-feather name="calendar"
                     class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
@@ -1880,7 +1880,7 @@
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
               [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
               formControlName="ShippingBillDate" />
-            <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+            <button class="btn  bi bi-calendar3 px-0" (click)="d2.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany ===
@@ -2014,7 +2014,7 @@
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
               #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" container="body"/>
-            <button class="btn bi bi-calendar3 " (click)="d8.toggle()" type="button"> <i-feather
+            <button class="btn bi bi-calendar3 px-0" (click)="d8.toggle()" type="button"> <i-feather
                 name="calendar" class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label">Cargo Received Date <span class="text-danger"></span>
