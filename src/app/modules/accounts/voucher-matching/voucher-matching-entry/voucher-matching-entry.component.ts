@@ -5,6 +5,7 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
+import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 
 @Component({
   selector: 'app-voucher-matching-entry',
@@ -15,6 +16,7 @@ import { CommonModule } from '@angular/common';
     NgbDatepickerModule,
     FeatherModule,
     NgSelectModule,
+    DateTimePickerComponent
   ],
   templateUrl: './voucher-matching-entry.component.html',
   styles: ``,
@@ -22,11 +24,23 @@ import { CommonModule } from '@angular/common';
 export class VoucherMatchingEntryComponent implements OnInit {
   constructor(private router: Router, private fb: FormBuilder) {}
 
+    tab = [
+  { name: "Inter Branch"},
+  { name: "Ex.JV"},
+  {name:"TDS"}
+];
   // dropdown sample
   status = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' },
   ];
+
+    selectTab(tab: string) {
+  this.selectedTab = tab;
+}
+
+
+selectedTab = this.tab[0].name;
 
   // main form
   form = this.fb.group({
@@ -82,6 +96,6 @@ export class VoucherMatchingEntryComponent implements OnInit {
 
   // back navigation
   navigateToBack() {
-    this.router.navigate(['accounts/journal-voucher/list']);
+    // this.router.navigate(['accounts/journal-voucher/list']);
   }
 }

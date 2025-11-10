@@ -121,105 +121,105 @@
     </div>
 
     <div class="bg-white">
-            <div class="split-table-container d-flex" formArrayName="journal">
-        <!-- Fixed Left Table -->
-        <div class="table-fixed table-borderless" style="flex: 0 0 auto; max-width: 950px; overflow: hidden;">
-            <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                <thead class="bg-info">
-                    <tr>
-                        <th class="bg-transparent text-light" width="3%"></th>
-                        <th class="bg-transparent text-light" style="min-width:160px">Subledger</th>
-                        <th class="bg-transparent text-light" style="min-width:160px">Ledger <span
-                                class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
-                                class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light" style="min-width:px">Ex.Rate <span
-                                class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light" style="min-width:px">Curr.Amt <span
-                                class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light" style="min-width:px">Local Amt <span
-                                class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light" style="min-width:80px">Dr/Cr <span
-                                class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light" style="min-width:100px">Narration <span
-                                class="text-danger">*</span></th>
-                    </tr>
-                </thead>
+        <div class="split-table-container d-flex" formArrayName="journal">
+            <!-- Fixed Left Table -->
+            <div class="table-fixed table-borderless" style="flex: 0 0 auto; max-width: 950px; overflow: hidden;">
+                <table class="table table-hover align-middle no-wrap table-sm mb-0">
+                    <thead class="bg-info">
+                        <tr>
+                            <th class="bg-transparent text-light" width="3%"></th>
+                            <th class="bg-transparent text-light" style="min-width:160px">Subledger</th>
+                            <th class="bg-transparent text-light" style="min-width:160px">Ledger <span
+                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
+                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:px">Ex.Rate <span
+                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:px">Curr.Amt <span
+                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:px">Local Amt <span
+                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:80px">Dr/Cr <span
+                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:100px">Narration <span
+                                    class="text-danger">*</span></th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
-                                <i class="fas fa-trash text-danger"></i>
-                            </button>
-                        </td>
+                    <tbody>
+                        <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
+                                    <i class="fas fa-trash text-danger"></i>
+                                </button>
+                            </td>
 
-                        <td><ng-select formControlName="subledger" appendTo="body"></ng-select></td>
-                        <td><ng-select formControlName="ledger" appendTo="body"></ng-select></td>
-                        <td><ng-select formControlName="currency" appendTo="body"></ng-select></td>
-                        <td><input type="text" formControlName="exRate" class="form-control" /></td>
-                        <td><input type="text" formControlName="currAmt" class="form-control" /></td>
-                        <td><input type="text" formControlName="localAmt" class="form-control" /></td>
-                        <td><ng-select formControlName="drCr" appendTo="body"></ng-select></td>
-                        <td><input type="text" formControlName="narration" class="form-control" /></td>
-                    </tr>
-                </tbody>
-               
-            </table>
-        </div>
+                            <td><ng-select formControlName="subledger" appendTo="body"></ng-select></td>
+                            <td><ng-select formControlName="ledger" appendTo="body"></ng-select></td>
+                            <td><ng-select formControlName="currency" appendTo="body"></ng-select></td>
+                            <td><input type="text" formControlName="exRate" class="form-control" /></td>
+                            <td><input type="text" formControlName="currAmt" class="form-control" /></td>
+                            <td><input type="text" formControlName="localAmt" class="form-control" /></td>
+                            <td><ng-select formControlName="drCr" appendTo="body"></ng-select></td>
+                            <td><input type="text" formControlName="narration" class="form-control" /></td>
+                        </tr>
+                    </tbody>
 
-
-
-
-        <!-- Scrollable Right Table -->
-        <div class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
-            <table class="table table-hover align-middle no-wrap table-sm pt-3 mb-0">
-                <thead class="bg-info">
-                    <tr>
-                        <th class="bg-transparent text-light" style="min-width:130px">Dept</th>
-                        <th class="bg-transparent text-light" style="min-width:100px">Charge</th>
-                        <th class="bg-transparent text-light" style="min-width:110px">HS/SAC</th>
-                        <th class="bg-transparent text-light" style="min-width:110px">House Job</th>
-                        <th class="bg-transparent text-light" style="min-width:110px">Master Job</th>
-                        <th class="bg-transparent text-light" style="min-width:70px">Tax%</th>
-                        <th class="bg-transparent text-light" style="min-width:70px">Tax Amt</th>
-                        <th class="bg-transparent text-light" style="min-width:90px">Cost Center</th>
-                        <th class="bg-transparent text-light" style="min-width:90px">Profit Center</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
-                        <td><ng-select formControlName="dept" appendTo="body"></ng-select></td>
-                        <td><ng-select formControlName="charge" appendTo="body"></ng-select></td>
-                        <td><input type="text" formControlName="hssac" class="form-control" /></td>
-                        <td><ng-select formControlName="houseJob" appendTo="body"></ng-select></td>
-                        <td><ng-select formControlName="masterJob" appendTo="body"></ng-select></td>
-                        <td><input type="text" formControlName="tax" class="form-control" /></td>
-                        <td><input type="text" formControlName="taxAmt" class="form-control" /></td>
-                        <td><input type="text" formControlName="costCenter" class="form-control" /></td>
-                        <td><input type="text" formControlName="profitCenter" class="form-control" /></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-    </div>
-
-
-      <div class="d-flex justify-content-center align-items-center gap-3 bg-white ">
-                <div class="d-flex justify-content-center gap-3">
-                    <strong class="fw-bold">Total Dr:  </strong>
-                    <p class="mb-0">xxx</p>
-                </div>
-                <div class="d-flex justify-content-center gap-3">
-                    <strong class="fw-bold">Total Cr:  </strong>
-                    <p class="mb-0">xxx</p>
-                </div>
+                </table>
             </div>
 
-          
+
+
+
+            <!-- Scrollable Right Table -->
+            <div class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
+                <table class="table table-hover align-middle no-wrap table-sm pt-3 mb-0">
+                    <thead class="bg-info">
+                        <tr>
+                            <th class="bg-transparent text-light" style="min-width:130px">Dept</th>
+                            <th class="bg-transparent text-light" style="min-width:100px">Charge</th>
+                            <th class="bg-transparent text-light" style="min-width:65px">HS/SAC</th>
+                            <th class="bg-transparent text-light" style="min-width:120px">House Job</th>
+                            <th class="bg-transparent text-light" style="min-width:120px">Master Job</th>
+                            <th class="bg-transparent text-light" style="min-width:70px">Tax%</th>
+                            <th class="bg-transparent text-light" style="min-width:70px">Tax Amt</th>
+                            <th class="bg-transparent text-light" style="min-width:90px">Cost Center</th>
+                            <th class="bg-transparent text-light" style="min-width:90px">Profit Center</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
+                            <td><ng-select formControlName="dept" appendTo="body"></ng-select></td>
+                            <td><ng-select formControlName="charge" appendTo="body"></ng-select></td>
+                            <td><input type="text" formControlName="hssac" class="form-control" /></td>
+                            <td><ng-select formControlName="houseJob" appendTo="body"></ng-select></td>
+                            <td><ng-select formControlName="masterJob" appendTo="body"></ng-select></td>
+                            <td><input type="text" formControlName="tax" class="form-control" /></td>
+                            <td><input type="text" formControlName="taxAmt" class="form-control" /></td>
+                            <td><input type="text" formControlName="costCenter" class="form-control" /></td>
+                            <td><input type="text" formControlName="profitCenter" class="form-control" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="d-flex justify-content-center align-items-center gap-3 bg-white ">
+        <div class="d-flex justify-content-center gap-3">
+            <strong class="fw-bold">Total Dr: </strong>
+            <p class="mb-0">xxx</p>
+        </div>
+        <div class="d-flex justify-content-center gap-3">
+            <strong class="fw-bold">Total Cr: </strong>
+            <p class="mb-0">xxx</p>
+        </div>
+    </div>
+
+
 
 
 </div>
