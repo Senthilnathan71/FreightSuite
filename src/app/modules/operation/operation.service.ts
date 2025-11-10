@@ -748,6 +748,73 @@ sendInvoiceEmail(payload: any) {
   );
 }
 
+createCreditNote(payload: any) {
+  return this.http.post<{ data: any }>('credit-note/create', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+getAllCreditNote() {
+  return this.http.get<{ data: any[] }>('credit-note').pipe(
+    map((resp) => {
+     let response = resp.data;
+        return response;
+    })
+  )
+  }
+  getAllInvoice() {
+  return this.http.get<{ data: any[] }>('credit-note/invoice').pipe(
+    map((resp) => {
+     let response = resp.data;
+        return response;
+    })
+  )
+  }
+
+
+getCreditNoteById(VoucherHeaderSid: number) {
+  return this.http.get<{ data: any }>(`credit-note/fetch/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+updateCreditNoteById(VoucherHeaderSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`credit-note/update/${VoucherHeaderSid}`, payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+deleteCreditNoteById(VoucherHeaderSid: number) {
+  return this.http.delete<{ data: any }>(`credit-note/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+searchCreditNote(payload: any) {
+  return this.http.post<{ data: any }>('credit-note/search-list', payload).pipe(
+    map((resp) => {
+     let response = resp;
+        return response;
+      })
+    );
+  }
+
+sendCreditNoteEmail(payload: any) {
+  return this.http.post<{ status: boolean; message: string; data: any }>('credit-note/send-email', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 // ----- Vendor Invoice Operations ----- //
 
 createVendorInvoice(payload: any) {

@@ -1,0 +1,1039 @@
+<div class="row compact-form">
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <h4 class="page-title mb-0">Credit Note</h4>
+      </div>
+      <div class="col-md-8 pb-1">
+
+        <div
+          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <!-- Draft Save Button -->
+          <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
+            [disabled]="creditNoteForm.invalid">
+            <i class="fas fa-save me-1"></i> Draft
+          </button>
+
+          <!-- Final Save Button -->
+          <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            [disabled]="creditNoteForm.invalid || details.length === 0">
+            <i class="fas fa-check-circle me-1"></i> Final
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()"
+            *ngIf="isEditMode">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSave()">
+            <i class="fas fa-save me-1"></i> Save
+          </button>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-pills-container">
+    <div class="nav-pills">
+      <div class="nav-pill" *ngFor="let tabs of tabs" [class.active]="selectedTab === tabs.name"
+        (click)="selectTab(tabs.name)">
+        <div class="pill-icon">
+          <i [class]="tabs.icon"></i>
+        </div>
+        <span class="pill-label">{{ tabs.name }}</span>
+        <div class="pill-indicator" *ngIf="selectedTab === tabs.name"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-md-12 px-0">
+    <div class="card mb-1">
+      <div class="card-body">
+        <form [formGroup]="creditNoteForm" novalidate>
+          <!-- Credit Note Tab Content -->
+          <div *ngIf="selectedTab === 'Credit Note'">
+            <div class="row">
+              <!-- 1. CreditNote No (VoucherNumber) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
+                    formControlName="VoucherNumber" readonly style="cursor: not-allowed;">
+                  <label for="text-input" class="input-label">Credit Note No</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <!-- <div class="d-flex align-items-center"> -->
+
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!creditNoteForm.get('ReversalVoucher')?.value">  
+                  <ng-select [items]="invoiceList" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid" placeholder=""
+                    formControlName="ReversalVoucher">
+                  </ng-select>
+                      <label for="text-input" class="input-label">Invoice No</label>
+                    </div>
+                         <button type="button" class="btn btn-info btn-sm dofi-min-w-40 dofi-max-w-40" (click)="getInvoiceData()">
+           Get 
+          </button>
+              </aside>
+
+              <!-- 2. Invoice Date (VoucherDate) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select-date"
+                  [class.filled]="!!creditNoteForm.get('VoucherDate')?.value">
+                  <div class="input-group">
+                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                      formControlName="VoucherDate" (click)="d1.toggle()" />
+                    <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                      <i-feather name="calendar" class="feather-sm"></i-feather>
+                    </button>
+                  </div>
+                  <label class="input-label">Credit Note Date</label>
+                </div>
+              </aside>
+
+              <!-- 3. Customer Name (Customer selection) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!creditNoteForm.get('PartyName')?.value">
+                  <dofi-searchable-dropdown [items]="customerList" formControlName="PartyName" placeholder=""
+                    [displayFields]="customerLookupConfig.displayFields"
+                    [displayLabels]="customerLookupConfig.displayLabels"
+                    [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName"
+                    (itemSelected)="onCustomerMasterChange($event)" readonly>
+                  </dofi-searchable-dropdown>
+                  <label class="input-label">Customer</label>
+                </div>
+              </aside>
+
+              <!-- 4. Customer Address (branch select) -->
+              
+
+
+              <aside class="col-md-3">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" formControlName="PartyAddress" placeholder="" readonly>
+    <label class="input-label">Customer Address</label>
+  </div>
+</aside>
+              <!-- 5. Ref No (DocumentNumber) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="" readonly>
+                  <label class="input-label">Ref No</label>
+                </div>
+              </aside>
+
+              <!-- 7. Job No (MasterJobSid) - ng-select showing MasterJobNumber and MBLNo -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!creditNoteForm.get('MasterJobSid')?.value">
+                  <ng-select [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid" placeholder=""
+                    formControlName="MasterJobSid" (change)="onMasterJobSelected($event)" [clearable]="true"
+                    [searchable]="true" appendTo="body" readonly>
+                    <ng-template ng-option-tmp let-item="item">
+                      <div class="d-flex flex-column">
+                        <strong>{{ item.MasterJobNumber }}</strong>
+                        <small *ngIf="item.MBLNo">MBL: {{ item.MBLNo }}</small>
+                        <small *ngIf="item.HBLNo">HBL: {{ item.HBLNo }}</small>
+                      </div>
+                    </ng-template>
+                    <ng-template ng-label-tmp let-item="item">
+                      <div>
+                        {{ item.MasterJobNumber }} <small *ngIf="item.MBLNo"></small>
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                  <label class="input-label">Job No</label>
+                </div>
+              </aside>
+
+              <!-- 15. MBL No -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="form-control custom-input-field sm" formControlName="MBLNo" placeholder=""
+                    style="background-color: white; cursor: not-allowed;" readonly>
+                  <label class="input-label">MBL No</label>
+                </div>
+              </aside>
+
+              <!-- 8. HBL No (HouseJob) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="HBLNo" placeholder="" readonly>
+                  <label class="input-label">HBL No</label>
+                </div>
+              </aside>
+
+              <!-- 9. Currency (CurrencyCode) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!creditNoteForm.get('CurrencyCode')?.value">
+                  <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" placeholder=""
+                    formControlName="CurrencyCode" (change)="recalculateAllRows()">
+                  </ng-select> -->
+                  <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode" [placeholder]="''"
+                    [displayFields]="CurrencyLookupConfig.displayFields"
+                    [displayLabels]="CurrencyLookupConfig.displayLabels"
+                    [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
+                    (itemSelected)="recalculateAllRows()" readonly>
+                  </dofi-searchable-dropdown>
+                  <label class="input-label">Currency</label>
+                </div>
+              </aside>
+
+              <!-- 10. Ex Rate (ExchangeRate) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate"
+                    (input)="recalculateAllRows()" placeholder="" readonly>
+                  <label class="input-label">Ex Rate</label>
+                </div>
+              </aside>
+
+              <!-- 11. GST No (GSTNo) -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="GST_VAT" placeholder="" readonly>
+                  <label class="input-label">GST No / VAT</label>
+                </div>
+              </aside>
+              <!-- 11. GSTType -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" readonly>
+                  <label class="input-label">GST Type</label>
+                </div>
+              </aside>
+              <!-- 12. Invoice Type -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!creditNoteForm.get('InvoiceType')?.value">
+                  <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" placeholder=""
+                    formControlName="InvoiceType" readonly>
+                  </ng-select>
+                  <label class="input-label">Invoice Type</label>
+                </div>
+              </aside>
+
+              <!-- 13. Remarks -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="Remarks" placeholder="" readonly>
+                  <label class="input-label">Remarks</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
+                    formControlName="CreditNoteReason" >
+                  <label for="text-input" class="input-label">Credit Note Reason</label>
+                </div>
+              </aside>
+
+              <!-- 6. IRN No -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="IRNNumber" placeholder="" readonly>
+                  <label class="input-label">IRN No</label>
+                </div>
+              </aside>
+
+              <!-- 14. IRN Status -->
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="IRNStatus" placeholder="" readonly>
+                  <label class="input-label">IRN Status</label>
+                </div>
+              </aside>
+
+              <!-- Status -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!creditNoteForm.get('status')?.value">
+                  <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="id"
+                    formControlName="status" readonly></ng-select>
+                  <label class="input-label">Status</label>
+                </div>
+              </aside>
+            </div>
+            <div class="col-md-12 px-0">
+              <div class="card mb-0">
+                <div class="card-body py-1">
+                  <form [formGroup]="creditNoteForm" novalidate>
+                    <div class="d-flex justify-content-end mb-1" *ngIf="!isEditMode">
+                      <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
+                        <i class="fas fa-plus me-1"></i> Add Charge
+                      </button>
+                    </div>
+
+                    <div class="table-responsive table-borderless">
+                      <table class="table table-hover table-sm mb-0 text-center">
+                        <thead class="table-header-booking">
+                          <tr class="align-middle bg-info">
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px;"></th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
+                              Charge</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">
+                              Description
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
+                              HS/SAC</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No
+                              of Unit
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex
+                              Rate</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">
+                              Amount</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">
+                              Taxable Amt
+                            </th>
+                            <!-- India GST Columns -->
+                            <ng-container *ngIf="isIndiaGST">
+                              <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                              <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
+                              <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
+                            </ng-container>
+                            <!-- VAT Column for non-India countries -->
+                            <ng-container *ngIf="isVATMode">
+                              <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
+                            </ng-container>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
+                              Local Amount
+                            </th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">
+                              Party Amount</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job
+                              No.</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
+                              House No.</th>
+                            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">
+                              Department</th>
+                          </tr>
+                          <tr class="align-middle bg-info">
+                            <!-- India GST Sub-headers -->
+                            <ng-container *ngIf="isIndiaGST">
+                              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                            </ng-container>
+                            <!-- VAT Sub-headers -->
+                            <ng-container *ngIf="isVATMode">
+                              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
+                              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
+                            </ng-container>
+                          </tr>
+                        </thead>
+                        <tbody formArrayName="voucherDetails">
+                          <ng-container *ngFor="let row of details.controls; let i = index">
+                            <tr [formGroupName]="i">
+                              <!-- Delete Button - Only show for new invoices -->
+                              <td>
+                                <button *ngIf="!isEditMode" type="button" class="btn btn-sm pt-0"
+                                  (click)="removeDetailRow(i)">
+                                  <i class="fas fa-trash text-danger"></i>
+                                </button>
+                              </td>
+                              <td>{{ i + 1 }}</td>
+
+                              <!-- Charge -->
+                              <td>
+                                <!-- <ng-select *ngIf="!isEditMode" [items]="chargeList" bindLabel="chargeCode"
+                        bindValue="ChargeMasterSid" formControlName="ChargeMasterSid"
+                        (change)="onDetailChange(i, 'ChargeMasterSid')" placeholder="" appendTo="body">
+                      </ng-select> -->
+                                <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid"
+                                  [placeholder]="''" [displayFields]="chargeLookupConfig.displayFields"
+                                  [displayLabels]="chargeLookupConfig.displayLabels"
+                                  [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'"
+                                  (itemSelected)="onDetailChange(i, 'ChargeMasterSid')" readonly>
+                                </dofi-searchable-dropdown>
+                                <!-- <span *ngIf="isEditMode">{{ getChargeCode(row.get('ChargeMasterSid')?.value) }}</span> -->
+                              </td>
+
+                              <!-- Description -->
+                              <td>
+                               
+                                <span>{{ row.get('ChargeDescription')?.value || '-' }}</span>
+                              </td>
+
+                              <!-- HSN/SAC -->
+                              <td>
+                                <!-- <ng-select *ngIf="!isEditMode" [items]="hssacList" bindValue="HSSACMasterSid"
+                        formControlName="HSSACMasterSid" placeholder="" appendTo="body">
+                        <ng-template ng-label-tmp let-item="item">
+                          {{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode || item?.SACCode ||
+                          item?.sacCode || '-' }}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item?.HSSACCode || item?.hssacCode || item?.HSNCode || item?.hsnCode ||
+                              item?.SACCode || item?.sacCode || '-' }}</strong>
+                            <small *ngIf="item?.Description || item?.description"> - {{ item?.Description ||
+                              item?.description }}</small>
+                          </div>
+                        </ng-template>
+                      </ng-select> -->
+                                <dofi-searchable-dropdown [items]="hssacList" formControlName="HSSACMasterSid"
+                                  [placeholder]="''" [displayFields]="HSSACLookupConfig.displayFields"
+                                  [displayLabels]="HSSACLookupConfig.displayLabels"
+                                  [labelFields]="HSSACLookupConfig.labelFields" [bindValue]="'HSSACMasterSid'"
+                                  appendTo="body" readonly>
+                                </dofi-searchable-dropdown>
+                                <!-- <span *ngIf="isEditMode">{{ getHSSACCode(row.get('HSSACMasterSid')?.value, i) }}</span> -->
+                              </td>
+
+                              <!-- Unit -->
+                              <td>
+                                
+                                <span>{{ getUOMCode(row.get('ChargeUOMSid')?.value) }}</span>
+                              </td>
+
+                              <!-- No of Unit -->
+                              <td>
+                                
+                                <span>{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
+                              </td>
+
+                              <!-- Dr/Cr -->
+                              <td>
+                                
+                                <span>{{ row.get('DrCr')?.value || '-' }}</span>
+                              </td>
+
+                              <!-- Currency -->
+                              <td>
+                                <!-- <ng-select *ngIf="!isEditMode" [items]="currencyList" bindLabel="currencyCode"
+                        bindValue="currencyCode" formControlName="CurrencyCode"
+                        (change)="onDetailChange(i,'CurrencyCode')" appendTo="body"></ng-select> -->
+                                <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyCode"
+                                  [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
+                                  [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                  [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
+                                  (itemSelected)="onDetailChange(i,'CurrencyCode')" readonly>
+                                </dofi-searchable-dropdown>
+                                <!-- <span *ngIf="isEditMode">{{ row.get('CurrencyCode')?.value || '-' }}</span> -->
+                              </td>
+
+                              <!-- Rate -->
+                              <td>
+                                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
+                                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')" >
+                                <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
+                              </td>
+
+                              <!-- Exchange Rate -->
+                              <td>
+                                <span>{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
+                              </td>
+
+                              <!-- Amount -->
+                              <td>
+                                <span>{{ row.get('Amount')?.value | numberFormat }}</span>
+                              </td>
+
+                              <!-- Taxable Amount -->
+                              <td>
+                                <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
+                              </td>
+
+                              <!-- India GST Columns -->
+                              <ng-container *ngIf="isIndiaGST">
+                                <!-- CGST % -->
+                                <td>
+                                  <span>{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                </td>
+                                <!-- CGST Amount -->
+                                <td>
+                                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                                </td>
+
+                                <!-- SGST % -->
+                                <td>
+                                  
+                                  <span>{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
+                                </td>
+                                <!-- SGST Amount -->
+                                <td>
+                                  <span>{{ row.get('TaxAmount2')?.value | numberFormat }}</span>
+                                </td>
+
+                                <!-- IGST % -->
+                                <td>
+                                  
+                                  <span>{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
+                                </td>
+                                <!-- IGST Amount -->
+                                <td>
+                                  <span>{{ row.get('TaxAmountIGST')?.value | numberFormat }}</span>
+                                </td>
+                              </ng-container>
+
+                              <!-- VAT Columns for non-India countries -->
+                              <ng-container *ngIf="isVATMode">
+                                <!-- VAT % -->
+                                <td>
+                                  
+                                  <span>{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                </td>
+                                <!-- VAT Amount -->
+                                <td>
+                                  <span>{{ row.get('TaxAmount1')?.value | numberFormat }}</span>
+                                </td>
+                              </ng-container>
+
+                              <!-- Local Amount -->
+                              <td>
+                                <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
+                              </td>
+                              <td>
+                                <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
+                              </td>
+
+                              <!-- MasterJobSid column -->
+                              <td style="min-width:200px;">
+                            
+                                <span>{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span>
+                              </td>
+
+                              <!-- HouseJobSid column -->
+                              <td style="min-width:200px;">
+                                
+                                <span>{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
+                                  row.get('MasterJobSid')?.value) }}</span>
+                              </td>
+                              <!-- Department Column -->
+                              <td style="min-width:200px;">
+                                <dofi-searchable-dropdown [items]="departmentList"
+                                  formControlName="DepartmentMasterSid" [placeholder]="''"
+                                  [displayFields]="departmentLookupConfig.displayFields"
+                                  [displayLabels]="departmentLookupConfig.displayLabels"
+                                  [labelFields]="departmentLookupConfig.labelFields" [bindValue]="'DepartmentMasterSid'" readonly
+                                  appendTo="body">
+                                </dofi-searchable-dropdown>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div class="row mt-1">
+                <div class="col-md-4"></div>
+                <div class="col-md-8">
+                  <div>
+                    <div class=" p-1">
+                      <table class="table table-sm table-borderless mb-0 w-100 align-middle"
+                        style="table-layout: fixed;">
+                        <tbody  class=" d-flex justify-content-end gap-4">
+                          <tr>
+                            <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
+                              <strong>Currency Amount</strong>
+                            </td>
+                            <td style="width: 5%; text-align: center;"><strong>:</strong></td>
+                            <td class="text-end" style="width: 40%; padding-left: 10px;">
+                              {{ getTotalCurrencyAmount() | number:'1.2-2' }}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
+                              <strong>Tax Amount</strong>
+                            </td>
+                            <td style="width: 5%; text-align: center;"><strong>:</strong></td>
+                            <td class="text-end" style="width: 40%; padding-left: 10px;">
+                              {{ getTotalTaxAmount() | number:'1.2-2' }}
+                            </td>
+                          </tr>
+                          <tr class="table-info">
+                            <td class="text-start" style="white-space: nowrap; width: 55%; padding-right: 5px;">
+                              <strong>Total Amount</strong>
+                            </td>
+                            <td style="width: 5%; text-align: center;"><strong>:</strong></td>
+                            <td class="text-end" style="width: 40%; padding-left: 10px;">
+                              <strong>{{ getGrandTotal() | number:'1.2-2' }}</strong>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Others Tab Content -->
+          <div *ngIf="selectedTab === 'Others'">
+            <div class="row" formGroupName="voucherOthers">
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="Footer" placeholder="">
+                  <label class="input-label">Invoice Footer</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="VoucherNote" placeholder="">
+                  <label class="input-label">Invoice Note</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="ReverseCreditNote" placeholder="">
+                  <label class="input-label">Reverse Credit Note</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="ContainerNumber" placeholder="">
+                  <label class="input-label">Container No</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select-date">
+                  <div class="input-group">
+                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                      formControlName="DueDate" (click)="d2.toggle()" container="body" />
+                    <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                      <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                  </div>
+                  <label class="input-label">Due Date</label>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Section with Table -->
+
+
+  <!-- Print Modal Template -->
+  <ng-template #printModal let-modal>
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-cente">
+      <h5 class="modal-title">Credit Note</h5>
+      <div class="d-flex gap-1 align-items-center">
+
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+          <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="openEmailModal(); modal.dismiss()">
+          <i class="fas fa-envelope me-1"></i> Send Email
+        </button>
+
+
+        <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="printContent">
+        <!-- Invoice Print Template -->
+        <div class="print-a4">
+          <div class="row">
+            <div class="company-header">
+              <div class="company-logo">
+                <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                  class="img-fluid">
+                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              </div>
+
+              <div class="company-info ">
+                <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                <p class="mb-1">
+                  {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                </p>
+                <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="text-center">
+            <h5 class="fw-bold my-1">TAX INVOICE</h5>
+            <p style="font-size: 12px;">
+              GST Code : {{currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '-'}}
+            </p>
+          </div>
+
+          <div class="row mt-2 pb-2" style="border-bottom: 1px solid black;">
+            <div class="col-md-6">
+              <strong>BILLED TO</strong><br />
+              <span>{{ getCustomerName(creditNoteForm.get('CustomerMasterSid')?.value) }}</span><br />
+              {{creditNoteForm.get('PartyAddress')?.value || '-'}} <br>
+              <span class="fw-semibold">
+                PAN :
+              </span> {{currentCompany?.Pan || currentCompany?.PAN || '-'}}
+            </div>
+            <div class="col-md-6 ">
+              <div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>Invoice No</strong></div>
+                  <div>: {{creditNoteForm.get('VoucherNumber')?.value || '-'}}</div>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>Invoice Date</strong></div>
+                  <div>: {{ (creditNoteData?.VoucherDate | formatDate )|| '-' }}</div>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>GST No</strong></div>
+                  <div>: {{creditNoteForm.get('GST_VAT')?.value || '-'}}</div>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 180px;"><strong>IRN No</strong></div>
+                  <div>: {{creditNoteForm.get('IRNNumber')?.value || '-'}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-1">
+            <div class="col-md-6">
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Shipper</strong></div>
+                <div>: {{ creditNoteData?.houseJob?.ShipperName }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Consignee / Notify</strong></div>
+                <div>: {{ creditNoteData?.houseJob?.ConsigneeName }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Vessel </strong></div>
+                <div>: {{ creditNoteData.houseJob?.VesselName }} </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Voyage / Flight No.</strong></div>
+                <div>: {{ creditNoteData.houseJob?.VoyageNo }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Loading Port</strong></div>
+                <div>: {{ creditNoteData?.masterJob?.POL }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Place of Supply</strong></div>
+                <div>: {{ creditNoteData?.masterJob?.POD }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Final Destination</strong></div>
+                <div>: {{ creditNoteData.masterJob?.FPD }}</div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>Vessel / Flight Date</strong></div>
+                <div>: 25/JUL/2025</div>
+            </div> -->
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>ETD</strong></div>
+                <div>: {{ creditNoteData?.houseJob?.ETD | formatDate }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>ETA</strong></div>
+                <div>: {{ creditNoteData?.houseJob?.ETA | formatDate }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>S Bill No</strong></div>
+                <div>: </div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Shipper Reference No</strong></div>
+                <div>: </div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>Forwarder B/L No</strong></div>
+                <div>: </div>
+            </div> -->
+            </div>
+
+            <div class="col-md-6">
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>HBL / HAWB</strong></div>
+                <div>: {{ creditNoteData?.houseJob?.HBLNo }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>MBL / MAWB</strong></div>
+                <div>: {{ creditNoteData?.masterJob?.MBLNo }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Job Number</strong></div>
+                <div>: {{ creditNoteData?.masterJob?.MBLNo }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Freight</strong></div>
+                <div>: {{ creditNoteData.masterJob?.FreightPPCC }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Pkgs / Wt / Vol</strong></div>
+                <div>: {{ creditNoteData.masterJob?.NoOfPkg }} / {{
+                  creditNoteData.masterJob?.GrossWeight }} / {{
+                  creditNoteData.masterJob?.Volume }}</div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>Exp Inv No</strong></div>
+                <div>: </div>
+            </div> -->
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Invoice Due Date</strong></div>
+                <div>: {{creditNoteForm.get('DueDate')?.value }}</div>
+              </div>
+              <!-- <div class="d-flex">
+                <div style="width: 180px;"><strong>BOE Reference</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex">
+                <div style="width: 180px;"><strong>IGM Number</strong></div>
+                <div>: /</div>
+            </div>
+            <div class="d-flex">
+                <div style="width: 180px;"><strong>Item Number</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex">
+                <div style="width: 180px;"><strong>Sub Item Number</strong></div>
+                <div>: </div>
+            </div> -->
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Currency / Ex-Rate</strong></div>
+                <div>: {{creditNoteData?.VoucherDetail?.[0]?.CurrencyCode }} / {{creditNoteData?.ExchangeRate }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Sales Person</strong></div>
+                <div>: Vimal</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>Carrier Name</strong></div>
+                <div>: {{ creditNoteData.houseJob?.CarrierName }}</div>
+              </div>
+              <div class="d-flex">
+                <div style="width: 180px;"><strong>CFS Name</strong></div>
+                <div>: {{ creditNoteData?.VoucherDetail?.[0]?.masterJob?.others?.[0]?.CFS }} </div>
+              </div>
+            </div>
+          </div>
+
+          <div class=" table-responsive ">
+            <table class="table tablebordered table-sm align-middle my-1">
+              <thead>
+                <tr>
+                  <th>Particulars</th>
+                  <th>HSN/SAC</th>
+                  <th>Curr</th>
+                  <th>No of Unit</th>
+                  <th>Rate</th>
+                  <th>ROE</th>
+                  <th>Taxable Value</th>
+                  <ng-container *ngIf="isIndiaGST">
+                    <th>CGST %</th>
+                    <th>CGST Amt</th>
+                    <th>SGST %</th>
+                    <th>SGST Amt</th>
+                    <th>IGST %</th>
+                    <th>IGST Amt</th>
+                  </ng-container>
+                  <ng-container *ngIf="isVATMode">
+                    <th>VAT %</th>
+                    <th>VAT Amt</th>
+                  </ng-container>
+                  <th>Total ({{creditNoteForm.get('CurrencyCode')?.value}})</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let detail of details.controls; let i = index">
+                  <td>{{detail.get('ChargeDescription')?.value}}</td>
+                  <td>{{getHSSACCode(detail.get('HSSACMasterSid')?.value, i)}}</td>
+                  <td>{{detail.get('CurrencyCode')?.value}}</td>
+                  <td>{{detail.get('NumberOfUnit')?.value | number:'1.3-3'}}</td>
+                  <td>{{detail.get('Rate')?.value | number:'1.2-2'}}</td>
+                  <td>{{detail.get('ExchangeRate')?.value | number:'1.2-4'}}</td>
+                  <td>{{detail.get('TaxableAmount')?.value | number:'1.2-2'}}</td>
+                  <ng-container *ngIf="isIndiaGST">
+                    <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxPercentage2')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmount2')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxPercentageIGST')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmountIGST')?.value | number:'1.2-2'}}</td>
+                  </ng-container>
+                  <ng-container *ngIf="isVATMode">
+                    <td>{{detail.get('TaxPercentage1')?.value | number:'1.2-2'}}</td>
+                    <td>{{detail.get('TaxAmount1')?.value | number:'1.2-2'}}</td>
+                  </ng-container>
+                  <td>{{detail.get('LocalAmount')?.value | number:'1.2-2'}}</td>
+                  <td>{{detail.get('PartyAmount')?.value | number:'1.2-2'}}</td>
+                </tr>
+                <tr>
+                  <td [attr.colspan]="isIndiaGST ? 13 : 9" class="text-end"><strong>Total</strong></td>
+                  <td><strong>{{getGrandTotal() | number:'1.2-2'}}</strong></td>
+                  <!-- <td><strong>{{getTotalPartyAmount() | number:'1.2-2'}}</strong></td> -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex ">
+            <p class="fw-bold mb-0" style="width: 180px;">Amount In Words</p>
+            <p class="mb-0 ">: {{getAmountInWords()}}</p>
+          </div>
+
+          <div class="d-flex   mt-2">
+            <p class="fw-bold" style="width: 180px;"> Remarks</p>
+            <p style="margin-bottom: 0;">: {{creditNoteForm.get('Remarks')?.value || '-'}}</p>
+          </div>
+
+          <p style=" margin-bottom: 0;" class="mt-3" *ngIf="bankDetails">Bank Details</p>
+          <div *ngIf="bankDetails" class=" ">
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0; font-size: 12px;"><strong>Account Name</strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.BeneficiaryName}}</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong>
+                  Account No
+                </strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.BankAccountNo}}</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong>Bank Name </strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.BankName}}</div>
+            </div>
+            <!-- <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;" > <strong>
+                Swift Code
+              </strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: </div>
+            </div> -->
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong> IFSC Code</strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.IFSCCode}}</div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 180px; margin-bottom: 0;font-size: 12px;"><strong>Address</strong></div>
+              <div style="margin-bottom: 0;font-size: 12px;">: {{bankDetails.BankAddress}}</div>
+            </div>
+          </div>
+          <div class="text-end mt-4  mb-1">
+            <p class="mb-0"><strong>For {{currentCompany?.companyName || currentCompany?.CompanyName || 'Company
+                Name'}}</strong></p>
+            <p class="mb-0">Authorised Signatory</p>
+          </div>
+
+          <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+              <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+              <span>
+                This document is computer-generated and does not require a signature.
+              </span>
+              <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="modal-footer p-1">
+ 
+    <button type="button" class="btn btn-sm btn-success" (click)="downloadPDF()">
+      <i class="fas fa-download me-1"></i> Download PDF
+    </button>
+    <button type="button" class="btn btn-sm btn-primary" (click)="openEmailModal(); modal.dismiss()">
+      <i class="fas fa-envelope me-1"></i> Send Email
+    </button>
+       <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+     Close
+    </button>
+  </div> -->
+  </ng-template>
+
+  <!-- Email Modal Template -->
+  <ng-template #emailModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Send Invoice via Email</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="emailForm">
+        <div class="mb-3">
+          <label class="form-label">From <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" formControlName="from" placeholder="sender@example.com">
+          <div class="text-danger" *ngIf="emailForm.get('from')?.invalid && emailForm.get('from')?.touched">
+            Please enter a valid email address
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">To <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" formControlName="to" placeholder="recipient@example.com">
+          <div class="text-danger" *ngIf="emailForm.get('to')?.invalid && emailForm.get('to')?.touched">
+            Please enter a valid email address
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">CC</label>
+          <input type="email" class="form-control" formControlName="cc" placeholder="cc@example.com (optional)">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Subject <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="subject" placeholder="CreditNote subject">
+          <div class="text-danger" *ngIf="emailForm.get('subject')?.invalid && emailForm.get('subject')?.touched">
+            Please enter a subject
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" formControlName="message" rows="4" placeholder="Email message"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Attachment</label>
+          <div class="form-control bg-light">
+            <i class="fas fa-file-pdf text-danger me-2"></i>
+            CreditNote_{{creditNoteForm.get('VoucherNumber')?.value}}.pdf
+          </div>
+          <small class="text-muted">CreditNote will be attached as PDF</small>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="sendcreditNoteEmail()" [disabled]="emailForm.invalid">
+        <i class="fas fa-paper-plane me-1"></i> Send Email
+      </button>
+    </div>
+  </ng-template>
