@@ -1,21 +1,268 @@
+// import { Component, OnInit } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+// import { NgSelectModule } from '@ng-select/ng-select';
+// import { ActivatedRoute, Router } from '@angular/router';
+// import { SettingsService } from '../../settings.service';
+// import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+// import { NgxSpinnerService } from 'ngx-spinner';
+// import { forkJoin } from 'rxjs';
+// import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+// import { DetailsComponent } from 'src/app/component/details/details.component';
+// @Component({
+//   selector: 'app-rolemenu-entry',
+//   standalone: true,
+//   imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
+//   templateUrl: './rolemenu-entry.component.html',
+//   styleUrls: ['./rolemenu-entry.component.scss'],
+// })
+// export class RolemenuEntryComponent implements OnInit {
+//   roleMenuForm!: FormGroup;
+//   moduleList: any[] = [];
+//   menuList: any[] = [];
+//   roleList: any[] = [];
+//   menuPermissionList: any[] = [];
+//   selectedPermission: string[] = [];
+//   menuPermissionsFetched = false;
+//   isEditMode = false;
+
+//   RoleMenuMasterSid: number;
+//   roleMenuData: any;
+//   currentCompany: any;
+//   currentBranch: any;
+//   userData: any;
+//   selectedModuleMenuList: any
+//   roleMenuMasterSid: number
+//   modeOfStatus = [
+//     { value: 'A', name: "Active" },
+//     { value: 'S', name: "Suspended" },
+//   ];
+
+//   constructor(
+//     private fb: FormBuilder,
+//     private router: Router,
+//     private settingService: SettingsService,
+//     private appSettingService: AppSettingsService,
+//     private spinner: NgxSpinnerService,
+//     private modalService: NgbModal,
+//     private route: ActivatedRoute
+//   ) { }
+
+//   ngOnInit(): void {
+//     this.initRoleMenuForm();
+//     this.loadDropdownData();
+
+//     // decrypt company and branch
+//     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+//     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+//     const userProfile = this.appSettingService.getDecryptedUserProfile();
+//     if (userProfile) this.userData = userProfile;
+
+
+//     this.route.paramMap.subscribe((params) => {
+//       const id = params.get('id');
+//       console.log(id)
+//       if (id) {
+//         this.isEditMode = true;
+//         this.roleMenuMasterSid = Number(id)
+//         // Wait until dropdowns are ready
+//       const interval = setInterval(() => {
+//         if (this.moduleList.length > 0 && this.roleList.length > 0) {
+//           clearInterval(interval);
+//           this.loadRoleMenuData();
+//         }
+//       }, 200);
+//       }})
+//     }
+
+//   initRoleMenuForm() {
+//     this.roleMenuForm = this.fb.group({
+//       Module: [, [Validators.required]],
+//       MenuMasterSid: [, [Validators.required]],
+//       RoleMasterSid: [, [Validators.required]],
+//       DisplayName: [''],
+//       Remarks: [''],
+//       status: ['Active'],
+//       InsertRole: [false],
+//       ViewRole: [false],
+//       UpdateRole: [false],
+//       DeleteRole: [false]
+//     });
+//   }
+
+//   loadDropdownData() {
+//     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+//     forkJoin({
+//       modules: this.settingService.getAllModule(),
+//       roles: this.settingService.getAllRole(CompanyMasterSid)
+//     }).subscribe(({ modules, roles }) => {
+//       this.moduleList = modules.data;
+//       this.roleList = roles.data;
+//     });
+//   }
+
+//   clearMenuPermissions() {
+//     this.menuPermissionsFetched = false;
+//     this.roleMenuForm.get('MenuPermissions').reset({});
+//     this.menuPermissionList = [];
+//     this.selectedPermission = [];
+//   }
+
+
+//   filterMenuByModule(selectedModule: any) {
+//     if (!selectedModule) {
+//       this.menuList = [];
+//       this.selectedPermission = [];
+//       return;
+//     }
+
+//     this.settingService.getMenuByModuleId(selectedModule.ModuleMasterSid).subscribe(
+//       (resp: any) => this.menuList = resp || [],
+//       (err) => console.error('Error loading menus', err)
+//     );
+//   }
+
+
+
+//   onSubmit() {
+//     if (this.roleMenuForm.invalid) {
+//       this.appSettingService.showWarning('Please fill all required fields');
+//       this.roleMenuForm.markAllAsTouched();
+//       return;
+//     }
+
+//     const formValue = this.roleMenuForm.value;
+//     const currentUserEmail = this.userData?.UserEmail || this.appSettingService.userSettingSource.value['userEmail'];
+
+//     const payload = {
+//       ...formValue,
+//       status: formValue.status === 'Active' ? 'A' : 'S',
+//       InsertRole: formValue.InsertRole === true ? 'Y' : 'N',
+//       ViewRole: formValue.ViewRole === true ? 'Y' : 'N',
+//       UpdateRole: formValue.UpdateRole === true ? 'Y' : 'N',
+//       DeleteRole: formValue.DeleteRole === true ? 'Y' : 'N',
+//       ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
+//     };
+
+//     console.log(payload, 'payload')
+
+//     if (this.isEditMode) {
+//       this.settingService.updateRoleMenuById(this.RoleMenuMasterSid, payload).subscribe(
+//         (resp: any) => {
+//           if (resp.status) {
+//             this.appSettingService.showSuccess(resp.message);
+//             this.router.navigate(['/settings/rolemenu']);
+//           } else this.appSettingService.showError(resp.message);
+//         },
+//         (error) => console.error('Update failed', error)
+//       );
+//     } else {
+//       this.settingService.createNewRoleMenu(payload).subscribe(
+//         (resp: any) => {
+//           if (resp.status) {
+//             this.appSettingService.showSuccess(resp.message);
+//             this.router.navigate(['/settings/rolemenu']);
+//           } else this.appSettingService.showError(resp.message);
+//         },
+//         (error) => console.error('Create failed', error)
+//       );
+//     }
+//   }
+// loadRoleMenuData() {
+//   this.settingService.getRoleMenuById(this.roleMenuMasterSid).subscribe({
+//     next: (resp) => {
+//       this.roleMenuData = resp.data;
+//       console.log(this.roleMenuData, 'this.roleMenuData');
+
+//       // ✅ Filter menu and permissions
+// const selectedModule = this.moduleList.find(
+//   item => item.ModuleName === this.roleMenuData.Module
+// );
+
+// if (selectedModule) {
+//   this.filterMenuByModule(selectedModule);
+// }      
+//       this.roleMenuForm.patchValue({
+//         Module: this.roleMenuData.Module,
+//         MenuMasterSid: this.roleMenuData.MenuMasterSid,
+//         RoleMasterSid: this.roleMenuData.RoleMasterSid,
+//         DisplayName: this.roleMenuData.DisplayName,
+//         Remarks: this.roleMenuData.Remarks,
+//         status: this.roleMenuData.status === 'A' ? 'Active' : 'Suspended',
+//         InsertRole: this.roleMenuData.InsertRole === 'Y',
+//         ViewRole: this.roleMenuData.ViewRole === 'Y',
+//         UpdateRole: this.roleMenuData.UpdateRole === 'Y',
+//         DeleteRole: this.roleMenuData.DeleteRole === 'Y',
+//       });
+
+//     },
+//     error: (err) => {
+//       console.error('Failed to load role menu data:', err);
+//     },
+//   });
+// }
+
+
+//   resetForm(): void {
+//     // If editing an existing role menu, reload the form data without reopening modal
+//     if (this.isEditMode && this.RoleMenuMasterSid && this.roleMenuData) {
+//       this.loadRoleMenuData();
+//       return;
+//     }
+
+//     // Create-mode: reset form to sensible defaults
+//     this.roleMenuForm.reset({
+//       Module: null,
+//       MenuMasterSid: null,
+//       RoleMasterSid: null,
+//       Remarks: '',
+//       MenuPermissions: {},
+//       status: 'Active',
+//       InsertRole: true,
+//       ViewRole: true,
+//       UpdateRole: true,
+//       DeleteRole: false
+//     });
+
+//     // Clear related data
+//     this.menuList = [];
+//     this.selectedPermission = [];
+//     this.menuPermissionList = [];
+//     this.menuPermissionsFetched = false;
+
+//     // Clear form validation states
+//     this.roleMenuForm.markAsUntouched();
+//     this.roleMenuForm.updateValueAndValidity();
+//   }
+
+//   showInfo() {
+//     if (!this.roleMenuData) return;
+//     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+//     modalRef.componentInstance.item = this.roleMenuData;
+//     modalRef.componentInstance.idLabel = 'Role Menu Id';
+//     modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+//   }
+//   navigateBack() {
+//     this.router.navigate(['/settings/rolemenu']);
+//   }
+// }
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { SettingsService } from '../../settings.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
-import { debounceTime, forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
-import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+
 @Component({
   selector: 'app-rolemenu-entry',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, TextWithNumbersDirective, TogglerComponent, MultiSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './rolemenu-entry.component.html',
   styleUrls: ['./rolemenu-entry.component.scss'],
 })
@@ -24,21 +271,17 @@ export class RolemenuEntryComponent implements OnInit {
   moduleList: any[] = [];
   menuList: any[] = [];
   roleList: any[] = [];
-  menuPermissionList: any[] = [];
-  selectedPermission: string[] = [];
-  menuPermissionsFetched = false;
+  dynamicMenuList: any[] = [];
   isEditMode = false;
 
-  RoleMenuMasterSid: number;
+  roleMenuHeaderSid!: number;
   roleMenuData: any;
   currentCompany: any;
-  currentBranch: any;
   userData: any;
-  selectedModuleMenuList: any
-  roleMenuMasterSid: number
+
   modeOfStatus = [
-    { value: 'A', name: "Active" },
-    { value: 'S', name: "Suspended" },
+    { value: 'A', name: 'Active' },
+    { value: 'S', name: 'Suspended' },
   ];
 
   constructor(
@@ -52,135 +295,146 @@ export class RolemenuEntryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.initRoleMenuForm();
+    this.initForm();
     this.loadDropdownData();
 
-    // decrypt company and branch
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;
 
-    // if editing (detect route param)
-    // const existingData = history.state?.data;
-    // if (existingData) {
-    //   this.isEditMode = true;
-    //   this.roleMenuData = existingData;
-    //  this.loadRoleMenuData(existingData);
-    // }
-
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
-      console.log(id)
       if (id) {
         this.isEditMode = true;
-        this.roleMenuMasterSid = Number(id)
-        // Wait until dropdowns are ready
-      const interval = setInterval(() => {
-        if (this.moduleList.length > 0 && this.roleList.length > 0) {
-          clearInterval(interval);
-          this.loadRoleMenuData();
-        }
-      }, 200);
-      }})
-    }
+        this.roleMenuHeaderSid = Number(id);
+        const interval = setInterval(() => {
+          if (this.moduleList.length && this.roleList.length) {
+            clearInterval(interval);
+            this.loadRoleMenuData();
+          }
+        }, 200);
+      }
+    });
+  }
 
-  initRoleMenuForm() {
+  initForm() {
     this.roleMenuForm = this.fb.group({
-      Module: [, [Validators.required]],
-      MenuMasterSid: [, [Validators.required]],
-      RoleMasterSid: [, [Validators.required]],
-      DisplayName: [''],
+      RoleMasterSid: [null, Validators.required],
+      Modules: [[], Validators.required],
       Remarks: [''],
-      MenuPermissions: [{}],
-      status: ['Active'],
-      InsertRole: [false],
-      ViewRole: [false],
-      UpdateRole: [false],
-      DeleteRole: [false]
+      status: ['A'],
     });
   }
 
   loadDropdownData() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const companySid = this.currentCompany?.CompanyMasterSid;
     forkJoin({
       modules: this.settingService.getAllModule(),
-      roles: this.settingService.getAllRole(CompanyMasterSid)
+      roles: this.settingService.getAllRole(companySid),
     }).subscribe(({ modules, roles }) => {
       this.moduleList = modules.data;
       this.roleList = roles.data;
     });
   }
 
-  clearMenuPermissions() {
-    this.menuPermissionsFetched = false;
-    this.roleMenuForm.get('MenuPermissions').reset({});
-    this.menuPermissionList = [];
-    this.selectedPermission = [];
-  }
-
-  onCheckboxKeydown(event: KeyboardEvent, permissionName: string) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.handlePermission(permissionName, { target: { checked: !this.selectedPermission.includes(permissionName) } } as any);
-    }
-
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      event.preventDefault();
-      const checkboxes = document.querySelectorAll<HTMLInputElement>('.form-check-input');
-      const currentIndex = Array.from(checkboxes).findIndex(cb => cb === event.target);
-
-      if (currentIndex >= 0) {
-        let nextIndex = currentIndex;
-
-        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-          nextIndex = Math.min(currentIndex + 1, checkboxes.length - 1);
-        } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-          nextIndex = Math.max(currentIndex - 1, 0);
-        }
-
-        checkboxes[nextIndex]?.focus();
+    // Called on multi-select module change
+    onModuleChange(selectedModules: any[]) {
+      if (!selectedModules?.length) {
+        this.dynamicMenuList = [];
+        return;
       }
+
+      this.dynamicMenuList = []; // reset
+
+      selectedModules.forEach((module) => {
+        this.settingService.getMenuByModuleId(module.ModuleMasterSid).subscribe({
+          next: (res: any) => {
+            const menus = res.map((m: any) => ({
+              ...m,
+              DisplayName: m.MenuName,
+              InsertRole: false,
+              UpdateRole: false,
+              ViewRole: false,
+              DeleteRole: false,
+              ModuleName: module.ModuleName,
+            }));
+            this.dynamicMenuList.push(...menus);
+          },
+        });
+      });
     }
-  }
-  filterMenuByModule(selectedModule: any) {
-    if (!selectedModule) {
-      this.menuList = [];
-      this.selectedPermission = [];
-      return;
+
+    // ✅ Load data for Edit Mode
+    loadRoleMenuData() {
+      this.settingService.getRoleMenuById(this.roleMenuHeaderSid).subscribe({
+        next: (resp) => {
+          this.roleMenuData = resp.data;
+
+          // Extract modules from existing RoleMenuDetail
+          const existingModules = [
+            ...new Set(
+              this.roleMenuData.RoleMenuDetail.flatMap((d: any) =>
+                Object.keys(d.ModuleAndMenus)
+              )
+            ),
+          ];
+
+          const selectedModules = this.moduleList.filter((m) =>
+            existingModules.includes(m.ModuleName)
+          );
+
+          this.roleMenuForm.patchValue({
+            RoleMasterSid: this.roleMenuData.RoleMasterSid,
+            Modules: selectedModules,
+            Remarks: this.roleMenuData.Remarks,
+            status: this.roleMenuData.status === 'A' ? 'A' : 'S',
+          });
+
+          // Build table rows
+          this.dynamicMenuList = this.roleMenuData.RoleMenuDetail.map((d: any) => {
+            const moduleName = Object.keys(d.ModuleAndMenus)[0];
+            const menuName = d.ModuleAndMenus[moduleName][0];
+            return {
+              MenuMasterSid: d.MenuMasterSid,
+              DisplayName: d.DisplayName,
+              MenuName: menuName,
+              ModuleName: moduleName,
+              InsertRole: d.InsertRole === 'Y',
+              UpdateRole: d.UpdateRole === 'Y',
+              ViewRole: d.ViewRole === 'Y',
+              DeleteRole: d.DeleteRole === 'Y',
+            };
+          });
+        },
+        error: (err) => console.error('Failed to load role menu data:', err),
+      });
     }
 
-    this.settingService.getMenuByModuleId(selectedModule.ModuleMasterSid).subscribe(
-      (resp: any) => this.menuList = resp || [],
-      (err) => console.error('Error loading menus', err)
-    );
-  }
+  // ✅ Prepare payload for Create / Update
+  preparePayload(isUpdate: boolean) {
+    const formValue = this.roleMenuForm.value;
+    const userEmail =
+      this.userData?.UserEmail ||
+      this.appSettingService.userSettingSource.value['userEmail'];
 
-
-  // getMenuPermissions(MenuMasterSid) {
-  //   this.settingService.getMenuPermissions(MenuMasterSid).subscribe(
-  //     (resp: any) => {
-  //       this.menuPermissionList = resp || [];
-  //       this.menuPermissionsFetched = this.menuPermissionList.length > 0;
-  //     },
-  //     (err) => console.error('Error loading permissions', err)
-  //   );
-  // }
-
-  handlePermission(permissionName: string, event: any) {
-    const checked = event.target.checked;
-    if (checked) this.selectedPermission.push(permissionName);
-    else this.selectedPermission = this.selectedPermission.filter(p => p !== permissionName);
-    this.updatePermissionControl();
-  }
-
-  updatePermissionControl() {
-    const permissions: any = {};
-    this.menuPermissionList.forEach((p) => {
-      permissions[p.permissionName] = this.selectedPermission.includes(p.permissionName)
-        ? 'isTrue' : 'isFalse';
-    });
-    this.roleMenuForm.get('MenuPermissions')?.setValue(permissions, { emitEvent: false });
+    return {
+      RoleMasterSid: formValue.RoleMasterSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      Remarks: formValue.Remarks,
+      status: formValue.status,
+      [isUpdate ? 'updatedBy' : 'createdBy']: userEmail,
+      details: this.dynamicMenuList.map((menu) => ({
+        MenuMasterSid: menu.MenuMasterSid,
+        DisplayName: menu.DisplayName,
+        ModuleAndMenus: {
+          [menu.ModuleName]: [menu.MenuName],
+        },
+        InsertRole: menu.InsertRole ? 'Y' : 'N',
+        UpdateRole: menu.UpdateRole ? 'Y' : 'N',
+        ViewRole: menu.ViewRole ? 'Y' : 'N',
+        DeleteRole: menu.DeleteRole ? 'Y' : 'N',
+      })),
+    };
   }
 
   onSubmit() {
@@ -190,131 +444,67 @@ export class RolemenuEntryComponent implements OnInit {
       return;
     }
 
-    this.updatePermissionControl();
-    const formValue = this.roleMenuForm.value;
-    const currentUserEmail = this.userData?.UserEmail || this.appSettingService.userSettingSource.value['userEmail'];
+    const payload = this.preparePayload(this.isEditMode);
 
-    const payload = {
-      ...formValue,
-      status: formValue.status === 'Active' ? 'A' : 'S',
-      InsertRole: formValue.InsertRole === true ? 'Y' : 'N',
-      ViewRole: formValue.ViewRole === true ? 'Y' : 'N',
-      UpdateRole: formValue.UpdateRole === true ? 'Y' : 'N',
-      DeleteRole: formValue.DeleteRole === true ? 'Y' : 'N',
-      ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
-    };
-
-    console.log(payload, 'payload')
+    console.log('Final Payload:', payload);
 
     if (this.isEditMode) {
-      this.settingService.updateRoleMenuById(this.RoleMenuMasterSid, payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
+      this.settingService
+        .updateRoleMenuById(this.roleMenuHeaderSid, payload)
+        .subscribe({
+          next: (resp: any) => {
             this.appSettingService.showSuccess(resp.message);
             this.router.navigate(['/settings/rolemenu']);
-          } else this.appSettingService.showError(resp.message);
-        },
-        (error) => console.error('Update failed', error)
-      );
+          },
+          error: (err) => {
+            console.error('Update failed', err);
+            this.appSettingService.showError('Failed to update role menu');
+          },
+        });
     } else {
-      this.settingService.createNewRoleMenu(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['/settings/rolemenu']);
-          } else this.appSettingService.showError(resp.message);
+      this.settingService.createNewRoleMenu(payload).subscribe({
+        next: (resp: any) => {
+          this.appSettingService.showSuccess(resp.message);
+          this.router.navigate(['/settings/rolemenu']);
         },
-        (error) => console.error('Create failed', error)
-      );
-    }
-  }
-loadRoleMenuData() {
-  this.settingService.getRoleMenuById(this.roleMenuMasterSid).subscribe({
-    next: (resp) => {
-      this.roleMenuData = resp.data;
-      console.log(this.roleMenuData, 'this.roleMenuData');
-
-      // ✅ Filter menu and permissions
-const selectedModule = this.moduleList.find(
-  item => item.ModuleName === this.roleMenuData.Module
-);
-
-if (selectedModule) {
-  this.filterMenuByModule(selectedModule);
-}      // this.getMenuPermissions(this.roleMenuData.MenuMasterSid);
-
-      // ✅ Handle permissions (parse JSON if needed)
-      // let permissions = this.roleMenuData.MenuPermissions;
-      // if (typeof permissions === 'string') {
-      //   try { permissions = JSON.parse(permissions); } catch { permissions = {}; }
-      // }
-
-      // ✅ Patch form values AFTER data arrives
-      this.roleMenuForm.patchValue({
-        Module: this.roleMenuData.Module,
-        MenuMasterSid: this.roleMenuData.MenuMasterSid,
-        RoleMasterSid: this.roleMenuData.RoleMasterSid,
-        DisplayName: this.roleMenuData.DisplayName,
-        Remarks: this.roleMenuData.Remarks,
-        status: this.roleMenuData.status === 'A' ? 'Active' : 'Suspended',
-        InsertRole: this.roleMenuData.InsertRole === 'Y',
-        ViewRole: this.roleMenuData.ViewRole === 'Y',
-        UpdateRole: this.roleMenuData.UpdateRole === 'Y',
-        DeleteRole: this.roleMenuData.DeleteRole === 'Y',
+        error: (err) => {
+          console.error('Create failed', err);
+          this.appSettingService.showError('Failed to create role menu');
+        },
       });
-
-      // ✅ Handle custom permission checkboxes
-      // this.selectedPermission = Object.entries(permissions || {})
-      //   .filter(([k, v]) => v === 'isTrue')
-      //   .map(([k]) => k);
-    },
-    error: (err) => {
-      console.error('Failed to load role menu data:', err);
-    },
-  });
-}
-
-
-  resetForm(): void {
-    // If editing an existing role menu, reload the form data without reopening modal
-    if (this.isEditMode && this.RoleMenuMasterSid && this.roleMenuData) {
-      this.loadRoleMenuData();
-      return;
     }
-
-    // Create-mode: reset form to sensible defaults
-    this.roleMenuForm.reset({
-      Module: null,
-      MenuMasterSid: null,
-      RoleMasterSid: null,
-      Remarks: '',
-      MenuPermissions: {},
-      status: 'Active',
-      InsertRole: true,
-      ViewRole: true,
-      UpdateRole: true,
-      DeleteRole: false
-    });
-
-    // Clear related data
-    this.menuList = [];
-    this.selectedPermission = [];
-    this.menuPermissionList = [];
-    this.menuPermissionsFetched = false;
-
-    // Clear form validation states
-    this.roleMenuForm.markAsUntouched();
-    this.roleMenuForm.updateValueAndValidity();
   }
 
-  showInfo() {
-    if (!this.roleMenuData) return;
-    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.item = this.roleMenuData;
-    modalRef.componentInstance.idLabel = 'Role Menu Id';
-    modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
-  }
   navigateBack() {
     this.router.navigate(['/settings/rolemenu']);
   }
+
+  resetForm(): void {
+    if (this.isEditMode && this.roleMenuHeaderSid && this.roleMenuData) {
+      // 🟡 If editing → reload saved data instead of clearing
+      this.loadRoleMenuData();
+      this.appSettingService.showInfo('Form restored to saved state');
+      return;
+    }
+
+    // 🟢 If creating new → clear all values
+    this.roleMenuForm.reset({
+      RoleMasterSid: null,
+      Modules: [],
+      Remarks: '',
+      status: 'A',
+    });
+
+    // clear dynamic menu table
+    this.dynamicMenuList = [];
+
+    // clear UI validation states
+    this.roleMenuForm.markAsPristine();
+    this.roleMenuForm.markAsUntouched();
+    this.roleMenuForm.updateValueAndValidity();
+
+    this.appSettingService.showInfo('Form has been reset');
+  }
+
+  ngOnDestroy() { }
 }
