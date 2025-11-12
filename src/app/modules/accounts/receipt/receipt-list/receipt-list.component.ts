@@ -212,6 +212,8 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     if(response && response.status){
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
+        ListAmount : item.VoucherDetail[0]?.LocalAmount || 0,
+        CashOrBank : item.BankOrCash === 'C' ? 'Cash' : 'Bank',
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
@@ -316,7 +318,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         width: '200px',
       },
       {
-        key: 'LocalAmount',
+        key: 'ListAmount',
         label: 'Amount',
         sortable: true,
         filterable: true,

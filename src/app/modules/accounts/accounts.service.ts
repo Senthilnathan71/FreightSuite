@@ -202,6 +202,14 @@ export class AccountsService {
     )
   }
 
+  getAllDebtorWithCOAMapped(payload: any) {
+    return this.http.post<{ data: any }>('subledgermaster/mapped-debtors', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
   getAllCreditorWithCOAMapped(payload) {
     return this.http.post<{ data: any }>('subledgermaster/mapped-creditors', payload).pipe(
       map((resp: any) => {
@@ -214,6 +222,100 @@ export class AccountsService {
     return this.http.post<{ data: any }>('subledgermaster/mapped-charge-debtors', payload).pipe(
       map((resp: any) => {
         return resp;
+      })
+    );
+  }
+
+  getAllLedgersByItsType(payload){
+    return this.http.post<{ data: any }>('coa/ledger-type', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllCoaWithLedgerCategory(payload){
+    return this.http.post<{ data: any }>('coa/ledger-category', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getLedgerByCOAMasterSid(payload){
+    return this.http.post<{ data: any }>('subledgermaster/coa/mapped', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllCostCenters(){
+    return this.http.get<{ data: any[] }>('cost-center').pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllProfitCenters(){
+    return this.http.get<{ data: any[] }>('profit-center').pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllCharges(CompanyMasterSid: number) {
+    return this.http.post('charge', { CompanyMasterSid }).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getMasterJobByDepartment(payload:any){
+    return this.http.post('master-job/filter-by-department',payload).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getHouseJobByMasterJob(payload:any){
+    return this.http.post('house-job/fetchByMaster',payload).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createReceipt(payload: any){
+    return this.http.post('accounts/receipt',payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getReceiptById(payload){
+    return this.http.post<{ data: any }>(`accounts/receipt/fetch`,payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateReceiptById(voucherHeaderSid: number, payload: any){
+    return this.http.patch<{ data: any }>(`accounts/receipt/update/${voucherHeaderSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
       })
     );
   }

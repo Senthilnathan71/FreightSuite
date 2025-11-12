@@ -1,3 +1,4 @@
+import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
 import { Port } from "../modules/crm-mobile/Interfaces/port.interface";
 
 export enum LeadStatus {
@@ -92,3 +93,12 @@ export function getConcatenatedPorts(portName: String, portCode: String): string
   return portName ? `${portName} - ${portCode}` : '';
 }
 
+// Converts a JS Date to NgbDateStruct
+export function toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+  if (!date) return null;
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate()
+  };
+}

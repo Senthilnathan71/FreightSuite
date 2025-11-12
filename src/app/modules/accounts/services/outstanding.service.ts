@@ -16,7 +16,7 @@ import {
   providedIn: 'root',
 })
 export class OutstandingService {
-  private readonly baseUrl = '/api/accounts/outstanding';
+  private readonly baseUrl = 'accounts/outstanding';
 
   constructor(private http: HttpClient) {}
 

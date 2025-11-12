@@ -1,67 +1,90 @@
 <ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' : 'Create Receipt') }}</h5>
+                <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Receipt' : (isEditMode ? 'Edit Receipt' :
+                    'Create Receipt') }}</h5>
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
-                        <i class="fas fa-history me-1"></i>Logs
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                            (click)="openAuditLogs(auditLogModal)">
+                            <i class="fas fa-history me-1"></i>Logs
+                        </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-
+    
                 </div>
             </div>
-            <div>
-                <button type="button" class="btn btn-primary btn-sm" (click)="openSearchModal()" [disabled]="receiptForm.get('LedgerMasterSid')?.value">
-                        <i class="fas fa-search me-2"></i>Search for OS
-                    </button>
+            <div class="d-flex gap-2 mb-2">
+                <div class="col-md-2">
+                    <ng-select 
+                        [items]="searchTypes" 
+                        [(ngModel)]="searchType" 
+                        clearabl="false" 
+                        bindLabel="label" 
+                        bindValue="value"
+                    >
+                    </ng-select>
                 </div>
-        </div>   
+    
+                <ng-container *ngIf="searchType === 'Party'; else textInput">
+                    <div class="col-md-3">
+                        <ng-select 
+                            [items]="partyList" 
+                            [(ngModel)]="selectedParty" 
+                            bindLabel="CustomerName" 
+                            bindValue="LedgerMasterSid"
+                            placeholder="Select Party"
+                            (change)="searchOutstanding($event)"
+                        >
+                        </ng-select>
+                    </div>
+                </ng-container>
+                <ng-template #textInput>
+                    <div class="col-md-3">
+                        <input type="text" [(ngModel)]="filterText" class="form-control" placeholder="Enter keyword" />
+                    </div>
+                </ng-template>
+    
+                <button class="btn btn-info" (click)="searchOutstanding()">Search</button>
+            </div>
+        </div>
     </div>
 
     <div class="col-md-12">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row" [formGroup]="receiptForm">
-                    <!-- <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="ModeofSearch" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Search Type <span class="text-danger"></span></label>
-                        </div>
-                    </aside> -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="VoucherNumber">
                             <label for="text-input" class="input-label">Receipt No <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select" [class.filled]="!!receiptForm.get('VoucherDate')?.value">
+                        <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="VoucherDate" (click)="d1.toggle()" />
+                                    #d1="ngbDatepicker" formControlName="VoucherDate"
+                                    [maxDate]="todayDateInNgbStruct" (click)="d1.toggle()" (keydown.arrowDown)="d1.open()"
+                                    readonly />
                                 <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -73,8 +96,9 @@
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="MultiLocation">
-                                <label for="" class="form-check-label sm">Multi Location <span
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                    formControlName="MultiBranch" (keydown.enter)="toggleMultiBranch($event)" (click)="toggleMultiBranch($event)">
+                                <label for="" class="form-check-label sm">Multi Branch <span
                                         class="text-danger"></span></label>
                             </div>
                         </div>
@@ -82,28 +106,49 @@
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="CashOrBank">
-                                <label for="" class="form-check-label sm">Cash or Bank <span
-                                        class="text-danger"></span></label>
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                    formControlName="CashOrBank"
+                                (keydown.enter)="toggleCashOrBank($event)" (click)="toggleCashOrBank($event)">
+                                <!-- <label for="" class="form-check-label sm">Cash or Bank <span
+                                        class="text-danger"></span></label> -->
+                                <label class="form-check-label sm" for="paymentMode">
+                                    Mode of Payment : <b class="text-warning">
+                                        {{ receiptForm.get('CashOrBank')?.value ? 'Cash' : 'Bank' }}
+                                    </b>
+                                </label>
                             </div>
                         </div>
                     </aside>
+                    @if(receiptForm.get('CashOrBank')?.value){
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Bank <span class="text-danger">*</span></label>
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
+                                <dofi-searchable-dropdown [items]="cashTypeLedgers" formControlName="BankCOA" placeholder=""
+                                    [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
+                                    [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                >
+                                </dofi-searchable-dropdown>
+                            <label for="text-input" class="input-label">Cash <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    
+                    } @else {
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
+                                <dofi-searchable-dropdown [items]="bankTypedLedgers" formControlName="BankCOA" placeholder=""
+                                    [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
+                                    [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid">
+                                </dofi-searchable-dropdown>
+                                <label for="text-input" class="input-label">Bank<span class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                    }
+
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!receiptForm.get('CurrencyMasterSid')?.value">
-                            <dofi-searchable-dropdown 
-                                [items]="currencyList" formControlName="CurrencyMasterSid"[placeholder]="''"
-                                [displayFields]="CurrencyLookupConfig.displayFields" 
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!r['CurrencyMasterSid']?.value">
+                            <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyMasterSid"
+                                [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
                                 [displayLabels]="CurrencyLookupConfig.displayLabels"
-                                [labelFields]="CurrencyLookupConfig.labelFields" 
-                                [bindValue]="'CurrencyMasterSid'"
+                                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
                                 (itemSelected)="onCurrencyChange($event)">
                             </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">Currency <span
@@ -119,13 +164,13 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!receiptForm.get('CustomerBranchSid')?.value">
-                            <dofi-searchable-dropdown [items]="partyList" formControlName="CustomerBranchSid" placeholder=""
-                            [displayFields]="CustomerLookupConfig.displayFields" 
-                            [displayLabels]="CustomerLookupConfig.displayLabels"
-                            [labelFields]="CustomerLookupConfig.labelFields" 
-                            bindLabel="CustomerName" bindValue="CustomerBranchSid"
-                            (itemSelected)="onPartyChange($event)">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!receiptForm.get('CustomerBranchSid')?.value">
+                            <dofi-searchable-dropdown [items]="partyList" formControlName="CustomerBranchSid"
+                                placeholder="" [displayFields]="CustomerLookupConfig.displayFields"
+                                [displayLabels]="CustomerLookupConfig.displayLabels"
+                                [labelFields]="CustomerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerBranchSid" (itemSelected)="onPartyChange($event)">
                             </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
                         </div>
@@ -133,17 +178,17 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="BankPartyName">
                             <label for="text-input" class="input-label">Received From <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    
+
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="PartyAddress">
                             <label for="text-input" class="input-label">Address <span
                                     class="text-danger"></span></label>
                         </div>
@@ -151,14 +196,16 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">GST No <span class="text-danger"></span></label>
+                                formControlName="GST_VAT">
+                            <label for="text-input" class="input-label">{{(currentUserCountry === 'india' ? 'GST No.' :
+                                (currentUserCountry ? 'VAT No.' : 'GST No./VAT No.'))}}<span
+                                    class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="Narration">
                             <label for="text-input" class="input-label">Narration <span
                                     class="text-danger">*</span></label>
                         </div>
@@ -168,15 +215,20 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="Remarks">
                             <label for="text-input" class="input-label">Remarks <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['InstrumentMode']?.value">
+                            <ng-select 
+                                class="ng-select" 
+                                [items]="paymentModes" bindLabel="label" 
+                                bindValue="value"
+                                formControlName="InstrumentMode"
+                            >
+                            </ng-select>
                             <label for="text-input" class="input-label">Inst Mode <span
                                     class="text-danger">*</span></label>
                         </div>
@@ -184,17 +236,24 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="InstrumentNumber">
                             <label for="text-input" class="input-label">Inst No <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                <input 
+                                    class="form-control" placeholder="dd-mm-yyyy" name="dp" 
+                                    ngbDatepicker
+                                    #d2="ngbDatepicker" formControlName="InstrumentDate"
+                                    (click)="d2.toggle()" 
+                                    (keydown.arrowDown)="d2.open()" readonly 
+                                />
+                                <button 
+                                    class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button"
+                                >
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label class="input-label">Inst Date <span class="text-danger">*</span>
@@ -203,11 +262,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
+                        <div class=" custom-form-group custom-form-group-select filled">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    #d3="ngbDatepicker" formControlName="ClearanceDate" (click)="d3.toggle()" (keydown.arrowDown)="d3.open()" readonly/>
+                                <button class="btn  bi bi-calendar3 " (click)="d3.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label class="input-label">Clearance Date <span class="text-danger"></span>
@@ -221,440 +280,370 @@
     </div>
 
 
-    <div class="mx-0  mt-2">
 
-        <div class="col-12">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col-4 d-flex pb-2">
-                    <h5 class="page-title mb-0 text-info" >
-                        Details
-                    </h5>
+    <div class="nav-pills-container mt-1">
+        <div class="nav-pills">
+            <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                (click)="selectTab(tab.name)">
+                <div class="pill-icon">
+                    <i [class]="tab.icon"></i>
                 </div>
-                <div class="col-8 pb-2">
-                    <div
-                        class="row d-flex  align-items-center  justify-content-end gap-1  mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openDubaiModal(dubaiModal)">
-                            <i class="fas fa-plus me-1"></i> Add
-                        </button>
-                    </div>
-
-                </div>
+                <span class="pill-label">{{ tab.name }}</span>
+                <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
             </div>
         </div>
+    </div>
 
-        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm ">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+    <div class="content-workspace">
+
+        <div class="workspace-content px-0" [hidden]="selectedTab !== 'Detail'"  [formGroup]="receiptForm">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                     <thead>
-                        <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
-                            <th class="bg-transparent text-light" scope="col">Ledger Name</th>
-                            <th class="bg-transparent text-light" scope="col">Branch</th>
-                            <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
-                            <th class="bg-transparent text-light" scope="col">Currency</th>
-                            <th class="bg-transparent text-light" scope="col">Ex Rate</th>
-                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
-                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
-                            <th class="bg-transparent text-light" scope="col">Narration</th>
-                            <th class="bg-transparent text-light" scope="col">Cost Center</th>
-                            <th class="bg-transparent text-light" scope="col">Profit Center</th>
-                            <th class="bg-transparent text-light" scope="col">Charge</th>
-                            <th class="bg-transparent text-light" scope="col">Master</th>
-                            <th class="bg-transparent text-light" scope="col">House</th>
+                        <tr class="bg-info text-center">
+                            <th class="bg-transparent text-light" width="3%"></th>
+                            <th class="bg-transparent text-light">Ledger Name <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Subledger <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Curr. <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Ex. Rate <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Curr. Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Local Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Narration</th>
+                            <th class="bg-transparent text-light">Cost Center</th>
+                            <th class="bg-transparent text-light">Profit Center</th>
+                            <th class="bg-transparent text-light">Dept</th>
+                            <th class="bg-transparent text-light">Charge</th>
+                            <th class="bg-transparent text-light">Master</th>
+                            <th class="bg-transparent text-light">House</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
-                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
-                                    </a>
-                                </div>
-                            </td> -->
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+                    <tbody formArrayName="detailItems">
+                        <ng-container *ngIf="detailItems.length > 0; else noDetails">
+                            <tr *ngFor="let d of detailItems.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    @if(i === detailItems.length - 1){
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="addDetailRow()">
+                                        <i class="fas fa-plus text-info"></i>
+                                    </button>
+                                    }
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="removeDetail(i)">
+                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                    </button>
+                                </td>
+                                <td class="dofi-min-w-150">
+                                    <ng-select 
+                                        [items]="coaList" 
+                                        bindLabel="LedgerName" 
+                                        bindValue="COAMasterSid" 
+                                        formControlName="COAMasterSid" 
+                                        appendTo="body"
+                                        (change)="handleCOAChange($event,i)"
+                                    >
+                                    </ng-select>
+                                </td>
+                                <td class="dofi-min-w-150">
+                                   <ng-select 
+                                    [items]="ledgerList[i]" 
+                                    bindLabel="SubledgerName" 
+                                    bindValue="SubledgerMasterSid" 
+                                    formControlName="LedgerMasterSid"
+                                    appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-80">
+                                    <ng-select 
+                                        class="ng-select"
+                                        [items]="CrDr"
+                                        bindLabel="name"
+                                        bindValue="value"
+                                        formControlName="DrCr"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-80">
+                                    <dofi-searchable-dropdown 
+                                        [items]="currencyList" 
+                                        formControlName="CurrencyMasterSid" 
+                                        [placeholder]="''"
+                                        [displayFields]="CurrencyLookupConfig.displayFields" 
+                                        [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                        [labelFields]="CurrencyLookupConfig.labelFields" 
+                                        [bindValue]="'CurrencyMasterSid'"
+                                        (itemSelected)="onCurrencyChangeForEachRow($event,i)">
+                                    </dofi-searchable-dropdown>
+                                </td>
+                                <td class="dofi-min-w-80">
+                                    <input 
+                                        type="text" 
+                                        formControlName="ExchangeRate"
+                                        class="custom-input-field sm text-end" 
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="4"
+                                        [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <input 
+                                        type="text" 
+                                        formControlName="Amount"
+                                        class="custom-input-field sm text-end"
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="9"
+                                         [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <input 
+                                        type="text" 
+                                        formControlName="LocalAmount"
+                                        class="custom-input-field sm text-end"
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="9"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                        readonly
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <input 
+                                        type="text" 
+                                        formControlName="Narration" 
+                                        class="custom-input-field sm"
+                                        [textWithNumbers]="200"
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="costCenterList"
+                                        bindLabel="CostCenterName" 
+                                        bindValue="CostCenterMasterSid" 
+                                        formControlName="CostCenter"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="profitCenterList"
+                                        bindLabel="ProfitCenterName" 
+                                        bindValue="ProfitCenterMasterSid" 
+                                        formControlName="ProfitCenter"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="deptList"
+                                        bindLabel="departmentName" 
+                                        bindValue="DepartmentMasterSid" 
+                                        formControlName="DepartmentMasterSid"
+                                        (change)="filterDetailsWithDept($event,i)"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="filteredChargeList[i]"
+                                        bindLabel="chargeCode" 
+                                        bindValue="ChargeMasterSid" 
+                                        formControlName="ChargeMasterSid"
+                                        (change)="onChargeChange(i,$event)"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                     <ng-select 
+                                        class="ng-select"
+                                        [items]="masterJobList[i]" 
+                                        bindLabel="MasterJobNumber" bindValue="MasterJobSid" formControlName="MasterJobSid"
+                                        (change)="onMasterJobChange(i,$event)"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                 <td class="dofi-min-w-100">
+                                    <ng-select
+                                        class="ng-select"
+                                        [items]="houseJobList[i]"
+                                        bindLabel="HBLNo"
+                                        bindValue="HouseJobSid" 
+                                        formControlName="HouseJobSid"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-template #noDetails>
+                            <tr>
+                                <td>
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0"
+                                        (click)="addDetailRow()">
+                                        <i class="fas fa-plus text-info"></i>
+                                    </button>
+                                </td>
+                                <td colspan="14">
+                                    <div class="text-center">No Detail added</div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
 
 
+
+
+        </div>
+        <div class="workspace-content px-0" [formGroup]="receiptForm" [hidden]="selectedTab !== 'Voucher Matching'">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info  text-center">
+                            <th class="bg-transparent text-light">Voucher No</th>
+                            <th class="bg-transparent text-light">Voucher Type</th>
+                            <th class="bg-transparent text-light">Voucher Date</th>
+                            <th class="bg-transparent text-light"> Dr/Cr</th>
+                            <th class="bg-transparent text-light">Curr.</th>
+                            <th class="bg-transparent text-light">Ex. Rate</th>
+                            <th class="bg-transparent text-light">Curr. Amt</th>
+                            <th class="bg-transparent text-light">Local Amt</th>
+                            <th class="bg-transparent text-light">OS Curr. Amt</th>
+                            <th class="bg-transparent text-light">OS Local Amt</th>
+                            <th class="bg-transparent text-light">Curr.</th>
+                            <th class="bg-transparent text-light">Ex. Rate</th>
+                            <th class="bg-transparent text-light">Curr Amt</th>
+                            <th class="bg-transparent text-light">Local Amt</th>
+                            <th class="bg-transparent text-light">TDS Amt</th>
                         </tr>
-                        }
+                    </thead>
+                    <tbody formArrayName="voucherMatchings">
+                        <tr *ngFor="let v of voucherMatchings.controls; let i = index" [formGroupName]="i">
+                            <td>
+                                <input type="text" formControlName="voucherNo" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <input type="text" formControlName="voucherType" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <div class="custom-form-group custom-form-group-select-date mt-0">
+                                    <div class="input-group">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                            #d4="ngbDatepicker" (click)="d4.toggle()" formControlName="voucherDate"
+                                            container="body" />
+                                        <button class="btn btn-sm " type="button" (click)="d4.toggle()">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" formControlName="drCr" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <input type="text" formControlName="curr" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="exRate" class="custom-input-field sm text-end" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="currAmt" class="custom-input-field sm text-end" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="localAmt"
+                                    class="custom-input-field sm text-end" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="osCurrAmt"
+                                    class="custom-input-field sm text-end" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="osLocalAmt"
+                                    class="custom-input-field sm text-end" />
+                            </td>
+                            <td>
+                                <input type="text" formControlName="matchCurr" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="matchExRate" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="matchCurrAmt" class="custom-input-field sm" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="matchLocalAmt"
+                                    class="custom-input-field sm text-end" />
+                            </td>
+                            <td>
+                                <input type="number" formControlName="tdsAmt" class="custom-input-field sm text-end" />
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
-
-         <div class="col-12 mt-2">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col d-flex pb-2 pt-2">
-                    <h5 class="page-title mb-1 text-info" >
-                        Voucher Matching
-                    </h5>
-                </div>
-            </div>
-        </div>
-
-         <div class="col-12 p-2 bg-white py-2 rounded shadow-sm ">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+        <div class="workspace-content px-0" [formGroup]="receiptForm" [hidden]="selectedTab !== 'Interbranch'">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                     <thead>
-                       
-                        <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
-                            <th rowspan="2" class="bg-transparent text-light text-center">Qty</th>
-                            <th class="bg-transparent text-light" scope="col">Voucher No</th>
-                            <th class="bg-transparent text-light" scope="col">Voucher Type</th>
-                            <th class="bg-transparent text-light" scope="col">Voucher Date</th>
-                            <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
-                            <th class="bg-transparent text-light" scope="col">Curr</th>
-                            <th class="bg-transparent text-light" scope="col">Ex Rate</th>
-                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
-                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
-                            <th class="bg-transparent text-light" scope="col">OS Curr Amt</th>
-                            <th class="bg-transparent text-light" scope="col">OS Local Amt</th>
-                            <th class="bg-transparent text-light" scope="col">Curr</th>
-                            <th class="bg-transparent text-light" scope="col">Ex Rate</th>
-                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
-                            <th class="bg-transparent text-light" scope="col">Local Amt</th>
+                        <tr class="bg-info  text-center">
+                            <th class="bg-transparent text-light" width="3%"></th>
+                            <th class="bg-transparent text-light">Branch</th>
+                            <th class="bg-transparent text-light">Curr. Amount</th>
+                            <th class="bg-transparent text-light">Inter Branch JV</th>
+                            <th class="bg-transparent text-light">Voucher Type</th>
+                            <!-- <th class="bg-transparent text-light">Add/Del</th> -->
                         </tr>
                     </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
-                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
-                                    </a>
-                                </div>
-                            </td> -->
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+                    <tbody formArrayName="interBranches">
+                        <ng-container *ngIf="interBranches.length > 0; else nointerBranch">
+                            <tr *ngFor="let b of interBranches.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="addInterBranch()">
+                                        <i class="fas fa-plus text-info"></i>
+                                    </button>
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="removeInterBranch(i)">
+                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                    </button>
+                                </td>
+                                <td>
+                                    <input type="text" formControlName="BranchName" class="custom-input-field sm" readonly/>
+                                </td>
+                                <td>
+                                    <input type="number" formControlName="CurrAmount"
+                                        class="custom-input-field sm text-end" />
+                                </td>
+                                <td>
+                                    <input type="text" formControlName="InterBranchJV" class="custom-input-field sm" />
+                                </td>
+                                <td>
+                                    <input type="text" formControlName="VoucherType" class="custom-input-field sm" />
+                                </td>
 
-
-                        </tr>
-                        }
-                          <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td class="fw-bold">Total</td>
-                            <td>2</td>
-                            <td>2</td>
-                            <td></td>
-                            <td>2</td>
-                            <td>2</td>
-                        </tr>
+                            </tr>
+                        </ng-container>
                     </tbody>
+                    <ng-template #nointerBranch>
+                        <tr>
+                            <td>
+                                <button type="button" class="btn waves-effect waves-light text-light py-0"
+                                    (click)="addDetailRow()">
+                                    <i class="fas fa-plus text-info"></i>
+                                </button>
+                            </td>
+                            <td colspan="14">
+                                <div class="text-center">No InterBranch added</div>
+                            </td>
+                        </tr>
+                    </ng-template>
                 </table>
             </div>
+
         </div>
-
-         <div class="col-12 mt-2">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col d-flex pb-2 pt-2">
-                    <h5 class="page-title mb-1 text-info" >
-                       Inter Branch
-                    </h5>
-                </div>
-            </div>
-        </div>
-
-         <div class="col-12 p-2 bg-white py-2 rounded shadow-sm ">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
-                            <th class="bg-transparent text-light" scope="col">Branch</th>
-                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
-                            <th class="bg-transparent text-light" scope="col">Inter Branch JV</th>
-                            <th class="bg-transparent text-light" scope="col">Voucher Type</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
-                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
-                                    </a>
-                                </div>
-                            </td> -->
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                          
-                       
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
-
-
-    <ng-template #dubaiModal let-modal>
-    <div class="modal-header p-2 bg-info text-white">
-        <h5 class="modal-title">Add Details</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <div class="row">
-
-       
-          <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Ledger Name <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                        <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Branch <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Dr/Cr <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Currency <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Ex Rate <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Curr Amt <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Local Amt <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Narration <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Cost Center <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Profit Center <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Charge <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Master <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">House <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     </div>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
-        <button class="btn btn-sm btn-info">Save</button>
-    </div>
-</ng-template>
-<ng-template #searchModal let-modal>
-  <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title">Search and Select Pending Costs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeSearchModal()"></button>
-  </div>
-  <div class="modal-body">
-    <!-- Search Criteria -->
-    <div class="row g-3 mb-3">
-      <div class="col-md-3">
-        <label class="form-label">Search By</label>
-        <select class="form-select form-select-sm" [(ngModel)]="searchType">
-          <option *ngFor="let item of modalSearchType" [value]="item.name">{{item.name}}</option>
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Search Value</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="searchValue"
-          placeholder="Enter search value" />
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">&nbsp;</label>
-        <button type="button" class="btn btn-primary btn-sm w-100" >
-            Get OS
-        </button>
-      </div>
-    </div>
-  </div>
- 
-
- 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeSearchModal()">Close</button>
-    <button type="button" class="btn btn-primary">
-      <i class="fas fa-plus me-2"></i>
-      Add Selected Costs 
-    </button>
-    
-  </div>
-</ng-template>
+</div>

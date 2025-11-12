@@ -73,6 +73,11 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],
     labelFields: ['currencyCode'],
+  },
+  COA_LEDGER: {
+    displayFields: ['LedgerCode', 'LedgerName', 'SubGroupName'],
+    displayLabels: ['Code', 'Name', 'SubGroup'],
+    labelFields: ['LedgerName']
   }
 } satisfies Record<string, {
   displayFields: string[];
