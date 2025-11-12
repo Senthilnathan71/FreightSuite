@@ -59,6 +59,9 @@ export class CreditNoteEntryComponent {
   hssacList: any[] = [];
   invoiceList:any[] =[];
   subledgerList: any[] = [];
+    invoiceOutstandingAmount: number = 0;
+  selectedOutstandingInvoice: any = null;
+  showOutstandingInfo: boolean = false;
   uomList: any[] = [];
   userData: any;
   currentDate = new Date()
@@ -66,6 +69,7 @@ export class CreditNoteEntryComponent {
     houseJobListByMasterJob: { [key: number]: any[] } = {};
     customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
     chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
+    invoiceLookupConfig = DROPDOWN_CONFIGS.INVOICE;
      CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName','countryName'],
     displayLabels: ['Code', 'Name','Country'],
@@ -100,6 +104,15 @@ export class CreditNoteEntryComponent {
     { id: 'BOS', name: 'Bill of Supply' },
     { id: 'NONGST', name: 'Non GST/Zero' },
   ];
+  reason =[
+    {id: 'Service Cancelled', name: 'Service Cancelled'},  
+    {id: 'Discount', name: 'Discount'},
+    {id: 'Service Deficiency', name: 'Service Deficiency'},
+    {id: 'Correction on Invoice', name: 'Correction on Invoice'},
+    {id: 'Tax Changes', name: 'Tax Changes'},
+    {id: 'Place of Supply Change', name: 'Place of Supply Change'},
+    {id: 'Others', name: 'Others'},
+  ]
   bookingModeCountry: string = '';
   private pendingBranchToSelect: number | null = null;
 
@@ -363,47 +376,140 @@ export class CreditNoteEntryComponent {
       }
 
       getInvoiceData(invoice?: any) {
-        const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
-        if (!invoiceId) {
-          this.appSettingService.showWarning('Please select an invoice first.');
-          return;
-        }
-        this.spinner.show();
-        this.operationService.getInvoiceById(invoiceId).subscribe({
-          next: (resp: any) => {
-            this.spinner.hide();
-            if (resp?.status && resp.data) {
-              this.patchInvoiceData(resp.data);
-              this.appSettingService.showSuccess('Invoice data loaded successfully.');
-            } else {
-              this.appSettingService.showError('Error loading invoice data.');
-            }
-          },
-          error: (err) => {
-            this.spinner.hide();
-            console.error('Error fetching invoice:', err);
-            this.appSettingService.showError('Failed to load invoice data.');
-          }
-        })
+  const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
+  if (!invoiceId) {
+    this.appSettingService.showWarning('Please select an invoice first.');
+    return;
+  }
+
+  let reversalVoucherId = invoiceId;
+  let invoiceNumber = '';
+
+  // Extract invoice number and ID
+  if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
+    invoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
+    reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+  } else {
+    // If it's just an ID, try to find the invoice in the list to get the number
+    const foundInvoice = this.invoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
+    );
+    invoiceNumber = foundInvoice?.VoucherNumber || foundInvoice?.voucherNumber || '';
+  }
+
+  this.spinner.show();
+  
+  // First, get the invoice data
+  this.operationService.getInvoiceById(invoiceId).subscribe({
+    next: (resp: any) => {
+      if (resp?.status && resp.data) {
+        this.creditNoteForm.patchValue({
+          ReversalVoucher: reversalVoucherId
+        });
+        this.patchInvoiceData(resp.data);
+        
+        // Now search for outstanding amount for this invoice
+        this.searchOutstandingForInvoice(invoiceNumber, resp.data);
+        
+        this.appSettingService.showSuccess('Invoice data loaded successfully.');
+      } else {
+        this.spinner.hide();
+        this.appSettingService.showError('Error loading invoice data.');
       }
+    },
+    error: (err) => {
+      this.spinner.hide();
+      console.error('Error fetching invoice:', err);
+      this.appSettingService.showError('Failed to load invoice data.');
+    }
+  });
+}
+
+// New method to search outstanding amount for the invoice
+private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
+  if (!invoiceNumber || !this.currentCompany?.CompanyMasterSid) {
+    this.spinner.hide();
+    console.log('DEBUG - Cannot search outstanding: missing invoice number or company');
+    return;
+  }
+
+  const searchDto = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    InvoiceNumber: invoiceNumber,
+    IncludeFullyPaid: false
+  };
+
+  console.log('DEBUG - Searching outstanding for invoice:', searchDto);
+
+  this.operationService.searchOutstandingInvoices(searchDto).subscribe({
+    next: (response: any) => {
+      this.spinner.hide();
+      console.log('DEBUG - Outstanding invoices response:', response);
+      
+      // Extract the array from the response
+      const outstandingInvoices = response.data || response || [];
+      
+      // Find the specific invoice in outstanding results
+      const matchingOutstanding = outstandingInvoices.find((inv: any) => 
+        inv.VoucherNumber === invoiceNumber
+      );
+      
+      if (matchingOutstanding) {
+        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
+        
+        console.log('DEBUG - Outstanding amount found:', {
+          invoiceNumber: invoiceNumber,
+          outstandingAmount: outstandingAmount,
+          originalAmount: matchingOutstanding.OriginalAmount,
+          matchedAmount: matchingOutstanding.MatchedAmount,
+          currency: matchingOutstanding.CurrencyCode
+        });
+        
+        // Store the outstanding information
+        this.invoiceOutstandingAmount = outstandingAmount;
+        this.selectedOutstandingInvoice = matchingOutstanding;
+        this.showOutstandingInfo = true;
+        
+        // Show outstanding amount information to user
+        this.appSettingService.showInfo(
+          `Outstanding amount for invoice ${invoiceNumber}: ${outstandingAmount} ${matchingOutstanding.CurrencyCode}`
+        );
+      } else {
+        this.invoiceOutstandingAmount = 0;
+        this.showOutstandingInfo = false;
+        console.log('DEBUG - No outstanding amount found for invoice:', invoiceNumber);
+        this.appSettingService.showInfo('No outstanding amount found for this invoice.');
+      }
+    },
+    error: (error) => {
+      this.spinner.hide();
+      console.error('Error searching outstanding invoices:', error);
+      this.invoiceOutstandingAmount = 0;
+      this.showOutstandingInfo = false;
+      this.appSettingService.showWarning('Could not fetch outstanding amount, but invoice data was loaded.');
+    }
+  });
+}
 
       private patchInvoiceData(invoiceData: any) {
         const header = invoiceData;
+        const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
         this.creditNoteForm.patchValue({
+          ReversalVoucher: invoiceHeaderSid,
           CustomerMasterSid: header.CustomerMasterSid || null,
           PartyMasterSid: header.PartyMasterSid || null,
           PartyName: header.PartyName || '',
           PartyAddress: header.PartyAddress || '',
           DocumentNumber: header.DocumentNumber || '',
           MasterJobSid: header.MasterJobSid || null,
-          HBLNo: header.HouseJob || header.HBLNo || '',
+          HBLNo: header.HouseJob || header.HouseNumber || '',
           CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
           ExchangeRate: header.ExchangeRate || header.ExRate || 1,
           GST_VAT: header.GST_VAT || '',
           GSTType: header.GSTType || '',
           InvoiceType: header.InvoiceType || null,
           Remarks: header.Remarks || '',
-          MBLNo: header.MBLNo || '',
+          MBLNo: header.MasterNumber || '',
         });
         const customerMasterSid = header.CustomerMasterSid;
   if (customerMasterSid) {
@@ -870,12 +976,24 @@ private getCustomerCountryCode(customer: any): string {
   patchValues(data: any) {
     const header = data;
     const voucherTypeForControl = header?.VoucherType != null ? [String(header.VoucherType)] : null;
-
+    let reversalVoucherDisplay = header.ReversalVoucher;
+     if (reversalVoucherDisplay && typeof reversalVoucherDisplay === 'object') {
+    if (!reversalVoucherDisplay.VoucherNumber) {
+      // Try to get from related invoice data or other fields
+      reversalVoucherDisplay.VoucherNumber = header.InvoiceNumber || 
+                                           header.ReversalInvoiceNumber || 
+                                           (header.reversalVoucherDetails?.VoucherNumber) || 
+                                           '-';
+    }
+  }
+  
+  const reversalVoucherId = header.ReversalVoucher || header.reversalVoucher || null;
     const customerMasterSidFromBranch = header?.customerBranch?.CustomerMasterSid
       || header?.CustomerBranch?.CustomerMasterSid
       || null;
 
     this.creditNoteForm.patchValue({
+      ReversalVoucher: reversalVoucherDisplay,
       VoucherNumber: header.VoucherNumber,
       VoucherDate: this.toNgbDate(header.VoucherDate),
       CustomerMasterSid: header.CustomerMasterSid || customerMasterSidFromBranch || null,
@@ -1011,14 +1129,14 @@ private getCustomerCountryCode(customer: any): string {
 
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
-      ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
+      ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
       ChargeDescription: [data?.ChargeDescription || ''],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null, disabled: true}],
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
       ChargeUOMSid: [data?.ChargeUOMSid || null], // will hold the UOM id (UOMMasterSid)
       NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
       DrCr: [data?.DrCr || 'Cr', Validators.required], // Default to Cr for Invoice (revenue)
-      CurrencyCode: [data?.CurrencyCode || this.creditNoteForm.get('CurrencyCode')?.value || null],
+      CurrencyCode: [{value: data?.CurrencyCode || this.creditNoteForm.get('CurrencyCode')?.value || null, disabled: true}],
       Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
       ExchangeRate: [data?.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value || 1],
       Amount: [data?.Amount || 0],
@@ -1431,6 +1549,7 @@ private normalizeParty(raw: any) {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       VoucherNumber: raw.VoucherNumber || null,
+      ReversalVoucher: raw.ReversalVoucher || null,
       VoucherDate: voucherDate,
       PostDate: voucherDate,
       GST_VAT: raw.GST_VAT || undefined,

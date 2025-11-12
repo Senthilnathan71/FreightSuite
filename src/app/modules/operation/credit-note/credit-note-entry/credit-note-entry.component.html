@@ -9,10 +9,10 @@
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <!-- Draft Save Button -->
-          <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
+          <!-- <button type="button" class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80"
             [disabled]="creditNoteForm.invalid">
             <i class="fas fa-save me-1"></i> Draft
-          </button>
+          </button> -->
 
           <!-- Final Save Button -->
           <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -51,6 +51,14 @@
         <span class="pill-label">{{ tabs.name }}</span>
         <div class="pill-indicator" *ngIf="selectedTab === tabs.name"></div>
       </div>
+      <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
+      <div class="pill-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <span class="pill-label">
+        Outstanding: {{ invoiceOutstandingAmount | numberFormat }} {{ selectedOutstandingInvoice?.CurrencyCode }}
+      </span>
+    </div>
     </div>
   </div>
 
@@ -72,18 +80,34 @@
               </aside>
 
               <aside class="col-md-3">
-                <!-- <div class="d-flex align-items-center"> -->
+  <div class="d-flex gap-1 align-items-end">
+    <!-- Invoice Dropdown -->
+    <div class="custom-form-group custom-form-group-select flex-grow-1" 
+         [class.filled]="!!creditNoteForm.get('ReversalVoucher')?.value">  
 
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!creditNoteForm.get('ReversalVoucher')?.value">  
-                  <ng-select [items]="invoiceList" bindLabel="VoucherNumber" bindValue="VoucherHeaderSid" placeholder=""
-                    formControlName="ReversalVoucher">
-                  </ng-select>
-                      <label for="text-input" class="input-label">Invoice No</label>
-                    </div>
-                         <button type="button" class="btn btn-info btn-sm dofi-min-w-40 dofi-max-w-40" (click)="getInvoiceData()">
-           Get 
-          </button>
-              </aside>
+      <dofi-searchable-dropdown 
+  [items]="invoiceList" 
+  formControlName="ReversalVoucher"
+  [placeholder]="''"
+  [displayFields]="invoiceLookupConfig.displayFields"
+  [displayLabels]="invoiceLookupConfig.displayLabels"
+  [labelFields]="invoiceLookupConfig.labelFields"
+  [bindValue]="'VoucherHeaderSid'">
+</dofi-searchable-dropdown>
+      <label class="input-label">Invoice No</label>
+    </div>
+    
+    <!-- Get Button with proper styling and disable state -->
+    <button 
+      type="button" 
+      class="btn btn-info btn-sm" 
+      style="min-width: 50px; height: 38px;"
+      (click)="getInvoiceData()"
+      [disabled]="!creditNoteForm.get('ReversalVoucher')?.value">
+      <i class="fas fa-download"></i>
+    </button>
+  </div>
+</aside>
 
               <!-- 2. Invoice Date (VoucherDate) -->
               <aside class="col-md-3">
@@ -232,12 +256,22 @@
                 </div>
               </aside>
 
-              <aside class="col-md-3">
+              <!-- <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input type="text" id="text-input" placeholder="" class=" custom-input-field sm"
                     formControlName="CreditNoteReason" >
                   <label for="text-input" class="input-label">Credit Note Reason</label>
                 </div>
+              </aside> -->
+              <aside class="col-md-3">
+                <!-- <div class="d-flex align-items-center"> -->
+
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!creditNoteForm.get('CreditNoteReason')?.value">  
+                  <ng-select [items]="reason" bindLabel="name" bindValue="name" placeholder=""
+                    formControlName="CreditNoteReason">
+                  </ng-select>
+                      <label for="text-input" class="input-label">Credit Note Reason</label>
+                    </div>
               </aside>
 
               <!-- 6. IRN No -->
@@ -440,9 +474,7 @@
 
                               <!-- Rate -->
                               <td>
-                                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
-                                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')" >
-                                <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
+                                <span>{{ row.get('Rate')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- Exchange Rate -->
@@ -452,7 +484,9 @@
 
                               <!-- Amount -->
                               <td>
-                                <span>{{ row.get('Amount')?.value | numberFormat }}</span>
+                                <input type="number" step="0.01" class="custom-input-field sm"
+                                  formControlName="Amount">
+                                <span *ngIf="isEditMode">{{ row.get('Amount')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- Taxable Amount -->

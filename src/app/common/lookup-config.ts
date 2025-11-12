@@ -78,6 +78,11 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['LedgerCode', 'LedgerName', 'SubGroupName'],
     displayLabels: ['Code', 'Name', 'SubGroup'],
     labelFields: ['LedgerName']
+  },
+  INVOICE: {
+    displayFields: ['VoucherNumber', 'PartyName', 'VoucherDate'],
+    displayLabels: ['Invoice No', 'Customer', 'Date'],    
+    labelFields: ['VoucherNumber']
   }
 } satisfies Record<string, {
   displayFields: string[];

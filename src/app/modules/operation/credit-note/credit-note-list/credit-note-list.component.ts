@@ -51,6 +51,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   // filterValue = '';
   results: any[] = [];
   creditNoteList: any[] = [];
+  invoiceList: any[] =[];
   // searchPerformed = false;
   companyMap: { [id: number]: string } = {};
   userData: any;
@@ -138,7 +139,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   override ngOnInit() {
     this.getAllCompanies();
     this.loadJobMappings();
-
+    this.loadInvoices();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -173,6 +174,21 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     return this.permissions.includes(permission);
   }
 
+  loadInvoices() {
+    this.operationService.getAllInvoice().subscribe({
+      next: (resp: any) => {
+        this.invoiceList = resp?.data || resp || [];
+        // Now load credit notes after invoices are loaded
+        this.loadCreditNotes();
+      },
+      error: (err) => {
+        console.error('Error loading invoices', err);
+        this.invoiceList = [];
+        this.loadCreditNotes();
+      }
+    });
+  }
+
   protected searchItems(): Observable<any> {
       this.spinner.show();
       return this.operationService.searchCreditNote(this.getSearchParams());
@@ -196,7 +212,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       this.allItems = (response.data.items || []).map((item: any) => ({
         ...item,
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
-        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+        Status: item.Status === 'A' ? 'Active' : 'Suspended',
+        ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher)
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
@@ -206,6 +223,17 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       this.allItems = [];
       this.totalLengthOfCollection = 0;
     }
+  }
+
+    getInvoiceNumber(reversalVoucherId: number): string {
+    if (!reversalVoucherId) return '-';
+    
+    const invoice = this.invoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucherId || 
+      inv.voucherHeaderSid === reversalVoucherId
+    );
+    
+    return invoice ? invoice.VoucherNumber : `ID: ${reversalVoucherId}`;
   }
 
   protected override handleSearchError(error: any): void {
@@ -263,8 +291,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   private initializeTableConfig(): void {
     this.tableConfig.columns = [
       {
-        key: '',
-        label: 'Credit Note No',
+        key: 'VoucherNumber',
+        label: 'Credit Note',
         sortable: true,
         filterable: true,
         visible: true,
@@ -272,21 +300,21 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         width:"150px"
       },
       {
-        key: 'VoucherNumber',
+        key: 'ReversalVoucherDisplay',
         label: 'Invoice No',
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string',
-        width:"150px"
+        dataType: 'string',        
       },
       {
         key: 'VoucherDate',
-        label: 'Invoice Date ',
+        label: 'Date ',
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        width:"150px"
       },
       {
         key: 'PartyName',
@@ -299,7 +327,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       },
        {
         key: 'CurrencyCode',
-        label: 'Curr Code ',
+        label: 'Curr',
         sortable: true,
         filterable: true,
         visible: true,
