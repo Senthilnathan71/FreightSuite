@@ -1071,4 +1071,10 @@ updateCreditRequest(payload: any) {
       })
     );
   }
+
+  searchOutstandingInvoices(payload: any) {
+  return this.http.post<{ status: boolean; message: string;data: any[]; }>('accounts/receipt/search-outstanding', payload).pipe(
+    map((resp) => resp)
+  );
+}
 }
