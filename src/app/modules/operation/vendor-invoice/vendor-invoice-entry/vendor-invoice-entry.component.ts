@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-import { NgbModal, NgbDatepickerModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -23,6 +23,7 @@ import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -39,7 +40,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgxSpinnerModule,
     NumberFormatPipe,
     CustomDatePipe,
-    SearchableDropdown
+    SearchableDropdown,
+    NgbDropdownModule
   ],
   templateUrl: './vendor-invoice-entry.component.html',
   styleUrls: ['./vendor-invoice-entry.component.scss'],
@@ -2013,6 +2015,121 @@ getMasterJobNumber(jobSid: number): string {
   removeDetailRow(index: number) {
   if (this.details.length > index) this.details.removeAt(index);
   this.recalculateAllRows();
+}
+// Replace the existing upload button click handler or add a new method
+openVendorInvoiceUploadModal(): void {
+  try {
+    const modalRef = this.modalService.open(DocumentVendorInvoiceEntryComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      centered: true,
+      windowClass: 'vendor-invoice-upload-modal'
+    });
+
+    // Handle the processed data from the document upload component
+    modalRef.componentInstance.documentProcessed.subscribe((processedData: any) => {
+      console.log('Received processed data:', processedData);
+      this.onVendorInvoiceProcessed(processedData);
+      modalRef.close();
+    });
+
+    // Handle modal close
+    modalRef.componentInstance.documentCleared.subscribe(() => {
+      modalRef.close();
+    });
+
+    // Handle modal dismissal
+    modalRef.result.catch((reason) => {
+      console.log('Modal dismissed:', reason);
+    });
+
+  } catch (error) {
+    console.error('Error opening vendor invoice upload modal:', error);
+    this.appSettingService.showError('Failed to open upload modal');
+  }
+}
+// Add this method to handle processed vendor invoice data from document upload
+onVendorInvoiceProcessed(processedData: any): void {
+  console.log('Vendor invoice data received from document upload:', processedData);
+  
+  // Populate the main form with the processed data
+  this.populateFormFromDocument(processedData);
+  
+  // Show success message
+  // this.toastr.success('Vendor invoice data populated from document');
+}
+
+// Add this method to populate form from document data
+private populateFormFromDocument(data: any): void {
+  if (!data) return;
+
+  // Populate header fields
+  this.vendorInvoiceForm.patchValue({
+    PartyName: data.partyName || '',
+    PartyAddress: data.partyAddress || '',
+    GSTNo: data.gstNo || '',
+    PlaceOfSupply: data.placeOfSupply || '',
+    CurrencyCode: data.currencyCode || '',
+    ExchangeRate: data.exchangeRate || 1,
+    BillNo: data.documentNumber || '',
+    BillDate: data.documentDate ? new Date(data.documentDate) : null,
+    BillAmt: data.amount || 0,
+    MBLNo: data.masterNumber || '',
+    HBLNo: data.houseNumber || '',
+    MasterJobSid: data.masterJobSid || null,
+    HouseJobSid: data.houseJobSid || null,
+    Narration: data.narration || '',
+    GSTType: data.gstType || ''
+  });
+
+  // Clear existing details and populate with new ones
+  this.details.clear();
+  
+  if (data.voucherDetails && data.voucherDetails.length > 0) {
+    data.voucherDetails.forEach((detail: any, index: number) => {
+      const detailGroup = this.createDetailGroup({
+        ChargeMasterSid: this.findChargeIdByDescription(detail.chargeDescription),
+        ChargeDescription: detail.chargeDescription,
+        HSSACMasterSid: this.findHssacIdByCode(detail.sacCode),
+        NumberOfUnit: detail.numberOfUnit || 1,
+        Rate: detail.rate || 0,
+        Amount: detail.amount || 0,
+        TaxableAmount: detail.taxableAmount || 0,
+        TaxPercentage1: detail.cgstRate || 0,
+        TaxAmount1: detail.cgstAmount || 0,
+        TaxPercentage2: detail.sgstRate || 0,
+        TaxAmount2: detail.sgstAmount || 0,
+        TaxPercentageIGST: detail.igstRate || 0,
+        TaxAmountIGST: detail.igstAmount || 0,
+        LocalAmount: detail.localAmount || 0,
+        PartyAmount: detail.partyAmount || 0,
+        MasterJobSid: detail.masterJobSid,
+        HouseJobSid: detail.houseJobSid,
+        DepartmentMasterSid: detail.departmentMasterSid
+      });
+      
+      this.details.push(detailGroup);
+    });
+  }
+
+  // Recalculate all rows after population
+  this.recalculateAllRows();
+}
+
+// Helper methods to find IDs from descriptions/codes
+private findChargeIdByDescription(description: string): number | null {
+  if (!description) return null;
+  const charge = this.chargeList.find(c => 
+    c.ChargeDescription?.toLowerCase().includes(description.toLowerCase()) ||
+    c.chargeName?.toLowerCase().includes(description.toLowerCase())
+  );
+  return charge?.ChargeMasterSid || null;
+}
+
+private findHssacIdByCode(code: string): number | null {
+  if (!code) return null;
+  const hssac = this.hssacList.find(h => h.HSSACCode === code);
+  return hssac?.HSSACMasterSid || null;
 }
 
 }

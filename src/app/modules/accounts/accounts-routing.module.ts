@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CurrencyExchangeListComponent } from './currency-exchange/currency-exchange-list/currency-exchange-list.component';
 import { CurrencyExchangeEntryComponent } from './currency-exchange/currency-exchange-entry/currency-exchange-entry.component';
-import { TaxGroupListComponent } from './tax-group/tax-group-list/tax-group-list.component';
-import { TaxGroupComponent } from './tax-group/tax-group.component';
 import { ApprovalComponent } from './approval/approval/approval.component';
 import { ModalComponent } from './modal/modal/modal.component';
 import { ChartAccountListComponent } from './chart-account/chart-account-list/chart-account-list.component';
@@ -63,28 +61,8 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-      {
-        path: "tax-group/list",
-        component: TaxGroupListComponent,
-        data: {
-          title: "Tax Group",
-          urls: [
-            { title: "Accounts", url: "/accounts" },
-            { title: "Tax Group" },
-          ],
-        },
-      },
-      {
-        path: "tax-group/entry",
-        component: TaxGroupComponent,
-        data: {
-          title: "Add Tax Group",
-          urls: [
-            { title: "Accounts", url: "/accounts" },
-            { title: "Tax Group" },
-          ],
-        },
-      },
+      
+     
       {
         path: "approval",
         component: ApprovalComponent,

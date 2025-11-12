@@ -311,11 +311,31 @@
             </aside>
 
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="Network" placeholder="" class="custom-input-field sm" formControlName="Network">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="customerForm.get('Network')?.value">
+                 <dofi-searchable-dropdown  [items]="networkList" formControlName="Network" [placeholder]="''"
+                                            [displayFields]=" ['NetworkName']" [displayLabels]="['NetworkName']"
+                                            [labelFields]="['NetworkName']" [bindValue]="'NetworkName'"  appendTo="body"></dofi-searchable-dropdown>
+                                        
                 <label for="Network" class="input-label">Network</label>
               </div>
             </aside>
+            <!-- <aside class="col-md-4">
+              <div class="custom-form-groupcustom-form-group-select"
+                [class.filled]="customerForm.get('Network')?.value">
+                <ng-select
+      id="Network"
+      placeholder="Select Network"
+      formControlName="Network"
+      [items]="networkList"
+      bindLabel="NetworkName"
+      bindValue="NetworkName"
+      [clearable]="true"
+      [searchable]="true">
+    </ng-select>
+                <label for="Network" class="input-label">Network</label>
+              </div>
+            </aside> -->
 
             <aside class="col-md-4">
               <div class="custom-form-group">
