@@ -38,7 +38,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ParseFlags } from '@angular/compiler';
-import { CustomDatePipe } from "../../../../core/pipes/custom-date-format.pipe";
+
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
@@ -52,6 +52,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -81,15 +82,15 @@ import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface
     SearchableDropdown
   ],
 
-  templateUrl: './tax-group-list.component.html',
-  styleUrl: './tax-group-list.component.scss',
+  templateUrl: './tax-master.component.html',
+  
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     { provide: CustomDatePipe }
   ],
 })
-export class TaxGroupListComponent extends BaseListComponent implements OnInit {
+export class TaxMasterComponent extends BaseListComponent implements OnInit {
   @ViewChild('taxGroupTable') taxGroupTable!: ReusableTableComponent;
     @ViewChild('content') content: TemplateRef<any>;
   taxGroupForm!: FormGroup;
@@ -124,6 +125,11 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  taxGroupResults: any[] = [];
+  taxCategoryOptions = [
+    { id: 1, name: 'Inter' },
+    { id: 2, name: 'Intra' }
+  ];
 
   // Table configuration
   tableConfig: TableConfig = {
@@ -227,40 +233,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
     }
 
 
-  // loadTaxGroups(): void {
-  //   this.spinner.show();
-  //   this.loading = true;
-
-  //   const params = {
-  //     search: this.filterValue?.trim() || '',
-  //     page: this.page,
-  //     pageSize: this.pageSize,
-  //     sortColumn: this.sortColumn,
-  //     sortDirection: this.sortDirection
-  //   };
-
-  //   this.masterService.searchTaxGroup(params).subscribe({
-  //     next: (response) => {
-  //       if (response.status) {
-  //         this.taxGroupList = response.data.items;
-  //         this.totalLengthOfCollection = response.data.totalCount;
-  //         this.applySorting();
-  //         this.searchPerformed = true;
-  //         this.searched = true;
-  //       }else {
-  //       this.appSettingService.showError(response.message);
-  //     }
-  //       this.spinner.hide();
-  //       this.loading = false;
-  //     },
-  //     error: (err) => {
-  //       console.error('Error fetching tax groups:', err);
-  //       this.taxGroupList = [];
-  //       this.totalLengthOfCollection = 0;
-  //       this.loading = false;
-  //     }
-  //   });
-  // }
+  
 
   protected searchItems(): Observable<any> {
     this.spinner.show();
@@ -280,22 +253,26 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   }
 
   protected processSearchResults(response: any): void {
-    this.spinner.hide();
-    if (response.status) {
-      this.allItems = response.data.items.map(item => ({
-        ...item,
-        status: item.status === 'A' ? 'Active' : 'Suspended',
-        EffectiveFrom: this.datePipe.transform(item?.EffectiveFrom)
-      }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
-      this.updateHeaderActionState();
-    } else {
-      this.appSettingService.showError('Error fetching Tax-group.');
-      this.allItems = [];
-      this.totalLengthOfCollection = 0;
-    }
+  this.spinner.hide();
+  if (response.status) {
+    this.allItems = response.data.items.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      EffectiveFrom: this.datePipe.transform(item?.EffectiveFrom),
+      // Ensure countryName is available
+      countryName: item.countryMaster?.countryName || item.countryName || 'N/A',
+      // Ensure TaxGroupName is available
+      taxGroupName : item.taxGroup?.TaxGroup && item.taxGroup?.TaxRate ? `${item.taxGroup.TaxGroup}${item.taxGroup.TaxRate}` : ""
+    }));
+    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.applySorting();
+    this.updateHeaderActionState();
+  } else {
+    this.appSettingService.showError('Error fetching Tax-group.');
+    this.allItems = [];
+    this.totalLengthOfCollection = 0;
   }
+}
 
   protected override handleSearchError(error: any): void {
     this.spinner.hide();
@@ -382,7 +359,7 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
   private initializeTableConfig(): void {
     this.tableConfig.columns = [
        {
-        key: '',
+        key: 'taxGroupName',
         label: 'Tax Group',
         sortable: true,
         filterable: true,
@@ -422,8 +399,8 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
        {
-        key: '',
-        label: 'Category',
+        key: 'TaxCategory',
+        label: 'Type',
         sortable: true,
         filterable: true,
         visible: true,
@@ -438,32 +415,15 @@ export class TaxGroupListComponent extends BaseListComponent implements OnInit {
         dataType: 'string'
       },
       {
-        key: '',
+        key: 'countryName',
         label: 'Country',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string'
       },
-      {
-        key: 'Remarks',
-        label: 'Tax Reason',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string'
-      },
-      // {
-      //   key: 'status',
-      //   label: 'Status',
-      //   sortable: true,
-      //   filterable: true,
-      //   visible: true,
-      //   template: 'status',
-      //   width: '100px',
-      //   dataType: 'string',
-      //   cellClass: 'status-column'
-      // }
+     
+      
     ];
   }
 
@@ -475,19 +435,23 @@ onTableActionClick(event: TableEventData): void {
 }
 
 viewTax(content: any, row: any) {
-  this.TaxMasterSid = row.TaxMasterSid; // store the id if needed
+  this.TaxMasterSid = row.TaxMasterSid; 
   this.openModal(content);
-  // If you need to prefill form with row data:
+ 
   this.isEditMode = true;
   this.selectedId = row.TaxMasterSid;
+  const taxType = this.modeofTaxType.find(type => type.name === row.TaxType);
+    const taxCategory = this.taxCategoryOptions.find(cat => cat.name === row.TaxCategory);
   this.taxGroupForm.patchValue({
-    TaxName: row.TaxName,
-    TaxCode: row.TaxCode,
-    TaxType: row.TaxType,
-    EffectiveFrom: new Date(row.EffectiveFrom),
-    TaxRate: row.TaxRate,
-    TaxExempt: row.TaxExempt === 'Y',
-    Remarks: row.Remarks,
+    TaxGroupSid: row.TaxGroupSid,
+      TaxName: row.TaxName,
+      TaxCode: row.TaxCode,
+      TaxType: taxType ? taxType.name : null,
+      TaxCategory: taxCategory ? taxCategory.name : null,
+      EffectiveFrom: new Date(row.EffectiveFrom),
+      TaxRate: row.TaxRate,
+      TaxExempt: row.TaxExempt === 'Y',
+      CountryMasterSid: row.CountryMasterSid,
   });
 }
 
@@ -508,42 +472,47 @@ viewTax(content: any, row: any) {
   }
 
   report(): void {
-    const formattedData = this.allTaxGroup;
-    const companyName = this.currentCompany?.companyName ?? 'Company';
+  const formattedData = this.allTaxGroup.map(item => ({
+    ...item,
+    TaxGroup: item.TaxGroupName, // Use the formatted Tax Group name
+    Country: item.CountryName    // Use the country name
+  }));
+  
+  const companyName = this.currentCompany?.companyName ?? 'Company';
 
-    // Get visible columns in their current order from the table component
-    const visibleColumns = this.taxGroupTable.getVisibleColumns();
-    const dynamicHeaders = visibleColumns.map(column => ({
-      key: column.key,
-      label: column.label
-    }));
+  // Get visible columns in their current order from the table component
+  const visibleColumns = this.taxGroupTable.getVisibleColumns();
+  const dynamicHeaders = visibleColumns.map(column => ({
+    key: column.key,
+    label: column.label
+  }));
 
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: dynamicHeaders,
-      fileName: 'Tax-Group-Report',
-      title: companyName
-    });
-  }
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: dynamicHeaders,
+    fileName: 'Tax-Group-Report',
+    title: companyName
+  });
+}
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
 
   initForm(): void {
     this.taxGroupForm = this.fb.group({
+       TaxGroupSid: ['', Validators.required],
       TaxName: ['', Validators.required],
       TaxCode: ['', Validators.required],
       TaxType: [null, Validators.required],
+      TaxCategory: [null, Validators.required],
       EffectiveFrom: ['', Validators.required],
-      TaxRate: [null, Validators.required],
+      TaxRate: [null, [Validators.required, Validators.min(0)]],
       TaxExempt: [false],
-      Remarks: [''],
+      CountryMasterSid: ['', Validators.required],
     });
   }
 
-  // resetForm(): void {
-  //   this.taxGroupForm.reset();
-  // }
+  
 
   resetForm(): void {
     // If editing an existing tax group, reload it (restore original state)
@@ -713,83 +682,23 @@ viewTax(content: any, row: any) {
   }
 
     loadAllFields() {
-        forkJoin({
-          countries : this.dropdownStore.loadCountries(),
-     
-        }).subscribe(({  countries  }) => {
-     this.countryResults = countries;
-        });
-    
-        // this.currencyResults = (this.dropdownStore.currencies() || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
-      }
+    forkJoin({
+      countries: this.dropdownStore.loadCountries(),
+      taxGroups: this.masterService.getAllTaxGroup() // Load tax groups
+    }).subscribe(({ countries, taxGroups }) => {
+      // this.countryResults = countries;
+      this.countryResults =(countries || []).map(c => ({...c,Country : c.countryMaster?.countryName}));
+      this.taxGroupResults = (taxGroups.data || []).map(t => ({...t,TaxGroup : t.TaxGroup}));
+      // this.taxGroupResults = taxGroups.data || []; // Assuming the API returns { data: [] }
+    });
+  }
 
-  // loadTaxGroups(): void {
-  //   this.masterService.getAllTax().subscribe({
-  //     next: (res: any) => {
-  //       this.results = res.data;
-  //       console.log(this.results);
-
-  //       this.searchPerformed = true;
-  //       if (this.results.length > 0) {
-  //         this.applySorting();
-  //         this.updatePaginationData();
-  //         this.totalLengthOfCollection = this.results.length;
-  //       } else {
-  //         this.taxGroupList = [];
-  //         this.totalLengthOfCollection = 0;
-  //       }
-  //     },
-  //     error: () =>
-  //       this.appSettingService.showError('Error fetching Tax Groups'),
-  //   });
-  // }
-
-  // sort(column: string): void {
-  //   if (this.sortColumn === column) {
-  //     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  //   } else {
-  //     this.sortColumn = column;
-  //     this.sortDirection = 'asc';
-  //   }
-  //   this.loadTaxGroups();
-  // }
-
-  // applySorting(): void {
-  //   this.taxGroupList.sort((a, b) => {
-  //     let valA = (a[this.sortColumn] || '').toString().toLowerCase();
-  //     let valB = (b[this.sortColumn] || '').toString().toLowerCase();
-  //     return this.sortDirection === 'asc'
-  //       ? valA.localeCompare(valB)
-  //       : valB.localeCompare(valA);
-  //   });
-  // }
-
-  // updatePaginationData(): void {
-  //   const start = (this.page - 1) * this.pageSize;
-  //   const end = start + this.pageSize;
-  //   this.loadTaxGroups();
-  // }
+  
 
   trackByIndex(index: number): number {
     return index;
   }
-  // clearFilterValue() {
-  //   this.filterValue = '';
-  //   this.loadTaxGroups();
-  // }
-
-  // softDeleteTaxGroup(id: number): void {
-  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
-  //   dialogRef.afterClosed().subscribe((result) => {
-  //     if (result === true) {
-  //       this.masterService.deleteTax(id).subscribe((resp: any) => {
-  //         this.appSettingService.showSuccess('Deleted!');
-  //         this.router.navigate(['accounts/tax-group/list']);
-
-  //       });
-  //     }
-  //   });
-  // }
+ 
 
   closeModal(): void {
     if (this.modalRef && typeof this.modalRef.close === 'function') {
@@ -799,42 +708,7 @@ viewTax(content: any, row: any) {
 
 
 
-  // resetPage(): void {
-  //   this.taxGroupList = [];
-  //   this.results = [];
-  //   this.searchPerformed = false;
-  //   this.filterValue = '';
-  //   this.searchType = 'TaxName';
-  //   this.page = 1;
-  //   this.sortColumn = 'TaxName';
-  //   this.sortDirection = 'asc';
-  //   this.loadTaxGroups();
-  // }
-
-  // report(): void {
-  //   const formattedData = this.taxGroupList.map((item) => ({
-  //     ...item,
-  //     Status: item.Status === 'A' ? 'Active' : 'Suspended',
-  //     EffectiveFrom: this.formatDateForExport(item.EffectiveFrom),
-  //   }));
-  //   // const companyName =
-  //   //   this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
-  //   //   'Company';
-  //   const companyName = this.currentCompany?.companyName ?? 'Company';
-  //   this.excelReportService.exportAsExcel({
-  //     data: formattedData,
-  //     headers: [
-  //       { key: 'TaxName', label: 'Tax Name' },
-  //       { key: 'TaxCode', label: 'Tax Code' },
-  //       { key: 'TaxType', label: 'Tax Type' },
-  //       { key: 'EffectiveFrom', label: 'Effective From' },
-  //       { key: 'TaxRate', label: 'Tax Rate' },
-  //       { key: 'Remarks', label: 'Tax Reason' },
-  //     ],
-  //     fileName: 'Tax-Report',
-  //     title: companyName,
-  //   });
-  // }
+  
 
   showInfo() {
     if (!this.taxGroupData) return;
