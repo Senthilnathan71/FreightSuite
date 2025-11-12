@@ -375,16 +375,16 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 				tooltipKey: 'fullModuleTooltip', // ✅ Tooltip field
 
 			},
-			{
-				key: 'MenuDisplay',
-				label: 'Menu Name ',
-				sortable: true,
-				filterable: true,
-				visible: true,
-				dataType: 'string',
-				tooltipKey: 'fullMenuTooltip', // ✅ Tooltip field
+			// {
+			// 	key: 'MenuDisplay',
+			// 	label: 'Menu Name ',
+			// 	sortable: true,
+			// 	filterable: true,
+			// 	visible: true,
+			// 	dataType: 'string',
+			// 	tooltipKey: 'fullMenuTooltip', // ✅ Tooltip field
 
-			},
+			// },
 			{
 				key: 'status',
 				label: 'Status',

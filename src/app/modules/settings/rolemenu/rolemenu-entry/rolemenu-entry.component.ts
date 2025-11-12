@@ -295,13 +295,13 @@ export class RolemenuEntryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.initForm();
-    this.loadDropdownData();
-
+    
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    console.log(this.currentCompany)
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;
-
+    this.loadDropdownData();
+    
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
@@ -315,6 +315,8 @@ export class RolemenuEntryComponent implements OnInit {
         }, 200);
       }
     });
+    this.initForm();
+
   }
 
   initForm() {
@@ -330,85 +332,140 @@ export class RolemenuEntryComponent implements OnInit {
     const companySid = this.currentCompany?.CompanyMasterSid;
     forkJoin({
       modules: this.settingService.getAllModule(),
-      roles: this.settingService.getAllRole(companySid),
+      roles: this.settingService.getAllRole(Number(companySid)),
     }).subscribe(({ modules, roles }) => {
       this.moduleList = modules.data;
       this.roleList = roles.data;
     });
   }
 
-    // Called on multi-select module change
-    onModuleChange(selectedModules: any[]) {
-      if (!selectedModules?.length) {
-        this.dynamicMenuList = [];
-        return;
-      }
+  // Called on multi-select module change
+  onModuleChange(selectedModules: any[]) {
+    if (!selectedModules?.length) {
+      this.dynamicMenuList = [];
+      return;
+    }
 
-      this.dynamicMenuList = []; // reset
+    this.dynamicMenuList = []; // reset
 
-      selectedModules.forEach((module) => {
-        this.settingService.getMenuByModuleId(module.ModuleMasterSid).subscribe({
-          next: (res: any) => {
-            const menus = res.map((m: any) => ({
+    selectedModules.forEach((module) => {
+      this.settingService.getMenuByModuleId(module.ModuleMasterSid).subscribe({
+        next: (res: any[]) => {
+          const menus = res.map((m: any) => {
+            // Default all permissions
+            let InsertRole = false,
+              UpdateRole = false,
+              ViewRole = false,
+              DeleteRole = false;
+
+            // Enable/disable state
+            // let canInsert = false,
+            //     canUpdate = false,
+            //     canView = false,
+            //     canDelete = false;
+
+            // ✅ If permissions exist, check and enable
+            if (Array.isArray(m.menuPermission) && m.menuPermission.length > 0) {
+              const permissionCodes = m.menuPermission.map((p: any) =>
+                p.permissionCode?.toLowerCase()
+              );
+
+              // Add permission → enable and set true
+              if (permissionCodes.includes('add')) {
+                // canInsert = true;
+                InsertRole = true;
+              }
+
+              if (permissionCodes.includes('edit')) {
+                // canUpdate = true;
+                UpdateRole = true;
+              }
+
+              if (permissionCodes.includes('view')) {
+                // canView = true;
+                ViewRole = true;
+              }
+
+              if (permissionCodes.includes('delete')) {
+                // canDelete = true;
+                DeleteRole = true;
+              }
+            }
+
+            return {
               ...m,
               DisplayName: m.MenuName,
-              InsertRole: false,
-              UpdateRole: false,
-              ViewRole: false,
-              DeleteRole: false,
               ModuleName: module.ModuleName,
-            }));
-            this.dynamicMenuList.push(...menus);
-          },
-        });
-      });
-    }
 
-    // ✅ Load data for Edit Mode
-    loadRoleMenuData() {
-      this.settingService.getRoleMenuById(this.roleMenuHeaderSid).subscribe({
-        next: (resp) => {
-          this.roleMenuData = resp.data;
+              // ✅ Checkbox values (checked if permission exists)
+              InsertRole,
+              UpdateRole,
+              ViewRole,
+              DeleteRole,
 
-          // Extract modules from existing RoleMenuDetail
-          const existingModules = [
-            ...new Set(
-              this.roleMenuData.RoleMenuDetail.flatMap((d: any) =>
-                Object.keys(d.ModuleAndMenus)
-              )
-            ),
-          ];
-
-          const selectedModules = this.moduleList.filter((m) =>
-            existingModules.includes(m.ModuleName)
-          );
-
-          this.roleMenuForm.patchValue({
-            RoleMasterSid: this.roleMenuData.RoleMasterSid,
-            Modules: selectedModules,
-            Remarks: this.roleMenuData.Remarks,
-            status: this.roleMenuData.status === 'A' ? 'A' : 'S',
-          });
-
-          // Build table rows
-          this.dynamicMenuList = this.roleMenuData.RoleMenuDetail.map((d: any) => {
-            const moduleName = Object.keys(d.ModuleAndMenus)[0];
-            const menuName = d.ModuleAndMenus[moduleName][0];
-            return {
-              MenuMasterSid: d.MenuMasterSid,
-              DisplayName: d.DisplayName,
-              MenuName: menuName,
-              ModuleName: moduleName,
-              InsertRole: d.InsertRole === 'Y',
-              UpdateRole: d.UpdateRole === 'Y',
-              ViewRole: d.ViewRole === 'Y',
-              DeleteRole: d.DeleteRole === 'Y',
+              // ✅ Checkbox enabled state
+              // canInsert,
+              // canUpdate,
+              // canView,
+              // canDelete,
             };
           });
+
+          this.dynamicMenuList.push(...menus);
         },
-        error: (err) => console.error('Failed to load role menu data:', err),
+        error: (err) => console.error(`Error loading menus for ${module.ModuleName}`, err),
       });
-    }
+    });
+  }
+
+
+
+
+  // ✅ Load data for Edit Mode
+  loadRoleMenuData() {
+    this.settingService.getRoleMenuById(this.roleMenuHeaderSid).subscribe({
+      next: (resp) => {
+        this.roleMenuData = resp.data;
+
+        // Extract modules from existing RoleMenuDetail
+        const existingModules = [
+          ...new Set(
+            this.roleMenuData.RoleMenuDetail.flatMap((d: any) =>
+              Object.keys(d.ModuleAndMenus)
+            )
+          ),
+        ];
+
+        const selectedModules = this.moduleList.filter((m) =>
+          existingModules.includes(m.ModuleName)
+        );
+
+        this.roleMenuForm.patchValue({
+          RoleMasterSid: this.roleMenuData.RoleMasterSid,
+          Modules: selectedModules,
+          Remarks: this.roleMenuData.Remarks,
+          status: this.roleMenuData.status === 'A' ? 'A' : 'S',
+        });
+
+        // Build table rows
+        this.dynamicMenuList = this.roleMenuData.RoleMenuDetail.map((d: any) => {
+          const moduleName = Object.keys(d.ModuleAndMenus)[0];
+          const menuName = d.ModuleAndMenus[moduleName][0];
+          return {
+            MenuMasterSid: d.MenuMasterSid,
+            DisplayName: d.DisplayName,
+            MenuName: menuName,
+            ModuleName: moduleName,
+            InsertRole: d.InsertRole === 'Y',
+            UpdateRole: d.UpdateRole === 'Y',
+            ViewRole: d.ViewRole === 'Y',
+            DeleteRole: d.DeleteRole === 'Y',
+          };
+        });
+      },
+      error: (err) => console.error('Failed to load role menu data:', err),
+    });
+  }
 
   // ✅ Prepare payload for Create / Update
   preparePayload(isUpdate: boolean) {

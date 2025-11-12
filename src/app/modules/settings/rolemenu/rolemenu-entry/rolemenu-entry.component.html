@@ -7,7 +7,7 @@
                         <i class="fas fa-users-cog"></i>
                     </div>
                     <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Role Menu</h5>
-<!-- 
+                    <!-- 
                     @if(isEditMode){
                     <a class="text-white ps-2 w-2 h-2 cursor-pointer" (click)="showInfo()">
                         <i class="fas fs-6 fa-info-circle"></i>
@@ -161,64 +161,84 @@
 
     <form [formGroup]="roleMenuForm" (ngSubmit)="onSubmit()" class="p-3">
 
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label>Role Name<span class="text-danger">*</span></label>
-      <ng-select [items]="roleList" bindLabel="UserRoleName" bindValue="RoleMasterSid"
-        formControlName="RoleMasterSid" placeholder="Select Role"></ng-select>
-    </div>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Role Name<span class="text-danger">*</span></label>
+                <ng-select [items]="roleList" bindLabel="UserRoleName" bindValue="RoleMasterSid"
+                    formControlName="RoleMasterSid" placeholder="Select Role"></ng-select>
+            </div>
 
-    <div class="col-md-5">
-      <label>Modules<span class="text-danger">*</span></label>
-      <ng-select [items]="moduleList" bindLabel="ModuleName"
-        [multiple]="true" (change)="onModuleChange($event)" 
-        formControlName="Modules" placeholder="Select Modules"></ng-select>
-    </div>
+            <div class="col-md-5">
+                <label>Modules<span class="text-danger">*</span></label>
+                <ng-select [items]="moduleList" bindLabel="ModuleName" [multiple]="true"
+                    (change)="onModuleChange($event)" formControlName="Modules"
+                    placeholder="Select Modules"></ng-select>
+            </div>
 
-    <div class="col-md-2">
-      <label>Remarks</label>
-      <input type="text" class="form-control" formControlName="Remarks">
-    </div>
+            <div class="col-md-2">
+                <label>Remarks</label>
+                <input type="text" class="form-control" formControlName="Remarks">
+            </div>
 
-    <div class="col-md-2">
-      <label>Status</label>
-      <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="value" formControlName="status"></ng-select>
-    </div>
-  </div>
+            <div class="col-md-2">
+                <label>Status</label>
+                <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="value"
+                    formControlName="status"></ng-select>
+            </div>
+        </div>
 
-  <!-- Permissions Table -->
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle text-center">
-      <thead class="bg-info text-white">
-        <tr>
-          <th>Menu Name</th>
-          <th>Display Name</th>
-          <th>Add</th>
-          <th>Modify</th>
-          <th>View</th>
-          <th>Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let menu of dynamicMenuList; let i = index">
-          <td>{{ menu.MenuName }}</td>
-          <td>
-            <input type="text" class="form-control form-control-sm" 
-                   [(ngModel)]="menu.DisplayName" [ngModelOptions]="{standalone: true}">
-          </td>
-          <td><input type="checkbox" [(ngModel)]="menu.InsertRole" [ngModelOptions]="{standalone: true}"></td>
-          <td><input type="checkbox" [(ngModel)]="menu.UpdateRole" [ngModelOptions]="{standalone: true}"></td>
-          <td><input type="checkbox" [(ngModel)]="menu.ViewRole" [ngModelOptions]="{standalone: true}"></td>
-          <td><input type="checkbox" [(ngModel)]="menu.DeleteRole" [ngModelOptions]="{standalone: true}"></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        <!-- Permissions Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="bg-info text-white">
+                    <tr>
+                        <th>Menu Name</th>
+                        <th>Display Name</th>
+                        <th>Add</th>
+                        <th>Modify</th>
+                        <th>View</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let menu of dynamicMenuList; let i = index">
+                        <td>{{ menu.MenuName }}</td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" [(ngModel)]="menu.DisplayName"
+                                [ngModelOptions]="{ standalone: true }" />
+                        </td>
 
-  <div class="d-flex justify-content-end mt-3">
-    <button type="submit" class="btn btn-info btn-sm" [disabled]="roleMenuForm.invalid">Save</button>
-  </div>
-</form>
+                        <!-- ✅ Checkboxes enabled/disabled based on can* flags -->
+                        <td>
+                            <i class="fas"
+                                [ngClass]="menu.InsertRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                        </td>
+
+                        <td>
+                            <i class="fas"
+                                [ngClass]="menu.UpdateRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                        </td>
+
+                        <td>
+                            <i class="fas"
+                                [ngClass]="menu.ViewRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                        </td>
+
+                        <td>
+                            <i class="fas"
+                                [ngClass]="menu.DeleteRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-info btn-sm" [disabled]="roleMenuForm.invalid">Save</button>
+        </div>
+    </form>
 
 
 </div>
