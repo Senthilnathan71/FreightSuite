@@ -271,6 +271,12 @@ auditLogs: any[] = []; // Stores audit logs
   minDate : any;
   currentDate = new Date();
   housejobData:any;
+  departments: any[] = [];
+  DepartmentMasterSid: number;
+  amountInWords: string = '';
+  customerWiseSummary : any;
+    profitSummary : any;
+      chargeList:any[]=[];
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
     { id: 2, name: 'FCL' },
@@ -1133,7 +1139,8 @@ loadHeaderLookups() {
       status : br.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
-
+    this.calculateChargeWiseProfit();
+    this.calculateCustomerWiseAmount();
   }
 
   onContainerTypeChange(containerType : any){
@@ -2540,4 +2547,382 @@ ${this.userData['userName']}`;
         scrollable: true,
       });
     }
+
+        reportIndeminty(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+     reportCommericalInvoice(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+       reportCertificateofOrgin(content: TemplateRef<any>) {
+    this.modalService.open(content, {
+      size: 'xl',
+      scrollable: true,
+    });
+  }
+// Helper Funstion 
+
+ getDepartmentName(DepartmentMasterSid: number) {
+  if (!DepartmentMasterSid || !this.departmentList || this.departmentList.length === 0) return '';
+  const department = this.departmentList.find(dep => dep.DepartmentMasterSid === DepartmentMasterSid);
+  return department ? department.departmentName : '';
+}
+  
+  getUnitCode(ChargeUomSid: number) {
+    console.log("GETUNITCODE",{
+      currentUOMId : ChargeUomSid,
+      uomList : this.uomList
+    })
+    if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
+      return '';
+    }
+    const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
+    console.log(uom);
+    return uom ? uom.UOMCode : '';
+}
+
+getCurrencyCode(revenueCurrencyMasterSid: number): string {
+  const currency = this.currencyList.find(
+    c => c.CurrencyMasterSid === revenueCurrencyMasterSid
+  );
+  return currency ? currency.currencyCode : '';  
+}
+
+getCurrencyCodeCost(CostCurrencyMasterSid: number): string {
+  const currency = this.currencyList.find(
+    c => c.CurrencyMasterSid === CostCurrencyMasterSid
+  );
+  return currency ? currency.currencyCode : '';  
+}
+
+// Total Amt
+
+getTotalLocalAmount(): number {
+  return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueLocalAmount || rate.LocalAmt || 0), 0);
+}
+
+getTotalAmount(): number {
+  return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueAmount || rate.Amt || 0), 0);
+}
+
+
+
+get totalGrossWeight(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.GrossWeight || 0), 0) || 0;
+}
+
+get totalVolume(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.Volume || 0), 0) || 0;
+}
+
+get totalChargeableWeight(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.ChargeableWeight || 0), 0) || 0;
+}
+
+get totalNetWeight(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.NetWeight || 0), 0) || 0;
+}
+
+
+
+get totalSales() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalSales) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get totalCost() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalCost) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get profit() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.profit) || 0;
+    return sum + value;
+  }, 0);
+}
+
+ calculateChargeWiseProfit() {
+    this.profitSummary = [];
+    const rateFormValue = this.rateResult|| [];
+    const data = [...rateFormValue];
+
+    data.forEach(item => {
+      console.log(item);
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+      const chargeName = charge ? charge.chargeName : "Unknown";
+
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
+
+      // if (item.CostRevenue === "Cost") {
+        existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
+
+      // if (item.CostRevenue === "Revenue") {
+        existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
+
+    this.profitSummary.forEach(p => {
+      let profit: number;
+      let profitPercent: number;
+
+      if (p.totalSales > p.totalCost) {
+        profit = p.totalSales - p.totalCost;
+        profitPercent = p.totalSales !== 0 ? (profit / p.totalSales) * 100 : 0;
+      } else {
+        profit = -(p.totalCost - p.totalSales);
+        profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
+      }
+
+      p.profit = profit.toFixed(2);
+      p.profitPercent = profitPercent.toFixed(2) + "%";
+      p.totalSales = p.totalSales.toFixed(2);
+      p.totalCost = p.totalCost.toFixed(2);
+    });
+
+    console.log(this.profitSummary);
+  }
+
+  calculateCustomerWiseAmount() {
+    this.customerWiseSummary = {};
+    const data = this.rateResult || [];
+
+    const costHmap = new Map<number, CustomerProfit>();
+    const revenueHmap = new Map<number, CustomerProfit>();
+
+    // --- COST SUMMARY ---
+    data.forEach(item => {
+      const costAmt = parseFloat(item.CostLocalAmount) || 0;
+      const customerName = item.costCustomerMaster?.CustomerName || "";
+      const customerId = item.costCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = costHmap.get(customerId);
+      const amtChange = item.CostDrCr === "D" ? costAmt : -costAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        costHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- REVENUE SUMMARY ---
+    data.forEach(item => {
+      const revenueAmt = parseFloat(item.RevenueLocalAmount) || 0;
+      const customerName = item.revenueCustomerMaster?.CustomerName || "";
+      const customerId = item.revenueCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = revenueHmap.get(customerId);
+      const amtChange = item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        revenueHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- LOGS & ASSIGNMENT ---
+    console.log("Cost Summary:", costHmap);
+    console.log("Revenue Summary:", revenueHmap);
+
+    this.customerWiseSummary = {
+      cost: Array.from(costHmap.values()),
+      revenue: Array.from(revenueHmap.values())
+    };
+  }
+
+getChargeName(ChargeMasterSid: number): string {
+  if (!ChargeMasterSid) return 'N/A';
+  if (!this.chargeList?.length) return 'N/A';
+
+  const charge = this.chargeList.find(c =>
+    c.ChargeMasterSid === ChargeMasterSid || c.ChargeMasterSID === ChargeMasterSid
+  );
+
+  console.log(charge,"Charge Name")
+  return charge ? (charge.chargeName || charge.chargeCode || charge.chargeCode ) : 'N/A';
+}
+
+ getPCurrRevenue(chargeData: any): string {
+    if (!chargeData) return '-';
+    
+    const localAmount = parseFloat(chargeData.RevenueLocalAmount || '0');
+    const exchangeRate = parseFloat(chargeData.RevenueExchangeRate || '1');
+    
+    if (exchangeRate === 0) return '0.00';
+    
+    const usdAmount = localAmount / exchangeRate;
+    return this.formatNumber(usdAmount);
+  }
+
+  // P.Curr Expense (in USD)
+  getPCurrExpense(chargeData: any): string {
+    if (!chargeData) return '-';
+    
+    const localAmount = parseFloat(chargeData.CostLocalAmount || '0');
+    const exchangeRate = parseFloat(chargeData.CostExchangeRate || '1');
+    
+    if (exchangeRate === 0) return '0.00';
+    
+    const usdAmount = localAmount / exchangeRate;
+    return this.formatNumber(usdAmount);
+  }
+
+  // P.Curr GP (Gross Profit in USD)
+  getPCurrGP(chargeData: any): string {
+    const revenue = parseFloat(this.getPCurrRevenue(chargeData)) || 0;
+    const expense = parseFloat(this.getPCurrExpense(chargeData)) || 0;
+    const gp = revenue - expense;
+    return this.formatNumber(gp);
+  }
+
+  // Local P.Revenue (in Local Currency)
+  getLocalRevenue(chargeData: any): string {
+    if (!chargeData) return '-';
+    return this.formatNumber(parseFloat(chargeData.RevenueLocalAmount || '0'));
+  }
+
+  // Local P.Expense (in Local Currency)
+  getLocalExpense(chargeData: any): string {
+    if (!chargeData) return '-';
+    return this.formatNumber(parseFloat(chargeData.CostLocalAmount || '0'));
+  }
+
+  // Local P.GP (Gross Profit in Local Currency)
+  getLocalGP(chargeData: any): string {
+    const revenue = parseFloat(this.getLocalRevenue(chargeData)) || 0;
+    const expense = parseFloat(this.getLocalExpense(chargeData)) || 0;
+    const gp = revenue - expense;
+    return this.formatNumber(gp);
+  }
+
+  // Helper function to format numbers
+  private formatNumber(value: number): string {
+    if (isNaN(value)) return '0.00';
+    return value.toFixed(2);
+  }
+
+
+calculateTotals(): any {
+  if (!this.housejobData?.costRevenueCharges) {
+    return {
+      totalPCurrRevenue: 0,
+      totalPCurrExpense: 0,
+      totalPCurrGP: 0,
+      totalLocalRevenue: 0,
+      totalLocalExpense: 0,
+      totalLocalGP: 0
+    };
+  }
+
+  let totalPCurrRevenue = 0;
+  let totalPCurrExpense = 0;
+  let totalLocalRevenue = 0;
+  let totalLocalExpense = 0;
+
+  this.housejobData.costRevenueCharges.forEach((chargeItem: any) => {
+    totalPCurrRevenue += parseFloat(this.getPCurrRevenue(chargeItem)) || 0;
+    totalPCurrExpense += parseFloat(this.getPCurrExpense(chargeItem)) || 0;
+    totalLocalRevenue += parseFloat(this.getLocalRevenue(chargeItem)) || 0;
+    totalLocalExpense += parseFloat(this.getLocalExpense(chargeItem)) || 0;
+  });
+
+  return {
+    totalPCurrRevenue: this.formatNumber(totalPCurrRevenue),
+    totalPCurrExpense: this.formatNumber(totalPCurrExpense),
+    totalPCurrGP: this.formatNumber(totalPCurrRevenue - totalPCurrExpense),
+    totalLocalRevenue: this.formatNumber(totalLocalRevenue),
+    totalLocalExpense: this.formatNumber(totalLocalExpense),
+    totalLocalGP: this.formatNumber(totalLocalRevenue - totalLocalExpense)
+  };
+}
+
+ getTotalLocalRevenuAmount(): number {
+    
+    return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueRate  || 0), 0);
+  }
+ 
+    TotalLocalAmount(): number {
+         return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueAmount  || 0), 0);
+   
+  }
+ 
+    getCostAmount(): number {
+        return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.CostRate  || 0), 0);
+   
+  }
+ 
+   CostAmount(): number {
+       return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.CostAmount  || 0), 0);
+   
+  }
+ 
+    grossAmount(): number {
+       return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.GrossWeight  || 0), 0);
+    
+  }
+ 
+    volumeAmount(): number {
+            return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.Volume  || 0), 0);
+   
+  }
+
+  
+}
+
+
+interface CustomerProfit {
+  CustomerName : string,
+  Amount : number
 }
