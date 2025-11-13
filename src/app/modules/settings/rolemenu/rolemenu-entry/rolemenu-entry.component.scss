@@ -25,4 +25,23 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2196f3; /* blue */
+}
+
+/* disabled unchecked */
+input[type="checkbox"]:disabled:not(:checked) {
+  border: 2px solid #ccc;
+  background-color: #eee;
+}
+
+/* disabled checked */
+input[type="checkbox"]:disabled:checked {
+  accent-color: #f39c12; /* orange for disabled-checked */
+  background-color: #f39c12;
+  border-color: #f39c12;
+}
 

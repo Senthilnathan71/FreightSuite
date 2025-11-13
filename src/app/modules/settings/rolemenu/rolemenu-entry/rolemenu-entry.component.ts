@@ -295,13 +295,13 @@ export class RolemenuEntryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    
+
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     console.log(this.currentCompany)
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;
     this.loadDropdownData();
-    
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
@@ -340,83 +340,83 @@ export class RolemenuEntryComponent implements OnInit {
   }
 
   // Called on multi-select module change
-  onModuleChange(selectedModules: any[]) {
-    if (!selectedModules?.length) {
-      this.dynamicMenuList = [];
-      return;
-    }
-
-    this.dynamicMenuList = []; // reset
-
-    selectedModules.forEach((module) => {
-      this.settingService.getMenuByModuleId(module.ModuleMasterSid).subscribe({
-        next: (res: any[]) => {
-          const menus = res.map((m: any) => {
-            // Default all permissions
-            let InsertRole = false,
-              UpdateRole = false,
-              ViewRole = false,
-              DeleteRole = false;
-
-            // Enable/disable state
-            // let canInsert = false,
-            //     canUpdate = false,
-            //     canView = false,
-            //     canDelete = false;
-
-            // ✅ If permissions exist, check and enable
-            if (Array.isArray(m.menuPermission) && m.menuPermission.length > 0) {
-              const permissionCodes = m.menuPermission.map((p: any) =>
-                p.permissionCode?.toLowerCase()
-              );
-
-              // Add permission → enable and set true
-              if (permissionCodes.includes('add')) {
-                // canInsert = true;
-                InsertRole = true;
-              }
-
-              if (permissionCodes.includes('edit')) {
-                // canUpdate = true;
-                UpdateRole = true;
-              }
-
-              if (permissionCodes.includes('view')) {
-                // canView = true;
-                ViewRole = true;
-              }
-
-              if (permissionCodes.includes('delete')) {
-                // canDelete = true;
-                DeleteRole = true;
-              }
-            }
-
-            return {
-              ...m,
-              DisplayName: m.MenuName,
-              ModuleName: module.ModuleName,
-
-              // ✅ Checkbox values (checked if permission exists)
-              InsertRole,
-              UpdateRole,
-              ViewRole,
-              DeleteRole,
-
-              // ✅ Checkbox enabled state
-              // canInsert,
-              // canUpdate,
-              // canView,
-              // canDelete,
-            };
-          });
-
-          this.dynamicMenuList.push(...menus);
-        },
-        error: (err) => console.error(`Error loading menus for ${module.ModuleName}`, err),
-      });
-    });
+onModuleChange(selectedModules: any[]) {
+  if (!selectedModules?.length) {
+    this.dynamicMenuList = [];
+    return;
   }
+
+  this.dynamicMenuList = [];
+
+  selectedModules.forEach((module) => {
+    this.settingService.getMenuByModuleId(module.ModuleMasterSid).subscribe({
+      next: (res: any[]) => {
+        const menus = res.map((m: any) => {
+          const menu = structuredClone(m); // ✅ clone safely
+
+          // Default: unchecked and editable
+          let InsertRole = false;
+          let UpdateRole = false;
+          let ViewRole = false;
+          let DeleteRole = false;
+
+          // let disableInsert = false;
+          // let disableUpdate = false;
+          // let disableView = false;
+          // let disableDelete = false;
+
+          // ✅ Check permissions
+          if (Array.isArray(menu.menuPermission) && menu.menuPermission.length > 0) {
+            const permissionCodes = menu.menuPermission.map((p: any) =>
+              (p.permissionCode || '').toLowerCase()
+            );
+
+            // If permission exists → checked & disabled
+            if (permissionCodes.includes('add')) {
+              InsertRole = true;
+              // disableInsert = true;
+            }
+            if (permissionCodes.includes('edit')) {
+              UpdateRole = true;
+              // disableUpdate = true;
+            }
+            if (permissionCodes.includes('view')) {
+              ViewRole = true;
+              // disableView = true;
+            }
+            if (permissionCodes.includes('delete')) {
+              DeleteRole = true;
+              // disableDelete = true;
+            }
+          }
+
+          return {
+            ...menu,
+            DisplayName: menu.MenuName,
+            ModuleName: module.ModuleName,
+            InsertRole,
+            UpdateRole,
+            ViewRole,
+            DeleteRole,
+            // disableInsert,
+            // disableUpdate,
+            // disableView,
+            // disableDelete,
+          };
+        });
+
+        this.dynamicMenuList.push(...menus);
+      },
+      error: (err) =>
+        console.error(`Error loading menus for ${module.ModuleName}`, err),
+    });
+  });
+}
+
+
+
+
+
 
 
 

@@ -192,6 +192,7 @@
             <table class="table table-bordered align-middle text-center">
                 <thead class="bg-info text-white">
                     <tr>
+                        <th>Module Name</th>
                         <th>Menu Name</th>
                         <th>Display Name</th>
                         <th>Add</th>
@@ -202,37 +203,43 @@
                 </thead>
                 <tbody>
                     <tr *ngFor="let menu of dynamicMenuList; let i = index">
+                        <td>{{ menu.ModuleName }}</td>
                         <td>{{ menu.MenuName }}</td>
                         <td>
                             <input type="text" class="form-control form-control-sm" [(ngModel)]="menu.DisplayName"
                                 [ngModelOptions]="{ standalone: true }" />
                         </td>
 
-                        <!-- ✅ Checkboxes enabled/disabled based on can* flags -->
+                        <!-- Add -->
                         <td>
-                            <i class="fas"
-                                [ngClass]="menu.InsertRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                            <input type="checkbox" [(ngModel)]="menu.InsertRole" [disabled]="menu.InsertRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
                         </td>
 
+                        <!-- Modify -->
                         <td>
-                            <i class="fas"
-                                [ngClass]="menu.UpdateRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                            <input type="checkbox" [(ngModel)]="menu.UpdateRole" [disabled]="menu.UpdateRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
                         </td>
 
+                        <!-- View -->
                         <td>
-                            <i class="fas"
-                                [ngClass]="menu.ViewRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                            <input type="checkbox" [(ngModel)]="menu.ViewRole" [disabled]="menu.ViewRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
                         </td>
 
+                        <!-- Delete -->
                         <td>
-                            <i class="fas"
-                                [ngClass]="menu.DeleteRole ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                            <input type="checkbox" [(ngModel)]="menu.DeleteRole" [disabled]="menu.DeleteRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
                         </td>
-
                     </tr>
                 </tbody>
             </table>
         </div>
+
+
+
 
 
         <div class="d-flex justify-content-end mt-3">
