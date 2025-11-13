@@ -94,7 +94,7 @@
                     [displayFields]="customerLookupConfig.displayFields"
                     [displayLabels]="customerLookupConfig.displayLabels"
                     [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName" bindValue="CustomerName"
-                    (itemSelected)="onCustomerMasterChange($event)">
+                    (itemSelected)="onCustomerChange($event)">
                   </dofi-searchable-dropdown>
                   <label class="input-label">Customer</label>
                 </div>
@@ -106,7 +106,7 @@
                   [class.filled]="!!invoiceForm.get('PartyName')?.value">
                   <ng-select [items]="customerBranchList.length ? customerBranchList : []" bindLabel="Address"
                     bindValue="CustomerBranchSid" placeholder="" formControlName="CustomerBranchSid"
-                    (change)="onBranchChange($event)" appendTo="body">
+                    (change)="onCustomerBranchChange($event)" appendTo="body">
                     <ng-template ng-option-tmp let-item="item">
                       <div>
                         <strong>{{ item.CustomerName }}</strong><br>
@@ -117,7 +117,31 @@
                   <label class="input-label">Customer Address</label>
                 </div>
               </aside>
-
+                <!-- 11. GST No (GSTNo) -->
+             <!-- GST No / VAT -->
+<aside class="col-md-3">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" formControlName="GST_VAT" placeholder="" readonly>
+    <label class="input-label">GST No / VAT</label>
+  </div>
+</aside>
+              <!-- 11. GSTType -->
+             <aside class="col-md-3">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" readonly>
+    <label class="input-label">GST Type</label>
+  </div>
+</aside>
+              <!-- 12. Invoice Type -->
+              <aside class="col-md-3">
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!invoiceForm.get('InvoiceType')?.value">
+    <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" 
+      formControlName="InvoiceType" >
+    </ng-select>
+    <label class="input-label">Invoice Type</label>
+  </div>
+</aside>
 
               <!-- <aside class="col-md-3">
   <div class="custom-form-group">
@@ -134,7 +158,7 @@
               </aside>
 
               <!-- 7. Job No (MasterJobSid) - ng-select showing MasterJobNumber and MBLNo -->
-              <aside class="col-md-3">
+              <!-- <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!invoiceForm.get('MasterJobSid')?.value">
                   <ng-select [items]="masterJobList" bindLabel="displayLabel" bindValue="MasterJobSid" placeholder=""
@@ -155,24 +179,24 @@
                   </ng-select>
                   <label class="input-label">Job No</label>
                 </div>
-              </aside>
+              </aside> -->
 
               <!-- 15. MBL No -->
-              <aside class="col-md-3">
+              <!-- <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input type="text" class="form-control custom-input-field sm" formControlName="MBLNo" placeholder=""
                     style="background-color: white; cursor: not-allowed;">
                   <label class="input-label">MBL No</label>
                 </div>
-              </aside>
+              </aside> -->
 
               <!-- 8. HBL No (HouseJob) -->
-              <aside class="col-md-3">
+              <!-- <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="HBLNo" placeholder="">
                   <label class="input-label">HBL No</label>
                 </div>
-              </aside>
+              </aside> -->
 
               <!-- 9. Currency (CurrencyCode) -->
               <aside class="col-md-3">
@@ -200,30 +224,7 @@
                 </div>
               </aside>
 
-              <!-- 11. GST No (GSTNo) -->
-              <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="GST_VAT" placeholder="" readonly>
-                  <label class="input-label">GST No / VAT</label>
-                </div>
-              </aside>
-              <!-- 11. GSTType -->
-              <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="">
-                  <label class="input-label">GST Type</label>
-                </div>
-              </aside>
-              <!-- 12. Invoice Type -->
-              <aside class="col-md-3">
-                <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!invoiceForm.get('InvoiceType')?.value">
-                  <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id" placeholder=""
-                    formControlName="InvoiceType">
-                  </ng-select>
-                  <label class="input-label">Invoice Type</label>
-                </div>
-              </aside>
+            
 
               <!-- 13. Remarks -->
               <aside class="col-md-3">
@@ -418,7 +419,7 @@
 
                               <!-- Dr/Cr -->
                               <td>
-                                <ng-select *ngIf="!isEditMode" [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]"
+                                <ng-select *ngIf="!isEditMode" [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
                                   bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
                                 <span *ngIf="isEditMode">{{ row.get('DrCr')?.value || '-' }}</span>
                               </td>

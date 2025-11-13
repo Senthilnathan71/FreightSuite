@@ -228,13 +228,15 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       if (selectedTax) {
         // Auto-fill the TaxRate field with the selected tax's rate
         this.hssacForm.patchValue({
-          TaxRate: selectedTax.TaxRate
+          TaxRate: selectedTax.TaxRate,
+          TaxGroupSid: selectedTax.TaxGroupSid,
         });
       }
     } else {
       // Clear TaxRate if no tax type is selected
       this.hssacForm.patchValue({
-        TaxRate: ''
+        TaxRate: '',
+        TaxGroupSid: '',
       });
     }
   }
@@ -435,6 +437,7 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
       ServiceName: ['', [Validators.required]],
       TaxRate: ['Default', [Validators.required]],
       TaxType: ['', [Validators.required]],
+      TaxGroupSid: ['', [Validators.required]],
       EffectiveFrom: ['', [Validators.required]],
       Remarks: [''],
       status: [{ value: 'Active', disabled: false }, Validators.required],
@@ -700,11 +703,13 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
         ...updatedBy,
         EffectiveFrom: new Date(formValue.EffectiveFrom),
         status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+        TaxGroupSid: formValue.TaxGroupSid,
       } : {
         ...formValue,
         ...createdBy,
         EffectiveFrom: new Date(formValue.EffectiveFrom),
         status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+        TaxGroupSid: formValue.TaxGroupSid,
       };
 
       console.log('payload', payload);
