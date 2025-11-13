@@ -1077,4 +1077,12 @@ updateCreditRequest(payload: any) {
     map((resp) => resp)
   );
 }
+getHouseJobByMasterJob(payload:any){
+    return this.http.post('house-job/fetchByMaster',payload).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 }

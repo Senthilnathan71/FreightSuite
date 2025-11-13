@@ -3631,8 +3631,8 @@ getCoaWithSubledger(CompanyMasterSid: number) {
     );
   }
   
-getSubledgerMasterByType(subledgerType: string) {
-    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}`).pipe(
+getSubledgerMasterByType(subledgerType: string , CompanyMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}?CompanyMasterSid=${CompanyMasterSid}`).pipe(
         map((resp: any) => {
             return resp;
         })

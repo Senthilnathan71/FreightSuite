@@ -176,8 +176,10 @@ selectedTab = this.tab[0].name;
   createGstFormGroup(gstData?: any): FormGroup {
     return this.fb.group({
       HSNCode: [gstData?.HSNCode || '', Validators.required],
+      HSSACMasterSid: [gstData?.HSSACMasterSid || null],
       description: [gstData?.description || ''],
       TaxGroup: [gstData?.TaxGroup || '', Validators.required],
+      TaxGroupSid: [gstData?.TaxGroupSid || null],
       TaxRate: [gstData?.TaxRate || '', [Validators.required, Validators.min(0), Validators.max(100)]],
       Status: [gstData?.Status || 'A', Validators.required],
       ChargeTaxMasterSid: [gstData?.ChargeTaxMasterSid || null]
@@ -453,9 +455,11 @@ onUOMChange() {
         Status: statusValue,
         chargeTaxMaster: this.chargeTaxMasters.getRawValue().map(gst => ({
     HSNCode: gst.HSNCode,
+    HSSACMasterSid: gst.HSSACMasterSid,
     EffectiveFrom:gst.EffectiveFrom,
     description: gst.description,
     TaxGroup: gst.TaxGroup,
+    TaxGroupSid: gst.TaxGroupSid,
     TaxRate: gst.TaxRate,
     Status: gst.Status,
     ...(gst.ChargeTaxMasterSid ? { ChargeTaxMasterSid: gst.ChargeTaxMasterSid } : {})
@@ -740,6 +744,9 @@ onUOMChange() {
     if (selectedHsnsac) {
       const gstGroup = this.chargeTaxMasters.at(index) as FormGroup;
       gstGroup.patchValue({
+        HSNCode: selectedHsnsac.HSSACCode,
+        HSSACMasterSid: selectedHsnsac.HSSACMasterSid,
+        TaxGroupSid: selectedHsnsac.TaxGroupSid,
         TaxGroup: selectedHsnsac.TaxType,    
         TaxRate: selectedHsnsac.TaxRate,     
         description: selectedHsnsac.HSNSACDescription || selectedHsnsac.ServiceName

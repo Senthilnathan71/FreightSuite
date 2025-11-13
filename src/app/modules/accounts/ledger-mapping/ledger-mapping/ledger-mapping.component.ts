@@ -161,8 +161,8 @@ export class LedgerMappingComponent implements OnInit {
     this.spinner.show();
 
     const observable = this.selectedTab === 'Party' 
-      ? this.masterService.getSubledgerMasterByType('Customer')
-      : this.masterService.getSubledgerMasterByType('Charge');
+      ? this.masterService.getSubledgerMasterByType('Customer',this.currentCompany?.CompanyMasterSid)
+      : this.masterService.getSubledgerMasterByType('Charge',this.currentCompany?.CompanyMasterSid);
 
     observable.subscribe({
       next: (response: any) => {
