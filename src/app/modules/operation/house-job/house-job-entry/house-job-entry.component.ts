@@ -380,13 +380,13 @@ auditLogs: any[] = []; // Stores audit logs
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentCompany?.BranchMasterSid,
     }
-
+    
     this.initBookingForm();
     this.initCargoForm();
     this.initOtherForm();
     this.initDetailsForm();
     this.spinner.show();
-  this.loadHeaderMandatoryParts().subscribe(() => {
+    this.loadHeaderMandatoryParts().subscribe(() => {
     this.loadHeaderLookups().subscribe(() => {
       this.currentRoute.paramMap.subscribe((param) => {
         this.HouseJobSid = +param.get('id');
@@ -398,6 +398,9 @@ auditLogs: any[] = []; // Stores audit logs
         }
       });
       this.loadCargoLookups();
+      if (!this.productLookupsLoaded) {
+      this.loadProductLookups();
+      }
       this.loadOtherLookups();
     });
     this.spinner.hide();
@@ -568,8 +571,8 @@ auditLogs: any[] = []; // Stores audit logs
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
       NetWeight: ['', [Validators.required]],
-      Volume: ['', [Validators.required]],
-      Volumetric: ['', [Validators.required]],
+      Volume: [''],
+      Volumetric: [''],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
@@ -986,7 +989,8 @@ loadHeaderLookups() {
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
-          this.patchValues(resp.data);
+          this.patchValues(resp.data);   
+          this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
           this.housejobData=resp.data;
           console.log("House Job",this.housejobData)
@@ -1153,10 +1157,6 @@ loadHeaderLookups() {
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
     this.initProductForm();
-    if (!this.productLookupsLoaded) {
-      this.loadProductLookups();
-      this.loadAllMasterJobContainers();
-    }
     if (data) {
       this.productForm.patchValue({
         HouseJobProductSid: data?.HouseJobProductSid,
@@ -2584,7 +2584,7 @@ ${this.userData['userName']}`;
     }
     const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
     console.log(uom);
-    return uom ? uom.UOMCode : '';
+    return uom ? uom.UOMName : '';
 }
 
 getCurrencyCode(revenueCurrencyMasterSid: number): string {
@@ -2616,19 +2616,19 @@ getTotalAmount(): number {
 
 
 get totalGrossWeight(): number {
-  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.GrossWeight || 0), 0) || 0;
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.GrossWeight || 0), 0) || 0;
 }
 
 get totalVolume(): number {
-  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.Volume || 0), 0) || 0;
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.Volume || 0), 0) || 0;
 }
 
 get totalChargeableWeight(): number {
-  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.ChargeableWeight || 0), 0) || 0;
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.ChargeableWeight || 0), 0) || 0;
 }
 
 get totalNetWeight(): number {
-  return this.housejobData?.Cargo?.reduce((sum, c) => sum + (c.NetWeight || 0), 0) || 0;
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.NetWeight || 0), 0) || 0;
 }
 
 
@@ -2906,18 +2906,93 @@ calculateTotals(): any {
    
   }
  
-    grossAmount(): number {
-       return (this.housejobData?.costRevenueCharges || [])
-    .reduce((sum, rate) => sum + Number(rate.GrossWeight  || 0), 0);
-    
-  }
+  
  
-    volumeAmount(): number {
-            return (this.housejobData?.costRevenueCharges || [])
-    .reduce((sum, rate) => sum + Number(rate.Volume  || 0), 0);
-   
+
+  getSealNo(containerNo:string){
+    if(!containerNo || this.masterJobContainers.length === 0){
+      return "";
+    }
+    const sealNo = this.masterJobContainers.find(con => con.ContainerNumber === containerNo)?.LineSeal || '';
+    return sealNo;
   }
 
+  getContainerName(ContainerTypeMasterSid:number){
+    console.log(ContainerTypeMasterSid);
+    if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
+      return "";
+    }
+    console.log("HERE",this.containerTypeList)
+    return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
+  }
+
+
+getTotalPerUnit(): number {
+  return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueRate || rate.LocalAmt || 0), 0);
+}
+
+grossAmount(): number {
+ 
+  const cargoList = this.housejobData?.Cargo || [];
+ 
+  return cargoList.reduce((sum: number, item: any) => {
+ 
+    const weight = parseFloat(item?.GrossWeight) || 0;
+ 
+    return sum + weight;
+ 
+  }, 0);
+ 
+}
+ 
+ 
+ 
+volumeAmount(): number {
+ 
+  const cargoList = this.housejobData?.Cargo || [];
+ 
+  return cargoList.reduce((sum: number, item: any) => {
+ 
+    const volume = parseFloat(item?.Volume) || 0;
+ 
+    return sum + volume;
+ 
+  }, 0);
+ 
+}
+ formatVesselVoyage(vessel?: string, voyage?: string): string {
+ 
+  // both vessel and voyage present
+ 
+  if (vessel && voyage) {
+ 
+    return `: ${vessel} / ${voyage}`;
+ 
+  }
+ 
+  // only vessel present
+ 
+  else if (vessel) {
+ 
+    return `:<br>${vessel}`;
+ 
+  }
+ 
+  // only voyage present
+ 
+  else if (voyage) {
+ 
+    return `:<br>${voyage}`;
+ 
+  }
+ 
+  // none present
+ 
+  return ':';
+ 
+}
+ 
   
 }
 

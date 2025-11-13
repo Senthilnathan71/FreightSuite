@@ -2367,6 +2367,14 @@ getAgentBranchName(AgentSid: number): string {
       });
     }
     
+      reportPackingList(content: TemplateRef<any>) {
+      this.modalService.open(content, {
+        size: 'xl',
+        scrollable: true,
+      });
+    }
+    
+
   calculateChargeWiseProfit() {
     this.profitSummary = [];
     const rateFormValue = this.rateResult|| [];

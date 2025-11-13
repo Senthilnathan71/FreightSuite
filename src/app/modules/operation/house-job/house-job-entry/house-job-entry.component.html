@@ -19,7 +19,7 @@
     </div>
 
     <div class="header-actions">
-     
+
       <div class="action-group" *ngIf="!isEditMode">
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openUploadModal()">
           <i class="fas fa-upload  me-1"></i>
@@ -27,35 +27,35 @@
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openAuditLogs(auditLogModal)">
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="openAuditLogs(auditLogModal)">
           <i class="fas fa-history me-1"></i>
           <span>Logs</span>
         </button>
       </div>
-        <div class="action-group" *ngIf="isEditMode">
-                <div ngbDropdown container="body" class="d-inline-block">
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle
-                    [disabled]="!housejobData" >
-                         <i class="fas fa-print me-1"></i> Print
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
-                        <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder(deliveryOrderPrint)"
-                           >Delivery Order</button>
-                             <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(CargoArrivalPrint)"
-                           >Cargo Arrival Notice</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportBill(BillPrint)"
-                           >House Bill of Landing</button>
-                                <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit(ShipmentPrint)"
-                           >Shipment Profit and Loss</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportIndeminty(IndemintyPrint)"
-                           >Imdeminty</button>
-                              <button class="text-dark" ngbDropdownItem (click)="reportCommericalInvoice(CommericalInvoice)"
-                           >Commerical Invoice</button>
-                                <button class="text-dark" ngbDropdownItem (click)="reportCertificateofOrgin(OrginPrint)">Ceritificate of Origin
-              </button>
-                    </div>
-                </div>
-            </div>
+      <div class="action-group" *ngIf="isEditMode">
+        <div ngbDropdown container="body" class="d-inline-block">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
+            ngbDropdownToggle [disabled]="!housejobData">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+            <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder(deliveryOrderPrint)">Delivery
+              Order</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(CargoArrivalPrint)">Cargo Arrival
+              Notice</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportBill(BillPrint)">House Bill of Landing</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit(ShipmentPrint)">Shipment Profit and
+              Loss</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportIndeminty(IndemintyPrint)">Imdeminty</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportCommericalInvoice(CommericalInvoice)">Commerical
+              Invoice</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportCertificateofOrgin(OrginPrint)">Certificate of
+              Origin
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="action-group">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
           <i class="fas fa-chevron-left  me-1"></i>
@@ -118,10 +118,11 @@
         </div>
       </div> -->
       <div class="smart-field-group">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
           <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
-            class="ng-select" formControlName="DepartmentMasterSid" placeholder=""
-            (change)="onDeptChange($event)" appendTo="body">
+            class="ng-select" formControlName="DepartmentMasterSid" placeholder="" (change)="onDeptChange($event)"
+            appendTo="body">
           </ng-select>
           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
           @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
@@ -137,7 +138,8 @@
       <div class="smart-field-group">
         <aside>
           <div class="custom-form-group">
-            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="ShipmentNo">
+            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+              formControlName="ShipmentNo">
             <label for="text-input" class="input-label">Shipment No <span class="text-danger">*</span></label>
 
           </div>
@@ -245,16 +247,18 @@
                 <div class="row compact-form" [formGroup]="houseJobForm">
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('CustomerMasterSid')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('CustomerMasterSid')?.value">
                       <!-- <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="CustomerMasterSid" placeholder=""
                         appendTo="body" (change)="onCustomerChange($event)">
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid" placeholder=""
-                [displayFields]="customerLookupConfig.displayFields"
-                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
-                bindValue="CustomerMasterSid" (itemSelected)="onCustomerChange($event)">
-              </dofi-searchable-dropdown>
+                      <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerMasterSid"
+                        (itemSelected)="onCustomerChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('CustomerMasterSid')?.touched &&
                       houseJobForm.get('CustomerMasterSid')?.invalid){
@@ -267,10 +271,11 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('CustomerAddress')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('CustomerAddress')?.value">
                       <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
-                        formControlName="CustomerAddress" placeholder=""
-                        (change)="onCustomerBranchChange($event)" appendTo="body">
+                        formControlName="CustomerAddress" placeholder="" (change)="onCustomerBranchChange($event)"
+                        appendTo="body">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer Address <span
                           class="text-danger">*</span></label>
@@ -284,7 +289,8 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('ShipperAddress')?.value">
                       <!-- <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ShipperName" placeholder=""
                         (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
@@ -296,11 +302,12 @@
                           </div>
                         </ng-template>
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName" placeholder=""
-                [displayFields]="customerLookupConfig.displayFields"
-                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
-                bindValue="CustomerName" (itemSelected)="setAddress('ShipperAddress',$event) ; onShipperChange($event)">
-              </dofi-searchable-dropdown>
+                      <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                        (itemSelected)="setAddress('ShipperAddress',$event) ; onShipperChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Shipper <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
                       <div class="error-message">
@@ -315,7 +322,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value" >
+                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ShipperAddress">
                       <label for="text-input" class="input-label">Shipper Address <span
@@ -331,7 +338,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('ConsigneeName')?.value">
                       <!-- <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ConsigneeName" placeholder=""
                         (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
@@ -343,11 +351,12 @@
                           </div>
                         </ng-template>
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName" placeholder=""
-                [displayFields]="customerLookupConfig.displayFields"
-                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
-                bindValue="CustomerName" (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)">
-              </dofi-searchable-dropdown>
+                      <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName"
+                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                        (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Consignee <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
                       <div class="error-message">
@@ -361,12 +370,13 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group"  [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value" >
+                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
                           class="text-danger">*</span></label>
-                      @if(houseJobForm.get('ConsigneeAddress')?.touched && houseJobForm.get('ConsigneeAddress')?.invalid){
+                      @if(houseJobForm.get('ConsigneeAddress')?.touched &&
+                      houseJobForm.get('ConsigneeAddress')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('ConsigneeAddress')?.hasError('required')){
                         <span>Required</span>
@@ -377,7 +387,8 @@
                   </aside>
 
                   <aside class="col-md-6" [formGroup]="otherForm">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('NotifyParty')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!otherForm.get('NotifyParty')?.value">
                       <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="NotifyParty" placeholder=""
                         (change)="setAddress('NotifyAddress',$event)" appendTo="body">
@@ -389,16 +400,17 @@
                         </ng-template>
                       </ng-select> -->
                       <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
-                [displayFields]="customerLookupConfig.displayFields"
-                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
-                bindValue="CustomerName" (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
-              </dofi-searchable-dropdown>
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                        (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
                     </div>
                   </aside>
 
                   <aside class="col-md-6" [formGroup]="otherForm">
-                    <div class="custom-form-group" [class.filled]="!!otherForm.get('NotifyPartyAddress')?.value" >
+                    <div class="custom-form-group" [class.filled]="!!otherForm.get('NotifyPartyAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NotifyPartyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
@@ -444,12 +456,13 @@
                   </aside> -->
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('CarrierName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('CarrierName')?.value">
                       <!-- <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="CarrierName" placeholder="" appendTo="body">
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                      <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
                         bindValue="CustomerName">
@@ -460,7 +473,8 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('SalesmanSid')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('SalesmanSid')?.value">
                       <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
                         formControlName="SalesmanSid" placeholder="" appendTo="body">
                       </ng-select>
@@ -468,7 +482,8 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('DestinationAgent')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('DestinationAgent')?.value">
                       <!-- <ng-select [items]="deliveryAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="DestinationAgent" placeholder=""
                         (change)="setAddress('AgentAddress',$event) ; handleDestAgentChange($event)" appendTo="body">
@@ -489,7 +504,8 @@
 
                       <label for="text-input" class="input-label">Delivery Agent <span
                           class="text-danger">*</span></label>
-                      @if(houseJobForm.get('DestinationAgent')?.touched && houseJobForm.get('DestinationAgent')?.invalid){
+                      @if(houseJobForm.get('DestinationAgent')?.touched &&
+                      houseJobForm.get('DestinationAgent')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('DestinationAgent')?.hasError('required')){
                         <span>Required</span>
@@ -499,7 +515,8 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('AgentName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('AgentName')?.value">
                       <!-- <ng-select [items]="originAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         class="ng-select" formControlName="AgentName" placeholder=""
                         (change)="handleOriginAgentChange($event)" appendTo="body">
@@ -511,8 +528,8 @@
                           </div>
                         </ng-template>
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                      <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
                         bindValue="CustomerMasterSid">
@@ -520,7 +537,8 @@
 
                       <label for="text-input" class="input-label">Origin Agent <span
                           class="text-danger">*</span></label>
-                      @if(houseJobForm.get('DestinationAgent')?.touched && houseJobForm.get('DestinationAgent')?.invalid){
+                      @if(houseJobForm.get('DestinationAgent')?.touched &&
+                      houseJobForm.get('DestinationAgent')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('DestinationAgent')?.hasError('required')){
                         <span>Required</span>
@@ -530,7 +548,8 @@
                     </div>
                   </aside>
                   <aside class="col-md-6" [formGroup]="cargoForm">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
                       <ng-select [items]="modeoftransport" bindLabel="name" bindValue="name" class="ng-select"
                         formControlName="ModeOfTransport" placeholder="" appendTo="body">
                       </ng-select>
@@ -540,14 +559,15 @@
                   </aside>
                   @if(selectedDepartmentType === "SEA"){
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('FreightTerms')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('FreightTerms')?.value">
                       <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
                         appendTo="body" placeholder="" formControlName="FreightTerms">
                       </ng-select>
                       <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
                     </div>
                   </aside>
-                }
+                  }
                   <!-- <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -586,8 +606,9 @@
 
                     </div>
                   </div> -->
-                  <aside class="col-md-6" >
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('NominatedBy')?.value">
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('NominatedBy')?.value">
                       <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select"
                         appendTo="body" formControlName="NominatedBy" placeholder="">
                       </ng-select>
@@ -619,7 +640,8 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('POO')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('POO')?.value">
                       <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POO" appendTo="body" placeholder="">
                       </ng-select> -->
@@ -633,7 +655,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('POL')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('POL')?.value">
                       <!-- <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POL" appendTo="body" placeholder=""
                         (change)="handlePOLChange($event) ; onVesselChange($event)">
@@ -656,7 +679,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select"[class.filled]="!!houseJobForm.get('POD')?.value" style="margin-top: 10px;">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('POD')?.value" style="margin-top: 10px;">
                       <!-- <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POD" appendTo="body"
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
@@ -679,7 +703,8 @@
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('FPD')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('FPD')?.value">
                       <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="FPD" appendTo="body" placeholder=""
                         (change)="handleFPODChange($event)">
@@ -687,8 +712,7 @@
                       <dofi-searchable-dropdown [items]="filteredPorts" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
-                        bindLabel="PortName" bindValue="PortCode"
-                        (itemSelected)="handleFPODChange($event)">
+                        bindLabel="PortName" bindValue="PortCode" (itemSelected)="handleFPODChange($event)">
                       </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                     </div>
@@ -696,7 +720,7 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group"[class.filled]="!!houseJobForm.get('POLTerminal')?.value">
+                    <div class="custom-form-group" [class.filled]="!!houseJobForm.get('POLTerminal')?.value">
                       <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                         formControlName="POLTerminal">
                       <label for="text-input" class="input-label">POL Terminal<span class="text-danger"></span></label>
@@ -711,15 +735,16 @@
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('VesselName')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('VesselName')?.value">
                       <!-- <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
                         class="ng-select" formControlName="VesselName" placeholder="" appendTo="body"
                         (change)="onVesselChange($event)">
                       </ng-select> -->
                       @if(selectedDepartmentType === "AIR"){
-                        <input type="text" id="vessel-input" placeholder="" class="custom-input-field sm"
-                            formControlName="VesselName">
-                          <label for="text-input" class="input-label">Airline <span class="text-danger"></span></label>
+                      <input type="text" id="vessel-input" placeholder="" class="custom-input-field sm"
+                        formControlName="VesselName">
+                      <label for="text-input" class="input-label">Airline <span class="text-danger"></span></label>
                       } @else{
                       <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
                         [displayFields]="vesselVoyageConfig.displayFields"
@@ -728,19 +753,19 @@
                         (itemSelected)="onVesselChange($event)">
                       </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
-                    }
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('VoyageNo')?.value">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!houseJobForm.get('VoyageNo')?.value">
                       @if(selectedDepartmentType === "AIR"){
-                        <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
-                            formControlName="VoyageNo">
-                          <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
+                      <input type="text" id="voyage-input" placeholder="" class="custom-input-field sm"
+                        formControlName="VoyageNo">
+                      <label for="text-input" class="input-label">Airline No<span class="text-danger"></span></label>
                       } @else {
                       <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                        appendTo="body" formControlName="VoyageNo" placeholder=""
-                        (change)="onVoyageChange($event)">
+                        appendTo="body" formControlName="VoyageNo" placeholder="" (change)="onVoyageChange($event)">
                         <ng-template ng-option-tmp let-item="item">
                           <!-- Voyage Number -->
                           <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
@@ -783,11 +808,12 @@
                         </ng-template>
                       </ng-select>   -->
                       <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                    }
-                  </div>
+                      }
+                    </div>
                   </aside>
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date" [class.filled]="!!houseJobForm.get('ETD')?.value">
+                    <div class=" custom-form-group custom-form-group-select-date"
+                      [class.filled]="!!houseJobForm.get('ETD')?.value">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
                           container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
@@ -801,7 +827,8 @@
                   </div>
 
                   <div class="col-md-6">
-                    <div class=" custom-form-group custom-form-group-select-date" [class.filled]="!!houseJobForm.get('ETA')?.value">
+                    <div class=" custom-form-group custom-form-group-select-date"
+                      [class.filled]="!!houseJobForm.get('ETA')?.value">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
                           container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
@@ -818,22 +845,16 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group custom-form-group-select mt-1" [class.filled]="!!houseJobForm.get('IncoTerms')?.value">
+                    <div class="custom-form-group custom-form-group-select mt-1"
+                      [class.filled]="!!houseJobForm.get('IncoTerms')?.value">
                       <!-- <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
                         appendTo="body" formControlName="IncoTerms" placeholder="">
                       </ng-select> -->
-                      <dofi-searchable-dropdown
-            [items]="incoList"
-            formControlName="IncoTerms"
-            placeholder=""
-            [displayFields]="incoLookupConfig.displayFields"
-            [displayLabels]="incoLookupConfig.displayLabels"
-            [labelFields]="incoLookupConfig.labelFields"
-            bindValue="IncoName"
-            (itemSelected)="onIncoChange($event)"
-            (clear)="onIncoChange(null)"
-            >
-        </dofi-searchable-dropdown>
+                      <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
+                        [displayFields]="incoLookupConfig.displayFields"
+                        [displayLabels]="incoLookupConfig.displayLabels" [labelFields]="incoLookupConfig.labelFields"
+                        bindValue="IncoName" (itemSelected)="onIncoChange($event)" (clear)="onIncoChange(null)">
+                      </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('IncoTerms')?.touched && houseJobForm.get('IncoTerms')?.invalid){
                       <div class="error-message">
@@ -870,19 +891,16 @@
                           class="text-danger">*</span></label>
                     </div>
                   </aside> -->
-                   <aside class="col-md-6">
-    <div class="custom-form-group mt-1">
-        <input type="text"
-            id="freightTerms"
-            class="form-control custom-input-field sm"
-            formControlName="FreightTerms"
-            placeholder="">
-        <label for="freightTerms" class="input-label">Freight PP/CC</label>
-    </div>
-</aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group mt-1">
+                      <input type="text" id="freightTerms" class="form-control custom-input-field sm"
+                        formControlName="FreightTerms" placeholder="">
+                      <label for="freightTerms" class="input-label">Freight PP/CC</label>
+                    </div>
+                  </aside>
 
                   <aside class="col-md-6 d-flex align-items-center mx-0">
-                    <div class="form-check form-check-inline p-0" >
+                    <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Coload"
                           (keydown.enter)="toggleHeaderCheckboxes($event,'Coload')">
@@ -891,9 +909,10 @@
                     </div>
                   </aside>
                   @if(b['Coload'].value){
-          <aside class="col-md-6" [formGroup]="otherForm">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Coloader')?.value">
-              <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                  <aside class="col-md-6" [formGroup]="otherForm">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!otherForm.get('Coloader')?.value">
+                      <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="Coloader" placeholder="" appendTo="body">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
@@ -902,16 +921,16 @@
                   </div>
                 </ng-template>
               </ng-select> -->
-              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Coloader"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                      <dofi-searchable-dropdown [items]="forwarderList" formControlName="Coloader" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
                         bindValue="CustomerName">
                       </dofi-searchable-dropdown>
-              <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
-            </div>
-          </aside>
-          }
+                      <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                  }
                   <!-- <aside class="col-md-6 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
@@ -990,7 +1009,7 @@
                 <div class="stat-label">Volume</div>
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
               </div>
-               <div class="stat-item">
+              <div class="stat-item">
                 <div class="stat-label">Volumetric</div>
                 <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
               </div>
@@ -1015,7 +1034,7 @@
                 <div class="stat-label">Volume</div>
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
               </div>
-               <div class="stat-item">
+              <div class="stat-item">
                 <div class="stat-label">Volumetric</div>
                 <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
               </div>
@@ -1065,10 +1084,10 @@
       <!-- <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
         (dataEmitter)="handleRateChange($event)"></app-cost-entry> -->
-           <app-cost-entry #costEntryComponent screenName="HouseJob" [currencyList]="currencyList"
+      <app-cost-entry #costEntryComponent screenName="HouseJob" [currencyList]="currencyList"
         [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
-        [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
-        (dataEmitter)="handleRateChange($event)" (reloadParent)="loadHouseById($event)"></app-cost-entry>
+        [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
+        (reloadParent)="loadHouseById($event)"></app-cost-entry>
     </div>
 
     <!-- Other Tabs -->
@@ -1087,7 +1106,8 @@
         <div class="row compact-form px-md-5" [formGroup]="cargoForm">
 
           <aside class="col-md-2">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('CargoType')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('CargoType')?.value">
               <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
                 formControlName="CargoType" placeholder="" appendTo="body">
               </ng-select>
@@ -1096,7 +1116,8 @@
           </aside>
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-2">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ContainerType')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ContainerType')?.value">
               <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                 class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                 (change)="onContainerTypeChange($event)">
@@ -1175,7 +1196,7 @@
             </div>
           </aside>
           @if(selectedFCLLCL === "AIR") {
-                        <aside class="col-md-2">
+          <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="Volumetric" DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1233,27 +1254,30 @@
           </aside>
           @if(selectedDepartmentType === "SEA"){
           <aside class="col-md-2">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('MovementType')?.value">
-              <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="" formControlName="MovementType" appendTo="body">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('MovementType')?.value">
+              <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="MovementType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Movement Type <span class="text-danger"></span></label>
             </div>
           </aside>
           }
           <aside class="col-md-2">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
-              <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name"
-                placeholder="" formControlName="ModeOfTransport" appendTo="body">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
+              <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" placeholder=""
+                formControlName="ModeOfTransport" appendTo="body">
 
               </ng-select>
               <label for="" class="input-label">Mode of Transport <span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-2">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('StuffingAt')?.value">
-              <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="" formControlName="StuffingAt" (change)="handleCFSOrYard()
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('StuffingAt')?.value">
+              <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="StuffingAt" (change)="handleCFSOrYard()
                 " appendTo="body">
               </ng-select>
               <label for="text-input" class="input-label">Stuffing at<span class="text-danger"></span></label>
@@ -1261,20 +1285,21 @@
           </aside>
           @if(selectedDepartmentType === "SEA"){
           <aside class="col-md-2">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
               <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
                 appendTo="body" placeholder="" formControlName="ShipmentTerms">
               </ng-select>
               <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
             </div>
           </aside>
-        }
+          }
         </div>
       </div>
       <div>
         <div class="table-toolbar">
           <div class="toolbar-left">
-            
+
           </div>
 
           <div class="toolbar-right">
@@ -1302,11 +1327,11 @@
                 <th>External Pkg</th>
                 <th>No of Pkg</th>
                 @if(selectedFCLLCL === "AIR"){
-                  <th>UOM</th>
-                  <th>Length</th>
-                  <th>Width</th>
-                  <th>Height</th>
-                  <th>Volumetric</th>
+                <th>UOM</th>
+                <th>Length</th>
+                <th>Width</th>
+                <th>Height</th>
+                <th>Volumetric</th>
                 }
                 <th>CBM</th>
                 <th>Gross Weight</th>
@@ -1326,7 +1351,7 @@
                     </a>
                     <a class="text-danger  ps-2"
                       (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
-                       <i class="fas fa-trash text-center fs-2"></i>
+                      <i class="fas fa-trash text-center fs-2"></i>
                     </a>
                   </div>
                 </td>
@@ -1336,11 +1361,11 @@
                 <td>{{product.value.ExternaPkg}}</td>
                 <td>{{product.value.ExternlQty}}</td>
                 @if(selectedFCLLCL === "AIR"){
-                  <td>{{getUomName(product.value.UomMasterSid)}}</td>
-                  <td>{{product.value.Length}}</td>
-                  <td>{{product.value.Width}}</td>
-                  <td>{{product.value.Height}}</td>
-                  <td>{{product.value.Volumetric}}</td>
+                <td>{{getUomName(product.value.UomMasterSid)}}</td>
+                <td>{{product.value.Length}}</td>
+                <td>{{product.value.Width}}</td>
+                <td>{{product.value.Height}}</td>
+                <td>{{product.value.Volumetric}}</td>
                 }
                 <td>{{product.value.Volume}}</td>
                 <td>{{product.value.GrossWeight}}</td>
@@ -1410,9 +1435,10 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('ReleaseType')?.value">
-              <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name" class="ng-select"
-                placeholder="" formControlName="ReleaseType" appendTo="body">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('ReleaseType')?.value">
+              <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                formControlName="ReleaseType" appendTo="body">
               </ng-select>
               <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
             </div>
@@ -1429,7 +1455,8 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('Forwarder')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('Forwarder')?.value">
               <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 placeholder="" (change)="setAddressOthers('ForwarderAddress',$event)"
                 formControlName="Forwarder" [textWithNumbers]="20" appendTo="body">
@@ -1440,12 +1467,12 @@
                   </div>
                 </ng-template>
               </ng-select> -->
-              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Forwarder"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerName" (itemSelected)="setAddressOthers('ForwarderAddress',$event)">
-                      </dofi-searchable-dropdown>
+              <dofi-searchable-dropdown [items]="forwarderList" formControlName="Forwarder" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindLabel="CustomerName" bindValue="CustomerName"
+                (itemSelected)="setAddressOthers('ForwarderAddress',$event)">
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Forwarder<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1457,7 +1484,8 @@
             </div>
           </aside>
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('NotifyParty')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('NotifyParty')?.value">
               <!-- <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="NotifyParty" placeholder="" appendTo="body"
                 (change)="setAddressOthers('NotifyPartyAddress',$event)">
@@ -1468,12 +1496,12 @@
                   </div>
                 </ng-template>
               </ng-select> -->
-              <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerName" (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
-                      </dofi-searchable-dropdown>
+              <dofi-searchable-dropdown [items]="notifyList" formControlName="NotifyParty" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindLabel="CustomerName" bindValue="CustomerName"
+                (itemSelected)="setAddressOthers('NotifyPartyAddress',$event)">
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Notify Party<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1496,12 +1524,12 @@
                   </div>
                 </ng-template>
               </ng-select> -->
-              <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify2"
-                        placeholder="" [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerName" (itemSelected)="setAddressOthers('NotifyAddress2',$event)">
-                      </dofi-searchable-dropdown>
+              <dofi-searchable-dropdown [items]="notifyList" formControlName="Notify2" placeholder=""
+                [displayFields]="customerLookupConfig.displayFields"
+                [displayLabels]="customerLookupConfig.displayLabels" [labelFields]="customerLookupConfig.labelFields"
+                bindLabel="CustomerName" bindValue="CustomerName"
+                (itemSelected)="setAddressOthers('NotifyAddress2',$event)">
+              </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Notify 2<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -1512,7 +1540,7 @@
               <label for="text-input" class="input-label">Notify Address 2<span class="text-danger"></span></label>
             </div>
           </aside>
-          
+
           <aside class="col-md-3">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -1536,8 +1564,8 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
                   (click)="d3.toggle()" container="body">
-                <button class="btn  bi bi-calendar3 px-0" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
-                    class="feather-sm"></i-feather></button>
+                <button class="btn  bi bi-calendar3 px-0" (click)="d3.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Delivery Date <span class="text-danger"></span>
               </label>
@@ -1569,13 +1597,15 @@
 
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('CargoCurrency')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('CargoCurrency')?.value">
               <!-- <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
                 placeholder="" formControlName="CargoCurrency" appendTo="body">
               </ng-select> -->
               <dofi-searchable-dropdown [items]="currencyList" formControlName="CargoCurrency" [placeholder]="''"
-                [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyCode'" appendTo="body">
+                [displayFields]="CurrencyLookupConfig.displayFields"
+                [displayLabels]="CurrencyLookupConfig.displayLabels" [labelFields]="CurrencyLookupConfig.labelFields"
+                [bindValue]="'CurrencyCode'" appendTo="body">
               </dofi-searchable-dropdown>
               <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
             </div>
@@ -1639,7 +1669,7 @@
               </div>
             </div>
           </aside>
-        }
+          }
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-3">
             <div class="custom-form-group">
@@ -1654,8 +1684,8 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()"
                   (click)="d7.toggle()" container="body" />
-                <button class="btn  bi bi-calendar3 px-0" (click)="d7.toggle()" type="button"> <i-feather name="calendar"
-                    class="feather-sm"></i-feather></button>
+                <button class="btn  bi bi-calendar3 px-0" (click)="d7.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
               </label>
@@ -1665,7 +1695,8 @@
           }
           @if(otherForm.get('SwitchBL')?.value){
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLAgent')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('SwitchBLAgent')?.value">
               <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName"
                 placeholder="" formControlName="SwitchBLAgent" appendTo="body"
                 (change)="setAddressOthers('AgentAddress',$event)">
@@ -1689,7 +1720,8 @@
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLShipper')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('SwitchBLShipper')?.value">
               <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
                 placeholder="" formControlName="SwitchBLShipper" appendTo="body">
               </ng-select>
@@ -1698,7 +1730,8 @@
           </aside>
 
           <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
               <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
                 formControlName="SwitchBLConsignee" placeholder="" appendTo="body">
               </ng-select>
@@ -1738,11 +1771,11 @@
       <ng-container *ngComponentOutlet="ArApcomponent"></ng-container>
     </div>
 
-     <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
-    <app-follow-up screenName="houseJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
-      [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
-    </app-follow-up>
-  </div>
+    <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
+      <app-follow-up screenName="houseJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
+        [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
+      </app-follow-up>
+    </div>
 
     <!-- <div class="workspace-content" *ngIf="selectedTab === 'Product'">
       <div class="modern-table-container">
@@ -1827,8 +1860,8 @@
     </div> -->
 
     <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
-      <app-edoc [dataItems]="edocData" screenName="houseJob" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
-        (dataEmitter)="handleEdocChange($event)">
+      <app-edoc [dataItems]="edocData" screenName="houseJob" [resetTrigger]="edocResetTrigger"
+        [formData]="currentEdocFormValue" (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>
   </div>
@@ -1839,7 +1872,7 @@
     </app-email-entry>
   </div> -->
 
- 
+
 
   <!-- Floating Action Button -->
   <div class="floating-actions">
@@ -1859,7 +1892,8 @@
   <div class="modal-body">
     <div class="row compact-form" [formGroup]="productForm">
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ProductName')?.value">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!productForm.get('ProductName')?.value">
           <ng-select [items]="productList" bindLabel="ProductName" bindValue="ProductName" formControlName="ProductName"
             placeholder="" (change)="handleProductChange($event)">
           </ng-select>
@@ -1932,8 +1966,9 @@
         </div>
       </aside>
       @if(selectedDepartmentType === "AIR"){
-        <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('UomMasterSid')?.value">
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!productForm.get('UomMasterSid')?.value">
           <ng-select [items]="measurementUnitList" bindLabel="name" bindValue="id" formControlName="UomMasterSid"
             placeholder="">
           </ng-select>
@@ -1964,14 +1999,16 @@
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volumetric"
-            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal" max="9999999.999">
+            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+            max="9999999.999">
           <label for="text-input" class="input-label">Volumetric <span class="text-danger"></span></label>
         </div>
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
-            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal" max="9999999.999">
+            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+            max="9999999.999">
           <label for="text-input" class="input-label">Volume <span class="text-danger"></span></label>
         </div>
       </aside>
@@ -2020,9 +2057,10 @@
         <div class=" custom-form-group custom-form-group-select-date">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
-              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" container="body"/>
-            <button class="btn bi bi-calendar3 px-0" (click)="d8.toggle()" type="button"> <i-feather
-                name="calendar" class="feather-sm"></i-feather></button>
+              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()"
+              container="body" />
+            <button class="btn bi bi-calendar3 px-0" (click)="d8.toggle()" type="button"> <i-feather name="calendar"
+                class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label">Cargo Received Date <span class="text-danger"></span>
           </label>
@@ -2039,7 +2077,7 @@
       </aside>
       @if(productForm.get('IsHaz')?.value){
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select"  [class.filled]="!!productForm.get('ImcoClass')?.value">
+        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ImcoClass')?.value">
           <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
             placeholder="Select IMCO">
           </ng-select>
@@ -2062,9 +2100,10 @@
       </aside>
       }
       <aside class="col-md-4">
-        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ContainerNo')?.value">
-           <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber" bindValue="ContainerNumber"
-            formControlName="ContainerNo">
+        <div class="custom-form-group custom-form-group-select"
+          [class.filled]="!!productForm.get('ContainerNo')?.value">
+          <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber"
+            bindValue="ContainerNumber" formControlName="ContainerNo">
           </ng-select>
           <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
 
@@ -2216,11 +2255,11 @@
 </ng-template>
 
 <ng-template #CargoArrivalPrint let-modal>
-
+ 
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Delivery Order</h5>
+    <h5 class="modal-title text-white mb-0">Cargo Arrival Notice</h5>
     <div class="d-flex gap-2 align-items-center">
-
+ 
       <div class="spinner-overlay">
         <div class="spinner"></div>
       </div>
@@ -2230,24 +2269,24 @@
       <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
         <i class="fas fa-envelope me-1"></i>Send Email
       </button>
-
+ 
       <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-
+ 
     </div>
   </div>
-
-
+ 
+ 
   <div class="modal-body">
     <div id="printContent">
       <div class="print-a4">
-
+ 
         <div class="row ">
           <div class="company-header">
             <div class="company-logo">
               <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
-
+ 
             <div class="company-info ">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
               <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
@@ -2263,118 +2302,143 @@
          <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
         <!-- Document Title -->
         <h5 class="text-center fw-bold mb-4">CARGO ARRIVAL NOTICE - {{ getDepartmentName(houseJobForm.get('DepartmentMasterSid')?.value) }}</h5>
-
+ 
         <!-- Left: Shipment Info | Right: Address -->
-        <div class="d-flex justify-content-between align-items-start mb-2 flex-column flex-md-row p-2">
+        <div class="d-flex justify-content-between align-items-start mb-2 flex-column flex-md-row px-5">
           <!-- Left: Shipment Info -->
-          <div class="col-md-6">
-            {{ housejobData?.ConsigneeName 
-        ? (housejobData?.ConsigneeName + ' & ' + housejobData?.ConsigneeAddress) 
-        : housejobData?.Notify }}
+         <div class="col-md-6 "
+     [innerHTML]="housejobData?.ConsigneeName
+       ? (housejobData?.ConsigneeName + '<br>' + housejobData?.ConsigneeAddress)
+       : housejobData?.Notify">
+</div>
+ 
+          <div class="col-md-6 mb-1 mb-md-0">
+            <div class="d-flex"><strong style="width: 180px;">Shipment</strong><span>: {{housejobData?.ShipmentNo}}</span></div>
+            <div class="d-flex"><strong style="width: 180px;">Date</strong><span>: {{housejobData?.MBLDate | formatDate}}</span></div>
+            <div class="d-flex"><strong style="width: 180px;">Booking No</strong><span>: {{housejobData?.BookingNo}}</span></div>
           </div>
-          <div class="col-md-6 mb-2 mb-md-0">
-            <div class="d-flex"><strong style="width: 150px;">Shipment</strong><span>: {{housejobData?.ShipmentNo}}</span></div>
-            <div class="d-flex"><strong style="width: 150px;">Date</strong><span>: {{housejobData?.MBLDate | formatDate}}</span></div>
-            <div class="d-flex"><strong style="width: 150px;">Booking No</strong><span>: {{housejobData?.BookingNo}}</span></div>
-          </div>
-
+ 
           <!-- Right: Company Address -->
-
+ 
         </div>
-
+ 
         <!-- Shipper / Consignee -->
-        <div class=" p-2" style="border-top: 1px solid black;border-left: 1px solid black;border-right: 1px solid black;">
+        <div class=" p-2 px-5" style="border-top: 1px solid black;border-left: 1px solid black;border-right: 1px solid black;">
           <div class="row">
             <div class="col-md-6 ">
-              <h6>Shipper & Address :</h6>
+              <h6 class="fw-bold">Shipper  </h6>
              <div>
-                {{housejobData?.ShipperName}} & {{housejobData?.ShipperAddress}}
+                {{housejobData?.ShipperName}} <br> {{housejobData?.ShipperAddress}}
              </div>
             </div>
-            <div class="col-md-6 ">
-              <h6>Consignee & Address :</h6>
+            <div class="col-md-6 px-0">
+              <h6 class="fw-bold">Consignee  </h6>
              <div>
-              {{housejobData?.ConsigneeName}} & {{housejobData?.ConsigneeAddress}}
+              {{housejobData?.ConsigneeName}} <br> {{housejobData?.ConsigneeAddress}}
              </div>
             </div>
           </div>
         </div>
-
-
-
+         <div class=" p-2 px-5" style="border-top: 1px solid black;border-left: 1px solid black;border-right: 1px solid black;">
+          <div class="row ">
+            <div class="col-md-6 ">
+             <div class="col-12 col-md-6 fw-bold">Notify Party </div>
+            <div class="col-12 col-md-6"> {{housejobData?.Others?.[0]?.NotifyParty}} <br> {{housejobData?.Others?.[0]?.NotifyPartyAddress}} <span></span></div>
+            </div>
+            <div class="col-md-6 px-0">
+              <div class="col-12 col-md-6 fw-bold"> Goods Available At</div>
+            <div class="col-12 col-md-6"> {{housejobData?.Others?.[0]?.YardCFS}}<span></span></div>
+            </div>
+          </div>
+        </div>
+ 
+ 
+ 
         <!-- Reference Details -->
-        <div class=" p-2 mb-1" style="border: 1px solid black;">
-          <h6 class="fw-bold mb-2">REFERENCE DETAILS</h6>
-
-          <div class="row mb-1">
+        <div class=" px-5 mb-1" style="border: 1px solid black;">
+ 
+          <!-- <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Notify Party</div>
             <div class="col-12 col-md-6">:  {{housejobData?.Notify}}<span></span></div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Goods Available At</div>
             <div class="col-12 col-md-6">: {{housejobData?.Others?.[0]?.YardCFS}}<span></span></div>
-          </div>
-          <div class="row mb-1">
-            <div class="col-12 col-md-6 fw-semibold"> Release Type</div>
+          </div> -->
+          <div class="row">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;"> Release Type</div>
             <div class="col-12 col-md-6">: {{housejobData?.Others?.[0]?.ReleaseType}}</div>
           </div>
-          <div class="row mb-1">
-            <div class="col-12 col-md-6 fw-semibold"> Goods To be Cleared By</div>
+       <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;"> Goods To be Cleared By</div>
             <div class="col-12 col-md-6">:  {{housejobData?.Others?.[0]?.CHAName}}<span></span></div>
           </div>
-          <div class="row mb-1">
-            <div class="col-12 col-md-6 fw-semibold"> Ocean Bill of Lading</div>
+         <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;"> Ocean Bill of Lading</div>
             <div class="col-12 col-md-6">: {{housejobData?.MBLNo}}<span></span></div>
           </div>
-          <div class="row mb-1">
-            <div class="col-12 col-md-6 fw-semibold"> Commodity</div>
-            <div class="col-12 col-md-6">: </div>
+            </div>
+ 
+            <div class="col-md-6 px-0">
+              <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;"> Commodity</div>
+            <div class="col-12 col-md-6">: {{housejobData?.Products?.[0]?.ProductName}}</div>
           </div>
-          <div class="row mb-1">
-            <div class="col-12 col-md-6 fw-semibold"> Order Numbers / Reference</div>
-            <div class="col-12 col-md-6">: <span></span></div>
+         <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;"> Order Numbers / Reference</div>
+            <div class="col-12 col-md-6">: {{housejobData?.Others?.[0]?.CustomerRefNo}}<span></span></div>
           </div>
-          <div class="row mb-1">
-            <div class="col-12 col-md-6 fw-semibold">House Bill of Lading</div>
+          <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;">House Bill of Lading</div>
             <div class="col-12 col-md-6">: {{housejobData?.HBLNo}}</div>
           </div>
-          <div class="row">
-            <div class="col-12 col-md-6 fw-semibold">Final Destination</div>
+         <div class="d-flex align-items-center mb-1">
+            <div class="fw-bold" style="width: 180px;">Final Destination</div>
             <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
           </div>
+            </div>
+          </div>
+ 
+ 
+       
+         
         </div>
-
-
-
+ 
+ 
+ 
         <div class="table-responsive mb-2">
           <table class="table tablebordered  mb-0">
             <thead>
               <tr>
                 <th>Goods Description</th>
-                <th>Packages</th>
-                <th>Gross Wt</th>
-                <th>Chargeable Wt</th>
+                <th>Package Type</th>
+                <th class="text-center">Gross Wt</th>
+                <th class="text-center">Chargeable Wt</th>
+                <th class="text-center">Vol</th>
                 <th>Est Delivery</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>{{housejobData?.Cargo?.[0]?.CargoType}}</td>
-                <td >{{housejobData?.Cargo?.[0]?.PackageType}}</td>
-                <td class="text-end">{{housejobData?.Cargo?.[0]?.GrossWeight}}</td>
-                <td  class="text-end">{{housejobData?.Cargo?.[0]?.ChargeableWeight}}</td>
+                <td >{{housejobData?.Cargo?.[0]?.ContainerType}}</td>
+                <td class="text-end">{{housejobData?.Cargo?.[0]?.GrossWeight | number: '1.3-3' }}</td>
+                <td class="text-end">{{housejobData?.Cargo?.[0]?.Volume | number: '1.3-3' }}</td>
+                <td  class="text-end">{{housejobData?.Cargo?.[0]?.ChargeableWeight | number: '1.3-3' }}</td>
                 <td></td>
               </tr>
             </tbody>
           </table>
         </div>
-
-
+ 
+ 
         <!-- Routing Information -->
-
+ 
         <div class=" p-2 mb-1" style="border: 1px solid black;">
           <h6 class="fw-bold mb-2">ROUTING INFORMATION</h6>
-
+ 
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Mode</div>
             <div class="col-12 col-md-6">: {{ housejobData?.Cargo?.[0]?.ModeOfTransport }} </div>
@@ -2382,6 +2446,10 @@
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Vessel</div>
             <div class="col-12 col-md-6">: {{housejobData?.VesselName}}</div>
+          </div>
+          <div class="row mb-1">
+            <div class="col-12 col-md-6 fw-semibold">Voyage </div>
+            <div class="col-12 col-md-6">: {{housejobData?.VoyageNo}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Loading</div>
@@ -2404,10 +2472,38 @@
             <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
           </div>
         </div>
-
-
+ 
+ 
+             <div class="table-responsive mb-2">
+          <table class="table tablebordered mb-0">
+            <thead>
+               <tr>
+              <th>Container</th>
+              <th>Type</th>
+              <th>Mode</th>
+              <th>Seal No</th>
+              <th width="12%" class="text-center">Qty</th>
+              <th width="12%" class="text-center">Volume</th>
+              <th width="12%" class="text-center">Gross Weight</th>
+            </tr>
+            </thead>
+           
+            <tbody>
+              <tr *ngFor="let product of housejobData?.Products">
+                <td>{{ product?.ContainerNo }}</td>
+                <td>{{ product?.ExternaPkg }}</td>
+                <td>{{ housejobData?.Cargo?.[0]?.ModeOfTransport }} </td>
+                <th></th>
+                <td class="text-end">{{ product?.ExternlQty | number: '1.3-3'}}</td>
+                <td class="text-end">{{ product?.Volume | number: '1.3-3'}}</td>
+                 <td class="text-end">{{product?.GrossWeight | number: '1.3-3'}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+ 
         <!-- Charges -->
-
+ 
         <div class="table-responsive mb-2">
           <table class="table tablebordered mb-0">
             <thead>
@@ -2415,10 +2511,10 @@
                 <th> Charge Description</th>
                 <th>Curr</th>
                 <th> Unit</th>
-                <th>Ex.Rate</th>
-                <th> Local Amt</th>
-                <th>Per Unit </th>
-                <th> Amt</th>
+                <th class="text-center">Ex.Rate</th>
+                <th class="text-center"> Local Amt</th>
+                <th class="text-center"> Per Unit </th>
+                <th class="text-center"> Amt</th>
               </tr>
             </thead>
             <tbody>
@@ -2426,28 +2522,28 @@
               <td>{{rate.ChargeDescription}}</td>
               <td>{{getCurrencyCode(rate.RevenueCurrencyMasterSid)}}</td>
               <td>{{ getUnitCode(rate.ChargeUomSid) }}</td>
-              <td >{{rate.RevenueExchangeRate}}</td>
-              <td class="text-end">{{rate.RevenueLocalAmount}}</td>
-              <td class="text-end">{{rate.RevenueRate}}</td>
-              <td class="text-end">{{rate.RevenueAmount}}</td>
+              <td class="text-end">{{rate.RevenueExchangeRate | number: '1.2-2'}}</td>
+              <td class="text-end">{{rate.RevenueLocalAmount | number: '1.2-2'}}</td>
+              <td class="text-end">{{rate.RevenueRate | number: '1.2-2'}}</td>
+              <td class="text-end">{{rate.RevenueAmount | number: '1.2-2'}}</td>
             </tr>
             <tr class="fw-bold">
               <td colspan="4" class="text-end">Total</td>
-              <td class="text-end">{{ getTotalLocalAmount() | number:'1.0-2' }}</td>
-              <td></td>
-              <td class="text-end">{{ getTotalAmount() | number:'1.0-2' }}</td>
-            
+              <td class="text-end">{{ getTotalLocalAmount() | number: '1.2-2'}}</td>
+              <td class="text-end">{{getTotalPerUnit() |  number: '1.2-2'}}</td>
+              <td class="text-end">{{ getTotalAmount() | number: '1.2-2' }}</td>
+           
             </tr>
             </tbody>
           </table>
         </div>
-
-
+ 
+ 
         <!-- Totals -->
         <!-- <p><strong>Sub Total:</strong> </p> -->
         <!-- <p><strong>Total :</strong> </p>
         <p><em>amountInWords </em></p> -->
-
+ 
         <!-- Footer -->
         <footer class="text-center mb-0 px-2">
           <div class="d-flex justify-content-between">
@@ -2458,17 +2554,17 @@
             <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
           </div>
         </footer>
-
+ 
       </div>
     </div>
   </div>
 </ng-template>
 
-<!-- House Bill of Loading -->
+<!-- House Bill of Loding -->
  <ng-template #BillPrint let-modal>
  
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">House Bill of Landing</h5>
+    <h5 class="modal-title text-white mb-0">House Bill of Lading</h5>
     <div class="d-flex gap-2 align-items-center">
  
       <div class="spinner-overlay">
@@ -2489,210 +2585,371 @@
  
   <div class="modal-body">
     <div id="printContent">
-      <div class="print-a4">
+  <div
+  style="
+    width: 280mm;
+    min-height: 405mm;
+    margin: 10px auto !important;
+    background: #fff;
+    box-sizing: border-box;
+    position: relative;
+    color: #000;
+    page-break-after: always;
+  "
+>
+  <h5 class="r fw-bold pb-2" style="margin: 0;">House Bill of Lading</h5>
  
-        <div class="row ">
-          <div class="company-header">
-            <div class="company-logo">
-              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-            </div>
+  <!-- <div class="row "> ... commented company header ... </div> -->
  
-            <div class="company-info ">
-              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-              <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-              <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-              <p class="mb-1">
-                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-              </p>
-              <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-              <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-            </div>
-          </div>
-        </div>
-        <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
- 
-        <h5 class="text-center fw-bold pb-2" style="margin: 0;">House Bill of Landing</h5>
- 
-        <div class="row mb-0" style="padding: 0 10px;">
-          <div class="col-md-6" style="border: 1px solid black;">
-            <div class="d-flex mb-1 ">
-              <div style="width: 200px;" ><strong>Shipper Name and Address  </strong></div>
-              <span style="min-height: 100px;height: auto;">: {{ housejobData?.ShipperName }} & {{ housejobData?.ShipperAddress }}</span>
-            </div>
-          </div>
-          <div class="col-md-6"
-            style="border-top: 1px solid black;border-bottom: 1px solid black; border-right: 1px solid black;">
-            <div class="d-flex mb-1">
-              <div style="width: 200px;"><strong>Consignee Name & Address</strong></div>
-              <span style="min-height: 100px;height: auto;">: {{ housejobData?.ConsigneeName }} & {{ housejobData?.ConsigneeAddress }}</span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="row mb-0" style="padding: 0 10px;">
-          <div class="col-md-6"
-            style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black;">
-            <div class="d-flex mb-1">
-              <div style="width: 130px;"><strong>Notify Address</strong></div>
-              <span style="min-height: 100px;height: auto;">:  {{ housejobData?.NotifyAddress }} </span>
-            </div>
-          </div>
-          <div class="col-md-6" style="border-bottom: 1px solid black; border-right: 1px solid black;">
-            <div class="d-flex mb-1">
-              <div style="width: 130px;"><strong>Forwarder</strong></div>
-              <span>: {{ housejobData?.Others?.[0]?.Forwarder }}  </span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="row mb-0" style="padding: 0 10px;">
-          <div class="col-md-4"
-            style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black;">
-            <div class="d-flex flex-column mb-1 text-center">
-              <div><strong>Place of Acceptance</strong></div>
-              <span class="text-center">  {{ housejobData?.Others?.[0]?.PickupAddress }}</span>
-            </div>
-          </div>
-          <div class="col-md-4" style="border-bottom: 1px solid black; ">
-            <div class="d-flex flex-column mb-1 text-center">
-              <div><strong>Port of Loading</strong></div>
-              <span class="text-center"> {{ housejobData?.POL }}</span>
-            </div>
-          </div>
-          <div class="col-md-4"
-            style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black;">
-            <div class="d-flex flex-column mb-1 text-center">
-              <div><strong>Port of Discharge</strong></div>
-             <span class="text-center"> {{ housejobData?.POD }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="row" style="padding: 0 10px;">
-          <div class="col-md-4"
-            style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black;">
-            <div class="d-flex flex-column mb-1 text-center">
-              <div><strong>Place of Delivery</strong></div>
-              <span class="text-center">  {{ housejobData?.Others?.[0]?.DeliveryPlace }} </span>
-            </div>
-          </div>
-          <div class="col-md-4" style="border-bottom: 1px solid black; ">
-            <div class="d-flex flex-column mb-1 text-center">
-              <div><strong>Vessel Name / Voyage No</strong></div>
-              <span class="text-center"> {{ housejobData?.VesselName }} & {{ housejobData?.VoyageNo }} </span>
-            </div>
-          </div>
-          <div class="col-md-4"
-            style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black;">
-            <!-- <div class="d-flex flex-column mb-1 text-center"><div ><strong>Carrier Booking Ref</strong></div>
-         <div class="text-center"> REF/MSC/2025/56789</div></div> -->
-          </div>
-        </div>
- 
- 
-        <div class="table-responsive">
-          <table class="table table-sm tablebordered table-hover mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>Container No / Seal No / Marks & No</th>
-                <th>No of Pkg / Description / Shipping Unit</th>
-                <th>Gross Weight</th>
-                <th>Volume</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rate of housejobData?.Cargo">
-                <td>{{ housejobData?.Cargo?.[0]?.NoofContainers }}  /  {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}   </td>
-                <td>{{ housejobData?.Cargo?.[0]?.NoOfPackage }} / {{ housejobData?.Cargo?.[0]?.CommodityDescription }} /  {{ housejobData?.Others?.[0]?.PackageType }}  </td>
-                <td class="text-end">{{ rate.GrossWeight }}</td>
-                <td class="text-end">{{ rate.Volume }}</td>
-              </tr>
- 
-            </tbody>
-            <tfoot>
-              <tr class="fw-bold">
-                <td class="text-end " colspan="2">TOTAL</td>
-                <td class="text-end">{{grossAmount()| number:'1.0-2'}}</td>
-                <td class="text-end">{{volumeAmount()| number:'1.0-2'}}</td>
- 
- 
-              </tr>
-            </tfoot>
-          </table>
-        </div>
- 
- 
- 
-        <footer class=" mb-0 px-2">
-          <div class="row mb-0" style="padding: 0 10px;">
-            <div class="col-md-6" style="border-top: 1px solid black;border-left:1px solid black ; ">
-              <div class="d-flex  mb-1">
-                <div><strong>Total Numbers of Containers :  </strong></div>
-                <span class="text-center"> {{ housejobData?.Cargo?.[0]?.NoofContainers }}  </span>
-              </div>
-            </div>
-            <div class="col-md-6"
-              style="border-top: 1px solid black;border-left:1px solid black ; border-right: 1px solid black;">
-              <div class="d-flex  mb-1">
-                <div><strong>Onboard Date :</strong></div>
-                <div class="text-center"> REF/MSC/2025/56789</div>
-              </div>
-            </div>
-          </div>
-          <div class="row" style="padding: 0 10px;">
-            <div class="col-md-6 text-start"
-              style="border-top: 1px solid black;border-left:1px solid black ; border-bottom: 1px solid black;">
-              <p class="fs-2">We certify that the cargo is in good order and condition and that the Quantities,
-                Weights and
-                Measurements shown here in are true and correct at the time of loading into the container or
-                deleivery to
-                the carrier.</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex">
-                  <p class="fw-bold">Signed</p>
-                  <p>: </p>
-                </div>
-                <div class="d-flex">
-                  <p class="fw-bold">Date</p>
-                  <p>: </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 text-start" style="border: 1px solid black;">
-              <p class="fs-2">Received the above mentioned cargo/container in apparent good order and condition
-                subject to the
-                terms, condition and exceptions contained in the container bill of landing issue by this company on
-                behalf
-                of the owner.</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex">
-                  <p class="fw-bold">Signed</p>
-                  <p>: </p>
-                </div>
-                <div class="d-flex">
-                  <p class="fw-bold">Date</p>
-                  <p>: </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="d-flex justify-content-between text-center">
-            <div><span>Printed By:</span> {{userData.userName}}</div>
-            <span>This document is computer-generated and does not require a signature.</span>
-            <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
-          </div>
-        </footer>
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-6 px-0"
+      style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;"
+    >
+      <div class="d-flex mb-1 px-2">
+        <div style="width: 200px;"><strong>Shipper</strong></div><br />
+        <span style="min-height: 80px; height: auto;">
+          {{ housejobData?.ShipperName }} <br />
+          {{ housejobData?.ShipperAddress }}
+        </span>
       </div>
+    </div>
+    <div
+      class="col-md-6 px-0"
+      style="border-top: 1px solid black; border-bottom: 1px solid black;"
+    >
+      <div class="d-flex mb-1 px-2" style="border-bottom: 1px solid black;">
+        <div style="width: 200px;"><strong>Bill of Lading No </strong></div>
+        <span style="min-height: 10px; height: auto;">: </span>
+      </div>
+      <div class="d-flex mb-1 px-2">
+         <div style="width: 200px;"><strong>F/Agent Name & Ref </strong></div>
+        <span style="min-height: 80px; height: auto;"> </span>
+        <!-- <div style="width: 200px;"><strong>Forwarder</strong></div>
+        <span style="min-height: 80px; height: auto;">{{ housejobData?.Others?.[0]?.Forwarder }} </span> -->
+      </div>
+    </div>
+  </div>
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div class="col-md-6 d-flex flex-column p-0">
+      <div
+        class="flex-fill d-flex"
+        style="border-bottom: 1px solid black; border-right: 1px solid black;"
+      >
+        <strong style="width: 200px;">Consignee</strong><br />
+        <span style="min-height: 70px; height: auto;">
+          {{ housejobData?.ConsigneeName }}<br />
+          {{ housejobData?.ConsigneeAddress }}
+        </span>
+      </div>
+ 
+      <div
+        class="flex-fill"
+        style="border-bottom: 1px solid black; border-right: 1px solid black;"
+      >
+        <strong style="width: 200px;">Notify Party</strong><br />
+        <span style="min-height: 70px; height: auto;">
+          {{ housejobData?.NotifyAddress }}
+        </span>
+      </div>
+    </div>
+ 
+    <div
+      class="col-md-6 d-flex flex-column justify-content-center align-items-center p-3"
+      style="border-bottom: 1px solid black;"
+    >
+      <img
+        src="assets/images/logos/xtreme-dark-icon.svg"
+        alt="Company Logo"
+        class="img-fluid mb-2"
+        style="max-height: 80px;"
+      />
+      <h4 class="mb-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+      <div class="company-info text-center">
+        <p class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</p>
+        <p class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</p>
+        <p class="mb-1">
+          {{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}
+        </p>
+        <p class="mb-1">
+          {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+        </p>
+        <p class="mb-1">
+          {{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}
+        </p>
+        <p class="mb-1">
+          {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}
+        </p>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Place of Receipt</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Others?.[0]?.PickupAddress }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Port of Loading</strong></div>
+        <span class="text-center">{{ housejobData?.POL }}</span>
+      </div>
+    </div>
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black;"
+    >
+      <div class="d-flex gap-5">
+        <div class="d-flex flex-column mb-1 text-center">
+          <div><strong>Job No</strong></div>
+          <span class="text-center"> </span>
+        </div>
+        <div class="d-flex flex-column mb-1 text-center ps-5">
+          <div><strong>Job ref</strong></div>
+          <span class="text-center"> </span>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="row" style="padding: 0 10px;">
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Vessel / Voyage No</strong></div>
+        <span class="text-center">
+          {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Port of Discharge</strong></div>
+        <span class="text-center">{{ housejobData?.POD }}</span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Place of Delivery</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Others?.[0]?.DeliveryPlace }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>No of Bill of Lading</strong></div>
+        <div class="text-center"> </div>
+      </div>
+    </div>
+  </div>
+ 
+ <div class="table-responsive">
+  <table
+    class="table table-sm tablebordered table-hover mb-0"
+    style="
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 11pt;
+      border: 1px solid black;
+      color: #000;
+    "
+  >
+    <thead style="font-weight: 700; color: #000; background-color: #fff;">
+      <tr>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          Container No / Seal No / Marks & No
+        </th>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          No of Pkg / Description / Shipping Unit
+        </th>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          Gross Weight
+        </th>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          Volume
+        </th>
+      </tr>
+    </thead>
+    <tbody style="color: #000;">
+      <tr *ngFor="let rate of housejobData?.Products">
+        <td style="border: 1px solid black; padding: 2px 8px; color: #000;">
+          {{ rate?.ContainerNo }} /
+          {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}
+        </td>
+        <td style="border: 1px solid black; padding: 2px 8px; color: #000;">
+          {{  rate?.ExternlQty }} /
+          {{ housejobData?.Cargo?.[0]?.CommodityDescription }} /
+          {{ rate?.ExternaPkg }}
+        </td>
+        <td
+      class="text-end"
+      style="border: 1px solid black; padding: 2px 8px; color: #000;"
+    >
+      {{ rate.GrossWeight | number: '1.3-3' }}
+    </td>
+    <td
+      class="text-end"
+      style="border: 1px solid black; padding: 2px 8px; color: #000;"
+    >
+      {{ rate.Volume | number: '1.3-3' }}
+    </td>
+ 
+      </tr>
+    </tbody>
+    <tfoot style="color: #000;">
+      <tr class="fw-bold">
+        <td
+          class="text-end"
+          colspan="2"
+          style="border: 1px solid black; padding: 2px 8px; color: #000;"
+        >
+          TOTAL
+        </td>
+        <td
+          class="text-end"
+          style="border: 1px solid black; padding: 2px 8px; color: #000;"
+        >
+          {{ grossAmount() | number: '1.3-3' }}
+        </td>
+        <td
+          class="text-end"
+          style="border: 1px solid black; padding: 2px 8px; color: #000;"
+        >
+          {{ volumeAmount() | number: '1.3-3' }}
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+ 
+ 
+ <footer
+    style="
+      position: absolute;
+      bottom: 2mm;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10pt;
+    "
+  >
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-8"
+      style="border-bottom: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;"
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Total Number of Containers SAY :</strong></div>
+        <span class="text-center">
+          <!-- {{ housejobData?.Others?.[0]?.PickupAddress }} -->
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-4"
+      style="border-bottom: 1px solid black; border-top: 1px solid black;"
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>OnBoard Date :</strong></div>
+        <span class="text-center"></span>
+      </div>
+    </div>
+   
+  </div>
+   
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Freight Details, Charges etc :</strong></div>
+        <span class="text-center">
+          <!-- {{ housejobData?.Others?.[0]?.PickupAddress }} -->
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; "
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Excess Value Declaration : </strong></div>
+        <span class="text-center"></span>
+      </div>
+    </div>
+   
+  </div>
+   <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; border-right: 1px solid black; "
+    >
+      <!-- <div class="d-flex  mb-1 text-center">
+        <div><strong>Freight Details, Charges etc :</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Others?.[0]?.PickupAddress }}
+        </span>
+      </div> -->
+    </div>
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; "
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Signed on behalf of the Carrier. </strong></div>
+        <span class="text-center">By {{ currentCompany?.companyName || 'Company Name' }}</span>
+        <div>
+          <strong>As Agent For the Carrier</strong>
+        </div>
+      </div>
+    </div>
+   
+  </div>
+    <div style="display: flex; justify-content: space-between; text-align: center;">
+      <div><span>Printed By:</span> {{ userData.userName }}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+    </div>
+  </footer>
+</div>
+ 
+ 
     </div>
   </div>
 </ng-template>
 
 <ng-template #ShipmentPrint let-modal>
-
+ 
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
     <h5 class="modal-title text-white mb-0">Shipment Profit and Loss</h5>
     <div class="d-flex gap-2 align-items-center">
-
+ 
       <div class="spinner-overlay">
         <div class="spinner"></div>
       </div>
@@ -2702,13 +2959,13 @@
       <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
         <i class="fas fa-envelope me-1"></i>Send Email
       </button>
-
+ 
       <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-
+ 
     </div>
   </div>
-
-
+ 
+ 
   <div class="modal-body">
     <div id="printContent">
       <div class="print-a4">
@@ -2719,7 +2976,7 @@
                           <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
                           <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                       </div>
-      
+     
                       <div class="company-info ">
                           <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                           <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
@@ -2731,38 +2988,38 @@
                           <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
                       </div>
                   </div>
-              </div> 
+              </div>
         <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
-      
+     
         <h5 class="text-center fw-bold pb-2" style="margin: 0;">Shipment Profit and Loss / Shipment No - {{housejobData?.ShipmentNo}}</h5>
-      
+     
         <div class="row" style="padding: 0 10px;">
           <div class="col-md-6" style="border: 1px solid black;">
             <div class="d-flex mb-1">
-              <div style="width: 120px;"><strong>Customer & Address</strong></div>
-              <div style="min-height: 100px;height: auto;">: {{housejobData?.CustomerName}} & {{housejobData?.CustomerAddress}}</div>
+              <div style="width: 120px;"><strong>Customer </strong></div>
+              <div style="min-height: 100px;height: auto;">: {{housejobData?.CustomerName}} <br> {{housejobData?.CustomerAddress}}</div>
             </div>
           </div>
           <div class="col-md-6"
             style="border-top: 1px solid black;border-bottom: 1px solid black; border-right: 1px solid black;">
             <div class="d-flex mb-1">
-              <div style="width: 120px;"><strong>Shipper & Address</strong></div>
-              <div style="min-height: 100px;height: auto;">:  {{housejobData?.ShipperName}} & {{housejobData?.ShipperAddress}}</div>
+              <div style="width: 120px;"><strong>Shipper </strong></div>
+              <div style="min-height: 100px;height: auto;">:  {{housejobData?.ShipperName}} <br> {{housejobData?.ShipperAddress}}</div>
             </div>
           </div>
         </div>
         <div class="row" style="padding: 0 10px;">
           <div class="col-md-6" style="border: 1px solid black;">
             <div class="d-flex mb-1">
-              <div style="width: 120px;"><strong>Consignee & Address</strong></div>
-              <div style="min-height: 100px;height: auto;">: {{housejobData?.ConsigneeName}} & {{housejobData?.ConsigneeAddress}}</div>
+              <div style="width: 120px;"><strong>Consignee </strong></div>
+              <div style="min-height: 100px;height: auto;">: {{housejobData?.ConsigneeName}} <br> {{housejobData?.ConsigneeAddress}}</div>
             </div>
           </div>
           <div class="col-md-6"
             style="border-top: 1px solid black;border-bottom: 1px solid black; border-right: 1px solid black;">
             <div class="d-flex mb-1">
-              <div style="width: 120px;"><strong>Forwarder & Address</strong></div>
-              <div style="min-height: 100px;height: auto;">: {{housejobData?.Forwarder}} & {{housejobData?.ForwarderAddress}}</div>
+              <div style="width: 120px;"><strong>Forwarder</strong></div>
+              <div style="min-height: 100px;height: auto;">: {{housejobData?.Forwarder}} <br> {{housejobData?.ForwarderAddress}}</div>
             </div>
           </div>
         </div>
@@ -2801,7 +3058,7 @@
               <div>: {{housejobData?.Cargo?.[0]?.ShipmentTerms}}</div>
             </div>
           </div>
-      
+     
           <div class="col-md-6">
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Job No</strong></div>
@@ -2828,16 +3085,17 @@
               <div>: {{ housejobData?.ETA | formatDate }}</div>
             </div>
             <div class="d-flex mb-1">
-              <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
-              <div>: {{housejobData?.VesselName}} / {{housejobData?.VoyageNo}}</div>
-            </div>
+  <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
+  <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div>
+</div>
+ 
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>PP/CC</strong></div>
               <div>: {{housejobData?.FreightTerms}}</div>
             </div>
           </div>
         </div>
-      
+     
         <div class="table-responsive">
           <table class="table table-sm tablebordered table-hover mb-0">
             <thead class="table-light">
@@ -2846,33 +3104,33 @@
                 <th>Type</th>
                 <th>Description</th>
                 <th>No of Pkg</th>
-                <th>Gross Wt</th>
-                <th>Vol</th>
-                <th>Chargeable Wt</th>
-                <th>Net Wt</th>
+                <th class="text-center">Gross Wt</th>
+                <th class="text-center">Vol</th>
+                <th class="text-center">Chargeable Wt</th>
+                <th class="text-center">Net Wt</th>
               </tr>
             </thead>
             <tbody>
-      
+     
               <tr>
                 <td>{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
                 <td>{{housejobData?.Cargo?.[0]?.ContainerType}}</td>
                 <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
                 <td>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
-                <td class="text-end">{{housejobData?.Cargo?.[0]?.GrossWeight}}</td>
-                <td class="text-end">{{housejobData?.Cargo?.[0]?.Volume}}</td>
-                <td class="text-end">{{housejobData?.Cargo?.[0]?.ChargeableWeight}}</td>
-                <td class="text-end">{{housejobData?.Cargo?.[0]?.NetWeight}}</td>
+                <td class="text-end">{{housejobData?.Cargo?.[0]?.GrossWeight | number : '1.3-3' }}</td>
+                <td class="text-end">{{housejobData?.Cargo?.[0]?.Volume | number : '1.3-3' }}</td>
+                <td class="text-end">{{housejobData?.Cargo?.[0]?.ChargeableWeight | number : '1.3-3' }}</td>
+                <td class="text-end">{{housejobData?.Cargo?.[0]?.NetWeight | number : '1.3-3' }}</td>
               </tr>
-      
+     
             </tbody>
             <tfoot>
               <tr class="fw-bold">
              <td colspan="4" class="text-end fw-bold">TOTAL</td>
-              <td class="text-end fw-bold">{{ totalGrossWeight }}</td>
-              <td class="text-end fw-bold">{{ totalVolume }}</td>
-              <td class="text-end fw-bold">{{ totalChargeableWeight }}</td>
-              <td class="text-end fw-bold">{{ totalNetWeight }}</td>
+              <td class="text-end fw-bold">{{ totalGrossWeight | number : '1.3-3'}}</td>
+              <td class="text-end fw-bold">{{ totalVolume | number : '1.3-3'}}</td>
+              <td class="text-end fw-bold">{{ totalChargeableWeight | number : '1.3-3'}}</td>
+              <td class="text-end fw-bold">{{ totalNetWeight | number : '1.3-3'}}</td>
               </tr>
             </tfoot>
           </table>
@@ -2888,11 +3146,11 @@
                 <th>Local P.Revenue</th>
                 <th>Local P.Expense</th>
                 <th>Local P.GP</th>
-      
+     
               </tr>
             </thead>
             <tbody>
-      
+     
              <tr *ngFor="let chargeItem of housejobData?.costRevenueCharges">
   <td>{{ getChargeName(chargeItem?.ChargeMasterSid) }}</td>
   <td class="text-end">{{ getPCurrRevenue(chargeItem) }}</td>
@@ -2902,7 +3160,7 @@
   <td class="text-end">{{ getLocalExpense(chargeItem) }}</td>
   <td class="text-end">{{ getLocalGP(chargeItem) }}</td>
 </tr>
-      
+     
             </tbody>
             <tfoot>
          
@@ -2926,7 +3184,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Sales Organization</th>
-                                <th>Amt</th>
+                                <th class="text-center">Amt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2945,7 +3203,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Cost Organization</th>
-                                <th>Amt</th>
+                                <th class="text-center">Amt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2993,106 +3251,109 @@
 
   <div class="modal-body">
     <div id="printContent">
-     <div class="print-a4">
+      <div class="print-a4">
 
-    <!-- HEADER -->
-     <div class="row ">
-                  <div class="company-header">
-                      <div class="company-logo">
-                          <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-                          <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                      </div>
-      
-                      <div class="company-info ">
-                          <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                          <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                          <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                          <p class="mb-1">
-                              {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                          </p>
-                          <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                          <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                      </div>
-                  </div>
-              </div> 
-
-    <h5 class="fw-bold text-uppercase mb-2 text-center pt-2" style="border-top: 1px solid black;">Letter of Indemnity</h5>
-    <!-- GREETING -->
-    <div class="mb-4">
-        <h5 class="fw-semibold mb-3">Dear Sir,</h5>
-
-        <!-- VESSEL DETAILS -->
-        <div class="p-3  rounded" style="border: 1px solid black;">
-            <div class="row gy-2">
-                <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
-                <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
-                <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
-                <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
-                <div class="d-flex"><strong class="w-50">Container No</strong>: </div>
+        <!-- HEADER -->
+        <div class="row ">
+          <div class="company-header">
+            <div class="company-logo">
+              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
+
+            <div class="company-info ">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+              <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+              <p class="mb-1">
+                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+              </p>
+              <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+              <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+            </div>
+          </div>
         </div>
-    </div>
 
-    <!-- INTRO PARAGRAPH -->
-    <p class="mb-2">
-        We should advise that according to the bill of lading, the details of the following consignment are as follows:
-    </p>
+        <h5 class="fw-bold text-uppercase mb-2 text-center pt-2" style="border-top: 1px solid black;">Letter of
+          Indemnity</h5>
+        <!-- GREETING -->
+        <div class="mb-4">
+          <h5 class="fw-semibold mb-3">Dear Sir,</h5>
 
-    <!-- FIRST TABLE -->
-    <div class="table-responsive mb-3">
-        <table class="table tablebordered border-dark text-center align-middle">
+          <!-- VESSEL DETAILS -->
+          <div class="p-3  rounded" style="border: 1px solid black;">
+            <div class="row gy-2">
+              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
+              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
+              <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
+              <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
+              <div class="d-flex"><strong class="w-50">Container No</strong>: </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTRO PARAGRAPH -->
+        <p class="mb-2">
+          We should advise that according to the bill of lading, the details of the following consignment are as
+          follows:
+        </p>
+
+        <!-- FIRST TABLE -->
+        <div class="table-responsive mb-3">
+          <table class="table tablebordered border-dark text-center align-middle">
             <thead class="bg-dark text-white">
-                <tr>
-                    <th>HBL No</th>
-                    <th>Marks and Numbers</th>
-                    <th>Description of Goods</th>
-                </tr>
+              <tr>
+                <th>HBL No</th>
+                <th>Marks and Numbers</th>
+                <th>Description of Goods</th>
+              </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>{{housejobData?.HBLNo}}</td>
-                    <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
-                    <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <p class="mb-2">
-        However, we have found that the cargo outturned with the following details:
-    </p>
-
-    <!-- SECOND TABLE -->
-    <div class="table-responsive mb-3">
-        <table class="table tablebordered border-dark text-center align-middle">
-            <thead class="bg-dark text-white">
-                <tr>
-                    <th>HBL No</th>
-                    <th>Marks and Numbers</th>
-                    <th>Description of Goods</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
+              <tr>
                 <td>{{housejobData?.HBLNo}}</td>
                 <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
                 <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-                </tr>
+              </tr>
             </tbody>
-        </table>
-    </div>
+          </table>
+        </div>
 
-    <!-- BODY PARAGRAPH -->
-    <p class="mb-5">
-        We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind
-        whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all
-        payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor &
-        client and any sums demanded by you for the defense of any proceeding brought against you by reason of the
-        delivery aforesaid...
-    </p>
+        <p class="mb-2">
+          However, we have found that the cargo outturned with the following details:
+        </p>
 
-    <!-- FOOTER -->
-     <footer class="text-center mb-0 px-2">
+        <!-- SECOND TABLE -->
+        <div class="table-responsive mb-3">
+          <table class="table tablebordered border-dark text-center align-middle">
+            <thead class="bg-dark text-white">
+              <tr>
+                <th>HBL No</th>
+                <th>Marks and Numbers</th>
+                <th>Description of Goods</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{housejobData?.HBLNo}}</td>
+                <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+                <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BODY PARAGRAPH -->
+        <p class="mb-5">
+          We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind
+          whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all
+          payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor
+          &
+          client and any sums demanded by you for the defense of any proceeding brought against you by reason of the
+          delivery aforesaid...
+        </p>
+
+        <!-- FOOTER -->
+        <footer class="text-center mb-0 px-2">
           <div class="d-flex justify-content-between">
             <div><span>Printed By:</span> {{userData.userName}}</div>
             <span>This document is computer-generated and does not require a signature.</span>
@@ -3100,10 +3361,13 @@
           </div>
         </footer>
 
-</div>
+      </div>
     </div>
   </div>
 </ng-template>
+
+
+<!-- commercial Invoice -->
 
 <ng-template #CommericalInvoice let-modal>
 
@@ -3129,236 +3393,15 @@
 
   <div class="modal-body">
     <div id="printContent">
-     <div class="print-a4">
-    <!-- Company Info -->
-    <div class="row ">
-            <div class="company-header">
-                <div class="company-logo">
-                    <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
-                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                </div>
-
-                <div class="company-info ">
-                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                    <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                    <p class="mb-1">
-                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                    </p>
-                    <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                    <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                </div>
-            </div>
-        </div> 
-   
-
-    <h5 class="text-center fw-bold py-2" style="margin: 0; border-top: 1px solid black;">Commerical Invoice</h5>
-
-
-
-    <!-- Section 1 -->
-    <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
-
-        <!-- Shipment No -->
-        <div
-            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; padding: 4px;">
-                <div style="width: 120px; font-weight: bold;">Shipment No</div>
-                <div>: {{housejobData?.ShipmentNo}}</div>
-            </div>
-        </div>
-
-        <!-- Job No -->
-        <div
-            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; padding: 4px;">
-                <div style="width: 120px; font-weight: bold;">Job No</div>
-                <div>: </div>
-            </div>
-        </div>
-
-        <!-- To -->
-        <div
-            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; padding: 4px;">
-                <div style="width: 120px; font-weight: bold;">To</div>
-                <div style="min-height: 100px; height: auto;">: </div>
-            </div>
-        </div>
-
-        <!-- Shipper -->
-        <div
-            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; padding: 4px;">
-                <div style="width: 120px; font-weight: bold;">Shipper & Address</div>
-                <div style="min-height: 100px; height: auto;">:  {{housejobData?.ShipperName}} & {{housejobData?.ShipperAddress}}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 2 -->
-    <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
-        <div
-            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; padding: 4px;">
-                <div style="width: 120px; font-weight: bold;">Consignee & Address</div>
-                <div style="min-height: 100px; height: auto;">: {{housejobData?.ConsigneeName}} & {{housejobData?.ConsigneeAddress}}</div>
-            </div>
-        </div>
-
-        <div
-            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; padding: 4px;">
-                <div style="width: 120px; font-weight: bold;">Notify</div>
-                <div style="min-height: 100px; height: auto;">: {{housejobData?.Notify}}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 3 -->
-    <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Commodity Description</strong></div>
-                <div> {{housejobData?.Cargo?.[0]?.CommodityDescription}}</div>
-            </div>
-        </div>
-
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Curr</strong></div>
-                <div> </div>
-            </div>
-        </div>
-
-        <div style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>No of Pkgs</strong></div>
-                <div> {{housejobData?.Cargo?.[0]?.NoOfPackage}}</div>
-            </div>
-        </div>
-
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Gross Wt</strong></div>
-                <div> {{housejobData?.Cargo?.[0]?.GrossWeight}}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 4 -->
-    <div class="row" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Net Wt</strong></div>
-                <div>{{housejobData?.Cargo?.[0]?.NetWeight}} </div>
-            </div>
-        </div>
-
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Volume</strong></div>
-                <div> {{housejobData?.Cargo?.[0]?.Volume}}</div>
-            </div>
-        </div>
-
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Good Value</strong></div>
-                <div> </div>
-            </div>
-        </div>
-
-        <div
-            style="flex: 0 0 25%; max-width: 25%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
-            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
-                <div><strong>Total Value</strong></div>
-                <div> </div>
-            </div>
-        </div>
-    </div>
-
-
-
-
-
-    <table class="table table-sm table-hover tablebordered">
-        <thead>
-            <tr>
-                <th>Container</th>
-                <th>Type</th>
-                <th>Commodity Description</th>
-                <th>No of Pkgs</th>
-                <th>Gross Wt</th>
-                <th>Volume</th>
-                <th>Chargeable Wt</th>
-                <th>Net Wt</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
-               <td>{{housejobData?.Cargo?.[0]?.ContainerType}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.GrossWeight}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.Volume}}</td>
-                <td>{{housejobData?.Cargo?.[0]?.ChargeableWeight}}</td>
-                  <td>{{housejobData?.Cargo?.[0]?.NetWeight}}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <footer class="text-center mb-0 px-2">
-        <div class="d-flex justify-content-between">
-      <div><span>Printed By:</span> {{userData.userName}}</div>
-      <span>This document is computer-generated and does not require a signature.</span>
-      <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
-    </div>
-    </footer>
-</div>
-    </div>
-  </div>
-</ng-template>
-<ng-template #deliveryOrderPrint let-modal>
- 
-  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Delivery Order</h5>
-    <div class="d-flex gap-2 align-items-center">
- 
-      <div class="spinner-overlay">
-        <div class="spinner"></div>
-      </div>
-      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
-        <i class="fas fa-download me-1"></i> Download PDF
-      </button>
-      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
-        <i class="fas fa-envelope me-1"></i>Send Email
-      </button>
- 
-      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
- 
-    </div>
-  </div>
- 
- 
-  <div class="modal-body">
-    <div id="printContent">
       <div class="print-a4">
- 
+        <!-- Company Info -->
         <div class="row ">
           <div class="company-header">
             <div class="company-logo">
               <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
- 
+
             <div class="company-info ">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
               <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
@@ -3371,126 +3414,374 @@
             </div>
           </div>
         </div>
-       
+
+
+        <h5 class="text-center fw-bold py-2" style="margin: 0; border-top: 1px solid black;">Commerical Invoice</h5>
+
+
+
+        <!-- Section 1 -->
+        <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
+
+          <!-- Shipment No -->
+          <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; align-items: center; padding: 4px;">
+              <div style="width: 120px; font-weight: bold;">Shipment No</div>
+              <div>: {{housejobData?.ShipmentNo}}</div>
+            </div>
+          </div>
+
+          <!-- Job No -->
+          <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; align-items: center; padding: 4px;">
+              <div style="width: 120px; font-weight: bold;">Job No</div>
+              <div>: </div>
+            </div>
+          </div>
+
+          <!-- To -->
+          <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+              <div style="width: 120px; font-weight: bold;">To</div>
+              <div style="min-height: 100px; height: auto;">: </div>
+            </div>
+          </div>
+
+          <!-- Shipper -->
+          <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+              <div style="width: 120px; font-weight: bold;">Shipper & Address</div>
+              <div style="min-height: 100px; height: auto;">: {{housejobData?.ShipperName}} &
+                {{housejobData?.ShipperAddress}}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
+          <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+              <div style="width: 120px; font-weight: bold;">Consignee & Address</div>
+              <div style="min-height: 100px; height: auto;">: {{housejobData?.ConsigneeName}} &
+                {{housejobData?.ConsigneeAddress}}</div>
+            </div>
+          </div>
+
+          <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+              <div style="width: 120px; font-weight: bold;">Notify</div>
+              <div style="min-height: 100px; height: auto;">: {{housejobData?.Notify}}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Commodity Description</strong></div>
+              <div> {{housejobData?.Cargo?.[0]?.CommodityDescription}}</div>
+            </div>
+          </div>
+
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Curr</strong></div>
+              <div> </div>
+            </div>
+          </div>
+
+          <div style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>No of Pkgs</strong></div>
+              <div> {{housejobData?.Cargo?.[0]?.NoOfPackage}}</div>
+            </div>
+          </div>
+
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Gross Wt</strong></div>
+              <div> {{housejobData?.Cargo?.[0]?.GrossWeight}}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="row" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Net Wt</strong></div>
+              <div>{{housejobData?.Cargo?.[0]?.NetWeight}} </div>
+            </div>
+          </div>
+
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Volume</strong></div>
+              <div> {{housejobData?.Cargo?.[0]?.Volume}}</div>
+            </div>
+          </div>
+
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Good Value</strong></div>
+              <div> </div>
+            </div>
+          </div>
+
+          <div
+            style="flex: 0 0 25%; max-width: 25%; border-left: 1px solid black; border-right: 1px solid black; border-top: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
+              <div><strong>Total Value</strong></div>
+              <div> </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+        <table class="table table-sm table-hover tablebordered">
+          <thead>
+            <tr>
+              <th>Container</th>
+              <th>Type</th>
+              <th>Commodity Description</th>
+              <th>No of Pkgs</th>
+              <th>Gross Wt</th>
+              <th>Volume</th>
+              <th>Chargeable Wt</th>
+              <th>Net Wt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.ContainerType}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.GrossWeight}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.Volume}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.ChargeableWeight}}</td>
+              <td>{{housejobData?.Cargo?.[0]?.NetWeight}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <footer class="text-center mb-0 px-2">
+          <div class="d-flex justify-content-between">
+            <div><span>Printed By:</span> {{userData.userName}}</div>
+            <span>This document is computer-generated and does not require a signature.</span>
+            <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Delivery Order  Sea -->
+<ng-template #deliveryOrderPrint let-modal>
+
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Delivery Order</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+        <i class="fas fa-envelope me-1"></i>Send Email
+      </button>
+
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+
+    </div>
+  </div>
+
+
+  <div class="modal-body">
+    <div id="printContent">
+      <div class="print-a4">
+
+        <div class="row ">
+          <div class="company-header">
+            <div class="company-logo">
+              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            </div>
+
+            <div class="company-info ">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+              <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+              <p class="mb-1">
+                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+              </p>
+              <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+              <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+            </div>
+          </div>
+        </div>
+
         <h5 class="my-3 fw-bold text-center pt-1" style="border-top: 1px solid black;">Delivery Order</h5>
- 
-        <div class="row">
+
+        <div class="row px-5">
           <div class="col-12 col-md-6 mb-3">
-            <strong>Release To</strong><br>
-            <p>
- 
-            </p>
+            <strong>Release To : </strong> <br>
+            <div class="" [innerHTML]="housejobData?.ConsigneeName
+       ? (housejobData?.ConsigneeName + '<br>' + housejobData?.ConsigneeAddress)
+       : housejobData?.Notify">
+            </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="d-flex mb-1">
-              <strong style="width: 200px;">Agent Code</strong>
-              <span>:</span>
+              <strong style="width: 100px;">Booking No.</strong>
+              <span>: {{ housejobData?.BookingNo }}</span>
             </div>
             <div class="d-flex mb-1">
-              <strong style="width: 200px;">DO Number</strong>
+              <strong style="width: 100px;">DO Number</strong>
               <span>: </span>
             </div>
             <div class="d-flex mb-1">
-              <strong style="width: 200px;">Date</strong>
+              <strong style="width: 100px;">Date</strong>
               <span>: {{ housejobData?.BookingDateTime | formatDate}}</span>
             </div>
             <div class="d-flex mb-1">
-              <strong style="width: 200px;">Shipment</strong>
+              <strong style="width: 100px;">Shipment</strong>
               <span>: {{ housejobData?.ShipmentNo }} </span>
             </div>
           </div>
         </div>
- 
+
         <!-- Shipment Details -->
         <h6 class="fw-bold">SHIPMENT DETAILS</h6>
-        <div class=" mb-2 p-2" style="border: 1px solid black;">
+        <div class=" mb-0 p-2 px-5"
+          style="border-top: 1px solid black;border-left: 1px solid black;border-right: 1px solid black;  ">
           <div class="row">
             <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <strong>Shipper & Address :</strong><br />
-              <span> {{ housejobData?.ShipperName }} & {{ housejobData?.ShipperAddress }} </span>
+              <strong>Shipper :</strong><br />
+              <span> {{ housejobData?.ShipperName }} <br> {{ housejobData?.ShipperAddress }} </span>
             </div>
             <div class="col-12 col-md-6">
-              <strong>Consignee Name & Consignee Address :</strong><br />
-              <span> {{ housejobData?.ConsigneeName }} & {{ housejobData?.ConsigneeAddress }} </span>
+              <strong>Consignee :</strong><br />
+              <span> {{ housejobData?.ConsigneeName }} <br> {{ housejobData?.ConsigneeAddress }} </span>
             </div>
           </div>
         </div>
- 
+
         <!-- Notify and Goods Available -->
-        <div class="row mb-2">
-          <div class="col-12 col-md-6">
+        <div class="row mb-0 p-1 mx-0" style="border-left: 1px solid black;border-right: 1px solid black;border-top: 1px solid black;">
+          <div class="col-12 col-md-6 ">
             <div class="d-flex">
-              <strong style="width: 180px;">NOTIFY PARTY</strong>
-              <span>: {{ housejobData?.Notify }} </span>
+              <strong style="width: 135px;">Notify Party</strong>
+              <span>: {{ housejobData?.Others?.[0]?.NotifyParty }} </span>
             </div>
           </div>
           <div class="col-12 col-md-6 mt-2 mt-md-0">
             <div class="d-flex">
-              <strong style="width: 180px;">GOODS AVAILABLE AT</strong>
+              <strong style="width: 170px;">Goods Available At</strong>
               <span>: {{ housejobData?.Others?.[0]?.YardCFS }} </span>
             </div>
           </div>
         </div>
- 
+
         <!-- Other Shipment Info -->
-        <div class="mb-3">
-          <div class="col-12">
-            <div class="d-flex mb-1 flex-wrap">
-              <strong style="width: 250px;">Release Type</strong>
-              <span>: {{ housejobData?.Others?.[0]?.ReleaseType }} </span>
+        <div class="mb-0"
+          style="border-left: 1px solid black;border-right: 1px solid black;border-bottom: 1px solid black;border-top: 1px solid black;">
+          <div class="row px-5 pt-2">
+            <div class="col-md-6">
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 140px;">Release Type</strong>
+                <span>: {{ housejobData?.Others?.[0]?.ReleaseType }} </span>
+              </div>
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 140px;">Order Numbers / Reference</strong>
+                <span>: {{ housejobData?.Others?.[0]?.CustomerRefNo }} </span>
+              </div>
+
             </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <strong style="width: 250px;">Order Numbers / Reference</strong>
-              <span>: {{ housejobData?.Others?.[0]?.CustomerRefNo }} </span>
+            <div class="col-md-6">
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 170px;">Ocean Bill OF Lading</strong>
+                <span>: {{ housejobData?.MBLNo }} </span>
+              </div>
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 170px;">Commodity</strong>
+                <span>: </span>
+              </div>
             </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <strong style="width: 250px;">Ocean Bill OF Lading</strong>
-              <span>: {{ housejobData?.MBLNo }} </span>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <strong style="width: 250px;">Commodity</strong>
-              <span>: </span>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <strong style="width: 250px;">HBL</strong>
-              <span>: {{ housejobData?.HBLNo }} </span>
+
+            <div class="col-12">
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 140px;">HBL</strong>
+                <span>: {{ housejobData?.HBLNo }} </span>
+              </div>
             </div>
           </div>
         </div>
- 
+
+        <!-- <div class="d-flex mb-1 flex-wrap">
+          <strong style="width: 250px;">Ocean Bill OF Lading</strong>
+          <span>: {{ housejobData?.MBLNo }} </span>
+        </div>
+        <div class="d-flex mb-1 flex-wrap">
+          <strong style="width: 250px;">Commodity</strong>
+          <span>: </span>
+        </div>
+        <div class="d-flex mb-1 flex-wrap">
+          <strong style="width: 250px;">HBL</strong>
+          <span>: {{ housejobData?.HBLNo }} </span>
+        </div> -->
+
         <!-- Routing Info -->
-        <h6 class="mt-4 fw-bold">ROUTING INFORMATION</h6>
         <div class="table-responsive">
           <table class="table tablebordered  mb-3">
             <thead>
               <tr>
-                <th>Container</th>
-                <th>Seal</th>
-                <th>Container Type</th>
-                <th> Gross Weight</th>
-                <th>Volume</th>
-                <th>Package Type</th>
+                <th width="5%">Container</th>
+                <th width="5%">Seal</th>
+                <th width="8%">Container Type</th>
+                <th width="5%"class="text-center"> Gross Weight</th>
+                <th width="5%"class="text-center">Volume</th>
+                <th width="8%"lass="text-center">Package Type</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>{{ housejobData?.Cargo?.[0]?.NoofContainers }}</td>
-                <td> </td>
-                <td>{{ housejobData?.Cargo?.[0]?.ContainerType }}</td>
-                <td>{{ housejobData?.Cargo?.[0]?.GrossWeight }}</td>
-                <td>{{ housejobData?.Cargo?.[0]?.Volume }}</td>
-                <td>{{ housejobData?.Cargo?.[0]?.PackageType }}</td>
+                <td >{{ housejobData?.Products?.[0]?.ContainerNo }}</td>
+                <td > {{getSealNo(housejobData?.Products?.[0]?.ContainerNo)}}</td>
+                <td >{{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}</td>
+                <td  class="text-end">{{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3'}}</td>
+                <td class="text-end">{{ housejobData?.Cargo?.[0]?.Volume | number:'1.3-3' }}</td>
+                <td>{{ housejobData?.Products?.[0]?.ExternlQty }} {{ housejobData?.Products?.[0]?.ExternaPkg }}  </td>
               </tr>
             </tbody>
           </table>
         </div>
- 
+
         <!-- Description -->
         <div class="mb-3">
           <strong>MARKS AND NUMBERS / GOODS DESCRIPTION :</strong><br />
-            {{housejobData?.Cargo?.[0]?.MarksAndNumber}} / {{ housejobData?.Cargo?.[0]?.CommodityDescription }}
+          <!-- <span>: {{housejobData?.Cargo?.[0]?.MarksAndNumber}} / {{ housejobData?.Cargo?.[0]?.CommodityDescription }}</span> -->
         </div>
- 
+
         <!-- Charges -->
         <!-- <h6 class="mt-4">CHARGES</h6> -->
         <div class="table-responsive">
@@ -3501,64 +3792,64 @@
                 <th rowspan="2 ">Unit</th>
                 <th colspan="3" class="text-center">Revenue</th>
                 <th colspan="3" class="text-center">Cost</th>
- 
+
               </tr>
- 
+
               <tr>
-                
-                <th>Currency</th>
-                <th>Per Unit</th>
-                <th>Amount</th>
-                <th>Currency</th>
-                <th>Per Unit</th>
-                <th>Amount</th>
+
+                <th class="text-center">Currency</th>
+                <th class="text-center">Per Unit</th>
+                <th class="text-center">Amount</th>
+                <th class="text-center">Currency</th>
+                <th class="text-center">Per Unit</th>
+                <th class="text-center">Amount</th>
                 <!-- <th>Tax</th> -->
               </tr>
- 
- 
- 
+
+
+
             </thead>
             <tbody>
-              <tr  *ngFor="let rate of housejobData?.costRevenueCharges">
+              <tr *ngFor="let rate of housejobData?.costRevenueCharges">
                 <td>{{ rate.ChargeDescription }}</td>
                 <td>{{ getUnitCode(rate.ChargeUomSid) }}</td>
                 <td>{{getCurrencyCode(rate.RevenueCurrencyMasterSid)}}</td>
-                <td class="text-end ">{{ rate.RevenueRate }}</td>
-                <td class="text-end ">{{ rate.RevenueAmount }}</td>
-                <td>{{getCurrencyCodeCost(rate.CostCurrencyMasterSid)  }}</td>
-                <td class="text-end ">{{ rate.CostRate }}</td>
-                <td class="text-end ">{{ rate.CostAmount }}</td>
+                <td class="text-end ">{{ rate.RevenueRate | number:'1.2-2' }}</td>
+                <td class="text-end ">{{ rate.RevenueAmount | number:'1.2-2' }}</td>
+                <td>{{getCurrencyCodeCost(rate.CostCurrencyMasterSid) }}</td>
+                <td class="text-end ">{{ rate.CostRate | number:'1.2-2' }}</td>
+                <td class="text-end ">{{ rate.CostAmount | number:'1.2-2' }}</td>
                 <!-- <td></td> -->
               </tr>
- 
- 
-              <tr >
+
+
+              <tr>
                 <td colspan="3" class="text-end fw-bold">Total</td>
-                <td class="text-end fw-bold">{{getTotalLocalRevenuAmount()| number:'1.0-2'}}</td>
-                <td class="text-end fw-bold">{{TotalLocalAmount()| number:'1.0-2'}}</td>
+                <td class="text-end fw-bold">{{getTotalLocalRevenuAmount()| number:'1.2-2'}}</td>
+                <td class="text-end fw-bold">{{TotalLocalAmount()| number:'1.2-2'}}</td>
                 <td></td>
-                <td class="text-end fw-bold">{{getCostAmount()| number:'1.0-2'}}</td>
-                <td class="text-end fw-bold">{{CostAmount()| number:'1.0-2'}}</td>
+                <td class="text-end fw-bold">{{getCostAmount()| number:'1.2-2'}}</td>
+                <td class="text-end fw-bold">{{CostAmount()| number:'1.2-2'}}</td>
               </tr>
- 
+
             </tbody>
           </table>
         </div>
         <!--
         <p><strong></strong></p>
         <p><strong>TOTAL: </strong></p> -->
- 
-        <div class="mt-4">
+
+        <!-- <div class="mt-4">
           <strong>Sea Delivery Order terms</strong><br />
           Admin,<br />
           DOFI
-        </div>
- 
+        </div> -->
+
         <div class="mt-5">
           DOFI Infosys LLC (BRANCH OF SINGAPORE)<br />
           (AS AGENTS ONLY)
         </div>
- 
+
         <footer class="text-center mb-0 px-2">
           <div class="d-flex justify-content-between">
             <div class=""><span>Printed By :</span> {{userData.userName}} </div>
@@ -3568,19 +3859,21 @@
             <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
           </div>
         </footer>
- 
+
       </div>
     </div>
   </div>
 </ng-template>
+
+
 <!-- Ceritificate of Origin -->
- 
+
 <ng-template #OrginPrint let-modal>
- 
+
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Ceritificate of Origin</h5>
+    <h5 class="modal-title text-white mb-0">Certificate of Origin</h5>
     <div class="d-flex gap-2 align-items-center">
- 
+
       <div class="spinner-overlay">
         <div class="spinner"></div>
       </div>
@@ -3590,23 +3883,23 @@
       <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
         <i class="fas fa-envelope me-1"></i>Send Email
       </button>
- 
+
       <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
- 
+
     </div>
   </div>
- 
- 
+
+
   <div class="modal-body">
     <div id="printContent">
-    <div class="print-a4">
-  <div class="row ">
+      <div class="print-a4">
+        <div class="row ">
           <div class="company-header">
             <div class="company-logo">
               <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
             </div>
- 
+
             <div class="company-info ">
               <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
               <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
@@ -3618,39 +3911,41 @@
               <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
             </div>
           </div>
- 
+
         </div>
- 
-          <h5 class="my-3 fw-bold text-center py-2" style="border-top: 1px solid black;">Certificate of Origin</h5>
- 
-           
-    <div class="mb-2">
-        <!-- <h5 class="fw-semibold pb-1">Shipper</h5> -->
- 
-         <div class="row mb-0" style="padding: 0 10px;">
-          <div class="col-md-6" style="border: 1px solid black;">
-            <div class="d-flex mb-1 ">
-              <div style="width: 200px;" ><strong>Shipper Name and Address  </strong></div>
-              <span style="min-height: 100px;height: auto;">: {{ housejobData?.ShipperName }} & {{ housejobData?.ShipperAddress }}</span>
+
+        <h5 class="my-3 fw-bold text-center py-2" style="border-top: 1px solid black;">Certificate of Origin</h5>
+
+
+        <div class="mb-2">
+          <!-- <h5 class="fw-semibold pb-1">Shipper</h5> -->
+
+          <div class="row mb-0" style="padding: 0 10px;">
+            <div class="col-md-6" style="border: 1px solid black;">
+              <div class="d-flex mb-1 ">
+                <div style="width: 200px;"><strong>Shipper Name and Address </strong></div>
+                <span style="min-height: 100px;height: auto;">: {{ housejobData?.ShipperName }} & {{
+                  housejobData?.ShipperAddress }}</span>
+              </div>
+            </div>
+            <div class="col-md-6"
+              style="border-top: 1px solid black;border-bottom: 1px solid black; border-right: 1px solid black;">
+              <div class="d-flex mb-1">
+                <div style="width: 200px;"><strong>Consignee Name & Address</strong></div>
+                <span style="min-height: 100px;height: auto;">: {{ housejobData?.ConsigneeName }} & {{
+                  housejobData?.ConsigneeAddress }}</span>
+              </div>
             </div>
           </div>
-          <div class="col-md-6"
-            style="border-top: 1px solid black;border-bottom: 1px solid black; border-right: 1px solid black;">
-            <div class="d-flex mb-1">
-              <div style="width: 200px;"><strong>Consignee Name & Address</strong></div>
-              <span style="min-height: 100px;height: auto;">: {{ housejobData?.ConsigneeName }} & {{ housejobData?.ConsigneeAddress }}</span>
-            </div>
-          </div>
         </div>
-    </div>
- 
-   
- 
-    <!-- Shipment Details -->
-    <h5 class="fw-semibold pb-1 mb-3">Shipment Details</h5>
- 
- 
-     <div class="row mb-0" style="padding: 0 10px;">
+
+
+
+        <!-- Shipment Details -->
+        <h5 class="fw-semibold pb-1 mb-3">Shipment Details</h5>
+
+
+        <div class="row mb-0" style="padding: 0 10px;">
           <div class="col-md-4"
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; border-top: 1px solid black;">
             <div class="d-flex flex-column mb-1 text-center">
@@ -3668,7 +3963,7 @@
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; border-top: 1px solid black;">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Port of Discharge</strong></div>
-             <span class="text-center"> {{ housejobData?.POD }}</span>
+              <span class="text-center"> {{ housejobData?.POD }}</span>
             </div>
           </div>
         </div>
@@ -3677,7 +3972,7 @@
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; ">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Place of Loading</strong></div>
-              <span class="text-center">  {{ housejobData?.POL }} </span>
+              <span class="text-center"> {{ housejobData?.POL }} </span>
             </div>
           </div>
           <div class="col-md-4" style="border-bottom: 1px solid black; ">
@@ -3692,28 +3987,28 @@
          <div class="text-center"> REF/MSC/2025/56789</div></div> -->
           </div>
         </div>
- 
- 
- 
-    <!-- Goods Description -->
-    <div>
-        <h5 class="fw-semibold pb-1">Goods Description</h5>
-        <ul class="mb-0">
+
+
+
+        <!-- Goods Description -->
+        <div>
+          <h5 class="fw-semibold pb-1">Goods Description</h5>
+          <ul class="mb-0">
             <li>{{ housejobData?.Cargo?.[0]?.CommodityDescription }}</li>
-        </ul>
- 
-         <footer class="text-center mb-0 px-2">
-          <div class="d-flex justify-content-between">
-            <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-            <span>
-              This document is computer-generated and does not require a signature.
-            </span>
-            <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-          </div>
-  </footer>
- 
-    </div>
-</div>
+          </ul>
+
+          <footer class="text-center mb-0 px-2">
+            <div class="d-flex justify-content-between">
+              <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+              <span>
+                This document is computer-generated and does not require a signature.
+              </span>
+              <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
     </div>
   </div>
 </ng-template>
