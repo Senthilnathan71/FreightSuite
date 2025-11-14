@@ -47,6 +47,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
+import { PreAlertComponent } from '../reports/pre-alert/pre-alert.component';
+import { ReleaseLetterComponent } from '../reports/release-letter/release-letter.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -2332,24 +2334,39 @@ getAgentBranchName(AgentSid: number): string {
   return 'N/A';
 }
 
-    reportPreAlertModel(content: TemplateRef<any>) {
-      this.modalService.open(content, {
+    reportPreAlertModel() {
+      const modalRef=this.modalService.open(PreAlertComponent,{
         size: 'xl',
         scrollable: true,
-      });
+      })
+      modalRef.componentInstance.masterJobData=this.masterJobData; 
+      modalRef.componentInstance.containerTypeList=this.containerTypeList;
+      modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
     }
 
-     reportcargomanifest(content: TemplateRef<any>) {
-      this.modalService.open(content, {
+     reportcargomanifest() {
+     const modelRef=this.modalService.open(ReleaseLetterComponent, {
         size: 'xl',
         scrollable: true,
       });
+
+      modelRef.componentInstance.masterJobData=this.masterJobData;
+      modelRef.componentInstance.packageType=this.packageTypeList;
+      modelRef.componentInstance.cfsList=this.cfsList;
+
     }
-     reportreleaseLetter(content: TemplateRef<any>) {
-      this.modalService.open(content, {
+
+
+     reportreleaseLetter() {
+      const modalRef = this.modalService.open(ReleaseLetterComponent, {
         size: 'xl',
         scrollable: true,
       });
+      modalRef.componentInstance.masterJobData= this.masterJobData;
+      modalRef.componentInstance.cfsList=this.cfsList || [];
+      modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     }
 
     
