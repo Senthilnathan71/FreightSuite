@@ -26,11 +26,11 @@
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
-                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel(preAlertPrint)"
+                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()"
                             [disabled]="isLoading">Pre Alert</button>
-                        <button class="text-dark" ngbDropdownItem  (click)="reportcargomanifest(cargoPrint)"
+                        <button class="text-dark" ngbDropdownItem  (click)="reportcargomanifest()"
                             [disabled]="isLoading">Cargo Manifest</button>
-                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseLetter(releasePrint)"
+                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseLetter()"
                             [disabled]="isLoading">Release Letter</button>
                             <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder(releaseOrderPrint)"
                             [disabled]="isLoading">Release Order</button>
