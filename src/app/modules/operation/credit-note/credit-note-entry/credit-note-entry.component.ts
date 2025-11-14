@@ -46,7 +46,8 @@ export class CreditNoteEntryComponent {
   creditNoteData : any;
 
   currUserEmail: string | null = null;
-  get isEditMode() { return !!this.headerId; }
+  isViewMode: boolean = false;
+  get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
   @ViewChild('printModal') printModalRef: any;
   @ViewChild('emailModal') emailModalRef: any;
@@ -56,6 +57,7 @@ export class CreditNoteEntryComponent {
   bankDetails : any;
   currencyList: any[] = [];
   chargeList: any[] = [];
+  stateList: any[] =[];
   hssacList: any[] = [];
   invoiceList:any[] =[];
   subledgerList: any[] = [];
@@ -80,6 +82,12 @@ export class CreditNoteEntryComponent {
     displayLabels : ['Code', 'Name'],
     labelFields :['HSSACCode'],
   };
+  gstTypes = [
+    { id: 'B2B', name: 'B2B - Business to Business' },
+    { id: 'B2C', name: 'B2C - Business to Customer' },
+    { id: 'EXWP', name: 'Export With Payment' },
+    { id: 'EXWOP', name: 'Export Without Payment' }
+  ];
   departmentList: any[] = [];
   departmentLookupConfig = {
     displayFields: ['departmentCode', 'departmentName'],
@@ -115,7 +123,13 @@ export class CreditNoteEntryComponent {
   ]
   bookingModeCountry: string = '';
   private pendingBranchToSelect: number | null = null;
-
+  currentUserState: string;
+  currentFinancialYear : number;
+  currentCountry : number;
+  currentCurrency: number;
+  currentUserCurrency : string;
+  
+  currentUserCountry :string;
   get isIndiaGST(): boolean {
     return this.bookingModeCountry === 'india';
   }
@@ -146,7 +160,30 @@ export class CreditNoteEntryComponent {
     try {
       this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+      this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+      this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+      this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+      this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
+      this.currentCurrency=Number(this.currentCompany?.CurrencyMasterSid)
+      this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
+      this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
+  
+      console.log('=== INITIAL COMPANY DATA ===');
+      console.log('Current Company:', this.currentCompany);
+      console.log('Current Branch:', this.currentBranch);
+      console.log('Company State:', this.currentUserState);
+      console.log('Company Currency:', this.currentUserCurrency);
+      console.log('Current Country:', this.currentCountry);
+      console.log('Current Currency:', this.currentCurrency);
+      console.log('Current Financial Year:', this.currentFinancialYear);
+  
+      // Set country mode from company settings
+      if (this.currentCompany?.CountryName) {
+        this.bookingModeCountry = this.currentCompany.CountryName.toLowerCase();
+        console.log('DEBUG - Booking mode country:', this.bookingModeCountry);
+      }
     } catch (e) {
+      console.error('Error loading company data:', e);
       this.currentCompany = null;
       this.currentBranch = null;
     }
@@ -158,9 +195,12 @@ export class CreditNoteEntryComponent {
       const profile = (this.appSettingService as any).getProfile ? (this.appSettingService as any).getProfile() : null;
       const decryptedProfileRaw = localStorage.getItem('user-profile');
       const decryptedProfile = decryptedProfileRaw ? this.appSettingService.decrypt(decryptedProfileRaw) : null;
-      this.currUserEmail = profile?.email || decryptedProfile?.email || localStorage.getItem('user-email') || null;
+      this.currUserEmail = decryptedProfile?.email || localStorage.getItem('user-email') || null;
     } catch (err) {
       this.currUserEmail = localStorage.getItem('user-email') || null;
+      this.route.data.subscribe(data => {
+        this.isViewMode = data['viewMode'] === true;
+      });
     }
 
     this.route.paramMap.subscribe((params) => {
@@ -207,6 +247,7 @@ export class CreditNoteEntryComponent {
         ExchangeRate: [{ value: 1, disabled: true }],
         GST_VAT: [{ value: '', disabled: true }],
         GSTType: [{ value: '', disabled: true }],
+        PostStatus: [''],
         InvoiceType: [{value: null, disabled: true}],
         VoucherType: [1],
         Narration: ['hi'],
@@ -215,6 +256,7 @@ export class CreditNoteEntryComponent {
         IRNStatus: [{ value: '', disabled: true }],
         MBLNo: [{ value: '', disabled: true }],
         status: [{ value: 'A', disabled: true }],
+        voucherDetails: this.fb.array([]),
         voucherOthers: this.fb.group({
           ContainerNumber: [''],
           VoucherNote: [''],
@@ -225,8 +267,7 @@ export class CreditNoteEntryComponent {
           IRNStatus: [''],
           IRNQRCode: [''],
           VoucherReverseSid: [null]
-        }),
-        voucherDetails: this.fb.array([]),
+        })
       });
     }
 
@@ -400,7 +441,7 @@ export class CreditNoteEntryComponent {
   this.spinner.show();
   
   // First, get the invoice data
-  this.operationService.getInvoiceById(invoiceId).subscribe({
+  this.operationService.getInvoicesById(invoiceId).subscribe({
     next: (resp: any) => {
       if (resp?.status && resp.data) {
         this.creditNoteForm.patchValue({
@@ -470,10 +511,7 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
         this.selectedOutstandingInvoice = matchingOutstanding;
         this.showOutstandingInfo = true;
         
-        // Show outstanding amount information to user
-        this.appSettingService.showInfo(
-          `Outstanding amount for invoice ${invoiceNumber}: ${outstandingAmount} ${matchingOutstanding.CurrencyCode}`
-        );
+        
       } else {
         this.invoiceOutstandingAmount = 0;
         this.showOutstandingInfo = false;
@@ -491,27 +529,29 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
   });
 }
 
-      private patchInvoiceData(invoiceData: any) {
-        const header = invoiceData;
-        const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
-        this.creditNoteForm.patchValue({
-          ReversalVoucher: invoiceHeaderSid,
-          CustomerMasterSid: header.CustomerMasterSid || null,
-          PartyMasterSid: header.PartyMasterSid || null,
-          PartyName: header.PartyName || '',
-          PartyAddress: header.PartyAddress || '',
-          DocumentNumber: header.DocumentNumber || '',
-          MasterJobSid: header.MasterJobSid || null,
-          HBLNo: header.HouseJob || header.HouseNumber || '',
-          CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
-          ExchangeRate: header.ExchangeRate || header.ExRate || 1,
-          GST_VAT: header.GST_VAT || '',
-          GSTType: header.GSTType || '',
-          InvoiceType: header.InvoiceType || null,
-          Remarks: header.Remarks || '',
-          MBLNo: header.MasterNumber || '',
-        });
-        const customerMasterSid = header.CustomerMasterSid;
+private patchInvoiceData(invoiceData: any) {
+  const header = invoiceData;
+  const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
+  
+  this.creditNoteForm.patchValue({
+    ReversalVoucher: invoiceHeaderSid,
+    CustomerMasterSid: header.CustomerMasterSid || null,
+    PartyMasterSid: header.PartyMasterSid || null,
+    PartyName: header.PartyName || '',
+    PartyAddress: header.PartyAddress || '',
+    DocumentNumber: header.DocumentNumber || '',
+    MasterJobSid: header.MasterJobSid || null,
+    HBLNo: header.HouseJob || header.HouseNumber || '',
+    CurrencyCode: header.currencyMaster?.currencyCode || header.CurrencyCode || null,
+    ExchangeRate: header.ExchangeRate || header.ExRate || 1,
+    GST_VAT: header.GST_VAT || '',
+    GSTType: header.GSTType || '',
+    InvoiceType: header.InvoiceType || null,
+    Remarks: header.Remarks || '',
+    MBLNo: header.MasterNumber || '',
+  });
+
+  const customerMasterSid = header.CustomerMasterSid;
   if (customerMasterSid) {
     // Set customer and load branches
     this.creditNoteForm.get('CustomerMasterSid')?.setValue(customerMasterSid);
@@ -546,12 +586,37 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
     }
   }
 
-  // Patch voucher details (invoice line items)
-  const detailsFromInvoice = invoiceData.voucherDetails 
-    || invoiceData.voucherDetail 
-    || invoiceData.VoucherDetail 
-    || invoiceData.VoucherDetails 
-    || [];
+  // Extract voucher details from the complex structure
+  let detailsFromInvoice: any[] = [];
+
+  // Method 1: Check if voucherDetail exists in VoucherTransaction array
+  if (header.VoucherTransaction && Array.isArray(header.VoucherTransaction)) {
+    detailsFromInvoice = header.VoucherTransaction
+      .filter((transaction: any) => transaction.voucherDetail) // Only transactions with voucherDetail
+      .map((transaction: any) => {
+        const detail = transaction.voucherDetail;
+        const transactionData = transaction; // Main transaction data
+        
+        return {
+          ...detail,
+          // Include transaction-level data that might be needed
+          Amount: transaction.Amount || detail.Amount,
+          LocalAmount: transaction.LocalAmount || detail.LocalAmount,
+          // Map other fields as needed
+        };
+      });
+  }
+  
+  // Method 2: Fallback to direct voucherDetails array if available
+  if (detailsFromInvoice.length === 0) {
+    detailsFromInvoice = invoiceData.voucherDetails 
+      || invoiceData.voucherDetail 
+      || invoiceData.VoucherDetail 
+      || invoiceData.VoucherDetails 
+      || [];
+  }
+
+  console.log('DEBUG - Extracted voucher details:', detailsFromInvoice);
 
   // Clear existing details and add new ones from invoice
   this.details.clear();
@@ -568,26 +633,28 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
     const taxPercentage1 = detail.TaxPercentage1 !== undefined ? Number(detail.TaxPercentage1) : 
                         detail.taxPercentage1 !== undefined ? Number(detail.taxPercentage1) : 0;
   
-  const taxPercentage2 = detail.TaxPercentage2 !== undefined ? Number(detail.TaxPercentage2) : 
+    const taxPercentage2 = detail.TaxPercentage2 !== undefined ? Number(detail.TaxPercentage2) : 
                         detail.taxPercentage2 !== undefined ? Number(detail.taxPercentage2) : 0;
   
-  const taxPercentageIGST = detail.TaxPercentageIGST !== undefined ? Number(detail.TaxPercentageIGST) : 
+    const taxPercentageIGST = detail.TaxPercentageIGST !== undefined ? Number(detail.TaxPercentageIGST) : 
                            detail.taxPercentageIGST !== undefined ? Number(detail.taxPercentageIGST) : 0;
 
-  console.log('DEBUG - Tax percentages:', {
-    taxPercentage1,
-    taxPercentage2,
-    taxPercentageIGST,
-    originalFields: Object.keys(detail).filter(key => key.toLowerCase().includes('tax'))
-  });
-    // For credit note, typically use 'Cr' for credit entries
-      const originalDrCr = detail.DrCr || detail.drCr || 'Dr';
-  const swappedDrCr = originalDrCr === 'Cr' ? 'Dr' : 'Cr';
+    console.log('DEBUG - Tax percentages for detail:', {
+      taxPercentage1,
+      taxPercentage2,
+      taxPercentageIGST,
+      chargeDescription: detail.ChargeDescription
+    });
 
-  console.log('DEBUG - Dr/Cr swap:', {
-    original: originalDrCr,
-    swapped: swappedDrCr
-  });
+    // For credit note, typically use 'Cr' for credit entries
+    const originalDrCr = detail.DrCr || detail.drCr || 'D';
+    const swappedDrCr = originalDrCr === 'C' ? 'D' : 'C';
+
+    console.log('DEBUG - Dr/Cr swap:', {
+      original: originalDrCr,
+      swapped: swappedDrCr,
+      chargeDescription: detail.ChargeDescription
+    });
 
     this.details.push(this.createDetailGroup({
       ChargeMasterSid: detail.ChargeMasterSid,
@@ -632,12 +699,233 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
     });
   }
 
-  // Recalculate all rows after patching
-  // setTimeout(() => {
-  //   this.recalculateAllRows();
-  // }, 1000);
-      }
+  console.log('DEBUG - Final details array length:', this.details.length);
+}
 
+onFinalSave() {
+  console.log('DEBUG - onFinalSave called');
+  
+  if (this.creditNoteForm.invalid) {
+    this.creditNoteForm.markAllAsTouched();
+    this.appSettingService.showWarning('Please fill required credit note fields.');
+    return;
+  }
+
+  if (this.details.length === 0) {
+    this.appSettingService.showWarning('Please add at least one charge line.');
+    return;
+  }
+
+  this.recalculateAllRows();
+
+  console.log('DEBUG - Calling saveCreditNote with isFinal: true');
+  
+  // First save the invoice, then post it
+  this.saveCreditNote(true); // true indicates final save
+}
+
+      private saveCreditNote(isFinal: boolean) {
+        const raw = this.creditNoteForm.getRawValue();
+      
+        const userEmailFromSettings = (this.appSettingService as any).userSettingSource?.value?.['userEmail'] || null;
+        const createdByValue = userEmailFromSettings || this.currUserEmail || null;
+        const updatedByValue = this.isEditMode ? (userEmailFromSettings || this.currUserEmail || null) : null;
+      
+        // Add PostStatus to payload
+        const postStatus = isFinal ? 'P' : 'D'; // 'P' for Posted, 'D' for Draft
+      
+        let normalizedVoucherType: number | null = null;
+        const vt = raw.VoucherType;
+        if (Array.isArray(vt) && vt.length > 0) {
+          normalizedVoucherType = Number(vt[0]);
+        } else if (vt !== null && vt !== undefined && vt !== '') {
+          normalizedVoucherType = Number(vt);
+        }
+        if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
+      
+        let voucherDate: Date;
+        if (!raw.VoucherDate) {
+          voucherDate = new Date();
+        } else if ((raw.VoucherDate as NgbDateStructLike).year) {
+          const converted = this.fromNgbDate(raw.VoucherDate as NgbDateStructLike);
+          voucherDate = converted ?? new Date();
+        } else {
+          const parsed = new Date(raw.VoucherDate);
+          voucherDate = isNaN(parsed.getTime()) ? new Date() : parsed;
+        }
+      
+        const normalizedParty = this.normalizeParty(raw);
+        const currencyMasterId = this.getCurrencyId(raw.CurrencyCode);
+        const masterJobSid = raw.MasterJobSid ? Number(raw.MasterJobSid) : null;
+      
+        const rawPartyControl = this.creditNoteForm.get('PartyMasterSid')?.value;
+        const partyMasterSid = rawPartyControl != null && rawPartyControl !== ''
+          ? Number(rawPartyControl)
+          : (normalizedParty.PartyMasterSid != null ? Number(normalizedParty.PartyMasterSid) : null);
+      
+        const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
+          const detail = {
+            ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
+            ChargeDescription: d.ChargeDescription || '',
+            HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
+            ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
+            DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
+            NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
+            DrCr: d.DrCr || 'D',
+            PlaceOfSupply: d.PlaceOfSupply || '',
+            CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
+            CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
+            Rate: d.Rate != null ? Number(d.Rate) : 0,
+            ExchangeRate: d.ExchangeRate != null ? Number(d.ExchangeRate) : (raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1),
+            Amount: d.Amount != null ? Number(d.Amount) : 0,
+            TaxableAmount: d.TaxableAmount != null ? Number(d.TaxableAmount) : (d.Amount != null ? Number(d.Amount) : 0),
+            TaxPercentage1: d.TaxPercentage1 != null ? Number(d.TaxPercentage1) : 0,
+            TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
+            TaxPercentage2: d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
+            TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
+            TaxPercentageIGST: d.TaxPercentageIGST != null ? Number(d.TaxPercentageIGST) : 0,
+            TaxAmountIGST: d.TaxAmountIGST != null ? Number(d.TaxAmountIGST) : 0,
+            LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
+            PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
+            MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : masterJobSid,
+            HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null
+          };
+          return detail;
+        });
+      
+        const rawVoucherOthers = raw.voucherOthers ? { ...raw.voucherOthers } : null;
+        if (rawVoucherOthers && rawVoucherOthers.DueDate && (rawVoucherOthers.DueDate as NgbDateStructLike).year) {
+          rawVoucherOthers.DueDate = this.fromNgbDate(rawVoucherOthers.DueDate as NgbDateStructLike);
+        }
+      
+        const voucherOthersCandidate = this.buildVoucherOthersPayload(rawVoucherOthers);
+      
+        const payload: any = {
+          ...(this.isEditMode ? { UpdatedBy: updatedByValue } : { CreatedBy: createdByValue }),
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          VoucherNumber: raw.VoucherNumber || null,
+          VoucherDate: voucherDate,
+          PostDate: voucherDate,
+          GST_VAT: raw.GST_VAT || undefined,
+          PartyMasterSid: partyMasterSid,
+          PartyName: normalizedParty.PartyName || String(raw.PartyName || ''),
+          PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
+          CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
+          PlaceOfSupply: raw.PlaceOfSupply || '',
+          COAMasterSid: raw.COAMasterSid ?? 1,
+          VoucherType: normalizedVoucherType,
+          VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
+          InvoiceType: raw.InvoiceType || 'REG',
+          GSTType: raw.GSTType || '',
+          CurrencyMasterSid: currencyMasterId,
+          CurrencyCode: raw.CurrencyCode || undefined,
+          ExchangeRate: raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
+          MasterJobSid: masterJobSid,
+          HouseJobSid: raw.HouseJobSid ? Number(raw.HouseJobSid) : null,
+          DocumentNumber: raw.DocumentNumber || undefined,
+          Remarks: raw.Remarks || undefined,
+          Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
+          status: (raw.status != null ? raw.status : 'A'),
+          PostStatus: postStatus, // Add PostStatus here
+          VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
+        };
+      
+        if (voucherOthersCandidate) {
+          payload.VoucherOthers = voucherOthersCandidate;
+        }
+      
+        Object.keys(payload).forEach(k => {
+          if (payload[k] === undefined) delete payload[k];
+        });
+      
+        const saveObservable = this.headerId 
+          ? this.operationService.updateCreditNoteById(this.headerId, payload)
+          : this.operationService.createCreditNote(payload);
+      
+        this.spinner.show();
+        saveObservable.subscribe({
+          next: async (resp: any) => {
+            if (resp?.status) {
+              const voucherHeaderSid = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || this.headerId;
+              
+              if (isFinal && voucherHeaderSid) {
+                // If final save, post the voucher
+                await this.postVoucher(voucherHeaderSid);
+              } else {
+                this.spinner.hide();
+                const message = isFinal ? 'CreditNote saved and posted successfully!' : 'CreditNote saved as draft successfully!';
+                this.appSettingService.showSuccess(message);
+                
+                if (!this.headerId && voucherHeaderSid) {
+                  this.headerId = voucherHeaderSid;
+                  this.router.navigate(['operation/credit-note/entry', voucherHeaderSid]);
+                }
+              }
+            } else {
+              this.spinner.hide();
+              this.appSettingService.showError('Error saving CreditNote.');
+            }
+          },
+          error: (err) => {
+            this.spinner.hide();
+            console.error('Save CreditNote error', err);
+            this.appSettingService.showError('Failed to save CreditNote.');
+          }
+        });
+      }
+      
+      private async postVoucher(voucherHeaderSid: number) {
+        try {
+          const currentCompany = this.currentCompany;
+          const currentBranch = this.currentBranch;
+          const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+          const currentCountry =Number(this.currentCompany?.CountryMasterSid);
+          const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+          const currentUserEmail =  this.userData?.userEmail;
+          
+       
+          
+          if (!currentCompany || !currentBranch || !currentFinancialYear || !currentCountry || !currentCurrency) {
+            throw new Error('Company, branch, or financial year or country information is missing');
+           
+          }
+      
+          const postPayload = {
+            VoucherHeaderSid: voucherHeaderSid,
+            CompanyMasterSid: currentCompany.CompanyMasterSid,
+            BranchMasterSid: currentBranch.BranchMasterSid,
+            YearMasterSid: currentFinancialYear,
+            LocalCurrencyMasterSid: currentCurrency  ,
+            LocalCurrencyCode: currentCompany.CurrencyCode , 
+            PostedBy: currentUserEmail ,
+            TaxDetails: {
+              CountryMasterSid: currentCountry,
+              countryName: currentCompany.CountryName,
+              TaxCategory: 'Inter', 
+              EffectiveFrom: new Date().toISOString(),
+              TaxType: 'Output' 
+            }
+          };
+      
+          const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
+          
+          this.spinner.hide();
+          if (result.success) {
+            this.appSettingService.showSuccess('Invoice posted successfully!');
+            this.creditNoteData.PostStatus = 'P'; // Update local state
+            
+            // Navigate to list or stay on page but disable edits
+            this.router.navigate(['operation/invoice/list']);
+          } else {
+            this.appSettingService.showError(result.message || 'Failed to post invoice.');
+          }
+        } catch (error) {
+          this.spinner.hide();
+          console.error('Post voucher error:', error);
+          this.appSettingService.showError('Failed to post invoice. Please try again.');
+        }
+      }
       async loadDepartments(companyMasterSid: number) {
           if (!companyMasterSid) {
             this.departmentList = [];
@@ -1047,7 +1335,7 @@ private getCustomerCountryCode(customer: any): string {
       || data.VoucherDetails
       || [];
 
-    this.details.clear();
+    // this.details.clear();
     for (const det of detailsFromResp) {
       // Tax logic: If TaxPercentage2 is 0/null, then TaxPercentage1 is IGST
       // Otherwise TaxPercentage1 is CGST and TaxPercentage2 is SGST
@@ -1130,23 +1418,23 @@ private getCustomerCountryCode(customer: any): string {
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
       ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
-      ChargeDescription: [data?.ChargeDescription || ''],
+      ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null, disabled: true}],
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
-      ChargeUOMSid: [data?.ChargeUOMSid || null], // will hold the UOM id (UOMMasterSid)
-      NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
-      DrCr: [data?.DrCr || 'Cr', Validators.required], // Default to Cr for Invoice (revenue)
+      ChargeUOMSid: [{value:data?.ChargeUOMSid || null, disabled: true}], // will hold the UOM id (UOMMasterSid)
+      NumberOfUnit: [{value:data?.NumberOfUnit || 1, disabled: true}],
+      DrCr: [{value: data?.DrCr || 'Cr', disabled: true}], // Default to Cr for Invoice (revenue)
       CurrencyCode: [{value: data?.CurrencyCode || this.creditNoteForm.get('CurrencyCode')?.value || null, disabled: true}],
       Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
-      ExchangeRate: [data?.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value || 1],
-      Amount: [data?.Amount || 0],
-      TaxableAmount: [data?.TaxableAmount || 0],
-      TaxPercentage1: [data?.TaxPercentage1 || 0],
-      TaxAmount1: [data?.TaxAmount1 || 0],
-      TaxPercentage2: [data?.TaxPercentage2 || 0],
-      TaxAmount2: [data?.TaxAmount2 || 0],
-      TaxPercentageIGST: [data?.TaxPercentageIGST || 0],
-      TaxAmountIGST: [data?.TaxAmountIGST || 0],
+      ExchangeRate: [{value:data?.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value || 1, disabled: true}],
+      Amount: [{value:data?.Amount || 0 , disabled: true}],
+      TaxableAmount: [{value: data?.TaxableAmount || 0, disabled: true}],
+      TaxPercentage1: [{value: data?.TaxPercentage1 || 0, disabled: true}],
+      TaxAmount1: [{value:data?.TaxAmount1 || 0, disabled: true}],
+      TaxPercentage2: [{value:data?.TaxPercentage2 || 0, disabled: true}],
+      TaxAmount2: [{value:data?.TaxAmount2 || 0, disabled: true}],
+      TaxPercentageIGST: [{value: data?.TaxPercentageIGST || 0, disabled: true}],
+      TaxAmountIGST: [{value:data?.TaxAmountIGST || 0, disabled: true}],
       LocalAmount: [data?.LocalAmount || 0],
       PartyAmount: [data?.PartyAmount || 0],
       MasterJobSid: [data?.MasterJobSid || null],
@@ -1203,79 +1491,63 @@ getDepartmentName(departmentSid: number): string {
   if (!row) return;
   const val = row.value;
 
-  const unit = Number(val.NumberOfUnit || 0);
-  const rate = Number(val.Rate || 0);
-  const exRateRow = Number(val.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value || 1);
+  const unit = Number(row.get('NumberOfUnit')?.value || 0);
+  const rate = Number(row.get('Rate')?.value || 0);
+  const exRate = Number(row.get('ExchangeRate')?.value || this.creditNoteForm.get('ExchangeRate')?.value || 1);
 
   const amount = unit * rate;
-  const taxableAmount = amount * exRateRow;
-  const localAmount = amount * (exRateRow || 1);
+  const taxableAmount = amount * exRate;
+  const localAmount = amount * (exRate || 1);
 
-  const companyRaw = localStorage.getItem('selected-company');
-  const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
-  const loginBranchState = company?.stateName || company?.branchState || '';
-  const partyBranchId = this.creditNoteForm.get('PartyName')?.value;
-  const party = this.customerBranchList.find((b: any) => b.CustomerBranchSid === partyBranchId);
-  const partyState = party?.StateName || party?.stateName || '';
+  const gstType = this.creditNoteForm.get('GSTType')?.value;
+  const placeOfSupply = this.creditNoteForm.get('PlaceOfSupply')?.value;
+  const companyState = this.getCompanyState();
+  const customerGSTNo = this.creditNoteForm.get('GST_VAT')?.value;
 
   let taxPerc1 = 0, taxAmt1 = 0, taxPerc2 = 0, taxAmt2 = 0, igstPerc = 0, igstAmt = 0;
 
-  if (this.bookingModeCountry === 'india') {
-    const isSameState = loginBranchState && partyState && (String(loginBranchState).trim().toLowerCase() === String(partyState).trim().toLowerCase());
-    const isUnionTerritory = (loginBranchState && String(loginBranchState).toLowerCase().includes('union'));
-    const configuredCGST = Number(row.get('TaxPercentage1')?.value || 0);
-    const configuredSGST = Number(row.get('TaxPercentage2')?.value || 0);
-    const configuredIGST = Number(row.get('TaxPercentageIGST')?.value || 0);
+  console.log('=== TAX CALCULATION DEBUG ===');
+  console.log('GST Type:', gstType);
+  console.log('Place of Supply:', placeOfSupply);
+  console.log('Company State:', companyState);
+  console.log('Customer GST No (GST_VAT):', customerGSTNo);
 
-    if (isUnionTerritory) {
-      taxPerc1 = configuredCGST;
-      taxAmt1 = (amount * taxPerc1) / 100;
-      taxPerc2 = configuredSGST;
-      taxAmt2 = (amount * taxPerc2) / 100;
-    } else if (isSameState) {
-      taxPerc1 = configuredCGST;
-      taxAmt1 = (amount * taxPerc1) / 100;
-      taxPerc2 = configuredSGST;
-      taxAmt2 = (amount * taxPerc2) / 100;
-    } else {
-      igstPerc = configuredIGST;
-      igstAmt = (amount * igstPerc) / 100;
-    }
-  } else if (this.bookingModeCountry === 'uae' || this.bookingModeCountry === 'dubai') {
-    const vatPerc = Number(row.get('TaxPercentage1')?.value || row.get('TaxPercentageIGST')?.value || 0);
-    taxPerc1 = vatPerc;
-    taxAmt1 = (amount * taxPerc1) / 100;
-  }
 
-  // Calculate total local amount including taxes
-  const totalLocalAmount = localAmount + taxAmt1 + taxAmt2 + igstAmt;
-  
-  // NEW: Calculate PartyAmount based on currency comparison
-  const headerCurrency = this.creditNoteForm.get('CurrencyCode')?.value;
-  const detailCurrency = row.get('CurrencyCode')?.value;
-  const headerExchangeRate = Number(this.creditNoteForm.get('ExchangeRate')?.value || 1);
-  
-  let partyAmount = 0;
-  
-  if (headerCurrency === detailCurrency) {
-    
-    partyAmount = amount;
-  } else {
-    
-    if (totalLocalAmount !== 0) {
-      partyAmount = totalLocalAmount / headerExchangeRate;
-    } else {
-      partyAmount = 0;
+if (this.isIndiaGST && customerGSTNo) { // Now checking GST_VAT field
+    // Get HSN/SAC tax rate
+    const hssacSid = row.get('HSSACMasterSid')?.value;
+    const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
+    const taxRate = hssac?.TaxRate || 18;
+
+    // Determine tax type based on GST Type
+    switch(gstType) {
+      case 'CGST+SGST':
+        taxPerc1 = taxRate / 2;
+        taxAmt1 = (taxableAmount * taxPerc1) / 100;
+        taxPerc2 = taxRate / 2;
+        taxAmt2 = (taxableAmount * taxPerc2) / 100;
+        break;
+      case 'IGST':
+        igstPerc = taxRate;
+        igstAmt = (taxableAmount * igstPerc) / 100;
+        break;
+      case 'EXWP':
+        break;
+      case 'B2C':
+        taxPerc1 = taxRate;
+        taxAmt1 = (taxableAmount * taxPerc1) / 100;
+        break;
+      default:
+        igstPerc = taxRate;
+        igstAmt = (taxableAmount * igstPerc) / 100;
+        break;
     }
+  } else if (this.isVATMode && customerGSTNo) { // Now checking GST_VAT field
+    const hssacSid = row.get('HSSACMasterSid')?.value;
+    const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
+    taxPerc1 = hssac?.TaxRate || 5;
+    taxAmt1 = (taxableAmount * taxPerc1) / 100;
   }
-  console.log('DEBUG PartyAmount Calculation:', {
-  headerCurrency,
-  detailCurrency,
-  headerExchangeRate,
-  totalLocalAmount,
-  partyAmount,
-  sameCurrency: headerCurrency === detailCurrency
-});
 
   row.get('Amount')?.setValue(this.round(amount));
   row.get('TaxableAmount')?.setValue(this.round(taxableAmount));
@@ -1285,8 +1557,205 @@ getDepartmentName(departmentSid: number): string {
   row.get('TaxAmount2')?.setValue(this.round(taxAmt2));
   row.get('TaxPercentageIGST')?.setValue(this.round(igstPerc));
   row.get('TaxAmountIGST')?.setValue(this.round(igstAmt));
-  row.get('LocalAmount')?.setValue(this.round(totalLocalAmount));
-  row.get('PartyAmount')?.setValue(this.round(partyAmount));
+  row.get('LocalAmount')?.setValue(this.round(localAmount));
+  row.get('PartyAmount')?.setValue(this.round(amount));
+
+  this.updateBillAmount();
+}
+
+onInvoiceTypeChange() {
+  const placeOfSupply = this.creditNoteForm.get('PlaceOfSupply')?.value;
+  this.determineGSTType(placeOfSupply);
+  this.recalculateAllRows();
+}
+
+determineGSTType(placeOfSupply: string) {
+  if (!placeOfSupply) {
+    this.creditNoteForm.get('GSTType')?.setValue('');
+    console.log('GST Type: No place of supply available');
+    return;
+  }
+
+  const companyState = this.getCompanyState();
+  const customerGSTNo = this.creditNoteForm.get('GST_VAT')?.value;
+  const invoiceType = this.creditNoteForm.get('InvoiceType')?.value;
+  
+  console.log('=== DETERMINING GST TYPE ===');
+  console.log('Company State:', companyState);
+  console.log('Place of Supply:', placeOfSupply);
+  console.log('Customer GST No (GST_VAT):', customerGSTNo);
+  console.log('Invoice Type:', invoiceType);
+  console.log('Is India GST:', this.isIndiaGST);
+
+  const normalizedCompanyState = companyState?.trim().toLowerCase();
+  const normalizedPlaceOfSupply = placeOfSupply?.trim().toLowerCase();
+
+  // Check if GST number is valid (not empty or undefined)
+  const hasValidGST = customerGSTNo && customerGSTNo.trim() !== '' && customerGSTNo !== 'undefined';
+
+  console.log('DEBUG - Has valid GST:', hasValidGST);
+
+  // Scenario 1: Export (Customer outside India)
+  if (invoiceType === 'EXWP' || invoiceType === 'EXWOP') {
+    this.creditNoteForm.get('GSTType')?.setValue('EXWP');
+    console.log('GST Type set to: EXPORT (Export scenario)');
+    return;
+  }
+
+  // Scenario 2 & 3: India GST scenarios
+  if (this.isIndiaGST) {
+    if (hasValidGST) {
+      // Customer has GST number
+      if (normalizedPlaceOfSupply === normalizedCompanyState) {
+        // Same State - CGST + SGST
+        this.creditNoteForm.get('GSTType')?.setValue('CGST+SGST');
+        console.log('GST Type set to: CGST+SGST (Intra-state with GST)');
+      } else {
+        // Different State - IGST
+        this.creditNoteForm.get('GSTType')?.setValue('IGST');
+        console.log('GST Type set to: IGST (Inter-state with GST)');
+      }
+    } else {
+      // Customer doesn't have GST number - B2C
+      this.creditNoteForm.get('GSTType')?.setValue('B2C');
+      console.log('GST Type set to: B2C (No GST number)');
+    }
+  } else {
+    // Non-India scenarios
+    this.creditNoteForm.get('GSTType')?.setValue('VAT');
+    console.log('GST Type set to: VAT (Non-India)');
+  }
+}
+
+getCompanyState(): string {
+  if (!this.currentCompany) {
+    console.warn('No current company data available');
+    return '';
+  }
+
+  console.log('=== COMPANY STATE DEBUG ===');
+  console.log('Current Company:', this.currentCompany);
+  console.log('Current Branch:', this.currentBranch);
+  console.log('User Data:', this.userData);
+
+  // Method 1: Check if currentCompany has stateMaster directly
+  if (this.currentCompany.stateMaster) {
+    const state = this.currentCompany.stateMaster.stateName || this.currentCompany.stateMaster.StateName;
+    if (state) {
+      console.log('Company State from currentCompany.stateMaster:', state);
+      return state;
+    }
+  }
+
+  // Method 2: Check if currentCompany has StateMasterSid and look up in stateList
+  if (this.currentCompany.StateMasterSid && this.stateList.length > 0) {
+    const state = this.stateList.find(s => 
+      s.StateMasterSid === this.currentCompany.StateMasterSid || 
+      s.stateMasterSid === this.currentCompany.StateMasterSid
+    );
+    if (state) {
+      const stateName = state.stateName || state.StateName;
+      console.log('Company State from currentCompany.StateMasterSid lookup:', stateName);
+      return stateName;
+    }
+  }
+
+  // Method 3: Check currentBranch state information
+  if (this.currentBranch && this.currentBranch.stateMaster) {
+    const state = this.currentBranch.stateMaster.stateName || this.currentBranch.stateMaster.StateName;
+    if (state) {
+      console.log('Company State from currentBranch.stateMaster:', state);
+      return state;
+    }
+  }
+
+  // Method 4: Check currentBranch StateMasterSid
+  if (this.currentBranch && this.currentBranch.StateMasterSid && this.stateList.length > 0) {
+    const state = this.stateList.find(s => 
+      s.StateMasterSid === this.currentBranch.StateMasterSid || 
+      s.stateMasterSid === this.currentBranch.StateMasterSid
+    );
+    if (state) {
+      const stateName = state.stateName || state.StateName;
+      console.log('Company State from currentBranch.StateMasterSid lookup:', stateName);
+      return stateName;
+    }
+  }
+
+  // Method 5: Navigate through userData structure to get branch state
+  if (this.userData && this.userData.userCompanyMaster) {
+    const userCompanies = this.userData.userCompanyMaster;
+    
+    // Find the current company in user companies
+    const currentUserCompany = userCompanies.find((uc: any) => 
+      uc.CompanyMasterSid === this.currentCompany.CompanyMasterSid
+    );
+    
+    if (currentUserCompany && currentUserCompany.companyMaster) {
+      const companyMaster = currentUserCompany.companyMaster;
+      
+      // Check company master's userBranchMaster
+      if (companyMaster.userBranchMaster && Array.isArray(companyMaster.userBranchMaster)) {
+        // Find the current branch
+        const currentUserBranch = companyMaster.userBranchMaster.find((ub: any) => 
+          ub.BranchMasterSid === this.currentBranch.BranchMasterSid
+        );
+        
+        if (currentUserBranch && currentUserBranch.branchMaster) {
+          const branchMaster = currentUserBranch.branchMaster;
+          
+          // Method 5a: Check branchMaster's stateMaster
+          if (branchMaster.stateMaster) {
+            const state = branchMaster.stateMaster.stateName || branchMaster.stateMaster.StateName;
+            if (state) {
+              console.log('Company State from userData->branchMaster->stateMaster:', state);
+              return state;
+            }
+          }
+          
+          // Method 5b: Check branchMaster's StateMasterSid
+          if (branchMaster.StateMasterSid && this.stateList.length > 0) {
+            const state = this.stateList.find(s => 
+              s.StateMasterSid === branchMaster.StateMasterSid || 
+              s.stateMasterSid === branchMaster.StateMasterSid
+            );
+            if (state) {
+              const stateName = state.stateName || state.StateName;
+              console.log('Company State from userData->branchMaster->StateMasterSid lookup:', stateName);
+              return stateName;
+            }
+          }
+        }
+      }
+      
+      // Method 6: Check company master's StateMasterSid
+      if (companyMaster.StateMasterSid && this.stateList.length > 0) {
+        const state = this.stateList.find(s => 
+          s.StateMasterSid === companyMaster.StateMasterSid || 
+          s.stateMasterSid === companyMaster.StateMasterSid
+        );
+        if (state) {
+          const stateName = state.stateName || state.StateName;
+          console.log('Company State from userData->companyMaster->StateMasterSid lookup:', stateName);
+          return stateName;
+        }
+      }
+    }
+  }
+
+  console.log('No company state found after all attempts');
+  return '';
+}
+
+updateBillAmount() {
+  const totalLocalAmount = this.calculateTotalLocalAmount();
+  this.creditNoteForm.get('BillAmt')?.setValue(this.round(totalLocalAmount));
+}
+
+calculateTotalLocalAmount(): number {
+  return this.details.controls.reduce((sum, row: any) => {
+    return sum + (Number(row.get('LocalAmount')?.value) || 0);
+  }, 0);
 }
 
   recalculateAllRows() {

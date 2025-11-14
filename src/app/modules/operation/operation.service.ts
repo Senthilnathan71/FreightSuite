@@ -773,6 +773,14 @@ getAllCreditNote() {
   )
   }
 
+  getInvoicesById(VoucherHeaderSid: number) {
+    return this.http.get<{ data: any }>(`credit-note/fetch/invoice/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
 
 getCreditNoteById(VoucherHeaderSid: number) {
   return this.http.get<{ data: any }>(`credit-note/fetch/${VoucherHeaderSid}`).pipe(
@@ -1084,5 +1092,13 @@ getHouseJobByMasterJob(payload:any){
         return response;
       })
     );
+  }
+
+  postVoucherByVoucherSid(payload: any) {
+    return this.http.post<{ success: boolean; voucherHeaderSid: number; transactionCount: number; transactionSids: number[]; postedAt: string; errors: any[]; message: string;}>('voucher/post-voucher',payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    )
   }
 }
