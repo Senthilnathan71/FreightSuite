@@ -38,6 +38,13 @@ import { BookingData } from '../../booking/excel-parser.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
+import { CargoArrivalComponent } from '../report/cargo-arrival/cargo-arrival.component';
+import { HblComponent } from '../report/HBL/hbl/hbl.component';
+import { ImdemintyComponent } from '../report/imdeminty/imdeminty.component';
+import { CommericalInvoiceComponent } from '../report/commerical-invoice/commerical-invoice.component';
+import { CertificateOfOriginComponent } from '../report/certificate-of-origin/certificate-of-origin.component';
+import { ShipmentComponent } from '../report/shipment/shipment.component';
+import { DeliveryOrderComponent } from '../report/delivery-order/delivery-order.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -484,6 +491,8 @@ auditLogs: any[] = []; // Stores audit logs
       ShipmentTerms: [null],
       MovementType: [null],
       FreightTerms: [null],
+      CommodityDescription:[],
+      MarksAndNumber:[],
       ModeOfTransport : [null],
       StuffingAt: ['Dock']
     })
@@ -1078,6 +1087,8 @@ loadHeaderLookups() {
       ChargeableWeight: cargoData?.ChargeableWeight,
       NoOfPackage: cargoData?.NoOfPackage,
       ShipmentTerms: cargoData?.ShipmentTerms,
+      CommodityDescription: cargoData?.CommodityDescription,
+      MarksAndNumber: cargoData?.MarksAndNumber,
       MovementType: cargoData?.MovementType,
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport : cargoData?.ModeOfTransport,
@@ -1127,7 +1138,9 @@ loadHeaderLookups() {
       this.bookingProducts.push(formWithData);
     }
     this.updateProductPagination();
-    this.handleProductRelatedCalculation();
+    if(productsFromResponse.length>0){
+      this.handleProductRelatedCalculation();
+    }
 
     this.bookingConnectionsArr = (response.Connections || []).map(connection => {
       return {
@@ -1331,6 +1344,8 @@ loadHeaderLookups() {
         ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
         NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
         ShipmentTerms: cargoFormValue.ShipmentTerms || null,
+         CommodityDescription: cargoFormValue.CommodityDescription || null,
+          MarksAndNumber: cargoFormValue.MarksAndNumber || null,
         MovementType: cargoFormValue.MovementType || null,
         FreightTerms: cargoFormValue.FreightTerms || null,
         ModeOfTransport : cargoFormValue.ModeOfTransport || null,
@@ -2520,51 +2535,73 @@ ${this.userData['userName']}`;
     this.currentFollowUpFormValue = event.formData || null;
   }
 
-     reportDeliveryOrder(content: TemplateRef<any>) {
-        this.modalService.open(content, {
-          size: 'xl',
-          scrollable: true,
-        });
-      }
+  reportDeliveryOrder() {
+    const modalRef = this.modalService.open(DeliveryOrderComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.uomList = this.uomList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+        modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+  }
 
-         reportCargoArrival(content: TemplateRef<any>) {
-        this.modalService.open(content, {
-          size: 'xl',
-          scrollable: true,
-        });
-      }
 
-       reportBill(content: TemplateRef<any>) {
-        this.modalService.open(content, {
-          size: 'xl',
-          scrollable: true,
-        });
-      }
-
-        reportShipmentProfit(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
-
-        reportIndeminty(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
-     reportCommericalInvoice(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
-        scrollable: true,
-      });
-    }
-       reportCertificateofOrgin(content: TemplateRef<any>) {
-    this.modalService.open(content, {
+  reportCargoArrival(withOrWithoutCharge : boolean) {
+    const modalRef = this.modalService.open(CargoArrivalComponent, {
       size: 'xl',
       scrollable: true,
     });
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.withOrWithoutCharge = withOrWithoutCharge || [];
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.uomList = this.uomList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+  }
+
+       reportBill() {
+        const modalRef = this.modalService.open(HblComponent,{
+          size: 'xl',
+          scrollable: true,
+        })
+          modalRef.componentInstance.housejobData = this.housejobData || [];
+      }
+
+        reportShipmentProfit() {
+          const modalRef=this.modalService.open(ShipmentComponent,{
+             size: 'xl',
+        scrollable: true,
+          })
+        modalRef.componentInstance.housejobData = this.housejobData || [];
+        modalRef.componentInstance.chargeList = this.chargeList || [];
+          modalRef.componentInstance.profitSummary = this.profitSummary || [];
+    }
+
+  reportIndeminty() {
+    const modalRef = this.modalService.open(ImdemintyComponent,{
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+  }
+     reportCommericalInvoice() {
+      const modalRef=this.modalService.open(CommericalInvoiceComponent,{
+         size: 'xl',
+        scrollable: true,
+      })
+       modalRef.componentInstance.housejobData = this.housejobData || [];
+    }
+       reportCertificateofOrgin() {
+        const modalRef=this.modalService.open(CertificateOfOriginComponent,{
+          size: 'xl',
+      scrollable: true,
+        })
+        modalRef.componentInstance.housejobData = this.housejobData || [];
   }
 // Helper Funstion 
 
@@ -2584,7 +2621,7 @@ ${this.userData['userName']}`;
     }
     const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
     console.log(uom);
-    return uom ? uom.UOMName : '';
+    return uom ? uom.UOMCode : '';
 }
 
 getCurrencyCode(revenueCurrencyMasterSid: number): string {
@@ -2992,6 +3029,17 @@ volumeAmount(): number {
   return ':';
  
 }
+
+  getPkgTypeName(PackageTypeMasterSid:number){
+    console.log("getPkgMame",{
+      PackageTypeMasterSid,
+      pkgList:this.packageTypeList
+    })
+    if(!PackageTypeMasterSid||this.packageTypeList.length===0){
+      return "";
+    }
+    return this.packageTypeList.find(pkg=>pkg.UOMMasterSid===PackageTypeMasterSid)?.UOMName|| "";
+  }
  
   
 }
