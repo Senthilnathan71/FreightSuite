@@ -15,8 +15,8 @@
           </button> -->
 
           <!-- Final Save Button -->
-          <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-            [disabled]="creditNoteForm.invalid || details.length === 0">
+          <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onFinalSave()"
+            [disabled]="creditNoteForm.invalid || details.length === 0" >
             <i class="fas fa-check-circle me-1"></i> Final
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openPrintModal()"
@@ -474,19 +474,22 @@
 
                               <!-- Rate -->
                               <td>
-                                <span>{{ row.get('Rate')?.value | numberFormat }}</span>
+                                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
+                                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
+                                <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- Exchange Rate -->
                               <td>
-                                <span>{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
+                                <input *ngIf="!isEditMode" type="number" step="0.0001" class="custom-input-field sm"
+                                  formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
+                                <span *ngIf="isEditMode">{{ row.get('ExchangeRate')?.value | number:'1.2-4' }}</span>
                               </td>
 
                               <!-- Amount -->
                               <td>
-                                <input type="number" step="0.01" class="custom-input-field sm"
-                                  formControlName="Amount">
-                                <span *ngIf="isEditMode">{{ row.get('Amount')?.value | numberFormat }}</span>
+                                
+                                <span>{{ row.get('Amount')?.value | numberFormat }}</span>
                               </td>
 
                               <!-- Taxable Amount -->
@@ -496,9 +499,15 @@
 
                               <!-- India GST Columns -->
                               <ng-container *ngIf="isIndiaGST">
-                                <!-- CGST % -->
                                 <td>
-                                  <span>{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                  <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                                    <div class="d-flex">
+                                      <input type="number" class="custom-input-field sm"
+                                        formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')">
+                                      <span class=" ">%</span>
+                                    </div>
+                                  </div>
+                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
                                 </td>
                                 <!-- CGST Amount -->
                                 <td>
@@ -507,8 +516,14 @@
 
                                 <!-- SGST % -->
                                 <td>
-                                  
-                                  <span>{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
+                                  <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                                    <div class="d-flex gap-1">
+                                      <input type="number" class="custom-input-field sm"
+                                        formControlName="TaxPercentage2" (input)="onDetailChange(i, 'TaxPercentage2')">
+                                      <span class="">%</span>
+                                    </div>
+                                  </div>
+                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentage2')?.value || 0 }}%</span>
                                 </td>
                                 <!-- SGST Amount -->
                                 <td>
@@ -517,8 +532,15 @@
 
                                 <!-- IGST % -->
                                 <td>
-                                  
-                                  <span>{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
+                                  <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                                    <div class="d-flex gap-1">
+                                      <input type="number" class="custom-input-field sm"
+                                        formControlName="TaxPercentageIGST"
+                                        (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                                      <span class="">%</span>
+                                    </div>
+                                  </div>
+                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentageIGST')?.value || 0 }}%</span>
                                 </td>
                                 <!-- IGST Amount -->
                                 <td>
@@ -530,8 +552,14 @@
                               <ng-container *ngIf="isVATMode">
                                 <!-- VAT % -->
                                 <td>
-                                  
-                                  <span>{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
+                                  <div *ngIf="!isEditMode" class="input-group input-group-sm">
+                                    <div class="d-flex">
+                                      <input type="number" class="custom-input-field sm"
+                                        formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')">
+                                      <span class=" ">%</span>
+                                    </div>
+                                  </div>
+                                  <span *ngIf="isEditMode">{{ row.get('TaxPercentage1')?.value || 0 }}%</span>
                                 </td>
                                 <!-- VAT Amount -->
                                 <td>
