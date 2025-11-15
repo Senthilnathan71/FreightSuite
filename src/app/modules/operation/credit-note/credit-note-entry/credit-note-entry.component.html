@@ -477,6 +477,17 @@
                                 <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
                                   formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
                                 <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
+                                <div *ngIf="row.get('Rate')?.invalid && row.get('Rate')?.touched" class="invalid-feedback d-block">
+    <div *ngIf="row.get('Rate')?.errors?.['rateExceeded']">
+      Credit note rate cannot exceed original invoice rate
+    </div>
+    <div *ngIf="row.get('Rate')?.errors?.['required']">
+      Rate is required
+    </div>
+    <div *ngIf="row.get('Rate')?.errors?.['min']">
+      Rate must be greater than or equal to 0
+    </div>
+  </div>
                               </td>
 
                               <!-- Exchange Rate -->
