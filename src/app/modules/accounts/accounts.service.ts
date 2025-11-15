@@ -319,5 +319,38 @@ export class AccountsService {
       })
     );
   }
-  
+
+  // Trial Balance - Master Data
+  getGroupsByCompany(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa/groups-by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getSubGroupsByCompany(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa/subgroups-by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getBranchesByCompany(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('branch-master/by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getFinancialYears(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('year-master/by-company', { CompanyMasterSid }).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
 }

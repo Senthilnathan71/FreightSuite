@@ -1,0 +1,196 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+
+  <div class="col-12">
+    <app-page-header
+      [title]="'Trial Balance Report'"
+      [showFavorite]="true"
+      [showSearch]="false"
+      [actions]="headerActions"
+      (actionTriggered)="onActionTriggered($event)">
+    </app-page-header>
+  </div>
+
+  <!-- Filter Parameters -->
+  <div class="col-12 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title mb-3">Report Parameters</h6>
+        <form [formGroup]="filterForm">
+          <div class="row">
+            <!-- From Date -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label">
+                From Date <span class="text-danger">*</span>
+              </label>
+              <input
+                type="date"
+                class="form-control"
+                formControlName="fromDate"
+                [class.is-invalid]="filterForm.get('fromDate')?.invalid && filterForm.get('fromDate')?.touched"
+              />
+              <div class="invalid-feedback" *ngIf="filterForm.get('fromDate')?.invalid && filterForm.get('fromDate')?.touched">
+                From Date is required
+              </div>
+            </div>
+
+            <!-- To Date -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label">
+                To Date <span class="text-danger">*</span>
+              </label>
+              <input
+                type="date"
+                class="form-control"
+                formControlName="toDate"
+                [class.is-invalid]="filterForm.get('toDate')?.invalid && filterForm.get('toDate')?.touched"
+              />
+              <div class="invalid-feedback" *ngIf="filterForm.get('toDate')?.invalid && filterForm.get('toDate')?.touched">
+                To Date is required and must be >= From Date
+              </div>
+            </div>
+
+            <!-- Financial Year -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Financial Year</label>
+              <ng-select
+                formControlName="YearMasterSid"
+                [items]="yearList"
+                bindLabel="YearName"
+                bindValue="YearMasterSid"
+                placeholder="Select Year"
+                [clearable]="true"
+              >
+              </ng-select>
+            </div>
+
+            <!-- Group -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Group</label>
+              <ng-select
+                formControlName="GroupName"
+                [items]="groupList"
+                bindLabel="GroupName"
+                bindValue="GroupName"
+                placeholder="Select Group (Optional)"
+                [clearable]="true"
+              >
+              </ng-select>
+            </div>
+
+            <!-- Sub Group -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Sub Group</label>
+              <ng-select
+                formControlName="SubGroupName"
+                [items]="subGroupList"
+                bindLabel="SubGroupName"
+                bindValue="SubGroupName"
+                placeholder="Select Sub Group (Optional)"
+                [clearable]="true"
+              >
+              </ng-select>
+            </div>
+
+            <!-- Branch -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Branch</label>
+              <ng-select
+                formControlName="BranchMasterSid"
+                [items]="branchList"
+                bindLabel="BranchName"
+                bindValue="BranchMasterSid"
+                placeholder="Select Branch (Optional)"
+                [multiple]="true"
+                [clearable]="true"
+              >
+              </ng-select>
+            </div>
+
+            <!-- Show Subtotals -->
+            <div class="col-md-3 mb-3">
+              <label class="form-label d-block">Show Subtotals</label>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  formControlName="showSubtotals"
+                  id="showSubtotals"
+                />
+                <label class="form-check-label" for="showSubtotals">
+                  Display Group/SubGroup Totals
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Display -->
+  <div class="col-12 px-0" id="trial-balance-print">
+    <!-- Report Header -->
+    <div class="report-header text-center mb-3" *ngIf="reportGenerated && reportResponse">
+      <h4>{{ currentCompany?.companyName }}</h4>
+      <h5>Trial Balance Report</h5>
+      <p class="mb-0">
+        From {{ reportResponse.parameters.fromDate | date: 'dd/MM/yyyy' }}
+        To {{ reportResponse.parameters.toDate | date: 'dd/MM/yyyy' }}
+      </p>
+      <p class="text-muted small">
+        Generated on: {{ reportResponse.generatedAt | date: 'dd/MM/yyyy HH:mm:ss' }}
+      </p>
+    </div>
+
+    <!-- Table -->
+    <app-reusable-table
+      #TrialBalanceTable
+      [config]="tableConfig"
+      [data]="reportData"
+      [loading]="tableLoading"
+      [totalRecords]="reportData.length"
+    >
+    </app-reusable-table>
+
+    <!-- Grand Totals -->
+    <div class="card mt-3" *ngIf="reportGenerated && reportResponse">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <h6 class="mb-0">
+              <strong>GRAND TOTAL</strong>
+              <span class="ms-3 text-muted">({{ reportResponse.totalLedgers }} ledgers)</span>
+            </h6>
+          </div>
+          <div class="col-md-4">
+            <div class="row text-end">
+              <div class="col-6">
+                <strong>Debit:</strong> {{ reportResponse.grandTotal.TotalClosingDebit | number: '1.2-2' }}
+              </div>
+              <div class="col-6">
+                <strong>Credit:</strong> {{ reportResponse.grandTotal.TotalClosingCredit | number: '1.2-2' }}
+              </div>
+            </div>
+            <div class="row text-end mt-2">
+              <div class="col-12">
+                <span
+                  [class.text-success]="reportResponse.grandTotal.IsBalanced"
+                  [class.text-danger]="!reportResponse.grandTotal.IsBalanced"
+                >
+                  <strong>Difference:</strong> {{ reportResponse.grandTotal.Difference | number: '1.2-2' }}
+                  <i *ngIf="reportResponse.grandTotal.IsBalanced" class="fas fa-check-circle ms-1"></i>
+                  <i *ngIf="!reportResponse.grandTotal.IsBalanced" class="fas fa-exclamation-triangle ms-1"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
