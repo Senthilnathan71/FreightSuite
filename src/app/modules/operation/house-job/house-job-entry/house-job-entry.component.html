@@ -46,7 +46,7 @@
               Notice with charges</button>
                <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
-            <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Landing</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Lading</button>
             <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">Shipment Profit and
               Loss</button>
             <button class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Imdeminty</button>
@@ -1781,6 +1781,27 @@
             </div>
           </aside>
           }
+           <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="DONo" >
+              <label for="text-input" class="input-label">DO No<span class="text-danger"></span></label>
+            </div>
+          </aside>
+           <aside class="col-md-3">
+            <div class=" custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  formControlName="DODate" [minDate]="minDate" #d16="ngbDatepicker" (keydown.arrowDown)="d16.open()"
+                  (click)="d16.toggle()" container="body" />
+                <button class="btn  bi bi-calendar3 px-0" (click)="d16.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+              <label for="" class="input-label">Do Date <span class="text-danger"></span>
+              </label>
+
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -1810,6 +1831,19 @@
       </app-follow-up>
     </div>
 
+    <!-- <div class="workspace-content" [hidden]="selectedTab !== 'BOE'">
+      <div class="col-md-12">
+        <div class="row compact-form">
+           <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                >
+              <label for="text-input" class="input-label"><span class="text-danger"></span></label>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div> -->
     <!-- <div class="workspace-content" *ngIf="selectedTab === 'Product'">
       <div class="modern-table-container">
         <div>

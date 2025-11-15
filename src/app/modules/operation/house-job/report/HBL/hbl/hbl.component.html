@@ -43,8 +43,9 @@
       class="col-md-6 px-0"
       style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;"
     >
-      <div class="d-flex mb-1 px-2">
-        <div style="width: 200px;"><strong>Shipper</strong></div><br />
+      <div class="d-flex mb-1 ">
+        <div style="width: 150px;"><strong>Shipper</strong></div>
+        <div style="width: 8px;">:</div>
         <span style="min-height: 80px; height: auto;">
           {{ housejobData?.ShipperName }} <br />
           {{ housejobData?.ShipperAddress }}
@@ -56,12 +57,12 @@
       style="border-top: 1px solid black; border-bottom: 1px solid black;"
     >
       <div class="d-flex mb-1 px-2" style="border-bottom: 1px solid black;">
-        <div style="width: 200px;"><strong>Bill of Lading No </strong></div>
-        <span style="min-height: 10px; height: auto;">: </span>
+        <div style="width: 150px;"><strong>Bill of Lading No </strong></div>
+        <span style="min-height: 10px; height: auto;">: {{ housejobData?.HBLNo }}</span>
       </div>
       <div class="d-flex mb-1 px-2">
-         <div style="width: 200px;"><strong>F/Agent Name & Ref </strong></div>
-        <span style="min-height: 80px; height: auto;"> </span>
+         <div style="width: 150px;"><strong>Delivery Agent  & Ref </strong></div>
+        <span style="min-height: 80px; height: auto;">: {{ getDestinationAgentName(housejobData?.DestinationAgent) }}</span>
         <!-- <div style="width: 200px;"><strong>Forwarder</strong></div>
         <span style="min-height: 80px; height: auto;">{{ housejobData?.Others?.[0]?.Forwarder }} </span> -->
       </div>
@@ -74,22 +75,27 @@
         class="flex-fill d-flex"
         style="border-bottom: 1px solid black; border-right: 1px solid black;"
       >
-        <strong style="width: 200px;">Consignee</strong><br />
+        <strong style="width: 150px;">Consignee</strong>
+         <div style="width: 8px;">:</div>
         <span style="min-height: 70px; height: auto;">
           {{ housejobData?.ConsigneeName }}<br />
           {{ housejobData?.ConsigneeAddress }}
         </span>
       </div>
  
+       
       <div
-        class="flex-fill"
+        class="flex-fill d-flex"
         style="border-bottom: 1px solid black; border-right: 1px solid black;"
       >
-        <strong style="width: 200px;">Notify Party</strong><br />
+        <strong style="width: 150px;">Notify Party</strong>
+         <div style="width: 8px;">:</div>
         <span style="min-height: 70px; height: auto;">
-          {{ housejobData?.NotifyAddress }}
+          {{ housejobData.Others?.[0]?.NotifyParty }} <br>
+          {{ housejobData.Others?.[0]?.NotifyPartyAddress }}
         </span>
       </div>
+     
     </div>
  
     <div
@@ -130,7 +136,7 @@
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Place of Receipt</strong></div>
         <span class="text-center">
-          {{ housejobData?.Others?.[0]?.PickupAddress }}
+          {{ housejobData?.Others?.[0]?.PickupPlace }}
         </span>
       </div>
     </div>
@@ -144,20 +150,27 @@
       </div>
     </div>
     <div
-      class="col-md-6"
-      style="border-bottom: 1px solid black;"
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
     >
-      <div class="d-flex gap-5">
+    
         <div class="d-flex flex-column mb-1 text-center">
           <div><strong>Job No</strong></div>
-          <span class="text-center"> </span>
+          <span class="text-center"> {{ housejobData?.MBLNo }}</span>
         </div>
-        <div class="d-flex flex-column mb-1 text-center ps-5">
+        
+     
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black;"
+    >
+       <div class="d-flex flex-column mb-1 text-center ">
           <div><strong>Job ref</strong></div>
           <span class="text-center"> </span>
         </div>
-      </div>
     </div>
+  
   </div>
  
   <div class="row" style="padding: 0 10px;">
@@ -235,6 +248,7 @@
       <tr *ngFor="let rate of housejobData?.Products">
         <td style="border: 1px solid black; padding: 2px 8px; color: #000;">
           {{ rate?.ContainerNo }} /
+          {{ housejobData?.masterJob?.containers?.[0]?.LineSeal}}/
           {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}
         </td>
         <td style="border: 1px solid black; padding: 2px 8px; color: #000;">
@@ -303,7 +317,7 @@
       <div class="d-flex  mb-1 text-center">
         <div><strong>Total Number of Containers SAY :</strong></div>
         <span class="text-center">
-          <!-- {{ housejobData?.Others?.[0]?.PickupAddress }} -->
+          {{ housejobData?.Cargo?.[0]?.NoofContainers }}
         </span>
       </div>
     </div>
@@ -313,7 +327,7 @@
     >
       <div class="d-flex  mb-1 text-center">
         <div><strong>OnBoard Date :</strong></div>
-        <span class="text-center"></span>
+        <span class="text-center">{{ housejobData?.masterJob?.others?.[0]?.SOBDate | formatDate }}</span>
       </div>
     </div>
    
@@ -326,7 +340,7 @@
     >
       <div class="d-flex  mb-1 text-center">
         <div><strong>Freight Details, Charges etc :</strong></div>
-        <span class="text-center">
+        <span class="text-center" style="height: 70px;">
           <!-- {{ housejobData?.Others?.[0]?.PickupAddress }} -->
         </span>
       </div>
@@ -358,13 +372,14 @@
       class="col-md-6"
       style="border-bottom: 1px solid black; "
     >
-      <div class="d-flex  mb-1 text-center">
+      <div class="d-flex gap-1 mb-1 text-center">
         <div><strong>Signed on behalf of the Carrier. </strong></div>
-        <span class="text-center">By {{ currentCompany?.companyName || 'Company Name' }}</span>
-        <div>
+        <span class="text-center"> By {{ currentCompany?.companyName || 'Company Name' }}</span> 
+        
+      </div>
+      <div class="text-start">
           <strong>As Agent For the Carrier</strong>
         </div>
-      </div>
     </div>
    
   </div>

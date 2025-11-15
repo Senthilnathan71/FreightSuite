@@ -340,7 +340,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
-    // { name: 'Product', icon: 'fas fa-box' },
+    // { name: 'BOE', icon: 'fas fa-box' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -723,7 +723,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       SwitchBLConsignee: [null],
       SwitchLocation: [''],
       CarrierBookingRef : [''],
-      CarrierBookingDate : ['']
+      CarrierBookingDate : [''],
+      DONo : [''],
+      DODate : ['']
     })
   }
 
@@ -1153,7 +1155,9 @@ loadHeaderLookups() {
       SwitchBLConsignee : otherData?.SwitchBLConsignee,
       SwitchLocation  : otherData?.SwitchLocation,
       CarrierBookingRef : otherData?.CarrierBookingRef,
-      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
+      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
+      DONo: otherData?.DONo || '',
+      DODate: otherData?.DODate || '',
     })
 
     this.bookingProducts.clear();
@@ -1310,6 +1314,11 @@ loadHeaderLookups() {
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    console.log('=== FORM DEBUG INFO ===');
+console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
+console.log('DoNo from form:', otherFormValue?.DONo);
+console.log('DoDate from form:', otherFormValue?.DODate);
+console.log('Full otherForm value:', otherFormValue);
 
     const payload = {
       MasterJobSid : houseJobFormValue.MasterJobSid,
@@ -1377,6 +1386,7 @@ loadHeaderLookups() {
         ModeOfTransport : cargoFormValue.ModeOfTransport || null,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
       },
+      
       houseJobOthers: {
         HouseJobOthersSid : otherFormValue.HouseJobOthersSid || null,
         CustomerRefNo: otherFormValue.CustomerRefNo || '',
@@ -1396,7 +1406,7 @@ loadHeaderLookups() {
         CHAName: otherFormValue.CHAName || '',
         PickupAddress: otherFormValue.PickupAddress || '',
         DeliveryAddress: otherFormValue.DeliveryAddress || '',
-        CargoCurrency: otherFormValue.CargoCurrency || null,
+        CargoCurrency: otherFormValue.CargoCurrency?.currencyCode || null,
         CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
         SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
         BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
@@ -1408,7 +1418,9 @@ loadHeaderLookups() {
         SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
         SwitchLocation: otherFormValue?.SwitchLocation,
         CarrierBookingRef : otherFormValue?.CarrierBookingRef,
-        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
+        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
+        DONo: otherFormValue?.DoNo || otherFormValue?.DONo || '',
+       DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,
       },
       houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
         HouseJobProductSid : product.HouseJobProductSid || null,
@@ -2577,13 +2589,14 @@ ${this.userData['userName']}`;
 
 
   reportCargoArrival(withOrWithoutCharge : boolean) {
+    
     const modalRef = this.modalService.open(CargoArrivalComponent, {
       size: 'xl',
       scrollable: true,
     });
     modalRef.componentInstance.housejobData = this.housejobData || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
-    modalRef.componentInstance.withOrWithoutCharge = withOrWithoutCharge || [];
+    modalRef.componentInstance.withOrWithoutCharge = withOrWithoutCharge;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.uomList = this.uomList || [];
@@ -2596,6 +2609,8 @@ ${this.userData['userName']}`;
           scrollable: true,
         })
           modalRef.componentInstance.housejobData = this.housejobData || [];
+          modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+          modalRef.componentInstance.agentList = this.agentList || [];
       }
 
         reportShipmentProfit() {
@@ -2621,6 +2636,7 @@ ${this.userData['userName']}`;
         scrollable: true,
       })
        modalRef.componentInstance.housejobData = this.housejobData || [];
+        modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     }
        reportCertificateofOrgin() {
         const modalRef=this.modalService.open(CertificateOfOriginComponent,{
