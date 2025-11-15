@@ -1101,4 +1101,46 @@ getHouseJobByMasterJob(payload:any){
       })
     )
   }
+    createBoe(payload: any) {
+    return this.http.post<{ data: any }>('boe/create', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+  updateBoeById(BoeSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`boe/update/${BoeSid}`, payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+
+  getBoeById(boeSid: number) {
+  return this.http.get<{ data: any }>(`boe/${boeSid}`).pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
+
+getAllBoe() {
+  return this.http.get(`boe`).pipe(
+    map((resp: any) => {
+      return resp.data;
+    })
+  )
+}
+
+deleteBoeById(BoeSid: number) {
+    return this.http.delete<{ data: any }>(`boe/${BoeSid}`).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+
 }

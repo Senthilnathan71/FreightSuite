@@ -1091,6 +1091,19 @@
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
         (reloadParent)="loadHouseById($event)"></app-cost-entry>
     </div>
+<!-- BOE -->
+  <div class="workspace-content" [hidden]="selectedTab !== 'BOE'">
+  <app-boe-entry
+    #boeEntryComponent
+    screenName="HouseJob"
+    [dataItems]="boeDataArray"
+    [resetTrigger]="resetTriggerBOE"
+    [formData]="currentBoeFormValue"
+    (dataEmitter)="handleBOEChange($event)"
+    (reloadParent)="loadHouseById($event)">
+  </app-boe-entry>
+</div>
+
 
     <!-- Other Tabs -->
     <div class="workspace-content" [hidden]="selectedTab !== 'Cargo'">

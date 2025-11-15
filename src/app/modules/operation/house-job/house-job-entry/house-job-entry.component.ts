@@ -45,6 +45,7 @@ import { CommericalInvoiceComponent } from '../report/commerical-invoice/commeri
 import { CertificateOfOriginComponent } from '../report/certificate-of-origin/certificate-of-origin.component';
 import { ShipmentComponent } from '../report/shipment/shipment.component';
 import { DeliveryOrderComponent } from '../report/delivery-order/delivery-order.component';
+import { BoeEntryComponent } from '../boe-entry/boe-entry.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -94,7 +95,8 @@ type Html2PdfOptions = {
     EmailEntryComponent,
     FollowUpComponent,
     SearchableDropdown,
-    NgbDropdownModule
+    NgbDropdownModule,
+    BoeEntryComponent
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -105,6 +107,7 @@ type Html2PdfOptions = {
   ],
 })
 export class HouseJobEntryComponent  implements OnInit {
+
 
 
   /**
@@ -120,6 +123,8 @@ export class HouseJobEntryComponent  implements OnInit {
   uploadResult: any = null;
   decimalAfterPrecision = 3;
   digitsAfterDecimal = 3;
+boeDataArray: any[] = [];        // for BOE data
+resetTriggerBOE: boolean = false; // trigger flag for reset
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -196,6 +201,7 @@ auditLogs: any[] = []; // Stores audit logs
     labelFields: ['currencyCode'],
   };
 
+  currentBoeFormValue:any
   houseJobForm !: FormGroup;
   modeOfTransport = [
     { id: 1, name: 'Rail' },
@@ -339,6 +345,7 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'BOE', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     // { name: 'Mail', icon: 'fas fa-envelope' },
@@ -1004,7 +1011,26 @@ loadHeaderLookups() {
           this.housejobData=resp.data;
           console.log("House Job",this.housejobData)
           this.minDate = undefined;
+
+        // ✅ Update the formData for child components
+        this.currentBoeFormValue = {
+          HouseJobSid: resp.data.HouseJobSid, // 👈 from backend response
+          CompanyMasterSid: resp.data.CompanyMasterSid,
+          BranchMasterSid: resp.data.BranchMasterSid,
+          CreatedBy: this.userData['userEmail'],
+          UpdatedBy: this.userData['userEmail']
+        };
+
+          // ✅ Extract BOE records for the current house job
+        this.boeDataArray = resp.data.houseJobBOE || [];
+
+
+        // ✅ Trigger reload for child components like BOE
+        this.resetTriggerBOE = true;
         }
+
+                console.log('✅ Sending formData to BOE:', this.currentBoeFormValue);
+
       }
     )
   }
@@ -2918,6 +2944,12 @@ calculateTotals(): any {
     totalLocalGP: this.formatNumber(totalLocalRevenue - totalLocalExpense)
   };
 }
+
+handleBOEChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
+
 
  getTotalLocalRevenuAmount(): number {
     
