@@ -6,41 +6,33 @@
                     <div class="brand-icon">
                         <i class="fas fa-file-invoice"></i>
                     </div>
-                    <h5 class="page-title mb-0 text-info">Journal Voucher</h5>
+                    <h5 class="page-title mb-0 text-info">
+                        {{ editMode ? 'Edit Journal Voucher' : 'New Journal Voucher' }}
+                    </h5>
                 </div>
             </div>
             <div class="col-md-8 pb-1">
-                <div
-                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="form.reset(); setTodayDate(); details.clear(); addDetailLine()" [disabled]="isPosted">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="saveDraft()" [disabled]="isPosted">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-                    <!-- <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
-              ngbDropdownToggle>
-              <i class="fas fa-ellipsis-v"></i>
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-file-alt me-1"></i> Edoc</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button class="text-dark" ngbDropdownItem appPreventMultiClick><i
-                  class="fas fa-envelope me-1"></i> Email</button>
-            </div>
-          </div>  -->
+                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="postVoucher()" [disabled]="isPosted || !voucherHeaderSid">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Post
+                    </button>
                 </div>
             </div>
         </div>
@@ -51,16 +43,15 @@
         <div class="card mb-1">
             <div class="card-body py-1">
                 <div class="row">
-                    <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5"></aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="voucherNo" class="custom-input-field sm"
+                            <input type="text" formControlName="voucherNumber" class="custom-input-field sm"
                                 placeholder="" />
                             <label class="input-label">Voucher No.</label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-2 mx-5">
+                    <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
                                 <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -75,39 +66,44 @@
 
                     <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="postedOn" class="custom-input-field sm"
+                            <input type="text" formControlName="postDate" class="custom-input-field sm"
                                 placeholder="" />
                             <label class="input-label">Posted On</label>
                         </div>
                     </aside>
-                    <aside class="col-md-2 d-md-block d-none "></aside>
-                    <aside class="col-md-2 d-md-block d-none ps-md-5 ms-md-5"></aside>
+
                     <aside class="col-md-2">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="postedStatus" bindLabel="name" bindValue="id" placeholder="">
-                            </ng-select>
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="postStatus" class="custom-input-field sm"
+                                placeholder="" />
                             <label class="input-label">Posted Status</label>
                         </div>
                     </aside>
 
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <textarea formControlName="narration" class="custom-input-field sm" rows="1" placeholder=""
+                                maxlength="200"></textarea>
+                            <label class="input-label">Narration</label>
+                        </div>
+                    </aside>
 
-                    <aside class="col-md-2 mx-5">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <textarea formControlName="remarks" class="custom-input-field sm" rows="1" placeholder=""
-                                maxlength="100"></textarea>
+                                maxlength="200"></textarea>
                             <label class="input-label">Remarks</label>
                         </div>
                     </aside>
 
                     <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="status" [items]="status" bindLabel="name" bindValue="id"
+                            <ng-select formControlName="status" [items]="statusList" bindLabel="name" bindValue="id"
                                 placeholder="">
                             </ng-select>
                             <label class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-2 d-md-block d-none"></aside>
                 </div>
             </div>
         </div>
@@ -115,13 +111,13 @@
 
     <!-- Journal Details -->
     <div class="d-flex justify-content-end mb-1">
-        <button type="button" class="btn btn-sm btn-info" (click)="addDetails()">
-            <i class="fas fa-plus"></i> Add Details
+        <button type="button" class="btn btn-sm btn-info" (click)="addDetailLine()" [disabled]="isPosted">
+            <i class="fas fa-plus"></i> Add Detail
         </button>
     </div>
 
     <div class="bg-white">
-        <div class="split-table-container d-flex" formArrayName="journal">
+        <div class="split-table-container d-flex" formArrayName="details">
             <!-- Fixed Left Table -->
             <div class="table-fixed table-borderless" style="flex: 0 0 auto; max-width: 950px; overflow: hidden;">
                 <table class="table table-hover align-middle no-wrap table-sm mb-0">
@@ -133,43 +129,79 @@
                                     class="text-danger">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
                                     class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light" style="min-width:px">Ex.Rate <span
+                            <th class="bg-transparent text-light" style="min-width:90px">Ex.Rate <span
                                     class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light" style="min-width:px">Curr.Amt <span
+                            <th class="bg-transparent text-light" style="min-width:110px">Curr.Amt <span
                                     class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light" style="min-width:px">Local Amt <span
+                            <th class="bg-transparent text-light" style="min-width:110px">Local Amt <span
                                     class="text-danger">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:80px">Dr/Cr <span
                                     class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light" style="min-width:100px">Narration <span
-                                    class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light" style="min-width:150px">Narration</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
+                        <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm border-0" (click)="deleteRow(i)">
+                                <button type="button" class="btn btn-sm border-0" (click)="deleteDetailLine(i)" [disabled]="isPosted">
                                     <i class="fas fa-trash text-danger"></i>
                                 </button>
                             </td>
 
-                            <td><ng-select formControlName="subledger" appendTo="body"></ng-select></td>
-                            <td><ng-select formControlName="ledger" appendTo="body"></ng-select></td>
-                            <td><ng-select formControlName="currency" appendTo="body"></ng-select></td>
-                            <td><input type="text" formControlName="exRate" class="form-control" /></td>
-                            <td><input type="text" formControlName="currAmt" class="form-control" /></td>
-                            <td><input type="text" formControlName="localAmt" class="form-control" /></td>
-                            <td><ng-select formControlName="drCr" appendTo="body"></ng-select></td>
-                            <td><input type="text" formControlName="narration" class="form-control" /></td>
+                            <td>
+                                <ng-select formControlName="ledgerMasterSid"
+                                    [items]="subledgerList"
+                                    bindLabel="CustomerName"
+                                    bindValue="SubledgerMasterSid"
+                                    appendTo="body"
+                                    placeholder="Select Subledger">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select formControlName="coaMasterSid"
+                                    [items]="coaList"
+                                    bindLabel="LedgerName"
+                                    bindValue="COAMasterSid"
+                                    appendTo="body"
+                                    placeholder="Select Ledger">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select formControlName="currencyMasterSid"
+                                    [items]="currencyList"
+                                    bindLabel="currencyCode"
+                                    bindValue="CurrencyMasterSid"
+                                    appendTo="body"
+                                    placeholder="Currency">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <input type="number" step="0.0001" formControlName="exchangeRate" class="form-control" />
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" formControlName="currencyAmount" class="form-control" />
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" formControlName="localAmount" class="form-control" readonly />
+                            </td>
+                            <td>
+                                <ng-select formControlName="drCr"
+                                    [items]="drCrList"
+                                    bindLabel="name"
+                                    bindValue="id"
+                                    appendTo="body"
+                                    placeholder="Dr/Cr">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <input type="text" formControlName="narration" class="form-control" maxlength="200" />
+                            </td>
                         </tr>
                     </tbody>
 
                 </table>
             </div>
-
-
-
 
             <!-- Scrollable Right Table -->
             <div class="table-scroll flex-grow-1 table-borderless" style="overflow-x: auto;">
@@ -177,28 +209,82 @@
                     <thead class="bg-info">
                         <tr>
                             <th class="bg-transparent text-light" style="min-width:130px">Dept</th>
-                            <th class="bg-transparent text-light" style="min-width:100px">Charge</th>
-                            <th class="bg-transparent text-light" style="min-width:65px">HS/SAC</th>
-                            <th class="bg-transparent text-light" style="min-width:120px">House Job</th>
+                            <th class="bg-transparent text-light" style="min-width:150px">Charge</th>
+                            <th class="bg-transparent text-light" style="min-width:90px">HS/SAC</th>
                             <th class="bg-transparent text-light" style="min-width:120px">Master Job</th>
+                            <th class="bg-transparent text-light" style="min-width:120px">House Job</th>
                             <th class="bg-transparent text-light" style="min-width:70px">Tax%</th>
-                            <th class="bg-transparent text-light" style="min-width:70px">Tax Amt</th>
-                            <th class="bg-transparent text-light" style="min-width:90px">Cost Center</th>
-                            <th class="bg-transparent text-light" style="min-width:90px">Profit Center</th>
+                            <th class="bg-transparent text-light" style="min-width:90px">Tax Amt</th>
+                            <th class="bg-transparent text-light" style="min-width:130px">Cost Center</th>
+                            <th class="bg-transparent text-light" style="min-width:130px">Profit Center</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        <tr *ngFor="let row of journal.controls; let i = index" [formGroupName]="i">
-                            <td><ng-select formControlName="dept" appendTo="body"></ng-select></td>
-                            <td><ng-select formControlName="charge" appendTo="body"></ng-select></td>
-                            <td><input type="text" formControlName="hssac" class="form-control" /></td>
-                            <td><ng-select formControlName="houseJob" appendTo="body"></ng-select></td>
-                            <td><ng-select formControlName="masterJob" appendTo="body"></ng-select></td>
-                            <td><input type="text" formControlName="tax" class="form-control" /></td>
-                            <td><input type="text" formControlName="taxAmt" class="form-control" /></td>
-                            <td><input type="text" formControlName="costCenter" class="form-control" /></td>
-                            <td><input type="text" formControlName="profitCenter" class="form-control" /></td>
+                        <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
+                            <td>
+                                <ng-select formControlName="departmentMasterSid"
+                                    [items]="departmentList"
+                                    bindLabel="departmentName"
+                                    bindValue="DepartmentMasterSid"
+                                    appendTo="body"
+                                    placeholder="Department">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select formControlName="chargeMasterSid"
+                                    [items]="chargeList"
+                                    bindLabel="chargeName"
+                                    bindValue="ChargeMasterSid"
+                                    appendTo="body"
+                                    placeholder="Charge">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <input type="text" formControlName="hsnsac" class="form-control" readonly />
+                            </td>
+                            <td>
+                                <ng-select formControlName="masterJobSid"
+                                    [items]="masterJobList"
+                                    bindLabel="MasterJobNo"
+                                    bindValue="MasterJobSid"
+                                    appendTo="body"
+                                    placeholder="Master Job">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select formControlName="houseJobSid"
+                                    [items]="houseJobList"
+                                    bindLabel="HouseJobNo"
+                                    bindValue="HouseJobSid"
+                                    appendTo="body"
+                                    placeholder="House Job">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" formControlName="taxPercentage" class="form-control" readonly />
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" formControlName="taxAmount" class="form-control" readonly />
+                            </td>
+                            <td>
+                                <ng-select formControlName="costCenterMasterSid"
+                                    [items]="costCenterList"
+                                    bindLabel="CostCenterName"
+                                    bindValue="CostCenterMasterSid"
+                                    appendTo="body"
+                                    placeholder="Cost Center">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select formControlName="profitCenterMasterSid"
+                                    [items]="profitCenterList"
+                                    bindLabel="ProfitCenterName"
+                                    bindValue="ProfitCenterMasterSid"
+                                    appendTo="body"
+                                    placeholder="Profit Center">
+                                </ng-select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -207,19 +293,30 @@
         </div>
     </div>
 
-
-    <div class="d-flex justify-content-center align-items-center gap-3 bg-white ">
-        <div class="d-flex justify-content-center gap-3">
-            <strong class="fw-bold">Total Dr: </strong>
-            <p class="mb-0">xxx</p>
+    <!-- Totals Display -->
+    <div class="d-flex justify-content-center align-items-center gap-4 bg-white py-2">
+        <div class="d-flex justify-content-center gap-2">
+            <strong class="fw-bold">Total Debit:</strong>
+            <p class="mb-0 text-success">{{ debitTotal | number:'1.2-2' }}</p>
         </div>
-        <div class="d-flex justify-content-center gap-3">
-            <strong class="fw-bold">Total Cr: </strong>
-            <p class="mb-0">xxx</p>
+        <div class="d-flex justify-content-center gap-2">
+            <strong class="fw-bold">Total Credit:</strong>
+            <p class="mb-0 text-primary">{{ creditTotal | number:'1.2-2' }}</p>
+        </div>
+        <div class="d-flex justify-content-center gap-2">
+            <strong class="fw-bold">Difference:</strong>
+            <p class="mb-0" [class.text-danger]="difference > 0.01" [class.text-success]="difference <= 0.01">
+                {{ difference | number:'1.2-2' }}
+            </p>
+        </div>
+        <div class="d-flex justify-content-center gap-2" *ngIf="difference <= 0.01">
+            <i class="fas fa-check-circle text-success"></i>
+            <strong class="text-success">Balanced</strong>
+        </div>
+        <div class="d-flex justify-content-center gap-2" *ngIf="difference > 0.01">
+            <i class="fas fa-exclamation-triangle text-danger"></i>
+            <strong class="text-danger">Unbalanced</strong>
         </div>
     </div>
-
-
-
 
 </div>
