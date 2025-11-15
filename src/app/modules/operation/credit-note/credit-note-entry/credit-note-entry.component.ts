@@ -50,7 +50,6 @@ export class CreditNoteEntryComponent {
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
   @ViewChild('printModal') printModalRef: any;
-  @ViewChild('emailModal') emailModalRef: any;
   private originalInvoiceRates: Map<number, number> = new Map();
   customerList: any[] = [];
   customerBranchList: any[] = [];
@@ -61,7 +60,7 @@ export class CreditNoteEntryComponent {
   hssacList: any[] = [];
   invoiceList:any[] =[];
   subledgerList: any[] = [];
-    invoiceOutstandingAmount: number = 0;
+  invoiceOutstandingAmount: number = 0;
   selectedOutstandingInvoice: any = null;
   showOutstandingInfo: boolean = false;
   uomList: any[] = [];
@@ -1430,7 +1429,7 @@ private getCustomerCountryCode(customer: any): string {
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
       ChargeUOMSid: [{value:data?.ChargeUOMSid || null, disabled: true}], // will hold the UOM id (UOMMasterSid)
       NumberOfUnit: [{value:data?.NumberOfUnit || 1, disabled: true}],
-      DrCr: [{value: data?.DrCr || 'Cr', disabled: true}], // Default to Cr for Invoice (revenue)
+      DrCr: [{value: data?.DrCr || 'C', disabled: true}], // Default to Cr for Invoice (revenue)
       CurrencyCode: [{value: data?.CurrencyCode || this.creditNoteForm.get('CurrencyCode')?.value || null, disabled: true}],
       Rate: [ data?.Rate != null ? Number(data.Rate) : 0, 
       [Validators.required, Validators.min(0), this.rateValidator.bind(this)]],
@@ -2038,7 +2037,7 @@ private normalizeParty(raw: any) {
         ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
         DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
         NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
-        DrCr: d.DrCr || 'Dr',
+        DrCr: d.DrCr || 'D',
         CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
         CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
         Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -2319,11 +2318,6 @@ private normalizeParty(raw: any) {
     }
   }
 
-  openEmailModal() {
-    this.initializeEmailForm();
-    this.modalService.open(this.emailModalRef, { size: 'lg' });
-  }
-
   initializeEmailForm() {
     const customerBranchSid = this.creditNoteForm.get('PartyName')?.value;
     const customerBranch = this.customerBranchList.find(b => b.CustomerBranchSid === customerBranchSid);
@@ -2393,22 +2387,22 @@ private normalizeParty(raw: any) {
         };
 
         // Call API to send email
-        this.operationService.sendCreditNoteEmail(payload).subscribe({
-          next: (resp: any) => {
-            this.spinner.hide();
-            if (resp?.status) {
-              this.appSettingService.showSuccess('creditNote email sent successfully!');
-              this.modalService.dismissAll();
-            } else {
-              this.appSettingService.showError(resp?.message || 'Failed to send email.');
-            }
-          },
-          error: (err) => {
-            this.spinner.hide();
-            console.error('Error sending email:', err);
-            this.appSettingService.showError('Failed to send creditNote email. Please try again.');
-          }
-        });
+        // this.operationService.sendCreditNoteEmail(payload).subscribe({
+        //   next: (resp: any) => {
+        //     this.spinner.hide();
+        //     if (resp?.status) {
+        //       this.appSettingService.showSuccess('creditNote email sent successfully!');
+        //       this.modalService.dismissAll();
+        //     } else {
+        //       this.appSettingService.showError(resp?.message || 'Failed to send email.');
+        //     }
+        //   },
+        //   error: (err) => {
+        //     this.spinner.hide();
+        //     console.error('Error sending email:', err);
+        //     this.appSettingService.showError('Failed to send creditNote email. Please try again.');
+        //   }
+        // });
       };
 
       reader.onerror = () => {
