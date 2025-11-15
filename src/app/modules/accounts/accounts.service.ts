@@ -227,7 +227,7 @@ export class AccountsService {
   }
 
   getAllLedgersByItsType(payload){
-    return this.http.post<{ data: any }>('coa/ledger-type', payload).pipe(
+    return this.http.post<{ data: any }>('coa/cashOrBank', payload).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -313,6 +313,15 @@ export class AccountsService {
 
   updateReceiptById(voucherHeaderSid: number, payload: any){
     return this.http.patch<{ data: any }>(`accounts/receipt/update/${voucherHeaderSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  softDeleteVoucherDetail(voucherDetailSid: number) {
+    return this.http.delete<{ data: any }>(`voucher/delete-detail/${voucherDetailSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
