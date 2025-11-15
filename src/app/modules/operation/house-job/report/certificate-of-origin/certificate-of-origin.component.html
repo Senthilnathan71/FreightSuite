@@ -44,26 +44,34 @@
 
         </div>
 
-        <h5 class="my-3 fw-bold text-center py-2" style="border-top: 1px solid black;">Certificate of Origin</h5>
+        <h5 class="my-2 fw-bold text-center py-2" style="border-top: 1px solid black;">Certificate of Origin</h5>
 
 
         <div class="mb-2">
           <!-- <h5 class="fw-semibold pb-1">Shipper</h5> -->
 
           <div class="row mb-0" style="padding: 0 10px;">
-            <div class="col-md-6" style="border: 1px solid black;">
-              <div class="d-flex mb-1 ">
-                <div style="width: 200px;"><strong>Shipper  </strong></div>
-                <span style="min-height: 100px;height: auto;">: {{ housejobData?.ShipperName }} <br> {{
-                  housejobData?.ShipperAddress }}</span>
-              </div>
-            </div>
+              <div class="col-md-6" style="border: 1px solid black;">
+                <div class="d-flex mb-1">
+                  <!-- LABEL -->
+                  <div style="width: 150px;"><strong>Shipper</strong></div>
+                  <!-- COLON column (fixed width) -->
+                  <div style="width: 10px;">:</div>
+                  <!-- TEXT column -->
+                  <div style="white-space: pre-line; min-height: 50px;">
+                    {{ housejobData?.ShipperName }} <br>
+                    {{ housejobData?.ShipperAddress }}
+                  </div>
+                </div>
+                </div>
             <div class="col-md-6"
               style="border-top: 1px solid black;border-bottom: 1px solid black; border-right: 1px solid black;">
               <div class="d-flex mb-1">
-                <div style="width: 200px;"><strong>Consignee </strong></div>
-                <span style="min-height: 100px;height: auto;">: {{ housejobData?.ConsigneeName }} <br> {{
-                  housejobData?.ConsigneeAddress }}</span>
+                <div style="width: 150px;"><strong>Consignee </strong></div>
+                <div style="width: 10px;">:</div>
+                <div style="min-height: 100px;white-space: pre-line;">
+                   {{ housejobData?.ConsigneeName }} <br>
+                   {{housejobData?.ConsigneeAddress }}</div>
               </div>
             </div>
           </div>
@@ -72,7 +80,7 @@
 
 
         <!-- Shipment Details -->
-        <h5 class="fw-semibold pb-1 mb-3">Shipment Details</h5>
+        <h5 class="fw-bold pb-1 ">Shipment Details</h5>
 
 
         <div class="row mb-0" style="padding: 0 10px;">
@@ -122,7 +130,7 @@
 
         <!-- Goods Description -->
         <div>
-          <h5 class="fw-semibold pb-1">Goods Description</h5>
+          <strong class=" pb-1">Goods Description</strong>
           <ul class="mb-0">
             <li>{{ housejobData?.Cargo?.[0]?.CommodityDescription }}</li>
           </ul>
