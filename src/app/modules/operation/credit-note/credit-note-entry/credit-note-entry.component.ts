@@ -663,6 +663,7 @@ private patchInvoiceData(invoiceData: any) {
     });
 
     this.details.push(this.createDetailGroup({
+      VoucherDetailSid: detail.VoucherDetailSid,
       ChargeMasterSid: detail.ChargeMasterSid,
       ChargeDescription: detail.ChargeDescription,
       HSSACMasterSid: detail.HSSACMasterSid,
@@ -906,7 +907,7 @@ onFinalSave() {
             LocalCurrencyCode: currentCompany.CurrencyCode , 
             PostedBy: currentUserEmail ,
             TaxDetails: {
-              CountryMasterSid: currentCountry,
+              CountryMasterSid: currentCountry || this.currentUserCountry,
               countryName: currentCompany.CountryName,
               TaxCategory: 'Inter', 
               EffectiveFrom: new Date().toISOString(),
@@ -917,7 +918,7 @@ onFinalSave() {
           const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
           
           this.spinner.hide();
-          if (result.success) {
+          if (result.status) {
             this.appSettingService.showSuccess('Invoice posted successfully!');
             this.creditNoteData.PostStatus = 'P'; // Update local state
             
@@ -1359,6 +1360,7 @@ private getCustomerCountryCode(customer: any): string {
       });
 
       this.details.push(this.createDetailGroup({
+        VoucherDetailSid: det.VoucherDetailSid,
         ChargeMasterSid: det.ChargeMasterSid,
         ChargeDescription: det.ChargeDescription,
         HSSACMasterSid: det.HSSACMasterSid,
@@ -2031,6 +2033,7 @@ private normalizeParty(raw: any) {
 
     const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
       const detail = {
+        VoucherDetailSid: d.VoucherDetailSid,
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -2114,7 +2117,8 @@ private normalizeParty(raw: any) {
         next: (resp: any) => {
           if (resp?.status) {
             this.appSettingService.showSuccess('CreditNote updated successfully.');
-            this.router.navigate(['operation/credit-note/list']);
+            const id = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || resp.data?.voucherHeaderSid || null;
+            this.router.navigate(['operation/credit-note/entry', id]);
           } else {
             this.appSettingService.showError('Error updating CreditNote.');
             console.error('updateCreditNote resp', resp);

@@ -64,10 +64,40 @@
                 <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
                   class="custom-input-field sm" readonly />
                 <label for="VoucherNumber" class="input-label">
-                  Vendor Invoice No. <span class="text-danger">*</span>
+                  Vendor CreditNote No. <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
+
+            <aside class="col-md-2">
+  <div class="d-flex gap-1 align-items-end">
+    <!-- Invoice Dropdown -->
+    <div class="custom-form-group custom-form-group-select flex-grow-1" 
+         [class.filled]="!!vendorCreditNoteForm.get('ReversalVoucher')?.value">  
+
+      <dofi-searchable-dropdown 
+  [items]="vendorInvoiceList" 
+  formControlName="ReversalVoucher"
+  [placeholder]="''"
+  [displayFields]="invoiceLookupConfig.displayFields"
+  [displayLabels]="invoiceLookupConfig.displayLabels"
+  [labelFields]="invoiceLookupConfig.labelFields"
+  [bindValue]="'VoucherHeaderSid'">
+</dofi-searchable-dropdown>
+      <label class="input-label">Invoice No</label>
+    </div>
+    
+    <!-- Get Button with proper styling and disable state -->
+    <button 
+      type="button" 
+      class="btn btn-info btn-sm" 
+      style="min-width: 30px; height: 30px;"
+      (click)="getVendorInvoiceData()"
+      [disabled]="!vendorCreditNoteForm.get('ReversalVoucher')?.value">Get
+    </button>
+  </div>
+</aside>
+
 
             <!-- Invoice Date -->
             <aside class="col-md-2">
