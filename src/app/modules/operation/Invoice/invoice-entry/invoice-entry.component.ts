@@ -1019,6 +1019,7 @@ private triggerCustomerBranchChange(customerBranchSid: number) {
       });
 
       this.details.push(this.createDetailGroup({
+        VoucherDetailSid: det.VoucherDetailSid,
         ChargeMasterSid: det.ChargeMasterSid,
         ChargeDescription: det.ChargeDescription,
         HSSACMasterSid: det.HSSACMasterSid,
@@ -1083,6 +1084,7 @@ private triggerCustomerBranchChange(customerBranchSid: number) {
 
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
+      VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
       ChargeDescription: [data?.ChargeDescription || ''],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
@@ -1509,7 +1511,8 @@ onDraftSave() {
       : (normalizedParty.PartyMasterSid != null ? Number(normalizedParty.PartyMasterSid) : null);
 
     const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
-      const detail = {
+      const detail = {   
+        VoucherDetailSid: d.VoucherDetailSid,
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -1594,7 +1597,8 @@ onDraftSave() {
         next: (resp: any) => {
           if (resp?.status) {
             this.appSettingService.showSuccess('Invoice updated successfully.');
-            this.router.navigate(['operation/invoice/list']);
+            const id = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || resp.data?.voucherHeaderSid || null;
+            this.router.navigate(['operation/invoice/entry', id]);
           } else {
             this.appSettingService.showError('Error updating invoice.');
             console.error('updateInvoice resp', resp);
@@ -1664,6 +1668,7 @@ private saveInvoice(isFinal: boolean) {
 
   const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
     const detail = {
+      VoucherDetailSid: d.VoucherDetailSid,
       ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
       ChargeDescription: d.ChargeDescription || '',
       HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -1811,7 +1816,7 @@ private async postVoucher(voucherHeaderSid: number) {
     const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
     
     this.spinner.hide();
-    if (result.success) {
+    if (result.status) {
       this.appSettingService.showSuccess('Invoice posted successfully!');
       this.invoiceData.PostStatus = 'P'; // Update local state
       

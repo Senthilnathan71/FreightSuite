@@ -122,6 +122,13 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
   permissions: string[] = [];
 	currentMenuPermissions: any = {};
   countryResults: Country[];
+  taxCodeOptions = [
+  { id: 1, name: 'CGST' },
+  { id: 2, name: 'SGST' },
+  { id: 3, name: 'IGST' },
+  { id: 4, name: 'UGST' },
+  { id: 5, name: 'VAT' }
+];
   // Company
   currentCompany: any;
   currentBranch: any;

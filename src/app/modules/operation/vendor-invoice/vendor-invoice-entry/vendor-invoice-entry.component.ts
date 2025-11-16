@@ -2000,7 +2000,7 @@ private async postVoucher(voucherHeaderSid: number) {
     const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
     
     this.spinner.hide();
-    if (result.success) {
+    if (result.status) {
       this.appSettingService.showSuccess('Invoice posted successfully!');
       this.vendorInvoiceData.PostStatus = 'P'; // Update local state
       
