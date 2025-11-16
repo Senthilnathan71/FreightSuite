@@ -55,6 +55,10 @@
             <button class="text-dark" ngbDropdownItem (click)="reportCertificateofOrgin()">Certificate of
               Origin
             </button>
+              <button class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
+            </button>
+             <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
+            </button>
           </div>
         </div>
       </div>
@@ -91,7 +95,7 @@
           <label for="text-input" [ngClass]="{
             'input-label': true,
             'bg-transparent': !b['HBLNo']?.getRawValue()
-           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger">*</span></label>
+           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}} <span class="text-danger">*</span></label>
         </div>
       </div>
 

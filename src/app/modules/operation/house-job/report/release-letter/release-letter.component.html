@@ -1,0 +1,149 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Release Letter </h5>
+    <div class="d-flex gap-2 align-items-center">
+
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+
+    </div>
+</div>
+
+
+<div class="modal-body">
+    <div id="printContent">
+        <div class="print-a4">
+
+            <div class="row ">
+                <div class="company-header">
+                    <div class="company-logo">
+                        <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    </div>
+
+                    <div class="company-info ">
+                        <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                        <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                        <p class="mb-1">
+                            {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                        </p>
+                        <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                        <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Title -->
+            <h5 class="text-center fw-bold  py-2" style="border-top: 1px solid black;">RELEASE LETTER</h5>
+
+            <div class="row p-3 px-5 mx-0" style="border: 1px solid black;">
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <strong class="" style="width: 130px;">CFS</strong>
+                        <p class="my-0">: {{ housejobData?.Others?.[0]?.YardCFS }}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Attn </strong>
+                        <p class="my-0">: </p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Shipper </strong>
+                        <p class="my-0">: {{housejobData?.ShipperName}}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Vessel </strong>
+                        <p class="my-0">: {{housejobData?.VesselName}}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Voyage </strong>
+                        <p class="mb-0">: {{housejobData?.VoyageNo}}</p>
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Date</strong>
+                        <p class="my-0">: {{ housejobData?.MBLDate | formatDate }}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Your Booking Ref. </strong>
+                        <p class="my-0">: {{housejobData?.Others?.[0]?.CustomerRefNo}} </p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Our Booking Ref. </strong>
+                        <p class="my-0">: {{housejobData?.BookingNo}}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Port Of Discharge </strong>
+                        <p class="my-0">: {{housejobData.POD}}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;"> Final Destination</strong>
+                        <p class="my-0">: {{housejobData.FPD}}</p>
+                    </div>
+                    <div class="d-flex "><strong class="" style="width: 130px;">Mark and Number</strong>
+                        <p class="my-0">: {{housejobData?.Cargo?.[0]?.MarksAndNumber}}</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Cargo Details -->
+            <h6 class="fw-bold  mt-1 mb-1">CARGO DETAILS</h6>
+            <table class="table tablebordered align-middle">
+                <thead>
+                    <tr>
+                        <th class="text-center">Package Type</th>
+                        <th class="text-center">No of Pkgs</th>
+                        <th class="text-center">Gross Weight</th>
+                        <th class="text-center">Volume</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td> {{ housejobData?.Products?.[0]?.ExternaPkg }}</td>
+                        <td class="text-end"> {{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
+                        <td class="text-end"> {{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.2-2' }}</td>
+                        <td class="text-end"> {{ housejobData?.Cargo?.[0]?.Volume | number:'1.2-2' }}</td>
+                       
+                    </tr>
+                    <tr class="fw-bold">
+
+                        <td class="text-end">Total</td>
+                        <td class="text-end">{{ totalNoOfPkg }}</td>
+                        <td class="text-end">{{ totalGrossWeight | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ totalVolume | number:'1.3-3' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+
+
+            <!-- Instruction -->
+            <p class="mb-2 "><strong>Please release the above mentioned booking to :</strong></p>
+
+            <!-- Remarks -->
+            <div class="d-flex pb-5"><strong class="" style="width: 130px;"> Remarks</strong>
+                <p class="mb-0">: {{housejobData?.others?.[0]?.InternalNote}} </p>
+            </div>
+
+            <p class="mb-1">YOUR'S SINCERELY</p>
+            <p class="fw-bold mb-4">{{ currentCompany?.companyName || 'Company Name' }}</p>
+
+            <footer class="text-center mb-0 px-2">
+                <div class="d-flex justify-content-between">
+                    <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                    <span>
+                        This document is computer-generated and does not require a signature.
+                    </span>
+                    <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+</div>

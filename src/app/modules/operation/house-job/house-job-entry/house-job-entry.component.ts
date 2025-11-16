@@ -46,6 +46,8 @@ import { CertificateOfOriginComponent } from '../report/certificate-of-origin/ce
 import { ShipmentComponent } from '../report/shipment/shipment.component';
 import { DeliveryOrderComponent } from '../report/delivery-order/delivery-order.component';
 import { BoeEntryComponent } from '../boe-entry/boe-entry.component';
+import { ReleaseLetterComponent } from '../report/release-letter/release-letter.component';
+import { ReleaseOrderComponent } from '../report/release-order/release-order.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -2645,6 +2647,30 @@ ${this.userData['userName']}`;
         })
         modalRef.componentInstance.housejobData = this.housejobData || [];
   }
+
+   reportReleaseLetter() {
+        const modalRef = this.modalService.open(ReleaseLetterComponent, {
+          size: 'xl',
+          scrollable: true,
+        });
+        modalRef.componentInstance.housejobData= this.housejobData || [];
+        // modalRef.componentInstance.cfsList=this.cfsList || [];
+        modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+        modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+      }
+
+         reportReleaseOrder() {
+        const modalRef = this.modalService.open(ReleaseOrderComponent, {
+          size: 'xl',
+          scrollable: true,
+        });
+        modalRef.componentInstance.housejobData= this.housejobData || [];
+        // modalRef.componentInstance.cfsList=this.cfsList || [];
+        modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+        modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+         modalRef.componentInstance.salesmanList = this.salesmanList || [];
+      }
+  
 // Helper Funstion 
 
  getDepartmentName(DepartmentMasterSid: number) {
