@@ -523,10 +523,12 @@
                             <th class="bg-transparent text-light"> Dr/Cr</th>
                             <th class="bg-transparent text-light">Curr.</th>
                             <th class="bg-transparent text-light">Ex. Rate</th>
+                            @if(!isEditMode){
                             <th class="bg-transparent text-light">Curr. Amt</th>
                             <th class="bg-transparent text-light">Local Amt</th>
                             <th class="bg-transparent text-light">OS Curr. Amt</th>
                             <th class="bg-transparent text-light">OS Local Amt</th>
+                            }
                             <th class="bg-warning text-light">Curr.</th>
                             <th class="bg-warning text-light">Ex. Rate</th>
                             <th class="bg-warning text-light">Curr Amt</th>
@@ -575,32 +577,33 @@
                             <!-- ExRate -->
                             <td>
                                 <input type="text" formControlName="exRate" class="custom-input-field sm text-end" DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('curr')?.value)" />
                             </td>
-
+                            @if(!isEditMode){
                             <!-- Current Amount -->
                             <td>
                                 <input type="text" formControlName="currAmt" class="custom-input-field sm text-end" DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
 
                             <!-- Local Amount -->
                             <td>
                                 <input type="text" formControlName="localAmt" class="custom-input-field sm text-end" DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
 
                             <!-- OS Current Amount -->
                             <td>
                                 <input type="text" formControlName="osCurrAmt" class="custom-input-field sm text-end" DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
 
                             <!-- OS Local Amount -->
                             <td>
                                 <input type="text" formControlName="osLocalAmt" class="custom-input-field sm text-end" DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
+                            }
 
                             <!-- Match Curr -->
                             <td class="dofi-min-w-80">
@@ -621,7 +624,7 @@
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="4" 
-                                    [DecimalPrecisionAfter]="2" 
+                                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('matchCurr')?.value)"
                                     (input) = "calculateLocalAmountForMatchRow(i)"
                                 />
                             </td>
@@ -634,7 +637,7 @@
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="4" 
-                                    [DecimalPrecisionAfter]="2" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)" 
                                     (input) = "calculateLocalAmountForMatchRow(i)"
                                 />
                             </td>
@@ -647,7 +650,7 @@
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="4" 
-                                    [DecimalPrecisionAfter]="2" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
                                     readonly
                                 />
                             </td>
@@ -660,7 +663,7 @@
                                     class="custom-input-field sm text-end"
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="4" 
-                                    [DecimalPrecisionAfter]="2"  
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"  
                                 />
                             </td>
                             <td>
@@ -670,7 +673,7 @@
                                     class="custom-input-field sm text-end"
                                     DecimalPrecision
                                     [DecimalPrecisionBefore]="4" 
-                                    [DecimalPrecisionAfter]="2"  
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
                                 />
                             </td>
 
@@ -679,13 +682,13 @@
                         <!-- TOTAL ROW -->
                         <tr class="table-info fw-bold text-end">
                             <td colspan="6" class="text-end">Total</td>
-
+                            @if(!isEditMode){
                             <td>{{ getTotalCurrAmt() }}</td>
                             <td>{{ getTotalLocalAmt() }}</td>
 
                             <td>{{ getTotalOSCurrAmt() }}</td>
                             <td>{{ getTotalOSLocalAmount() }}</td>
-
+                            }
                             <td></td> <!-- matchCurr -->
                             <td></td> <!-- matchExRate -->
 

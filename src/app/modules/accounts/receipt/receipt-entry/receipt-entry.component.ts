@@ -239,7 +239,7 @@ export class ReceiptEntryComponent implements OnInit {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     this.receiptForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],  // Receipt Number
-      VoucherDate: [null], // Receipt Date
+      VoucherDate: [new Date()], // Receipt Date
       MultiBranch: [{value : false, disabled: true}],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
@@ -1130,7 +1130,7 @@ export class ReceiptEntryComponent implements OnInit {
 
         // Voucher Info
         voucherNo: [tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo],
-        voucherTypeMasterSid: [tx.VoucherType],
+        voucherTypeMasterSid: [tx.VoucherTypeMasterSid],
         voucherType: [tx.VoucherHeader?.voucherTypeMaster?.DocumentTypeName || tx.VoucherType],
         voucherDate: [new Date(tx.VoucherHeader?.VoucherDate || tx.VoucherDate)],
         drCr: [tx.DrCr === "C" ? "Cr" : "Dr"],
@@ -1175,7 +1175,8 @@ export class ReceiptEntryComponent implements OnInit {
       ].forEach(field => form.get(field)?.disable());
       form.get('matchLocalAmt').valueChanges.subscribe(val => {
         const osLocalAmt = form.get('osLocalAmt')?.value;
-        form.get('balance')?.setValue(osLocalAmt - val);
+        const balance = Number(osLocalAmt-val).toFixed(2);
+        form.get('balance')?.setValue(Number(balance));
       });
       this.voucherMatchings.push(form);
     });
