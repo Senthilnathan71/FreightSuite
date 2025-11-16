@@ -636,7 +636,7 @@
                                     formControlName="matchCurrAmt" 
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionBefore]="9" 
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)" 
                                     (input) = "calculateLocalAmountForMatchRow(i)"
                                 />
@@ -649,7 +649,7 @@
                                     formControlName="matchLocalAmt" 
                                     class="custom-input-field sm text-end" 
                                     DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionBefore]="9" 
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
                                     readonly
                                 />
@@ -662,7 +662,7 @@
                                     formControlName="tdsAmt" 
                                     class="custom-input-field sm text-end"
                                     DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionBefore]="9" 
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"  
                                 />
                             </td>
@@ -672,7 +672,7 @@
                                     formControlName="balance" 
                                     class="custom-input-field sm text-end"
                                     DecimalPrecision
-                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionBefore]="9" 
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
                                 />
                             </td>
