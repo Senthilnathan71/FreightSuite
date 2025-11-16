@@ -48,6 +48,8 @@ import { DeliveryOrderComponent } from '../report/delivery-order/delivery-order.
 import { BoeEntryComponent } from '../boe-entry/boe-entry.component';
 import { ReleaseLetterComponent } from '../report/release-letter/release-letter.component';
 import { ReleaseOrderComponent } from '../report/release-order/release-order.component';
+import { VehicleComponent } from '../vehicle/vehicle.component';
+import { CustomsComponent } from '../customs/customs.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -98,7 +100,9 @@ type Html2PdfOptions = {
     FollowUpComponent,
     SearchableDropdown,
     NgbDropdownModule,
-    BoeEntryComponent
+    BoeEntryComponent,
+    VehicleComponent,
+    CustomsComponent
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -127,6 +131,10 @@ export class HouseJobEntryComponent  implements OnInit {
   digitsAfterDecimal = 3;
 boeDataArray: any[] = [];        // for BOE data
 resetTriggerBOE: boolean = false; // trigger flag for reset
+vehicleDataArray: any[] = [];        // for BOE data
+resetTriggerVehicle: boolean = false; // trigger flag for reset
+customsDataArray: any[] = [];        // for BOE data
+resetTriggerCustoms: boolean = false; // trigger flag for reset
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -203,7 +211,7 @@ auditLogs: any[] = []; // Stores audit logs
     labelFields: ['currencyCode'],
   };
 
-  currentBoeFormValue:any
+  commonFormValue:any
   houseJobForm !: FormGroup;
   modeOfTransport = [
     { id: 1, name: 'Rail' },
@@ -347,7 +355,9 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
-    { name: 'BOE', icon: 'fas fa-rupee-sign' },
+{ name: 'BOE', icon: 'fas fa-file-invoice' },
+{ name: 'Vehicle', icon: 'fas fa-truck' },
+{ name: 'Customs', icon: 'fas fa-passport' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     // { name: 'Mail', icon: 'fas fa-envelope' },
@@ -1017,7 +1027,7 @@ loadHeaderLookups() {
           this.minDate = undefined;
 
         // ✅ Update the formData for child components
-        this.currentBoeFormValue = {
+        this.commonFormValue = {
           HouseJobSid: resp.data.HouseJobSid, // 👈 from backend response
           CompanyMasterSid: resp.data.CompanyMasterSid,
           BranchMasterSid: resp.data.BranchMasterSid,
@@ -1027,14 +1037,14 @@ loadHeaderLookups() {
 
           // ✅ Extract BOE records for the current house job
         this.boeDataArray = resp.data.houseJobBOE || [];
+        this.vehicleDataArray = resp.data.houseJobVehicle || [];
+        this.customsDataArray = resp.data.houseJobCustoms || [];
+
 
 
         // ✅ Trigger reload for child components like BOE
         this.resetTriggerBOE = true;
         }
-
-                console.log('✅ Sending formData to BOE:', this.currentBoeFormValue);
-
       }
     )
   }
@@ -2992,6 +3002,14 @@ handleBOEChange(event: any) {
   // You can process and save event data here
 }
 
+handleVehicleChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
+handleCustomsChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
 
  getTotalLocalRevenuAmount(): number {
     

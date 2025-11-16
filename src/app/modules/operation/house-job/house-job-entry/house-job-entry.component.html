@@ -1102,10 +1102,34 @@
     screenName="HouseJob"
     [dataItems]="boeDataArray"
     [resetTrigger]="resetTriggerBOE"
-    [formData]="currentBoeFormValue"
+    [formData]="commonFormValue"
     (dataEmitter)="handleBOEChange($event)"
     (reloadParent)="loadHouseById($event)">
   </app-boe-entry>
+</div>
+
+<div class="workspace-content" [hidden]="selectedTab !== 'Vehicle'">
+  <app-vehicle
+    #vehicleComponent
+    screenName="HouseJob"
+    [dataItems]="vehicleDataArray"
+    [resetTrigger]="resetTriggerVehicle"
+    [formData]="commonFormValue"
+    (dataEmitter)="handleVehicleChange($event)"
+    (reloadParent)="loadHouseById($event)">
+  </app-vehicle>
+</div>
+
+<div class="workspace-content" [hidden]="selectedTab !== 'Customs'">
+  <app-customs
+    #customsComponent
+    screenName="HouseJob"
+    [dataItems]="customsDataArray"
+    [resetTrigger]="resetTriggerCustoms"
+    [formData]="commonFormValue"
+    (dataEmitter)="handleCustomsChange($event)"
+    (reloadParent)="loadHouseById($event)">
+  </app-customs>
 </div>
 
 

@@ -20,11 +20,7 @@ export class BoeEntryComponent implements OnInit {
   @Input() screenName: string = 'HouseJob';
   @Input() formData: any; // contains HouseJobSid, CompanyMasterSid, etc.
   @Input() resetTrigger: boolean = false;
-  @Input() currencyList: any[] = [];
-  @Input() customerList: any[] = [];
-  @Input() agentList: any[] = [];
   @Input() dataItems: any[] = [];
-
   @Output() dataEmitter = new EventEmitter<any>();
   @Output() reloadParent = new EventEmitter<any>();
 
