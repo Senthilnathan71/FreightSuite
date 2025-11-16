@@ -29,6 +29,8 @@ import { MawbillListComponent } from './Master-air-waybill/mawbill-list/mawbill-
 import { MawbillEntryComponent } from './Master-air-waybill/mawbill-entry/mawbill-entry.component';
 import { CreditNoteEntryComponent } from './credit-note/credit-note-entry/credit-note-entry.component';
 import { CreditNoteListComponent } from './credit-note/credit-note-list/credit-note-list.component';
+import { VendorCreditNoteListComponent } from './vendor-credit-note/vendor-credit-note-list/vendor-credit-note-list.component';
+import { VendorCreditNoteEntryComponent } from './vendor-credit-note/vendor-credit-note-entry/vendor-credit-note-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -194,6 +196,30 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Credit Note',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Note' }],
+        },
+      },
+      {
+        path: 'vendor-credit-note/list',
+        component: VendorCreditNoteListComponent,
+        data: {
+          title: 'Vendor Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
+        },
+      },
+      {
+        path: 'vendor-credit-note/entry',
+        component: VendorCreditNoteEntryComponent,
+        data: {
+          title: 'Vendor Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
+        },
+      },
+      {
+        path: 'vendor-credit-note/entry/:id',
+        component: VendorCreditNoteEntryComponent,
+        data: {
+          title: 'Vendor Credit Note',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
         },
       },
         {

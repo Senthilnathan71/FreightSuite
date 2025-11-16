@@ -1,34 +1,25 @@
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  AbstractControl,
-  ReactiveFormsModule,
-  FormsModule
-} from '@angular/forms';
-import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { CommonModule } from '@angular/common';
-import { firstValueFrom } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-
-import { OperationService } from 'src/app/modules/operation/operation.service';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
-import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
-import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
-import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { OperationService } from '../../operation.service';
+import { firstValueFrom } from 'rxjs';
+import { DocumentVendorInvoiceEntryComponent } from '../../vendor-invoice/document-vendorinvoice/document-vendorinvoice.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
-  selector: 'app-vendor-invoice-entry',
+  selector: 'app-vendor-credit-note-entry',
   standalone: true,
   imports: [
     CommonModule,
@@ -43,25 +34,20 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     SearchableDropdown,
     NgbDropdownModule
   ],
-  templateUrl: './vendor-invoice-entry.component.html',
-  styleUrls: ['./vendor-invoice-entry.component.scss'],
+  templateUrl: './vendor-credit-note-entry.component.html',
+  styleUrl: './vendor-credit-note-entry.component.scss'
 })
-export class VendorInvoiceEntryComponent implements OnInit {
-  vendorInvoiceForm!: FormGroup;
+export class VendorCreditNoteEntryComponent {
+  vendorCreditNoteForm!: FormGroup;
   headerId: number | null = null;
   currentCompany: any;
   currentBranch: any;
-  vendorInvoiceData: any;
+  vendorCreditNoteData: any;
 
   currUserEmail: string | null = null;
   isViewMode: boolean = false;
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
-  // ViewChild references for modals
-  @ViewChild('searchCostsModal') searchCostsModalRef: TemplateRef<any> | undefined;
-  searchCostsModalInstance: NgbModalRef | null = null;
-
-  // Lookups
   vendorList: any[] = [];
   vendorBranchList: any[] = [];
   currencyList: any[] = [];
@@ -78,9 +64,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   searchVendors: any[] = []; 
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
-  
 
-CurrencyLookupConfig = {
+  CurrencyLookupConfig = {
   displayFields: ['currencyCode', 'currencyName','countryName'],
   displayLabels: ['Code', 'Name','Country'],
   labelFields: ['currencyCode'],
@@ -164,8 +149,8 @@ gstTypes = [
   searchResultsLoading: boolean = false;
 
   // TDS Configuration
-  tdsConfig: any = null;
-currentUserState: string;
+  // tdsConfig: any = null;
+  currentUserState: string;
   currentFinancialYear : number;
   currentCountry : number;
   currentCurrency: number;
@@ -182,14 +167,14 @@ currentUserState: string;
   }
 
   get f(): { [key: string]: AbstractControl } {
-    return this.vendorInvoiceForm.controls;
+    return this.vendorCreditNoteForm.controls;
   }
   get details(): FormArray {
-    return this.vendorInvoiceForm.get('voucherDetails') as FormArray;
+    return this.vendorCreditNoteForm.get('voucherDetails') as FormArray;
   }
-  get tdsGroup(): FormGroup {
-    return this.vendorInvoiceForm.get('voucherTDS') as FormGroup;
-  }
+  // get tdsGroup(): FormGroup {
+  //   return this.vendorCreditNoteForm.get('voucherTDS') as FormGroup;
+  // }
 
   constructor(
     private router: Router,
@@ -260,12 +245,12 @@ currentUserState: string;
       const id = params.get('id');
       if (id) {
         this.headerId = Number(id);
-        this.loadVendorInvoiceById(this.headerId);
+        this.loadVendorCreditNoteById(this.headerId);
       } else {
         // New vendor invoice - set default currency
         const currencySettings = this.companySettings.getCurrencySettings();
         console.log(currencySettings,'currencySettings')
-        this.vendorInvoiceForm.patchValue({
+        this.vendorCreditNoteForm.patchValue({
           CurrencyCode: currencySettings.code,
           ExchangeRate: 1
         });
@@ -273,17 +258,17 @@ currentUserState: string;
     });
 
     // Recalculate when currency/exchange rate changes
-    this.vendorInvoiceForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
+    this.vendorCreditNoteForm.get('CurrencyCode')?.valueChanges.subscribe(() => {
       this.recalculateAllRows();
     });
 
-    this.vendorInvoiceForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
+    this.vendorCreditNoteForm.get('ExchangeRate')?.valueChanges.subscribe(() => {
       this.recalculateAllRows();
     });
   }
 
   initForm() {
-    this.vendorInvoiceForm = this.fb.group({
+    this.vendorCreditNoteForm = this.fb.group({
       // Header
       VoucherNumber: [{ value: '', disabled: true }],
       VoucherDate: [this.formatDateForNgb(new Date()), Validators.required],
@@ -314,23 +299,23 @@ currentUserState: string;
       voucherDetails: this.fb.array([]),
 
       // TDS Section
-      voucherTDS: this.fb.group({
-        TDSSet: [{ value: '', disabled: true }],
-        TDSCompany: [{ value: '', disabled: true }],
-        ITSectionType: [{ value: '', disabled: true }],
-        ITSectionCode: [{ value: 'null', disabled: true }],
-        CertificateNo: [{ value: '', disabled: true }],
-        Percentage: [{ value: 0, disabled: true }],
-        TaxableAmt: [{ value: 0, disabled: true }],
-        TDSSetRateSid: [{ value: 0, disabled: true }],
-        TDSAmt: [{ value: 0, disabled: true }],
-        Reason: [''],
-        TDSSectionCode:[''],
-        TDSNature:[''],
-        TDSCompanyType:[''],
-        TDSPercent:[''],
-        TDSAccountCode:['']
-      }),
+      // voucherTDS: this.fb.group({
+      //   TDSSet: [{ value: '', disabled: true }],
+      //   TDSCompany: [{ value: '', disabled: true }],
+      //   ITSectionType: [{ value: '', disabled: true }],
+      //   ITSectionCode: [{ value: 'null', disabled: true }],
+      //   CertificateNo: [{ value: '', disabled: true }],
+      //   Percentage: [{ value: 0, disabled: true }],
+      //   TaxableAmt: [{ value: 0, disabled: true }],
+      //   TDSSetRateSid: [{ value: 0, disabled: true }],
+      //   TDSAmt: [{ value: 0, disabled: true }],
+      //   Reason: [''],
+      //   TDSSectionCode:[''],
+      //   TDSNature:[''],
+      //   TDSCompanyType:[''],
+      //   TDSPercent:[''],
+      //   TDSAccountCode:['']
+      // }),
 
       // Others
       voucherOthers: this.fb.group({
@@ -350,9 +335,9 @@ currentUserState: string;
     ChargeUOMSid: [data?.ChargeUOMSid || null],
     NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
     DrCr: [data?.DrCr || 'D', Validators.required],
-    CurrencyCode: [data?.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value || null],
+    CurrencyCode: [data?.CurrencyCode || this.vendorCreditNoteForm.get('CurrencyCode')?.value || null],
     Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
-    ExchangeRate: [data?.ExchangeRate || this.vendorInvoiceForm.get('ExchangeRate')?.value || 1],
+    ExchangeRate: [data?.ExchangeRate || this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1],
     Amount: [data?.Amount || 0],
     TaxableAmount: [data?.TaxableAmount || 0],
     TaxPercentage1: [data?.TaxPercentage1 || 0],
@@ -370,6 +355,7 @@ currentUserState: string;
     COAMasterSid: [data?.COAMasterSid || null]
   });
 }
+
 getDepartmentName(departmentSid: number): string {
   if (!departmentSid || this.departmentList.length === 0) {
     return '-';
@@ -433,7 +419,7 @@ recalcRow(index: number) {
   
   const unit = Number(row.get('NumberOfUnit')?.value || 0);
   const rate = Number(row.get('Rate')?.value || 0);
-  const exRate = Number(row.get('ExchangeRate')?.value || this.vendorInvoiceForm.get('ExchangeRate')?.value || 1);
+  const exRate = Number(row.get('ExchangeRate')?.value || this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1);
 
   // Calculate basic amounts
   const amount = unit * rate;
@@ -441,8 +427,8 @@ recalcRow(index: number) {
   const localAmount = amount * exRate;
 
   // Get GST Type and determine tax applicability
-  const gstType = this.vendorInvoiceForm.get('GSTType')?.value;
-  const placeOfSupply = this.vendorInvoiceForm.get('PlaceOfSupply')?.value;
+  const gstType = this.vendorCreditNoteForm.get('GSTType')?.value;
+  const placeOfSupply = this.vendorCreditNoteForm.get('PlaceOfSupply')?.value;
   const companyState = this.getCompanyState();
   
   let taxPerc1 = 0, taxAmt1 = 0, taxPerc2 = 0, taxAmt2 = 0, igstPerc = 0, igstAmt = 0;
@@ -452,7 +438,7 @@ recalcRow(index: number) {
   console.log('Place of Supply:', placeOfSupply);
   console.log('Company State:', companyState);
 
-  if (this.isIndiaGST && this.vendorInvoiceForm.get('GSTNo')?.value) {
+  if (this.isIndiaGST && this.vendorCreditNoteForm.get('GSTNo')?.value) {
     // Get HSN/SAC tax rate
     const hssacSid = row.get('HSSACMasterSid')?.value;
     const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
@@ -495,7 +481,7 @@ recalcRow(index: number) {
         console.log(`DEFAULT: ${igstPerc}% IGST`);
         break;
     }
-  } else if (this.isVATMode && this.vendorInvoiceForm.get('GSTNo')?.value) {
+  } else if (this.isVATMode && this.vendorCreditNoteForm.get('GSTNo')?.value) {
     // VAT calculation for non-India countries
     const hssacSid = row.get('HSSACMasterSid')?.value;
     const hssac = this.hssacList.find(h => h.HSSACMasterSid === hssacSid);
@@ -518,23 +504,23 @@ recalcRow(index: number) {
 
   // Update Bill Amount
   this.updateBillAmount();
-  this.calculateTDS();
+  // this.calculateTDS();
 }
 
 
 updateBillAmount() {
   const totalLocalAmount = this.calculateTotalLocalAmount();
-  this.vendorInvoiceForm.get('BillAmt')?.setValue(this.round(totalLocalAmount));
+  this.vendorCreditNoteForm.get('BillAmt')?.setValue(this.round(totalLocalAmount));
 }
 recalculateAllRows() {
   for (let i = 0; i < this.details.length; i++) {
     const exRateCtrl = this.details.at(i).get('ExchangeRate');
     if (exRateCtrl && (exRateCtrl.value === null || exRateCtrl.value === undefined)) {
-      exRateCtrl.setValue(this.vendorInvoiceForm.get('ExchangeRate')?.value || 1);
+      exRateCtrl.setValue(this.vendorCreditNoteForm.get('ExchangeRate')?.value || 1);
     }
     const currCtrl = this.details.at(i).get('CurrencyCode');
     if (currCtrl && !currCtrl.value) {
-      currCtrl.setValue(this.vendorInvoiceForm.get('CurrencyCode')?.value || null);
+      currCtrl.setValue(this.vendorCreditNoteForm.get('CurrencyCode')?.value || null);
     }
     this.recalcRow(i);
   }
@@ -588,7 +574,6 @@ getGrandTotal(): number {
       }
     });
   }
-
   onChargeChange(row: FormGroup, chargeSid: number) {
     const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
     console.log(charge,'onChargeChange')
@@ -678,7 +663,7 @@ getGrandTotal(): number {
     row.patchValue({ LocalAmount: this.round(localAmount) }, { emitEvent: false });
 
     // Recalculate TDS
-    this.calculateTDS();
+    // this.calculateTDS();
   }
 
  
@@ -686,7 +671,7 @@ getGrandTotal(): number {
   deleteDetailRow(index: number) {
     this.details.removeAt(index);
     this.renumberRows();
-    this.calculateTDS();
+    // this.calculateTDS();
   }
 
   renumberRows() {
@@ -695,19 +680,19 @@ getGrandTotal(): number {
     });
   }
 
-  calculateTDS() {
-  const totalTaxable = this.details.controls.reduce((sum, row: any) => {
-    return sum + (Number(row.get('TaxableAmount')?.value) || 0);
-  }, 0);
+//   calculateTDS() {
+//   const totalTaxable = this.details.controls.reduce((sum, row: any) => {
+//     return sum + (Number(row.get('TaxableAmount')?.value) || 0);
+//   }, 0);
 
-  const tdsRate = this.tdsConfig?.tdsRate || 0;
-  const tdsAmount = (totalTaxable * tdsRate) / 100;
+//   const tdsRate = this.tdsConfig?.tdsRate || 0;
+//   const tdsAmount = (totalTaxable * tdsRate) / 100;
 
-  this.tdsGroup.patchValue({
-    TaxableAmt: this.round(totalTaxable),
-    TDSAmt: this.round(tdsAmount)
-  });
-}
+//   this.tdsGroup.patchValue({
+//     TaxableAmt: this.round(totalTaxable),
+//     TDSAmt: this.round(tdsAmount)
+//   });
+// }
 
   calculateTotalAmount(): number {
     return this.details.controls.reduce((sum, row: any) => {
@@ -762,29 +747,29 @@ onVendorChange(selected: any) {
   
   if (!vendorMasterSid) {
     this.vendorBranchList = [];
-    this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(null);
-    this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
-    this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(null); // Clear PartyMasterSid
-    this.vendorInvoiceForm.get('GSTNo')?.setValue('');
-    this.vendorInvoiceForm.get('PartyName')?.setValue('');
-    this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
-    this.vendorInvoiceForm.get('InvoiceType')?.setValue('B2B');
-    this.vendorInvoiceForm.get('GSTType')?.setValue('');
+    this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(null);
+    this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
+    this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(null); // Clear PartyMasterSid
+    this.vendorCreditNoteForm.get('GSTNo')?.setValue('');
+    this.vendorCreditNoteForm.get('PartyName')?.setValue('');
+    this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
+    this.vendorCreditNoteForm.get('InvoiceType')?.setValue('B2B');
+    this.vendorCreditNoteForm.get('GSTType')?.setValue('');
     return;
   }
 
   const vendor = this.vendorList.find(v => v.CustomerMasterSid === vendorMasterSid);
   if (vendor) {
     // Set PartyName to vendor name
-    this.vendorInvoiceForm.get('PartyName')?.setValue(vendor.CustomerName || '');
+    this.vendorCreditNoteForm.get('PartyName')?.setValue(vendor.CustomerName || '');
     
     // CRITICAL: Set PartyMasterSid from vendor's SubledgerMasterSid
     if (vendor.SubledgerMasterSid) {
-      this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(Number(vendor.SubledgerMasterSid));
+      this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(Number(vendor.SubledgerMasterSid));
       console.log('DEBUG - Set PartyMasterSid from vendor:', vendor.SubledgerMasterSid);
     } else {
       console.warn('DEBUG - Vendor has no SubledgerMasterSid:', vendor);
-      this.vendorInvoiceForm.get('PartyMasterSid')?.setValue(null);
+      this.vendorCreditNoteForm.get('PartyMasterSid')?.setValue(null);
     }
 
     // Rest of your existing code for GST, InvoiceType, etc...
@@ -792,25 +777,25 @@ onVendorChange(selected: any) {
     console.log('Vendor Country Code:', countryCode);
     
     if (countryCode === 'IN' && vendor.GSTNo) {
-      this.vendorInvoiceForm.get('InvoiceType')?.setValue('B2B');
+      this.vendorCreditNoteForm.get('InvoiceType')?.setValue('B2B');
       console.log('Invoice Type: B2B (Indian vendor with GST)');
     } else if (countryCode !== 'IN') {
-      this.vendorInvoiceForm.get('InvoiceType')?.setValue('EXWP');
+      this.vendorCreditNoteForm.get('InvoiceType')?.setValue('EXWP');
       console.log('Invoice Type: EXWP (Export vendor)');
     } else {
-      this.vendorInvoiceForm.get('InvoiceType')?.setValue('B2C');
+      this.vendorCreditNoteForm.get('InvoiceType')?.setValue('B2C');
       console.log('Invoice Type: B2C (Indian vendor without GST)');
     }
 
     // Load TDS configuration
-    this.loadVendorTDS(vendorMasterSid);
+    // this.loadVendorTDS(vendorMasterSid);
   }
 
   // Reset branch selection when vendor changes
-  this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(null);
-  this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
-  this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
-  this.vendorInvoiceForm.get('GSTType')?.setValue('');
+  this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(null);
+  this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
+  this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
+  this.vendorCreditNoteForm.get('GSTType')?.setValue('');
   this.getVendorBranchByVendor(Number(vendorMasterSid));
 }
 
@@ -821,9 +806,9 @@ onVendorBranchChange(selectedBranch: any) {
     : selectedBranch;
 
   if (!branchSid) {
-    this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
-    this.vendorInvoiceForm.get('GSTNo')?.setValue('');
-    this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
+    this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
+    this.vendorCreditNoteForm.get('GSTNo')?.setValue('');
+    this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
     return;
   }
 
@@ -832,7 +817,7 @@ onVendorBranchChange(selectedBranch: any) {
   if (foundBranch) {
     // Set address from branch
     const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
-    this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
+    this.vendorCreditNoteForm.get('PartyAddress')?.setValue(address);
 
     // Get Place of Supply from state lookup
     let placeOfSupply = '';
@@ -854,7 +839,7 @@ onVendorBranchChange(selectedBranch: any) {
     }
 
     console.log('Setting Place of Supply:', placeOfSupply);
-    this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
+    this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
 
     // Set GST No based on country
     const vendorMasterSid = foundBranch.CustomerMasterSid;
@@ -863,9 +848,9 @@ onVendorBranchChange(selectedBranch: any) {
       if (vendor) {
         const countryCode = this.getCustomerCountryCode(vendor);
         if (countryCode === 'IN') {
-          this.vendorInvoiceForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
+          this.vendorCreditNoteForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
         } else {
-          this.vendorInvoiceForm.get('GSTNo')?.setValue(vendor.PanType || '');
+          this.vendorCreditNoteForm.get('GSTNo')?.setValue(vendor.PanType || '');
         }
       }
     }
@@ -873,9 +858,9 @@ onVendorBranchChange(selectedBranch: any) {
     // Auto-determine GST Type based on Place of Supply
     this.determineGSTType(placeOfSupply);
   } else {
-    this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
-    this.vendorInvoiceForm.get('GSTNo')?.setValue('');
-    this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
+    this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
+    this.vendorCreditNoteForm.get('GSTNo')?.setValue('');
+    this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue('');
   }
 }
 
@@ -888,13 +873,13 @@ getStateNameFromVendor(vendorMasterSid: number): string {
 }
 determineGSTType(placeOfSupply: string) {
   if (!placeOfSupply) {
-    this.vendorInvoiceForm.get('GSTType')?.setValue('');
+    this.vendorCreditNoteForm.get('GSTType')?.setValue('');
     return;
   }
 
   const companyState = this.getCompanyState();
-  const vendorGSTNo = this.vendorInvoiceForm.get('GSTNo')?.value;
-  const invoiceType = this.vendorInvoiceForm.get('InvoiceType')?.value;
+  const vendorGSTNo = this.vendorCreditNoteForm.get('GSTNo')?.value;
+  const invoiceType = this.vendorCreditNoteForm.get('InvoiceType')?.value;
   
   console.log('=== DETERMINING GST TYPE ===');
   console.log('Company State:', companyState);
@@ -907,7 +892,7 @@ determineGSTType(placeOfSupply: string) {
 
   // Scenario 3: Export (Vendor outside India)
   if (invoiceType === 'EXWP' || invoiceType === 'EXWOP') {
-    this.vendorInvoiceForm.get('GSTType')?.setValue('EXWP');
+    this.vendorCreditNoteForm.get('GSTType')?.setValue('EXWP');
     console.log('GST Type set to: EXPORT (Export scenario)');
     return;
   }
@@ -916,23 +901,24 @@ determineGSTType(placeOfSupply: string) {
   if (this.isIndiaGST && vendorGSTNo) {
     if (placeOfSupply === companyState) {
       // Scenario 1: Same State - CGST + SGST
-      this.vendorInvoiceForm.get('GSTType')?.setValue('CGST+SGST');
+      this.vendorCreditNoteForm.get('GSTType')?.setValue('CGST+SGST');
       console.log('GST Type set to: CGST+SGST (Intra-state)');
     } else {
       // Scenario 2: Different State - IGST
-      this.vendorInvoiceForm.get('GSTType')?.setValue('IGST');
+      this.vendorCreditNoteForm.get('GSTType')?.setValue('IGST');
       console.log('GST Type set to: IGST (Inter-state)');
     }
   } else if (this.isIndiaGST && !vendorGSTNo) {
     // B2C or unregistered dealer in India
-    this.vendorInvoiceForm.get('GSTType')?.setValue('B2C');
+    this.vendorCreditNoteForm.get('GSTType')?.setValue('B2C');
     console.log('GST Type set to: B2C (Unregistered dealer)');
   } else {
     // Non-India scenarios
-    this.vendorInvoiceForm.get('GSTType')?.setValue('VAT');
+    this.vendorCreditNoteForm.get('GSTType')?.setValue('VAT');
     console.log('GST Type set to: VAT (Non-India)');
   }
 }
+
 getCompanyState(): string {
   if (!this.currentCompany) {
     console.warn('No current company data available');
@@ -1134,157 +1120,59 @@ private getCustomerCountryCode(vendor: any): string {
     : vendor;
     if (!vendor) {
       this.vendorList = [];
-      this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
+      this.vendorCreditNoteForm.get('PartyAddress')?.setValue('');
       return;
     }
-    this.vendorInvoiceForm.get('PartyAddress')?.setValue(vendor.Address || '');
+    this.vendorCreditNoteForm.get('PartyAddress')?.setValue(vendor.Address || '');
   }
 
-  loadVendorTDS(vendorSid: number) {
-    this.operationService.getVendorTDSMapping(vendorSid).subscribe({
-      next: (response) => {
-        if (response.status && response.data) {
-          this.tdsConfig = response.data;
+  // loadVendorTDS(vendorSid: number) {
+  //   this.operationService.getVendorTDSMapping(vendorSid).subscribe({
+  //     next: (response) => {
+  //       if (response.status && response.data) {
+  //         this.tdsConfig = response.data;
 
-          this.tdsGroup.patchValue({
-            TDSSet: this.tdsConfig.tdsSetName || '',
-            TDSCompany: this.currentCompany?.CompanyName || '',
-            ITSectionType: this.tdsConfig.companyType || '',
-            ITSectionCode: this.tdsConfig.itSectionCode || '',
-            TDSSetRateSid: this.tdsConfig.tdsSetRateSid || 0,
-            CertificateNo: this.tdsConfig.certificateNo || '',
-            Percentage: this.tdsConfig.tdsRate || 0
-          });
+  //         this.tdsGroup.patchValue({
+  //           TDSSet: this.tdsConfig.tdsSetName || '',
+  //           TDSCompany: this.currentCompany?.CompanyName || '',
+  //           ITSectionType: this.tdsConfig.companyType || '',
+  //           ITSectionCode: this.tdsConfig.itSectionCode || '',
+  //           TDSSetRateSid: this.tdsConfig.tdsSetRateSid || 0,
+  //           CertificateNo: this.tdsConfig.certificateNo || '',
+  //           Percentage: this.tdsConfig.tdsRate || 0
+  //         });
 
-          // Recalculate TDS
-          this.calculateTDS();
-        } else {
-          // No TDS config found
-          this.tdsConfig = null;
-          this.tdsGroup.patchValue({
-            TDSSet: '',
-            TDSCompany: '',
-            ITSectionType: '',
-            ITSectionCode: '',
-            TDSSetRateSid: 0,
-            CertificateNo: '',
-            Percentage: 0,
-            TDSAmt: 0
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Error loading TDS config:', error);
-        this.tdsConfig = null;
-      }
-    });
-  }
-
-  // Search Pending Costs
-  openSearchCostsModal() {
-  if (!this.searchCostsModalRef) {
-    this.appSettingService.showError('Search modal template not found');
-    return;
-  }
-
-  this.searchType = 'Master Job';
-  this.searchValue = '';
-  this.allPendingCosts = [];
-  this.searchVendors = [];
-  this.selectedVendorForCosts = null;
-
-  this.searchCostsModalInstance = this.modalService.open(this.searchCostsModalRef, {
-    size: 'lg',
-    backdrop: 'static',
-    keyboard: false,
-    centered:true,
-  });
-}
-
- searchPendingCostsAction() {
-  if (!this.searchValue.trim()) {
-    this.appSettingService.showWarning('Please enter a search value');
-    return;
-  }
-
-  this.searchResultsLoading = true;
-  
-  const payload = {
-    searchType: this.searchType,
-    searchValue: this.searchValue.trim(),
-    companyMasterSid: this.currentCompany?.CompanyMasterSid,
-    branchMasterSid: this.currentBranch?.BranchMasterSid
-  };
-
-  this.operationService.searchPendingCosts(payload).subscribe({
-    next: (response) => {
-      this.searchResultsLoading = false;
-      this.searchPerformed = true;
-      
-      if (response.status && response.data) {
-        this.allPendingCosts = response.data.items || response.data;
-        
-        if (this.allPendingCosts.length > 0) {
-          // Extract unique vendors for selection
-          this.extractVendorsFromCosts(this.allPendingCosts);
-          
-          this.appSettingService.showSuccess(`Found ${this.allPendingCosts.length} pending costs`);
-        } else {
-          this.appSettingService.showInfo('No pending costs found');
-          this.allPendingCosts = [];
-          this.searchVendors = [];
-        }
-      } else {
-        this.appSettingService.showError(response.message || 'No pending costs found');
-        this.allPendingCosts = [];
-        this.searchVendors = [];
-      }
-    },
-    error: (error) => {
-      this.searchResultsLoading = false;
-      this.searchPerformed = true;
-      this.appSettingService.showError('Error searching pending costs');
-      console.error('Error:', error);
-    }
-  });
-}
+  //         // Recalculate TDS
+  //         this.calculateTDS();
+  //       } else {
+  //         // No TDS config found
+  //         this.tdsConfig = null;
+  //         this.tdsGroup.patchValue({
+  //           TDSSet: '',
+  //           TDSCompany: '',
+  //           ITSectionType: '',
+  //           ITSectionCode: '',
+  //           TDSSetRateSid: 0,
+  //           CertificateNo: '',
+  //           Percentage: 0,
+  //           TDSAmt: 0
+  //         });
+  //       }
+  //     },
+  //     error: (error) => {
+  //       console.error('Error loading TDS config:', error);
+  //       this.tdsConfig = null;
+  //     }
+  //   });
+  // }
 // Extract unique vendors from costs
-private extractVendorsFromCosts(costs: any[]) {
-  const vendorMap = new Map();
-  
-  costs.forEach(cost => {
-    if (cost.VendorSid && cost.VendorName) {
-      if (!vendorMap.has(cost.VendorSid)) {
-        vendorMap.set(cost.VendorSid, {
-          VendorSid: cost.VendorSid,
-          VendorName: cost.VendorName,
-          VendorAddress: cost.VendorAddress || '',
-          CustomerName: cost.CustomerName || cost.VendorName,
-          Address: cost.Address || cost.VendorAddress || ''
-        });
-      }
-    }
-  });
-  
-  this.searchVendors = Array.from(vendorMap.values());
-  console.log('Available vendors:', this.searchVendors);
-}
-onVendorSelectForCosts(selectedVendor: any) {
-  this.selectedVendorForCosts = selectedVendor;
-  
-  if (selectedVendor) {
-    // Auto-populate vendor information in main form
-    this.autoPopulateVendorFromSelection(selectedVendor);
-  }
-}
-
 
 
 private autoPopulateVendorFromSelection(vendor: any) {
   if (!vendor) return;
 
   // Set vendor information in main form
-  this.vendorInvoiceForm.patchValue({
+  this.vendorCreditNoteForm.patchValue({
     PartyName: vendor.VendorName || vendor.CustomerName,
     PartyMasterSid: vendor.VendorSid
   });
@@ -1300,14 +1188,14 @@ private autoPopulateVendorFromSelection(vendor: any) {
       const branchToSelect = matchingBranch || branches[0];
       
       if (branchToSelect) {
-        this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(branchToSelect.CustomerBranchSid);
+        this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(branchToSelect.CustomerBranchSid);
         this.triggerVendorBranchChange(branchToSelect.CustomerBranchSid);
       }
     }
   });
 
   // Set vendor address
-  this.vendorInvoiceForm.patchValue({
+  this.vendorCreditNoteForm.patchValue({
     PartyAddress: vendor.VendorAddress || vendor.Address || ''
   });
 }
@@ -1327,7 +1215,7 @@ private autoPopulateVendorFromSelection(vendor: any) {
   if (foundBranch) {
     // Set address from branch
     const address = foundBranch.Address || foundBranch.CustomerAddress1 || foundBranch.customerAddress || '';
-    this.vendorInvoiceForm.get('PartyAddress')?.setValue(address);
+    this.vendorCreditNoteForm.get('PartyAddress')?.setValue(address);
 
     // Get Place of Supply from state lookup
     let placeOfSupply = '';
@@ -1349,7 +1237,7 @@ private autoPopulateVendorFromSelection(vendor: any) {
     }
 
     console.log('Setting Place of Supply:', placeOfSupply);
-    this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
+    this.vendorCreditNoteForm.get('PlaceOfSupply')?.setValue(placeOfSupply);
 
     // Set GST No based on country
     const vendorMasterSid = foundBranch.CustomerMasterSid;
@@ -1358,9 +1246,9 @@ private autoPopulateVendorFromSelection(vendor: any) {
       if (vendor) {
         const countryCode = this.getCustomerCountryCode(vendor);
         if (countryCode === 'IN') {
-          this.vendorInvoiceForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
+          this.vendorCreditNoteForm.get('GSTNo')?.setValue(foundBranch.GSTNo || '');
         } else {
-          this.vendorInvoiceForm.get('GSTNo')?.setValue(vendor.PanType || '');
+          this.vendorCreditNoteForm.get('GSTNo')?.setValue(vendor.PanType || '');
         }
       }
     }
@@ -1369,78 +1257,12 @@ private autoPopulateVendorFromSelection(vendor: any) {
     this.determineGSTType(placeOfSupply);
   }
 }
-addSelectedCosts() {
-   const selectedCostItems = this.allPendingCosts.filter(cost => cost.selected);
-  
-  if (selectedCostItems.length === 0) {
-    this.appSettingService.showWarning('Please select at least one cost');
-    return;
-  }
 
-  // Check if all selected costs belong to the same vendor
-  const uniqueVendors = new Set(selectedCostItems.map(cost => cost.VendorSid));
-  if (uniqueVendors.size > 1) {
-    this.appSettingService.showWarning('Selected costs belong to different vendors. Please select costs from one vendor only.');
-    return;
-  }
 
-  // Use the vendor from first selected cost if no vendor explicitly selected
-  const firstCostVendor = selectedCostItems[0];
-  if (!this.selectedVendorForCosts && firstCostVendor) {
-    const vendor = this.searchVendors.find(v => v.VendorSid === firstCostVendor.VendorSid);
-    if (vendor) {
-      this.onVendorSelectForCosts(vendor);
-    }
-  }
-
-  selectedCostItems.forEach(cost => {
-    const detailRow = this.createDetailGroup({
-      CostRevenueChargesSid: cost.CostRevenueChargesSid,
-      ChargeMasterSid: cost.ChargeMasterSid,
-      ChargeDescription: cost.ChargeDescription,
-      NumberOfUnit: cost.NumberOfUnit || 1,
-      Rate: cost.Rate || cost.CostAmount || 0,
-      CurrencyCode: cost.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value,
-      ExchangeRate: cost.CostExchangeRate || cost.ExchangeRate || 1,
-      MasterJobSid: cost.MasterJobSid,
-      HouseJobSid: cost.HouseJobSid,
-      HSSACMasterSid: cost.HSSACMasterSid,
-      ChargeUOMSid: cost.ChargeUOMSid,
-
-    });
-
-    this.details.push(detailRow);
-    this.subscribeToRowChanges(detailRow);
-  });
-
-  this.renumberRows();
-  this.recalculateAllRows();
-  this.searchCostsModalInstance?.close();
-  this.appSettingService.showSuccess(`${selectedCostItems.length} cost(s) added successfully`);
-}
-
- // Select/Deselect all costs
-toggleSelectAll(event: any): void {
-  const checked = event.target.checked;
-  this.allPendingCosts.forEach(cost => cost.selected = checked);
-}
-
-// Check if all costs are selected
-isAllSelected(): boolean {
-  return this.allPendingCosts.length > 0 && 
-         this.allPendingCosts.every(c => c.selected);
-}
 
 // Get selected costs
 getSelectedCosts(): any[] {
   return this.allPendingCosts.filter(cost => cost.selected);
-}
-
-  closeSearchCostsModal() {
-  this.searchCostsModalInstance?.close();
-  this.selectedVendorForCosts = null;
-  this.searchVendors = [];
-  this.allPendingCosts = [];
 }
 
   // Load lookups
@@ -1546,15 +1368,15 @@ getMasterJobNumber(jobSid: number): string {
   return job?.MasterJobNumber || job?.displayLabel || '-';
 }
   // Load vendor invoice by ID
-  loadVendorInvoiceById(id: number) {
+  loadVendorCreditNoteById(id: number) {
     this.spinner.show();
     this.operationService.getVendorInvoiceById(id).subscribe({
       next: (response) => {
         this.spinner.hide();
         if (response.status && response.data) {
           console.log(response.data,'loadVendorInvoiceById')
-          this.vendorInvoiceData = response.data;
-          this.populateForm(this.vendorInvoiceData);
+          this.vendorCreditNoteData = response.data;
+          this.populateForm(this.vendorCreditNoteData);
           this.setFormReadonly();
         } else {
           this.appSettingService.showError('Vendor Invoice not found');
@@ -1572,22 +1394,22 @@ getMasterJobNumber(jobSid: number): string {
 
  setFormReadonly() {
   if (this.isViewMode || this.isPosted) {
-    this.vendorInvoiceForm.disable();
+    this.vendorCreditNoteForm.disable();
     
     // Also disable details array if posted
     // if (this.isPosted) {
     //   this.details.disable();
     // }
   } else {
-    this.vendorInvoiceForm.enable();
+    this.vendorCreditNoteForm.enable();
     this.details.enable();
     
     // Keep readonly fields as is
-    this.vendorInvoiceForm.get('VoucherNumber')?.disable();
-    this.vendorInvoiceForm.get('PostedOn')?.disable();
-    this.vendorInvoiceForm.get('PartyAddress')?.disable();
-    this.vendorInvoiceForm.get('GSTNo')?.disable();
-    this.vendorInvoiceForm.get('PlaceOfSupply')?.disable();
+    this.vendorCreditNoteForm.get('VoucherNumber')?.disable();
+    this.vendorCreditNoteForm.get('PostedOn')?.disable();
+    this.vendorCreditNoteForm.get('PartyAddress')?.disable();
+    this.vendorCreditNoteForm.get('GSTNo')?.disable();
+    this.vendorCreditNoteForm.get('PlaceOfSupply')?.disable();
   }
 }
 
@@ -1611,7 +1433,7 @@ getMasterJobNumber(jobSid: number): string {
       || null;
     
     console.log(currency,'currency')
-    this.vendorInvoiceForm.patchValue({
+    this.vendorCreditNoteForm.patchValue({
       VoucherNumber: data.VoucherNumber,
       VoucherDate: this.formatDateForNgb(data.VoucherDate),
       CustomerMasterSid: data.CustomerMasterSid || customerMasterSidFromBranch || null,
@@ -1649,10 +1471,10 @@ getMasterJobNumber(jobSid: number): string {
     this.getVendorBranchByVendor(cm);
     console.log('DEBUG - pendingBranchToSelect:', this.pendingBranchToSelect);
     if(branchSid){
-      this.vendorInvoiceForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
+      this.vendorCreditNoteForm.get('CustomerBranchSid')?.setValue(Number(branchSid));
       this.pendingBranchToSelect = Number(branchSid);
       console.log('DEBUG - pendingBranchToSelect:', this.pendingBranchToSelect);
-      const currentVendor = this.vendorInvoiceForm.get('CustomerMasterSid')?.value;
+      const currentVendor = this.vendorCreditNoteForm.get('CustomerMasterSid')?.value;
       if (currentVendor) {
         this.getVendorBranchByVendor(Number(currentVendor));
       } else {
@@ -1661,8 +1483,8 @@ getMasterJobNumber(jobSid: number): string {
           Number(b.CustomerName) === Number(branchSid)
         );
         if (found) {
-          this.vendorInvoiceForm.get('PartyName')?.setValue(Number(branchSid));
-          this.vendorInvoiceForm.get('PartyAddress')?.setValue(found.Address);
+          this.vendorCreditNoteForm.get('PartyName')?.setValue(Number(branchSid));
+          this.vendorCreditNoteForm.get('PartyAddress')?.setValue(found.Address);
         }
       }
     }
@@ -1712,22 +1534,22 @@ getMasterJobNumber(jobSid: number): string {
     }
 
     // Populate TDS
-    if (data.VoucherTDS && data.VoucherTDS.length > 0) {
-      const tds = data.VoucherTDS[0];
-      this.tdsGroup.patchValue({
-        ITSectionCode: tds.ITSectionCode,
-        TDSSetRateSid: tds.TDSSetRateSid,
-        Percentage: tds.TDSRate,
-        TaxableAmt: tds.TaxableAmount,
-        TDSAmt: tds.TDSAmount,
-        Reason: tds.Reason || ''
-      });
-    }
+    // if (data.VoucherTDS && data.VoucherTDS.length > 0) {
+    //   const tds = data.VoucherTDS[0];
+    //   this.tdsGroup.patchValue({
+    //     ITSectionCode: tds.ITSectionCode,
+    //     TDSSetRateSid: tds.TDSSetRateSid,
+    //     Percentage: tds.TDSRate,
+    //     TaxableAmt: tds.TaxableAmount,
+    //     TDSAmt: tds.TDSAmount,
+    //     Reason: tds.Reason || ''
+    //   });
+    // }
 
     // Populate others
     if (data.VoucherOthers && data.VoucherOthers.length > 0) {
       const others = data.VoucherOthers[0];
-      this.vendorInvoiceForm.get('voucherOthers')?.patchValue({
+      this.vendorCreditNoteForm.get('voucherOthers')?.patchValue({
         ContainerNumber: others.ContainerNumber || '',
         VoucherNote: others.VoucherNote || '',
         Footer: others.Footer || ''
@@ -1737,9 +1559,9 @@ getMasterJobNumber(jobSid: number): string {
 
   // Save
   onSave() {
-    if (this.vendorInvoiceForm.invalid) {
+    if (this.vendorCreditNoteForm.invalid) {
       this.appSettingService.showWarning('Please fill all required fields');
-      this.markFormGroupTouched(this.vendorInvoiceForm);
+      this.markFormGroupTouched(this.vendorCreditNoteForm);
       return;
     }
 
@@ -1790,7 +1612,7 @@ getMasterJobNumber(jobSid: number): string {
   
 
  preparePayload(): any {
-  const formValue = this.vendorInvoiceForm.getRawValue();
+  const formValue = this.vendorCreditNoteForm.getRawValue();
 
   const payload: any = {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -1906,8 +1728,8 @@ getMasterJobNumber(jobSid: number): string {
 // }
 
 onFinalSave() {
-  if (this.vendorInvoiceForm.invalid) {
-    this.vendorInvoiceForm.markAllAsTouched();
+  if (this.vendorCreditNoteForm.invalid) {
+    this.vendorCreditNoteForm.markAllAsTouched();
     this.appSettingService.showWarning('Please fill required vendor invoice fields.');
     return;
   }
@@ -1970,7 +1792,7 @@ private async postVoucher(voucherHeaderSid: number) {
     const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
     const currentCountry =Number(this.currentCompany?.CountryMasterSid);
     const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
-    const currentCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    const currentCountryName = String(this. currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     const currentUserEmail =  this.userData?.userEmail;
     
  
@@ -2002,7 +1824,7 @@ private async postVoucher(voucherHeaderSid: number) {
     this.spinner.hide();
     if (result.success) {
       this.appSettingService.showSuccess('Invoice posted successfully!');
-      this.vendorInvoiceData.PostStatus = 'P'; // Update local state
+      this.vendorCreditNoteData.PostStatus = 'P'; // Update local state
       
       // Navigate to list or stay on page but disable edits
       this.router.navigate(['operation/invoice/list']);
@@ -2017,24 +1839,24 @@ private async postVoucher(voucherHeaderSid: number) {
 }
 // Check if voucher is posted (for UI controls)
 get isPosted(): boolean {
-  return this.vendorInvoiceData?.PostStatus === 'P';
+  return this.vendorCreditNoteData?.PostStatus === 'P';
 }
 
 // Check if voucher is draft
 get isDraft(): boolean {
-  return !this.vendorInvoiceData?.PostStatus || this.vendorInvoiceData?.PostStatus === 'U';
+  return !this.vendorCreditNoteData?.PostStatus || this.vendorCreditNoteData?.PostStatus === 'U';
 }
 
 
   onReset() {
     if (this.isEditMode) {
-      this.loadVendorInvoiceById(this.headerId!);
+      this.loadVendorCreditNoteById(this.headerId!);
     } else {
-      this.vendorInvoiceForm.reset();
+      this.vendorCreditNoteForm.reset();
       this.details.clear();
-      this.tdsGroup.reset();
+      // this.tdsGroup.reset();
       const currencySettings = this.companySettings.getCurrencySettings();
-      this.vendorInvoiceForm.patchValue({
+      this.vendorCreditNoteForm.patchValue({
         CurrencyCode: currencySettings.code,
         ExchangeRate: 1,
         InvoiceType: 'B2B',
@@ -2058,8 +1880,8 @@ get isDraft(): boolean {
   }
 
   onSubmit() {
-    if (this.vendorInvoiceForm.invalid) {
-      this.markFormGroupTouched(this.vendorInvoiceForm);
+    if (this.vendorCreditNoteForm.invalid) {
+      this.markFormGroupTouched(this.vendorCreditNoteForm);
       this.appSettingService.showError('Please fill all required fields');
       return;
     }
@@ -2117,7 +1939,7 @@ get isDraft(): boolean {
   }
 
   isFieldInvalid(fieldName: string): boolean {
-    const field = this.vendorInvoiceForm.get(fieldName);
+    const field = this.vendorCreditNoteForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
@@ -2130,7 +1952,7 @@ get isDraft(): boolean {
   setToday(fieldName: string, datepicker: any): void {
     const today = new Date();
     const ngbDate = { day: today.getDate(), month: today.getMonth() + 1, year: today.getFullYear() };
-    this.vendorInvoiceForm.get(fieldName)?.setValue(ngbDate);
+    this.vendorCreditNoteForm.get(fieldName)?.setValue(ngbDate);
     datepicker.close();
   }
 
@@ -2141,7 +1963,7 @@ get isDraft(): boolean {
 
     const currency = this.currencyList.find(c => c.CurrencyMasterSid === currencySid);
     if (currency) {
-      this.vendorInvoiceForm.patchValue({
+      this.vendorCreditNoteForm.patchValue({
         CurrencyCode: currency.currencyCode,
         ExchangeRate: currency.ExchangeRate || 1
       });
@@ -2235,7 +2057,7 @@ private populateFormFromDocument(data: any): void {
   if (!data) return;
 
   // Populate header fields
-  this.vendorInvoiceForm.patchValue({
+  this.vendorCreditNoteForm.patchValue({
     PartyName: data.partyName || '',
     PartyAddress: data.partyAddress || '',
     GSTNo: data.gstNo || '',

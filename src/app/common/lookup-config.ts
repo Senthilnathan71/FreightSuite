@@ -80,8 +80,8 @@ export const DROPDOWN_CONFIGS = {
     labelFields: ['LedgerName']
   },
   INVOICE: {
-    displayFields: ['VoucherNumber', 'PartyName', 'VoucherDate'],
-    displayLabels: ['Invoice No', 'Customer', 'Date'],    
+    displayFields: ['VoucherNumber', 'PartyName'],
+    displayLabels: ['Invoice No', 'Customer'],    
     labelFields: ['VoucherNumber']
   }
 } satisfies Record<string, {
