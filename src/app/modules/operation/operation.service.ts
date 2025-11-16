@@ -815,13 +815,74 @@ searchCreditNote(payload: any) {
     );
   }
 
-sendCreditNoteEmail(payload: any) {
-  return this.http.post<{ status: boolean; message: string; data: any }>('credit-note/send-email', payload).pipe(
+  
+createVendorCreditNote(payload: any) {
+  return this.http.post<{ data: any }>('vendor-credit-note/create', payload).pipe(
     map((resp) => {
       return resp;
     })
   );
 }
+
+getAllVendorCreditNote() {
+  return this.http.get<{ data: any[] }>('vendor-credit-note').pipe(
+    map((resp) => {
+     let response = resp.data;
+        return response;
+    })
+  )
+  }
+  getAllVendorInvoice() {
+  return this.http.get<{ data: any[] }>('vendor-credit-note/vendor-invoice').pipe(
+    map((resp) => {
+     let response = resp.data;
+        return response;
+    })
+  )
+  }
+
+  getVendorInvoicesById(VoucherHeaderSid: number) {
+    return this.http.get<{ data: any }>(`vendor-credit-note/fetch/vendor-invoice/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+
+getVendorCreditNoteById(VoucherHeaderSid: number) {
+  return this.http.get<{ data: any }>(`vendor-credit-note/fetch/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+updateVendorCreditNoteById(VoucherHeaderSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`vendor-credit-note/update/${VoucherHeaderSid}`, payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+deleteVendorCreditNoteById(VoucherHeaderSid: number) {
+  return this.http.delete<{ data: any }>(`vendor-credit-note/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+searchVendorCreditNote(payload: any) {
+  return this.http.post<{ data: any }>('vendor-credit-note/search-list', payload).pipe(
+    map((resp) => {
+     let response = resp;
+        return response;
+      })
+    );
+  }
+
 
 // ----- Vendor Invoice Operations ----- //
 
@@ -1101,4 +1162,46 @@ getHouseJobByMasterJob(payload:any){
       })
     )
   }
+    createBoe(payload: any) {
+    return this.http.post<{ data: any }>('boe/create', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+  updateBoeById(BoeSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`boe/update/${BoeSid}`, payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+
+  getBoeById(boeSid: number) {
+  return this.http.get<{ data: any }>(`boe/${boeSid}`).pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
+
+getAllBoe() {
+  return this.http.get(`boe`).pipe(
+    map((resp: any) => {
+      return resp.data;
+    })
+  )
+}
+
+deleteBoeById(BoeSid: number) {
+    return this.http.delete<{ data: any }>(`boe/${BoeSid}`).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+
 }

@@ -32,11 +32,11 @@
                             [disabled]="isLoading">Cargo Manifest</button>
                             <button class="text-dark" ngbDropdownItem  (click)="reportreleaseLetter()"
                             [disabled]="isLoading">Release Letter</button>
-                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder(releaseOrderPrint)"
+                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder()"
                             [disabled]="isLoading">Release Order</button>
                              <button class="text-dark" ngbDropdownItem  (click)="reportjobCard(jobCardPrint)"
                             [disabled]="isLoading">Job Card</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportPackingList(PackingListPrint)">Packing List
+                            <button class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
                             </button>
                     </div>
                 </div>
@@ -2563,6 +2563,7 @@
 <ng-template #pdfContent let-modal>
 
 </ng-template>
+
 
 <ng-template #preAlertPrint let-modal>
 

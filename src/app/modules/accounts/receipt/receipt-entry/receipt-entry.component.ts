@@ -94,6 +94,7 @@ export class ReceiptEntryComponent implements OnInit {
 
   today = new Date();
   todayDateInNgbStruct = toNgbDateStruct(this.today);
+  searchOutstandingForm!: FormGroup;
   receiptForm!: FormGroup;
   partyList: any[] = [];
   currencyList: any[] = [];
@@ -141,12 +142,12 @@ export class ReceiptEntryComponent implements OnInit {
   public searchTypes = [
     { label: 'Party', value: 'Party' },
     { label: 'Invoice', value: 'Invoice' },
-    { label: 'House No.', value: 'HouseNo' },
-    { label: 'HBL No.', value: 'HBLNo' },
-    { label: 'Master No.', value: 'MasterNo' },
-    { label: 'MBL No.', value: 'MBLNo' },
-    { label: 'HAWB', value: 'HAWB' },
-    { label: 'MAWB', value: 'MAWB' }
+    // { label: 'House No.', value: 'HouseNo' },
+    // { label: 'HBL No.', value: 'HBLNo' },
+    // { label: 'Master No.', value: 'MasterNo' },
+    // { label: 'MBL No.', value: 'MBLNo' },
+    // { label: 'HAWB', value: 'HAWB' },
+    // { label: 'MAWB', value: 'MAWB' }
   ];
 
   modalSearchType = [
@@ -176,9 +177,7 @@ export class ReceiptEntryComponent implements OnInit {
     private dropdownStore: DropdownStore,
     private accountService: AccountsService,
     private currencyFormatService: CurrencyFormatService,
-    private currencyConfigService: CurrencyConfigurationService,
-    private outstandingService: OutstandingService,
-    private spinner: NgxSpinnerService,
+    private currencyConfigService: CurrencyConfigurationService
   ) { }
 
   ngOnInit(): void {
@@ -198,6 +197,7 @@ export class ReceiptEntryComponent implements OnInit {
     console.log("CURRENT USER COUNTRY", this.currentUserCountry);
     console.log("CURRENT YEAR ID", this.currentYearId);
 
+    this.initSearchOutstandingForm();
     this.initializeForm();
     this.loadPaymentModes();
     this.loadAllLookups();
@@ -213,80 +213,26 @@ export class ReceiptEntryComponent implements OnInit {
     }
   }
 
-  private subscribeToPartyAndBankChanges(): void {
-    combineLatest([
-      this.receiptForm.get('CustomerBranchSid').valueChanges,
-      this.receiptForm.get('BankCOA').valueChanges
-    ]).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(([partySid, bankCoaSid]) => {
-      // Check if both are selected and if the details grid is empty
-      if (partySid && bankCoaSid) {
-        this.populateInitialDetailRows(partySid, bankCoaSid);
-      }
+  initSearchOutstandingForm() {
+    this.searchOutstandingForm = this.fb.group({
+      CompanyMasterSid: [this.currentCompany?.CompanyMasterSid, Validators.required],
+      SearchType: ['Party', Validators.required],
+
+      LedgerMasterSid: [null],
+      CustomerName: [''],
+      InvoiceNumber: [''],
+      HouseNumber: [''],
+
+      FilterText: [''],   // generic input for all NON-Party searches
+      IncludeFullyPaid: [false]
+    });
+
+    this.searchOutstandingForm.get('SearchType')?.valueChanges.subscribe(type => {
+      this.clearSearchFields(type);
     });
   }
 
-  getCurrentCompanyBranches() {
-    const currentCompanyId = this.currentCompany?.CompanyMasterSid;
-    const currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
-    this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
-    console.log(this.currentCompanyBranches);
-  }
-
-  loadAllLookups() {
-    const filterOption = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid
-    }
-    forkJoin({
-      parties: this.accountService.getAllDebtorWithCOAMapped(filterOption).pipe(catchError(err => of([]))),
-      currencies: this.dropdownStore.loadCurrencies().pipe(catchError(err => of([]))),
-      bankTypedLedgers: this.accountService.getAllLedgersByItsType({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        LedgerType: 'Bank'
-      }).pipe(catchError(err => of([]))),
-      cashTypeLedgers: this.accountService.getAllLedgersByItsType({
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        LedgerType: 'Cash'
-      }).pipe(catchError(err => of([]))),
-    }).subscribe(({ parties, currencies, bankTypedLedgers, cashTypeLedgers }) => {
-      this.partyList = parties.data;
-      this.currencyList = (currencies || []).map(c => ({ ...c, countryName: c?.countryMaster?.countryName }));
-      this.currencyConfigService.initializeConfigurations(this.currencyList);
-      console.log("CURRENCY CONFIG INITIALIZED", this.currencyConfigService.getAllCurrencyConfigs());
-      this.bankTypedLedgers = bankTypedLedgers.data;
-      this.cashTypeLedgers = cashTypeLedgers.data;
-    })
-  }
-
-  loadDetailLookups() {
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-    const filterOption = {
-      CompanyMasterSid,
-      BranchMasterSid
-    }
-    forkJoin({
-      coaWithLedgerCategoryAsLedger: this.accountService.getAllCoaWithLedgerCategory({
-        LedgerCategory: 'Ledger',
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      }).pipe(catchError(err => of([]))),
-      costCenters: this.accountService.getAllCostCenters().pipe(catchError(err => of([]))),
-      profitCenters: this.accountService.getAllProfitCenters().pipe(catchError(err => of([]))),
-      depts: this.dropdownStore.loadDepartments(filterOption).pipe(catchError(err => of([]))),
-      charges: this.accountService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([])))
-    }).subscribe(({ coaWithLedgerCategoryAsLedger, costCenters, profitCenters, depts, charges }) => {
-      this.coaList = coaWithLedgerCategoryAsLedger.data;
-      this.costCenterList = costCenters.data;
-      this.profitCenterList = profitCenters.data;
-      this.deptList = depts
-      this.chargeList = charges;
-      this.filterChargeByDeptForAllRow();
-    })
-  }
-
-  /**
+    /**
    * Initialize the receipt form with validation
    */
   private initializeForm(): void {
@@ -294,7 +240,7 @@ export class ReceiptEntryComponent implements OnInit {
     this.receiptForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }],  // Receipt Number
       VoucherDate: [null], // Receipt Date
-      MultiBranch: [false],
+      MultiBranch: [{value : false, disabled: true}],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
       CurrencyMasterSid: [companyCurrency || null],
@@ -324,113 +270,7 @@ export class ReceiptEntryComponent implements OnInit {
     });
   }
 
-  get r(): { [key: string]: AbstractControl } {
-    return this.receiptForm.controls || {}
-  }
-
-  get detailItems(): FormArray {
-    return this.receiptForm.get('detailItems') as FormArray;
-  }
-
-  constructDetailItems(data?: any): FormGroup {
-    const detailItem = this.fb.group({
-      // Primary & audit fields
-      VoucherDetailSid: [data?.VoucherDetailSid || 0],
-      VoucherHeaderSid: [data?.VoucherHeaderSid || null],
-      Sno: [data?.Sno || 1],
-      Status: [data?.Status || 'A'],
-
-      // Foreign keys
-      COAMasterSid: [data?.COAMasterSid || null, [Validators.required]],
-      LedgerMasterSid: [data?.LedgerMasterSid || null, [Validators.required]],
-      DrCr: [data?.DrCr || 'D', Validators.required],
-      CurrencyMasterSid: [data?.CurrencyMasterSid || null, Validators.required],
-      CurrencyCode: [data?.CurrencyCode || 'INR', Validators.required],
-      ExchangeRate: [data?.ExchangeRate || 1.000, Validators.required],
-      NumberOfUnit: [data?.NumberOfUnit || 1.000],
-      Rate: [data?.Rate || 1],
-      Amount: [data?.Amount || 0.000, Validators.required],
-      LocalAmount: [data?.LocalAmount || 0.000, Validators.required],
-
-      Narration: [data?.Narration || ''],
-      CostCenter: [data?.CostCenter || null],
-      ProfitCenter: [data?.ProfitCenter || null],
-      DepartmentMasterSid: [data?.DepartmentMasterSid || null],
-      ChargeMasterSid: [data?.ChargeMasterSid || null],
-      ChargeDescription: [data?.ChargeDescription || ''],
-      HSSACMasterSid: [data?.HSSACMasterSid || null],
-      ChargeUOMSid: [data?.ChargeUOMSid || null],
-      HouseJobSid: [data?.HouseJobSid || null],
-      MasterJobSid: [data?.MasterJobSid || null],
-
-
-      YearMasterSid: [data?.YearMasterSid || null],
-      VoucherTransactionSid: [data?.VoucherTransactionSid || null],
-
-      // Transaction details
-      CostRevenue: [data?.CostRevenue || ''],
-      TaxableAmount: [data?.TaxableAmount || 0.000],
-      TaxPercentage1: [data?.TaxPercentage1 || 0.00],
-      TaxAmount1: [data?.TaxAmount1 || 0.000],
-      TaxPercentage2: [data?.TaxPercentage2 || 0.00],
-      TaxAmount2: [data?.TaxAmount2 || 0.000],
-      InvoiceType: [data?.InvoiceType || ''],
-      Remarks: [data?.Remarks || ''],
-      PartyAmount: [data?.PartyAmount || 0.000],
-
-      // Relational objects (used for dropdowns or display)
-      coaMaster: [data?.coaMaster || null],              // COA reference
-      chargeMaster: [data?.chargeMaster || null],        // Charge reference
-      currencyMaster: [data?.currencyMaster || null],    // Currency reference
-      departmentMaster: [data?.departmentMaster || null],
-      hSSACMaster: [data?.hSSACMaster || null],
-      houseJob: [data?.houseJob || null],
-      masterJob: [data?.masterJob || null],
-      CostCenterMaster: [data?.CostCenterMaster || null],
-      ProfitCenterMaster: [data?.ProfitCenterMaster || null],
-      VoucherHeader: [data?.VoucherHeader || null],
-      voucherTransaction: [data?.voucherTransaction || null],
-      yearMaster: [data?.yearMaster || null],
-    });
-    return detailItem;
-  }
-
-  addDetailRow(data?: any) {
-    const newRow = this.constructDetailItems(data);
-    this.detailItems.push(newRow);
-    const lastAddedRow = this.detailItems.length - 1;
-    const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
-    localAmountTriggeringCtrls.forEach(ctrl => {
-      newRow.get(ctrl)?.valueChanges.subscribe(() => {
-        this.calculateLocalAmount(lastAddedRow);
-      });
-    });
-  }
-
-  removeDetail(detailIndex: number) {
-
-  }
-
-  constructVoucherMatching(data?: any) {
-
-  }
-
-  get voucherMatchings(): FormArray {
-    return this.receiptForm.get('voucherMatchings') as FormArray;
-  }
-
-  get interBranches(): FormArray {
-    return this.receiptForm.get('interBranches') as FormArray;
-  }
-
-
-  /**
-   * Load payment modes
-   */
-  private loadPaymentModes(): void {
-    this.paymentModes = this.receiptService.getPaymentModes();
-  }
-
+  
   /**
    * Setup form value change listeners
    */
@@ -483,199 +323,125 @@ export class ReceiptEntryComponent implements OnInit {
   //   });
   // }
 
+  loadAllLookups() {
+    const filterOption = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid
+    }
+    forkJoin({
+      parties: this.accountService.getAllDebtorWithCOAMapped(filterOption).pipe(catchError(err => of([]))),
+      currencies: this.dropdownStore.loadCurrencies().pipe(catchError(err => of([]))),
+      bankTypedLedgers: this.accountService.getAllLedgersByItsType({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        LedgerType: 'Bank'
+      }).pipe(catchError(err => of([]))),
+      cashTypeLedgers: this.accountService.getAllLedgersByItsType({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        LedgerType: 'Cash'
+      }).pipe(catchError(err => of([]))),
+    }).subscribe(({ parties, currencies, bankTypedLedgers, cashTypeLedgers }) => {
+      this.partyList = parties.data;
+      this.currencyList = (currencies || []).map(c => ({ ...c, countryName: c?.countryMaster?.countryName }));
+      this.bankTypedLedgers = bankTypedLedgers.data;
+      this.cashTypeLedgers = cashTypeLedgers.data;
 
-  /**
-   * Remove voucher matching row
-   */
-  removeVoucher(index: number): void {
-    this.detailItems.removeAt(index);
-    this.recalculateTotalAmount();
+      const companyCurrency = this.r['CurrencyMasterSid']?.value;
+      this.setCurrencyCode(companyCurrency)
+
+      this.currencyConfigService.initializeConfigurations(this.currencyList);
+      console.log("CURRENCY CONFIG INITIALIZED", this.currencyConfigService.getAllCurrencyConfigs());
+    })
+  }
+
+  loadDetailLookups() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const filterOption = {
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    forkJoin({
+      coaWithLedgerCategoryAsLedger: this.accountService.getAllCoaWithLedgerCategory({
+        LedgerCategory: 'Ledger',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      }).pipe(catchError(err => of([]))),
+      costCenters: this.accountService.getAllCostCenters().pipe(catchError(err => of([]))),
+      profitCenters: this.accountService.getAllProfitCenters().pipe(catchError(err => of([]))),
+      depts: this.dropdownStore.loadDepartments(filterOption).pipe(catchError(err => of([]))),
+      charges: this.accountService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([])))
+    }).subscribe(({ coaWithLedgerCategoryAsLedger, costCenters, profitCenters, depts, charges }) => {
+      this.coaList = coaWithLedgerCategoryAsLedger.data;
+      this.costCenterList = costCenters.data;
+      this.profitCenterList = profitCenters.data;
+      this.deptList = depts
+      this.chargeList = charges;
+      this.filterChargeByDeptForAllRow();
+    })
   }
 
   /**
-   * Add inter-branch row
-   */
-  addInterBranch(): void {
-    this.interBranches.push(
-      this.fb.group({
-        BranchMasterSid: [null, Validators.required],
-        BranchName: [''],
-        Amount: [0, [Validators.required, Validators.min(0)]],
-        InterBranchJV: [''],
-        VoucherType: [''],
-      }),
-    );
-  }
-
-  /**
-   * Remove inter-branch row
-   */
-  removeInterBranch(index: number): void {
-    this.interBranches.removeAt(index);
-  }
-
-  /**
-   * Tab selection
-   */
-  selectTab(tab: string): void {
-    this.selectedTab = tab;
-  }
-
-  /**
-   * Open outstanding modal
-   */
-  openDubaiModal(content: any): void {
-    this.modalService.open(content, { centered: true, size: 'xl' });
+ * Load payment modes
+ */
+  private loadPaymentModes(): void {
+    this.paymentModes = this.receiptService.getPaymentModes();
   }
 
   /**
    * Search outstanding invoices for customer
    */
 
-  searchOutstanding(party?: any) {
-    if (this.searchType === 'Party') {
-      const companyId = this.currentCompany?.CompanyMasterSid;
-      console.log("SELECTED PARTY", party);
-      this.outstandingService.getCustomerOutstanding(companyId, party.SubledgerMasterSid)
-        .subscribe(response => this.patchOutstandingFormArray(response.transactions));
-    } else {
-      // Implement logic for other types when ready
+  searchOutstanding() {
+    const form = this.searchOutstandingForm.getRawValue();
+    console.log("FormValue", form);
+    let payload: any = {
+      CompanyMasterSid: form.CompanyMasterSid,
+      IncludeFullyPaid: form.IncludeFullyPaid
+    };
+
+    switch (form.SearchType) {
+      case 'Party':
+        payload.LedgerMasterSid = form.LedgerMasterSid;
+        break;
+
+      case 'Invoice':
+        payload.InvoiceNumber = form.FilterText;
+        break;
+
+      case 'HouseNo':
+        payload.HouseNumber = form.FilterText;
+        break;
+
+      default:
+        // For HBL, MBL, HAWB, MAWB, MasterNo etc.
+        payload.InvoiceNumber = form.FilterText;
+    }
+
+    console.log("Payload Sent:", payload);
+
+    this.receiptService.searchOutstandingInvoices(payload).subscribe(
+      res => {
+        this.patchHeaderValue(res);
+        this.patchOutstandingFormArray(res)
+    });
+  }
+
+  patchHeaderValue(res: any) {
+    console.log("RES",res);
+    if(res.length > 0 && res[0].LedgerMasterSid && this.searchOutstandingForm.get('SearchType')?.value === "Invoice"){ 
+      const party = this.partyList.find(p => p.SubledgerMasterSid === res[0].LedgerMasterSid);
+      this.onPartyChange(party);
+    } else if(
+      res.length > 0 && this.searchOutstandingForm.get('SearchType')?.value === "Party" 
+      && this.searchOutstandingForm.get('LedgerMasterSid')?.value
+    ){
+      const partyIdInSearch = this.searchOutstandingForm.get('LedgerMasterSid')?.value;
+      const party = this.partyList.find(p => p.SubledgerMasterSid === partyIdInSearch);
+      this.onPartyChange(party);
     }
   }
 
-  patchOutstandingFormArray(transactions: any) {
-    this.voucherMatchings.clear();
-    transactions.forEach(tx => {
-      this.voucherMatchings.push(this.fb.group({
-        voucherNo: [tx.voucherNumber],
-        voucherType: [tx.voucherType],
-        voucherDate: [new Date(tx.voucherDate)],
-        branch: [tx.branch],
-        drCr: [tx.drCr],
-        curr: [tx.currencyCode],
-        exRate: [tx.exchangeRate],
-        currAmt: [tx.originalCurrencyAmount],
-        localAmt: [tx.originalLocalAmount],
-        osCurrAmt: [tx.outstandingCurrencyAmount],
-        osLocalAmt: [tx.outstandingLocalAmount],
-        // Matching side for user entry:
-        matchCurr: [tx.currencyCode],
-        matchExRate: [tx.exchangeRate],
-        matchCurrAmt: [null],
-        matchLocalAmt: [null],
-        tdsAmt: [null],
-        balance: [tx.outstandingLocalAmount] // This updates as user enters matchLocalAmt
-      }));
-    });
-    console.log(this.voucherMatchings.value)
-  }
 
-  // async searchOutstanding(modal?: any): Promise<void> {
-  //   const customerSid = this.receiptForm.get('LedgerMasterSid')?.value;
-  //   if (!customerSid) {
-  //     this.toastr.warning('Please select a customer first');
-  //     return;
-  //   }
-
-  //   try {
-  //     // Use receipt service which calls outstanding service
-  //     const invoices = await this.receiptService.getCustomerOutstanding(this.CompanyMasterSid, customerSid).toPromise();
-
-  //     if (invoices && invoices.length > 0) {
-  //       this.outstandingInvoices = invoices;
-  //       this.modalService.open(modal, { size: 'xl', backdrop: 'static' });
-  //     } else {
-  //       this.toastr.info('No outstanding invoices found for this customer');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('Failed to fetch outstanding:', error);
-  //     this.toastr.error(error.message || 'Failed to fetch outstanding invoices');
-  //   }
-  // }
-
-  /**
-   * Select invoices from outstanding modal
-   */
-  applySelectedInvoices(): void {
-    const selectedInvoices = this.outstandingInvoices.filter((inv) => inv.selected);
-
-    if (selectedInvoices.length === 0) {
-      this.toastr.warning('Please select at least one invoice');
-      return;
-    }
-
-    // Clear existing vouchers
-    this.detailItems.clear();
-
-    // Add selected invoices to vouchers
-    selectedInvoices.forEach((invoice) => {
-      const amountToApply = invoice.amountToApply || invoice.OutstandingAmount;
-
-      this.detailItems.push(
-        this.fb.group({
-          VoucherTransactionSid: [invoice.VoucherTransactionSid],
-          VoucherNumber: [invoice.VoucherNumber],
-          VoucherType: [invoice.VoucherType],
-          VoucherDate: [invoice.VoucherDate],
-          OriginalAmount: [invoice.OriginalAmount],
-          OutstandingAmount: [invoice.OutstandingAmount],
-          MatchedAmount: [amountToApply, [Validators.required, Validators.min(0)]],
-          CurrencyCode: [invoice.CurrencyCode],
-          DrCr: [invoice.DrCr],
-          Narration: [''],
-          IsAdvance: [false],
-        }),
-      );
-    });
-
-    this.recalculateTotalAmount();
-    this.modalService.dismissAll();
-    this.toastr.success(`${selectedInvoices.length} invoice(s) added`);
-  }
-
-  /**
-   * Calculate total invoice amount from vouchers
-   */
-  recalculateTotalAmount(): void {
-    let total = 0;
-    this.detailItems.controls.forEach((control) => {
-      const matchedAmount = control.get('MatchedAmount')?.value || 0;
-      total += matchedAmount;
-    });
-
-    this.receiptForm.patchValue({
-      TotalInvoiceAmount: total,
-    });
-  }
-
-  /**
-   * Calculate TDS amount
-   */
-  calculateTDS(): void {
-    const hasTDS = this.receiptForm.get('HasTDS')?.value;
-    if (!hasTDS) {
-      this.receiptForm.patchValue({ TDSAmount: 0 });
-      return;
-    }
-
-    const totalAmount = this.receiptForm.get('TotalInvoiceAmount')?.value || 0;
-    const tdsPercentage = this.receiptForm.get('TDSPercentage')?.value || 0;
-
-    const tdsAmount = this.receiptService.calculateTDS(totalAmount, tdsPercentage);
-    this.receiptForm.patchValue({ TDSAmount: tdsAmount });
-  }
-
-  /**
-   * Calculate net receipt amount
-   */
-  calculateNetAmount(): void {
-    const totalAmount = this.receiptForm.get('TotalInvoiceAmount')?.value || 0;
-    const tdsAmount = this.receiptForm.get('TDSAmount')?.value || 0;
-
-    const netAmount = this.receiptService.calculateNetAmount(totalAmount, tdsAmount);
-    this.receiptForm.patchValue({ NetReceiptAmount: netAmount });
-  }
-
+  
   /**
    * Save receipt
    */
@@ -744,7 +510,8 @@ export class ReceiptEntryComponent implements OnInit {
   //     this.isSaving = false;
   //   }
   // }
-  onSubmit(isPostingTrue?: boolean) {
+
+    onSubmit(isPostingTrue?: boolean) {
     const formValue = this.receiptForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();
     if (this.detailItems.length === 0) {
@@ -787,7 +554,19 @@ export class ReceiptEntryComponent implements OnInit {
     this.isSaving = true;
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const voucherMatching = this.voucherMatchings.getRawValue();
+    const voucherMatching = this.voucherMatchings.getRawValue()
+    .filter(vm => (vm.matchCurrAmt || vm.matchLocalAmt))
+    .map((vm)=>({
+      ...vm,
+      DrCr : vm.drCr ?? '',
+      VoucherType : vm.voucherTypeMasterSid,
+      CurrencyCode : vm.matchCurr ?? '',
+      ExchangeRate : vm.matchExRate || 1,
+      Amount : vm.matchCurrAmt ?? 0,
+      LocalAmount : vm.matchLocalAmt ?? 0,
+    }));
+    
+    console.log("Only filled voucher matchings", voucherMatching);
     const totalTDSAmount = voucherMatching.reduce((acc, curr) => acc + curr.tdsAmt, 0);
     const totalLocalAmount = voucherMatching.reduce((acc, curr) => acc + curr.matchLocalAmt, 0);
     const payload = {
@@ -837,6 +616,7 @@ export class ReceiptEntryComponent implements OnInit {
           } : {})
         }
       }),
+      voucherMatching : voucherMatching,
       ...(this.isEditMode ? {
         UpdatedBy: currentUserEmail
       } : {
@@ -876,8 +656,8 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   /**
-   * Load existing receipt for editing
-   */
+ * Load existing receipt for editing
+ */
   loadReceipt(receiptId: number) {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -975,14 +755,17 @@ export class ReceiptEntryComponent implements OnInit {
       })
     })
 
-    const voucherMatchingRecords = response.voucherMatchings || [];
+    const voucherMatchingHeader = response.voucherMatchingHeader[0] || [];
+    console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
+    const voucherMatchingRecords = voucherMatchingHeader.voucherMatchings || [];
+    console.log("VOUCHER MATCHING RECORDS", voucherMatchingRecords);
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
   }
 
   /**
-   * Reset form
-   */
+ * Reset form
+ */
   resetForm(): void {
     this.receiptForm.reset();
     this.detailItems.clear();
@@ -999,234 +782,174 @@ export class ReceiptEntryComponent implements OnInit {
     history.back();
   }
 
-  /**
-   * Mark all form controls as touched to show validation errors
-   */
-  private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
-    Object.keys(formGroup.controls).forEach((key) => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
+  // Section-2 VoucherDetail Related
 
-      if (control instanceof FormGroup || control instanceof FormArray) {
-        this.markFormGroupTouched(control);
-      }
+  get detailItems(): FormArray {
+    return this.receiptForm.get('detailItems') as FormArray;
+  }
+
+  constructDetailItems(data?: any): FormGroup {
+    const detailItem = this.fb.group({
+      // Primary & audit fields
+      VoucherDetailSid: [data?.VoucherDetailSid || 0],
+      VoucherHeaderSid: [data?.VoucherHeaderSid || null],
+      Sno: [data?.Sno || 1],
+      Status: [data?.Status || 'A'],
+
+      // Foreign keys
+      COAMasterSid: [data?.COAMasterSid || null, [Validators.required]],
+      LedgerMasterSid: [data?.LedgerMasterSid || null, [Validators.required]],
+      DrCr: [data?.DrCr || 'D', Validators.required],
+      CurrencyMasterSid: [data?.CurrencyMasterSid || null, Validators.required],
+      CurrencyCode: [data?.CurrencyCode || 'INR', Validators.required],
+      ExchangeRate: [data?.ExchangeRate || 1.000, Validators.required],
+      NumberOfUnit: [data?.NumberOfUnit || 1.000],
+      Rate: [data?.Rate || 1],
+      Amount: [data?.Amount || 0.000, Validators.required],
+      LocalAmount: [data?.LocalAmount || 0.000, Validators.required],
+
+      Narration: [data?.Narration || ''],
+      CostCenter: [data?.CostCenter || null],
+      ProfitCenter: [data?.ProfitCenter || null],
+      DepartmentMasterSid: [data?.DepartmentMasterSid || null],
+      ChargeMasterSid: [data?.ChargeMasterSid || null],
+      ChargeDescription: [data?.ChargeDescription || ''],
+      HSSACMasterSid: [data?.HSSACMasterSid || null],
+      ChargeUOMSid: [data?.ChargeUOMSid || null],
+      HouseJobSid: [data?.HouseJobSid || null],
+      MasterJobSid: [data?.MasterJobSid || null],
+
+
+      YearMasterSid: [data?.YearMasterSid || null],
+      VoucherTransactionSid: [data?.VoucherTransactionSid || null],
+
+      // Transaction details
+      CostRevenue: [data?.CostRevenue || ''],
+      TaxableAmount: [data?.TaxableAmount || 0.000],
+      TaxPercentage1: [data?.TaxPercentage1 || 0.00],
+      TaxAmount1: [data?.TaxAmount1 || 0.000],
+      TaxPercentage2: [data?.TaxPercentage2 || 0.00],
+      TaxAmount2: [data?.TaxAmount2 || 0.000],
+      InvoiceType: [data?.InvoiceType || ''],
+      Remarks: [data?.Remarks || ''],
+      PartyAmount: [data?.PartyAmount || 0.000],
+
+      // Relational objects (used for dropdowns or display)
+      coaMaster: [data?.coaMaster || null],              // COA reference
+      chargeMaster: [data?.chargeMaster || null],        // Charge reference
+      currencyMaster: [data?.currencyMaster || null],    // Currency reference
+      departmentMaster: [data?.departmentMaster || null],
+      hSSACMaster: [data?.hSSACMaster || null],
+      houseJob: [data?.houseJob || null],
+      masterJob: [data?.masterJob || null],
+      CostCenterMaster: [data?.CostCenterMaster || null],
+      ProfitCenterMaster: [data?.ProfitCenterMaster || null],
+      VoucherHeader: [data?.VoucherHeader || null],
+      voucherTransaction: [data?.voucherTransaction || null],
+      yearMaster: [data?.yearMaster || null],
+    });
+    return detailItem;
+  }
+
+  addDetailRow(data?: any) {
+    const newRow = this.constructDetailItems(data);
+    this.detailItems.push(newRow);
+    const lastAddedRow = this.detailItems.length - 1;
+    const localAmountTriggeringCtrls = ['Amount', 'ExchangeRate'];
+    localAmountTriggeringCtrls.forEach(ctrl => {
+      newRow.get(ctrl)?.valueChanges.subscribe(() => {
+        this.calculateLocalAmount(lastAddedRow);
+      });
     });
   }
 
-  /**
-   * Check if field has error
-   */
-  hasError(fieldName: string, errorType?: string): boolean {
-    const field = this.receiptForm.get(fieldName);
-    if (!field) return false;
+  removeDetail(detailIndex: number, VoucherDetailSid?: number) {
 
-    if (errorType) {
-      return field.hasError(errorType) && (field.dirty || field.touched);
-    }
-    return field.invalid && (field.dirty || field.touched);
-  }
-
-  onCurrencyChange(selected: any) {
-    if (!selected) {
-      this.receiptForm.patchValue({
-        CurrencyCode: null
-      })
-      return;
-    } else {
-      this.receiptForm.patchValue({
-        CurrencyCode: selected.currencyCode
-      })
-    }
-    this.patchCurrencyExchangeRate();
-  }
-
-  patchCurrencyExchangeRate() {
-    const currencySid = this.receiptForm.get('CurrencyMasterSid')?.value;
-    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    console.log('Entered patchCurrencyExchangeRate', {
-      FromCurrencyId: currencySid,
-      toCurrencyId: companyCurrency
-    });
-
-    if (currencySid === companyCurrency && currencySid !== null) {
-      this.receiptForm.patchValue({
-        ExchangeRate: 1
-      })
-      return;
-    }
-
-    const fromCurrencyCode = this.receiptForm.get('CurrencyCode')?.value;
-    const toCurrencyCode = this.currencyList.find(c => c.CurrencyMasterSid === companyCurrency)?.currencyCode;
-    if (!fromCurrencyCode || !toCurrencyCode) {
-      return;
-    }
-    console.log('FINDING CURRENCY EXCHANGE', {
-      fromCurrencyCode: fromCurrencyCode,
-      toCurrencyCode: toCurrencyCode
-    })
-    const payload = {
-      fromCurrencyCode,
-      toCurrencyCode,
-      segment: 'revenue'
-    };
-    this.accountService.getExchangeRate(payload).subscribe(
-      (resp: any) => {
-        if (resp?.status && resp.data) {
-          console.log('PATCHING EXCHANGE RATE', resp.data);
-          this.receiptForm.patchValue({
-            ExchangeRate: resp.data
-          })
+    // Case 1 : Row has VoucherDetailSid → call API first
+    if (VoucherDetailSid) {
+      this.accountService.softDeleteVoucherDetail(VoucherDetailSid).subscribe({
+        next: (res) => {
+          // On success, remove row from form array
+          (this.detailItems as FormArray).removeAt(detailIndex);
+        },
+        error: (err) => {
+          console.error('Error deleting voucher detail:', err);
         }
-      }
-    )
+      });
+    }
+    // Case 2 : New row (no VoucherDetailSid) → directly remove it
+    else {
+      (this.detailItems as FormArray).removeAt(detailIndex);
+    }
   }
 
-  onPartyChange(party: any) {
-    console.log("Selected Party", party);
-    this.errorLogger();
-    if (!party) {
-      this.receiptForm.patchValue({
-        PartyMasterSid: null,
-        PartyName: '',
-        PartyAddress: '',
-        CustomerBranchSid: null,
-        COAMasterSid: null,
-        LedgerMasterSid: null,
-        GST_VAT: ''
-      })
+  private subscribeToPartyAndBankChanges(): void {
+    combineLatest([
+      this.receiptForm.get('CustomerBranchSid').valueChanges,
+      this.receiptForm.get('BankCOA').valueChanges
+    ]).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(([partySid, bankCoaSid]) => {
+      // Check if both are selected and if the details grid is empty
+      if (partySid && bankCoaSid) {
+        this.populateInitialDetailRows(partySid, bankCoaSid);
+      }
+    });
+  }
+
+  private populateInitialDetailRows(partySid: number, bankCoaSid: number): void {
+    this.detailItems.clear();
+    console.log("Selected ITEMS", {
+      SelectedPartyId: partySid,
+      SelectedBankCoaId: bankCoaSid
+    })
+    // 1. Find the selected bank/cash ledger
+    const isCashMode = this.receiptForm.get('CashOrBank')?.value;
+    const bankLedgerSource = isCashMode ? this.cashTypeLedgers : this.bankTypedLedgers;
+    const bankLedger = bankLedgerSource.find(ledger => ledger.COAMasterSid === bankCoaSid);
+
+    // 2. Find the selected party ledger
+    const partyLedger = this.partyList.find(p => p.CustomerBranchSid === partySid);
+
+    console.log("Selected Full ITEMS", {
+      SelectedParty: partyLedger,
+      SelectedBank: bankLedger
+    })
+
+    if (!bankLedger || !partyLedger) {
+      console.error('Could not find the selected bank or party ledger details.');
       return;
     }
-    this.receiptForm.patchValue({
-      PartyMasterSid: party.SubledgerMasterSid,
-      PartyName: party.CustomerName,
-      PartyAddress: party.Address,
-      CustomerBranchSid: party.CustomerBranchSid,
-      COAMasterSid: party.COAMappedId,
-      LedgerMasterSid: party.SubledgerMasterSid,
-      GST_VAT: party.GSTNo
-    })
-    if (!this.r['BankPartyName']?.value) {
-      this.r['BankPartyName']?.setValue(party.CustomerName);
+
+    // 3. Create the Party Row (Credit)
+    const partyData = {
+      Sno: 1,
+      COAMasterSid: partyLedger.COAMappedId,
+      LedgerMasterSid: partyLedger.SubledgerMasterSid,
+      DrCr: 'C',
+      CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
+      ExchangeRate: this.r['ExchangeRate']?.value,
     }
-    console.log("FORM VALUE AFTER CUSTOMER SELECTED", this.receiptForm.value);
+    console.log("PartyData", partyData);
+    this.addDetailRow(partyData);
+    this.fetchLedgerForCOA(partyLedger, 0);
+
+    // 4. Create the Bank Row (Debit)
+    const bankData = {
+      Sno: 2,
+      COAMasterSid: bankLedger.COAMasterSid,
+      LedgerMasterSid: bankLedger.LedgerMasterSid,
+      DrCr: 'D',
+      CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
+      ExchangeRate: this.r['ExchangeRate']?.value,
+    }
+    console.log("BankData", bankData);
+    this.addDetailRow(bankData);
+    this.fetchLedgerForCOA(bankLedger, 1);
+
   }
 
-  // openSearchModal() {
-  //   if (!this.searchModal) {
-  //     this.appSettingService.showError('Search modal template not found');
-  //     return;
-  //   }
-
-  //   this.searchType = 'House No';
-  //   this.searchValue = '';
-  //   this.allPendingCosts = [];
-  //   this.selectedCosts = [];
-
-  //   this.modalService.open(this.searchModal, {
-  //     size: 'lg',
-  //     backdrop: 'static',
-  //     keyboard: false
-  //   });
-  // }
-  // closeSearchModal() {
-  //   this.modalService.dismissAll();
-  //   this.selectedCosts = [];
-  // }
-
-  toggleMultiBranch(event: any) {
-    const ctrl = this.receiptForm.get('MultiBranch');
-    const element = event.target as HTMLInputElement;
-
-    // Handle keyboard enter toggle
-    if (event instanceof KeyboardEvent && event.key === 'Enter') {
-      element.checked = !element.checked;
-    }
-
-    // Confirmation dialog if disabling MultiBranch while interBranches exist
-    if (!element.checked && this.interBranches.length > 0) {
-      const modalRef = this.modalService.open(ConfirmationDialogComponent, {
-        centered: true,
-        size: 'lg',
-        backdrop: 'static'
-      });
-      modalRef.componentInstance.header = 'Confirm';
-      modalRef.componentInstance.body = 'There are some inter-branch transactions. Are you sure you want to proceed?';
-      modalRef.componentInstance.yesButtonText = 'Yes';
-      modalRef.componentInstance.noButtonText = 'No';
-
-      modalRef.componentInstance.onYesClick = () => {
-        this.interBranches.clear();
-        ctrl.setValue(element.checked);
-        this.tabs.pop();
-        modalRef.close();
-      };
-
-      modalRef.componentInstance.onNoClick = () => {
-        element.checked = !element.checked;
-        ctrl.setValue(element.checked);
-        modalRef.close();
-      };
-
-      return; // Exit so further logic runs only after user confirms
-    }
-
-    // Set MultiBranch control value
-    ctrl.setValue(element.checked);
-
-    if (element.checked) {
-      // Add interbranch tab if not already present
-      if (!this.tabs.find(t => t.name === 'Interbranch')) {
-        this.tabs.push({ name: 'Interbranch', icon: 'fas fa-flag-checkered' });
-      }
-
-      // Clear existing interBranches
-      this.interBranches.clear();
-
-      // Populate interBranches FormArray from current company branches
-      this.currentCompanyBranches.forEach(branch => {
-        this.interBranches.push(this.fb.group({
-          BranchMasterSid: {value : branch.BranchMasterSid, disabled: true},
-          BranchName: {value : branch.branchName, disabled: true},
-          CurrAmount: 0,
-          InterBranchJV: '',
-          VoucherType: ''
-        }));
-      });
-    } else {
-      // Remove the interbranch tab
-      this.tabs = this.tabs.filter(t => t.name !== 'Interbranch');
-      // Clear interBranches as MultiBranch is unchecked
-      this.interBranches.clear();
-    }
-
-    console.log("FINAL FORM LEVEL VALUE", ctrl.value);
-    console.log("FINAL TABS", this.tabs);
-  }
-
-
-  toggleCashOrBank(event: any) {
-    const element = event.target as HTMLInputElement;
-    const ctrl = this.receiptForm.get('CashOrBank');
-    if (event instanceof KeyboardEvent && event.key === 'Enter') {
-      element.checked = !element.checked;
-      console.log("KEYBOARD EVENT TRIGGERED", {
-        isCheckBoxTicked: element.checked,
-        prevValue: ctrl.value,
-        newValue: !ctrl.value
-      })
-    }
-    else if (event instanceof PointerEvent) {
-      console.log("POINTER EVENT TRIGGERED", {
-        isCheckBoxTicked: element.checked,
-        prevValue: ctrl.value,
-        newValue: !ctrl.value
-      })
-    }
-    this.r['BankCOA']?.setValue(null);
-    ctrl.setValue(element.checked);
-  }
-
-  handleCOAChange(coa: any, detailIndex: number) {
+   handleCOAChange(coa: any, detailIndex: number) {
     console.log("Handle COA Change", coa);
     if (!coa) {
       this.detailItems.at(detailIndex).get('LedgerMasterSid')?.setValue(null);
@@ -1381,6 +1104,513 @@ export class ReceiptEntryComponent implements OnInit {
     })
   }
 
+  // Section-3 Voucher Matching Related
+
+  get voucherMatchings(): FormArray {
+    return this.receiptForm.get('voucherMatchings') as FormArray;
+  }
+
+  patchOutstandingFormArray(transactions: any[]) {
+    this.voucherMatchings.clear();
+
+    const currencyInHeader = this.r['CurrencyCode']?.value;
+    const exchangeRateInHeader = this.r['ExchangeRate']?.value;
+
+    transactions.forEach(tx => {
+
+      const isMatchedRecord = !!tx.VoucherMatchingSid;  // <–– detect matched data
+
+      const form = this.fb.group({
+        VoucherMatchingSid: [tx.VoucherMatchingSid || null],
+        VoucherTransactionSid: [tx.VoucherTransactionSid],
+        VoucherHeaderSid: [tx.VoucherHeaderSid],
+        VoucherDetailSid: [tx.VoucherDetailSid],
+        LedgerMasterSid: [tx.LedgerMasterSid],
+        COAMasterSid: [tx.COAMasterSid],
+
+        // Voucher Info
+        voucherNo: [tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo],
+        voucherTypeMasterSid: [tx.VoucherType],
+        voucherType: [tx.VoucherHeader?.voucherTypeMaster?.DocumentTypeName || tx.VoucherType],
+        voucherDate: [new Date(tx.VoucherHeader?.VoucherDate || tx.VoucherDate)],
+        drCr: [tx.DrCr === "C" ? "Cr" : "Dr"],
+
+        // System amounts
+        curr: [tx.CurrencyCode],
+        currAmt: [tx.OriginalCurrencyAmount ?? tx.Amount],
+        localAmt: [tx.OriginalAmount ?? tx.LocalAmount],
+
+        osCurrAmt: [tx.OutstandingCurrencyAmount ?? tx.Amount],
+        osLocalAmt: [tx.OutstandingAmount ?? tx.LocalAmount],
+
+        exRate: [tx.ExchangeRate || 1],
+
+        // Matching values (either blank or existing)
+        matchCurr: [
+          isMatchedRecord ? tx.CurrencyCode : currencyInHeader
+        ],
+        matchExRate: [
+          isMatchedRecord ? tx.ExchangeRate : (exchangeRateInHeader || 1)
+        ],
+        matchCurrAmt: [
+          isMatchedRecord ? tx.Amount : null
+        ],
+        matchLocalAmt: [
+          isMatchedRecord ? tx.LocalAmount : null
+        ],
+        tdsAmt: [
+          isMatchedRecord ? tx.TDSAmount ?? null : null
+        ],
+
+        balance: [
+          isMatchedRecord ? (tx.OutstandingAmount - tx.LocalAmount) : null
+        ]
+      });
+
+      // Disable fields
+      [
+        'voucherNo', 'voucherType', 'voucherDate', 'drCr',
+        'curr', 'exRate', 'currAmt', 'localAmt', 'osCurrAmt', 'osLocalAmt',
+        'balance'
+      ].forEach(field => form.get(field)?.disable());
+      form.get('matchLocalAmt').valueChanges.subscribe(val => {
+        const osLocalAmt = form.get('osLocalAmt')?.value;
+        form.get('balance')?.setValue(osLocalAmt - val);
+      });
+      this.voucherMatchings.push(form);
+    });
+
+    console.log("Unified FormArray →", this.voucherMatchings.getRawValue());
+  }
+
+
+  patchExchangeRateForMatchRow(index: number) {
+    const row = this.voucherMatchings.at(index) as FormGroup;
+    const curr = row.get('matchCurr')?.value;
+    this.getExchangeRate(curr).subscribe(rate => {
+      row.get('matchExRate')?.setValue(rate);
+    })
+    this.calculateLocalAmountForMatchRow(index);
+  }
+
+
+
+  calculateLocalAmountForMatchRow(index: number) {
+    const row = this.voucherMatchings.at(index) as FormGroup;
+    const amount = Number(row.get('matchCurrAmt')?.value);
+    const exchangeRate = Number(row.get('matchExRate')?.value);
+    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, row.get('matchCurr')?.value);
+    const formattedAmount = this.getFormattedAmount(amount, row.get('matchCurr')?.value);
+
+    let finalAmount;
+    if (this.formatCurrencyAmountBeforeConcludingLocal) {
+      finalAmount = Number(formattedAmount) * Number(formattedExchangeRate);
+    } else {
+      finalAmount = Number(amount) * Number(formattedExchangeRate);
+    }
+    row.get('matchLocalAmt')?.setValue(this.getFormattedAmount(finalAmount, row.get('matchCurr')?.value));
+  }
+
+  
+  /**
+   * Remove voucher matching row
+   */
+  removeVoucher(index: number): void {
+    this.detailItems.removeAt(index);
+    this.recalculateTotalAmount();
+  }
+
+  getTotalCurrAmt() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('currAmt')?.value || 0), 0).toFixed(2);
+  }
+
+  getTotalLocalAmt() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('localAmt')?.value || 0), 0).toFixed(2);
+  }
+
+  getTotalOSCurrAmt() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('osCurrAmt')?.value || 0), 0).toFixed(2);
+  }
+
+  getTotalOSLocalAmount() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('osLocalAmt')?.value || 0), 0).toFixed(2);
+  }
+
+  getTotalMatchCurrAmt() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('matchCurrAmt')?.value || 0), 0).toFixed(2);
+  }
+
+  getTotalMatchLocalAmt() {
+    return this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('matchLocalAmt')?.value || 0), 0).toFixed(2);
+  }
+
+  getTotalTdsAmt() {
+    return (this.voucherMatchings.controls
+      .reduce((total, control) => total + Number(control.get('tdsAmt')?.value || 0), 0).toFixed(2));
+  }
+
+  /**
+ * Select invoices from outstanding modal
+ */
+  applySelectedInvoices(): void {
+    const selectedInvoices = this.outstandingInvoices.filter((inv) => inv.selected);
+
+    if (selectedInvoices.length === 0) {
+      this.toastr.warning('Please select at least one invoice');
+      return;
+    }
+
+    // Clear existing vouchers
+    this.detailItems.clear();
+
+    // Add selected invoices to vouchers
+    selectedInvoices.forEach((invoice) => {
+      const amountToApply = invoice.amountToApply || invoice.OutstandingAmount;
+
+      this.detailItems.push(
+        this.fb.group({
+          VoucherTransactionSid: [invoice.VoucherTransactionSid],
+          VoucherNumber: [invoice.VoucherNumber],
+          VoucherType: [invoice.VoucherType],
+          VoucherDate: [invoice.VoucherDate],
+          OriginalAmount: [invoice.OriginalAmount],
+          OutstandingAmount: [invoice.OutstandingAmount],
+          MatchedAmount: [amountToApply, [Validators.required, Validators.min(0)]],
+          CurrencyCode: [invoice.CurrencyCode],
+          DrCr: [invoice.DrCr],
+          Narration: [''],
+          IsAdvance: [false],
+        }),
+      );
+    });
+
+    this.recalculateTotalAmount();
+    this.modalService.dismissAll();
+    this.toastr.success(`${selectedInvoices.length} invoice(s) added`);
+  }
+
+
+  // Section-4 Helper
+  getCurrentCompanyBranches() {
+    const currentCompanyId = this.currentCompany?.CompanyMasterSid;
+    const currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === currentCompanyId).companyMaster);
+    this.currentCompanyBranches = (currentCompany?.userBranchMaster || []).map(ubm => ubm.branchMaster);
+    console.log(this.currentCompanyBranches);
+  }
+
+
+  get r(): { [key: string]: AbstractControl } {
+    return this.receiptForm.controls || {}
+  }
+
+  get interBranches(): FormArray {
+    return this.receiptForm.get('interBranches') as FormArray;
+  }
+
+  /**
+   * Add inter-branch row
+   */
+  addInterBranch(): void {
+    this.interBranches.push(
+      this.fb.group({
+        BranchMasterSid: [null, Validators.required],
+        BranchName: [''],
+        Amount: [0, [Validators.required, Validators.min(0)]],
+        InterBranchJV: [''],
+        VoucherType: [''],
+      }),
+    );
+  }
+
+  /**
+   * Remove inter-branch row
+   */
+  removeInterBranch(index: number): void {
+    this.interBranches.removeAt(index);
+  }
+
+  /**
+   * Tab selection
+   */
+  selectTab(tab: string): void {
+    this.selectedTab = tab;
+  }
+
+  /**
+   * Open outstanding modal
+   */
+  openDubaiModal(content: any): void {
+    this.modalService.open(content, { centered: true, size: 'xl' });
+  }
+
+
+
+
+
+
+
+  // async searchOutstanding(modal?: any): Promise<void> {
+  //   const customerSid = this.receiptForm.get('LedgerMasterSid')?.value;
+  //   if (!customerSid) {
+  //     this.toastr.warning('Please select a customer first');
+  //     return;
+  //   }
+
+  //   try {
+  //     // Use receipt service which calls outstanding service
+  //     const invoices = await this.receiptService.getCustomerOutstanding(this.CompanyMasterSid, customerSid).toPromise();
+
+  //     if (invoices && invoices.length > 0) {
+  //       this.outstandingInvoices = invoices;
+  //       this.modalService.open(modal, { size: 'xl', backdrop: 'static' });
+  //     } else {
+  //       this.toastr.info('No outstanding invoices found for this customer');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Failed to fetch outstanding:', error);
+  //     this.toastr.error(error.message || 'Failed to fetch outstanding invoices');
+  //   }
+  // }
+
+
+
+  /**
+   * Calculate total invoice amount from vouchers
+   */
+  recalculateTotalAmount(): void {
+    let total = 0;
+    this.detailItems.controls.forEach((control) => {
+      const matchedAmount = control.get('MatchedAmount')?.value || 0;
+      total += matchedAmount;
+    });
+
+    this.receiptForm.patchValue({
+      TotalInvoiceAmount: total,
+    });
+  }
+
+  /**
+   * Calculate TDS amount
+   */
+  calculateTDS(): void {
+    const hasTDS = this.receiptForm.get('HasTDS')?.value;
+    if (!hasTDS) {
+      this.receiptForm.patchValue({ TDSAmount: 0 });
+      return;
+    }
+
+    const totalAmount = this.receiptForm.get('TotalInvoiceAmount')?.value || 0;
+    const tdsPercentage = this.receiptForm.get('TDSPercentage')?.value || 0;
+
+    const tdsAmount = this.receiptService.calculateTDS(totalAmount, tdsPercentage);
+    this.receiptForm.patchValue({ TDSAmount: tdsAmount });
+  }
+
+  /**
+   * Calculate net receipt amount
+   */
+  calculateNetAmount(): void {
+    const totalAmount = this.receiptForm.get('TotalInvoiceAmount')?.value || 0;
+    const tdsAmount = this.receiptForm.get('TDSAmount')?.value || 0;
+
+    const netAmount = this.receiptService.calculateNetAmount(totalAmount, tdsAmount);
+    this.receiptForm.patchValue({ NetReceiptAmount: netAmount });
+  }
+
+
+
+
+
+
+
+
+
+  /**
+   * Mark all form controls as touched to show validation errors
+   */
+  private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
+    Object.keys(formGroup.controls).forEach((key) => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        this.markFormGroupTouched(control);
+      }
+    });
+  }
+
+  /**
+   * Check if field has error
+   */
+  hasError(fieldName: string, errorType?: string): boolean {
+    const field = this.receiptForm.get(fieldName);
+    if (!field) return false;
+
+    if (errorType) {
+      return field.hasError(errorType) && (field.dirty || field.touched);
+    }
+    return field.invalid && (field.dirty || field.touched);
+  }
+
+  onCurrencyChange(selected: any) {
+    if (!selected) {
+      this.receiptForm.patchValue({
+        CurrencyCode: null
+      })
+      return;
+    } else {
+      this.receiptForm.patchValue({
+        CurrencyCode: selected.currencyCode
+      })
+    }
+    this.patchCurrencyExchangeRate();
+  }
+
+  patchCurrencyExchangeRate() {
+    const currencySid = this.receiptForm.get('CurrencyMasterSid')?.value;
+    const companyCurrency = this.currentCompany?.CurrencyMasterSid;
+    console.log('Entered patchCurrencyExchangeRate', {
+      FromCurrencyId: currencySid,
+      toCurrencyId: companyCurrency
+    });
+
+    if (currencySid === companyCurrency && currencySid !== null) {
+      this.receiptForm.patchValue({
+        ExchangeRate: 1
+      })
+      return;
+    }
+
+    const fromCurrencyCode = this.receiptForm.get('CurrencyCode')?.value;
+    const toCurrencyCode = this.currencyList.find(c => c.CurrencyMasterSid === companyCurrency)?.currencyCode;
+    if (!fromCurrencyCode || !toCurrencyCode) {
+      return;
+    }
+    console.log('FINDING CURRENCY EXCHANGE', {
+      fromCurrencyCode: fromCurrencyCode,
+      toCurrencyCode: toCurrencyCode
+    })
+    const payload = {
+      fromCurrencyCode,
+      toCurrencyCode,
+      segment: 'revenue'
+    };
+    this.accountService.getExchangeRate(payload).subscribe(
+      (resp: any) => {
+        if (resp?.status && resp.data) {
+          console.log('PATCHING EXCHANGE RATE', resp.data);
+          this.receiptForm.patchValue({
+            ExchangeRate: resp.data
+          })
+        }
+      }
+    )
+  }
+
+  onPartyChange(party: any) {
+    console.log("Selected Party", party);
+    this.errorLogger();
+    if (!party) {
+      this.receiptForm.patchValue({
+        PartyMasterSid: null,
+        PartyName: '',
+        PartyAddress: '',
+        CustomerBranchSid: null,
+        COAMasterSid: null,
+        LedgerMasterSid: null,
+        GST_VAT: ''
+      })
+      return;
+    }
+    this.receiptForm.patchValue({
+      PartyMasterSid: party.SubledgerMasterSid,
+      PartyName: party.CustomerName,
+      PartyAddress: party.Address,
+      CustomerBranchSid: party.CustomerBranchSid,
+      COAMasterSid: party.COAMappedId,
+      LedgerMasterSid: party.SubledgerMasterSid,
+      GST_VAT: party.GSTNo
+    })
+    if (!this.r['BankPartyName']?.value) {
+      this.r['BankPartyName']?.setValue(party.CustomerName);
+    }
+    console.log("FORM VALUE AFTER CUSTOMER SELECTED", this.receiptForm.value);
+  }
+
+  // openSearchModal() {
+  //   if (!this.searchModal) {
+  //     this.appSettingService.showError('Search modal template not found');
+  //     return;
+  //   }
+
+  //   this.searchType = 'House No';
+  //   this.searchValue = '';
+  //   this.allPendingCosts = [];
+  //   this.selectedCosts = [];
+
+  //   this.modalService.open(this.searchModal, {
+  //     size: 'lg',
+  //     backdrop: 'static',
+  //     keyboard: false
+  //   });
+  // }
+  // closeSearchModal() {
+  //   this.modalService.dismissAll();
+  //   this.selectedCosts = [];
+  // }
+
+  toggleMultiBranch(event: any): void {
+    const ctrl = this.receiptForm.get('MultiBranch');
+    const element = event.target as HTMLInputElement;
+    if (event instanceof KeyboardEvent && event.key === 'Enter') {
+      element.checked = !element.checked;
+    }
+    ctrl.setValue(element.checked);
+    if (element.checked) {
+      // Only add interBranch tab if not already present
+      if (!this.tabs.find(t => t.name === 'Interbranch')) {
+        this.tabs.push({ name: 'Interbranch', icon: 'fas fa-flag-checkered' });
+      }
+      // Do not auto-populate interBranches; only add rows when user clicks "Add"
+    } else {
+      // Remove interBranch tab and clear form array
+      this.tabs = this.tabs.filter(t => t.name !== 'Interbranch');
+      this.interBranches.clear();
+    }
+  }
+
+
+
+  toggleCashOrBank(event: any) {
+    const element = event.target as HTMLInputElement;
+    const ctrl = this.receiptForm.get('CashOrBank');
+    if (event instanceof KeyboardEvent && event.key === 'Enter') {
+      element.checked = !element.checked;
+      console.log("KEYBOARD EVENT TRIGGERED", {
+        isCheckBoxTicked: element.checked,
+        prevValue: ctrl.value,
+        newValue: !ctrl.value
+      })
+    }
+    else if (event instanceof PointerEvent) {
+      console.log("POINTER EVENT TRIGGERED", {
+        isCheckBoxTicked: element.checked,
+        prevValue: ctrl.value,
+        newValue: !ctrl.value
+      })
+    }
+    this.r['BankCOA']?.setValue(null);
+    ctrl.setValue(element.checked);
+  }
+
+ 
+
   getExchangeRate(currency: number | string): Observable<number> {
     if (!currency) {
       return of(1);
@@ -1447,6 +1677,24 @@ export class ReceiptEntryComponent implements OnInit {
       finalAmount = Number(amount) * Number(formattedExchangeRate);
     }
     row.get('LocalAmount')?.setValue(this.getFormattedAmount(finalAmount, row.get('CurrencyMasterSid')?.value));
+  }
+
+  setCurrencyCode(CurrencyMasterSid: number) {
+    if(!CurrencyMasterSid || this.currencyList.length === 0) return;
+    const code = this.currencyList.find(c => c.CurrencyMasterSid === CurrencyMasterSid)?.currencyCode;
+    this.r['CurrencyCode']?.setValue(code);
+  }
+
+
+
+  clearSearchFields(type: string) {
+    this.searchOutstandingForm.patchValue({
+      LedgerMasterSid: null,
+      CustomerName: '',
+      InvoiceNumber: '',
+      HouseNumber: '',
+      FilterText: ''
+    });
   }
 
 
@@ -1534,57 +1782,7 @@ export class ReceiptEntryComponent implements OnInit {
     }
   }
 
-  private populateInitialDetailRows(partySid: number, bankCoaSid: number): void {
-    this.detailItems.clear();
-    console.log("Selected ITEMS", {
-      SelectedPartyId: partySid,
-      SelectedBankCoaId: bankCoaSid
-    })
-    // 1. Find the selected bank/cash ledger
-    const isCashMode = this.receiptForm.get('CashOrBank')?.value;
-    const bankLedgerSource = isCashMode ? this.cashTypeLedgers : this.bankTypedLedgers;
-    const bankLedger = bankLedgerSource.find(ledger => ledger.COAMasterSid === bankCoaSid);
 
-    // 2. Find the selected party ledger
-    const partyLedger = this.partyList.find(p => p.CustomerBranchSid === partySid);
-
-    console.log("Selected Full ITEMS", {
-      SelectedParty: partyLedger,
-      SelectedBank: bankLedger
-    })
-
-    if (!bankLedger || !partyLedger) {
-      console.error('Could not find the selected bank or party ledger details.');
-      return;
-    }
-
-    // 3. Create the Party Row (Credit)
-    const partyData = {
-      Sno: 1,
-      COAMasterSid: partyLedger.COAMappedId,
-      LedgerMasterSid: partyLedger.SubledgerMasterSid,
-      DrCr: 'C',
-      CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
-      ExchangeRate: this.r['ExchangeRate']?.value,
-    }
-    console.log("PartyData", partyData);
-    this.addDetailRow(partyData);
-    this.fetchLedgerForCOA(partyLedger, 0);
-
-    // 4. Create the Bank Row (Debit)
-    const bankData = {
-      Sno: 2,
-      COAMasterSid: bankLedger.COAMasterSid,
-      LedgerMasterSid: bankLedger.LedgerMasterSid,
-      DrCr: 'D',
-      CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
-      ExchangeRate: this.r['ExchangeRate']?.value,
-    }
-    console.log("BankData", bankData);
-    this.addDetailRow(bankData);
-    this.fetchLedgerForCOA(bankLedger, 1);
-
-  }
 
 
   ngOnDestroy(): void {

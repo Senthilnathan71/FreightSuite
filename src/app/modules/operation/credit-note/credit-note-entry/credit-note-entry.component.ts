@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -50,8 +50,7 @@ export class CreditNoteEntryComponent {
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
   @ViewChild('printModal') printModalRef: any;
-  @ViewChild('emailModal') emailModalRef: any;
-
+  private originalInvoiceRates: Map<number, number> = new Map();
   customerList: any[] = [];
   customerBranchList: any[] = [];
   bankDetails : any;
@@ -61,7 +60,7 @@ export class CreditNoteEntryComponent {
   hssacList: any[] = [];
   invoiceList:any[] =[];
   subledgerList: any[] = [];
-    invoiceOutstandingAmount: number = 0;
+  invoiceOutstandingAmount: number = 0;
   selectedOutstandingInvoice: any = null;
   showOutstandingInfo: boolean = false;
   uomList: any[] = [];
@@ -532,7 +531,7 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
 private patchInvoiceData(invoiceData: any) {
   const header = invoiceData;
   const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
-  
+  this.originalInvoiceRates = new Map();
   this.creditNoteForm.patchValue({
     ReversalVoucher: invoiceHeaderSid,
     CustomerMasterSid: header.CustomerMasterSid || null,
@@ -596,7 +595,14 @@ private patchInvoiceData(invoiceData: any) {
       .map((transaction: any) => {
         const detail = transaction.voucherDetail;
         const transactionData = transaction; // Main transaction data
-        
+        if (detail.ChargeMasterSid && detail.Rate != null) {
+          const chargeId = Number(detail.ChargeMasterSid);
+          const originalRate = Number(detail.Rate);
+          
+          this.originalInvoiceRates.set(chargeId, originalRate);
+          
+          console.log(`DEBUG - Stored original rate for charge ${chargeId}: ${originalRate}`);
+        }
         return {
           ...detail,
           // Include transaction-level data that might be needed
@@ -665,7 +671,7 @@ private patchInvoiceData(invoiceData: any) {
       NumberOfUnit: detail.NumberOfUnit,
       DrCr: swappedDrCr,
       CurrencyCode: detail.CurrencyCode,
-      Rate: detail.Rate,
+      Rate: detail.Rate != null ? Number(detail.Rate) : 0,
       ExchangeRate: detail.ExchangeRate,
       Amount: amount,
       TaxableAmount: taxableAmount,
@@ -1423,9 +1429,10 @@ private getCustomerCountryCode(customer: any): string {
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
       ChargeUOMSid: [{value:data?.ChargeUOMSid || null, disabled: true}], // will hold the UOM id (UOMMasterSid)
       NumberOfUnit: [{value:data?.NumberOfUnit || 1, disabled: true}],
-      DrCr: [{value: data?.DrCr || 'Cr', disabled: true}], // Default to Cr for Invoice (revenue)
+      DrCr: [{value: data?.DrCr || 'C', disabled: true}], // Default to Cr for Invoice (revenue)
       CurrencyCode: [{value: data?.CurrencyCode || this.creditNoteForm.get('CurrencyCode')?.value || null, disabled: true}],
-      Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
+      Rate: [ data?.Rate != null ? Number(data.Rate) : 0, 
+      [Validators.required, Validators.min(0), this.rateValidator.bind(this)]],
       ExchangeRate: [{value:data?.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value || 1, disabled: true}],
       Amount: [{value:data?.Amount || 0 , disabled: true}],
       TaxableAmount: [{value: data?.TaxableAmount || 0, disabled: true}],
@@ -1931,6 +1938,52 @@ private normalizeParty(raw: any) {
     }
   }
 
+  private rateValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value && control.value !== 0) {
+    return null; // Let required validator handle empty values
+  }
+
+  const rate = Number(control.value);
+  const rowIndex = this.getRowIndexFromControl(control);
+  
+  if (rowIndex === -1) return null;
+
+  const row = this.details.at(rowIndex);
+  if (!row) return null;
+
+  const chargeMasterSid = row.get('ChargeMasterSid')?.value;
+  
+  if (!chargeMasterSid || !this.originalInvoiceRates) {
+    return null; // No original rate to compare against
+  }
+
+  const originalRate = this.originalInvoiceRates.get(Number(chargeMasterSid));
+  
+  // Allow rates less than or equal to original rate, but not greater
+  if (originalRate !== undefined && rate > originalRate) {
+    return { 
+      rateExceeded: {
+        actualRate: rate,
+        maxAllowedRate: originalRate
+      }
+    };
+  }
+
+  return null;
+}
+
+  private getRowIndexFromControl(control: AbstractControl): number {
+  if (!this.details) return -1;
+  
+  for (let i = 0; i < this.details.length; i++) {
+    const row = this.details.at(i);
+    if (row.get('Rate') === control) {
+      return i;
+    }
+  }
+  return -1;
+}
+
   async onSave() {
     if (this.creditNoteForm.invalid) {
       this.creditNoteForm.markAllAsTouched();
@@ -1984,7 +2037,7 @@ private normalizeParty(raw: any) {
         ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
         DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
         NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
-        DrCr: d.DrCr || 'Dr',
+        DrCr: d.DrCr || 'D',
         CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
         CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
         Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -2265,11 +2318,6 @@ private normalizeParty(raw: any) {
     }
   }
 
-  openEmailModal() {
-    this.initializeEmailForm();
-    this.modalService.open(this.emailModalRef, { size: 'lg' });
-  }
-
   initializeEmailForm() {
     const customerBranchSid = this.creditNoteForm.get('PartyName')?.value;
     const customerBranch = this.customerBranchList.find(b => b.CustomerBranchSid === customerBranchSid);
@@ -2339,22 +2387,22 @@ private normalizeParty(raw: any) {
         };
 
         // Call API to send email
-        this.operationService.sendCreditNoteEmail(payload).subscribe({
-          next: (resp: any) => {
-            this.spinner.hide();
-            if (resp?.status) {
-              this.appSettingService.showSuccess('creditNote email sent successfully!');
-              this.modalService.dismissAll();
-            } else {
-              this.appSettingService.showError(resp?.message || 'Failed to send email.');
-            }
-          },
-          error: (err) => {
-            this.spinner.hide();
-            console.error('Error sending email:', err);
-            this.appSettingService.showError('Failed to send creditNote email. Please try again.');
-          }
-        });
+        // this.operationService.sendCreditNoteEmail(payload).subscribe({
+        //   next: (resp: any) => {
+        //     this.spinner.hide();
+        //     if (resp?.status) {
+        //       this.appSettingService.showSuccess('creditNote email sent successfully!');
+        //       this.modalService.dismissAll();
+        //     } else {
+        //       this.appSettingService.showError(resp?.message || 'Failed to send email.');
+        //     }
+        //   },
+        //   error: (err) => {
+        //     this.spinner.hide();
+        //     console.error('Error sending email:', err);
+        //     this.appSettingService.showError('Failed to send creditNote email. Please try again.');
+        //   }
+        // });
       };
 
       reader.onerror = () => {

@@ -58,7 +58,7 @@
               <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
               <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
               <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
-              <div class="d-flex"><strong class="w-50">Container No</strong>: </div>
+              <div class="d-flex"><strong class="w-50">Container No</strong>:  {{ housejobData?.Products?.[0]?.ContainerNo }}</div>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@
               <tr>
                 <th>HBL No</th>
                 <th>Marks and Numbers</th>
-                <th>Description of Goods</th>
+                <th>  Goods Description</th>
               </tr>
             </thead>
             <tbody>
@@ -100,7 +100,7 @@
               <tr>
                 <th>HBL No</th>
                 <th>Marks and Numbers</th>
-                <th>Description of Goods</th>
+                <th>  Goods Description</th>
               </tr>
             </thead>
             <tbody>

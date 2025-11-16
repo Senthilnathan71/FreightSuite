@@ -56,8 +56,8 @@
           <div
             style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; align-items: center; padding: 4px;">
-              <div style="width: 120px; font-weight: bold;">Shipment No</div>
-              <div>: {{housejobData?.ShipmentNo}}</div>
+              <div style="width: 120px; font-weight: bold;">HBL No</div>
+              <div>: {{housejobData?.HBLNo}}</div>
             </div>
           </div>
 
@@ -66,7 +66,7 @@
             style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; align-items: center; padding: 4px;">
               <div style="width: 120px; font-weight: bold;">Job No</div>
-              <div>: </div>
+              <div>: {{housejobData?.MBLNo}}</div>
             </div>
           </div>
 
@@ -75,7 +75,9 @@
             style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; padding: 4px;">
               <div style="width: 120px; font-weight: bold;">To</div>
-              <div style="min-height: 100px; height: auto;">: </div>
+              <div style="width: 8px;">:</div>
+              <div style="min-height: 100px; height: auto;white-space: pre-line;"> {{housejobData?.ConsigneeName}} <br>
+                {{housejobData?.ConsigneeAddress}}</div>
             </div>
           </div>
 
@@ -84,7 +86,8 @@
             style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; padding: 4px;">
               <div style="width: 120px; font-weight: bold;">Shipper </div>
-              <div style="min-height: 100px; height: auto;">: {{housejobData?.ShipperName}} <br>
+              <div style="width: 8px;">:</div>
+              <div style="min-height: 100px; height: auto; white-space: pre-line;"> {{housejobData?.ShipperName}} <br>
                 {{housejobData?.ShipperAddress}}</div>
             </div>
           </div>
@@ -96,7 +99,8 @@
             style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; padding: 4px;">
               <div style="width: 120px; font-weight: bold;">Consignee </div>
-              <div style="min-height: 100px; height: auto;">: {{housejobData?.ConsigneeName}} <br>
+              <div style="width: 8px;">:</div>
+              <div style="min-height: 100px; height: auto;white-space: pre-line;"> {{housejobData?.ConsigneeName}} <br>
                 {{housejobData?.ConsigneeAddress}}</div>
             </div>
           </div>
@@ -105,7 +109,8 @@
             style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; padding: 4px;">
               <div style="width: 120px; font-weight: bold;">Notify</div>
-              <div style="min-height: 100px; height: auto;">: {{housejobData?.Notify}}</div>
+              <div style="width: 8px;">:</div>
+              <div style="min-height: 100px; height: auto;white-space: pre-line;"> {{housejobData?.Others?.[0]?.NotifyParty}} <br> {{housejobData?.Others?.[0]?.NotifyPartyAddress}}</div>
             </div>
           </div>
         </div>
@@ -124,7 +129,7 @@
             style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
               <div><strong>Curr</strong></div>
-              <div> </div>
+              <div> {{housejobData?.Others?.[0]?.CargoCurrency}} </div>
             </div>
           </div>
 
@@ -166,7 +171,7 @@
             style="flex: 0 0 25%; max-width: 25%; border-top: 1px solid black; border-bottom: 1px solid black; box-sizing: border-box;">
             <div style="display: flex; flex-direction: column; text-align: center; padding: 4px;">
               <div><strong>Good Value</strong></div>
-              <div> </div>
+              <div> {{housejobData?.Others?.[0]?.CargoValue}}</div>
             </div>
           </div>
 
@@ -198,14 +203,14 @@
           </thead>
           <tbody>
             <tr>
-              <td>{{housejobData?.Cargo?.[0]?.NoofContainers}}</td>
-              <td></td>
+              <td>{{housejobData?.Products?.[0]?.ContainerNo}}</td>
+              <td>{{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}</td>
               <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
               <td>{{housejobData?.Cargo?.[0]?.NoOfPackage}}</td>
-              <td>{{housejobData?.Cargo?.[0]?.GrossWeight | number : '1.3-3'}}</td>
-              <td>{{housejobData?.Cargo?.[0]?.Volume | number : '1.3-3'}}</td>
+              <td class="text-end">{{housejobData?.Cargo?.[0]?.GrossWeight | number : '1.3-3'}}</td>
+              <td class="text-end">{{housejobData?.Cargo?.[0]?.Volume | number : '1.3-3'}}</td>
               <!-- <td>{{housejobData?.Cargo?.[0]?.ChargeableWeight}}</td> -->
-              <td>{{housejobData?.Cargo?.[0]?.NetWeight | number : '1.3-3'}}</td>
+              <td class="text-end">{{housejobData?.Cargo?.[0]?.NetWeight | number : '1.3-3'}}</td>
             </tr>
           </tbody>
         </table>

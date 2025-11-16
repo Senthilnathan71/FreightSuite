@@ -1780,6 +1780,7 @@ private async postVoucher(voucherHeaderSid: number) {
     const currentBranch = this.currentBranch;
     const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
     const currentCountry =Number(this.currentCompany?.CountryMasterSid);
+    const currentCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
     const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
     const currentUserEmail =  this.userData?.userEmail;
     
@@ -1800,7 +1801,7 @@ private async postVoucher(voucherHeaderSid: number) {
       PostedBy: currentUserEmail ,
       TaxDetails: {
         CountryMasterSid: currentCountry,
-        countryName: currentCompany.CountryName,
+        countryName: currentCountryName,
         TaxCategory: 'Inter', 
         EffectiveFrom: new Date().toISOString(),
         TaxType: 'Output' 

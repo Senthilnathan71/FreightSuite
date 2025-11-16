@@ -30,39 +30,53 @@
     
                 </div>
             </div>
-            <div class="d-flex gap-2 mb-2">
-                <div class="col-md-2">
-                    <ng-select 
-                        [items]="searchTypes" 
-                        [(ngModel)]="searchType" 
-                        clearabl="false" 
-                        bindLabel="label" 
-                        bindValue="value"
-                    >
-                    </ng-select>
-                </div>
-    
-                <ng-container *ngIf="searchType === 'Party'; else textInput">
+            <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
+
+                <div class="d-flex flex-wrap gap-2 mb-3 p-2 bg-light rounded">
+
+                    <!-- Search Type -->
+                    <div class="col-md-2 col-sm-4">
+                        <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label" bindValue="value"
+                            clearable="false">
+                        </ng-select>
+                    </div>
+
+                    <!-- Party -->
+                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
                     <div class="col-md-3">
                         <ng-select 
                             [items]="partyList" 
-                            [(ngModel)]="selectedParty" 
                             bindLabel="CustomerName" 
-                            bindValue="LedgerMasterSid"
+                            bindValue="SubledgerMasterSid"
+                            formControlName="LedgerMasterSid"
                             placeholder="Select Party"
-                            (change)="searchOutstanding($event)"
                         >
                         </ng-select>
                     </div>
-                </ng-container>
-                <ng-template #textInput>
-                    <div class="col-md-3">
-                        <input type="text" [(ngModel)]="filterText" class="form-control" placeholder="Enter keyword" />
+                    }  @else {
+                    <div class="col-md-3 col-sm-6">
+                        <input formControlName="FilterText" class="form-control" placeholder="Enter keyword">
                     </div>
-                </ng-template>
-    
-                <button class="btn btn-info" (click)="searchOutstanding()">Search</button>
-            </div>
+                    }
+
+                    <!-- Search Button -->
+                    <div class="col-auto d-flex align-items-end">
+                        <button 
+                            class="btn btn-info px-4" 
+                            [disabled]="
+                                !searchOutstandingForm.get('SearchType')?.value || 
+                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
+                                r['LedgerMasterSid']?.value
+                            " 
+                            (click)="searchOutstanding()"
+                        >
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
         </div>
     </div>
 
@@ -329,7 +343,7 @@
                                     </button>
                                     }
                                     <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
-                                        (click)="removeDetail(i)">
+                                        (click)="removeDetail(i,d.get('VoucherDetailSid')?.value)">
                                         <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
                                     </button>
                                 </td>
@@ -513,74 +527,174 @@
                             <th class="bg-transparent text-light">Local Amt</th>
                             <th class="bg-transparent text-light">OS Curr. Amt</th>
                             <th class="bg-transparent text-light">OS Local Amt</th>
-                            <th class="bg-transparent text-light">Curr.</th>
-                            <th class="bg-transparent text-light">Ex. Rate</th>
-                            <th class="bg-transparent text-light">Curr Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">TDS Amt</th>
+                            <th class="bg-warning text-light">Curr.</th>
+                            <th class="bg-warning text-light">Ex. Rate</th>
+                            <th class="bg-warning text-light">Curr Amt</th>
+                            <th class="bg-warning text-light">Local Amt</th>
+                            <th class="bg-warning text-light">TDS Amt</th>
+                            <th class="bg-warning text-light">Balance</th>
                         </tr>
                     </thead>
                     <tbody formArrayName="voucherMatchings">
+
                         <tr *ngFor="let v of voucherMatchings.controls; let i = index" [formGroupName]="i">
+
+                            <!-- Voucher No -->
                             <td>
                                 <input type="text" formControlName="voucherNo" class="custom-input-field sm" />
                             </td>
+
+                            <!-- Voucher Type -->
                             <td>
                                 <input type="text" formControlName="voucherType" class="custom-input-field sm" />
                             </td>
+
+                            <!-- Voucher Date -->
                             <td>
                                 <div class="custom-form-group custom-form-group-select-date mt-0">
                                     <div class="input-group">
-                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                            #d4="ngbDatepicker" (click)="d4.toggle()" formControlName="voucherDate"
-                                            container="body" />
-                                        <button class="btn btn-sm " type="button" (click)="d4.toggle()">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d4="ngbDatepicker"
+                                            (click)="d4.toggle()" formControlName="voucherDate" container="body" />
+                                        <button class="btn btn-sm" type="button" (click)="d4.toggle()">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
                                         </button>
                                     </div>
                                 </div>
                             </td>
+
+                            <!-- Dr / Cr -->
                             <td>
                                 <input type="text" formControlName="drCr" class="custom-input-field sm" />
                             </td>
+
+                            <!-- Currency -->
                             <td>
                                 <input type="text" formControlName="curr" class="custom-input-field sm" />
                             </td>
+
+                            <!-- ExRate -->
                             <td>
-                                <input type="number" formControlName="exRate" class="custom-input-field sm text-end" />
+                                <input type="text" formControlName="exRate" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                            </td>
+
+                            <!-- Current Amount -->
+                            <td>
+                                <input type="text" formControlName="currAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                            </td>
+
+                            <!-- Local Amount -->
+                            <td>
+                                <input type="text" formControlName="localAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                            </td>
+
+                            <!-- OS Current Amount -->
+                            <td>
+                                <input type="text" formControlName="osCurrAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                            </td>
+
+                            <!-- OS Local Amount -->
+                            <td>
+                                <input type="text" formControlName="osLocalAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="2" />
+                            </td>
+
+                            <!-- Match Curr -->
+                            <td class="dofi-min-w-80">
+                                <dofi-searchable-dropdown 
+                                    [items]="currencyList" formControlName="matchCurr" 
+                                    [placeholder]="''"
+                                    [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                    [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
+                                    (itemSelected)="patchExchangeRateForMatchRow(i)">
+                                </dofi-searchable-dropdown>
+                            </td>
+
+                            <!-- Match ExRate -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchExRate" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionAfter]="2" 
+                                    (input) = "calculateLocalAmountForMatchRow(i)"
+                                />
+                            </td>
+
+                            <!-- Match Curr Amount -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchCurrAmt" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionAfter]="2" 
+                                    (input) = "calculateLocalAmountForMatchRow(i)"
+                                />
+                            </td>
+
+                            <!-- Match Local Amount -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchLocalAmt" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionAfter]="2" 
+                                    readonly
+                                />
+                            </td>
+
+                            <!-- TDS Amount -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="tdsAmt" 
+                                    class="custom-input-field sm text-end"
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionAfter]="2"  
+                                />
                             </td>
                             <td>
-                                <input type="number" formControlName="currAmt" class="custom-input-field sm text-end" />
+                                <input 
+                                    type="text" 
+                                    formControlName="balance" 
+                                    class="custom-input-field sm text-end"
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionAfter]="2"  
+                                />
                             </td>
-                            <td>
-                                <input type="number" formControlName="localAmt"
-                                    class="custom-input-field sm text-end" />
-                            </td>
-                            <td>
-                                <input type="number" formControlName="osCurrAmt"
-                                    class="custom-input-field sm text-end" />
-                            </td>
-                            <td>
-                                <input type="number" formControlName="osLocalAmt"
-                                    class="custom-input-field sm text-end" />
-                            </td>
-                            <td>
-                                <input type="text" formControlName="matchCurr" class="custom-input-field sm" />
-                            </td>
-                            <td>
-                                <input type="number" formControlName="matchExRate" class="custom-input-field sm" />
-                            </td>
-                            <td>
-                                <input type="number" formControlName="matchCurrAmt" class="custom-input-field sm" />
-                            </td>
-                            <td>
-                                <input type="number" formControlName="matchLocalAmt"
-                                    class="custom-input-field sm text-end" />
-                            </td>
-                            <td>
-                                <input type="number" formControlName="tdsAmt" class="custom-input-field sm text-end" />
-                            </td>
+
                         </tr>
+
+                        <!-- TOTAL ROW -->
+                        <tr class="table-info fw-bold text-end">
+                            <td colspan="6" class="text-end">Total</td>
+
+                            <td>{{ getTotalCurrAmt() }}</td>
+                            <td>{{ getTotalLocalAmt() }}</td>
+
+                            <td>{{ getTotalOSCurrAmt() }}</td>
+                            <td>{{ getTotalOSLocalAmount() }}</td>
+
+                            <td></td> <!-- matchCurr -->
+                            <td></td> <!-- matchExRate -->
+
+                            <td>{{ getTotalMatchCurrAmt() }}</td>
+                            <td>{{ getTotalMatchLocalAmt() }}</td>
+                            <td>{{ getTotalTdsAmt() }}</td>
+                            <td></td>
+                        </tr>
+
                     </tbody>
                 </table>
             </div>

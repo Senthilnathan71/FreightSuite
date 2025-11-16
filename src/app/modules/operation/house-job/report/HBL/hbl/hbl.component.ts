@@ -22,7 +22,7 @@ export class HblComponent {
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
   @Input() selectedFCLLCL: any;
-
+  @Input() agentList: any;
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
@@ -65,6 +65,12 @@ export class HblComponent {
 
     }, 0);
   }
+  getDestinationAgentName(CustomerMasterSid: number | string): string {
+    const agent = this.agentList.find(a => a.CustomerMasterSid == CustomerMasterSid);
+    return agent ? agent.CustomerName : '';
+  }
+
+
 
   modalClose() {
     this.activeModal.close()
