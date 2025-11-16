@@ -1156,8 +1156,8 @@ getHouseJobByMasterJob(payload:any){
   }
 
   postVoucherByVoucherSid(payload: any) {
-    return this.http.post<{ success: boolean; voucherHeaderSid: number; transactionCount: number; transactionSids: number[]; postedAt: string; errors: any[]; message: string;}>('voucher/post-voucher',payload).pipe(
-      map((resp) => {
+    return this.http.post<{ data: any}>('voucher/post-voucher',payload).pipe(
+      map((resp:any) => {
         return resp;
       })
     )
