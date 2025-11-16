@@ -51,6 +51,7 @@ import { PreAlertComponent } from '../reports/pre-alert/pre-alert.component';
 import { ReleaseLetterComponent } from '../reports/release-letter/release-letter.component';
 import { ReleaseOrderComponent } from '../reports/release-order/release-order.component';
 import { PackingListComponent } from '../reports/packing-list/packing-list.component';
+import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -2381,17 +2382,19 @@ getAgentBranchName(AgentSid: number): string {
       modalRef.componentInstance.containerTypeList=this.containerTypeList;
       modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
       modalRef.componentInstance.packageTypeList=this.packageTypeList;
+         modalRef.componentInstance.agentList=this.agentList;
     }
 
      reportcargomanifest() {
-     const modelRef=this.modalService.open(ReleaseLetterComponent, {
+     const modalRef=this.modalService.open(CargoManifestComponent, {
         size: 'xl',
         scrollable: true,
       });
-
-      modelRef.componentInstance.masterJobData=this.masterJobData;
-      modelRef.componentInstance.packageType=this.packageTypeList;
-      modelRef.componentInstance.cfsList=this.cfsList;
+      modalRef.componentInstance.masterJobData=this.masterJobData; 
+      modalRef.componentInstance.containerTypeList=this.containerTypeList;
+      modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
+      modalRef.componentInstance.agentList=this.agentList;
 
     }
 
