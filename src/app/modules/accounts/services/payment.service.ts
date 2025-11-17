@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import {
   CreatePaymentRequest,
@@ -16,6 +16,7 @@ import {
   PaymentSummary,
 } from '../models/payment.model';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 
 /**
  * Payment Service
@@ -236,6 +237,16 @@ export class PaymentService {
         return [];
       })
     );
+  }
+
+  searchPayment(arg0: SearchParams): Observable<any> {
+    return of({
+      status : true,
+      data : {
+        items : [],
+        totalCount : 0
+      }
+    });
   }
 
   /**

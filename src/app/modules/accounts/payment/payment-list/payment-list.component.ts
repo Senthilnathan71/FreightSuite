@@ -49,7 +49,7 @@ import { PaymentService } from '../../services/payment.service';
   templateUrl: './payment-list.component.html',
   styleUrls: ['./payment-list.component.scss']
 })
-export class PaymentListComponent implements OnInit {
+export class PaymentListComponent extends BaseListComponent implements OnInit {
   @ViewChild('paymentTable') paymentTable!: ReusableTableComponent;
 
   searchType = 'VoucherNumber';
@@ -59,17 +59,25 @@ export class PaymentListComponent implements OnInit {
   companyMap: { [id: number]: string } = {};
   userData: any;
   loading = false;
+  tableLoading = false;
   isFavorite: boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
-  totalLengthOfCollection = 0;
 
   // Company & Branch
   currentCompany: any;
   currentBranch: any;
 
+  protected config: ListComponentConfig = {
+    storageKey: 'payment-list-state',
+    defaultPageSize: 10,
+    defaultSortColumn: 'VoucherNumber',
+    defaultSortDirection: 'desc',
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
+
   // Filters
-  filterValue = '';
   selectedPaymentMode = 'All'; // All, Cash, Bank
   dateFrom?: string;
   dateTo?: string;
@@ -151,6 +159,8 @@ export class PaymentListComponent implements OnInit {
     }
   ];
 
+  get Allpayment() { return this.allItems; }
+
   constructor(
     public router: Router,
     public dialog: MatDialog,
@@ -158,29 +168,49 @@ export class PaymentListComponent implements OnInit {
     public spinner: NgxSpinnerService,
     public excelService: ExcelExportService,
     private paymentService: PaymentService,
-    private datePipe: CustomDatePipe
-  ) {}
-
-  ngOnInit(): void {
-    this.initializeComponent();
-    this.setupTableColumns();
-    this.loadPayments();
+    private datePipe: CustomDatePipe,
+    paginationService : PaginationService
+  ) {
+    super(paginationService)
   }
 
-  initializeComponent(): void {
-    // Get current company and branch from session/storage
-    this.currentCompany = this.getCurrentCompany();
-    this.currentBranch = this.getCurrentBranch();
+  override ngOnInit(): void {
+    this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
+    const userProfile = this.appSettingsService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
+    }
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
 
-    // Get user data and permissions
-    this.userData = this.getUserData();
-    this.permissions = this.userData?.permissions || [];
-
-    // Check if this page is favorited
-    this.isFavorite = this.checkIfFavorite();
+    super.ngOnInit();
   }
 
-  setupTableColumns(): void {
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        // condition: this.hasPermission('Add')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+
+  initializeTableConfig(): void {
     this.tableConfig.columns = [
       {
         key: 'VoucherNumber',
@@ -196,62 +226,33 @@ export class PaymentListComponent implements OnInit {
         width: '110px'
       },
       {
+        key: 'Bank',
+        label: 'Bank',
+        sortable: true,
+        width: '110px'
+      },
+      {
         key: 'VendorName',
-        label: 'Vendor',
+        label: 'Party',
         sortable: true,
         width: '200px',
         cellClass: 'text-truncate'
       },
       {
-        key: 'BankName',
-        label: 'Bank',
-        sortable: true,
-        width: '150px',
-        cellClass: 'text-truncate'
-      },
-      {
-        key: 'PaymentMode',
-        label: 'Payment Mode',
-        sortable: true,
-        width: '120px',
-        cellClass: 'badge bg-success'
-      },
-      {
-        key: 'TotalAmount',
-        label: 'Total Amount',
+        key: 'PartyAmount',
+        label: 'Amount',
         sortable: true,
         width: '130px',
         cellClass: 'fw-bold'
       },
       {
-        key: 'TDSAmount',
-        label: 'TDS Amount',
-        sortable: true,
-        width: '120px',
-        cellClass: 'text-warning'
-      },
-      {
-        key: 'NetAmount',
-        label: 'Net Amount',
-        sortable: true,
-        width: '130px',
-        cellClass: 'fw-bold text-success'
-      },
-      {
-        key: 'BranchName',
-        label: 'Branch',
-        sortable: true,
-        width: '150px',
-        cellClass: 'text-truncate'
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Created By',
+        key: 'PostStatus',
+        label: 'Post Status',
         sortable: true,
         width: '120px'
       },
       {
-        key: 'StatusDisplay',
+        key: 'Status',
         label: 'Status',
         sortable: true,
         width: '100px',
@@ -259,6 +260,91 @@ export class PaymentListComponent implements OnInit {
       }
     ];
   }
+
+  protected searchItems(): Observable<any> {
+    this.tableLoading = true;
+    this.spinner.show();
+    return this.paymentService.searchPayment(this.getSearchParams());
+  }
+
+  protected getSearchParams(): SearchParams {
+    return {
+      search: this.filterValue.trim(),
+      page: Number(this.page),
+      pageSize: Number(this.pageSize),
+      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeBranchId: this.currentBranch?.BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+  }
+
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    if (response.status) {
+      this.allItems = response.data.items.map(item => ({
+        ...item,
+        PostStatus : item.PostStatus === 'P' ? 'Posted' : 'UnPosted',
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingsService.showError('Error searching payments.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
+  }
+
+  private updateHeaderActionState(): void {
+    this.headerActions = this.headerActions.map(action => {
+      if (action.action === 'report') {
+        return { ...action, disabled: this.totalLengthOfCollection === 0 };
+      }
+      return action;
+    });
+  }
+
+  onTableFilterChange(filters: TableFilter[]): void {
+    // For now, we'll handle this with the existing search functionality
+    // In a more advanced implementation, you could apply individual column filters
+    console.log('Filters changed:', filters);
+  }
+
+  onTableSortChange(sort: TableSortConfig): void {
+    this.sortColumn = sort.column;
+    this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.search();
+  }
+
+  onTableRowClick(row: any): void {
+    // Row clicking can be handled by the table component if needed
+  }
+
+  onActionTriggered(action: string): void {
+    switch (action) {
+      case 'create':
+        this.navigateToCreate();
+        break;
+      case 'report':
+        this.exportToExcel();
+        break;
+      case 'reset':
+        this.resetPage();
+        break;
+      default:
+        console.warn(`Unknown action: ${action}`);
+    }
+  }
+
+  navigateToCreate() {
+    this.router.navigate(['accounts/payment/entry'])
+  }
+
+
+
 
   /**
    * Load payments from API
@@ -555,5 +641,14 @@ export class PaymentListComponent implements OnInit {
     // Get from session storage or auth service
     const userStr = sessionStorage.getItem('userData');
     return userStr ? JSON.parse(userStr) : null;
+  }
+
+  onSearchCleared(): void {
+    this.filterValue = '';
+    this.clearFilterValue();
+  }
+
+  clearFilterValue() {
+    this.clearFilter();
   }
 }

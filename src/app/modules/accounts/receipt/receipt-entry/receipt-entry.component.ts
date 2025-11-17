@@ -755,6 +755,10 @@ export class ReceiptEntryComponent implements OnInit {
       })
     })
 
+    if(response.PostStatus === 'P'){
+      this.receiptForm.disable();
+    }
+
     const voucherMatchingHeader = response.voucherMatchingHeader[0] || [];
     console.log("VOUCHER MATCHING HEADER", voucherMatchingHeader);
     const voucherMatchingRecords = voucherMatchingHeader.voucherMatchings || [];
