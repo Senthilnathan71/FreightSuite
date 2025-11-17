@@ -21,6 +21,7 @@ export class CargoManifestComponent {
   @Input() masterJobContainers: any[] = [];
   @Input() packageTypeList: any[] =[];
   @Input() agentList:any[]=[];
+   @Input() yardList:any[]=[];
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal
@@ -64,6 +65,17 @@ export class CargoManifestComponent {
     }, 0);
   }
 
+getYardName(yardSid: number): string {
+  if (!yardSid || this.yardList.length === 0) return '';
+  const yard = this.yardList.find(yard => yard.CustomerMasterSid === yardSid);
+  return yard ? yard.CustomerName : '';
+}
+
+  getPackageTypeName(pkgTypeSid: number): string {
+  if (!pkgTypeSid) return 'Unknown';
+  const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+  return packageType ? packageType.UOMName : 'Unknown';
+}
 
   
     modalClose() {
