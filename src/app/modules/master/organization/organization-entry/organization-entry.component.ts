@@ -138,7 +138,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
    private selectedStatusChanges = new Subject<void>();
 
 
-
+  networkList: any[] = [];
   isCustomerSaved = false;
   showAdditionalTabs = false;
   isLoadingStates = false;
@@ -434,6 +434,7 @@ onCountryChange(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
+    this.loadNetworks();
 
     // ✅ Get logged-in user profile
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -3628,6 +3629,31 @@ private updateMilestonesForBranch(branchIndex: number, isSuspended: boolean): vo
     }
   });
 }
+private loadNetworks(): void {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  if (!CompanyMasterSid ) {
+    console.warn('Company ID not available for loading networks');
+    return;
+  }
 
+  this.masterService.getAllNetworks(CompanyMasterSid).subscribe({
+    next: (resp: any) => {
+      if (resp && resp) {
+        this.networkList = resp;
+        console.log('Networks loaded successfully:', this.networkList);
+      } else {
+        console.warn('No network data received');
+        this.networkList = [];
+      }
+      this.cdRef.markForCheck();
+    },
+    error: (error) => {
+      console.error('Error loading networks:', error);
+      this.networkList = [];
+      this.appSettingService.showError('Error loading networks');
+      this.cdRef.markForCheck();
+    }
+  });
+}
   
 }

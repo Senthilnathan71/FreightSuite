@@ -1,0 +1,396 @@
+
+ 
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">House Bill of Lading</h5>
+    <div class="d-flex gap-2 align-items-center">
+ 
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+        <i class="fas fa-envelope me-1"></i>Send Email
+      </button>
+ 
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+ 
+    </div>
+  </div>
+ 
+ 
+  <div class="modal-body">
+    <div id="printContent">
+  <div
+  style="
+    width: 280mm;
+    min-height: 405mm;
+    margin: 10px auto !important;
+    background: #fff;
+    box-sizing: border-box;
+    position: relative;
+    color: #000;
+    page-break-after: always;
+  "
+>
+  <h5 class="r fw-bold pb-2" style="margin: 0;">House Bill of Lading</h5>
+ 
+  <!-- <div class="row "> ... commented company header ... </div> -->
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-6 px-0"
+      style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;"
+    >
+      <div class="d-flex mb-1 ">
+        <div style="width: 150px;"><strong>Shipper</strong></div>
+        <div style="width: 8px;">:</div>
+        <span style="min-height: 80px; height: auto;">
+          {{ housejobData?.ShipperName }} <br />
+          {{ housejobData?.ShipperAddress }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-6 px-0"
+      style="border-top: 1px solid black; border-bottom: 1px solid black;"
+    >
+      <div class="d-flex mb-1 px-2" style="border-bottom: 1px solid black;">
+        <div style="width: 150px;"><strong>Bill of Lading No </strong></div>
+        <span style="min-height: 10px; height: auto;">: {{ housejobData?.HBLNo }}</span>
+      </div>
+      <div class="d-flex mb-1 px-2">
+         <div style="width: 150px;"><strong>Delivery Agent  & Ref </strong></div>
+        <span style="min-height: 80px; height: auto;">: {{ getDestinationAgentName(housejobData?.DestinationAgent) }}</span>
+        <!-- <div style="width: 200px;"><strong>Forwarder</strong></div>
+        <span style="min-height: 80px; height: auto;">{{ housejobData?.Others?.[0]?.Forwarder }} </span> -->
+      </div>
+    </div>
+  </div>
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div class="col-md-6 d-flex flex-column p-0">
+      <div
+        class="flex-fill d-flex"
+        style="border-bottom: 1px solid black; border-right: 1px solid black;"
+      >
+        <strong style="width: 150px;">Consignee</strong>
+         <div style="width: 8px;">:</div>
+        <span style="min-height: 70px; height: auto;">
+          {{ housejobData?.ConsigneeName }}<br />
+          {{ housejobData?.ConsigneeAddress }}
+        </span>
+      </div>
+ 
+       
+      <div
+        class="flex-fill d-flex"
+        style="border-bottom: 1px solid black; border-right: 1px solid black;"
+      >
+        <strong style="width: 150px;">Notify Party</strong>
+         <div style="width: 8px;">:</div>
+        <span style="min-height: 70px; height: auto;">
+          {{ housejobData.Others?.[0]?.NotifyParty }} <br>
+          {{ housejobData.Others?.[0]?.NotifyPartyAddress }}
+        </span>
+      </div>
+     
+    </div>
+ 
+    <div
+      class="col-md-6 d-flex flex-column justify-content-center align-items-center p-3"
+      style="border-bottom: 1px solid black;"
+    >
+      <img
+        src="assets/images/logos/xtreme-dark-icon.svg"
+        alt="Company Logo"
+        class="img-fluid mb-2"
+        style="max-height: 80px;"
+      />
+      <h4 class="mb-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+      <div class="company-info text-center">
+        <p class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</p>
+        <p class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</p>
+        <p class="mb-1">
+          {{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}
+        </p>
+        <p class="mb-1">
+          {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+        </p>
+        <p class="mb-1">
+          {{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}
+        </p>
+        <p class="mb-1">
+          {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}
+        </p>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Place of Receipt</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Others?.[0]?.PickupPlace }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Port of Loading</strong></div>
+        <span class="text-center">{{ housejobData?.POL }}</span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+    
+        <div class="d-flex flex-column mb-1 text-center">
+          <div><strong>Job No</strong></div>
+          <span class="text-center"> {{ housejobData?.MBLNo }}</span>
+        </div>
+        
+     
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black;"
+    >
+       <div class="d-flex flex-column mb-1 text-center ">
+          <div><strong>Job ref</strong></div>
+          <span class="text-center"> </span>
+        </div>
+    </div>
+  
+  </div>
+ 
+  <div class="row" style="padding: 0 10px;">
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Vessel / Voyage No</strong></div>
+        <span class="text-center">
+          {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Port of Discharge</strong></div>
+        <span class="text-center">{{ housejobData?.POD }}</span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>Place of Delivery</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Others?.[0]?.DeliveryPlace }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-3"
+      style="border-bottom: 1px solid black;"
+    >
+      <div class="d-flex flex-column mb-1 text-center">
+        <div><strong>No of Bill of Lading</strong></div>
+        <div class="text-center"> {{ housejobData?.masterJob?.NoofOriginal }}</div>
+      </div>
+    </div>
+  </div>
+ 
+ <div class="table-responsive">
+  <table
+    class="table table-sm tablebordered table-hover mb-0"
+    style="
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 11pt;
+      border: 1px solid black;
+      color: #000;
+    "
+  >
+    <thead style="font-weight: 700; color: #000; background-color: #fff;">
+      <tr>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          Container No / Seal No / Marks & No
+        </th>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          No of Pkg / Description / Shipping Unit
+        </th>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          Gross Weight
+        </th>
+        <th style="border: 1px solid black; padding: 2px 8px; color: #000;font-weight: 700;">
+          Volume
+        </th>
+      </tr>
+    </thead>
+    <tbody style="color: #000;">
+      <tr *ngFor="let rate of housejobData?.Products">
+        <td style="border: 1px solid black; padding: 2px 8px; color: #000;">
+          {{ rate?.ContainerNo }} /
+          {{ housejobData?.masterJob?.containers?.[0]?.LineSeal}}/
+          {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}
+        </td>
+        <td style="border: 1px solid black; padding: 2px 8px; color: #000;">
+          {{  rate?.ExternlQty }} /
+          {{ housejobData?.Cargo?.[0]?.CommodityDescription }} /
+          {{ rate?.ExternaPkg }}
+        </td>
+        <td
+      class="text-end"
+      style="border: 1px solid black; padding: 2px 8px; color: #000;"
+    >
+      {{ rate.GrossWeight | number: '1.3-3' }}
+    </td>
+    <td
+      class="text-end"
+      style="border: 1px solid black; padding: 2px 8px; color: #000;"
+    >
+      {{ rate.Volume | number: '1.3-3' }}
+    </td>
+ 
+      </tr>
+    </tbody>
+    <tfoot style="color: #000;">
+      <tr class="fw-bold">
+        <td
+          class="text-end"
+          colspan="2"
+          style="border: 1px solid black; padding: 2px 8px; color: #000;"
+        >
+          TOTAL
+        </td>
+        <td
+          class="text-end"
+          style="border: 1px solid black; padding: 2px 8px; color: #000;"
+        >
+          {{ grossAmount() | number: '1.3-3' }}
+        </td>
+        <td
+          class="text-end"
+          style="border: 1px solid black; padding: 2px 8px; color: #000;"
+        >
+          {{ volumeAmount() | number: '1.3-3' }}
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+ 
+ 
+ <footer
+    style="
+      position: absolute;
+      bottom: 2mm;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10pt;
+    "
+  >
+ 
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-8"
+      style="border-bottom: 1px solid black; border-right: 1px solid black; border-top: 1px solid black;"
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Total Number of Containers SAY :</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Cargo?.[0]?.NoofContainers }}
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-4"
+      style="border-bottom: 1px solid black; border-top: 1px solid black;"
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>OnBoard Date :</strong></div>
+        <span class="text-center">{{ housejobData?.masterJob?.others?.[0]?.SOBDate | formatDate }}</span>
+      </div>
+    </div>
+   
+  </div>
+   
+  <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; border-right: 1px solid black;"
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Freight Details, Charges etc :</strong></div>
+        <span class="text-center" style="height: 70px;">
+          <!-- {{ housejobData?.Others?.[0]?.PickupAddress }} -->
+        </span>
+      </div>
+    </div>
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; "
+    >
+      <div class="d-flex  mb-1 text-center">
+        <div><strong>Excess Value Declaration : </strong></div>
+        <span class="text-center"></span>
+      </div>
+    </div>
+   
+  </div>
+   <div class="row mb-0" style="padding: 0 10px;">
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; border-right: 1px solid black; "
+    >
+      <!-- <div class="d-flex  mb-1 text-center">
+        <div><strong>Freight Details, Charges etc :</strong></div>
+        <span class="text-center">
+          {{ housejobData?.Others?.[0]?.PickupAddress }}
+        </span>
+      </div> -->
+    </div>
+    <div
+      class="col-md-6"
+      style="border-bottom: 1px solid black; "
+    >
+      <div class="d-flex gap-1 mb-1 text-center">
+        <div><strong>Signed on behalf of the Carrier. </strong></div>
+        <span class="text-center"> By {{ currentCompany?.companyName || 'Company Name' }}</span> 
+        
+      </div>
+      <div class="text-start">
+          <strong>As Agent For the Carrier</strong>
+        </div>
+    </div>
+   
+  </div>
+    <div style="display: flex; justify-content: space-between; text-align: center;">
+      <div><span>Printed By:</span> {{ userData.userName }}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+    </div>
+  </footer>
+</div>
+ 
+ 
+    </div>
+  </div>

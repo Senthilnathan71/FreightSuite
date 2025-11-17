@@ -1,11 +1,4 @@
-<div class="d-flex justify-content-end align-items-center mb-1">
-  <!-- <h5 class="mb-0">Booking Rates & Charges</h5> -->
-  <button type="button" class="btn btn-success btn-sm" (click)="openVoucherTypeModal()"
-    [disabled]="!isEditMode || !rateFormArray?.length" title="Generate Invoice/Voucher from rates">
-    <i class="fas fa-file-invoice me-1"></i>
-    Generate Voucher
-  </button>
-</div>
+
 <div class="charges-workspace" [formGroup]="rateForm">
 
   <!-- Charges Header -->
@@ -99,6 +92,11 @@
           </div>
 
           <div class="buttons">
+            <button type="button" class="btn btn-success btn-sm" (click)="openVoucherTypeModal()"
+              [disabled]="!isEditMode || !rateFormArray?.length" title="Generate Invoice/Voucher from rates">
+              <i class="fas fa-file-invoice me-1"></i>
+              Generate Voucher
+            </button>
             <button class="btn btn-sm btn-info" (click)="addRateRow()">
               <i class="fas fa-plus"></i> Add Charge
             </button>
@@ -131,7 +129,7 @@
       <div class="table-fixed ">
         <table>
           <thead>
-      <tr class="first-table bg-info">
+      <tr class="first-table bg-info no-wrap">
     <th class="bg-transparent text-light" ></th>
     <th class="bg-transparent text-light" >SNo</th>
     <th class="bg-transparent text-light" >Charge <span class="text-danger">{{hasRequired('ChargeMasterSid') ? '*' : ''}}</span></th>
@@ -143,7 +141,9 @@
 
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
-            <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
+            <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i" [ngClass]="{
+              'bg-success': row.get('RevenueVoucherHeaderSid')?.value,
+            }">
             <td>
   <!-- Change the delete button condition -->
   <button class="action-icon delete py-0"
@@ -224,7 +224,7 @@
                 <!-- Revenue -->
                 <!-- <th class="table-header">Unit</th> -->
                 
-                <th class="bg-transparent text-light " style="border-left: 1px solid white;">Curr</th>
+                <th class="bg-transparent text-light " style="border-left: 1px solid white; width: 90px;"  >Curr</th>
                 <th class="bg-transparent text-light ">Ex Rate <span class="text-danger"></span>
                 </th>
                 <th class="bg-transparent text-light">Per Unit</th>

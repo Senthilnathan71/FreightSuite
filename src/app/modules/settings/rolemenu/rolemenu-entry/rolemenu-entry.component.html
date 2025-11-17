@@ -7,12 +7,12 @@
                         <i class="fas fa-users-cog"></i>
                     </div>
                     <h5 class="page-title mb-0 text-info">{{ isEditMode ? 'Edit' : 'Add' }} Role Menu</h5>
-
+                    <!-- 
                     @if(isEditMode){
                     <a class="text-white ps-2 w-2 h-2 cursor-pointer" (click)="showInfo()">
                         <i class="fas fs-6 fa-info-circle"></i>
                     </a>
-                    }
+                    } -->
 
                 </div>
             </div>
@@ -35,29 +35,18 @@
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-                    <!-- <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
     </div>
 
-    <form [formGroup]="roleMenuForm" class="px-0">
+    <!-- <form [formGroup]="roleMenuForm" class="px-0">
         <div class="col-md-12 ">
 
             <div class="card mb-1">
                 <div class="card-body">
                     <div class="row ps-md-5">
-                                  <aside class="col-md-1 d-md-block d-none"></aside>
+                        <aside class="col-md-1 d-md-block d-none"></aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleMenuForm.get('RoleMasterSid')?.value">
@@ -78,26 +67,25 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleMenuForm.get('Module')?.value">
-                                <multi-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
-                                    bindValue="ModuleName" (change)="filterMenuByModule($event)" placeholder=""
+                                <ng-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
+                                    bindValue="ModuleName" 
+                                    (change)="filterMenuByModule($event)" 
+                                    placeholder=""
                                     formControlName="Module">
-                                </multi-select>
+                                </ng-select>
                                 <label for="text-input" class="input-label">Module <span
                                         class="text-danger">*</span></label>
                                 @if(roleMenuForm['Module']?.touched && roleMenuForm['Module']?.invalid ){
                                 <div class="error-message">
                                     @if(roleMenuForm['Module']?.hasError('required')){
                                     <span>Required</span>
-                                    } @else if(roleMenuForm['Module'].hasError('maxlength')){
-                                    <span>Max 50 Chars</span>
                                     }
                                 </div>
                                 }
                             </div>
                         </aside>
-                       
-             
-                      
+
+
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleMenuForm.get('status')?.value">
@@ -119,42 +107,48 @@
             </div>
 
             <div class="col-12 container " style="padding: 0 160px;">
-                <div class="table-responsive table-borderless ">
+                <div class="table-responsive table-borderless" style="overflow: visible;">
                     <table class="table table-hover align-middle no-wrap  table-sm">
                         <thead class="bg-info">
                             <tr>
-                                <th  class="bg-transparent text-light" >Menu Name</th>
-                                <th class="bg-transparent text-light" >DisplayName</th>
-                                 <th class="bg-transparent text-light" width="35%"></th>
-                                <th class="bg-transparent text-light" >Add</th>
-                                <th class="bg-transparent text-light" >Modify</th>
-                                <th class="bg-transparent text-light" >View</th>
-                                <th class="bg-transparent text-light" >Delete</th>
+                                <th class="bg-transparent text-light">Menu Name</th>
+                                <th class="bg-transparent text-light">DisplayName</th>
+                                <th class="bg-transparent text-light" width="35%"></th>
+                                <th class="bg-transparent text-light">Add</th>
+                                <th class="bg-transparent text-light">Modify</th>
+                                <th class="bg-transparent text-light">View</th>
+                                <th class="bg-transparent text-light">Delete</th>
                             </tr>
                         </thead>
-                        <tbody >
+                        <tbody>
 
                             <tr>
-                                <td style="width: 150px;"> 
-                                    Charge
+                                <td style="width: 150px;">
+                                    <ng-select class="ng-select" [items]="menuList" bindLabel="MenuName"
+                                        bindValue="MenuMasterSid" placeholder="" formControlName="MenuMasterSid">
+                                    </ng-select>
                                 </td>
                                 <td class="pb-1" style="width: 150px;">
-                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="" >
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="DisplayName">
                                 </td>
-                               <td></td>
+                                <td></td>
                                 <td style="width: 50px;">
-                                      <input type="checkbox" class="form-check-input ms-1 cursor-pointer">
+                                    <input type="checkbox" class="form-check-input ms-1 cursor-pointer"
+                                        formControlName="InsertRole">
                                 </td>
 
                                 <td style="width: 50px;">
-                                      <input type="checkbox" class="form-check-input ms-1 cursor-pointer">
+                                    <input type="checkbox" class="form-check-input ms-1 cursor-pointer"
+                                        formControlName="UpdateRole">
                                 </td>
                                 <td style="width: 50px;">
-                                      <input type="checkbox" class="form-check-input ms-1 cursor-pointer">
+                                    <input type="checkbox" class="form-check-input ms-1 cursor-pointer"
+                                        formControlName="ViewRole">
                                 </td>
                                 <td style="width: 50px;">
-                                      <input type="checkbox" class="form-check-input ms-2 cursor-pointer">
+                                    <input type="checkbox" class="form-check-input ms-2 cursor-pointer"
+                                        formControlName="DeleteRole">
                                 </td>
                             </tr>
 
@@ -162,41 +156,96 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </form> -->
+
+    <form [formGroup]="roleMenuForm" (ngSubmit)="onSubmit()" class="p-3">
+
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Role Name<span class="text-danger">*</span></label>
+                <ng-select [items]="roleList" bindLabel="UserRoleName" bindValue="RoleMasterSid"
+                    formControlName="RoleMasterSid" placeholder="Select Role"></ng-select>
+            </div>
+
+            <div class="col-md-5">
+                <label>Modules<span class="text-danger">*</span></label>
+                <ng-select [items]="moduleList" bindLabel="ModuleName" [multiple]="true"
+                    (change)="onModuleChange($event)" formControlName="Modules"
+                    placeholder="Select Modules"></ng-select>
+            </div>
+
+            <div class="col-md-2">
+                <label>Remarks</label>
+                <input type="text" class="form-control" formControlName="Remarks">
+            </div>
+
+            <div class="col-md-2">
+                <label>Status</label>
+                <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="value"
+                    formControlName="status"></ng-select>
+            </div>
+        </div>
+
+        <!-- Permissions Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="bg-info text-white">
+                    <tr>
+                        <th>Module Name</th>
+                        <th>Menu Name</th>
+                        <th>Display Name</th>
+                        <th>Add</th>
+                        <th>Modify</th>
+                        <th>View</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let menu of dynamicMenuList; let i = index">
+                        <td>{{ menu.ModuleName }}</td>
+                        <td>{{ menu.MenuName }}</td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" [(ngModel)]="menu.DisplayName"
+                                [ngModelOptions]="{ standalone: true }" />
+                        </td>
+
+                        <!-- Add -->
+                        <td>
+                            <input type="checkbox" [(ngModel)]="menu.InsertRole" [disabled]="menu.InsertRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
+                        </td>
+
+                        <!-- Modify -->
+                        <td>
+                            <input type="checkbox" [(ngModel)]="menu.UpdateRole" [disabled]="menu.UpdateRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
+                        </td>
+
+                        <!-- View -->
+                        <td>
+                            <input type="checkbox" [(ngModel)]="menu.ViewRole" [disabled]="menu.ViewRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
+                        </td>
+
+                        <!-- Delete -->
+                        <td>
+                            <input type="checkbox" [(ngModel)]="menu.DeleteRole" [disabled]="menu.DeleteRole === true"
+                                [ngModelOptions]="{ standalone: true }" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
 
-            <section class="card-body pb-0" *ngIf="roleMenuForm.get('MenuMasterSid')?.value">
-                <section>
-                    <h6 class="card-title">Role Access Permissions</h6>
-                    <section class="row">
-                        <div class="text-center">
-                            <!-- <div class="d-flex justify-content-center align-items-center" style="min-height: 100px;">
-                                            <div class="spinner-border spinner-border-sm text-info me-2" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <span class="loading-text">Loading Permissions</span>
-                                        </div> -->
-                        </div>
-                    </section>
-                    <section class="row">
-                        @for(permission of menuPermissionList; track i; let i = $index) {
-                        <form class="col-md-4 d-flex align-items-center my-2">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input focus-ring focus-ring-primary"
-                                    [id]="'permission-' + i"
-                                    [checked]="selectedPermission.includes(permission.permissionName)"
-                                    (change)="handlePermission(permission.permissionName, $event)"
-                                    (keydown)="onCheckboxKeydown($event, permission.permissionName)" tabindex="0">
-                                <label [for]="'permission-' + i" class="form-check-label">
-                                    {{permission.permissionName}}
-                                </label>
-                            </div>
-                        </form>
-                        }
-                    </section>
-                </section>
-            </section>
 
+
+
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-info btn-sm" [disabled]="roleMenuForm.invalid">Save</button>
         </div>
     </form>
+
 
 </div>

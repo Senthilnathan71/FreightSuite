@@ -3,28 +3,25 @@
 .document-upload-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 10px;
+  // font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 30px;
-
-  .subtitle {
-    color: #7f8c8d;
-    margin: 0;
-  }
+  background-color: #05608d;
+  color: white;
+  padding: 5px;
 }
 
 /* Upload Section */
 .upload-section {
-  margin-bottom: 16px;
+ 
 
   .upload-card {
     background: #fff;
     border-radius: 12px;
-    padding: 20px;
+  
   }
 }
 
@@ -38,7 +35,6 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 8px;
     border: 2px dashed var(--bs-border-color);
     border-radius: 8px;
     background: #f8f9fa;
@@ -90,7 +86,7 @@
 
 /* Progress Bar */
 .progress-section {
-  margin-top: 20px;
+  margin-top: 10px;
 
   .progress-bar {
     width: 100%;
@@ -132,7 +128,7 @@
 
 /* Status Messages */
 .status-messages {
-  margin-top: 20px;
+  margin-top: 10px;
 
   .error-message, .success-message {
     padding: 12px 16px;
@@ -190,7 +186,7 @@
   }
 
   .form-header {
-    margin-bottom: 16px;
+    margin-bottom: 5px;
     text-align: center;
 
     h3 {
@@ -222,7 +218,7 @@
   }
 
   .form-section-header {
-    margin: 20px 0 16px 0;
+    margin: 5px 0 5px 0;
     padding-bottom: 8px;
     border-bottom: 2px solid #e5e7eb;
 
@@ -249,7 +245,7 @@
   }
 
   .house-jobs-section {
-    margin-top: 20px;
+  
 
     .house-job-card {
       .card {
@@ -258,9 +254,9 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
         .card-header {
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          background: #05608d;
           border-bottom: 1px solid #dee2e6;
-          padding: 12px 16px;
+          padding: 2px ;
 
           h6 {
             color: #495057;
@@ -271,10 +267,6 @@
             padding: 4px 8px;
             font-size: 12px;
           }
-        }
-
-        .card-body {
-          padding: 16px;
         }
       }
     }
@@ -318,8 +310,8 @@
   display: flex;
   gap: 16px;
   justify-content: flex-end;
-  margin-top: 30px;
-  padding-top: 20px;
+  margin-top: 5px;
+  padding-top: 5px;
   border-top: 1px solid #e5e7eb;
 
   @media (max-width: 768px) {
@@ -350,30 +342,30 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   }
 
-  .modal-header {
-    padding: 20px 30px;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  // .modal-header {
+  //   padding: 20px 30px;
+  //   border-bottom: 1px solid #e5e7eb;
+  //   display: flex;
+  //   justify-content: space-between;
+  //   align-items: center;
 
-    h4 {
-      margin: 0;
-      color: #1f2937;
-    }
+  //   h4 {
+  //     margin: 0;
+  //     color: #1f2937;
+  //   }
 
-    .close {
-      font-size: 28px;
-      font-weight: bold;
-      color: #9ca3af;
-      cursor: pointer;
-      transition: color 0.2s ease;
+  //   .close {
+  //     font-size: 28px;
+  //     font-weight: bold;
+  //     color: #9ca3af;
+  //     cursor: pointer;
+  //     transition: color 0.2s ease;
 
-      &:hover {
-        color: #374151;
-      }
-    }
-  }
+  //     &:hover {
+  //       color: #374151;
+  //     }
+  //   }
+  // }
 
   .modal-body {
     padding: 30px;

@@ -11,6 +11,8 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { FormsModule } from '@angular/forms';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { Subject, takeUntil } from 'rxjs';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 declare var $: any;
 
@@ -55,6 +57,9 @@ branchList: any[] = [];
   selectedCompanyId: any = null;
   @ViewChild('branchSwitchModal') branchSwitchModal!: TemplateRef<any>;
   private modalRef!: NgbModalRef;
+  financialYears: any[] = [];
+  selectedYearId: number | null = null;
+  private unsubscribe$ = new Subject<void>();
 
   // Menu Search Related Variable Declaration
   activeIndex = -1;
@@ -74,7 +79,8 @@ branchList: any[] = [];
     private verticalNavService: VerticalNavService,
     private modalService: NgbModal,
     private cdr: ChangeDetectorRef,
-    private companySettingsManager: CompanySettingsManagerService
+    private companySettingsManager: CompanySettingsManagerService,
+    private masterService : MasterService
   ) {
     // translate.setDefaultLang('en');
   }
@@ -88,8 +94,10 @@ ngOnInit(): void {
   try {
     const encryptedCompany = localStorage.getItem('selected-company');
     const encryptedBranch = localStorage.getItem('selected-branch');
+    const storedYearId = localStorage.getItem('current-year-id');
     storedCompany = encryptedCompany ? this.appSettingsService.decrypt(encryptedCompany) : null;
     storedBranch = encryptedBranch ? this.appSettingsService.decrypt(encryptedBranch) : null;
+    this.selectedYearId = storedYearId ? +storedYearId : null;
   } catch (err) {
     console.warn('Decryption failed for selected company/branch:', err);
   }
@@ -176,20 +184,49 @@ ngOnInit(): void {
     console.log('Extracted companies:', this.companyList);
   }
 
-  onCompanyChange(companyId: number) {
+  onCompanyChange(companyId: number,resetYear : boolean = true) {
   const selectedCompany = this.companyList.find(c => c.CompanyMasterSid === companyId);
 
   // Extract branch list from companyMaster.userBranchMaster
 this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   .filter(ubm => ubm.GiveAccess === 'Y'); // ✅ Only show GiveAccess = Y
   this.selectedBranchId = null;
+    if (resetYear) {
+      this.financialYears = [];
+      this.selectedYearId = null;
+    }
+
+  if (companyId) {
+    this.getFinancialYears(companyId);
+  }
 
   console.log('Selected Company:', selectedCompany);
   console.log('Branch List:', this.branchList);
 }
 
+  getFinancialYears(companyId: number) {
+    this.masterService.getFinancialYearsByCompany(companyId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((resp: any) => {
+        if (resp.status && resp.data) {
+          this.financialYears = resp.data;
+          const existInList = this.financialYears.find(fy => fy.YearMasterSid === this.selectedYearId);
+          this.selectedYearId = existInList ? this.selectedYearId : this.financialYears.find(fy => fy.CurrentYear === 'Y')?.YearMasterSid;
+          console.log({
+            'Financial Years' : this.financialYears,
+            'selectedYearId' : this.selectedYearId
+          });
+        } else {
+          this.appSettingsService.showError(resp.message);
+        }
+      });
+  }
 
  openBranchSwitchModal(content: TemplateRef<any>): void {
+  console.log({
+    'Financial Years': this.financialYears,
+    'selectedYearId': this.selectedYearId
+  });
   if (this.selectedBranchCompany) {
     // Get company and branch SIDs from selectedBranchCompany
     const company = this.companyList.find(
@@ -198,8 +235,13 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
     if (company) {
       this.selectedCompanyId = company.CompanyMasterSid;
-      this.onCompanyChange(this.selectedCompanyId); // Load branch list
+      this.onCompanyChange(this.selectedCompanyId,false); // Load branch list
     }
+
+    console.log({
+      'Financial Years': this.financialYears,
+      'selectedYearId': this.selectedYearId
+    });
 
     const branch = (company?.companyMaster?.userBranchMaster || []).find(
       b => b.branchMaster.BranchMasterSid === this.selectedBranchCompany.branchMaster.BranchMasterSid
@@ -209,6 +251,10 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
       this.selectedBranchId = branch.UserBranchMasterSid;
     }
   }
+
+  //  if (this.selectedCompanyId) {
+  //    this.getFinancialYears(this.selectedCompanyId);
+  //  }
 
   this.modalRef = this.modalService.open(content, {
     centered: true,
@@ -226,6 +272,11 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   if (!selectedCompany || !selectedBranch) {
     this.appSettingsService.showError('Invalid company or branch selected');
+    return;
+  }
+
+  if (!this.selectedYearId) {
+    this.appSettingsService.showError('Please select a financial year.');
     return;
   }
 
@@ -257,6 +308,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
     localStorage.setItem('selected-company', this.appSettingsService.encrypt(companyToStore));
     localStorage.setItem('selected-branch', this.appSettingsService.encrypt(branchToStore));
+    localStorage.setItem('current-year-id', this.selectedYearId.toString());
 
     // Load company configuration and store in localStorage
     this.companySettingsManager.setCurrentCompany(companyToStore.CompanyMasterSid);
@@ -605,6 +657,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     // Preserve remembered credentials
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     const rememberedPassword = localStorage.getItem('rememberedPassword');
+    const lastUsedFinancialYear = localStorage.getItem('current-year-id');
 
     // Clear all localStorage data
     localStorage.clear();
@@ -615,6 +668,9 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     }
     if (rememberedPassword) {
       localStorage.setItem('rememberedPassword', rememberedPassword);
+    }
+    if (lastUsedFinancialYear) {
+      localStorage.setItem('current-year-id', lastUsedFinancialYear);
     }
 
 
@@ -634,5 +690,9 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   navigateToMaster() {
     this.router.navigate(['dashboard']);
+  }
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }

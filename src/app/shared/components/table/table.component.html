@@ -8,39 +8,29 @@
   </div> -->
 
   <!-- Table Controls -->
-  <div class="table-controls mb-1"
-       *ngIf="!loading && (config.showColumnToggle || config.showFilters)">
+  <div class="table-controls mb-1" *ngIf="!loading && (config.showColumnToggle || config.showFilters)">
 
-    
+
     <div class="custom-dropdown" *ngIf="config.showColumnToggle">
-       <button class="btn btn-icon dropdown-toggle"
-          type="button"
-          (click)="toggleColumnDropdown()"
-          [attr.aria-expanded]="showColumnToggle"
-          [class.expanded]="showColumnToggle">
-    <i class="fas fa-columns"></i>
-    <span class="btn-text">Columns</span>
-  </button>
+      <button class="btn btn-icon dropdown-toggle" type="button" (click)="toggleColumnDropdown()"
+        [attr.aria-expanded]="showColumnToggle" [class.expanded]="showColumnToggle">
+        <i class="fas fa-columns"></i>
+        <span class="btn-text">Columns</span>
+      </button>
 
-  <div class="custom-dropdown-menu"
-       [class.show]="showColumnToggle"
-       #columnToggleDropdown>
-    <h6 class="dropdown-header">Column Visibility</h6>
-    <div class="dropdown-item-text" *ngFor="let column of config.columns; trackBy: trackByColumn">
-      <div class="form-check">
-        <input class="form-check-input"
-               type="checkbox"
-               [id]="'col-toggle-' + column.key"
-               [checked]="columnVisibility[column.key]"
-               (change)="toggleColumnVisibility(column.key)">
-        <label class="form-check-label"
-               [for]="'col-toggle-' + column.key"
-               (click)="toggleColumnVisibility(column.key)">
-          {{ column.label }}
-        </label>
+      <div class="custom-dropdown-menu" [class.show]="showColumnToggle" #columnToggleDropdown>
+        <h6 class="dropdown-header">Column Visibility</h6>
+        <div class="dropdown-item-text" *ngFor="let column of config.columns; trackBy: trackByColumn">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" [id]="'col-toggle-' + column.key"
+              [checked]="columnVisibility[column.key]" (change)="toggleColumnVisibility(column.key)">
+            <label class="form-check-label" [for]="'col-toggle-' + column.key"
+              (click)="toggleColumnVisibility(column.key)">
+              {{ column.label }}
+            </label>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
       <!-- <button class="btn btn-icon dropdown-toggle"
               type="button"
               (click)="toggleColumnDropdown()"
@@ -70,7 +60,7 @@
       </div> -->
     </div>
 
-   
+
     <!-- <div class="filter-controls" *ngIf="config.showFilters && currentFilters.length > 0">
       <button class="btn btn-outline-danger btn-sm"
               (click)="clearAllFilters()"
@@ -80,11 +70,11 @@
       </button>
     </div> -->
     <div class="filter-controls" *ngIf="config.showFilters && currentFilters.length > 0">
-  <button class="clear-btn" (click)="clearAllFilters()" title="Clear all filters">
-    <i class="fas fa-times"></i>
-    <span>Clear Filters ({{ currentFilters.length }})</span>
-  </button>
-</div>
+      <button class="clear-btn" (click)="clearAllFilters()" title="Clear all filters">
+        <i class="fas fa-times"></i>
+        <span>Clear Filters ({{ currentFilters.length }})</span>
+      </button>
+    </div>
 
   </div>
 
@@ -96,54 +86,36 @@
       <thead class="enterprise-header">
 
         <!-- Header Row -->
-        <tr cdkDropList
-            [cdkDropListData]="getVisibleColumns()"
-            (cdkDropListDropped)="onColumnDrop($event)"
-            [cdkDropListDisabled]="!config.dragAndDrop"
-            cdkDropListOrientation="horizontal">
+        <tr cdkDropList [cdkDropListData]="getVisibleColumns()" (cdkDropListDropped)="onColumnDrop($event)"
+          [cdkDropListDisabled]="!config.dragAndDrop" cdkDropListOrientation="horizontal">
 
           <!-- Action Column -->
           <th *ngIf="config.actions && config.actions.length > 0" class="action-header"></th>
 
           <!-- Data Columns -->
           <th *ngFor="let column of getVisibleColumns(); trackBy: trackByColumn"
-              [class]="'sortable-header ' + (column.headerClass || '')"
-              [class.sortable]="column.sortable !== false"
-              [style.width]="column.width"
-              cdkDrag
-              [cdkDragDisabled]="!config.dragAndDrop">
+            [class]="'sortable-header ' + (column.headerClass || '')" [class.sortable]="column.sortable !== false"
+            [style.width]="column.width" cdkDrag [cdkDragDisabled]="!config.dragAndDrop">
             <div class="header-content">
               <span (click)="onSort(column)">{{ column.label }}</span>
               <div class="header-icons">
-                <i *ngIf="column.sortable !== false"
-                   [class]="getSortIcon(column) + ' sort-icon'"
-                   [class.fa-sort-up]="currentSort.direction === 'asc' && (currentSort.column === (column.sortKey || column.key))"
-                   [class.fa-sort-down]="currentSort.direction === 'desc' && (currentSort.column === (column.sortKey || column.key))"
-                   (click)="onSort(column)"
-                   title="Sort"></i>
-                <i *ngIf="column.filterable !== false"
-                   class="fas fa-filter filter-icon"
-                   [class.active]="filterInputs[column.key]"
-                   (click)="toggleFilter(column.key)"
-                   title="Filter">
+                <i *ngIf="column.sortable !== false" [class]="getSortIcon(column) + ' sort-icon'"
+                  [class.fa-sort-up]="currentSort.direction === 'asc' && (currentSort.column === (column.sortKey || column.key))"
+                  [class.fa-sort-down]="currentSort.direction === 'desc' && (currentSort.column === (column.sortKey || column.key))"
+                  (click)="onSort(column)" title="Sort"></i>
+                <i *ngIf="column.filterable !== false" class="fas fa-filter filter-icon"
+                  [class.active]="filterInputs[column.key]" (click)="toggleFilter(column.key)" title="Filter">
                 </i>
               </div>
             </div>
             <!-- Filter Input (Hidden by default) -->
             <div *ngIf="showFilter[column.key]" class="filter-dropdown">
               <div class="filter-input-container">
-                <input type="text"
-                       class="form-control form-control-sm"
-                       [placeholder]="'Filter ' + column.label"
-                       [(ngModel)]="filterInputs[column.key]"
-                       (input)="onFilterInput(column.key, $any($event.target).value)"
-                       (keyup.enter)="hideFilter(column.key)"
-                       (keyup.escape)="hideFilter(column.key)"
-                       #filterInput>
-                <button *ngIf="filterInputs[column.key]"
-                        class="btn btn-sm btn-outline-secondary clear-filter-btn"
-                        (click)="clearFilter(column.key)"
-                        title="Clear filter">
+                <input type="text" class="form-control form-control-sm" [placeholder]="'Filter ' + column.label"
+                  [(ngModel)]="filterInputs[column.key]" (input)="onFilterInput(column.key, $any($event.target).value)"
+                  (keyup.enter)="hideFilter(column.key)" (keyup.escape)="hideFilter(column.key)" #filterInput>
+                <button *ngIf="filterInputs[column.key]" class="btn btn-sm btn-outline-secondary clear-filter-btn"
+                  (click)="clearFilter(column.key)" title="Clear filter">
                   <i class="fas fa-times"></i>
                 </button>
               </div>
@@ -154,56 +126,51 @@
 
       <!-- Table Body -->
       <tbody>
-        <tr *ngFor="let row of filteredData; let i = index"
-            [class]="getRowClass(row)"
-            (click)="onRowClick(row)">
+        <tr *ngFor="let row of filteredData; let i = index" [class]="getRowClass(row)" (click)="onRowClick(row)">
 
 
           <!-- Action Column -->
-          <td *ngIf="config.actions && config.actions.length > 0"
-              class="action-column"
-              (click)="$event.stopPropagation()">
+          <td *ngIf="config.actions && config.actions.length > 0" class="action-column"
+            (click)="$event.stopPropagation()">
             <div class="action-buttons">
-              <button *ngFor="let action of config.actions"
-                      class="action-icon me-1"
-                      [class]="action.class"
-                      [title]="action.tooltip || action.label"
-                      (click)="onActionClick(action.action, row)"
-                      [style.display]="action.condition ? (action.condition(row) ? 'inline-flex' : 'none') : 'inline-flex'">
+              <button *ngFor="let action of config.actions" class="action-icon me-1" [class]="action.class"
+                [title]="action.tooltip || action.label" (click)="onActionClick(action.action, row)"
+                [style.display]="action.condition ? (action.condition(row) ? 'inline-flex' : 'none') : 'inline-flex'">
                 <i [class]="action.icon"></i>
               </button>
             </div>
           </td>
 
           <!-- Data Columns -->
-          <td *ngFor="let column of getVisibleColumns(); trackBy: trackByColumn"
-              [class]="column.cellClass">
+          <td *ngFor="let column of getVisibleColumns(); trackBy: trackByColumn" [class]="column.cellClass">
 
             <!-- Default Template -->
-            <span *ngIf="!column.template || column.template === 'default'">
+            <!-- <span *ngIf="!column.template || column.template === 'default'">
+              {{ getCellDisplay(row, column) }}
+            </span> -->
+            <span *ngIf="!column.template || column.template === 'default'"
+              [title]="column.tooltipKey ? row[column.tooltipKey] : ''" class="truncate-text">
               {{ getCellDisplay(row, column) }}
             </span>
 
             <!-- Link Template -->
-            <button *ngIf="column.template === 'link'"
-                    class="btn btn-link p-0 text-start booking-link"
-                    (click)="onActionClick('view', row, column); $event.stopPropagation()">
+            <button *ngIf="column.template === 'link'" class="btn btn-link p-0 text-start booking-link"
+              (click)="onActionClick('view', row, column); $event.stopPropagation()">
               {{ getCellDisplay(row, column) }}
             </button>
 
             <!-- Status Template -->
             <span *ngIf="column.template === 'status'" class="status-badge"
-                  [class.active]="getCellValue(row, column.key) === 'Active'"
-                  [class.inactive]="getCellValue(row, column.key) !== 'Active'">
+              [class.active]="getCellValue(row, column.key) === 'Active'"
+              [class.inactive]="getCellValue(row, column.key) !== 'Active'">
               <i class="status-dot"></i>
               {{ getCellDisplay(row, column) }}
             </span>
 
             <!-- Action Template -->
             <div *ngIf="column.template === 'action'">
-              <button class="action-icon"
-                      (click)="onActionClick('view', row, column); $event.stopPropagation()"
-                      title="View">
+              <button class="action-icon" (click)="onActionClick('view', row, column); $event.stopPropagation()"
+                title="View">
                 <i-feather name="eye"></i-feather>
               </button>
             </div>
@@ -213,8 +180,7 @@
 
         <!-- Empty State -->
         <tr *ngIf="!loading && filteredData.length === 0">
-          <td [attr.colspan]="getVisibleColumns().length + (config.actions?.length ? 1 : 0)"
-              class="text-center p-4">
+          <td [attr.colspan]="getVisibleColumns().length + (config.actions?.length ? 1 : 0)" class="text-center p-4">
             <div class="alert alert-info mb-0">
               {{ getEmptyMessage() }}
             </div>
@@ -233,11 +199,8 @@
   </div>
 
   <!-- Pagination -->
-  <app-common-pagination
-    *ngIf="config.showPagination && paginationConfig && !loading"
-    [config]="paginationConfig"
-    (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)">
+  <app-common-pagination *ngIf="config.showPagination && paginationConfig && !loading" [config]="paginationConfig"
+    (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
   </app-common-pagination>
 </div>
 

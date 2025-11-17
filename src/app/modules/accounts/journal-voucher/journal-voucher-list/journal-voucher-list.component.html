@@ -1,0 +1,27 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+
+
+<div class="row compact-form">
+    
+    <div class="col-12">
+        <app-page-header [title]="'Joural Voucher'" [showFavorite]="true" [showSearch]="true"
+            [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue"
+            [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
+            (actionTriggered)="onActionTriggered($event)">
+        </app-page-header>
+    </div>
+
+    <!-- Reusable Table Component -->
+    <div class="col-12 px-0">
+        <app-reusable-table #JournalVoucherTable [config]="tableConfig" [data]="allJournalVoucher" [loading]="tableLoading"
+            [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
+            (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
+            (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
+            (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+        </app-reusable-table>
+    </div>
+
+</div>

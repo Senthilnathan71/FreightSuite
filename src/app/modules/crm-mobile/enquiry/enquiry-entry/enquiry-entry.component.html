@@ -22,10 +22,12 @@
                         (click)="openAuditLogs(auditLogModal)">
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                  <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                        *ngIf="isEditMode"
+                        [disabled]="!rateRequestData"
                         (click)="openPrint()">
                         <i class="fas fa-print me-1"></i> Print
-                    </button>
+                </button>
 
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -1540,7 +1542,7 @@
 
 <ng-template #enquiryPrint let-modal>
 
-    <div class="modal-header  modalHeaderpart d-flex justify-content-between align-items-center">
+    <div class="modal-header  modalHeaderpart d-flex justify-content-between align-items-center ">
 
 
         <h5 class="modal-title mb-0 text-white">Enquiry</h5>
@@ -1559,12 +1561,12 @@
 
     </div>
 
-    <div class="modal-body ">
+    <div class="modal-body">
         <div id="printContent">
             <div class="print-a4">
 
                 <!-- Company Info -->
-                <div class="row ">
+                <div class="row">
                     <div class="company-header">
                         <div class="company-logo">
                             <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
@@ -1586,7 +1588,8 @@
                 </div>
 
                 <!-- Horizontal Line -->
-                <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+                <div  style="height: 1px; background-color: black; width: 100%; margin: 1.5rem 0 0.3rem 0;"></div>
+
 
                 <!-- Title -->
                 <h5 class="text-center fw-bold pb-2" style="margin: 0;">ENQUIRY</h5>

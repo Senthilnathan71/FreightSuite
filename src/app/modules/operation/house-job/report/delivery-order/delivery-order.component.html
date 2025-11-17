@@ -1,0 +1,327 @@
+
+ 
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Delivery Order</h5>
+    <div class="d-flex gap-2 align-items-center">
+ 
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+        <i class="fas fa-envelope me-1"></i>Send Email
+      </button>
+ 
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+ 
+    </div>
+  </div>
+ 
+ 
+  <div class="modal-body">
+    <div id="printContent">
+      <div class="print-a4">
+ 
+        <div class="row ">
+          <div class="company-header">
+            <div class="company-logo">
+              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            </div>
+ 
+            <div class="company-info ">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+              <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+              <p class="mb-1">
+                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+              </p>
+              <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+              <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+            </div>
+          </div>
+        </div>
+ 
+        <h5 class="my-3 fw-bold text-center pt-1" style="border-top: 1px solid black;">Delivery Order</h5>
+ 
+        <div class="row px-5">
+          <div class="col-12 col-md-6 mb-3">
+            <strong>Release To </strong> <br>
+            <div class="" [innerHTML]="housejobData?.ConsigneeName
+       ? (housejobData?.ConsigneeName + '<br>' + housejobData?.ConsigneeAddress)
+       : housejobData?.Notify">
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="d-flex mb-1">
+              <strong style="width: 100px;">HBL No.</strong>
+              <span>: {{ housejobData?.HBLNo }} </span>
+            </div>
+            <div class="d-flex mb-1">
+              <strong style="width: 100px;">DO Number</strong>
+              <span>: {{ housejobData?.Others?.[0]?.DONo }}</span>
+            </div>
+            <div class="d-flex mb-1">
+              <strong style="width: 100px;">Do Date</strong>
+              <span>: {{ housejobData?.DODate | formatDate}}</span>
+            </div>
+            <div class="d-flex mb-1">
+              <strong style="width: 100px;">Shipment</strong>
+              <span>: {{ housejobData?.ShipmentNo }} </span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Shipment Details -->
+        <h6 class="fw-bold">SHIPMENT DETAILS</h6>
+        <div class=" mb-0 p-2 px-5"
+          style="border-top: 1px solid black;border-left: 1px solid black;border-right: 1px solid black;  ">
+          <div class="row">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <strong>Shipper </strong><br />
+              <span> {{ housejobData?.ShipperName }} <br> {{ housejobData?.ShipperAddress }} </span>
+            </div>
+            <div class="col-12 col-md-6">
+              <strong>Consignee </strong><br />
+              <span> {{ housejobData?.ConsigneeName }} <br> {{ housejobData?.ConsigneeAddress }} </span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Notify and Goods Available -->
+        <div class="row mb-0 p-1 mx-0"
+          style="border-left: 1px solid black;border-right: 1px solid black;border-top: 1px solid black;">
+          <div class="col-12 col-md-6 ps-5 ">
+            <div class="d-flex flex-column">
+              <strong style="width: 135px;">Notify Party</strong> 
+              <span style="height: 70px;"> {{ housejobData?.Others?.[0]?.NotifyParty }} </span>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 mt-2 mt-md-0">
+            <div class="d-flex flex-column">
+              <strong style="width: 170px;">Goods Available At</strong>
+              <span> {{ housejobData?.Others?.[0]?.YardCFS }} </span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Other Shipment Info -->
+        <div class="mb-0"
+          style="border-left: 1px solid black;border-right: 1px solid black;border-bottom: 1px solid black;border-top: 1px solid black;">
+          <div class="row px-5 pt-2">
+            <div class="col-md-6">
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 140px;">Release Type</strong>
+                <span>: {{ housejobData?.Others?.[0]?.ReleaseType }} </span>
+              </div>
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 140px;">Order Numbers / Reference</strong>
+                <span>: {{ housejobData?.Others?.[0]?.CustomerRefNo }} </span>
+              </div>
+ 
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 170px;">Ocean Bill Of Lading</strong>
+                <span>: {{ housejobData?.MBLNo }} </span>
+              </div>
+              <div class="d-flex mb-1 flex-wrap">
+                <strong style="width: 170px;">Commodity</strong>
+                <span>: {{ housejobData?.Products?.[0]?.ProductName }} </span>
+              </div>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- <div class="d-flex mb-1 flex-wrap">
+          <strong style="width: 250px;">Ocean Bill OF Lading</strong>
+          <span>: {{ housejobData?.MBLNo }} </span>
+        </div>
+        <div class="d-flex mb-1 flex-wrap">
+          <strong style="width: 250px;">Commodity</strong>
+          <span>: </span>
+        </div>
+        <div class="d-flex mb-1 flex-wrap">
+          <strong style="width: 250px;">HBL</strong>
+          <span>: {{ housejobData?.HBLNo }} </span>
+        </div> -->
+ 
+        <!-- Routing Info -->
+ 
+        <div class="table-responsive">
+          @if(selectedFCLLCL === "FCL"){
+          <table class="table tablebordered mb-2" style="table-layout: fixed; width: 100%;">
+            <thead>
+              <tr>
+ 
+                <th style="width: 20%;">Container</th>
+                <th style="width: 20%;">Container Type</th>
+                <th style="width: 20%;">Seal</th>
+ 
+                <th style="width: 20%;">Package Type</th>
+                <th style="width: 20%;" class="text-center">Gross Weight</th>
+                <th style="width: 20%;" class="text-center">Volume</th>
+              </tr>
+            </thead>
+ 
+            <tbody>
+              <tr *ngFor="let container of masterJobContainers">
+ 
+                <td style="width: 20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  {{ container?.ContainerNumber }}
+                </td>
+                <td style="width: 20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  {{ getContainerName(container.ContainerType) }}
+                </td>
+                <td style="width: 20%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  {{ container?.LineSeal }}
+                </td>
+ 
+                <td style="width: 20%;">
+                  {{ container?.NoOfPkg || 0 }} {{ getPkgTypeName(container?.PkgType) }}
+                </td>
+                <td style="width: 20%;" class="text-end">
+                  {{ container?.GrossWeight || 0 | number:'1.3-3'}}
+                </td>
+ 
+                <td style="width: 20%;" class="text-end">
+                  {{ container?.Volume || 0 | number:'1.3-3' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          }
+          @if(selectedFCLLCL === "LCL"){
+          <table class="table tablebordered mb-2" style="table-layout: fixed; width: 100%;">
+            <thead>
+              <tr>
+                <th style="width: 20%;">No of Package</th>
+                <!-- <th style="width: 20%;">Package Type</th> -->
+                <th style="width: 20%;" class="text-center">Gross Weight</th>
+                <th style="width: 20%;" class="text-center">Net Weight</th>
+                <th style="width: 20%;" class="text-center">Volume</th>
+              </tr>
+            </thead>
+ 
+            <tbody>
+              <tr >
+                <td style="width: 20%;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }} </td>
+ 
+                <!-- <td style="width: 20%;">
+                  {{ getPkgTypeName(cargo?.PackageType) }}
+                </td> -->
+                <td style="width: 20%;" class="text-end">
+                  {{ housejobData?.Cargo?.[0]?.GrossWeight || 0 | number:'1.3-3'}}
+                </td>
+ 
+                 <td style="width: 20%;" class="text-end">
+                  {{ housejobData?.Cargo?.[0]?.NetWeight || 0 | number:'1.3-3'}}
+                </td>
+ 
+                <td style="width: 20%;" class="text-end">
+                  {{ housejobData?.Cargo?.[0]?.cargo?.Volume || 0 | number:'1.3-3' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          }
+        </div>
+ 
+ 
+        <!-- Description -->
+        <div class="ps-5 pt-2" style="border: 1px solid black;">
+          <div class="row">
+            <div class="col-md-6">
+              <strong style="width: 100px;">Marks And Numbers </strong>
+              <span>: {{housejobData?.Cargo?.[0]?.MarksAndNumber}}</span>
+            </div>
+            <div class="col-md-6">
+              <strong  style="width: 100px;"> Goods Description </strong>
+              <span>: {{ housejobData?.Cargo?.[0]?.CommodityDescription }}</span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Charges -->
+        <!-- <h6 class="mt-4">CHARGES</h6> -->
+        <div class="table-responsive">
+          <table class="table tablebordered">
+            <thead>
+              <tr>
+                <th rowspan="2 ">Charge Description</th>
+                <th rowspan="2 ">Unit</th>
+                <th colspan="3" class="text-center">Revenue</th>
+                <th colspan="3" class="text-center">Cost</th>
+ 
+              </tr>
+ 
+              <tr>
+ 
+                <th class="text-center">Currency</th>
+                <th class="text-center">Per Unit</th>
+                <th class="text-center">Amount</th>
+                <th class="text-center">Currency</th>
+                <th class="text-center">Per Unit</th>
+                <th class="text-center">Amount</th>
+                <!-- <th>Tax</th> -->
+              </tr>
+ 
+ 
+ 
+            </thead>
+            <tbody>
+              <tr *ngFor="let rate of housejobData?.costRevenueCharges">
+                <td>{{ rate.ChargeDescription }}</td>
+                <td>{{ getUnitCode(rate.ChargeUomSid) }}</td>
+                <td>{{getCurrencyCode(rate.RevenueCurrencyMasterSid)}}</td>
+                <td class="text-end ">{{ rate.RevenueRate | number:'1.2-2' }}</td>
+                <td class="text-end ">{{ rate.RevenueAmount | number:'1.2-2' }}</td>
+                <td>{{getCurrencyCodeCost(rate.CostCurrencyMasterSid) }}</td>
+                <td class="text-end ">{{ rate.CostRate | number:'1.2-2' }}</td>
+                <td class="text-end ">{{ rate.CostAmount | number:'1.2-2' }}</td>
+                <!-- <td></td> -->
+              </tr>
+ 
+ 
+              <tr>
+                <td colspan="3" class="text-end fw-bold">Total</td>
+                <td class="text-end fw-bold">{{getTotalLocalRevenuAmount()| number:'1.2-2'}}</td>
+                <td class="text-end fw-bold">{{TotalLocalAmount()| number:'1.2-2'}}</td>
+                <td></td>
+                <td class="text-end fw-bold">{{getCostAmount()| number:'1.2-2'}}</td>
+                <td class="text-end fw-bold">{{CostAmount()| number:'1.2-2'}}</td>
+              </tr>
+ 
+            </tbody>
+          </table>
+        </div>
+        <!--
+        <p><strong></strong></p>
+        <p><strong>TOTAL: </strong></p> -->
+ 
+        <!-- <div class="mt-4">
+          <strong>Sea Delivery Order terms</strong><br />
+          Admin,<br />
+          DOFI
+        </div> -->
+ 
+        <!-- <div class="mt-5">
+          DOFI Infosys LLC (BRANCH OF SINGAPORE)<br />
+          (AS AGENTS ONLY)
+        </div> -->
+ 
+        <footer class="text-center mb-0 px-2">
+          <div class="d-flex justify-content-between">
+            <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+            <span>
+              This document is computer-generated and does not require a signature.
+            </span>
+            <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+          </div>
+        </footer>
+ 
+      </div>
+    </div>
+  </div>

@@ -68,7 +68,7 @@ export const SettingsRoutes: Routes = [
                 component: RolemenuComponent,
                 data: {
                     title: 'Role Menu',
-                    urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Role Menu' }],
                 },
             },
              {
@@ -76,7 +76,15 @@ export const SettingsRoutes: Routes = [
                 component: RolemenuEntryComponent,
                 data: {
                     title: 'Role Menu',
-                    urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Role Menu' }],
+                },
+            },
+            {
+                path: 'rolemenu/entry/:id',
+                component: RolemenuEntryComponent,
+                data: {
+                    title: 'Role Menu',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Role Menu' }],
                 },
             },
              {

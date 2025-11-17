@@ -1,0 +1,137 @@
+
+
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Indeminty</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+        <i class="fas fa-envelope me-1"></i>Send Email
+      </button>
+
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
+
+    </div>
+  </div>
+
+
+  <div class="modal-body">
+    <div id="printContent">
+      <div class="print-a4">
+
+        <!-- HEADER -->
+        <div class="row ">
+          <div class="company-header">
+            <div class="company-logo">
+              <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+            </div>
+
+            <div class="company-info ">
+              <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+              <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+              <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+              <p class="mb-1">
+                {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+              </p>
+              <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+              <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <h5 class="fw-bold text-uppercase mb-2 text-center pt-2" style="border-top: 1px solid black;">Letter of
+          Indemnity</h5>
+        <!-- GREETING -->
+        <div class="mb-4">
+          <h5 class="fw-semibold mb-3">Dear Sir,</h5>
+
+          <!-- VESSEL DETAILS -->
+          <div class="p-3  rounded" style="border: 1px solid black;">
+            <div class="row gy-2">
+              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
+              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
+              <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
+              <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
+              <div class="d-flex"><strong class="w-50">Container No</strong>:  {{ housejobData?.Products?.[0]?.ContainerNo }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTRO PARAGRAPH -->
+        <p class="mb-2">
+          We should advise that according to the bill of lading, the details of the following consignment are as
+          follows:
+        </p>
+
+        <!-- FIRST TABLE -->
+        <div class="table-responsive mb-3">
+          <table class="table tablebordered border-dark text-center align-middle">
+            <thead class="bg-dark text-white">
+              <tr>
+                <th>HBL No</th>
+                <th>Marks and Numbers</th>
+                <th>  Goods Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{housejobData?.HBLNo}}</td>
+                <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+                <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="mb-2">
+          However, we have found that the cargo outturned with the following details:
+        </p>
+
+        <!-- SECOND TABLE -->
+        <div class="table-responsive mb-3">
+          <table class="table tablebordered border-dark text-center align-middle">
+            <thead class="bg-dark text-white">
+              <tr>
+                <th>HBL No</th>
+                <th>Marks and Numbers</th>
+                <th>  Goods Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{housejobData?.HBLNo}}</td>
+                <td>{{housejobData?.Cargo?.[0]?.MarksAndNumber}}</td>
+                <td>{{housejobData?.Cargo?.[0]?.CommodityDescription}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BODY PARAGRAPH -->
+        <p class="mb-5">
+          We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind
+          whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all
+          payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor
+          &
+          client and any sums demanded by you for the defense of any proceeding brought against you by reason of the
+          delivery aforesaid...
+        </p>
+
+        <!-- FOOTER -->
+        <footer class="text-center mb-0 px-2">
+          <div class="d-flex justify-content-between">
+            <div><span>Printed By:</span> {{userData.userName}}</div>
+            <span>This document is computer-generated and does not require a signature.</span>
+            <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+  </div>

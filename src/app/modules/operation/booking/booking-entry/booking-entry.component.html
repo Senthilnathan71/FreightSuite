@@ -1077,6 +1077,10 @@
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
+                <div class="stat-label">Volumetric</div>
+                <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
                 <div class="stat-label">Char W</div>
                 <div class="stat-value">
                   <span class="status-badge status-active">-</span>
@@ -1096,6 +1100,10 @@
               <div class="stat-item">
                 <div class="stat-label">Volume</div>
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Volumetric</div>
+                <div class="stat-value">{{c['Volumetric']?.value ? c['Volumetric']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
                 <div class="stat-label">Status</div>
@@ -1281,7 +1289,26 @@
               }
             </div>
           </aside>
-          @if(selectedFCLLCL === "AIR") {
+          @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL" ) {
+            <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="Volumetric" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+              <label for="text-input" class="input-label">Volumetric<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('Volumetric')?.touched || cargoForm.get('Volumetric')?.dirty) &&
+              cargoForm.get('Volumetric')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('Volumetric')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('Volumetric')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -1457,7 +1484,17 @@
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg
                     <span class="text-danger">*</span>
                   </th>
-                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'FCL'){
+                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM</th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length</th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width</th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height</th>
+                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric</th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM</th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt</th>
+                    <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt</th>
+                  }
+                  @if(selectedFCLLCL === 'FCL'){
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt
                     <span class="text-danger">*</span>
                   </th>
@@ -1469,12 +1506,6 @@
                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date <span
                       class="text-danger"></span></th>
-                  @if(selectedFCLLCL === 'AIR'){
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length</th>
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width</th>
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height</th>
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM</th>
-                  }
                   <th class="bg-transparent text-light" scope="col">Is Haz</th>
 
                   <th class="bg-transparent text-light dofi-min-w-60" scope="col">Imco Class
@@ -1531,7 +1562,48 @@
                     <input type="text" id="text-input" formControlName="ExternlQty" [onlyNumbers]=5 placeholder=""
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
                   </td>
-                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'FCL'){
+                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
+                    <td >
+                    <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="name"
+                      bindValue="id" appendTo="body"></ng-select>
+                   
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Length" placeholder="" [onlyNumbers]
+                      class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Width" placeholder="" [onlyNumbers]
+                      class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Height" placeholder="" [onlyNumbers]
+                      class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Volumetric" placeholder="" DecimalPrecision
+                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
+                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
+                  </td>
+                   <td>
+
+                    <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision
+                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      (input)="handleProductRelatedCalculation()" placeholder="" class="custom-input-field sm text-end">
+
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision
+                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      (input)="handleProductRelatedCalculation()" placeholder="" class="custom-input-field sm text-end">
+                  </td>
+                  }
+                  @if(selectedFCLLCL === 'FCL'){
                   <td>
 
                     <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision
@@ -1563,32 +1635,6 @@
                       </div>
                     </div>
                   </td>
-
-                  <!-- AIR Part -->
-                  @if(selectedFCLLCL === 'AIR'){
-                  <td>
-                    <input type="text" id="text-input" formControlName="Length" placeholder="" [onlyNumbers]
-                      class="custom-input-field sm text-end">
-                  </td>
-                  <td>
-                    <input type="text" id="text-input" formControlName="Width" placeholder="" [onlyNumbers]
-                      class="custom-input-field sm text-end">
-                  </td>
-                  <td>
-                    <input type="text" id="text-input" formControlName="Height" placeholder="" [onlyNumbers]
-                      class="custom-input-field sm text-end">
-                  </td>
-                  <td >
-                    <!-- <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="UOMName"
-                      bindValue="UOMMasterSid" appendTo="body"></ng-select> -->
-                    <dofi-searchable-dropdown [items]="measurementUnitList" formControlName="UomMasterSid"
-                      [placeholder]="''" [displayFields]="uomLookupConfig.displayFields"
-                      [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
-                      [bindValue]="'UOMCode'" style="padding:0;">
-                    </dofi-searchable-dropdown>
-                  </td>
-                  }
-
                   <!-- Haz Part  -->
                   <td>
                     <div class="form-check">
@@ -1627,7 +1673,7 @@
                       <i class="fas fa-plus"></i>
                     </button>
                   </td> -->
-                  <td colspan="10">
+                  <td colspan="15">
                     <div class="text-center">No Products added</div>
                   </td>
                 </tr>

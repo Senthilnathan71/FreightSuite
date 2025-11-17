@@ -49,6 +49,7 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CommonService } from 'src/app/common/common.service';
 import { Menu } from 'angular-feather/icons';
+import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -200,7 +201,11 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
   private isManualFreightChange = false;
   decimalAfterPrecision = 3;
   currentCompanyBranches: any[] = [];
-  measurementUnitList: any[] = [];
+  measurementUnitList =[
+    { id: 1, name: 'm' },
+    { id: 2, name: 'cm' },
+    { id: 3, name: 'inch'}
+  ]
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   permissions: any[] = [];
@@ -370,7 +375,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     private leadService: LeadService,
     public dropdownStore: DropdownStore,
     private pdfService:PdfDownloadService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -651,6 +657,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       GrossWeight: [''],
       NetWeight: [''],
       Volume: [''],
+      Volumetric: [''],
       ChargeableWeight: [''],
       NoOfPackage: [''],
       ShipmentTerms: [null],
@@ -661,10 +668,17 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     })
     this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
       this.setOrResetWeightError(this.cargoForm);
+      this.calculateChargeableWeight();
     });
     this.cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
       this.setOrResetWeightError(this.cargoForm);
     });
+    this.cargoForm.get('Volume')?.valueChanges.subscribe(() => {
+    this.calculateChargeableWeight();
+  });
+    this.cargoForm.get('Volumetric')?.valueChanges.subscribe(() => {
+    this.calculateChargeableWeight(); // Add this
+  });
     this.cargoForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
     })
@@ -682,7 +696,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
       NetWeight: ['', [Validators.required]],
-      Volume: ['', [Validators.required]],
+      Volumetric: ['', [Validators.required]],
+      Volume: [''],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
@@ -692,8 +707,114 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       Height: [''],
       UomMasterSid: [null],
       CargoRecDate: [null]
-    })
+    });
+    this.setupImmediateCBMCalculation();
+    this.setupImmediateVolumetricCalculation(this.productForm)
   }
+
+  private calculateChargeableWeight(): void {
+  const volumetric = Number(this.c['Volumetric']?.value) || 0;
+  const volume  = Number(this.c['Volume']?.value) || 0;
+  
+  let chargeableWeight = 0;
+  
+  // Chargeable Weight is the greater of Volumetric or Gross Weight
+  if (volumetric > volume ) {
+    chargeableWeight = volumetric;
+  } else {
+    chargeableWeight = volume;
+  }
+  
+  // Update the chargeable weight field
+  if (chargeableWeight > 0) {
+    this.c['ChargeableWeight']?.setValue(
+      Number(chargeableWeight.toFixed(this.decimalAfterPrecision)), 
+      { emitEvent: false }
+    );
+  } else {
+    this.c['ChargeableWeight']?.setValue('', { emitEvent: false });
+  }
+}
+
+private setupImmediateCBMCalculation() {
+  const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensionFields.forEach(field => {
+    this.productForm.get(field)?.valueChanges.subscribe(() => {
+      // Calculate immediately on every change
+      this.calculateCBM();
+    });
+  });
+}
+
+private calculateCBM() {
+  const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
+  const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
+  const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
+  const height = this.parseFloatSafe(this.productForm.get('Height')?.value);
+  const uomMasterSid = this.productForm.get('UomMasterSid')?.value;
+  
+  // Calculate immediately if we have at least some values
+  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+    // const cbm = this.volumetricAndCbmCalculationService.calculateCBM(externlQty, length, width, height, uomMasterSid);
+    let cbm = this.volumetricAndCbmCalculationService.calculateCBM(
+      externlQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
+    );
+    
+    // Update the Volume field immediately
+    const calculatedValue = cbm > 0 ? cbm : '';
+    this.productForm.get('Volume')?.setValue(calculatedValue, { emitEvent: false });
+  } else {
+    // Clear if incomplete data
+    this.productForm.get('Volume')?.setValue('', { emitEvent: false });
+  }
+}
+
+// Helper method to safely parse float values
+private parseFloatSafe(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
+  const calculateVolumetric = () => {
+    const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
+    const length = Number(productForm.get('Length')?.value) || 0;
+    const width = Number(productForm.get('Width')?.value) || 0;
+    const height = Number(productForm.get('Height')?.value) || 0;
+    const uomMasterSid = productForm.get('UomMasterSid')?.value;
+    
+    // Calculate if we have at least one dimension and quantity
+    if (externlQty > 0 && (length > 0 || width > 0 || height > 0) && uomMasterSid) {
+      let volumetric = this.volumetricAndCbmCalculationService.calculateVolumetric(
+        externlQty, length, width, height, uomMasterSid, 
+        this.selectedFCLLCL as 'LCL' | 'AIR', 
+        this.digitsAfterDecimal
+      );
+      
+      // Update volumetric field
+      if (volumetric > 0) {
+        productForm.get('Volumetric')?.setValue(volumetric, 
+          { emitEvent: false }
+        );
+      } else {
+        productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+      }
+    } else {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
+  };
+
+  // Listen to input events for immediate calculation
+  const dimensions = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensions.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      calculateVolumetric();
+    });
+  });
+}
 
   initOtherForm() {
     this.otherForm = this.fb.group({
@@ -787,9 +908,13 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       Length: [data?.Length || ''],
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
+      Volumetric: [data?.Volumetric|| ''],
       UomMasterSid: [data?.UomMasterSid || null],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
-    })
+    });
+
+    this.setupProductFormImmediateCalculation(productForm);
+    this.setupImmediateVolumetricCalculationForFormArray(productForm);
 
     if (data?.CargoRecDate) {
       ['ExternlQty', 'GrossWeight', 'NetWeight', 'Volume'].forEach(field => {
@@ -806,6 +931,81 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
 
     return productForm;
   }
+
+  private setupProductFormImmediateCalculation(productForm: FormGroup) {
+  const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensionFields.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      this.calculateProductFormCBMAndVolumetric(productForm);
+    });
+  });
+}
+
+private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
+  const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
+  const length = this.parseFloatSafe(productForm.get('Length')?.value);
+  const width = this.parseFloatSafe(productForm.get('Width')?.value);
+  const height = this.parseFloatSafe(productForm.get('Height')?.value);
+  const uomMasterSid = productForm.get('UomMasterSid')?.value;
+
+  // Calculate both CBM and Volumetric when UOM or dimensions change
+  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+    const { cbm, volumetric } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
+      externlQty, length, width, height, uomMasterSid,
+      this.selectedFCLLCL as 'LCL' | 'AIR',
+      this.digitsAfterDecimal
+    );
+    
+    // Update both fields
+    productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+    productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    
+    // Update main cargo form totals
+    setTimeout(() => {
+      this.handleProductRelatedCalculation();
+    }, 100);
+  } else {
+    productForm.get('Volume')?.setValue('', { emitEvent: false });
+    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+  }
+}
+
+private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup): void {
+  const calculateVolumetric = () => {
+    const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
+    const length = Number(productForm.get('Length')?.value) || 0;
+    const width = Number(productForm.get('Width')?.value) || 0;
+    const height = Number(productForm.get('Height')?.value) || 0;
+    const uomMasterSid = productForm.get('UomMasterSid')?.value;
+    
+    if (externlQty > 0 && (length > 0 || width > 0 || height > 0) && uomMasterSid) {
+      let volumetric = this.volumetricAndCbmCalculationService.calculateVolumetric(
+        externlQty, length, width, height, uomMasterSid, 
+        this.selectedFCLLCL as 'LCL' | 'AIR', 
+        this.digitsAfterDecimal
+      );;
+      
+      if (volumetric > 0) {
+        productForm.get('Volumetric')?.setValue(volumetric, 
+          { emitEvent: false }
+        );
+      } else {
+        productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+      }
+    } else {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
+  };
+
+  const dimensions = ['ExternlQty', 'Length', 'Width', 'Height'];
+  
+  dimensions.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      calculateVolumetric();
+    });
+  });
+}
 
   // changeAuthStateBasedOnDate() {
   //   let atLeastOneHasDate = false;
@@ -1035,6 +1235,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       GrossWeight: cargoData?.GrossWeight,
       NetWeight: cargoData?.NetWeight,
       Volume: cargoData?.Volume,
+      Volumetric: cargoData?.Volumetric,
       ChargeableWeight: cargoData?.ChargeableWeight,
       NoOfPackage: cargoData?.NoOfPackage,
       ShipmentTerms: cargoData?.ShipmentTerms,
@@ -1199,6 +1400,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
         Length: data?.Length,
         Width: data?.Width,
         Height: data?.Height,
+        Volumetric: data?.Volumetric,
         UomMasterSid: data?.UomMasterSid,
         CargoRecDate: data?.CargoRecDate
       })
@@ -1353,6 +1555,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
         GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
         NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
         Volume: parseFloat(cargoFormValue.Volume) || 0,
+        Volumetric: parseFloat(cargoFormValue.Volumetric) || 0,
         ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
         NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
         ShipmentTerms: cargoFormValue.ShipmentTerms || null,
@@ -1411,6 +1614,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
         Length: Number(product.Length),
         Width: Number(product.Width),
         Height: Number(product.Height),
+        Volumetric: parseFloat(product.Volumetric) || 0,
         UomMasterSid: product.UomMasterSid,
         CargoRecDate: product.CargoRecDate
       })),
@@ -1979,6 +2183,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       this.c['GrossWeight']?.enable(); this.c['GrossWeight']?.setValue(0);
       this.c['NetWeight']?.enable(); this.c['NetWeight']?.setValue(0);
       this.c['Volume']?.enable(); this.c['Volume']?.setValue(0);
+      this.c['Volumetric']?.enable(); this.c['Volumetric']?.setValue(0);
+      this.c['ChargeableWeight']?.enable(); this.c['ChargeableWeight']?.setValue(0);
       return;
     }
 
@@ -1986,6 +2192,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     let totalGrossWeight: any = 0;
     let totalNetWeight: any = 0;
     let totalVolume: any = 0;
+    let totalVolumetric: any = 0;
 
     let productValue = this.bookingProducts.getRawValue() || [];
     productValue.forEach(product => {
@@ -1993,6 +2200,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       totalGrossWeight += Number(product.GrossWeight) || 0;
       totalNetWeight += Number(product.NetWeight) || 0;
       totalVolume += Number(product.Volume) || 0;
+      totalVolumetric += Number(product.Volumetric) || 0;
     });
 
     this.c['NoOfPackage']?.setValue(Number(totalNoOfPkg.toFixed(this.decimalAfterPrecision)));
@@ -2007,6 +2215,10 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
 
     this.c['Volume']?.setValue(Number(totalVolume.toFixed(this.decimalAfterPrecision)));
     this.c['Volume']?.disable();
+
+    this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
+    this.c['Volumetric']?.disable();
+    this.calculateChargeableWeight();
   }
 
   // ************ END OF PRODUCT RELATED FUNCTIONS *************
@@ -2090,6 +2302,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
     const GrossWeight = this.c['GrossWeight']?.value;
     const NoofContainers = this.c['NoofContainers']?.value;
     const Volume = this.c['Volume']?.value;
+    const Volumetric = this.c['Volumetric']?.value;
     const ChargeableWeight = this.c['ChargeableWeight']?.value;
 
     const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
@@ -2115,6 +2328,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy {
       GrossWeight,
       NetWeight,
       Volume,
+      Volumetric,
       NoofContainers,
       ChargeableWeight,
       countryOfCompany : this.countryOfCompany
@@ -2516,6 +2730,7 @@ ${this.userData['userName']}`;
       GrossWeight: product.value.GrossWeight || '',
       NetWeight: product.value.NetWeight || '',
       Volume: product.value.Volume || '',
+      Volumetric: product.value.Volumetric || '',
       CargoRecDate: this.datePipe.transform(product.value.CargoRecDate) || ''
     }));
 
@@ -2532,6 +2747,7 @@ ${this.userData['userName']}`;
         { key: 'GrossWeight', label: 'Gross Weight' },
         { key: 'NetWeight', label: 'Net Weight' },
         { key: 'Volume', label: 'CBM' },
+        { key: 'Volumetric', label: 'Volumetric' },
         { key: 'CargoRecDate', label: 'Cargo Received Date' }
       ],
       fileName: 'Booking-Products-Report',
@@ -2974,6 +3190,7 @@ async downloadPDF() {
         NetWeight: this.c['NetWeight']?.value || 0,
         ChargeableWeight: this.c['ChargeableWeight']?.value || 0,
         Volume: this.c['Volume']?.value || 0,
+        Volumetric: this.c['Volumetric']?.value || 0,
         IsSoc: "N"
       });
     }

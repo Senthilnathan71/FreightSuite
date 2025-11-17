@@ -1,21 +1,28 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { FeatherModule } from 'angular-feather';
+import { CommonModule } from '@angular/common';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
-import { TableColumn, TableConfig, TableEventData } from 'src/app/shared/interfaces/table.interface';
+import { PaginationService } from 'src/app/shared/services/pagination.service';
+import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
-import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ToolsDropdownComponent, DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { PaymentListItem, PaymentFilter } from '../../models/payment.model';
 import { PaymentService } from '../../services/payment.service';
-import { PaymentFilter, PaymentListItem } from '../../models/payment.model';
 
 /**
  * Payment List Component

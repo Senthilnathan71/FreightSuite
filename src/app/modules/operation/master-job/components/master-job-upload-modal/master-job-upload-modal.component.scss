@@ -3,12 +3,6 @@
   border-bottom: 2px solid #e9ecef;
   padding: 1.25rem 1.5rem;
 
-  .modal-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-  }
 
   .btn-close {
     &:disabled {
@@ -19,7 +13,7 @@
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1rem;
   position: relative;
   max-height: calc(85vh - 130px);
   overflow-y: auto;
@@ -71,7 +65,7 @@
 
   .file-upload-box {
     text-align: center;
-    padding: 3rem 2rem;
+    // padding: 3rem 2rem;
     border: 2px dashed #dee2e6;
     border-radius: 0.5rem;
     background-color: #fafbfc;
@@ -82,14 +76,7 @@
       background-color: #f0f7ff;
     }
 
-    .btn {
-      padding: 0.75rem 2rem;
-      font-size: 1rem;
-
-      i {
-        font-size: 1.125rem;
-      }
-    }
+    
 
     .selected-file {
       color: #198754;
@@ -109,10 +96,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
+    padding: 0.5rem 1.25rem;
     background-color: #f8f9fa;
     border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
+    // margin-bottom: 1.5rem;
     border-left: 4px solid #0d6efd;
 
     h6 {
@@ -127,7 +114,7 @@
   }
 
   .tab-content-wrapper {
-    padding: 1.5rem 0;
+    // padding: 1.5rem 0;
     min-height: 300px;
   }
 
@@ -408,20 +395,20 @@ ul.nav-tabs {
 
 // Child Data Section Styling
 .child-data-section {
-  margin-top: 1.5rem;
+  
 
   .section-title {
     font-weight: 600;
     color: #333;
     font-size: 1rem;
-    padding-bottom: 0.5rem;
+    // padding-bottom: 0.5rem;
     border-bottom: 2px solid #dee2e6;
   }
 
   .accordion {
     .accordion-item {
       border: 1px solid #dee2e6;
-      margin-bottom: 0.75rem;
+      // margin-bottom: 0.75rem;
       border-radius: 0.375rem;
       overflow: hidden;
 
@@ -433,16 +420,12 @@ ul.nav-tabs {
     .accordion-header {
       .accordion-button {
         font-weight: 500;
-        font-size: 0.95rem;
-        padding: 0.875rem 1.25rem;
-        background-color: #f8f9fa;
-        color: #495057;
+        font-size: 0.9rem;
+        padding: 5px;
+        background-color: #05608d;
+        color: white;
 
-        &:not(.collapsed) {
-          background-color: #e7f1ff;
-          color: #0d6efd;
-          box-shadow: none;
-        }
+     
 
         &:focus {
           box-shadow: none;
@@ -461,19 +444,25 @@ ul.nav-tabs {
       }
     }
 
+     .accordion-button::after {
+    color: white !important;
+    filter: brightness(0) invert(1);
+  }
+
+  
     .accordion-body {
-      padding: 1rem 1.25rem;
-      background-color: #fff;
+      padding: 0px;
+      
     }
   }
 }
 
 .child-data-content {
   .child-data-item {
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    border: 1px solid #e9ecef;
+    // background-color: #f8f9fa;
+    padding: 2px;
+    // border-radius: 0.375rem;
+    // border: 1px solid #e9ecef;
 
     h6 {
       color: #495057;

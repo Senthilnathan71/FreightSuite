@@ -1,0 +1,47 @@
+/* Ensure ng-select expands properly inside table cells */
+.table td .ng-select {
+  width: 100%;
+  min-width: 150px;
+  height: auto;
+}
+
+.ng-select .ng-select-container {
+  min-height: 34px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+/* Prevent dropdown from being cut off */
+.table-responsive {
+  overflow: visible !important;
+}
+
+/* Optional: Adjust dropdown style to align better visually */
+.ng-dropdown-panel {
+  z-index: 9999 !important;
+  position: absolute !important;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2196f3; /* blue */
+}
+
+/* disabled unchecked */
+input[type="checkbox"]:disabled:not(:checked) {
+  border: 2px solid #ccc;
+  background-color: #eee;
+}
+
+/* disabled checked */
+input[type="checkbox"]:disabled:checked {
+  accent-color: #f39c12; /* orange for disabled-checked */
+  background-color: #f39c12;
+  border-color: #f39c12;
+}
+

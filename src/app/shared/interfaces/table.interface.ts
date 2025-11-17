@@ -12,6 +12,7 @@ export interface TableColumn {
   customRenderer?: (value: any, row: any) => string;
   sortKey?: string; // Different key for sorting if needed
   filterKey?: string; // Different key for filtering if needed
+  tooltipKey?:string;
 }
 
 export interface TableAction {

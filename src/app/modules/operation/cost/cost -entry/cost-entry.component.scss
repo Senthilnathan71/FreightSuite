@@ -462,6 +462,11 @@ table tbody td {
 .secondtable{
   height: 50px !important;
 }
+
+
+.secondtable th{
+  padding: 0px 10px;
+}
 .scroll-inner {
   overflow-x: scroll;
   cursor: pointer;

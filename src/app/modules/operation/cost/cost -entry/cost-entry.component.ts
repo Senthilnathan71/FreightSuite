@@ -619,9 +619,61 @@ createRateFormGroup(data?: any): FormGroup {
     form.get('RevenueChargeUomSid')?.setValue(value);
     form.get('CostChargeUomSid')?.setValue(value);
   });
-  if(data?.RevenueVoucherHeaderSid || data?.CostVoucherHeaderSid){
-    form.disable();
+  // if(data?.RevenueVoucherHeaderSid || data?.CostVoucherHeaderSid){
+  //   form.disable();
+  // }
+  const commonFields = [
+    'ChargeMasterSid',
+    'ChargeDescription',
+    'ChargeUomSid',
+    'NoOfUnit'
+  ];
+  const revenueFields = [ 
+    'RevenueCurrencyMasterSid',
+    'RevenueExchangeRate',
+    'RevenueRate',
+    'RevenueAmount',
+    'RevenueLocalAmount',
+    'RevenueDrCr',
+    'RevenueCustomerMasterSid',
+    'RevenueCustomerBranchSid',
+    'RevenuePrepaidCollect',
+    'RevenueVoucherHeaderSid',
+    'RevenueVoucherTypeSid',
+    'RevenueVoucherHeader',  
+    'RevenueVoucherType', 
+   ];
+  const costFields = [
+    'CostCurrencyMasterSid',
+    'CostExchangeRate',
+    'CostRate',
+    'CostAmount',
+    'CostLocalAmount',
+    'CostDrCr',
+    'CostAgentMasterSid',
+    'CostAgentBranchSid',
+    'CostPrepaidCollect',
+    'CostVoucherHeaderSid',
+    'CostVoucherTypeSid',
+    'CostVoucherHeader',  
+    'CostVoucherType',
+  ];
+  if(data?.RevenueVoucherHeaderSid){
+    revenueFields.forEach(field => {
+      form.get(field)?.disable();
+    })
   }
+  if(data?.CostVoucherHeaderSid){
+    costFields.forEach(field => {
+      form.get(field)?.disable();
+    })
+  }
+  if(data?.RevenueVoucherHeaderSid || data?.CostVoucherHeaderSid){
+    commonFields.forEach(field => {
+      form.get(field)?.disable();
+    })
+  }
+
   return form
 
 }

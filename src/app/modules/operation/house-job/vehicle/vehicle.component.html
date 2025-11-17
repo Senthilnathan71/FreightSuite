@@ -1,0 +1,118 @@
+<div class="vehicle-form">
+  <form [formGroup]="vehicleForm">
+
+    <div class="grid">
+
+      <!-- Vehicle Indicator -->
+      <div class="col">
+        <label>Vehicle Type</label>
+        <ng-select
+          [items]="vehicleIndicatorList"
+          bindLabel="label"
+          bindValue="value"
+          formControlName="VehicleIndicator"
+          appendTo="body">
+        </ng-select>
+      </div>
+
+      <!-- Used/New -->
+      <div class="col">
+        <label>Used / New</label>
+        <ng-select
+          [items]="usedNewList"
+          bindLabel="label"
+          bindValue="value"
+          formControlName="UsedNew"
+          appendTo="body">
+        </ng-select>
+      </div>
+
+      <!-- Rolling -->
+      <div class="col">
+        <label>Rolling</label>
+        <ng-select
+          [items]="rollingList"
+          bindLabel="label"
+          bindValue="value"
+          formControlName="Rolling"
+          appendTo="body">
+        </ng-select>
+      </div>
+
+      <!-- Chassis No -->
+      <div class="col">
+        <label>Chassis No</label>
+        <input type="text" formControlName="ChassisNo" />
+      </div>
+
+      <!-- Case No -->
+      <div class="col">
+        <label>Case No</label>
+        <input type="text" formControlName="CaseNo" />
+      </div>
+
+      <!-- Make -->
+      <div class="col">
+        <label>Make</label>
+        <input type="text" formControlName="Make" />
+      </div>
+
+      <!-- Model -->
+      <div class="col">
+        <label>Model</label>
+        <input type="text" formControlName="Model" />
+      </div>
+
+      <!-- Engine No -->
+      <div class="col">
+        <label>Engine No</label>
+        <input type="text" formControlName="EngineNo" />
+      </div>
+
+      <!-- Year Built -->
+      <div class="col">
+        <label>Year Built</label>
+        <input type="text" formControlName="YearBuilt" maxlength="4" />
+      </div>
+
+      <!-- Color -->
+      <div class="col">
+        <label>Color</label>
+        <input type="text" formControlName="Color" />
+      </div>
+
+      <!-- Weight -->
+      <div class="col">
+        <label>Weight</label>
+        <input type="number" step="0.001" formControlName="Weight" />
+      </div>
+
+      <!-- Volume -->
+      <div class="col">
+        <label>Volume</label>
+        <input type="number" step="0.001" formControlName="Volume" />
+      </div>
+
+      <!-- Goods Description -->
+      <div class="full">
+        <label>Goods Description</label>
+        <input type="text" formControlName="GoodsDescription" />
+      </div>
+
+      <!-- Remarks -->
+      <div class="full">
+        <label>Remarks</label>
+        <textarea formControlName="Remarks" rows="2"></textarea>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" (click)="resetChildForm()">Clear</button>
+      <button type="button" class="btn primary" (click)="submitForm()" [disabled]="loading">
+        {{ selectedRecord ? 'Update Vehicle' : 'Save Vehicle' }}
+      </button>
+    </div>
+
+  </form>
+</div>

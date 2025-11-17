@@ -68,11 +68,13 @@ export const iconsData: Record<string, { name: string; icon: string;size?: strin
     { name: "Merge Booking", icon: "fas fa-object-group" },
     { name: "Operation Reports", icon: "fas fa-chart-line" },
     { name: "Shipment Instruction", icon: "fas fa-clipboard-list" },
-    { name: "Split Booking", icon: "fas fa-object-ungroup" }
+    { name: "Split Booking", icon: "fas fa-object-ungroup" },
+    {name:"Master Air Waybill",icon:"fas fa-plane"},
+    {name:"Service Job",icon:"fas fa-tools"}
   ],
   Account: [
     { name: "Chart of Accounts", icon: "fas fa-project-diagram" },
-    { name: "Currency Exchange", icon: "fas fa-exchange-alt" },
+    { name: "Currency Exchange", icon: "fas fa-rupee-sign" },
     { name: "Subledger Mapping", icon: "fas fa-sitemap" },
     { name: "Supplier TDS Mapping", icon: "fas fa-user-tag" },
     { name: "Tax Group", icon: "fas fa-percent" }

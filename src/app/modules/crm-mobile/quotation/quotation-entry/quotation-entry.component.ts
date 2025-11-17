@@ -228,7 +228,9 @@ export class QuotationEntryComponent implements OnInit {
     {value : "Counter", name : "Counter"}
   ]
 
-  
+  isLocked = true;
+
+
   
   tabs: string[] = ['Quotation', 'Route Details'];
   requiredFieldsToGetTariff = ['DepartmentMasterSid','POLSid','PODSid','effDate','expDate']
@@ -3291,6 +3293,11 @@ ${this.userData.userName}`;
       }
     });
   }
+
+  
+toggleLock() {
+  this.isLocked = !this.isLocked;
+}
 
   copyToCostUnit(routeIndex:number , carrierIndex:number , chargeIndex:number,unit){
     const ctrl = (this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup).get('CostChargeUomSid');

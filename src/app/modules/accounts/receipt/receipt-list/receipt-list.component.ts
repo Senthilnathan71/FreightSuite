@@ -24,6 +24,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptFilter, ReceiptListItem } from '../../models/receipt.model';
+import { AccountsService } from '../../accounts.service';
 
 /**
  * Receipt List Component
@@ -73,31 +74,31 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     columns: [],
     actions: [
       {
-        icon: 'fas fa-eye',
+        icon: 'fas fa-file',
         label: 'View',
         action: 'view',
         tooltip: 'View Receipt',
       },
       {
-        icon: 'fas fa-edit',
+        icon: 'fas fa-eye',
         label: 'Edit',
         action: 'edit',
         tooltip: 'Edit Receipt',
       },
-      {
-        icon: 'fas fa-undo',
-        label: 'Reverse',
-        action: 'reverse',
-        tooltip: 'Reverse Receipt',
-        class: 'text-warning',
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete Receipt',
-        class: 'text-danger',
-      }
+      // {
+      //   icon: 'fas fa-undo',
+      //   label: 'Reverse',
+      //   action: 'reverse',
+      //   tooltip: 'Reverse Receipt',
+      //   class: 'text-warning',
+      // },
+      // {
+      //   icon: 'fas fa-trash',
+      //   label: 'Delete',
+      //   action: 'delete',
+      //   tooltip: 'Delete Receipt',
+      //   class: 'text-danger',
+      // }
     ],
     selectable: false,
     multiSelect: false,
@@ -127,6 +128,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
 
   constructor(
     private receiptService: ReceiptService,
+    private accountService : AccountsService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
@@ -153,7 +155,6 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     this.initializeTableConfig();
     this.initializeModalDropdownItems();
     super.ngOnInit();
-    this.loadReceipts();
   }
 
   checkPermissions() {
@@ -161,7 +162,23 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
 
     if (currentMenuId && userRole) {
-      // TODO: Implement permission checking if needed
+      this.accountService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              key => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            // Re-initialize actions after permissions are available
+            this.initializeHeaderActions();
+            // Refresh table actions to apply conditions
+            this.tableConfig.actions = this.tableConfig.actions?.map(action => ({
+              ...action,
+              condition: action.condition
+            }));
+          },
+        });
     }
   }
 
@@ -170,15 +187,9 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   }
 
   protected searchItems(): Observable<any> {
+    this.tableLoading = true;
     this.spinner.show();
-    const filter: ReceiptFilter = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      VoucherNumber: this.filterValue.trim(),
-      DateFrom: undefined,
-      DateTo: undefined,
-    };
-    return this.receiptService.getReceipts(filter);
+    return this.receiptService.searchReceipts(this.getSearchParams());
   }
 
   protected getSearchParams(): SearchParams {
@@ -194,20 +205,27 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   }
 
   protected processSearchResults(response: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
 
     // Handle both array response and paginated response
-    const items = Array.isArray(response) ? response : (response.data?.items || response.data || []);
-
-    this.allItems = items.map((item: any) => ({
-      ...item,
-      VoucherDate: this.datePipe.transform(item?.VoucherDate),
-      Status: item.Status === 'A' ? 'Active' : 'Suspended'
-    }));
-
-    this.totalLengthOfCollection = Array.isArray(response) ? response.length : (response.data?.totalCount || this.allItems.length);
-    this.applySorting();
-    this.updateHeaderActionState();
+    if(response && response.status){
+      this.allItems = (response.data.items || []).map((item: any) => ({
+        ...item,
+        ListAmount : item.VoucherDetail[0]?.LocalAmount || 0,
+        CashOrBank : item.BankOrCash === 'C' ? 'Cash' : 'Bank',
+        VoucherDate: this.datePipe.transform(item?.VoucherDate),
+        PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
+        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+      }));
+      this.totalLengthOfCollection = response.data.totalCount || this.allItems.length;
+      this.applySorting();
+      this.updateHeaderActionState();
+    } else {
+      this.appSettingService.showError('Error searching receipts.');
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+    }
   }
 
   protected override handleSearchError(error: any): void {
@@ -282,7 +300,16 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         width: '130px'
       },
       {
-        key: 'CustomerName',
+        key: 'CashOrBank',
+        label: 'Cash or Bank',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '120px',
+      },
+      {
+        key: 'PartyName',
         label: 'Customer Name',
         sortable: true,
         filterable: true,
@@ -291,17 +318,8 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         width: '200px',
       },
       {
-        key: 'PaymentMode',
-        label: 'Payment Mode',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '120px',
-      },
-      {
-        key: 'TotalAmount',
-        label: 'Total Amount',
+        key: 'ListAmount',
+        label: 'Amount',
         sortable: true,
         filterable: true,
         visible: true,
@@ -309,8 +327,8 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         width: '130px',
       },
       {
-        key: 'TDSAmount',
-        label: 'TDS Amount',
+        key: 'CurrencyCode',
+        label: 'Currency',
         sortable: true,
         filterable: true,
         visible: true,
@@ -318,30 +336,12 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         width: '120px',
       },
       {
-        key: 'NetAmount',
-        label: 'Net Amount',
+        key: 'PostStatus',
+        label: 'Post Status',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'number',
-        width: '130px',
-      },
-      {
-        key: 'BranchName',
-        label: 'Branch',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '150px',
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Created By',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
         width: '130px',
       },
       {
@@ -489,7 +489,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
       VoucherNumber: this.filterValue?.trim() || '',
     };
 
-    this.receiptService.getReceipts(filter).subscribe({
+    this.receiptService.searchReceipts(filter).subscribe({
       next: (response: any) => {
         // Handle both array response and object with data property
         const receipts = Array.isArray(response) ? response : (response.data || []);
@@ -499,6 +499,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         this.totalLengthOfCollection = receipts.length;
         this.allItems = this.results.map(item => ({
           ...item,
+          PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
           VoucherDate: this.datePipe.transform(item.VoucherDate),
           Status: item.Status === 'A' ? 'Active' : 'Suspended'
         }));

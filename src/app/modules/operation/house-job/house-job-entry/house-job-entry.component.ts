@@ -37,6 +37,19 @@ import { BookingUploadComponent } from '../../booking/booking-upload/booking-upl
 import { BookingData } from '../../booking/excel-parser.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
+import { CargoArrivalComponent } from '../report/cargo-arrival/cargo-arrival.component';
+import { HblComponent } from '../report/HBL/hbl/hbl.component';
+import { ImdemintyComponent } from '../report/imdeminty/imdeminty.component';
+import { CommericalInvoiceComponent } from '../report/commerical-invoice/commerical-invoice.component';
+import { CertificateOfOriginComponent } from '../report/certificate-of-origin/certificate-of-origin.component';
+import { ShipmentComponent } from '../report/shipment/shipment.component';
+import { DeliveryOrderComponent } from '../report/delivery-order/delivery-order.component';
+import { BoeEntryComponent } from '../boe-entry/boe-entry.component';
+import { ReleaseLetterComponent } from '../report/release-letter/release-letter.component';
+import { ReleaseOrderComponent } from '../report/release-order/release-order.component';
+import { VehicleComponent } from '../vehicle/vehicle.component';
+import { CustomsComponent } from '../customs/customs.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -86,7 +99,10 @@ type Html2PdfOptions = {
     EmailEntryComponent,
     FollowUpComponent,
     SearchableDropdown,
-    NgbDropdownModule
+    NgbDropdownModule,
+    BoeEntryComponent,
+    VehicleComponent,
+    CustomsComponent
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -97,6 +113,7 @@ type Html2PdfOptions = {
   ],
 })
 export class HouseJobEntryComponent  implements OnInit {
+
 
 
   /**
@@ -110,6 +127,14 @@ export class HouseJobEntryComponent  implements OnInit {
   parsedBookings: BookingData[] = [];
   showParsedData = false;
   uploadResult: any = null;
+  decimalAfterPrecision = 3;
+  digitsAfterDecimal = 3;
+boeDataArray: any[] = [];        // for BOE data
+resetTriggerBOE: boolean = false; // trigger flag for reset
+vehicleDataArray: any[] = [];        // for BOE data
+resetTriggerVehicle: boolean = false; // trigger flag for reset
+customsDataArray: any[] = [];        // for BOE data
+resetTriggerCustoms: boolean = false; // trigger flag for reset
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
@@ -186,6 +211,7 @@ auditLogs: any[] = []; // Stores audit logs
     labelFields: ['currencyCode'],
   };
 
+  commonFormValue:any
   houseJobForm !: FormGroup;
   modeOfTransport = [
     { id: 1, name: 'Rail' },
@@ -239,6 +265,11 @@ auditLogs: any[] = []; // Stores audit logs
   currencyList: any[] = [];
   imcoList: any[] = [];
   uomList: any[] = [];
+    measurementUnitList =[
+    { id: 1, name: 'm' },
+    { id: 2, name: 'cm' },
+    { id: 3, name: 'inch'}
+  ]
   otherForm !: FormGroup;
 
   // Variable Declaration - Connection Part
@@ -262,7 +293,13 @@ auditLogs: any[] = []; // Stores audit logs
   today : any;
   minDate : any;
   currentDate = new Date();
-
+  housejobData:any;
+  departments: any[] = [];
+  DepartmentMasterSid: number;
+  amountInWords: string = '';
+  customerWiseSummary : any;
+    profitSummary : any;
+      chargeList:any[]=[];
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
     { id: 2, name: 'FCL' },
@@ -313,11 +350,14 @@ auditLogs: any[] = []; // Stores audit logs
 
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
-    // { name: 'Product', icon: 'fas fa-box' },
+    // { name: 'BOE', icon: 'fas fa-box' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
+{ name: 'BOE', icon: 'fas fa-file-invoice' },
+{ name: 'Vehicle', icon: 'fas fa-truck' },
+{ name: 'Customs', icon: 'fas fa-passport' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     // { name: 'Mail', icon: 'fas fa-envelope' },
@@ -344,7 +384,8 @@ auditLogs: any[] = []; // Stores audit logs
     private calendar : NgbCalendar,
     private exportExcelService: ExcelExportService,
     private datePipe : CustomDatePipe,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();
    }
@@ -365,13 +406,13 @@ auditLogs: any[] = []; // Stores audit logs
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentCompany?.BranchMasterSid,
     }
-
+    
     this.initBookingForm();
     this.initCargoForm();
     this.initOtherForm();
     this.initDetailsForm();
     this.spinner.show();
-  this.loadHeaderMandatoryParts().subscribe(() => {
+    this.loadHeaderMandatoryParts().subscribe(() => {
     this.loadHeaderLookups().subscribe(() => {
       this.currentRoute.paramMap.subscribe((param) => {
         this.HouseJobSid = +param.get('id');
@@ -383,6 +424,9 @@ auditLogs: any[] = []; // Stores audit logs
         }
       });
       this.loadCargoLookups();
+      if (!this.productLookupsLoaded) {
+      this.loadProductLookups();
+      }
       this.loadOtherLookups();
     });
     this.spinner.hide();
@@ -460,18 +504,52 @@ auditLogs: any[] = []; // Stores audit logs
       GrossWeight: [''],
       NetWeight: [''],
       Volume: [''],
+      Volumetric: [''],
       ChargeableWeight: [''],
       NoOfPackage: [''],
       ShipmentTerms: [null],
       MovementType: [null],
       FreightTerms: [null],
+      CommodityDescription:[],
+      MarksAndNumber:[],
       ModeOfTransport : [null],
       StuffingAt: ['Dock']
     })
+    this.cargoForm.get('Volume')?.valueChanges.subscribe(() => {
+    this.calculateChargeableWeight();
+  });
+    this.cargoForm.get('Volumetric')?.valueChanges.subscribe(() => {
+    this.calculateChargeableWeight(); // Add this
+  });
     this.cargoForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
     })
   }
+
+  private calculateChargeableWeight(): void {
+  const volumetric = Number(this.c['Volumetric']?.value) || 0;
+  const volume  = Number(this.c['Volume']?.value) || 0;
+  
+  let chargeableWeight = 0;
+  
+  // Chargeable Weight is the greater of Volumetric or Gross Weight
+  if (volumetric > volume ) {
+    chargeableWeight = volumetric;
+  } else {
+    chargeableWeight = volume;
+  }
+  
+  // Update the chargeable weight field
+  if (chargeableWeight > 0) {
+    this.c['ChargeableWeight']?.setValue(
+      Number(chargeableWeight.toFixed(this.decimalAfterPrecision)), 
+      { emitEvent: false }
+    );
+  } else {
+    this.c['ChargeableWeight']?.setValue('', { emitEvent: false });
+  }
+}
+
 
   onIncoChange(selectedInco: any): void {
     if (!selectedInco) {
@@ -484,14 +562,28 @@ auditLogs: any[] = []; // Stores audit logs
   } else if (typeof selectedInco === 'string') {
     selectedIncoTerm = this.incoList.find(inco => inco.IncoName === selectedInco);
   }
-  if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
-    // Direct mapping since OceanFreight is only Prepaid or Collect
-    const freightValue = selectedIncoTerm.OceanFreight; 
-    // Update FreightTerms field
-    this.houseJobForm.patchValue({
-      FreightTerms: freightValue
-    }, { emitEvent: false });
-    console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms set to: ${freightValue}`);
+  if (this.selectedDepartmentType === "AIR") {
+    if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
+      const freightValue = selectedIncoTerm.OceanFreight;
+      
+      // Only update FreightTerms if it's not "Collect" (keep as Prepaid for AIR)
+      if (freightValue !== 'Collect') {
+        this.houseJobForm.patchValue({
+          FreightTerms: freightValue
+        }, { emitEvent: false });
+      }
+      // If it's Collect, don't change from Prepaid (default for AIR)
+      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms remains as: ${this.b['FreightTerms']?.value}`);
+    }
+  } else {
+    // For non-AIR departments, use the original logic
+    if (selectedIncoTerm && selectedIncoTerm.OceanFreight) {
+      const freightValue = selectedIncoTerm.OceanFreight;
+      this.houseJobForm.patchValue({
+        FreightTerms: freightValue
+      }, { emitEvent: false });
+      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightTerms set to: ${freightValue}`);
+    }
   }
 }
 
@@ -507,7 +599,8 @@ auditLogs: any[] = []; // Stores audit logs
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
       NetWeight: ['', [Validators.required]],
-      Volume: ['', [Validators.required]],
+      Volume: [''],
+      Volumetric: [''],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
@@ -519,8 +612,96 @@ auditLogs: any[] = []; // Stores audit logs
       CargoRecDate : [null],
       ContainerNo : [''],
       MarksAndNumbers : ['']
-    })
+    });
+    this.setupImmediateCBMCalculation();
+    this.setupImmediateVolumetricCalculation(this.productForm)
   }
+
+  private setupImmediateCBMCalculation() {
+  const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensionFields.forEach(field => {
+    this.productForm.get(field)?.valueChanges.subscribe(() => {
+      // Calculate immediately on every change
+      this.calculateCBM();
+    });
+  });
+}
+
+getUomName(uomId: number): string {
+  const uom = this.measurementUnitList.find(item => item.id === uomId);
+  return uom ? uom.name : '-';
+}
+
+private calculateCBM() {
+  const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
+  const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
+  const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
+  const height = this.parseFloatSafe(this.productForm.get('Height')?.value);
+  const uomMasterSid = this.productForm.get('UomMasterSid')?.value;
+  
+  
+  // Calculate immediately if we have at least some values
+  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+    // const cbm = this.volumetricAndCbmCalculationService.calculateCBM(externlQty, length, width, height, uomMasterSid);
+    let cbm = this.volumetricAndCbmCalculationService.calculateCBM(
+      externlQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
+    );
+    
+    // Update the Volume field immediately
+    const calculatedValue = cbm > 0 ? cbm : '';
+    this.productForm.get('Volume')?.setValue(calculatedValue, { emitEvent: false });
+  } else {
+    // Clear if incomplete data
+    this.productForm.get('Volume')?.setValue('', { emitEvent: false });
+  }
+}
+
+private parseFloatSafe(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
+  const calculateVolumetric = () => {
+    const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
+    const length = Number(productForm.get('Length')?.value) || 0;
+    const width = Number(productForm.get('Width')?.value) || 0;
+    const height = Number(productForm.get('Height')?.value) || 0;
+    const uomMasterSid = productForm.get('UomMasterSid')?.value;
+    
+    // Calculate if we have at least one dimension and quantity
+    if (externlQty > 0 && (length > 0 || width > 0 || height > 0) && uomMasterSid) {
+      let volumetric = this.volumetricAndCbmCalculationService.calculateVolumetric(
+        externlQty, length, width, height, uomMasterSid, 
+        this.selectedFCLLCL as 'LCL' | 'AIR', 
+        this.digitsAfterDecimal
+      );
+      
+      // Update volumetric field
+      if (volumetric > 0) {
+        productForm.get('Volumetric')?.setValue(volumetric, 
+          { emitEvent: false }
+        );
+      } else {
+        productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+      }
+    } else {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
+  };
+
+  // Listen to input events for immediate calculation
+  const dimensions = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensions.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      calculateVolumetric();
+    });
+  });
+}
+
 
   initOtherForm() {
     this.otherForm = this.fb.group({
@@ -554,7 +735,9 @@ auditLogs: any[] = []; // Stores audit logs
       SwitchBLConsignee: [null],
       SwitchLocation: [''],
       CarrierBookingRef : [''],
-      CarrierBookingDate : ['']
+      CarrierBookingDate : [''],
+      DONo : [''],
+      DODate : ['']
     })
   }
 
@@ -607,6 +790,7 @@ auditLogs: any[] = []; // Stores audit logs
       GrossWeight: [data?.GrossWeight || '', [Validators.required]],
       NetWeight: [data?.NetWeight || '', [Validators.required]],
       Volume: [data?.Volume || '', [Validators.required]],
+      Volumetric: [data?.Volumetric|| ''],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass : [data?.ImcoClass || null],
       UnNo : [data?.UnNo || ''],
@@ -618,9 +802,86 @@ auditLogs: any[] = []; // Stores audit logs
       CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null],
       ContainerNo : [data?.ContainerNo || ''],
       MarksAndNumbers : [data?.MarksAndNumbers || '']
-    })
+    });
+    this.setupProductFormImmediateCalculation(productForm);
+    this.setupImmediateVolumetricCalculationForFormArray(productForm);
     return productForm;
   }
+
+   private setupProductFormImmediateCalculation(productForm: FormGroup) {
+  const dimensionFields = ['ExternlQty', 'Length', 'Width', 'Height', 'UomMasterSid'];
+  
+  dimensionFields.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      this.calculateProductFormCBMAndVolumetric(productForm);
+    });
+  });
+}
+
+private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
+  const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
+  const length = this.parseFloatSafe(productForm.get('Length')?.value);
+  const width = this.parseFloatSafe(productForm.get('Width')?.value);
+  const height = this.parseFloatSafe(productForm.get('Height')?.value);
+  const uomMasterSid = productForm.get('UomMasterSid')?.value;
+
+  // Calculate both CBM and Volumetric when UOM or dimensions change
+  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+    const { cbm, volumetric } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
+      externlQty, length, width, height, uomMasterSid,
+      this.selectedFCLLCL as 'LCL' | 'AIR',
+      this.digitsAfterDecimal
+    );
+    
+    // Update both fields
+    productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+    productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    
+    // Update main cargo form totals
+    setTimeout(() => {
+      this.handleProductRelatedCalculation();
+    }, 100);
+  } else {
+    productForm.get('Volume')?.setValue('', { emitEvent: false });
+    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+  }
+}
+
+private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup): void {
+  const calculateVolumetric = () => {
+    const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
+    const length = Number(productForm.get('Length')?.value) || 0;
+    const width = Number(productForm.get('Width')?.value) || 0;
+    const height = Number(productForm.get('Height')?.value) || 0;
+    const uomMasterSid = productForm.get('UomMasterSid')?.value;
+    
+    if (externlQty > 0 && (length > 0 || width > 0 || height > 0) && uomMasterSid) {
+      let volumetric = this.volumetricAndCbmCalculationService.calculateVolumetric(
+        externlQty, length, width, height, uomMasterSid, 
+        this.selectedFCLLCL as 'LCL' | 'AIR', 
+        this.digitsAfterDecimal
+      );;
+      
+      if (volumetric > 0) {
+        productForm.get('Volumetric')?.setValue(volumetric, 
+          { emitEvent: false }
+        );
+      } else {
+        productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+      }
+    } else {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
+  };
+
+  const dimensions = ['ExternlQty', 'Length', 'Width', 'Height'];
+  
+  dimensions.forEach(field => {
+    productForm.get(field)?.valueChanges.subscribe(() => {
+      calculateVolumetric();
+    });
+  });
+}
 
   createBookingConnectionGroup(data?: any): FormGroup {
     const connectionForm = this.fb.group({
@@ -758,9 +1019,31 @@ loadHeaderLookups() {
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
-          this.patchValues(resp.data);
+          this.patchValues(resp.data);   
+          this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
+          this.housejobData=resp.data;
+          console.log("House Job",this.housejobData)
           this.minDate = undefined;
+
+        // ✅ Update the formData for child components
+        this.commonFormValue = {
+          HouseJobSid: resp.data.HouseJobSid, // 👈 from backend response
+          CompanyMasterSid: resp.data.CompanyMasterSid,
+          BranchMasterSid: resp.data.BranchMasterSid,
+          CreatedBy: this.userData['userEmail'],
+          UpdatedBy: this.userData['userEmail']
+        };
+
+          // ✅ Extract BOE records for the current house job
+        this.boeDataArray = resp.data.houseJobBOE || [];
+        this.vehicleDataArray = resp.data.houseJobVehicle || [];
+        this.customsDataArray = resp.data.houseJobCustoms || [];
+
+
+
+        // ✅ Trigger reload for child components like BOE
+        this.resetTriggerBOE = true;
         }
       }
     )
@@ -840,9 +1123,12 @@ loadHeaderLookups() {
       GrossWeight: cargoData?.GrossWeight,
       NetWeight: cargoData?.NetWeight,
       Volume: cargoData?.Volume,
+      Volumetric: cargoData?.Volumetric,
       ChargeableWeight: cargoData?.ChargeableWeight,
       NoOfPackage: cargoData?.NoOfPackage,
       ShipmentTerms: cargoData?.ShipmentTerms,
+      CommodityDescription: cargoData?.CommodityDescription,
+      MarksAndNumber: cargoData?.MarksAndNumber,
       MovementType: cargoData?.MovementType,
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport : cargoData?.ModeOfTransport,
@@ -881,7 +1167,9 @@ loadHeaderLookups() {
       SwitchBLConsignee : otherData?.SwitchBLConsignee,
       SwitchLocation  : otherData?.SwitchLocation,
       CarrierBookingRef : otherData?.CarrierBookingRef,
-      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
+      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
+      DONo: otherData?.DONo || '',
+      DODate: otherData?.DODate || '',
     })
 
     this.bookingProducts.clear();
@@ -892,7 +1180,9 @@ loadHeaderLookups() {
       this.bookingProducts.push(formWithData);
     }
     this.updateProductPagination();
-    this.handleProductRelatedCalculation();
+    if(productsFromResponse.length>0){
+      this.handleProductRelatedCalculation();
+    }
 
     this.bookingConnectionsArr = (response.Connections || []).map(connection => {
       return {
@@ -908,7 +1198,8 @@ loadHeaderLookups() {
       status : br.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
-
+    this.calculateChargeWiseProfit();
+    this.calculateCustomerWiseAmount();
   }
 
   onContainerTypeChange(containerType : any){
@@ -921,10 +1212,6 @@ loadHeaderLookups() {
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
     this.initProductForm();
-    if (!this.productLookupsLoaded) {
-      this.loadProductLookups();
-      this.loadAllMasterJobContainers();
-    }
     if (data) {
       this.productForm.patchValue({
         HouseJobProductSid: data?.HouseJobProductSid,
@@ -936,6 +1223,7 @@ loadHeaderLookups() {
         GrossWeight: data?.GrossWeight,
         NetWeight: data?.NetWeight,
         Volume: data?.Volume,
+        Volumetric: data?.Volumetric,
         IsHaz: data?.IsHaz,
         ImcoClass: data?.ImcoClass,
         UnNo: data?.UnNo,
@@ -1038,6 +1326,11 @@ loadHeaderLookups() {
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    console.log('=== FORM DEBUG INFO ===');
+console.log('CargoCurrency from form:', otherFormValue.CargoCurrency);
+console.log('DoNo from form:', otherFormValue?.DONo);
+console.log('DoDate from form:', otherFormValue?.DODate);
+console.log('Full otherForm value:', otherFormValue);
 
     const payload = {
       MasterJobSid : houseJobFormValue.MasterJobSid,
@@ -1094,14 +1387,18 @@ loadHeaderLookups() {
         GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
         NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
         Volume: parseFloat(cargoFormValue.Volume) || 0,
+        Volumetric: parseFloat(cargoFormValue.Volumetric) || 0,
         ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
         NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
         ShipmentTerms: cargoFormValue.ShipmentTerms || null,
+         CommodityDescription: cargoFormValue.CommodityDescription || null,
+          MarksAndNumber: cargoFormValue.MarksAndNumber || null,
         MovementType: cargoFormValue.MovementType || null,
         FreightTerms: cargoFormValue.FreightTerms || null,
         ModeOfTransport : cargoFormValue.ModeOfTransport || null,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
       },
+      
       houseJobOthers: {
         HouseJobOthersSid : otherFormValue.HouseJobOthersSid || null,
         CustomerRefNo: otherFormValue.CustomerRefNo || '',
@@ -1121,7 +1418,7 @@ loadHeaderLookups() {
         CHAName: otherFormValue.CHAName || '',
         PickupAddress: otherFormValue.PickupAddress || '',
         DeliveryAddress: otherFormValue.DeliveryAddress || '',
-        CargoCurrency: otherFormValue.CargoCurrency || null,
+        CargoCurrency: otherFormValue.CargoCurrency?.currencyCode || null,
         CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
         SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
         BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
@@ -1133,7 +1430,9 @@ loadHeaderLookups() {
         SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
         SwitchLocation: otherFormValue?.SwitchLocation,
         CarrierBookingRef : otherFormValue?.CarrierBookingRef,
-        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
+        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
+        DONo: otherFormValue?.DoNo || otherFormValue?.DONo || '',
+       DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,
       },
       houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
         HouseJobProductSid : product.HouseJobProductSid || null,
@@ -1145,6 +1444,7 @@ loadHeaderLookups() {
         GrossWeight: parseFloat(product.GrossWeight) || 0,
         NetWeight: parseFloat(product.NetWeight) || 0,
         Volume: parseFloat(product.Volume) || 0,
+        Volumetric: parseFloat(product.Volumetric) || 0,
         IsHaz: product.IsHaz ? 'Y' : 'N',
         ImcoClass: product.ImcoClass || '',
         UnNo: product.UnNo || '',
@@ -1230,6 +1530,18 @@ loadHeaderLookups() {
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+    if (this.selectedDepartmentType === "AIR") {
+    // Set IncoTerms to CIF
+    this.b['IncoTerms']?.setValue('CIF');
+    
+    // Set FreightTerms to Prepaid
+    this.b['FreightTerms']?.setValue('Prepaid');
+    
+    // Set Mode of Transport to Flight
+    this.c['ModeOfTransport']?.setValue('Flight');
+  } else {
+    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+  }
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock');
       this.cargoForm.get('StuffingAt')?.disable();
@@ -1648,6 +1960,8 @@ loadHeaderLookups() {
       this.c['GrossWeight']?.enable(); this.c['GrossWeight']?.setValue(0);
       this.c['NetWeight']?.enable(); this.c['NetWeight']?.setValue(0);
       this.c['Volume']?.enable(); this.c['Volume']?.setValue(0);
+      this.c['Volumetric']?.enable(); this.c['Volumetric']?.setValue(0);
+      this.c['ChargeableWeight']?.enable(); this.c['ChargeableWeight']?.setValue(0);
       return;
     }
 
@@ -1655,6 +1969,7 @@ loadHeaderLookups() {
     let totalGrossWeight = 0;
     let totalNetWeight = 0;
     let totalVolume = 0;
+    let totalVolumetric: any = 0;
 
     let productValue = this.bookingProducts.getRawValue() || [];
     productValue.forEach(product => {
@@ -1662,6 +1977,7 @@ loadHeaderLookups() {
       totalGrossWeight += Number(product.GrossWeight) || 0;
       totalNetWeight += Number(product.NetWeight) || 0;
       totalVolume += Number(product.Volume) || 0;
+      totalVolumetric += Number(product.Volumetric) || 0
     });
 
     this.c['NoOfPackage']?.setValue(totalNoOfPkg);
@@ -1672,6 +1988,9 @@ loadHeaderLookups() {
     this.c['NetWeight']?.disable();
     this.c['Volume']?.setValue(totalVolume);
     this.c['Volume']?.disable();
+    this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
+    this.c['Volumetric']?.disable();
+    this.calculateChargeableWeight();
   }
 
   // ************ END OF PRODUCT RELATED FUNCTIONS *************
@@ -2266,31 +2585,559 @@ ${this.userData['userName']}`;
     this.currentFollowUpFormValue = event.formData || null;
   }
 
-     reportDeliveryOrder(content: TemplateRef<any>) {
-        this.modalService.open(content, {
+  reportDeliveryOrder() {
+    const modalRef = this.modalService.open(DeliveryOrderComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.uomList = this.uomList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+        modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+  }
+
+
+  reportCargoArrival(withOrWithoutCharge : boolean) {
+    
+    const modalRef = this.modalService.open(CargoArrivalComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.withOrWithoutCharge = withOrWithoutCharge;
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.uomList = this.uomList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+  }
+
+       reportBill() {
+        const modalRef = this.modalService.open(HblComponent,{
           size: 'xl',
           scrollable: true,
-        });
+        })
+          modalRef.componentInstance.housejobData = this.housejobData || [];
+          modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+          modalRef.componentInstance.agentList = this.agentList || [];
       }
 
-         reportCargoArrival(content: TemplateRef<any>) {
-        this.modalService.open(content, {
-          size: 'xl',
-          scrollable: true,
-        });
-      }
-
-       reportBill(content: TemplateRef<any>) {
-        this.modalService.open(content, {
-          size: 'xl',
-          scrollable: true,
-        });
-      }
-
-        reportShipmentProfit(content: TemplateRef<any>) {
-      this.modalService.open(content, {
-        size: 'xl',
+        reportShipmentProfit() {
+          const modalRef=this.modalService.open(ShipmentComponent,{
+             size: 'xl',
         scrollable: true,
-      });
+          })
+        modalRef.componentInstance.housejobData = this.housejobData || [];
+        modalRef.componentInstance.chargeList = this.chargeList || [];
+          modalRef.componentInstance.profitSummary = this.profitSummary || [];
     }
+
+  reportIndeminty() {
+    const modalRef = this.modalService.open(ImdemintyComponent,{
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+  }
+     reportCommericalInvoice() {
+      const modalRef=this.modalService.open(CommericalInvoiceComponent,{
+         size: 'xl',
+        scrollable: true,
+      })
+       modalRef.componentInstance.housejobData = this.housejobData || [];
+        modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    }
+       reportCertificateofOrgin() {
+        const modalRef=this.modalService.open(CertificateOfOriginComponent,{
+          size: 'xl',
+      scrollable: true,
+        })
+        modalRef.componentInstance.housejobData = this.housejobData || [];
+  }
+
+   reportReleaseLetter() {
+        const modalRef = this.modalService.open(ReleaseLetterComponent, {
+          size: 'xl',
+          scrollable: true,
+        });
+        modalRef.componentInstance.housejobData= this.housejobData || [];
+        // modalRef.componentInstance.cfsList=this.cfsList || [];
+        modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+        modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+      }
+
+         reportReleaseOrder() {
+        const modalRef = this.modalService.open(ReleaseOrderComponent, {
+          size: 'xl',
+          scrollable: true,
+        });
+        modalRef.componentInstance.housejobData= this.housejobData || [];
+        // modalRef.componentInstance.cfsList=this.cfsList || [];
+        modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+        modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+         modalRef.componentInstance.salesmanList = this.salesmanList || [];
+      }
+  
+// Helper Funstion 
+
+ getDepartmentName(DepartmentMasterSid: number) {
+  if (!DepartmentMasterSid || !this.departmentList || this.departmentList.length === 0) return '';
+  const department = this.departmentList.find(dep => dep.DepartmentMasterSid === DepartmentMasterSid);
+  return department ? department.departmentName : '';
+}
+  
+  getUnitCode(ChargeUomSid: number) {
+    console.log("GETUNITCODE",{
+      currentUOMId : ChargeUomSid,
+      uomList : this.uomList
+    })
+    if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
+      return '';
+    }
+    const uom = this.uomList.find(item => item.UOMMasterSid === ChargeUomSid);
+    console.log(uom);
+    return uom ? uom.UOMCode : '';
+}
+
+getCurrencyCode(revenueCurrencyMasterSid: number): string {
+  const currency = this.currencyList.find(
+    c => c.CurrencyMasterSid === revenueCurrencyMasterSid
+  );
+  return currency ? currency.currencyCode : '';  
+}
+
+getCurrencyCodeCost(CostCurrencyMasterSid: number): string {
+  const currency = this.currencyList.find(
+    c => c.CurrencyMasterSid === CostCurrencyMasterSid
+  );
+  return currency ? currency.currencyCode : '';  
+}
+
+// Total Amt
+
+getTotalLocalAmount(): number {
+  return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueLocalAmount || rate.LocalAmt || 0), 0);
+}
+
+getTotalAmount(): number {
+  return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueAmount || rate.Amt || 0), 0);
+}
+
+
+
+get totalGrossWeight(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.GrossWeight || 0), 0) || 0;
+}
+
+get totalVolume(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.Volume || 0), 0) || 0;
+}
+
+get totalChargeableWeight(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.ChargeableWeight || 0), 0) || 0;
+}
+
+get totalNetWeight(): number {
+  return this.housejobData?.Cargo?.reduce((sum, c) => sum + Number(c.NetWeight || 0), 0) || 0;
+}
+
+
+
+get totalSales() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalSales) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get totalCost() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.totalCost) || 0;
+    return sum + value;
+  }, 0);
+}
+
+get profit() {
+  if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+    return 0;
+  }
+
+  return this.profitSummary.reduce((sum, c) => {
+    const value = Number(c.profit) || 0;
+    return sum + value;
+  }, 0);
+}
+
+ calculateChargeWiseProfit() {
+    this.profitSummary = [];
+    const rateFormValue = this.rateResult|| [];
+    const data = [...rateFormValue];
+
+    data.forEach(item => {
+      console.log(item);
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+      const chargeName = charge ? charge.chargeName : "Unknown";
+
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
+
+      // if (item.CostRevenue === "Cost") {
+        existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
+
+      // if (item.CostRevenue === "Revenue") {
+        existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
+
+    this.profitSummary.forEach(p => {
+      let profit: number;
+      let profitPercent: number;
+
+      if (p.totalSales > p.totalCost) {
+        profit = p.totalSales - p.totalCost;
+        profitPercent = p.totalSales !== 0 ? (profit / p.totalSales) * 100 : 0;
+      } else {
+        profit = -(p.totalCost - p.totalSales);
+        profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
+      }
+
+      p.profit = profit.toFixed(2);
+      p.profitPercent = profitPercent.toFixed(2) + "%";
+      p.totalSales = p.totalSales.toFixed(2);
+      p.totalCost = p.totalCost.toFixed(2);
+    });
+
+    console.log(this.profitSummary);
+  }
+
+  calculateCustomerWiseAmount() {
+    this.customerWiseSummary = {};
+    const data = this.rateResult || [];
+
+    const costHmap = new Map<number, CustomerProfit>();
+    const revenueHmap = new Map<number, CustomerProfit>();
+
+    // --- COST SUMMARY ---
+    data.forEach(item => {
+      const costAmt = parseFloat(item.CostLocalAmount) || 0;
+      const customerName = item.costCustomerMaster?.CustomerName || "";
+      const customerId = item.costCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = costHmap.get(customerId);
+      const amtChange = item.CostDrCr === "D" ? costAmt : -costAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        costHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- REVENUE SUMMARY ---
+    data.forEach(item => {
+      const revenueAmt = parseFloat(item.RevenueLocalAmount) || 0;
+      const customerName = item.revenueCustomerMaster?.CustomerName || "";
+      const customerId = item.revenueCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = revenueHmap.get(customerId);
+      const amtChange = item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        revenueHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- LOGS & ASSIGNMENT ---
+    console.log("Cost Summary:", costHmap);
+    console.log("Revenue Summary:", revenueHmap);
+
+    this.customerWiseSummary = {
+      cost: Array.from(costHmap.values()),
+      revenue: Array.from(revenueHmap.values())
+    };
+  }
+
+getChargeName(ChargeMasterSid: number): string {
+  if (!ChargeMasterSid) return 'N/A';
+  if (!this.chargeList?.length) return 'N/A';
+
+  const charge = this.chargeList.find(c =>
+    c.ChargeMasterSid === ChargeMasterSid || c.ChargeMasterSID === ChargeMasterSid
+  );
+
+  console.log(charge,"Charge Name")
+  return charge ? (charge.chargeName || charge.chargeCode || charge.chargeCode ) : 'N/A';
+}
+
+ getPCurrRevenue(chargeData: any): string {
+    if (!chargeData) return '-';
+    
+    const localAmount = parseFloat(chargeData.RevenueLocalAmount || '0');
+    const exchangeRate = parseFloat(chargeData.RevenueExchangeRate || '1');
+    
+    if (exchangeRate === 0) return '0.00';
+    
+    const usdAmount = localAmount / exchangeRate;
+    return this.formatNumber(usdAmount);
+  }
+
+  // P.Curr Expense (in USD)
+  getPCurrExpense(chargeData: any): string {
+    if (!chargeData) return '-';
+    
+    const localAmount = parseFloat(chargeData.CostLocalAmount || '0');
+    const exchangeRate = parseFloat(chargeData.CostExchangeRate || '1');
+    
+    if (exchangeRate === 0) return '0.00';
+    
+    const usdAmount = localAmount / exchangeRate;
+    return this.formatNumber(usdAmount);
+  }
+
+  // P.Curr GP (Gross Profit in USD)
+  getPCurrGP(chargeData: any): string {
+    const revenue = parseFloat(this.getPCurrRevenue(chargeData)) || 0;
+    const expense = parseFloat(this.getPCurrExpense(chargeData)) || 0;
+    const gp = revenue - expense;
+    return this.formatNumber(gp);
+  }
+
+  // Local P.Revenue (in Local Currency)
+  getLocalRevenue(chargeData: any): string {
+    if (!chargeData) return '-';
+    return this.formatNumber(parseFloat(chargeData.RevenueLocalAmount || '0'));
+  }
+
+  // Local P.Expense (in Local Currency)
+  getLocalExpense(chargeData: any): string {
+    if (!chargeData) return '-';
+    return this.formatNumber(parseFloat(chargeData.CostLocalAmount || '0'));
+  }
+
+  // Local P.GP (Gross Profit in Local Currency)
+  getLocalGP(chargeData: any): string {
+    const revenue = parseFloat(this.getLocalRevenue(chargeData)) || 0;
+    const expense = parseFloat(this.getLocalExpense(chargeData)) || 0;
+    const gp = revenue - expense;
+    return this.formatNumber(gp);
+  }
+
+  // Helper function to format numbers
+  private formatNumber(value: number): string {
+    if (isNaN(value)) return '0.00';
+    return value.toFixed(2);
+  }
+
+
+calculateTotals(): any {
+  if (!this.housejobData?.costRevenueCharges) {
+    return {
+      totalPCurrRevenue: 0,
+      totalPCurrExpense: 0,
+      totalPCurrGP: 0,
+      totalLocalRevenue: 0,
+      totalLocalExpense: 0,
+      totalLocalGP: 0
+    };
+  }
+
+  let totalPCurrRevenue = 0;
+  let totalPCurrExpense = 0;
+  let totalLocalRevenue = 0;
+  let totalLocalExpense = 0;
+
+  this.housejobData.costRevenueCharges.forEach((chargeItem: any) => {
+    totalPCurrRevenue += parseFloat(this.getPCurrRevenue(chargeItem)) || 0;
+    totalPCurrExpense += parseFloat(this.getPCurrExpense(chargeItem)) || 0;
+    totalLocalRevenue += parseFloat(this.getLocalRevenue(chargeItem)) || 0;
+    totalLocalExpense += parseFloat(this.getLocalExpense(chargeItem)) || 0;
+  });
+
+  return {
+    totalPCurrRevenue: this.formatNumber(totalPCurrRevenue),
+    totalPCurrExpense: this.formatNumber(totalPCurrExpense),
+    totalPCurrGP: this.formatNumber(totalPCurrRevenue - totalPCurrExpense),
+    totalLocalRevenue: this.formatNumber(totalLocalRevenue),
+    totalLocalExpense: this.formatNumber(totalLocalExpense),
+    totalLocalGP: this.formatNumber(totalLocalRevenue - totalLocalExpense)
+  };
+}
+
+handleBOEChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
+
+handleVehicleChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
+handleCustomsChange(event: any) {
+  console.log('BOE Data from child:', event);
+  // You can process and save event data here
+}
+
+ getTotalLocalRevenuAmount(): number {
+    
+    return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueRate  || 0), 0);
+  }
+ 
+    TotalLocalAmount(): number {
+         return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueAmount  || 0), 0);
+   
+  }
+ 
+    getCostAmount(): number {
+        return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.CostRate  || 0), 0);
+   
+  }
+ 
+   CostAmount(): number {
+       return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.CostAmount  || 0), 0);
+   
+  }
+ 
+  
+ 
+
+  getSealNo(containerNo:string){
+    if(!containerNo || this.masterJobContainers.length === 0){
+      return "";
+    }
+    const sealNo = this.masterJobContainers.find(con => con.ContainerNumber === containerNo)?.LineSeal || '';
+    return sealNo;
+  }
+
+  getContainerName(ContainerTypeMasterSid:number){
+    console.log(ContainerTypeMasterSid);
+    if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
+      return "";
+    }
+    console.log("HERE",this.containerTypeList)
+    return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
+  }
+
+
+getTotalPerUnit(): number {
+  return (this.housejobData?.costRevenueCharges || [])
+    .reduce((sum, rate) => sum + Number(rate.RevenueRate || rate.LocalAmt || 0), 0);
+}
+
+grossAmount(): number {
+ 
+  const cargoList = this.housejobData?.Cargo || [];
+ 
+  return cargoList.reduce((sum: number, item: any) => {
+ 
+    const weight = parseFloat(item?.GrossWeight) || 0;
+ 
+    return sum + weight;
+ 
+  }, 0);
+ 
+}
+ 
+ 
+ 
+volumeAmount(): number {
+ 
+  const cargoList = this.housejobData?.Cargo || [];
+ 
+  return cargoList.reduce((sum: number, item: any) => {
+ 
+    const volume = parseFloat(item?.Volume) || 0;
+ 
+    return sum + volume;
+ 
+  }, 0);
+ 
+}
+ formatVesselVoyage(vessel?: string, voyage?: string): string {
+ 
+  // both vessel and voyage present
+ 
+  if (vessel && voyage) {
+ 
+    return `: ${vessel} / ${voyage}`;
+ 
+  }
+ 
+  // only vessel present
+ 
+  else if (vessel) {
+ 
+    return `:<br>${vessel}`;
+ 
+  }
+ 
+  // only voyage present
+ 
+  else if (voyage) {
+ 
+    return `:<br>${voyage}`;
+ 
+  }
+ 
+  // none present
+ 
+  return ':';
+ 
+}
+
+  getPkgTypeName(PackageTypeMasterSid:number){
+    console.log("getPkgMame",{
+      PackageTypeMasterSid,
+      pkgList:this.packageTypeList
+    })
+    if(!PackageTypeMasterSid||this.packageTypeList.length===0){
+      return "";
+    }
+    return this.packageTypeList.find(pkg=>pkg.UOMMasterSid===PackageTypeMasterSid)?.UOMName|| "";
+  }
+ 
+  
+}
+
+
+interface CustomerProfit {
+  CustomerName : string,
+  Amount : number
 }

@@ -21,20 +21,23 @@
             </div>
                <div class="action-group" *ngIf="isEditMode">
                 <div ngbDropdown container="body" class="d-inline-block">
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle>
-                         <i class="fas fa-print me-1"></i> Print
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle
+                        [disabled]="!masterJobData" title="{{ masterJobData ? 'Print Master Job' : 'Load Job data to enable print' }}">
+                        <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
-                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel(preAlertPrint)"
+                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()"
                             [disabled]="isLoading">Pre Alert</button>
-                        <button class="text-dark" ngbDropdownItem  (click)="reportcargomanifest(cargoPrint)"
+                        <button class="text-dark" ngbDropdownItem  (click)="reportcargomanifest()"
                             [disabled]="isLoading">Cargo Manifest</button>
-                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseLetter(releasePrint)"
+                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseLetter()"
                             [disabled]="isLoading">Release Letter</button>
-                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder(releaseOrderPrint)"
+                            <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder()"
                             [disabled]="isLoading">Release Order</button>
                              <button class="text-dark" ngbDropdownItem  (click)="reportjobCard(jobCardPrint)"
                             [disabled]="isLoading">Job Card</button>
+                            <button class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
+                            </button>
                     </div>
                 </div>
             </div>
@@ -110,7 +113,8 @@
             <!-- master forms-->
             <div class="content-layout px-1">
                 <div class="row two-column-layout gap-1">
-                    <div class="info-card col-md-4 px-0  ">
+                   <div class="d-flex first-two-cards gap-1 px-0">
+                           <div class="info-card col-md-6 px-0 first-fixed ">
                         <!-- <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
@@ -170,7 +174,7 @@
 
                                         </div>
                                     </aside>
-                                    <div class="col-md-6 mt-md-1">
+                                    <div class="col-md-6 ">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -195,7 +199,7 @@
 
                                         </div>
                                     </div>
-                                    <aside class="col-md-6 mt-md-1">
+                                    <aside class="col-md-6 ">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FreightPPCC')?.value">
                                             <ng-select [items]="modeOfFreightTerms" bindLabel="name" bindValue="id"
@@ -217,7 +221,7 @@
                                     </aside>
                                     <!-- Destination Agent Field -->
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-md-1"
                                             [class.filled]="!!masterJobForm.get('DestinationAgent')?.value">
                                             <!-- <ng-select [items]="filteredDestinationAgents" bindLabel="CustomerName"
                                                 bindValue="CustomerMasterSid" formControlName="DestinationAgent"
@@ -243,14 +247,14 @@
 
                                     <!-- Destination Agent Address Field -->
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group " style="margin-top: 3px;">
                                             <input type="text" formControlName="DestinationAgentAddress"
                                                 class="custom-input-field sm" placeholder="">
                                             <label class="input-label">Address</label>
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group " style="margin-top: 7px;">
                                             <input type="text" formControlName="MBLNo" class="custom-input-field sm"
                                                 [textWithNumbers]="20" placeholder="">
                                             <label class="input-label">MBL NO </label>
@@ -283,7 +287,7 @@
                                         </div>
                                     </div>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-1"
                                             [class.filled]="!!masterJobForm.get('BLReleaseType')?.value">
                                             <ng-select [items]="modeOfBLReleaseType" bindLabel="name" bindValue="id"
                                                 formControlName="BLReleaseType" appendTo="body">
@@ -302,7 +306,7 @@
                                         </div>
                                     </aside>
                                     <aside class="col-md-6">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group mt-1">
                                             <input type="number" formControlName="NoofOriginal"
                                                 class="custom-input-field sm" min="0">
                                             <label class="input-label">No of Original <span
@@ -327,7 +331,7 @@
                     </div>
 
 
-                    <div class="info-card col-md px-0  ">
+                    <div class="info-card col-md-6 px-0  second-flex ">
                         <!-- <div class="card-header">
                             <div class="header-content">
                                 <h4 class="card-title">
@@ -418,7 +422,7 @@
                                     </aside>
 
                                     <!-- FDC Field -->
-                                    <aside class="col-md-4 mt-md-1">
+                                    <aside class="col-md-4 ">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('FPD')?.value">
                                             <!-- <ng-select [items]="portList" bindLabel="PortCode"
@@ -439,7 +443,7 @@
                                     </aside>
 
                                     <!-- Vessel Field -->
-<div class="col-md-4 mt-md-1">
+<div class="col-md-4 ">
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="!!masterJobForm.get('VesselName')?.value">
     <dofi-searchable-dropdown 
@@ -456,7 +460,7 @@
   </div>
 </div>
                                     <!-- Voyage Field -->
-                                    <aside class="col-md-4 mt-md-1">
+                                    <aside class="col-md-4 ">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('VoyageNo')?.value">
                                             <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
@@ -485,7 +489,7 @@
                                     </aside>
 
                                     <!-- Carrier Field -->
-                                    <aside class="col-md-4 mt-md-1">
+                                    <aside class="col-md-4 ">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('CarrierName')?.value">
                                             <!-- <ng-select [items]="carrierList" bindLabel="CustomerName"
@@ -510,7 +514,7 @@
                                     </aside>
 
                                     <!-- ETD Field -->
-                                    <div class="col-md-4 mt-md-1">
+                                    <div class="col-md-4 ">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -526,7 +530,7 @@
                                     </div>
 
                                     <!-- ETA Field -->
-                                    <div class="col-md-4 mt-md-1">
+                                    <div class="col-md-4 ">
                                         <div class="custom-form-group custom-form-group-select-date">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
@@ -545,7 +549,7 @@
 
                                     <!-- Cut Off Date Field -->
                                     <div class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select-date">
+                                        <div class="custom-form-group custom-form-group-select-date mt-1">
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="dd-mm-yyyy"
                                                     formControlName="CutOffDate" ngbDatepicker
@@ -563,7 +567,7 @@
 
                                     <!-- SI Cut Off Field -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
+                                        <div class="custom-form-group mt-1">
                                             <input type="text" formControlName="SICutOff" class="custom-input-field sm" placeholder="">
                                             <label class="input-label">SI Cut Off<span
                                                     class="text-danger"></span></label>
@@ -573,7 +577,7 @@
 
                                     <!-- Shipment Terms Field - Updated to Dropdown -->
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group custom-form-group-select"
+                                        <div class="custom-form-group custom-form-group-select mt-1"
                                             [class.filled]="!!masterJobForm.get('ShipmentTerms')?.value">
                                             <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="id"
                                                 formControlName="ShipmentTerms" placeholder="" appendTo="body">
@@ -583,7 +587,7 @@
                                         </div>
                                     </aside>
                                     
-                                    <aside class="col-md-8">
+                                    <aside class="col-md-4">
                                         <div class="custom-form-group mt-1">
                                             <input type="textarea" formControlName="MarksandNumber" id="text-input"
                                                 class="custom-input-field sm" placeholder="" [textWithNumbers]="1000">
@@ -595,75 +599,8 @@
                                             </div>
                                         </div>
                                     </aside>
-                                   
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="info-card1 col-md-3 px-0 ">
-                        <!-- <div class="card-header">
-                            <div class="header-content">
-                                <h4 class="card-title">
-                                    <i class="fas fa-boxes "></i>
-                                    Cargo & Package
-                                </h4>
-                            </div>
-                        </div> -->
-                        <div class="card-body ">
-                            <div class="col-md-12">
-                                <div class="row compact-form" [formGroup]="masterJobForm">
-                                    <aside class="col-md-6">
-                                        <div class="custom-form-group">
-                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm"
-                                                min="0">
-                                            <label class="input-label">Total Pkg</label>
-                                        </div>
-                                    </aside>
-                                    <aside class="col-md-6">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!masterJobForm.get('WeightIn')?.value">
-                                            <ng-select [items]="modeOfWeightIn" bindLabel="name" bindValue="id"
-                                                formControlName="WeightIn">
-                                            </ng-select>
-                                            <label class="input-label">Weight In</label>
-                                        </div>
-                                    </aside>
-                                    <aside class="col-md-6 mt-md-1">
-                                        <div class="custom-form-group">
-                                            <input type="number" formControlName="GrossWeight"
-                                                class="custom-input-field sm"  DecimalPrecision [DecimalPrecisionBefore]="10"
-                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"step="0.001" min="0">
-                                            <label class="input-label">Gross Weight</label>
-                                        </div>
-                                    </aside>
-                                    <aside class="col-md-6 mt-md-1">
-                                        <div class="custom-form-group">
-                                            <input type="number" formControlName="NetWeight"
-                                                class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="10"
-                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999" step="0.001" min="0">
-                                            <label class="input-label">Net Weight</label>
-                                        </div>
-                                    </aside>
-                                    <aside class="col-md-6 mt-md-1">
-                                        <div class="custom-form-group">
-                                            <input type="number" formControlName="ChargeableWeight"
-                                                class="custom-input-field sm" step="0.001" min="0">
-                                            <label class="input-label">Chargeable Weight</label>
-                                        </div>
-                                    </aside>
-                                    <aside class="col-md-6 mt-md-1">
-                                        <div class="custom-form-group">
-                                            <input type="number" formControlName="Volume"   DecimalPrecision [DecimalPrecisionBefore]="8"
-                [DecimalPrecisionAfter]="3" max="999999.999" class="custom-input-field sm"
-                                                step="0.001" min="0">
-                                            <label class="input-label">Volume (CBM)</label>
-                                        </div>
-                                    </aside>
-                                    <aside class="col-md-12">
-                                        <div class="custom-form-group">
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group mt-1">
                                             <input type="textarea" formControlName="CommodityDescription"
                                                 id="text-input" class="custom-input-field sm" placeholder=""
                                                 [textWithNumbers]="1000">
@@ -676,11 +613,80 @@
                                             </div>
                                         </div>
                                     </aside>
-
-                                    <div class="d-flex justify-content-end mt-3">
+                                     <div class="col-md-4 text-end mt-2">
                             <button class="btn btn-sm btn-info ms-auto" (click)="openAttachModal()"><i
                                     class="fas fa-paperclip"></i> Attach Booking</button>
                         </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                   
+                 
+
+                    <div class="info-card col-md-12 px-0 ">
+                        <!-- <div class="card-header">
+                            <div class="header-content">
+                                <h4 class="card-title">
+                                    <i class="fas fa-boxes "></i>
+                                    Cargo & Package
+                                </h4>
+                            </div>
+                        </div> -->
+                        <div class="card-body ">
+                            <div class="col-md-12">
+                                <div class="row compact-form" [formGroup]="masterJobForm">
+                                    <aside class="col-md-2">
+                                        <div class="custom-form-group">
+                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm"
+                                                min="0">
+                                            <label class="input-label">Total Pkg</label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-2">
+                                        <div class="custom-form-group custom-form-group-select"
+                                            [class.filled]="!!masterJobForm.get('WeightIn')?.value">
+                                            <ng-select [items]="modeOfWeightIn" bindLabel="name" bindValue="id"
+                                                formControlName="WeightIn">
+                                            </ng-select>
+                                            <label class="input-label">Weight In</label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-2">
+                                        <div class="custom-form-group">
+                                            <input type="number" formControlName="GrossWeight"
+                                                class="custom-input-field sm"  DecimalPrecision [DecimalPrecisionBefore]="10"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"step="0.001" min="0">
+                                            <label class="input-label">Gross Weight</label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-2 ">
+                                        <div class="custom-form-group">
+                                            <input type="number" formControlName="NetWeight"
+                                                class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="10"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999" step="0.001" min="0">
+                                            <label class="input-label">Net Weight</label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-2 ">
+                                        <div class="custom-form-group">
+                                            <input type="number" formControlName="ChargeableWeight"
+                                                class="custom-input-field sm" step="0.001" min="0">
+                                            <label class="input-label">Chargeable Weight</label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-2 ">
+                                        <div class="custom-form-group">
+                                            <input type="number" formControlName="Volume"   DecimalPrecision [DecimalPrecisionBefore]="8"
+                [DecimalPrecisionAfter]="3" max="999999.999" class="custom-input-field sm"
+                                                step="0.001" min="0">
+                                            <label class="input-label">Volume (CBM)</label>
+                                        </div>
+                                    </aside>
+                                   
+
+                                   
                                 </div>
                             </div>
                         </div>
@@ -698,7 +704,9 @@
                 </div> -->
 
 
-                @if(totalLengthOfAttachedBookings > 0){
+             
+            </div>
+               @if(totalLengthOfAttachedBookings > 0){
                 <div>
                     <div class="modern-table-wrapper my-1">
                         <table class="modern-table ">
@@ -777,7 +785,7 @@
                         <ngb-pagination class="d-flex justify-content-end"
                             [collectionSize]="totalLengthOfAttachedBookings" [pageSize]="pageSize" [(page)]="page"
                             (pageChange)="  updateAttachedBookingsPagination()" [rotate]="true" [ellipses]="false"
-                            [maxSize]="10">
+                            [maxSize]="10" size="sm">
                         </ngb-pagination>
                     </div>
                 </div>
@@ -786,8 +794,6 @@
                     <div class="text-center">Click 'Attach Booking' to add booking details.</div>
                 </div>
                 }
-            </div>
-
 
         </div>
 
@@ -2558,6 +2564,7 @@
 
 </ng-template>
 
+
 <ng-template #preAlertPrint let-modal>
 
     <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
@@ -2753,6 +2760,9 @@
         </div>
     </div>
 </ng-template>
+
+
+<!-- cargo manifest -->
 
 <ng-template #cargoPrint let-modal>
 
@@ -3273,28 +3283,28 @@
                             <p class="mb-0">: </p>
                         </div>
                         <div class="d-flex "><strong class="" style="width: 200px;"> Shipper </strong>
-                            <p class="mb-0">: </p>
+                            <p class="mb-0">: {{masterJobData?.allShipments?.[0]?.ShipperName}}</p>
                         </div>
                         <div class="d-flex "><strong class="" style="width: 200px;"> Vessel </strong>
-                            <p class="mb-0">: </p>
+                            <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
                         </div>
                         <div class="d-flex "><strong class="" style="width: 200px;"> Voyage </strong>
-                            <p class="mb-0">: </p>
+                            <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
                         </div>
             
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex "><strong class="" style="width: 200px;"> Your Booking Ref </strong>
-                            <p class="mb-0">: </p>
+                            <p class="mb-0">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
                         </div>
                         <div class="d-flex "><strong class="" style="width: 200px;"> Our Booking Ref </strong>
                             <p class="mb-0">: </p>
                         </div>
                         <div class="d-flex "><strong class="" style="width: 200px;"> Port Of Discharge </strong>
-                            <p class="mb-0">: </p>
+                            <p class="mb-0">: {{masterJobData.POD}}</p>
                         </div>
                         <div class="d-flex "><strong class="" style="width: 200px;"> Final Destination</strong>
-                            <p class="mb-0">: </p>
+                            <p class="mb-0">: {{masterJobData.FPD}}</p>
                         </div>
                     </div>
                 </div>
@@ -3302,16 +3312,35 @@
             
             
                 <!-- Cargo Details -->
-                <h6 class="fw-bold  mt-3 text-center">CARGO DETAILS</h6>
-                <div class="d-flex "><strong class="" style="width: 200px;"> No of Pkgs</strong>
-                    <p class="mb-0">: </p>
-                </div>
-                <div class="d-flex "><strong class="" style="width: 200px;"> Gross Weight</strong>
-                    <p class="mb-0">: </p>
-                </div>
-                <div class="d-flex "><strong class="" style="width: 200px;"> Volume</strong>
-                    <p class="mb-0">: </p>
-                </div>
+                 <h6 class="fw-bold  mt-3 text-center">CARGO DETAILS</h6>
+                <table class="table tablebordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Pkg Type</th>
+                            <th>No of Pkgs</th>
+                            <th>Gross Weight</th>
+                            <th>Volume</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let container of masterJobData?.containers">
+                           <td>{{ getPackageTypeName(container.PkgType) }}</td>
+                            <td class="text-end">{{ container.NoOfPkg || 0 }}</td>
+                            <td class="text-end">{{ container.GrossWeight || 0 }}</td>
+                            <td class="text-end">{{ container.Volume || 0 }}</td>
+                        </tr>
+                         <tr class="fw-bold">
+                        
+                        <td  class="text-end">Total</td>
+                        <td class="text-end">{{ totalNoOfPkg }}</td>
+                        <td class="text-end">{{ totalGrossWeight | number:'1.0-3' }}</td>
+                        <td class="text-end">{{ totalVolume | number:'1.0-3' }}</td>
+                        </tr>
+                    </tbody>
+                 </table>
+                
+                
             
             
                 <!-- Instruction -->
@@ -3322,11 +3351,12 @@
                     <p class="mb-0">: </p>
                 </div>
                 <div class="d-flex "><strong class="" style="width: 200px;"> Date</strong>
-                    <p class="mb-0">: </p>
+                    <p class="mb-0">: {{ masterJobData.MasterJobDate | formatDate }}</p>
                 </div>
-                <div class="d-flex "><strong class="" style="width: 200px;"> CFS</strong>
-                    <p class="mb-0">: </p>
-                </div>
+               <div class="d-flex">
+    <strong class="" style="width: 200px;">CFS</strong>
+    <p class="mb-0">: {{ getCfsValue(masterJobData?.others?.[0]?.CFS) }}</p>
+</div>
             
                 <p class="mb-1">YOUR'S SINCERELY</p>
                 <p class="fw-bold mb-4">{{ currentCompany?.companyName || 'Company Name' }}</p>
@@ -3349,7 +3379,7 @@
 <ng-template #releaseOrderPrint let-modal>
 
     <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-        <h5 class="modal-title text-white mb-0">Release Letter </h5>
+        <h5 class="modal-title text-white mb-0">Release Order </h5>
         <div class="d-flex gap-2 align-items-center">
 
             <div class="spinner-overlay">
@@ -3393,25 +3423,25 @@
                     </div>
                 </div>
                 <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-    <h5 style="font-weight: bold;" class="text-center my-4">EXPORT RELEASE ORDER</h5>
+    <h5 style="font-weight: bold;" class="text-center my-4">RELEASE ORDER</h5>
 
     <!-- Booking Info -->
     <div class="row mb-3 ">
         <div class="col-md-6">
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>BOOKING REF NUMBER</strong></div>
-                <div>: BOMGE2500058</div>
+                <div style="width: 240px;"><strong> Booking Ref Number</strong></div>
+                <div>: {{masterJobData?.allShipments?.[0]?.BookingNo}}</div>
             </div>
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>SALES PERSON</strong></div>
-                <div>: Abhijit Said</div>
-            </div>
-            <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>ONHIRE REFERENCE NO</strong></div>
+                <div style="width: 240px;"><strong> Sales Person</strong></div>
                 <div>: </div>
             </div>
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>BROKER</strong></div>
+                <div style="width: 240px;"><strong> Onhire Ref No</strong></div>
+                <div>: </div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div style="width: 240px;"><strong>Broker</strong></div>
                 <div>: </div>
             </div>
             <div class="d-flex flex-wrap mb-1">
@@ -3421,21 +3451,21 @@
         </div>
         <div class="col-md-6">
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>RELEASE ORDER DATE</strong></div>
-                <div>: 20/Jan/2025</div>
+                <div style="width: 240px;"><strong> Release Order Date</strong></div>
+                <div>: </div>
             </div>
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>VALIDITY DATE</strong></div>
+                <div style="width: 240px;"><strong> Validity Date</strong></div>
                 <div>: </div>
             </div>
             <br>
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>BOOKING PARTY</strong></div>
-                <div>: SKYBAY SHIPPING </div>
+                <div style="width: 240px;"><strong>Booking Party</strong></div>
+                <div>: {{masterJobData?.allShipments?.[0]?.CustomerName}} </div>
             </div>
             <div class="d-flex flex-wrap mb-1">
-                <div style="width: 240px;"><strong>TRANSPORTER</strong></div>
-                <div>: </div>
+                <div style="width: 240px;"><strong> Transporter</strong></div>
+                <div>: {{masterJobData?.others?.[0]?.Transporter}}</div>
             </div>
         </div>
     </div>
@@ -3446,43 +3476,47 @@
     <div class="row ">
         <div class="col-md-6">
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>VESSEL / VOY</strong></div>
-                <div>: BORKUM / 2435</div>
+                <div style="width: 240px; white-space: nowrap;"><strong> Vessel / Voyage</strong></div>
+                <div>: {{masterJobData?.voyages?.[0]?.VesselName}} / {{masterJobData?.voyages?.[0]?.VoyageNo}}</div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>ETA / ETD</strong></div>
-                <div>: 13/Sep/2024 /04/Aug/2024</div>
+                <div style="width: 240px; white-space: nowrap;"><strong>ETA </strong></div>
+                <div>: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }} </div>
+            </div>
+             <div class="d-flex align-items-center">
+                <div style="width: 240px; white-space: nowrap;"><strong>ETD </strong></div>
+                <div>: {{ masterJobData?.voyages?.[0]?.ETD | formatDate }} </div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>LIST / VGM CUT OFF</strong></div>
+                <div style="width: 240px; white-space: nowrap;"><strong>List / VGM Cut Off</strong></div>
                 <div>: </div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>PORT CUT OFF</strong></div>
+                <div style="width: 240px; white-space: nowrap;"><strong> Port Cut Off</strong></div>
                 <div>: </div>
             </div>
         </div>
 
         <div class="col-md-6">
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>PORT OF ORIGIN</strong></div>
-                <div>: NHAVA</div>
+                <div style="width: 240px; white-space: nowrap;"><strong>Port of Origin</strong></div>
+                <div>: {{masterJobData.POO}}</div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>PORT OF LOADING</strong></div>
-                <div>: NHAVA</div>
+                <div style="width: 240px; white-space: nowrap;"><strong> Port of Loading</strong></div>
+                <div>: {{masterJobData.POL}}</div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>TRANSHIPMENT PORT</strong></div>
+                <div style="width: 240px; white-space: nowrap;"><strong>Transhipment Port</strong></div>
                 <div>: </div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>PORT OF DISCHARGE</strong></div>
-                <div>: Bahrain(BHBAH)</div>
+                <div style="width: 240px; white-space: nowrap;"><strong> Port of Discharge</strong></div>
+                <div>: {{masterJobData.POD}}</div>
             </div>
             <div class="d-flex align-items-center">
-                <div style="width: 240px; white-space: nowrap;"><strong>FINAL PLACE OF DESTINATION</strong></div>
-                <div>: Bahrain(BHBAH)</div>
+                <div style="width: 240px; white-space: nowrap;"><strong>Final Destination</strong></div>
+                <div>: {{masterJobData.FPD}}</div>
             </div>
         </div>
     </div>
@@ -3491,16 +3525,16 @@
     <!-- Remarks -->
     <div class="mb-3">
         <div class="d-flex flex-wrap mb-2">
-            <div style="width: 240px;"><strong>EMPTY PICK UP YARD </strong></div>
-            <div>: 1st print is ok</div>
+            <div style="width: 240px;"><strong> Empty Pick Up Yard</strong></div>
+            <div>: </div>
         </div>
         <div class="d-flex flex-wrap mb-2">
-            <div style="width: 240px;"><strong>REMARKS TO YARD </strong></div>
-            <div>: 1st print is ok</div>
+            <div style="width: 240px;"><strong> Remarks to Yard</strong></div>
+            <div>: </div>
         </div>
         <div class="d-flex flex-wrap mb-2">
-            <div style="width: 240px;"><strong>REMARKS TO SHIPPER </strong></div>
-            <div>: 1st print is ok</div>
+            <div style="width: 240px;"><strong> Remarks to Shipper</strong></div>
+            <div>: </div>
         </div>
     </div>
 
@@ -3509,59 +3543,39 @@
         <table class="table table tablebordered table-sm" >
             <thead>
                 <tr >
-                    <th >Type/Size</th>
+                    <th >Container Type</th>
                     <th >Container No</th>
-                    <th >Qty</th>
-                    <th>Temp</th>
-                    <th >Ventilation</th>
-                    <th >Humidity</th>
-                    <th >Commodity</th>
-                    <th >WT [KGS]</th>
-                    <th >Un No</th>
-                    <th >IMCO</th>
-                    <th >Capacity</th>
+                    <th >Commodity Desc</th>
+                    <th>Pky Type</th>
+                    <th >No of PKg</th>
+                    <th >Gross Wt</th>
+                    <th >Net Wt</th>
+                    <th >Chargeable Wt</th>
+                    <th >Vol</th>
+             
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td >20GP</td>
-                    <td >TTSU1234567</td>
-                    <td >1</td>
-                    <td >Ambient</td>
-                    <td >Closed</td>
-                    <td >60%</td>
-                    <td >Electronics</td>
-                    <td >8000</td>
-                    <td >UN3481</td>
-                    <td >9</td>
-                    <td >33 CBM</td>
+                <tr *ngFor="let container of masterJobData?.containers">
+                    <td >{{ getContainerTypeName(container?.ContainerType) }}</td>
+                    <td>{{ container?.ContainerNumber }}</td>
+                    <td >{{ container?.CommodityDescription }}</td>
+                    <td >{{ getPackageTypeName(container.PkgType) }}</td>
+                    <td class="text-end">{{ container.NoOfPkg || 0 }}</td>
+                     <td class="text-end">{{ container.GrossWeight || 0 }}</td>
+                    <td class="text-end">{{ container.NetWeight || 0 }}</td>
+                    <td class="text-end">{{ container.ChargeableWeight || 0 }}</td>
+                   <td class="text-end">{{ container.Volume || 0 }}</td>
                 </tr>
                 <tr>
-                    <td >20GP</td>
-                    <td >TTSU1234567</td>
-                    <td >1</td>
-                    <td >Ambient</td>
-                    <td >Closed</td>
-                    <td >60%</td>
-                    <td >Electronics</td>
-                    <td >8000</td>
-                    <td >UN3481</td>
-                    <td >9</td>
-                    <td >33 CBM</td>
+                    <td colspan="4" class="fw-bold text-end">Total</td>
+                      <td class="text-end fw-bold">{{ totalNoOfPkg }}</td>
+                        <td class="text-end fw-bold">{{ totalGrossWeight | number:'1.0-3' }}</td>
+                        <td class="text-end fw-bold">{{ totalNetWeight | number:'1.0-3' }}</td>
+                        <td class="text-end fw-bold">{{ totalChargeableWeight | number:'1.0-3' }}</td>
+                        <td class="text-end fw-bold">{{ totalVolume | number:'1.0-3' }}</td>
                 </tr>
-                <tr>
-                    <td >20GP</td>
-                    <td >TTSU1234567</td>
-                    <td >1</td>
-                    <td >Ambient</td>
-                    <td >Closed</td>
-                    <td >60%</td>
-                    <td >Electronics</td>
-                    <td >8000</td>
-                    <td >UN3481</td>
-                    <td >9</td>
-                    <td >33 CBM</td>
-                </tr>
+                            
             </tbody>
         </table>
     </div>
@@ -3631,7 +3645,7 @@
             </div> 
         <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
     
-        <h5 class="text-center fw-bold pb-2" style="margin: 0;">Job Card / Job No - 1234567890</h5>
+        <h5 class="text-center fw-bold pb-2" style="margin: 0;">Job Card / Job No - {{ masterJobData?.MasterJobNumber }}</h5>
     
         <div class="row mb-0" style="padding: 0 10px;">
             <div class="col-md-6"
@@ -3643,8 +3657,8 @@
             </div>
             <div class="col-md-6" style="border-top: 1px solid black; border-right: 1px solid black;">
                 <div class="d-flex mb-1">
-                    <div style="width: 120px;"><strong>Shipper</strong></div>
-                    <div style="min-height: 100px;height: auto;">: </div>
+                    <div style="width: 120px;"><strong>Shipper & Address</strong></div>
+                    <div style="min-height: 100px;height: auto;">: {{ masterJobData?.allShipments?.[0]?.ShipperName }} & {{ masterJobData?.allShipments?.[0]?.ShipperAddress }} </div>
                 </div>
             </div>
         </div>
@@ -3652,8 +3666,8 @@
             <div class="col-md-6"
                 style="border-top: 1px solid black; border-left: 1px solid black;border-right: 1px solid black;">
                 <div class="d-flex mb-1">
-                    <div style="width: 120px;"><strong>Consignee</strong></div>
-                    <div style="min-height: 100px;height: auto;">: </div>
+                    <div style="width: 120px;"><strong>Consignee & Address</strong></div>
+                    <div style="min-height: 100px;height: auto;">: {{ masterJobData?.allShipments?.[0]?.ConsigneeName }} & {{ masterJobData?.allShipments?.[0]?.ConsigneeAddress }} </div>
                 </div>
             </div>
             <div class="col-md-6" style="border-top: 1px solid black; border-right: 1px solid black;">
@@ -3667,73 +3681,73 @@
             <div class="col-md-6">
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Job No</strong></div>
-                    <div>: MBL998877</div>
+                    <div>: {{ masterJobData?.MasterJobNumber }} </div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>HBL No</strong></div>
-                    <div>: MSC Horizon / 045E</div>
+                    <div>: </div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Port of Loading</strong></div>
-                    <div>: Mediterranean Shipping Co.</div>
+                    <div>: {{ masterJobData?.POL }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Port of Discharge</strong></div>
-                    <div>: Rotterdam</div>
+                    <div>: {{ masterJobData?.POD }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Port of Origin</strong></div>
-                    <div>: Rotterdam</div>
+                    <div>: {{ masterJobData?.POO }} </div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Final Destination</strong></div>
-                    <div>: PP</div>
+                    <div>: {{ masterJobData?.FPD }}</div>
                 </div>
     
     
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Service Type</strong></div>
-                    <div>: PP</div>
+                    <div>: </div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Sales Person</strong></div>
-                    <div>: PP</div>
+                    <div>: </div>
                 </div>
             </div>
     
             <div class="col-md-6">
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>MBL No</strong></div>
-                    <div>: Cochin</div>
+                    <div>: {{ masterJobData?.MBLNo }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Place of Receipt</strong></div>
-                    <div>: Dubai</div>
+                    <div>: </div>
                 </div>
     
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Place of Delivery</strong></div>
-                    <div>: Hamburg</div>
+                    <div>: </div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>ETA</strong></div>
-                    <div>: Rotterdam</div>
+                    <div>:  {{ masterJobData?.voyages?.[0]?.ETA | formatDate }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>ETD</strong></div>
-                    <div>: PP</div>
+                    <div>:  {{ masterJobData?.voyages?.[0]?.ETD | formatDate }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
-                    <div>: Hamburg</div>
+                    <div>: {{ masterJobData?.voyages?.[0]?.VesselName }} / {{ masterJobData?.voyages?.[0]?.VoyageNo }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>Carrier</strong></div>
-                    <div>: PP</div>
+                    <div>:  {{ masterJobData?.voyages?.[0]?.CarrierName }}</div>
                 </div>
                 <div class="d-flex mb-1">
                     <div style="width: 120px;"><strong>PP/CC</strong></div>
-                    <div>: Hamburg</div>
+                    <div>:  {{ masterJobData?.FreightPPCC }}</div>
                 </div>
             </div>
         </div>
@@ -3744,64 +3758,72 @@
                     <tr>
                         <th>Container No</th>
                         <th>Type</th>
-                        <th>Description</th>
+                        <th> Commodity Description</th>
                         <th>No of Pkg</th>
                         <th>G Wt</th>
                         <th>Vol</th>
-                        <th>Vol Wt</th>
                         <th>Net Wt</th>
                     </tr>
                 </thead>
                 <tbody>
     
-                    <tr>
-                        <td>HBL001201</td>
-                        <td>Mumbai</td>
-                        <td>Rotterdam</td>
-                        <td>ABC001–005</td>
-                        <td class="text-end">80</td>
-                        <td class="text-end">12,500</td>
-                        <td class="text-end">19.20</td>
-                        <td>General Cargo</td>
+                    <tr  *ngFor="let container of masterJobData?.containers">
+                        <td>{{ container?.ContainerNumber }}</td>
+                        <td>{{ getContainerTypeName(container?.ContainerType) }} </td>
+                        <td>{{container?.CommodityDescription }}</td>
+                        <td class="text-end"> {{container?.NoOfPkg}} </td>
+                        <td class="text-end"> {{ container?.GrossWeight}} </td>
+                        <td class="text-end"> {{ container?.Volume}} </td>
+                        <td class="text-end"> {{container?.NetWeight}} </td>
                     </tr>
     
                 </tbody>
                 <tfoot>
                     <tr class="fw-bold">
-                        <td colspan="4" class="text-end">TOTAL</td>
-                        <td class="text-end">500</td>
-                        <td class="text-end">72,400</td>
-                        <td class="text-end">91.55</td>
+                        <td colspan="3" class="text-end">TOTAL</td>
+                        <td  class="text-end">{{ totalNoOfPkg }}</td>
+                        <td class="text-end"> {{ totalGrossWeight | number:'1.0-3' }} </td>
+                        <td class="text-end"> {{ totalVolume | number:'1.0-3' }} </td>
+                        <td class="text-end">{{ totalNetWeight | number:'1.0-3' }} </td>
                     </tr>
+                    <!-- <tr class="fw-bold">
+                        
+                        <td rowspan="2" class="text-end">Total</td>
+                        <td></td>
+                        <td class="text-end">{{ totalNoOfPkg }}</td>
+                        <td class="text-end">{{ totalGrossWeight | number:'1.0-3' }}</td>
+                        <td class="text-end">{{ totalVolume | number:'1.0-3' }}</td>
+                        <td class="text-end">{{ totalNetWeight | number:'1.0-3' }}</td>
+                        </tr> -->
                 </tfoot>
             </table>
         </div>
         <div class="table-responsive">
             <table class="table table-sm tablebordered table-hover mb-0">
                 <thead class="table-light">
-                    <tr>
-                        <th>Charge</th>
-                        <th>Sales</th>
-                        <th>Cost</th>
-                        <th>GP</th>
-                    </tr>
-                </thead>
-                <tbody>
-    
-                    <tr>
-                        <td>HBL001201</td>
-                        <td class="text-end">80</td>
-                        <td class="text-end">12,500</td>
-                        <td class="text-end">19.20</td>
-                    </tr>
+    <tr>
+        <th>Charge</th>
+        <th>Sales</th>
+        <th>Cost</th>
+        <th>GP</th>
+    </tr>
+</thead>
+<tbody>
+    <tr *ngFor="let item of profitSummary">
+        <td>{{ item.chargeName }}</td>
+        <td class="text-end">{{item.totalSales}}</td>
+        <td class="text-end">{{item.totalCost}}</td>
+        <td class="text-end">{{item.profit}}</td>
+    </tr>
+
     
                 </tbody>
                 <tfoot>
                     <tr class="fw-bold">
                         <td class="text-end">TOTAL</td>
-                        <td class="text-end">500</td>
-                        <td class="text-end">72,400</td>
-                        <td class="text-end">91.55</td>
+                        <td class="text-end">{{totalSales | number:'1.0-3'}}</td>
+                        <td class="text-end">{{totalCost | number:'1.0-3'}}</td>
+                        <td class="text-end">{{profit | number:'1.0-3'}}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -3814,7 +3836,6 @@
                         <th>Unit</th>
                         <th>Curr</th>
                         <th>Ex Rate</th>
-                        <th>Sales/Unit</th>
                         <th>Local Amt</th>
                         <th>Cost Curr</th>
                         <th>Cost Ex Rate</th>
@@ -3826,16 +3847,15 @@
                 <tbody>
     
                     <tr>
-                        <td>HBL001201</td>
-                        <td class="text-end">80</td>
-                        <td class="text-end">12,500</td>
-                        <td class="text-end">19.20</td>
-                        <td>HBL001201</td>
-                        <td class="text-end">80</td>
-                        <td class="text-end">12,500</td>
-                        <td class="text-end">19.20</td>
-                        <td>HBL001201</td>
-                        <td class="text-end">80</td>
+                        <td>{{ getChargeName(masterJobData?.costRevenueCharges?.[0]?.ChargeMasterSid) }}</td>
+                        <td class="text-end"> {{ masterJobData?.costRevenueCharges?.[0]?.ChargeUomSid}} </td>
+                        <td class="text-end"> {{ getCurrencyName(masterJobData?.costRevenueCharges?.[0]?.CostCurrencyMasterSid) }}</td>
+                        <td class="text-end"> {{ masterJobData?.costRevenueCharges?.[0]?.CostExchangeRate}}</td>
+                        <td class="text-end">{{ masterJobData?.costRevenueCharges?.[0]?.CostLocalAmount}}</td>
+                        <td class="text-end">{{ getCurrencyName(masterJobData?.costRevenueCharges?.[0]?.CostCurrencyMasterSid) }}</td>
+                        <td class="text-end">{{ masterJobData?.costRevenueCharges?.[0]?.CostExchangeRate}}</td>
+                        <td class="text-end"> {{ masterJobData?.costRevenueCharges?.[0]?.CostNumberOfUnit}}</td>
+                        <td class="text-end">{{ masterJobData?.costRevenueCharges?.[0]?.CostLocalAmount}}</td>
     
                     </tr>
     
@@ -3855,10 +3875,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>HBL001201</td>
-                                <td class="text-end">80</td>
-                            </tr>
+                            <tr *ngFor="let item of customerWiseSummary?.revenue">
+            <td>{{ item.CustomerName }}</td>
+            <td class="text-end">{{ item.Amount || '0.00' }}</td>
+          </tr>
                         </tbody>
                     </table>
                 </div>
@@ -3874,9 +3894,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>HBL001201</td>
-                                <td class="text-end">80</td>
+                            <tr *ngFor="let item of customerWiseSummary?.cost">
+                                <td>{{ item.CustomerName }}</td>
+                                <td class="text-end">{{ item.Amount || '0.00' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -3894,3 +3914,223 @@
         </div>
     </div>
 </ng-template>
+
+
+
+<!-- packing list -->
+
+
+<ng-template #PackingListPrint let-modal>
+
+    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+        <h5 class="modal-title text-white mb-0">Packing List</h5>
+        <div class="d-flex gap-2 align-items-center">
+
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+                <i class="fas fa-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+                <i class="fas fa-envelope me-1"></i>Send Email
+            </button>
+
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+
+        </div>
+    </div>
+
+
+    <div class="modal-body">
+        <div id="printContent">
+    <div class="print-a4">
+    <!-- Company Info -->
+    <div class="row ">
+            <div class="company-header">
+                <div class="company-logo">
+                    <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
+                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                </div>
+
+                <div class="company-info ">
+                    <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                    <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                    <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
+                    <p class="mb-1">
+                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
+                    </p>
+                    <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
+                    <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
+                </div>
+            </div>
+        </div> 
+    <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+    <h5 class="text-center fw-bold pb-2" style="margin: 0;">Packing List</h5>
+
+
+
+    <!-- Section 1 -->
+    <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
+
+        <!-- To -->
+        <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">To</div>
+                <div style="min-height: 100px; height: auto;">: </div>
+            </div>
+        </div>
+
+        <!-- Shipper -->
+        <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Shipper & Address</div>
+                <span style="min-height: 100px; height: auto;">:  {{ masterJobData?.allShipments?.[0]?.ShipperName }} & {{ masterJobData?.allShipments?.[0]?.ShipperAddress }}  </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="row mb-0" style="display: flex; flex-wrap: wrap; padding: 0 10px;">
+        <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-left: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Consignee & Address</div>
+                <span style="min-height: 100px; height: auto;">: {{ masterJobData?.allShipments?.[0]?.ConsigneeName }} & {{ masterJobData?.allShipments?.[0]?.ConsigneeAddress }}  </span>
+            </div>
+        </div>
+
+        <div
+            style="flex: 0 0 50%; max-width: 50%; border-top: 1px solid black; border-right: 1px solid black; box-sizing: border-box;">
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Notify</div>
+                <span style="min-height: 100px; height: auto;">:  {{ masterJobData?.Notify }} </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="padding: 0 10px;">
+        <div class="col-md-6" style="border:1px solid black">
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Job No</div>
+                <span>: {{ masterJobData?.MasterJobNumber }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">MBL No</div>
+                <span>: {{ masterJobData?.MBLNo }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Port of Loading</div>
+                <span>: {{ masterJobData?.POL }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Port of Discharge</div>
+                <span>: {{ masterJobData?.POD }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Port of Origin</div>
+                <span>: {{ masterJobData?.POO }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Final Destination</div>
+                <span>:  {{ masterJobData?.FPD }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Place of Receipt</div>
+                <span>: </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Place of Delivery</div>
+                <span>: </span>
+            </div>
+        </div>
+        <div class="col-md-6"
+            style="border-top: 1px solid black; border-right: 1px solid black; border-bottom:1px solid black">
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Shipment No</div>
+                <div>: </div>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">HBL No</div>
+                <span>: {{ masterJobData?.allShipments?.[0]?.HBLNo }} </span>
+            </div>
+
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">ETA</div>
+                <span>: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">ETD</div>
+                <span>: {{ masterJobData?.voyages?.[0]?.ETD | formatDate }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Vessel/Voyage No</div>
+                <span>: {{ masterJobData?.voyages?.[0]?.VesselName }} / {{ masterJobData?.voyages?.[0]?.VoyageNo }}  </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Carrier</div>
+                <span>: {{ masterJobData?.voyages?.[0]?.CarrierName }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">PP/CC</div>
+                <span>: {{ masterJobData?.FreightPPCC }} </span>
+            </div>
+            <div style="display: flex; padding: 4px;">
+                <div style="width: 120px; font-weight: bold;">Movement Type</div>
+                <span>:  {{ masterJobData?.allShipments?.[0]?.MovementType }} </span>
+            </div>
+        </div>
+    </div>
+
+
+    <table class="table tablebordered table-sm table-hover">
+        <thead>
+            <tr>
+                <th>Sno</th>
+                <th>Commodity Description</th>
+                <th>Length x Width x height(cm)</th>
+                <th>No of Package</th>
+                <th>Package Type</th>
+                <th>Gross Weight</th>
+                <th>Volume</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>{{ masterJobData?.CommodityDescription }}</td>
+                <td> </td>
+                <td>{{ masterJobData?. NoOfPkg }}</td>
+                <td>{{ masterJobData?. PkgType }}</td>
+                <td>{{ masterJobData?.GrossWeight }}</td>
+                <td>{{ masterJobData?.Volume }}</td>
+                
+            </tr>
+        </tbody>
+    </table>
+
+    <div>
+        <p class="fw-bold">Remarks :</p>
+        <p></p>
+    </div>
+
+    <footer class="text-center mb-0 px-2">
+        <div class="d-flex justify-content-between">
+      <div><span>Printed By:</span> {{userData.userName}}</div>
+      <span>This document is computer-generated and does not require a signature.</span>
+      <div><span>Printed On:</span> {{ currentDate | formatDate }}</div>
+    </div>
+    </footer>
+</div>
+        </div>
+    </div>
+</ng-template>
+
+
+
+

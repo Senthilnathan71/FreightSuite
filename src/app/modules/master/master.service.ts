@@ -2963,6 +2963,24 @@ getFieldConfiguration() {
     )
   }
 
+  getYearMasterByUserId(email: string) {
+    return this.http.get<{ data: any[] }>(`year/user/${email}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getFinancialYearsByCompany(companyId: number) {
+    return this.http.get<{ data: any[] }>(`year/company/${companyId}`).pipe(
+      map((resp:any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getAuditLogsYear(tableName: string, recordId?: string) {
     let url = `year/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
@@ -3613,8 +3631,8 @@ getCoaWithSubledger(CompanyMasterSid: number) {
     );
   }
   
-getSubledgerMasterByType(subledgerType: string) {
-    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}`).pipe(
+getSubledgerMasterByType(subledgerType: string , CompanyMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`subledgermaster/type/${subledgerType}?CompanyMasterSid=${CompanyMasterSid}`).pipe(
         map((resp: any) => {
             return resp;
         })
@@ -3925,6 +3943,139 @@ createReportMaster(payload: any) {
     );
   }
 
+  //Tax-Group
+  getAllTaxGroup() {
+    return this.http.get<{ data: any[] }>('tax-group', {  }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewTaxGroup(payload) {
+    return this.http.post<{ data: any }>('tax-group/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTaxGroupById(TaxGroupSid) {
+    return this.http.get<{ data: any }>(`tax-group/fetch/${TaxGroupSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateTaxGroupById(TaxGroupSid, payload) {
+    return this.http.patch<{ data: any }>(`tax-group/update/${TaxGroupSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteTaxGroupById(TaxGroupSid) {
+    return this.http.delete<{ data: any }>(`tax-group/delete/${TaxGroupSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchTaxGroupMaster(payload) {
+    return this.http.post<{ data: any[] }>('tax-group/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
+// Get All Networks
+getAllNetworks(CompanyMasterSid: number) {
+  return this.http.post<{ data: any }>('network-master', { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Create Network
+createNetwork(payload: any) {
+  return this.http.post('network-master/create', payload).pipe(
+    map((res: any) => {
+      return res;
+    })
+  );
+}
+
+// Get Network By ID
+getNetworkById(id: number) {
+  return this.http.get<{ data: any }>(`network-master/fetch/${id}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Update Network By ID
+updateNetworkById(id: number, payload: any) {
+  return this.http.patch<{ data: any }>(`network-master/update/${id}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+// Delete Network By ID
+deleteNetworkById(id: number) {
+  return this.http.delete<{ data: any }>(`network-master/delete/${id}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Search Network List
+searchNetworkList(params: any) {
+  return this.http.post("network-master/search-list", params).pipe(
+    map((resp: any) => {
+      return resp;
+    })
+  );
+}
+
+// Get Network by Type
+getNetworkByType(type: string, CompanyMasterSid: number) {
+  return this.http.post(`network-master/network-type?type=${type}`, { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+// Get Audit Logs for Network
+getAuditLogsNetwork(tableName: string, recordId?: string) {
+  let url = `network-master/audit-logs?tableName=${tableName}`;
+  if (recordId) url += `&recordId=${recordId}`;
+
+  return this.http.get<{ data: any }>(url).pipe(
+    map((resp) => resp.data)
+  );
+}
 }
 
 

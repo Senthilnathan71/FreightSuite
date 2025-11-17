@@ -33,7 +33,8 @@ export class ReportMasterComponent {
     formats: [<ReportFormat[]>[], Validators.required],
     excludedCompanyIds: [<string[]>[]],
     query: ['', Validators.required],
-    parameters: this.fb.array([])
+    parameters: this.fb.array([]),
+    Module:[]
   });
 
   get parameters(): FormArray { return this.form.get('parameters') as FormArray; }

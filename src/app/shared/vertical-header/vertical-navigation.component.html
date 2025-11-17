@@ -613,6 +613,14 @@
         <span *ngIf="branch.companyMaster?.companyName">({{ branch.companyMaster.companyName }})</span>
       </option>
     </select>
+
+    <label class="form-label fw-bold text-black">Select Financial Year</label>
+    <select class="form-select mb-3" [(ngModel)]="selectedYearId">
+      <option [ngValue]="null">-- Select Financial Year --</option>
+      <option *ngFor="let year of financialYears" [ngValue]="year.YearMasterSid">
+        {{ year.YearName }}
+      </option>
+    </select>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
