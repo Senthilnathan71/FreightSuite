@@ -524,25 +524,25 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       // Add other search types
     }
 
-    this.paymentService.searchVendorOutstanding(request)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (invoices) => {
-          this.outstandingInvoices = invoices;
-          this.filteredOutstandingInvoices = invoices;
-          this.isLoading = false;
-          this.spinner.hide();
+    // this.paymentService.searchVendorOutstanding(request)
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe({
+    //     next: (invoices) => {
+    //       this.outstandingInvoices = invoices;
+    //       this.filteredOutstandingInvoices = invoices;
+    //       this.isLoading = false;
+    //       this.spinner.hide();
 
-          if (invoices.length === 0) {
-            this.appSettingsService.showInfo('No outstanding invoices found');
-          }
-        },
-        error: (error) => {
-          console.error('Error searching outstanding:', error);
-          this.isLoading = false;
-          this.spinner.hide();
-        }
-      });
+    //       if (invoices.length === 0) {
+    //         this.appSettingsService.showInfo('No outstanding invoices found');
+    //       }
+    //     },
+    //     error: (error) => {
+    //       console.error('Error searching outstanding:', error);
+    //       this.isLoading = false;
+    //       this.spinner.hide();
+    //     }
+    //   });
   }
 
   /**

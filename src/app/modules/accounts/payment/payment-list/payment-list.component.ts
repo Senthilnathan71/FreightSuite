@@ -85,30 +85,30 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   tableConfig: TableConfig = {
     columns: [],
     actions: [
+      // {
+      //   icon: 'fas fa-eye',
+      //   label: 'View',
+      //   action: 'view',
+      //   tooltip: 'View Payment',
+      // },
       {
         icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Payment',
-      },
-      {
-        icon: 'fas fa-edit',
         label: 'Edit',
         action: 'edit',
         tooltip: 'Edit Payment',
       },
-      {
-        icon: 'fas fa-undo',
-        label: 'Reverse',
-        action: 'reverse',
-        tooltip: 'Reverse Payment'
-      },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete Payment'
-      }
+      // {
+      //   icon: 'fas fa-undo',
+      //   label: 'Reverse',
+      //   action: 'reverse',
+      //   tooltip: 'Reverse Payment'
+      // },
+      // {
+      //   icon: 'fas fa-trash',
+      //   label: 'Delete',
+      //   action: 'delete',
+      //   tooltip: 'Delete Payment'
+      // }
     ],
     selectable: true,
     showPagination: true,
@@ -216,6 +216,8 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         key: 'VoucherNumber',
         label: 'Payment No',
         sortable: true,
+        filterable: true,
+        visible: true,
         width: '120px',
         cellClass: 'fw-bold text-primary'
       },
@@ -223,40 +225,63 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         key: 'VoucherDate',
         label: 'Payment Date',
         sortable: true,
+        filterable: true,
+        visible: true,
         width: '110px'
       },
       {
-        key: 'Bank',
+        key: 'BankName',
         label: 'Bank',
         sortable: true,
-        width: '110px'
+        filterable: true,
+        visible: true,
+        width: '150px'
       },
       {
-        key: 'VendorName',
+        key: 'PartyName',
         label: 'Party',
         sortable: true,
+        filterable: true,
+        visible: true,
         width: '200px',
         cellClass: 'text-truncate'
       },
       {
-        key: 'PartyAmount',
+        key: 'LocalAmount',
         label: 'Amount',
         sortable: true,
+        filterable: true,
+        visible: true,
         width: '130px',
-        cellClass: 'fw-bold'
+        cellClass: 'text-end pe-5'
+      },
+      {
+        key: 'CreatedBy',
+        label: 'Created By',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        width: '200px',
+        cellClass: 'text-truncate'
       },
       {
         key: 'PostStatus',
         label: 'Post Status',
         sortable: true,
+        filterable: true,
+        visible: true,
         width: '120px'
       },
       {
         key: 'Status',
         label: 'Status',
         sortable: true,
+        filterable: true,
+        visible: true,
+        template: 'status',
         width: '100px',
-        cellClass: 'badge bg-success'
+        dataType: 'string',
+        cellClass: 'status-column'
       }
     ];
   }
@@ -285,7 +310,9 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
-        PostStatus : item.PostStatus === 'P' ? 'Posted' : 'UnPosted',
+        LocalAmount : Number(item.LocalAmount).toFixed(2),
+        VoucherDate : this.datePipe.transform(item.VoucherDate),
+        PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -520,39 +547,22 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    * Export to Excel
    */
   exportToExcel(): void {
-    const exportData = this.allPayments.map(payment => ({
-      'Payment No': payment.VoucherNumber,
-      'Payment Date': payment.VoucherDate,
-      'Vendor': payment.VendorName,
-      'Bank': payment.BankName || 'N/A',
-      'Payment Mode': payment.PaymentMode,
-      'Total Amount': payment.TotalAmount,
-      'TDS Amount': payment.TDSAmount || 0,
-      'Net Amount': payment.NetAmount,
-      'Branch': payment.BranchName || 'N/A',
-      'Created By': payment.CreatedBy || 'N/A',
-      'Status': payment.StatusDisplay
+    const formattedData = this.allItems;
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    // Get visible columns from table
+    const visibleColumns = this.paymentTable.getVisibleColumns();
+    const dynamicHeaders = visibleColumns.map(column => ({
+      key: column.key,
+      label: column.label
     }));
 
     this.excelService.exportAsExcel({
-      data: exportData,
-      headers: [
-        { key: 'Payment No', label: 'Payment No' },
-        { key: 'Payment Date', label: 'Payment Date' },
-        { key: 'Vendor', label: 'Vendor' },
-        { key: 'Bank', label: 'Bank' },
-        { key: 'Payment Mode', label: 'Payment Mode' },
-        { key: 'Total Amount', label: 'Total Amount' },
-        { key: 'TDS Amount', label: 'TDS Amount' },
-        { key: 'Net Amount', label: 'Net Amount' },
-        { key: 'Branch', label: 'Branch' },
-        { key: 'Created By', label: 'Created By' },
-        { key: 'Status', label: 'Status' }
-      ],
-      fileName: 'Payment_Vouchers',
-      sheetName: 'Payments'
+      data: formattedData,
+      headers: dynamicHeaders,
+      fileName: 'Payment-Voucher-Report',
+      title: companyName
     });
-    this.appSettingsService.showSuccess('Payment data exported successfully');
   }
 
   /**

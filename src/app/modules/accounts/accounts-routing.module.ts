@@ -21,6 +21,7 @@ import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-l
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
 import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
+import { PaymentEntryFinalComponent } from './payment/payment-entry-final/payment-entry-final.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -248,7 +249,7 @@ export const AccountRoutes: Routes = [
 
       {
         path: "payment/entry",
-        component: PaymentEntryComponent,
+        component: PaymentEntryFinalComponent,
         data: {
           title: "Add Payment Voucher",
           urls: [
@@ -260,7 +261,7 @@ export const AccountRoutes: Routes = [
       },
       {
         path: "payment/entry/:id",
-        component: PaymentEntryComponent,
+        component: PaymentEntryFinalComponent,
         data: {
           title: "Edit Payment Voucher",
           urls: [
@@ -272,7 +273,7 @@ export const AccountRoutes: Routes = [
       },
       {
         path: "payment/view/:id",
-        component: PaymentViewComponent,
+        component: PaymentEntryFinalComponent,
         data: {
           title: "View Payment Voucher",
           urls: [

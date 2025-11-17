@@ -14,6 +14,7 @@ import {
   ApiResponse,
   ReceiptSummary,
   PaymentMode,
+  InstrumentMode,
 } from '../models/receipt.model';
 import { OutstandingService } from './outstanding.service';
 
@@ -394,6 +395,17 @@ export class ReceiptService {
       { value: PaymentMode.UPI, label: 'UPI' },
       { value: PaymentMode.CARD, label: 'Card' },
       { value: PaymentMode.ONLINE, label: 'Online' },
+    ];
+  }
+
+  getInstrumentModes(): { value: string; label: string }[] {
+    return [
+      { value: InstrumentMode.Cheque, label: 'Cheque' },
+      { value: InstrumentMode.DD, label: 'DD' },
+      { value: InstrumentMode.IMPS, label: 'IMPS' },
+      { value: InstrumentMode.NEFT, label: 'NEFT' },
+      { value: InstrumentMode.RTGS, label: 'RTGS' },
+      { value: InstrumentMode.Others, label: 'Others' },
     ];
   }
 

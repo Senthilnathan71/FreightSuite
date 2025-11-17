@@ -6,16 +6,9 @@ import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal }
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
-import { ReceiptService } from '../../services/receipt.service';
+import { PaymentService } from '../../services/payment.service';
 import { OutstandingService } from '../../services/outstanding.service';
-import {
-  CreateReceiptRequest,
-  ReceiptDetail,
-  OutstandingInvoice,
-  PaymentMode,
-  SearchOutstandingRequest,
-  ReceiptFormData,
-} from '../../models/receipt.model';
+
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
@@ -33,18 +26,19 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { OutstandingInvoice, PaymentMode } from '../../models/receipt.model';
 
 /**
- * Receipt Entry Component
- * Handles creation and editing of receipt vouchers with:
+ * Payment Entry Component
+ * Handles creation and editing of payment vouchers with:
  * - Invoice matching
- * - Advance receipts
+ * - Advance payments
  * - TDS deduction
  * - Multi-currency
- * - Inter-branch receipts with automatic JV
+ * - Inter-branch payments with automatic JV
  */
 @Component({
-  selector: 'app-receipt-entry',
+  selector: 'app-payment-entry-final',
   standalone: true,
   imports: [
     CommonModule,
@@ -59,15 +53,15 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
     TextWithNumbersDirective,
     OnlyNumbersDirective
   ],
-  templateUrl: './receipt-entry.component.html',
-  styleUrl: './receipt-entry.component.scss',
+  templateUrl: './payment-entry-final.component.html',
+  styleUrl: './payment-entry-final.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     CustomDatePipe
   ],
 })
-export class ReceiptEntryComponent implements OnInit {
+export class PaymentEntryFinalComponent implements OnInit {
   headerId: number;
   CompanyMasterSid: number;
   BranchMasterSid: number;
@@ -86,7 +80,7 @@ export class ReceiptEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   currentYearId: any;
-  receiptData: any;
+  paymentData: any;
   userData: any;
   searchType: string = 'Party';
   selectedParty: any;
@@ -95,7 +89,7 @@ export class ReceiptEntryComponent implements OnInit {
   today = new Date();
   todayDateInNgbStruct = toNgbDateStruct(this.today);
   searchOutstandingForm!: FormGroup;
-  receiptForm!: FormGroup;
+  paymentForm!: FormGroup;
   partyList: any[] = [];
   currencyList: any[] = [];
   coaList: any[] = [];
@@ -172,7 +166,7 @@ export class ReceiptEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private modalService: NgbModal,
     private toastr: ToastrService,
-    private receiptService: ReceiptService,
+    private paymentService: PaymentService,
     private appSettingService: AppSettingsService,
     private dropdownStore: DropdownStore,
     private accountService: AccountsService,
@@ -203,11 +197,11 @@ export class ReceiptEntryComponent implements OnInit {
     this.loadAllLookups();
     this.loadDetailLookups();
 
-    // Check if editing existing receipt
-    const receiptId = this.route.snapshot.params['id'];
-    if (receiptId) {
-      this.headerId = Number(receiptId);
-      this.loadReceipt(this.headerId);
+    // Check if editing existing payment
+    const paymentId = this.route.snapshot.params['id'];
+    if (paymentId) {
+      this.headerId = Number(paymentId);
+      this.loadPayment(this.headerId);
     } else {
       this.subscribeToPartyAndBankChanges();
     }
@@ -233,13 +227,13 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
     /**
-   * Initialize the receipt form with validation
+   * Initialize the payment form with validation
    */
   private initializeForm(): void {
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    this.receiptForm = this.fb.group({
-      VoucherNumber: [{ value: '', disabled: true }],  // Receipt Number
-      VoucherDate: [new Date()], // Receipt Date
+    this.paymentForm = this.fb.group({
+      VoucherNumber: [{ value: '', disabled: true }],  // payment Number
+      VoucherDate: [new Date()], // payment Date
       MultiBranch: [{value : false, disabled: true}],
       CashOrBank: [false],
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
@@ -276,50 +270,50 @@ export class ReceiptEntryComponent implements OnInit {
    */
   // private setupFormListeners(): void {
   //   // Recalculate TDS when percentage or amount changes
-  //   this.receiptForm.get('TDSPercentage')?.valueChanges.subscribe(() => {
+  //   this.paymentForm.get('TDSPercentage')?.valueChanges.subscribe(() => {
   //     this.calculateTDS();
   //   });
 
-  //   this.receiptForm.get('TotalInvoiceAmount')?.valueChanges.subscribe(() => {
+  //   this.paymentForm.get('TotalInvoiceAmount')?.valueChanges.subscribe(() => {
   //     this.calculateTDS();
   //     this.calculateNetAmount();
   //   });
 
   //   // Show/hide TDS fields
-  //   this.receiptForm.get('HasTDS')?.valueChanges.subscribe((hasTDS) => {
+  //   this.paymentForm.get('HasTDS')?.valueChanges.subscribe((hasTDS) => {
   //     if (hasTDS) {
-  //       this.receiptForm.get('TDSPercentage')?.setValidators([Validators.required, Validators.min(0)]);
-  //       this.receiptForm.get('TDSLedgerMasterSid')?.setValidators([Validators.required]);
+  //       this.paymentForm.get('TDSPercentage')?.setValidators([Validators.required, Validators.min(0)]);
+  //       this.paymentForm.get('TDSLedgerMasterSid')?.setValidators([Validators.required]);
   //     } else {
-  //       this.receiptForm.get('TDSPercentage')?.clearValidators();
-  //       this.receiptForm.get('TDSLedgerMasterSid')?.clearValidators();
-  //       this.receiptForm.patchValue({ TDSPercentage: 0, TDSAmount: 0 });
+  //       this.paymentForm.get('TDSPercentage')?.clearValidators();
+  //       this.paymentForm.get('TDSLedgerMasterSid')?.clearValidators();
+  //       this.paymentForm.patchValue({ TDSPercentage: 0, TDSAmount: 0 });
   //     }
-  //     this.receiptForm.get('TDSPercentage')?.updateValueAndValidity();
-  //     this.receiptForm.get('TDSLedgerMasterSid')?.updateValueAndValidity();
+  //     this.paymentForm.get('TDSPercentage')?.updateValueAndValidity();
+  //     this.paymentForm.get('TDSLedgerMasterSid')?.updateValueAndValidity();
   //   });
 
   //   // Show/hide inter-branch fields
-  //   this.receiptForm.get('IsInterBranch')?.valueChanges.subscribe((isInterBranch) => {
+  //   this.paymentForm.get('IsInterBranch')?.valueChanges.subscribe((isInterBranch) => {
   //     if (isInterBranch) {
-  //       this.receiptForm.get('ReceivingBranchMasterSid')?.setValidators([Validators.required]);
+  //       this.paymentForm.get('ReceivingBranchMasterSid')?.setValidators([Validators.required]);
   //     } else {
-  //       this.receiptForm.get('ReceivingBranchMasterSid')?.clearValidators();
+  //       this.paymentForm.get('ReceivingBranchMasterSid')?.clearValidators();
   //     }
-  //     this.receiptForm.get('ReceivingBranchMasterSid')?.updateValueAndValidity();
+  //     this.paymentForm.get('ReceivingBranchMasterSid')?.updateValueAndValidity();
   //   });
 
   //   // Show cheque fields for cheque payment mode
-  //   this.receiptForm.get('PaymentMode')?.valueChanges.subscribe((mode) => {
+  //   this.paymentForm.get('PaymentMode')?.valueChanges.subscribe((mode) => {
   //     if (mode === PaymentMode.CHEQUE) {
-  //       this.receiptForm.get('ChequeNumber')?.setValidators([Validators.required]);
-  //       this.receiptForm.get('ChequeDate')?.setValidators([Validators.required]);
+  //       this.paymentForm.get('ChequeNumber')?.setValidators([Validators.required]);
+  //       this.paymentForm.get('ChequeDate')?.setValidators([Validators.required]);
   //     } else {
-  //       this.receiptForm.get('ChequeNumber')?.clearValidators();
-  //       this.receiptForm.get('ChequeDate')?.clearValidators();
+  //       this.paymentForm.get('ChequeNumber')?.clearValidators();
+  //       this.paymentForm.get('ChequeDate')?.clearValidators();
   //     }
-  //     this.receiptForm.get('ChequeNumber')?.updateValueAndValidity();
-  //     this.receiptForm.get('ChequeDate')?.updateValueAndValidity();
+  //     this.paymentForm.get('ChequeNumber')?.updateValueAndValidity();
+  //     this.paymentForm.get('ChequeDate')?.updateValueAndValidity();
   //   });
   // }
 
@@ -329,7 +323,7 @@ export class ReceiptEntryComponent implements OnInit {
       BranchMasterSid: this.currentBranch?.BranchMasterSid
     }
     forkJoin({
-      parties: this.accountService.getAllDebtorWithCOAMapped(filterOption).pipe(catchError(err => of([]))),
+      parties: this.accountService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(err => of([]))),
       currencies: this.dropdownStore.loadCurrencies().pipe(catchError(err => of([]))),
       bankTypedLedgers: this.accountService.getAllLedgersByItsType({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -383,7 +377,7 @@ export class ReceiptEntryComponent implements OnInit {
  * Load payment modes
  */
   private loadPaymentModes(): void {
-    this.paymentModes = this.receiptService.getInstrumentModes();
+    this.paymentModes = this.paymentService.getInstrumentModes();
   }
 
   /**
@@ -418,7 +412,7 @@ export class ReceiptEntryComponent implements OnInit {
 
     console.log("Payload Sent:", payload);
 
-    this.receiptService.searchOutstandingInvoices(payload).subscribe(
+    this.paymentService.searchOutstandingInvoices(payload).subscribe(
       res => {
         this.patchHeaderValue(res);
         this.patchOutstandingFormArray(res)
@@ -443,22 +437,22 @@ export class ReceiptEntryComponent implements OnInit {
 
   
   /**
-   * Save receipt
+   * Save payment
    */
-  // async saveReceipt(): Promise<void> {
-  //   if (this.receiptForm.invalid) {
+  // async savepayment(): Promise<void> {
+  //   if (this.paymentForm.invalid) {
   //     this.toastr.warning('Please fill all required fields');
-  //     this.markFormGroupTouched(this.receiptForm);
+  //     this.markFormGroupTouched(this.paymentForm);
   //     return;
   //   }
 
   //   this.isSaving = true;
 
   //   try {
-  //     const formValue = this.receiptForm.getRawValue();
+  //     const formValue = this.paymentForm.getRawValue();
 
-  //     // Build receipt details from vouchers
-  //     const details: ReceiptDetail[] = this.detailItems.controls.map((control) => ({
+  //     // Build payment details from vouchers
+  //     const details: paymentDetail[] = this.detailItems.controls.map((control) => ({
   //       VoucherTransactionSid: control.get('VoucherTransactionSid')?.value,
   //       Amount: control.get('MatchedAmount')?.value,
   //       Narration: control.get('Narration')?.value,
@@ -475,15 +469,15 @@ export class ReceiptEntryComponent implements OnInit {
   //       });
   //     }
 
-  //     const createRequest: CreateReceiptRequest = {
+  //     const createRequest: CreatepaymentRequest = {
   //       CompanyMasterSid: formValue.CompanyMasterSid,
   //       BranchMasterSid: formValue.BranchMasterSid,
   //       LedgerMasterSid: formValue.LedgerMasterSid,
-  //       VoucherDate: this.receiptService.formatDateForAPI(formValue.VoucherDate),
+  //       VoucherDate: this.paymentService.formatDateForAPI(formValue.VoucherDate),
   //       Narration: formValue.Narration,
   //       PaymentMode: formValue.PaymentMode,
   //       ChequeNumber: formValue.ChequeNumber,
-  //       ChequeDate: formValue.ChequeDate ? this.receiptService.formatDateForAPI(formValue.ChequeDate) : undefined,
+  //       ChequeDate: formValue.ChequeDate ? this.paymentService.formatDateForAPI(formValue.ChequeDate) : undefined,
   //       BankName: formValue.BankName,
   //       TotalAmount: formValue.TotalInvoiceAmount,
   //       CurrencyMasterSid: formValue.CurrencyMasterSid,
@@ -499,23 +493,23 @@ export class ReceiptEntryComponent implements OnInit {
   //       CreatedBy: 'current-user', // TODO: Get from auth service
   //     };
 
-  //     const response = await this.receiptService.createReceipt(createRequest).toPromise();
+  //     const response = await this.paymentService.createpayment(createRequest).toPromise();
 
-  //     this.toastr.success(`Receipt ${response?.VoucherNumber} created successfully`);
-  //     this.router.navigate(['/accounts/receipt/list']);
+  //     this.toastr.success(`payment ${response?.VoucherNumber} created successfully`);
+  //     this.router.navigate(['/accounts/payment/list']);
   //   } catch (error: any) {
-  //     console.error('Failed to save receipt:', error);
-  //     this.toastr.error(error.message || 'Failed to save receipt');
+  //     console.error('Failed to save payment:', error);
+  //     this.toastr.error(error.message || 'Failed to save payment');
   //   } finally {
   //     this.isSaving = false;
   //   }
   // }
 
     onSubmit(isPostingTrue?: boolean) {
-    const formValue = this.receiptForm.getRawValue();
+    const formValue = this.paymentForm.getRawValue();
     const detailItems = this.detailItems.getRawValue();
     if (this.detailItems.length === 0) {
-      this.appSettingService.showError('Please add at least one receipt detail');
+      this.appSettingService.showError('Please add at least one payment detail');
       return;
     }
 
@@ -546,9 +540,9 @@ export class ReceiptEntryComponent implements OnInit {
       return;
     }
 
-    if (this.receiptForm.invalid) {
+    if (this.paymentForm.invalid) {
       this; this.appSettingService.showError('Please fill all required fields');
-      this.markFormGroupTouched(this.receiptForm);
+      this.markFormGroupTouched(this.paymentForm);
       return;
     }
     this.isSaving = true;
@@ -627,25 +621,25 @@ export class ReceiptEntryComponent implements OnInit {
     console.log("PAYLOAD", payload);
 
     if (this.isEditMode) {
-      this.accountService.updateReceiptById(this.headerId, payload).subscribe(
+      this.paymentService.updatePayment(this.headerId, payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Receipt updated successfully');
+            this.appSettingService.showSuccess('Payment updated successfully');
             const id = resp.data?.voucherHeader?.VoucherHeaderSid;
-            this.loadReceipt(this.headerId)
+            this.loadPayment(this.headerId)
           } else {
             this.appSettingService.showError(resp.message);
           }
         }
       );
     } else {
-      this.accountService.createReceipt(payload).subscribe(
+      this.paymentService.createPayment(payload).subscribe(
         (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Receipt created successfully');
+            this.appSettingService.showSuccess('Payment created successfully');
             const id = resp.data?.voucherHeader?.VoucherHeaderSid;
             if (id) {
-              this.router.navigate(['accounts/receipt/entry', id]);
+              this.router.navigate(['accounts/payment/entry', id]);
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -656,15 +650,15 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   /**
- * Load existing receipt for editing
+ * Load existing payment for editing
  */
-  loadReceipt(receiptId: number) {
+  loadPayment(paymentId: number) {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      VoucherHeaderSid: receiptId
+      VoucherHeaderSid: paymentId
     }
-    this.accountService.getReceiptById(payload).subscribe(
+    this.paymentService.getPaymentById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
@@ -676,9 +670,9 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   patchValues(response: any) {
-    this.receiptData = response;
+    this.paymentData = response;
     const { VoucherDetail, VoucherTransaction, voucherMatchings, ...headerInfo } = response;
-    this.receiptForm.patchValue({
+    this.paymentForm.patchValue({
       VoucherNumber: headerInfo.VoucherNumber,
       CashOrBank: headerInfo.CashOrBank === "C",
       MultiBranch: headerInfo.MultiBranch === "Y",
@@ -756,7 +750,7 @@ export class ReceiptEntryComponent implements OnInit {
     })
 
     if(response.PostStatus === 'P'){
-      this.receiptForm.disable();
+      this.paymentForm.disable();
     }
 
     const voucherMatchingHeader = response.voucherMatchingHeader[0] || [];
@@ -771,7 +765,7 @@ export class ReceiptEntryComponent implements OnInit {
  * Reset form
  */
   resetForm(): void {
-    this.receiptForm.reset();
+    this.paymentForm.reset();
     this.detailItems.clear();
     this.interBranches.clear();
     this.addInterBranch();
@@ -789,7 +783,7 @@ export class ReceiptEntryComponent implements OnInit {
   // Section-2 VoucherDetail Related
 
   get detailItems(): FormArray {
-    return this.receiptForm.get('detailItems') as FormArray;
+    return this.paymentForm.get('detailItems') as FormArray;
   }
 
   constructDetailItems(data?: any): FormGroup {
@@ -889,8 +883,8 @@ export class ReceiptEntryComponent implements OnInit {
 
   private subscribeToPartyAndBankChanges(): void {
     combineLatest([
-      this.receiptForm.get('CustomerBranchSid').valueChanges,
-      this.receiptForm.get('BankCOA').valueChanges
+      this.paymentForm.get('CustomerBranchSid').valueChanges,
+      this.paymentForm.get('BankCOA').valueChanges
     ]).pipe(
       takeUntil(this.destroy$)
     ).subscribe(([partySid, bankCoaSid]) => {
@@ -908,7 +902,7 @@ export class ReceiptEntryComponent implements OnInit {
       SelectedBankCoaId: bankCoaSid
     })
     // 1. Find the selected bank/cash ledger
-    const isCashMode = this.receiptForm.get('CashOrBank')?.value;
+    const isCashMode = this.paymentForm.get('CashOrBank')?.value;
     const bankLedgerSource = isCashMode ? this.cashTypeLedgers : this.bankTypedLedgers;
     const bankLedger = bankLedgerSource.find(ledger => ledger.COAMasterSid === bankCoaSid);
 
@@ -930,7 +924,7 @@ export class ReceiptEntryComponent implements OnInit {
       Sno: 1,
       COAMasterSid: partyLedger.COAMappedId,
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
-      DrCr: 'D',
+      DrCr: 'C',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
     }
@@ -943,7 +937,7 @@ export class ReceiptEntryComponent implements OnInit {
       Sno: 2,
       COAMasterSid: bankLedger.COAMasterSid,
       LedgerMasterSid: bankLedger.LedgerMasterSid,
-      DrCr: 'C',
+      DrCr: 'D',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
     }
@@ -968,7 +962,7 @@ export class ReceiptEntryComponent implements OnInit {
       ledgerCtrl.enable();
       ledgerCtrl.setValidators([Validators.required]);
       this.accountService.getLedgerByCOAMasterSid({
-        COAMasterSid: coa.COAMasterSid,
+        COAMasterSid: coa.COAMappedId,
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         DrCr : 'C'
       }).subscribe(
@@ -1112,7 +1106,7 @@ export class ReceiptEntryComponent implements OnInit {
   // Section-3 Voucher Matching Related
 
   get voucherMatchings(): FormArray {
-    return this.receiptForm.get('voucherMatchings') as FormArray;
+    return this.paymentForm.get('voucherMatchings') as FormArray;
   }
 
   patchOutstandingFormArray(transactions: any[]) {
@@ -1312,11 +1306,11 @@ export class ReceiptEntryComponent implements OnInit {
 
 
   get r(): { [key: string]: AbstractControl } {
-    return this.receiptForm.controls || {}
+    return this.paymentForm.controls || {}
   }
 
   get interBranches(): FormArray {
-    return this.receiptForm.get('interBranches') as FormArray;
+    return this.paymentForm.get('interBranches') as FormArray;
   }
 
   /**
@@ -1362,15 +1356,15 @@ export class ReceiptEntryComponent implements OnInit {
 
 
   // async searchOutstanding(modal?: any): Promise<void> {
-  //   const customerSid = this.receiptForm.get('LedgerMasterSid')?.value;
+  //   const customerSid = this.paymentForm.get('LedgerMasterSid')?.value;
   //   if (!customerSid) {
   //     this.toastr.warning('Please select a customer first');
   //     return;
   //   }
 
   //   try {
-  //     // Use receipt service which calls outstanding service
-  //     const invoices = await this.receiptService.getCustomerOutstanding(this.CompanyMasterSid, customerSid).toPromise();
+  //     // Use payment service which calls outstanding service
+  //     const invoices = await this.paymentService.getCustomerOutstanding(this.CompanyMasterSid, customerSid).toPromise();
 
   //     if (invoices && invoices.length > 0) {
   //       this.outstandingInvoices = invoices;
@@ -1396,7 +1390,7 @@ export class ReceiptEntryComponent implements OnInit {
       total += matchedAmount;
     });
 
-    this.receiptForm.patchValue({
+    this.paymentForm.patchValue({
       TotalInvoiceAmount: total,
     });
   }
@@ -1405,29 +1399,29 @@ export class ReceiptEntryComponent implements OnInit {
    * Calculate TDS amount
    */
   calculateTDS(): void {
-    const hasTDS = this.receiptForm.get('HasTDS')?.value;
+    const hasTDS = this.paymentForm.get('HasTDS')?.value;
     if (!hasTDS) {
-      this.receiptForm.patchValue({ TDSAmount: 0 });
+      this.paymentForm.patchValue({ TDSAmount: 0 });
       return;
     }
 
-    const totalAmount = this.receiptForm.get('TotalInvoiceAmount')?.value || 0;
-    const tdsPercentage = this.receiptForm.get('TDSPercentage')?.value || 0;
+    const totalAmount = this.paymentForm.get('TotalInvoiceAmount')?.value || 0;
+    const tdsPercentage = this.paymentForm.get('TDSPercentage')?.value || 0;
 
-    const tdsAmount = this.receiptService.calculateTDS(totalAmount, tdsPercentage);
-    this.receiptForm.patchValue({ TDSAmount: tdsAmount });
+    const tdsAmount = this.paymentService.calculateTDS(totalAmount, tdsPercentage);
+    this.paymentForm.patchValue({ TDSAmount: tdsAmount });
   }
 
   /**
-   * Calculate net receipt amount
+   * Calculate net payment amount
    */
-  calculateNetAmount(): void {
-    const totalAmount = this.receiptForm.get('TotalInvoiceAmount')?.value || 0;
-    const tdsAmount = this.receiptForm.get('TDSAmount')?.value || 0;
+  // calculateNetAmount(): void {
+  //   const totalAmount = this.paymentForm.get('TotalInvoiceAmount')?.value || 0;
+  //   const tdsAmount = this.paymentForm.get('TDSAmount')?.value || 0;
 
-    const netAmount = this.receiptService.calculateNetAmount(totalAmount, tdsAmount);
-    this.receiptForm.patchValue({ NetReceiptAmount: netAmount });
-  }
+  //   const netAmount = this.paymentService.calculateNetAmount(totalAmount, tdsAmount);
+  //   this.paymentForm.patchValue({ NetPaymentAmount: netAmount });
+  // }
 
 
 
@@ -1455,7 +1449,7 @@ export class ReceiptEntryComponent implements OnInit {
    * Check if field has error
    */
   hasError(fieldName: string, errorType?: string): boolean {
-    const field = this.receiptForm.get(fieldName);
+    const field = this.paymentForm.get(fieldName);
     if (!field) return false;
 
     if (errorType) {
@@ -1466,12 +1460,12 @@ export class ReceiptEntryComponent implements OnInit {
 
   onCurrencyChange(selected: any) {
     if (!selected) {
-      this.receiptForm.patchValue({
+      this.paymentForm.patchValue({
         CurrencyCode: null
       })
       return;
     } else {
-      this.receiptForm.patchValue({
+      this.paymentForm.patchValue({
         CurrencyCode: selected.currencyCode
       })
     }
@@ -1479,7 +1473,7 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   patchCurrencyExchangeRate() {
-    const currencySid = this.receiptForm.get('CurrencyMasterSid')?.value;
+    const currencySid = this.paymentForm.get('CurrencyMasterSid')?.value;
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
     console.log('Entered patchCurrencyExchangeRate', {
       FromCurrencyId: currencySid,
@@ -1487,13 +1481,13 @@ export class ReceiptEntryComponent implements OnInit {
     });
 
     if (currencySid === companyCurrency && currencySid !== null) {
-      this.receiptForm.patchValue({
+      this.paymentForm.patchValue({
         ExchangeRate: 1
       })
       return;
     }
 
-    const fromCurrencyCode = this.receiptForm.get('CurrencyCode')?.value;
+    const fromCurrencyCode = this.paymentForm.get('CurrencyCode')?.value;
     const toCurrencyCode = this.currencyList.find(c => c.CurrencyMasterSid === companyCurrency)?.currencyCode;
     if (!fromCurrencyCode || !toCurrencyCode) {
       return;
@@ -1511,7 +1505,7 @@ export class ReceiptEntryComponent implements OnInit {
       (resp: any) => {
         if (resp?.status && resp.data) {
           console.log('PATCHING EXCHANGE RATE', resp.data);
-          this.receiptForm.patchValue({
+          this.paymentForm.patchValue({
             ExchangeRate: resp.data
           })
         }
@@ -1523,7 +1517,7 @@ export class ReceiptEntryComponent implements OnInit {
     console.log("Selected Party", party);
     this.errorLogger();
     if (!party) {
-      this.receiptForm.patchValue({
+      this.paymentForm.patchValue({
         PartyMasterSid: null,
         PartyName: '',
         PartyAddress: '',
@@ -1534,7 +1528,7 @@ export class ReceiptEntryComponent implements OnInit {
       })
       return;
     }
-    this.receiptForm.patchValue({
+    this.paymentForm.patchValue({
       PartyMasterSid: party.SubledgerMasterSid,
       PartyName: party.CustomerName,
       PartyAddress: party.Address,
@@ -1546,7 +1540,7 @@ export class ReceiptEntryComponent implements OnInit {
     if (!this.r['BankPartyName']?.value) {
       this.r['BankPartyName']?.setValue(party.CustomerName);
     }
-    console.log("FORM VALUE AFTER CUSTOMER SELECTED", this.receiptForm.value);
+    console.log("FORM VALUE AFTER CUSTOMER SELECTED", this.paymentForm.getRawValue());
   }
 
   // openSearchModal() {
@@ -1572,7 +1566,7 @@ export class ReceiptEntryComponent implements OnInit {
   // }
 
   toggleMultiBranch(event: any): void {
-    const ctrl = this.receiptForm.get('MultiBranch');
+    const ctrl = this.paymentForm.get('MultiBranch');
     const element = event.target as HTMLInputElement;
     if (event instanceof KeyboardEvent && event.key === 'Enter') {
       element.checked = !element.checked;
@@ -1595,7 +1589,7 @@ export class ReceiptEntryComponent implements OnInit {
 
   toggleCashOrBank(event: any) {
     const element = event.target as HTMLInputElement;
-    const ctrl = this.receiptForm.get('CashOrBank');
+    const ctrl = this.paymentForm.get('CashOrBank');
     if (event instanceof KeyboardEvent && event.key === 'Enter') {
       element.checked = !element.checked;
       console.log("KEYBOARD EVENT TRIGGERED", {
@@ -1779,9 +1773,9 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   public errorLogger(): void {
-    console.log('Form Status:', this.receiptForm.status);
-    if (this.receiptForm.invalid) {
-      const invalid = this.findInvalidControlsRecursive(this.receiptForm);
+    console.log('Form Status:', this.paymentForm.status);
+    if (this.paymentForm.invalid) {
+      const invalid = this.findInvalidControlsRecursive(this.paymentForm);
       console.log('Invalid controls:', invalid);
     } else {
       console.log('No invalid controls found.');
