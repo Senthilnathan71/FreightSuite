@@ -772,6 +772,7 @@ onFinalSave() {
       
         const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
           const detail = {
+            VoucherDetailSid: d.VoucherDetailSid,
             ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
             ChargeDescription: d.ChargeDescription || '',
             HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -779,7 +780,6 @@ onFinalSave() {
             DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
             NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
             DrCr: d.DrCr || 'D',
-            PlaceOfSupply: d.PlaceOfSupply || '',
             CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
             CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
             Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -826,6 +826,7 @@ onFinalSave() {
           InvoiceType: raw.InvoiceType || 'REG',
           GSTType: raw.GSTType || '',
           CurrencyMasterSid: currencyMasterId,
+          PostStatus: raw.PostStatus || '',
           CurrencyCode: raw.CurrencyCode || undefined,
           ExchangeRate: raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
           MasterJobSid: masterJobSid,
@@ -834,7 +835,6 @@ onFinalSave() {
           Remarks: raw.Remarks || undefined,
           Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
           status: (raw.status != null ? raw.status : 'A'),
-          PostStatus: postStatus, // Add PostStatus here
           VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
         };
       
@@ -919,18 +919,18 @@ onFinalSave() {
           
           this.spinner.hide();
           if (result.status) {
-            this.appSettingService.showSuccess('Invoice posted successfully!');
+            this.appSettingService.showSuccess('Credted Note posted successfully!');
             this.creditNoteData.PostStatus = 'P'; // Update local state
             
             // Navigate to list or stay on page but disable edits
-            this.router.navigate(['operation/invoice/list']);
+            this.router.navigate(['operation/credit-note/list']);
           } else {
-            this.appSettingService.showError(result.message || 'Failed to post invoice.');
+            this.appSettingService.showError(result.message || 'Failed to post Credit Note.');
           }
         } catch (error) {
           this.spinner.hide();
           console.error('Post voucher error:', error);
-          this.appSettingService.showError('Failed to post invoice. Please try again.');
+          this.appSettingService.showError('Failed to post Credit Note. Please try again.');
         }
       }
       async loadDepartments(companyMasterSid: number) {
@@ -1425,6 +1425,7 @@ private getCustomerCountryCode(customer: any): string {
 
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
+      VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
       ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null, disabled: true}],
