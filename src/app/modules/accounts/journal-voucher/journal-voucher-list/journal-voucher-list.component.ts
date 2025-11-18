@@ -18,7 +18,7 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
-import { JournalVoucherService } from '../journal-voucher.service';
+import { JournalVoucherService, JournalVoucherSearchResponse } from '../journal-voucher.service';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -149,12 +149,12 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     };
 
     return this.journalVoucherService.searchJournalVouchers(params).pipe(
-      map(response => {
+      map((response: JournalVoucherSearchResponse) => {
         return {
           status: true,
           data: {
-            items: response.data || [],
-            totalCount: response.total || 0
+            items: response.data?.items || [],
+            totalCount: response.data?.totalCount 
           }
         };
       })
@@ -177,14 +177,14 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items.map(item => ({
+      this.allItems = response.data.items.map((item: any) => ({
         ...item,
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
-        StatusLabel: item.Status === 'Active' ? 'Active' : 'Inactive',
+        StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended',
         VoucherDateFormatted: new Date(item.VoucherDate).toLocaleDateString(),
         PostDateFormatted: item.PostDate ? new Date(item.PostDate).toLocaleDateString() : '-',
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
+     this.totalLengthOfCollection = response.data.totalCount || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -362,12 +362,12 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
   }
 
   viewJournalVoucher(item: any): void {
-    this.router.navigate(['/accounts/journal-voucher/view', item.VoucherHeaderSid]);
-  }
+  this.router.navigate(['/accounts/journal-voucher/entry', item.VoucherHeaderSid]);
+}
 
-  editJournalVoucher(item: any): void {
-    this.router.navigate(['/accounts/journal-voucher/entry', item.VoucherHeaderSid]);
-  }
+editJournalVoucher(item: any): void {
+  this.router.navigate(['/accounts/journal-voucher/entry', item.VoucherHeaderSid]);
+}
 
   postJournalVoucher(item: any): void {
     const confirmed = confirm(`Are you sure you want to post voucher ${item.VoucherNumber}? This action cannot be undone.`);
@@ -377,12 +377,10 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
       this.journalVoucherService.postJournalVoucher(item.VoucherHeaderSid).subscribe({
         next: (response) => {
           this.spinner.hide();
-          if (response.success) {
+          if (response.status) {
             this.appSettingService.showSuccess('Journal voucher posted successfully', 'Success');
             this.searchJournalVoucher(); // Refresh list
-          } else {
-            this.appSettingService.showError(response.errors?.join(', ') || 'Validation failed', 'Validation Failed');
-          }
+          } 
         },
         error: (err) => {
           this.spinner.hide();
@@ -399,11 +397,8 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.spinner.show();
-        this.journalVoucherService.deleteJournalVoucher(
-          item.VoucherHeaderSid,
-          this.currentCompany?.CompanyMasterSid,
-          this.currentBranch?.BranchMasterSid
-        ).subscribe({
+        // Use item.VoucherHeaderSid instead of just VoucherHeaderSid
+        this.journalVoucherService.deleteJournalVoucherById(item.VoucherHeaderSid).subscribe({
           next: (resp: any) => {
             this.spinner.hide();
             this.appSettingService.showSuccess("Journal Voucher Deleted!");

@@ -2005,7 +2005,7 @@ private async postVoucher(voucherHeaderSid: number) {
       this.vendorInvoiceData.PostStatus = 'P'; // Update local state
       
       // Navigate to list or stay on page but disable edits
-      this.router.navigate(['operation/invoice/list']);
+      this.router.navigate(['/operation/vendor-invoice/list']);
     } else {
       this.appSettingService.showError(result.message || 'Failed to post invoice.');
     }

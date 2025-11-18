@@ -18,10 +18,11 @@ import { PaymentListComponent } from './payment/payment-list/payment-list.compon
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 import { PaymentViewComponent } from './payment/payment-view/payment-view.component';
 import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-list/journal-voucher-list.component';
-import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
+
 import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
 import { PaymentEntryFinalComponent } from './payment/payment-entry-final/payment-entry-final.component';
+import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -303,6 +304,18 @@ export const AccountRoutes: Routes = [
           title: "Journal-Voucher",
           urls: [
             { title: "Accounts", url: "/accounts" },
+            { title: "Journal-Voucher" },
+          ],
+        },
+      },
+      {
+        path: "journal-voucher/entry/:id",
+        component: JournalVoucherEntryComponent,
+        data: {
+          title: "Journal-Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Journal-Voucher", url: "/accounts/journal-voucher/list" },
             { title: "Journal-Voucher" },
           ],
         },
