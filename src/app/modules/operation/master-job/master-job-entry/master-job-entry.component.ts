@@ -52,6 +52,7 @@ import { ReleaseLetterComponent } from '../reports/release-letter/release-letter
 import { ReleaseOrderComponent } from '../reports/release-order/release-order.component';
 import { PackingListComponent } from '../reports/packing-list/packing-list.component';
 import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest.component';
+import { JobCardComponent } from '../reports/job-card/job-card.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -2106,6 +2107,12 @@ handleEdocChange(event: any) {
     const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
     return agent ? agent.CustomerName : '';
   }
+  getYardName(yardSid: number): string {
+  if (!yardSid || this.yardList.length === 0) return '';
+  const yard = this.yardList.find(yard => yard.CustomerMasterSid === yardSid);
+  return yard ? yard.CustomerName : '';
+}
+
 
   patchShipments(shipments: any[]) {
     this.attachedBookings.clear();
@@ -2382,7 +2389,7 @@ getAgentBranchName(AgentSid: number): string {
       modalRef.componentInstance.containerTypeList=this.containerTypeList;
       modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
       modalRef.componentInstance.packageTypeList=this.packageTypeList;
-         modalRef.componentInstance.agentList=this.agentList;
+      modalRef.componentInstance.agentList=this.agentList;
     }
 
      reportcargomanifest() {
@@ -2395,6 +2402,7 @@ getAgentBranchName(AgentSid: number): string {
       modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
       modalRef.componentInstance.packageTypeList=this.packageTypeList;
       modalRef.componentInstance.agentList=this.agentList;
+      modalRef.componentInstance.yardList=this.yardList;
 
     }
 
@@ -2423,11 +2431,20 @@ getAgentBranchName(AgentSid: number): string {
       modalRef.componentInstance.containerTypeList=this.containerTypeList;
     }
 
-     reportjobCard(content: TemplateRef<any>) {
-      this.modalService.open(content, {
+     reportjobCard() {
+     const modalRef = this.modalService.open(JobCardComponent, {
         size: 'xl',
         scrollable: true,
       });
+      modalRef.componentInstance.masterJobData=this.masterJobData; 
+      modalRef.componentInstance.containerTypeList=this.containerTypeList;
+      modalRef.componentInstance.masterJobContainers=this.masterJobData.containers || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
+      modalRef.componentInstance.agentList=this.agentList;
+      modalRef.componentInstance.currencyList= this.currencyList;
+      modalRef.componentInstance.chargeList= this.chargeList;
+      modalRef.componentInstance.profitSummary =this.profitSummary || [];
+      modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
     }
     
       reportPackingList() {
@@ -2436,10 +2453,6 @@ getAgentBranchName(AgentSid: number): string {
         scrollable: true,
       });
       modalRef.componentInstance.masterJobData=this.masterJobData;
-
-
-
-      
     }
     
 

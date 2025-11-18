@@ -34,7 +34,7 @@
                             [disabled]="isLoading">Release Letter</button>
                             <button class="text-dark" ngbDropdownItem  (click)="reportreleaseOrder()"
                             [disabled]="isLoading">Release Order</button>
-                             <button class="text-dark" ngbDropdownItem  (click)="reportjobCard(jobCardPrint)"
+                             <button class="text-dark" ngbDropdownItem  (click)="reportjobCard()"
                             [disabled]="isLoading">Job Card</button>
                             <button class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
                             </button>
@@ -3227,6 +3227,8 @@
     </div>
 </ng-template>
 
+<!-- release print -->
+
 <ng-template #releasePrint let-modal>
 
     <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
@@ -3375,6 +3377,8 @@
         </div>
     </div>
 </ng-template>
+
+<!-- release order -->
 
 <ng-template #releaseOrderPrint let-modal>
 
@@ -3596,6 +3600,8 @@
         </div>
     </div>
 </ng-template>
+
+<!-- job card -->
 
 <ng-template #jobCardPrint let-modal>
 
