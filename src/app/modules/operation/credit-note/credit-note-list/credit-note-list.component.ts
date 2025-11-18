@@ -305,16 +305,16 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string',        
+        dataType: 'string',   
+        template: 'link'     
       },
       {
         key: 'VoucherDate',
-        label: 'Date ',
+        label: 'Date',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"150px"
       },
       {
         key: 'PartyName',
@@ -332,7 +332,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
+        width: '120px',
       },
       //  {
       //   key: 'LocalAmount',
@@ -455,6 +455,11 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   onTableActionClick(event: TableEventData): void {
+    if (event.column?.key === 'ReversalVoucherDisplay') {
+    // Clicking VENDOR INVOICE link
+    this.navigateToInvoice(event.row.ReversalVoucher);
+    return;
+  }
       if (event.action === 'view') {
         this.editbyrow(event.row);
       } else if (event.action === 'delete') {
@@ -465,6 +470,15 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     editbyrow(row:any) {
      this.router.navigate(['operation/credit-note/entry/', row.VoucherHeaderSid]);
   }
+
+  navigateToInvoice(voucherSid: number) {
+  if (!voucherSid) return;
+
+  this.router.navigate([
+    '/operation/invoice/entry',
+    voucherSid
+  ]);
+}
 
   deleteCreditNoteByRow(row: any) {
     this.deleteCreditNote(row.VoucherHeaderSid);

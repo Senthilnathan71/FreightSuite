@@ -1,25 +1,28 @@
-<!-- vendor-invoice-entry.component.html -->
-<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
-  <p style="color: white;" class="m-0">Loading...</p>
-</ngx-spinner>
 
 <div class="row compact-form">
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
-          'Create Vendor Invoice') }}</h5>
+        <h5 class="page-title mb-0 text-info">Vendor Credit Note</h5>
+        <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
+      <div class="pill-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <span class="pill-label">
+        Outstanding: {{ invoiceOutstandingAmount | numberFormat }} {{ selectedOutstandingInvoice?.CurrencyCode }}
+      </span>
+    </div>
       </div>
       
       <div class="col-md-8 pb-1">
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
              
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+          <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
         (click)="openVendorInvoiceUploadModal()" 
         [disabled]="isViewMode">
   <i class="fas fa-upload me-1"></i> Upload
-</button>
+</button> -->
  <button  type="button" 
             class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
             (click)="onFinalSave()" 
@@ -27,11 +30,11 @@
       <i class="fas fa-check-circle me-1"></i> Final
     </button>
 
-    <button *ngIf="isViewMode && isPosted" type="button" 
+    <!-- <button *ngIf="isViewMode && isPosted" type="button" 
             class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
             disabled>
       <i class="fas fa-check-circle me-1"></i> Posted
-    </button>
+    </button> -->
     
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
@@ -42,9 +45,9 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button *ngIf="!isViewMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onSubmit()" [disabled]="vendorCreditNoteForm.invalid || isSaving">
-            <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="onSubmit()">
+            <i class="fas fa-save me-1"></i> Save
           </button>
         </div>
       </div>
@@ -103,7 +106,7 @@
             <aside class="col-md-2">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
-                  <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker
+                  <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker id="VoucherDate"
                     #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="VoucherDate"
                     [footerTemplate]="footerTemplate1" [class.is-invalid]="isFieldInvalid('VoucherDate')" />
                   <label class="input-label" for="VoucherDate">
@@ -180,30 +183,10 @@
 
             <!-- Vendor Address (readonly) -->
             <!-- Vendor Branch Selection -->
-<aside class="col-md-2">
-  <div class="custom-form-group custom-form-group-select"
-    [class.filled]="!!vendorCreditNoteForm.get('CustomerBranchSid')?.value">
-    <ng-select 
-  [items]="vendorBranchList"
-  bindLabel="Address"
-  bindValue="CustomerBranchSid"
-  formControlName="CustomerBranchSid"
-  (change)="onVendorBranchChange($event)"
-  [appendTo]="'body'">
-  <ng-template ng-option-tmp let-item="item">
-    <div>
-      <strong>{{ item.CustomerName }}</strong><br>
-      <small>{{ item.Address }}</small>
-    </div>
-  </ng-template>
-</ng-select>
-
-<!-- Display selected address below the dropdown -->
-<!-- <div *ngIf="vendorInvoiceForm.get('PartyAddress').value">
-  <label>Vendor Address:</label>
-  <div>{{ vendorInvoiceForm.get('PartyAddress').value }}</div>
-</div> -->
-<label class="input-label">Vendor Address <span class="text-danger"></span></label>
+             <aside class="col-md-2">
+  <div class="custom-form-group">
+    <input type="text" class="custom-input-field sm" formControlName="PartyAddress" placeholder="" readonly id="PartyAddress">
+    <label class="input-label" for="PartyAddress">Vendor Address</label>
   </div>
 </aside>
 
@@ -221,17 +204,17 @@
 <!-- GST Type -->
 <aside class="col-md-2">
   <div class="custom-form-group">
-    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="">
-    <label class="input-label">GST Type</label>
+    <input type="text" class="custom-input-field sm" formControlName="GSTType" placeholder="" id="GSTType">
+    <label class="input-label" for="GSTType">GST Type</label>
   </div>
 </aside>
 
            <!-- Add this temporarily for debugging -->
 <aside class="col-md-2">
   <div class="custom-form-group">
-    <input type="text" formControlName="PlaceOfSupply" placeholder="" 
+    <input type="text" formControlName="PlaceOfSupply" placeholder="" id="PlaceOfSupply"
       class="custom-input-field sm" readonly />
-    <label class="input-label">Place of Supply</label>
+    <label class="input-label" for="PlaceOfSupply">Place of Supply</label>
   </div>
   
 </aside>
@@ -258,7 +241,7 @@
                     {{ item.CurrencyCode }} - {{ item.CurrencyName }}
                   </ng-template> -->
                 </ng-select>
-                <label for="CurrencyCode" class="input-label">
+                <label class="input-label">
                   Currency <span class="text-danger">*</span>
                 </label>
               </div>
@@ -291,7 +274,7 @@
             <aside class="col-md-2">
               <div class="d-flex">
                 <div class="custom-form-group custom-form-group-select-date w-100">
-                  <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="billDate" ngbDatepicker
+                  <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="billDate" ngbDatepicker id="BillDate"
                     #d="ngbDatepicker" (click)="d.toggle()" readonly formControlName="BillDate"
                     [footerTemplate]="footerTemplate" [class.is-invalid]="isFieldInvalid('BillDate')" />
                   <label class="input-label" for="BillDate">
@@ -352,6 +335,16 @@
               </div>
             </aside>
 
+            <aside class="col-md-2">
+
+                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!vendorCreditNoteForm.get('CreditNoteReason')?.value">  
+                  <ng-select [items]="reason" bindLabel="name" bindValue="name" placeholder=""
+                    formControlName="CreditNoteReason">
+                  </ng-select>
+                      <label class="input-label">CreditNote Reason</label>
+                    </div>
+              </aside>
+
             <!-- Status -->
             <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
@@ -359,7 +352,7 @@
                 <ng-select [items]="statusList" bindLabel="name" bindValue="value" formControlName="Status"
                   appendTo="body" class="ng-select">
                 </ng-select>
-                <label for="Status" class="input-label">Status</label>
+                <label class="input-label">Status</label>
               </div>
             </aside>
 
@@ -374,7 +367,6 @@
           </div> -->
          
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <h5 class="mb-0"> Vendor Invoice Line Items</h5>
               <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
                 <i class="fas fa-plus me-1"></i>Add Charge
               </button>
@@ -456,7 +448,7 @@
 
               <!-- Description -->
               <td>
-                <input class="custom-input-field sm" formControlName="ChargeDescription" readonly>
+                <span>{{ row.get('ChargeDescription')?.value || '-' }}</span>
               </td>
 
               <!-- HSN/SAC -->
@@ -479,14 +471,12 @@
 
               <!-- No of Unit -->
               <td>
-                <input type="number" min="0" class="custom-input-field sm"
-                  formControlName="NumberOfUnit" (input)="onDetailChange(i, 'NumberOfUnit')">
+                <span>{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
               </td>
 
               <!-- Dr/Cr -->
               <td>
-                <ng-select [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
-                  bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
+                <span>{{ row.get('DrCr')?.value || '-' }}</span>
               </td>
 
               <!-- Currency -->
@@ -500,8 +490,20 @@
 
               <!-- Rate -->
               <td>
-                <input type="number" step="0.01" class="custom-input-field sm"
-                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
+                <input *ngIf="!isEditMode" type="number" step="0.01" class="custom-input-field sm"
+                                  formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
+                                <span *ngIf="isEditMode">{{ row.get('Rate')?.value | numberFormat }}</span>
+                                <div *ngIf="row.get('Rate')?.invalid && row.get('Rate')?.touched" class="invalid-feedback d-block">
+    <div *ngIf="row.get('Rate')?.errors?.['rateExceeded']">
+      Credit note rate cannot exceed original vendor invoice rate
+    </div>
+    <div *ngIf="row.get('Rate')?.errors?.['required']">
+      Rate is required
+    </div>
+    <div *ngIf="row.get('Rate')?.errors?.['min']">
+      Rate must be greater than or equal to 0
+    </div>
+  </div>
               </td>
 
               <!-- Exchange Rate -->
