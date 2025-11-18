@@ -2632,7 +2632,9 @@ ${this.userData['userName']}`;
           })
         modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.chargeList = this.chargeList || [];
-          modalRef.componentInstance.profitSummary = this.profitSummary || [];
+        modalRef.componentInstance.profitSummary = this.profitSummary || [];
+        modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
+        modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     }
 
   reportIndeminty() {
