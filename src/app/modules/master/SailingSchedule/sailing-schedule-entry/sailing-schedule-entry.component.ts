@@ -241,37 +241,65 @@ export class SailingScheduleEntryComponent implements OnInit {
         });
     }
 
-    loadAllFields(){
+    loadAllFields() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-
     const payload = {
         CompanyMasterSid: CompanyMasterSid,
-        types:['carrier']
-    }
-    this.dropdownStore.loadPorts().subscribe();
-    this.dropdownStore.loadVessels().subscribe();
-    this.dropdownStore.loadCustomerTypeData(payload).subscribe();
+        types: ['carrier']
+    };
 
-    if(this.dropdownStore.ports()){
+    // Load all required data first
+    forkJoin({
+        ports: this.dropdownStore.loadPorts(),
+        vessels: this.dropdownStore.loadVessels(),
+        carriers: this.dropdownStore.loadCustomerTypeData(payload)
+    }).subscribe({
+        next: () => {
+            // Initialize port lists with ALL ports initially
+            this.portList = [...this.dropdownStore.ports()];
+            this.filteredPOLList = [...this.dropdownStore.ports()];
+            this.filteredPODList = [...this.dropdownStore.ports()];
 
-        // Initialize filtered lists (if voyage type already selected, apply filter; else show all)
+            // Apply voyage type filter if needed
             const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
-            this.applyPortTypeFilter(currentVoyageType, /*init=*/ true);
-            this.applyPolPodExclusion();
-    
-            // <<< NEW: if schedule data already loaded (edit mode), re-patch POL/POD so dropdowns can match items
-            if (this.sailHeadData) {
-                // Ensure numeric types (match PortMasterSid type)
-                const pol = this.sailHeadData.POLSid ? Number(this.sailHeadData.POLSid) : null;
-                const pod = this.sailHeadData.PODSid ? Number(this.sailHeadData.PODSid) : null;
-                // Patch only POLSid and PODSid (avoid overwriting other fields)
-                this.scheduleForm.patchValue({ POLSid: pol, PODSid: pod });
-                // Re-run exclusion to ensure lists are consistent
-                this.applyPolPodExclusion();
-                // Force change detection so dropdown visual updates
-                this.cdr.detectChanges();
+            this.applyPortTypeFilter(currentVoyageType, true);
+            
+            // If we're in edit mode and have data, ensure POL/POD are displayed
+            if (this.sailHeadData && this.VoyageMasterHeaderSid) {
+                this.ensurePolPodDisplay();
             }
+        },
+        error: (error) => {
+            console.error('Error loading fields:', error);
+        }
+    });
+}
+
+private ensurePolPodDisplay() {
+    if (!this.sailHeadData) return;
+
+    const polSid = this.sailHeadData.POLSid;
+    const podSid = this.sailHeadData.PODSid;
+
+    // If POL exists in data but not in filtered list, add it
+    if (polSid && !this.filteredPOLList.some(p => p.PortMasterSid === polSid)) {
+        const allPorts = this.dropdownStore.ports();
+        const polPort = allPorts.find(p => p.PortMasterSid === polSid);
+        if (polPort) {
+            this.filteredPOLList = [polPort, ...this.filteredPOLList];
+        }
     }
+
+    // If POD exists in data but not in filtered list, add it
+    if (podSid && !this.filteredPODList.some(p => p.PortMasterSid === podSid)) {
+        const allPorts = this.dropdownStore.ports();
+        const podPort = allPorts.find(p => p.PortMasterSid === podSid);
+        if (podPort) {
+            this.filteredPODList = [podPort, ...this.filteredPODList];
+        }
+    }
+
+    this.cdr.detectChanges();
 }
 
     applyPolPodExclusion() {
@@ -305,71 +333,63 @@ export class SailingScheduleEntryComponent implements OnInit {
      * - Tries to detect port type via common keys: PortType, PortCategory, Type.
      */
     applyPortTypeFilter(voyageType: string | null | undefined, init = false) {
-        // If no ports loaded yet, keep empty arrays until loadAllFields sets them.
-        if (!this.dropdownStore.ports() || this.dropdownStore.ports().length === 0) {
-            this.filteredPOLList = [];
-            this.filteredPODList = [];
-            return;
-        }
+    // If no ports loaded yet, return
+    if (!this.dropdownStore.ports() || this.dropdownStore.ports().length === 0) {
+        return;
+    }
 
-        // When voyageType is falsy, restore full list
-        if (!voyageType) {
-            this.filteredPOLList = [...this.dropdownStore.ports()];
-            this.filteredPODList = [...this.dropdownStore.ports()];
-            // If init, do not clear existing selection
-            if (!init) {
-                this.clearPolPodIfNotInList();
-            }
-            this.cdr.markForCheck();
-            return;
-        }
-
-        // Normalize voyageType for comparisons
-        const vt = ('' + voyageType).toLowerCase();
-
-        // mapping function: check multiple possible port fields
-        const portMatchesVoyageType = (port: any) => {
-            if (!port) return false;
-            const vals = [
-                port.PortType,
-                port.PortCategory,
-                port.Type,
-                port.portType,
-                port.port_category,
-                port.port_class
-            ].filter(v => v !== undefined && v !== null).map(v => ('' + v).toLowerCase());
-
-            // direct match
-            if (vals.some(v => v === vt)) return true;
-
-            // some ports may have abbreviations or words: sea -> 'seaport', 'ocean', 'harbour'
-            if (vt === 'sea') {
-                return vals.some(v => v.includes('sea') || v.includes('port') || v.includes('ocean') || v.includes('harb'));
-            }
-            if (vt === 'air') {
-                return vals.some(v => v.includes('air') || v.includes('airport') || v.includes('aero'));
-            }
-            if (vt === 'road') {
-                return vals.some(v => v.includes('road') || v.includes('inland') || v.includes('truck') || v.includes('rail'));
-            }
-
-            return false;
-        };
-
-        // Apply filter
-        const polFiltered = this.dropdownStore.ports().filter(p => portMatchesVoyageType(p));
-        const podFiltered = this.dropdownStore.ports().filter(p => portMatchesVoyageType(p));
-
-        // If filter results are empty, fallback to full list (prevents blank selects)
-        this.filteredPOLList = polFiltered.length ? polFiltered : [...this.dropdownStore.ports()];
-        this.filteredPODList = podFiltered.length ? podFiltered : [...this.dropdownStore.ports()];
-
-        // If currently selected POL/POD not in filtered list, clear them (unless during init)
+    const allPorts = [...this.dropdownStore.ports()];
+    
+    // When voyageType is falsy, show all ports
+    if (!voyageType) {
+        this.filteredPOLList = allPorts;
+        this.filteredPODList = allPorts;
+        this.portList = allPorts;
         if (!init) {
             this.clearPolPodIfNotInList();
         }
         this.cdr.markForCheck();
+        return;
     }
+
+    // Apply voyage type filtering
+    const vt = ('' + voyageType).toLowerCase();
+    
+    const portMatchesVoyageType = (port: any) => {
+        if (!port) return true; // If we can't determine, include it
+        
+        const portType = (port.PortType || port.PortCategory || port.Type || '').toString().toLowerCase();
+        
+        if (vt === 'sea') {
+            return !portType || portType.includes('sea') || portType.includes('port') || 
+                   portType.includes('ocean') || portType.includes('harb');
+        }
+        if (vt === 'air') {
+            return !portType || portType.includes('air') || portType.includes('aero');
+        }
+        if (vt === 'road') {
+            return !portType || portType.includes('road') || portType.includes('inland') || 
+                   portType.includes('truck') || portType.includes('rail');
+        }
+        
+        return true; // Default to including if voyage type doesn't match known types
+    };
+
+    const filteredPorts = allPorts.filter(portMatchesVoyageType);
+    
+    // Use filtered ports, but fallback to all ports if filtering removes everything
+    this.filteredPOLList = filteredPorts.length > 0 ? filteredPorts : allPorts;
+    this.filteredPODList = filteredPorts.length > 0 ? filteredPorts : allPorts;
+    this.portList = filteredPorts.length > 0 ? filteredPorts : allPorts;
+
+    if (!init) {
+        this.clearPolPodIfNotInList();
+    }
+    
+    // Ensure current selections are still available
+    this.ensurePolPodDisplay();
+    this.cdr.markForCheck();
+}
 
     // Clear POL/POD if they do not exist in currently filtered lists
     clearPolPodIfNotInList() {
@@ -396,7 +416,23 @@ export class SailingScheduleEntryComponent implements OnInit {
                     this.sailHeadData = resp.data;
                     const scheduleData = resp.data;
                     console.log('Loading schedule data:', scheduleData);
-
+                    if (this.dropdownStore.ports().length === 0) {
+                    this.dropdownStore.loadPorts().subscribe(() => {
+                        this.patchFormData(scheduleData);
+                    });
+                } else {
+                    this.patchFormData(scheduleData);
+                }
+            } else {
+                this.appSettingService.showError('Error Loading Sailing Schedule');
+            }
+        },
+        (error) => {
+            console.error('Error Loading Sailing Schedule', error);
+        }
+    );
+}
+private patchFormData(scheduleData: any) {
                     // Patch the form first
                     this.scheduleForm.patchValue({
                         ...scheduleData,
@@ -416,23 +452,16 @@ export class SailingScheduleEntryComponent implements OnInit {
                     });
 
                     // Ensure port lists are filtered after form patch
-                    setTimeout(() => {
-                        const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
-                        this.applyPortTypeFilter(currentVoyageType, true);
-                        this.applyPolPodExclusion();
+                     this.ensurePolPodDisplay();
+    
+    // Apply filters
+    const currentVoyageType = this.scheduleForm.get('VoyageType')?.value;
+    this.applyPortTypeFilter(currentVoyageType, true);
+    this.applyPolPodExclusion();
 
-                        // Force change detection
-                        this.cdr.detectChanges();
-                    });
-                } else {
-                    this.appSettingService.showError('Error Loading Sailing Schedule');
-                }
-            },
-            (error) => {
-                console.error('Error Loading Sailing Schedule', error);
-            }
-        );
-    }
+    // Force change detection
+    this.cdr.detectChanges();
+}
 
     // ------- Save / Update header only -------
     onSubmit(){

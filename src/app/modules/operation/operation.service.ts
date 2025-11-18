@@ -1291,4 +1291,16 @@ export class OperationService {
     );
   }
 
+  getLedgerForTaxGroup(payload: {
+  taxGroup: number | number[];
+  InputOrOutput: 'Input' | 'Output';
+  TaxCategory: 'Intra' | 'Inter';
+  CountryMasterSid: number;
+}) {
+  return this.http.post<{ data: any }>('subledgermaster/tax-group', payload).pipe(
+    map((resp: any) => {
+      return resp;
+    })
+  );
+}
 }

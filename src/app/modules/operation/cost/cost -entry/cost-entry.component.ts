@@ -74,6 +74,8 @@ export class CostEntryComponent implements OnInit {
   filterOption: any;
   currentCompany: any;
   currentBranch: any;
+  selectedGSTType: string = 'B2B';
+  placeOfSupply: string = '';
   userData : any;
   digitsAfterDecimal = 3;
   CurrencyLookupConfig = {
@@ -1770,6 +1772,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     // Initialize invoice header
     this.initializeInvoiceHeader(pendingCharges);
+    this.determineGSTTypeAndPlaceOfSupply();
 
     // Load tax groups
     this.loadTaxGroups();
@@ -1841,14 +1844,20 @@ createRateFormGroup(data?: any): FormGroup {
     const customerMaster = charge?.customerMasterBP;
     const customerBranch = charge?.customerBranch;
 
+    console.log('Revenue - Customer Data:', {
+      customerMaster: customerMaster?.CustomerName,
+      customerBranch: customerBranch?.BranchName,
+      country: customerMaster?.countryMaster?.countryCode,
+      gstNo: customerBranch?.GSTNo,
+      panType: customerMaster?.PanType
+    });
+
     if (customerMaster && customerMaster.countryMaster) {
       const countryCode = customerMaster.countryMaster.countryCode;
       
       if (countryCode === 'IN') {
-        // For India - use GSTNo from branch
         this.billingGST_VAT = customerBranch?.GSTNo || '';
       } else {
-        // For other countries - use PanType from customer master
         this.billingGST_VAT = customerMaster?.PanType || '';
       }
     } else {
@@ -1859,14 +1868,20 @@ createRateFormGroup(data?: any): FormGroup {
     const agentMaster = charge?.AgentMaster;
     const agentBranch = charge?.AgentBranch;
 
+    console.log('Cost - Agent Data:', {
+      agentMaster: agentMaster?.CustomerName,
+      agentBranch: agentBranch?.BranchName,
+      country: agentMaster?.countryMaster?.countryCode,
+      gstNo: agentBranch?.GSTNo,
+      panType: agentMaster?.PanType
+    });
+
     if (agentMaster && agentMaster.countryMaster) {
       const countryCode = agentMaster.countryMaster.countryCode;
       
       if (countryCode === 'IN') {
-        // For India - use GSTNo from branch
         this.billingGST_VAT = agentBranch?.GSTNo || '';
       } else {
-        // For other countries - use PanType from agent master
         this.billingGST_VAT = agentMaster?.PanType || '';
       }
     } else {
@@ -1874,13 +1889,7 @@ createRateFormGroup(data?: any): FormGroup {
     }
   }
 
-  console.log('GST-VAT set:', {
-    isRevenue,
-    countryCode: isRevenue ? charge?.customerMasterBP?.countryMaster?.countryCode : charge?.AgentMaster?.countryMaster?.countryCode,
-    GST_VAT: this.billingGST_VAT,
-    hasGSTNo: isRevenue ? !!charge?.customerBranch?.GSTNo : !!charge?.AgentBranch?.GSTNo,
-    hasPanType: isRevenue ? !!charge?.customerMasterBP?.PanType : !!charge?.AgentMaster?.PanType
-  });
+  console.log('Final GST-VAT:', this.billingGST_VAT);
 }
 
   private loadTaxGroups() {
@@ -2602,7 +2611,10 @@ createRateFormGroup(data?: any): FormGroup {
         billingPartyName: this.billingPartyDetails?.CustomerName || this.billingPartyDetails?.VendorName,
         billingPartyAddress: this.billingPartyAddress,
         GST_VAT: this.billingGST_VAT, // Add GST-VAT to payload
-        gstType: gstType
+        gstType: this.selectedGSTType,
+        placeOfSupply: this.placeOfSupply, // Add Place of Supply
+      customerBranchSid: this.getCustomerBranchSid()
+
       },
       
 
@@ -2659,7 +2671,15 @@ createRateFormGroup(data?: any): FormGroup {
     console.error('Error generating voucher:', error);
   }
 }
-
+private getCustomerBranchSid(): number | null {
+  const firstCharge = this.availableCharges[0];
+  if (!firstCharge) return null;
+  
+  const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+  return isRevenue ? 
+    firstCharge.RevenueCustomerBranchSid : 
+    firstCharge.CostAgentBranchSid;
+}
   cancelChargeSelection() {
     this.chargeSelectionModalRef?.close();
     this.selectedCharges.clear();
@@ -2755,4 +2775,113 @@ createRateFormGroup(data?: any): FormGroup {
     });
  
   }
+  private getCompanyState(): string {
+  return this.currentBranch?.stateMaster?.stateName || 
+         this.currentBranch?.StateName ||
+         this.currentCompany?.stateMaster?.stateName || 
+         this.currentCompany?.StateName || 
+         '';
+}
+
+  private determineGSTTypeAndPlaceOfSupply() {
+  console.log('=== DETERMINING GST TYPE AND PLACE OF SUPPLY ===');
+  
+  // Get company state
+  const companyState = this.getCompanyState();
+  console.log('Company State:', companyState);
+  
+  // Get customer/agent state based on voucher type
+  const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+  
+  let billingPartyState = '';
+  
+  if (isRevenue) {
+    // For Revenue (Invoice) - get from customer branch
+    const customerBranch = this.availableCharges[0]?.customerBranch;
+    billingPartyState = customerBranch?.stateMaster?.stateName || 
+                       customerBranch?.StateName || 
+                       customerBranch?.stateMaster?.stateCode || 
+                       customerBranch?.StateCode || 
+                       this.billingPartyDetails?.stateMaster?.stateName || 
+                       this.billingPartyDetails?.StateName || 
+                       '';
+    console.log('Revenue - Customer Branch State:', {
+      customerBranch: customerBranch,
+      stateMaster: customerBranch?.stateMaster,
+      stateName: customerBranch?.stateMaster?.stateName,
+      StateName: customerBranch?.StateName,
+      finalState: billingPartyState
+    });
+  } else {
+    // For Cost (Vendor Invoice) - get from agent branch
+    const agentBranch = this.availableCharges[0]?.AgentBranch;
+    billingPartyState = agentBranch?.stateMaster?.stateName || 
+                       agentBranch?.StateName || 
+                       agentBranch?.stateMaster?.stateCode || 
+                       agentBranch?.StateCode || 
+                       this.billingPartyDetails?.stateMaster?.stateName || 
+                       this.billingPartyDetails?.StateName || 
+                       '';
+    console.log('Cost - Agent Branch State:', {
+      agentBranch: agentBranch,
+      stateMaster: agentBranch?.stateMaster,
+      stateName: agentBranch?.stateMaster?.stateName,
+      StateName: agentBranch?.StateName,
+      finalState: billingPartyState
+    });
+  }
+  
+  console.log('Billing Party State:', billingPartyState);
+  console.log('Billing Party GST:', this.billingGST_VAT);
+  console.log('Is Revenue:', isRevenue);
+
+  // Determine Place of Supply
+  this.placeOfSupply = billingPartyState || companyState || '';
+  console.log('Place of Supply:', this.placeOfSupply);
+
+  // Determine GST Type based on business rules
+  if (this.countryOfCompany?.toLowerCase() === 'india' || 
+      this.currentCompany?.countryMaster?.countryCode?.toLowerCase() === 'in') {
+    
+    if (this.billingGST_VAT && this.billingGST_VAT.trim() !== '') {
+      // Registered dealer with GST number
+      if (companyState === billingPartyState) {
+        this.selectedGSTType = 'B2B';
+        console.log('GST Type: B2B (Same state, registered dealer)');
+      } else {
+        this.selectedGSTType = 'B2B';
+        console.log('GST Type: B2B (Different state, registered dealer)');
+      }
+    } else {
+      // Unregistered dealer
+      if (companyState === billingPartyState) {
+        this.selectedGSTType = 'B2C';
+        console.log('GST Type: B2C (Same state, unregistered dealer)');
+      } else {
+        this.selectedGSTType = 'B2C';
+        console.log('GST Type: B2C (Different state, unregistered dealer)');
+      }
+    }
+
+    // Check for export scenarios
+    const isExport = this.checkIfExportShipment();
+    if (isExport) {
+      this.selectedGSTType = 'EXWP';
+      console.log('GST Type: EXWP (Export shipment)');
+    }
+  } else {
+    // Non-India - no GST
+    this.selectedGSTType = '';
+    console.log('GST Type: Not applicable (Non-India company)');
+  }
+
+  console.log('Final GST Type:', this.selectedGSTType);
+  console.log('=== END GST DETERMINATION ===');
+}
+
+onGSTTypeChange() {
+  console.log('GST Type changed to:', this.selectedGSTType);
+  this.calculateChargeSelectionTax();
+}
+
 }
