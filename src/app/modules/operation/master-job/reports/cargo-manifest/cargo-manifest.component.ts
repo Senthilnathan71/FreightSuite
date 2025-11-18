@@ -77,6 +77,12 @@ getYardName(yardSid: number): string {
   return packageType ? packageType.UOMName : 'Unknown';
 }
 
+ getContainerTypeName(ContainerTypeMasterSid: number): string {
+    if(!this.containerTypeList) return "";
+    const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
+    return containerType ? containerType.ContainerName : '';
+  }
+
   
     modalClose() {
     this.activeModal.close();

@@ -267,7 +267,7 @@
                         </div>
                         <div class="d-flex">
                             <div style="width: 130px; white-space: nowrap;"><strong>Container Type </strong></div>
-                            <p class="">: {{masterJobData?.containers?.[0]?.ContainerType}}</p>
+                            <p class="">: {{getContainerTypeName(masterJobData?.containers?.[0]?.ContainerType)}}</p>
                         </div>
                         <div class="d-flex">
                             <div style="width: 130px; white-space: nowrap;"><strong>SOC Container </strong></div>
@@ -333,29 +333,29 @@
                         </thead>
                         <tbody>
                             <tr *ngfor="">
-                                <td>1</td>
+                                <td></td>
                                 <td class="">: {{masterJobData?.allShipments?.[0]?.HBLNo}}</td>
                                 <td>
-                                    <strong>Shipper:</strong> {{masterJobData?.allShipments?.[0]?.ShipperName}}<br>
-                                    <strong>Consignee:</strong>{{masterJobData?.allShipments?.[0]?.ConsigneeName}}<br>
-                                    <strong>Notify:</strong> {{masterJobData?.allShipments?.[0]?.Notify}}
-                                    {{masterJobData?.allShipments?.[0]?.NotifyAddress}}
+                                    <strong>Shipper:</strong> {{masterJobData?.houseJob?.[0]?.ShipperName}}<br>
+                                    <strong>Consignee:</strong>{{masterJobData?.houseJob?.[0]?.ConsigneeName}}<br>
+                                    <strong>Notify:</strong> {{masterJobData?.houseJob?.[0]?.Notify}}
+                                    {{masterJobData?.houseJob?.[0]?.NotifyAddress}}
                                 </td>
-                                <td>120 PKGS Plastic Toys</td>
-                                <td class="text-end">8,400</td>
-                                <td class="text-end">12.50</td>
-                                <td>PP</td>
-                                <td>Prepaid Ocean Freight</td>
-                                <td>AMS785469</td>
-                                <td>FCL</td>
+                                <td></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                             </tr>
 
 
                             <tr>
                                 <td colspan="3" class="text-end fw-bold">Total</td>
-                                <td class="text-end fw-bold">5</td>
-                                <td class="text-end fw-bold">59,850</td>
-                                <td class="text-end fw-bold">77.35</td>
+                                <td class="text-end fw-bold"></td>
+                                <td class="text-end fw-bold"></td>
+                                <td class="text-end fw-bold"></td>
                                 <td colspan="4"></td>
                             </tr>
                         </tbody>
