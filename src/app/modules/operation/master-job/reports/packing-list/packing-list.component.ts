@@ -17,6 +17,8 @@ export class PackingListComponent {
   currentBranch: any;
   currentDate = new Date();
   @Input() masterJobData: any;
+  @Input() masterJobContainers: any[] = [];
+  @Input() packageTypeList: any[] =[];
 
   constructor(
     private appSettingsService: AppSettingsService,
@@ -33,6 +35,33 @@ export class PackingListComponent {
     );
   }
 
+    get totalNoOfPkg(): number {
+    console.log("Containers",this.masterJobContainers)
+    return this.masterJobContainers.reduce((sum, c) => {
+      const value = Number(c.NoOfPkg) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get totalGrossWeight(): number {
+    return this.masterJobContainers.reduce((sum, c) => {
+      const value = Number(c.GrossWeight) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get totalVolume(): number {
+    return this.masterJobContainers.reduce((sum, c) => {
+      const value = Number(c.Volume) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  getPackageTypeName(pkgTypeSid: number): string {
+  if (!pkgTypeSid) return 'Unknown';
+  const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+  return packageType ? packageType.UOMName : 'Unknown';
+}
 
     modalClose() {
     this.activeModal.close();

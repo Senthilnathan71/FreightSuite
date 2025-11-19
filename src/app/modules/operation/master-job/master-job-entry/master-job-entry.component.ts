@@ -53,6 +53,7 @@ import { ReleaseOrderComponent } from '../reports/release-order/release-order.co
 import { PackingListComponent } from '../reports/packing-list/packing-list.component';
 import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest.component';
 import { JobCardComponent } from '../reports/job-card/job-card.component';
+import { SailingConfirmationComponent } from '../reports/sailing-confirmation/sailing-confirmation.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -2453,6 +2454,20 @@ getAgentBranchName(AgentSid: number): string {
         scrollable: true,
       });
       modalRef.componentInstance.masterJobData=this.masterJobData;
+      modalRef.componentInstance.masterJobContainers=this.masterJobContainers.getRawValue() || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
+    }
+
+    // sailing confirmation
+
+    reportSailingConfirmation(){
+      const modalRef  = this.modalService.open(SailingConfirmationComponent,{
+        size: 'xl',
+        scrollable: true,
+      });
+       modalRef.componentInstance.masterJobData=this.masterJobData;
+      modalRef.componentInstance.masterJobContainers=this.masterJobContainers.getRawValue() || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
     }
     
 
