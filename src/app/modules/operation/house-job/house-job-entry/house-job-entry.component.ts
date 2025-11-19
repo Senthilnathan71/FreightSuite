@@ -50,6 +50,7 @@ import { ReleaseLetterComponent } from '../report/release-letter/release-letter.
 import { ReleaseOrderComponent } from '../report/release-order/release-order.component';
 import { VehicleComponent } from '../vehicle/vehicle.component';
 import { CustomsComponent } from '../customs/customs.component';
+import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-invoice.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -2671,18 +2672,39 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
       }
 
-         reportReleaseOrder() {
-        const modalRef = this.modalService.open(ReleaseOrderComponent, {
-          size: 'xl',
-          scrollable: true,
-        });
-        modalRef.componentInstance.housejobData= this.housejobData || [];
-        // modalRef.componentInstance.cfsList=this.cfsList || [];
-        modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
-        modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
-         modalRef.componentInstance.salesmanList = this.salesmanList || [];
-      }
-  
+  reportReleaseOrder() {
+    const modalRef = this.modalService.open(ReleaseOrderComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    // modalRef.componentInstance.cfsList=this.cfsList || [];
+    modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.salesmanList = this.salesmanList || [];
+  }
+
+  reportPerformaInvoice() {
+    const modalRef = this.modalService.open(PerformaInvoiceComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    // modalRef.componentInstance.cfsList=this.cfsList || [];
+    modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.salesmanList = this.salesmanList || [];
+  }
+
+      // reportMilestoneSummary() {
+      //   const modalRef = this.modalService.open(MilestoneSummaryComponent,{
+      //     size: 'xl',
+      //     scrollable: true,
+      //   })
+      //   modalRef.componentInstance.housejobData = this.housejobData || [];
+      //   modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+      //   modalRef.componentInstance.agentList = this.agentList || [];
+      // }
 // Helper Funstion 
 
  getDepartmentName(DepartmentMasterSid: number) {
