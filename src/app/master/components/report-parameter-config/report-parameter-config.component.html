@@ -1,0 +1,300 @@
+<div class="report-parameter-config-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="row align-items-center">
+      <div class="col">
+        <h3 class="page-title">
+          <i class="mdi mdi-cog"></i> Configure Report Parameters
+        </h3>
+        <p class="text-muted" *ngIf="report">
+          <strong>{{ report.ReportDisplayName }}</strong> ({{ report.ReportName }})
+        </p>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-secondary" (click)="goBack()">
+          <i class="mdi mdi-arrow-left"></i> Back to List
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="card">
+    <div class="card-body text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <p class="text-muted mt-3">Loading parameters...</p>
+    </div>
+  </div>
+
+  <!-- Parameters List -->
+  <div *ngIf="!loading && !showForm" class="card mb-3">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+          <i class="mdi mdi-format-list-bulleted"></i> Parameters ({{ parameters.length }})
+        </h6>
+        <button class="btn btn-primary btn-sm" (click)="showAddForm()">
+          <i class="mdi mdi-plus"></i> Add Parameter
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Parameters Table -->
+      <div *ngIf="parameters.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Parameter Name</th>
+              <th>Display Name</th>
+              <th>Field Type</th>
+              <th>Mandatory</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let param of parameters">
+              <td>
+                <code>{{ param.ParameterName }}</code>
+              </td>
+              <td>
+                <strong>{{ param.ParameterDisplayName }}</strong>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="getFieldTypeBadgeClass(param.ParameterFieldType)">
+                  {{ param.ParameterFieldType }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="param.IsMandatory" class="badge badge-danger">Yes</span>
+                <span *ngIf="!param.IsMandatory" class="badge badge-secondary">No</span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-primary"
+                    (click)="showEditForm(param)"
+                    title="Edit Parameter"
+                  >
+                    <i class="mdi mdi-pencil"></i>
+                  </button>
+                  <button
+                    class="btn btn-danger"
+                    (click)="deleteParameter(param)"
+                    title="Delete Parameter"
+                  >
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Parameters -->
+      <div *ngIf="parameters.length === 0" class="text-center py-5">
+        <i class="mdi mdi-information-outline text-muted" style="font-size: 48px;"></i>
+        <p class="text-muted mt-3">No parameters configured yet.</p>
+        <button class="btn btn-primary" (click)="showAddForm()">
+          <i class="mdi mdi-plus"></i> Add First Parameter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parameter Form -->
+  <div *ngIf="showForm" class="card">
+    <div class="card-header">
+      <h6 class="mb-0">
+        <i class="mdi mdi-pencil"></i>
+        {{ editingParameter ? 'Edit Parameter' : 'Add New Parameter' }}
+      </h6>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="parameterForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <!-- Parameter Name -->
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="parameterName" class="form-label">
+                Parameter Name <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                id="parameterName"
+                class="form-control"
+                formControlName="ParameterName"
+                placeholder="e.g., fromDate"
+                [class.is-invalid]="hasError('ParameterName')"
+              />
+              <small class="form-text text-muted">
+                Use camelCase (letters, numbers, underscores only)
+              </small>
+              <div *ngIf="hasError('ParameterName')" class="invalid-feedback d-block">
+                {{ getErrorMessage('ParameterName') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Parameter Display Name -->
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="parameterDisplayName" class="form-label">
+                Display Name <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                id="parameterDisplayName"
+                class="form-control"
+                formControlName="ParameterDisplayName"
+                placeholder="e.g., From Date"
+                [class.is-invalid]="hasError('ParameterDisplayName')"
+              />
+              <div *ngIf="hasError('ParameterDisplayName')" class="invalid-feedback d-block">
+                {{ getErrorMessage('ParameterDisplayName') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Field Type -->
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="parameterFieldType" class="form-label">
+                Field Type <span class="text-danger">*</span>
+              </label>
+              <select
+                id="parameterFieldType"
+                class="form-control"
+                formControlName="ParameterFieldType"
+                [class.is-invalid]="hasError('ParameterFieldType')"
+              >
+                <option *ngFor="let type of fieldTypes" [value]="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+              <div *ngIf="hasError('ParameterFieldType')" class="invalid-feedback d-block">
+                {{ getErrorMessage('ParameterFieldType') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Is Mandatory -->
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Is Mandatory</label>
+              <div class="form-check">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="isMandatory"
+                  formControlName="IsMandatory"
+                />
+                <label class="form-check-label" for="isMandatory">
+                  Required field for report generation
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dropdown Configuration (shown only for DROPDOWN type) -->
+          <div *ngIf="isDropdownFieldType()" class="col-12">
+            <div class="dropdown-config-section">
+              <h6>Dropdown Configuration</h6>
+
+              <!-- Dropdown Values (JSON) -->
+              <div class="form-group">
+                <label for="dropDownValue" class="form-label">
+                  Dropdown Values (JSON) <span class="text-danger">*</span>
+                </label>
+                <textarea
+                  id="dropDownValue"
+                  class="form-control"
+                  formControlName="DropDownValue"
+                  rows="4"
+                  placeholder='[{"value": 1, "label": "Option 1"}, {"value": 2, "label": "Option 2"}]'
+                  [class.is-invalid]="hasError('DropDownValue')"
+                ></textarea>
+                <small class="form-text text-muted">
+                  JSON array of objects with "value" and "label" properties
+                </small>
+                <div *ngIf="hasError('DropDownValue')" class="invalid-feedback d-block">
+                  {{ getErrorMessage('DropDownValue') }}
+                </div>
+              </div>
+
+              <!-- Parameter Query -->
+              <div class="form-group">
+                <label for="parameterQuery" class="form-label">
+                  Parameter Query (SQL) <span class="text-danger">*</span>
+                </label>
+                <textarea
+                  id="parameterQuery"
+                  class="form-control"
+                  formControlName="ParameterQuery"
+                  rows="3"
+                  placeholder="SELECT id as value, name as label FROM table WHERE status = 'A'"
+                  [class.is-invalid]="hasError('ParameterQuery')"
+                ></textarea>
+                <small class="form-text text-muted">
+                  SQL query to fetch dropdown options (must return "value" and "label" columns)
+                </small>
+                <div *ngIf="hasError('ParameterQuery')" class="invalid-feedback d-block">
+                  {{ getErrorMessage('ParameterQuery') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="status" class="form-label">
+                Status <span class="text-danger">*</span>
+              </label>
+              <select
+                id="status"
+                class="form-control"
+                formControlName="Status"
+                [class.is-invalid]="hasError('Status')"
+              >
+                <option value="A">Active</option>
+                <option value="I">Inactive</option>
+              </select>
+              <div *ngIf="hasError('Status')" class="invalid-feedback d-block">
+                {{ getErrorMessage('Status') }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancelForm()"
+            [disabled]="saving"
+          >
+            <i class="mdi mdi-close"></i> Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="parameterForm.invalid || saving"
+          >
+            <span *ngIf="!saving">
+              <i class="mdi mdi-content-save"></i>
+              {{ editingParameter ? 'Update Parameter' : 'Add Parameter' }}
+            </span>
+            <span *ngIf="saving">
+              <span class="spinner-border spinner-border-sm mr-2" role="status"></span>
+              Saving...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

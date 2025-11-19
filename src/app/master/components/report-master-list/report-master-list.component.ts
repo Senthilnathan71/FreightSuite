@@ -11,7 +11,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MasterService } from '../../master.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
@@ -35,7 +35,7 @@ import { Observable } from 'rxjs';
     PageHeaderComponent
   ],
   templateUrl: './report-master-list.component.html',
-  styleUrl: './report-master-list.component.scss'
+  styleUrls: ['./report-master-list.component.scss']
 })
 export class ReportMasterListComponent extends BaseListComponent implements OnInit {
   allReports: any[] = [];
@@ -59,7 +59,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => this.hasPermission('View')
+        condition: (row: any) => true
       },
       {
         icon: 'fas fa-trash',
@@ -67,7 +67,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
         action: 'delete',
         tooltip: 'Delete',
         class: 'text-danger',
-        condition: (row: any) => this.hasPermission('Delete')
+        condition: (row: any) => true
       }
     ],
     trackByKey: 'ReportMasterSid',
@@ -90,13 +90,13 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       label: 'Create',
       icon: 'fas fa-plus',
       action: 'create',
-      condition: this.hasPermission('Add')
+      condition: true
     },
     {
       label: 'Report',
       icon: 'fas fa-file-alt',
       action: 'report',
-      disabled: this.totalLengthOfCollection === 0
+      disabled: false
     },
     {
       label: 'Reset',
@@ -117,7 +117,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
     super(paginationService);
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {

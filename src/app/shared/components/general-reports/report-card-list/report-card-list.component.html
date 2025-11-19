@@ -1,0 +1,60 @@
+<div class="report-card-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading reports...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && reports.length === 0" class="empty-state text-center py-5">
+    <i class="mdi mdi-file-chart display-1 text-muted"></i>
+    <h5 class="mt-3 text-muted">No Reports Available</h5>
+    <p class="text-muted">There are no reports configured for your company.</p>
+  </div>
+
+  <!-- Report Cards Grid -->
+  <div *ngIf="!loading && reports.length > 0" class="row">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12 mb-3" *ngFor="let report of reports">
+      <div class="card report-card h-100" (click)="onSelectReport(report)" [attr.data-report-type]="report.ReportType">
+        <div class="card-body d-flex flex-column">
+          <!-- Icon Circle with Gradient -->
+          <div class="text-center mb-3">
+            <div class="report-icon-circle" [attr.data-type]="report.ReportType">
+              <i [class]="getReportIcon(report.ReportType)"></i>
+            </div>
+          </div>
+
+          <!-- Report Title -->
+          <h6 class="card-title text-center mb-2 fw-bold">{{ report.ReportDisplayName }}</h6>
+
+          <!-- Report Type & Format Badges -->
+          <div class="d-flex justify-content-center gap-1 mb-2">
+            <span class="badge badge-type" [attr.data-type]="report.ReportType">
+              {{ report.ReportType }}
+            </span>
+            <span class="badge badge-format" [attr.data-format]="report.ReportFormat">
+              {{ report.ReportFormat }}
+            </span>
+          </div>
+
+          <!-- Report Details -->
+          <div class="report-details text-center mb-3">
+            <small class="text-muted">
+              <i class="mdi mdi-format-list-bulleted"></i>
+              {{ report.ReportMasterDetail?.length || 0 }} Parameters
+            </small>
+          </div>
+
+          <!-- Always Visible Action Button -->
+          <div class="mt-auto">
+            <button class="btn btn-sm btn-action w-100">
+              <i class="mdi mdi-chart-bar"></i> Open Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

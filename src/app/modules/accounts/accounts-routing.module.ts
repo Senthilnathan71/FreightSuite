@@ -20,6 +20,7 @@ import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-l
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
 import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
+import { AccountsReportsComponent } from '../../accounts/components/accounts-reports/accounts-reports.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -301,6 +302,18 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Trial Balance" },
+          ],
+        },
+      },
+
+      {
+        path: "reports",
+        component: AccountsReportsComponent,
+        data: {
+          title: "Accounts Reports",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Reports" },
           ],
         },
       },

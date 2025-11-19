@@ -2,7 +2,7 @@ import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
-import { MasterService } from '../../master.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
@@ -12,12 +12,13 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+
 @Component({
   selector: 'app-report-master-entry',
   standalone: true,
   imports: [NgSelectModule, ReactiveFormsModule, CommonModule, MultiSelectComponent, DetailsComponent, NgbDropdownModule],
   templateUrl: './report-master-entry.component.html',
-  styleUrl: './report-master-entry.component.scss'
+  styleUrls: ['./report-master-entry.component.scss']
 })
 export class ReportMasterEntryComponent implements OnInit {
   reportForm!: FormGroup;
@@ -25,7 +26,7 @@ export class ReportMasterEntryComponent implements OnInit {
   ReportMasterSid!: number;
   currentCompany: any;
   reportData: any;
-  auditLogs: any[] = []; // Stores audit logs
+  auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
   currentMenuId: number;
   TandCList: any;
@@ -45,7 +46,6 @@ export class ReportMasterEntryComponent implements OnInit {
     { id: 3, name: "Ana Report" }
   ];
   reportMenus: any[] = [];
-  excludedCompanies: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -89,7 +89,6 @@ export class ReportMasterEntryComponent implements OnInit {
     this.masterService.getAllMenu().subscribe({
       next: (resp: any) => {
         this.reportMenus = resp;
-        console.log('Menu:', this.reportMenus);
       },
       error: () => {
         this.appSettingsService.showError('Failed to load report menus');
@@ -105,7 +104,6 @@ export class ReportMasterEntryComponent implements OnInit {
     }
     return '';
   }
-
 
   loadReportData() {
     this.masterService.getReportMasterById(this.ReportMasterSid).subscribe({
@@ -127,7 +125,6 @@ export class ReportMasterEntryComponent implements OnInit {
       }
     });
   }
-
 
   onSubmit() {
     if (this.reportForm.invalid) {
@@ -158,7 +155,7 @@ export class ReportMasterEntryComponent implements OnInit {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess(resp.message);
-            this.router.navigate(['master/report-master/list']);
+            this.router.navigate(['/master/report-master/list']);
           } else {
             this.appSettingsService.showError(resp.message);
           }
@@ -172,7 +169,7 @@ export class ReportMasterEntryComponent implements OnInit {
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess(resp.message);
-            this.router.navigate(['master/report-master/list']);
+            this.router.navigate(['/master/report-master/list']);
           } else {
             this.appSettingsService.showError(resp.message);
           }
@@ -192,20 +189,17 @@ export class ReportMasterEntryComponent implements OnInit {
     }
   }
 
-
   navigateback() {
     this.router.navigate(["/master/report-master/list"])
   }
-
 
   showInfo() {
     if (!this.reportData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.reportData;
     modalRef.componentInstance.idLabel = 'Report Master Id';
-    modalRef.componentInstance.idValue = this.reportData?.ProductMasterSId;
+    modalRef.componentInstance.idValue = this.reportData?.ReportMasterSid;
   }
-
 
   openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -222,7 +216,6 @@ export class ReportMasterEntryComponent implements OnInit {
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.ReportMasterSid;
-
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }
@@ -232,6 +225,7 @@ export class ReportMasterEntryComponent implements OnInit {
       }
     );
   }
+
   openEmail() {
     if (!this.reportData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {
@@ -262,18 +256,18 @@ export class ReportMasterEntryComponent implements OnInit {
     });
     modalRef.componentInstance.item = this.reportData;
     modalRef.componentInstance.idLabel = 'Report Master Id';
-    modalRef.componentInstance.idValue = this.reportData?.ProductMasterSId;
+    modalRef.componentInstance.idValue = this.reportData?.ReportMasterSid;
   }
+
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ReportMasterSid) return;
 
-    this.masterService.getAuditLogs('ProductMaster', this.ReportMasterSid.toString()).subscribe({
+    this.masterService.getAuditLogs('ReportMaster', this.ReportMasterSid.toString()).subscribe({
       next: (logs: any[]) => {
         const formatFields = (val: any) => {
           if (!val) return ['NA'];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          delete obj.updatedOn; // Remove updatedOn field
-          // If no fields exist after deleting updatedOn
+          delete obj.updatedOn;
           if (Object.keys(obj).length === 0) return ['NA'];
           return Object.entries(obj).map(
             ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
@@ -291,7 +285,4 @@ export class ReportMasterEntryComponent implements OnInit {
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
-
-
-
 }

@@ -1,0 +1,158 @@
+<div class="report-parameter-form">
+  <form [formGroup]="parameterForm" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <!-- Dynamic Parameter Fields -->
+      <div
+        *ngFor="let param of parameters"
+        [ngClass]="{
+          'col-md-6': parameters.length > 4,
+          'col-md-4': parameters.length <= 4,
+          'col-12': parameters.length === 1
+        }"
+        class="mb-3"
+      >
+        <div class="form-group">
+          <label [for]="param.ParameterName" class="form-label">
+            {{ getParameterLabel(param.ParameterName) }}
+            <span *ngIf="isFieldRequired(param.ParameterName)" class="text-danger">*</span>
+          </label>
+
+          <!-- DATE Field -->
+          <input
+            *ngIf="param.ParameterFieldType === 'DATE'"
+            type="date"
+            class="form-control"
+            [id]="param.ParameterName"
+            [formControlName]="param.ParameterName"
+            [class.is-invalid]="hasError(param.ParameterName)"
+          />
+
+          <!-- NUMBER Field -->
+          <input
+            *ngIf="param.ParameterFieldType === 'NUMBER'"
+            type="number"
+            class="form-control"
+            [id]="param.ParameterName"
+            [formControlName]="param.ParameterName"
+            [class.is-invalid]="hasError(param.ParameterName)"
+            placeholder="Enter {{ getParameterLabel(param.ParameterName) }}"
+          />
+
+          <!-- TEXT Field -->
+          <input
+            *ngIf="param.ParameterFieldType === 'TEXT'"
+            type="text"
+            class="form-control"
+            [id]="param.ParameterName"
+            [formControlName]="param.ParameterName"
+            [class.is-invalid]="hasError(param.ParameterName)"
+            placeholder="Enter {{ getParameterLabel(param.ParameterName) }}"
+          />
+
+          <!-- DROPDOWN Field -->
+          <ng-select
+            *ngIf="param.ParameterFieldType === 'DROPDOWN'"
+            [items]="getDropdownOptions(param.ParameterName)"
+            bindLabel="label"
+            bindValue="value"
+            [formControlName]="param.ParameterName"
+            [placeholder]="'Select ' + getParameterLabel(param.ParameterName)"
+            [clearable]="!isFieldRequired(param.ParameterName)"
+            [class.is-invalid]="hasError(param.ParameterName)"
+            [loading]="isDropdownLoading(param.ParameterName)"
+            [disabled]="isDropdownLoading(param.ParameterName)"
+          >
+            <!-- Loading template -->
+            <ng-template ng-loadingspinner-tmp>
+              <div class="text-center py-2">
+                <span class="spinner-border spinner-border-sm"></span>
+                <span class="ms-2">Loading options...</span>
+              </div>
+            </ng-template>
+
+            <!-- No items template -->
+            <ng-template ng-notfound-tmp>
+              <div class="text-center py-2">
+                <small class="text-muted">No options available</small>
+              </div>
+            </ng-template>
+          </ng-select>
+
+          <!-- YEAR Field -->
+          <ng-select
+            *ngIf="param.ParameterFieldType === 'YEAR'"
+            [items]="getDropdownOptions(param.ParameterName)"
+            bindLabel="label"
+            bindValue="value"
+            [formControlName]="param.ParameterName"
+            placeholder="Select Financial Year"
+            [clearable]="!isFieldRequired(param.ParameterName)"
+            [class.is-invalid]="hasError(param.ParameterName)"
+          ></ng-select>
+
+          <!-- Error Message -->
+          <div *ngIf="hasError(param.ParameterName)" class="invalid-feedback d-block">
+            {{ getErrorMessage(param.ParameterName) }}
+          </div>
+
+          <!-- Loading indicator for dynamic dropdowns -->
+          <small
+            *ngIf="param.ParameterFieldType === 'DROPDOWN' && isDropdownLoading(param.ParameterName)"
+            class="form-text text-info"
+          >
+            <i class="mdi mdi-loading mdi-spin"></i> Loading options...
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions mt-4 pt-3 border-top">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <small class="text-muted">
+            <i class="mdi mdi-information-outline"></i>
+            <span class="text-danger">*</span> Required fields
+          </small>
+        </div>
+        <div>
+          <button
+            type="button"
+            class="btn btn-secondary mr-2"
+            (click)="resetForm()"
+            [disabled]="loading"
+          >
+            <i class="mdi mdi-refresh"></i> Reset
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!isFormValid() || loading"
+          >
+            <span *ngIf="!loading">
+              <i class="mdi mdi-chart-bar"></i> Generate Report
+            </span>
+            <span *ngIf="loading">
+              <span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+              Generating...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- No Parameters Message -->
+  <div *ngIf="parameters.length === 0" class="no-parameters text-center py-4">
+    <i class="mdi mdi-format-list-checkbox display-4 text-muted"></i>
+    <p class="mt-3 text-muted">No parameters required for this report</p>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="onGenerate.emit({})"
+      [disabled]="loading"
+    >
+      <i class="mdi mdi-chart-bar"></i> Generate Report
+    </button>
+  </div>
+</div>

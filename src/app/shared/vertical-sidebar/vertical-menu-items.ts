@@ -446,6 +446,16 @@ export const ROUTES: RouteInfo[] = [
         label: '',
         labelClass: '',
         submenu: []
+      },
+      {
+        path: '/accounts/reports',
+        title: 'Reports',
+        icon: 'mdi mdi-chart-bar',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
       }
     ]
   },
@@ -528,6 +538,28 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+    ]
+  },
+
+  {
+    path: '',
+    title: 'Operation',
+    icon: 'mdi mdi-briefcase',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: [
+      {
+        path: '/operation/reports',
+        title: 'Reports',
+        icon: 'mdi mdi-chart-line',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      }
     ]
   },
 

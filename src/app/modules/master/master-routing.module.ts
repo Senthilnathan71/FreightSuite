@@ -72,8 +72,9 @@ import { DocumnetGenerationListComponent } from './document-number-generation/do
 import { DocumnetGenerationEntryComponent } from './document-number-generation/documnet-generation-entry/documnet-generation-entry.component';
 import { ContainerActivityListComponent } from './container-activity/container-activity-list/container-activity-list.component';
 import { ContainerActivityEntryComponent } from './container-activity/container-activity-entry/container-activity-entry.component';
-import { ReportMasterEntryComponent } from './report-master/report-master-entry/report-master-entry.component';
-import { ReportMasterListComponent } from './report-master/report-master-list/report-master-list.component';
+import { ReportMasterEntryComponent } from '../../master/components/report-master-entry/report-master-entry.component';
+import { ReportMasterListComponent } from '../../master/components/report-master-list/report-master-list.component';
+import { ReportParameterConfigComponent } from '../../master/components/report-parameter-config/report-parameter-config.component';
 import { SailingScheduleListComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
 import { MawbStockListComponent } from './Mawb-stock/mawb-stock-list/mawb-stock-list.component';
 import { MawbStockComponent } from './Mawb-stock/mawb-stock/mawb-stock.component';
@@ -1159,6 +1160,18 @@ export const MasterRoutes: Routes = [
       urls: [
         { title: 'Master', url: '/master' },
         { title: 'Report Master' },
+      ]
+    }
+  },
+  {
+    path: 'report-master/parameters/:id',
+    component: ReportParameterConfigComponent,
+    data: {
+      title: 'Report Parameters',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Report Master', url: '/master/report-master/list' },
+        { title: 'Parameters' },
       ]
     }
   },

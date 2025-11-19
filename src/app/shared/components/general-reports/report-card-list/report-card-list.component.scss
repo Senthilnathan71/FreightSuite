@@ -1,0 +1,229 @@
+.report-card-container {
+  padding: 10px 0;
+}
+
+.report-card {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  // Subtle gradient border effect based on report type
+  &[data-report-type="ACCOUNTS"] {
+    border-left: 3px solid #667eea;
+  }
+
+  &[data-report-type="OPERATION"] {
+    border-left: 3px solid #f093fb;
+  }
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+
+    .report-icon-circle {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transform: scale(1.05);
+    }
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  // Icon Circle with Gradient Background
+  .report-icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+
+    i {
+      font-size: 2rem;
+      color: white;
+      position: relative;
+      z-index: 1;
+    }
+
+    // Accounts gradient (Blue/Purple)
+    &[data-type="ACCOUNTS"] {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    // Operation gradient (Pink/Red)
+    &[data-type="OPERATION"] {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+    }
+
+    // Default gradient
+    &:not([data-type]) {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+    }
+  }
+
+  .card-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #2d3748;
+    line-height: 1.4;
+    letter-spacing: -0.2px;
+  }
+
+  .report-details {
+    font-size: 0.75rem;
+    color: #718096;
+
+    i {
+      margin-right: 4px;
+      font-size: 0.8rem;
+    }
+  }
+
+  // Type and Format Badges with Gradients
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.3em 0.6em;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .badge-type {
+    &[data-type="ACCOUNTS"] {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    &[data-type="OPERATION"] {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+  }
+
+  .badge-format {
+    &[data-format="EXCEL"] {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    &[data-format="PDF"] {
+      background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      color: white;
+    }
+
+    &[data-format="BOTH"],
+    &[data-format="CSV"] {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+  }
+
+  // Always Visible Action Button
+  .btn-action {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #4a5568;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+
+    i {
+      margin-right: 4px;
+      font-size: 0.85rem;
+    }
+
+    &:hover {
+      border-color: transparent;
+    }
+  }
+}
+
+.empty-state {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 4rem;
+    opacity: 0.4;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 992px) {
+  .report-card {
+    .card-title {
+      font-size: 0.85rem;
+    }
+
+    .report-icon-circle {
+      width: 55px;
+      height: 55px;
+
+      i {
+        font-size: 1.8rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .report-card {
+    .card-title {
+      font-size: 0.8rem;
+    }
+
+    .report-icon-circle {
+      width: 50px;
+      height: 50px;
+
+      i {
+        font-size: 1.6rem;
+      }
+    }
+
+    .btn-action {
+      font-size: 0.7rem;
+      padding: 0.4rem 0.6rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .report-card {
+    .card-body {
+      padding: 0.875rem;
+    }
+
+    .report-icon-circle {
+      width: 45px;
+      height: 45px;
+
+      i {
+        font-size: 1.4rem;
+      }
+    }
+  }
+}
