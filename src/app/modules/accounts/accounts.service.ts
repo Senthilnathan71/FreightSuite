@@ -226,6 +226,14 @@ export class AccountsService {
     );
   }
 
+  getCoaWithSubledger(payload) {
+    return this.http.post<{ data: any }>('coa/with-subledger', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
   getAllLedgersByItsType(payload){
     return this.http.post<{ data: any }>('coa/cashOrBank', payload).pipe(
       map((resp: any) => {

@@ -12,6 +12,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-journal-voucher-entry',
@@ -85,6 +86,7 @@ export class JournalVoucherEntryComponent implements OnInit {
     private fb: FormBuilder,
     private journalVoucherService: JournalVoucherService,
     private accountsService: AccountsService,
+    private maasterService: MasterService,
     private dropdownStore: DropdownStore,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
@@ -209,10 +211,7 @@ export class JournalVoucherEntryComponent implements OnInit {
   }
 
   loadSubledgerList(): void {
-    this.accountsService.getAllDebtorWithCOAMapped({
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid
-    }).subscribe({
+    this.maasterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid).subscribe({
       next: (response: any) => {
         this.subledgerList = response.data || [];
       },
@@ -349,6 +348,7 @@ export class JournalVoucherEntryComponent implements OnInit {
       taxAmount: [0],
       costCenterMasterSid: [null],
       profitCenterMasterSid: [null],
+      filteredSubledgers: [[]],
     });
   }
 
@@ -362,6 +362,10 @@ export class JournalVoucherEntryComponent implements OnInit {
   detailGroup.get('currencyAmount')?.valueChanges.subscribe(() => {
     this.calculateLocalAmount(detailGroup);
     this.calculateTotals();
+  });
+
+  detailGroup.get('coaMasterSid')?.valueChanges.subscribe((coaMasterSid)=>{
+    this.onCoaChange(detailGroup, coaMasterSid);
   });
 
   detailGroup.get('exchangeRate')?.valueChanges.subscribe(() => {
@@ -397,6 +401,36 @@ export class JournalVoucherEntryComponent implements OnInit {
   detailGroup.get('taxPercentage')?.valueChanges.subscribe(() => {
     this.calculateTaxAmount(detailGroup);
   });
+}
+
+
+  // NEW METHOD: Check if subledger matches the selected COA
+  doesSubledgerMatchCOA(subledger: any, coaMasterSid: number): boolean {
+    return subledger.AccrualCOAMasterSid === coaMasterSid ||
+           subledger.CrCOAMasterSid === coaMasterSid ||
+           subledger.DrCOAMasterSid === coaMasterSid;
+  }
+
+  onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
+  // Ensure consistent type (numbers) if your COA values are numbers
+  const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
+
+  // Build filtered list of subledgers for this COA
+  const filtered = coaId
+    ? this.subledgerList.filter(subledger => this.doesSubledgerMatchCOA(subledger, coaId))
+    : this.subledgerList.slice(); // copy of full list when no COA
+
+  // Patch filtered list into the detail row (template reads this)
+  detailGroup.patchValue({ filteredSubledgers: filtered }, { emitEvent: false });
+
+  // If an existing ledgerMasterSid is selected but does not belong to the new COA, clear it
+  const currentSubledgerSid = detailGroup.get('ledgerMasterSid')?.value;
+  if (currentSubledgerSid) {
+    const currentSubledger = this.subledgerList.find(sl => sl.SubledgerMasterSid === currentSubledgerSid);
+    if (!currentSubledger || !this.doesSubledgerMatchCOA(currentSubledger, coaId)) {
+      detailGroup.patchValue({ ledgerMasterSid: null }, { emitEvent: false });
+    }
+  }
 }
 
 

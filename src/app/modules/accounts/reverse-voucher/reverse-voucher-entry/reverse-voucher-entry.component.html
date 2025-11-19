@@ -3,49 +3,30 @@
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-1">
-        <h5 class="page-title mb-0 text-info">Vendor Credit Note</h5>
-        <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
-      <div class="pill-icon">
-        <i class="fas fa-file-invoice-dollar"></i>
-      </div>
-      <span class="pill-label">
-        Outstanding: {{ invoiceOutstandingAmount | numberFormat }} {{ selectedOutstandingInvoice?.CurrencyCode }}
-      </span>
+        <h5 class="page-title mb-0 text-info">Reverse Voucher</h5>
+        <div class="nav-pill outstanding-info-pill">
     </div>
       </div>
       
       <div class="col-md-8 pb-1">
         <div
           class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-             
-          <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-        (click)="openVendorInvoiceUploadModal()" 
-        [disabled]="isViewMode">
-  <i class="fas fa-upload me-1"></i> Upload
-</button> -->
  <button  type="button" 
             class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
             (click)="onFinalSave()" 
             >
       <i class="fas fa-check-circle me-1"></i> Final
-    </button>
-
-    <!-- <button *ngIf="isViewMode && isPosted" type="button" 
-            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
-            disabled>
-      <i class="fas fa-check-circle me-1"></i> Posted
-    </button> -->
-    
+    </button>    
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
 
-          <button *ngIf="!isEditMode" type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button *ngIf="!isViewMode" type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onReset()">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button *ngIf="!isEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onSubmit()">
             <i class="fas fa-save me-1"></i> Save
           </button>
@@ -61,13 +42,12 @@
         <form [formGroup]="vendorCreditNoteForm">
           <div class="row">
 
-            <!-- Vendor Invoice No -->
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
                   class="custom-input-field sm" readonly />
                 <label for="VoucherNumber" class="input-label">
-                  Vendor CreditNote No. <span class="text-danger">*</span>
+                  Reverse Voucher No. <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
@@ -87,7 +67,7 @@
   [labelFields]="invoiceLookupConfig.labelFields"
   [bindValue]="'VoucherHeaderSid'">
 </dofi-searchable-dropdown>
-      <label class="input-label">Invoice No</label>
+      <label class="input-label">Voucher No</label>
     </div>
     
     <!-- Get Button with proper styling and disable state -->
@@ -110,7 +90,7 @@
                     #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="VoucherDate"
                     [footerTemplate]="footerTemplate1" [class.is-invalid]="isFieldInvalid('VoucherDate')" />
                   <label class="input-label" for="VoucherDate">
-                    Invoice Date <span class="text-danger">*</span>
+                    Voucher Date <span class="text-danger">*</span>
                   </label>
                 </div>
                 <button class="btn bi bi-calendar3 mt-2" (click)="d1.toggle()" type="button">
@@ -335,16 +315,6 @@
               </div>
             </aside>
 
-            <aside class="col-md-2">
-
-                    <div class="custom-form-group custom-form-group-select" [class.filled]="!!vendorCreditNoteForm.get('CreditNoteReason')?.value">  
-                  <ng-select [items]="reason" bindLabel="name" bindValue="name" placeholder=""
-                    formControlName="CreditNoteReason">
-                  </ng-select>
-                      <label class="input-label">CreditNote Reason</label>
-                    </div>
-              </aside>
-
             <!-- Status -->
             <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
@@ -357,14 +327,6 @@
             </aside>
 
           </div>
-
-          <!-- Search Costs Button -->
-          <!-- <div class="col-12 px-0 mt-2" *ngIf="!isViewMode">
-            
-            <button type="button" class="btn btn-success btn-sm ms-2" (click)="addDetailRow()">
-              <i class="fas fa-plus me-2"></i>Add Row
-            </button>
-          </div> -->
          
             <div class="d-flex justify-content-between align-items-center mb-1">
               <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
@@ -382,48 +344,18 @@
           <tr class="align-middle bg-info">
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 30px; border-top-left-radius: 10px;"></th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Charge</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Description</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">SACCode</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Unit</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">No of Unit</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
+            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Ledger</th>
+            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Subledger</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Curr</th>
+            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 80px;">Dr/Cr</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Rate</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Ex Rate</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Taxable Amt</th>
-            <!-- India GST Columns -->
-            <ng-container *ngIf="isIndiaGST">
-              <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
-              <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
-              <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
-            </ng-container>
-            <!-- VAT Column for non-India countries -->
-            <ng-container *ngIf="isVATMode">
-              <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
-            </ng-container>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Local Amount</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Party Amount</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">Job No.</th>
             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px;">House No.</th>
              <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px; border-top-right-radius: 10px;">Department</th>
-          </tr>
-          <tr class="align-middle bg-info">
-            <!-- India GST Sub-headers -->
-            <ng-container *ngIf="isIndiaGST">
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
-            <!-- VAT Sub-headers -->
-            <ng-container *ngIf="isVATMode">
-              <th class="text-center bg-transparent text-light" style="min-width: 80px;">Rate</th>
-              <th class="text-center bg-transparent text-light" style="min-width: 100px;">Amount</th>
-            </ng-container>
           </tr>
         </thead>
         <tbody formArrayName="voucherDetails">

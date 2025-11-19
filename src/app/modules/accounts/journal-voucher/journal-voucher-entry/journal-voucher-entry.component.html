@@ -164,8 +164,8 @@
                             </td>
                              <td>
                                 <ng-select formControlName="ledgerMasterSid"
-                                    [items]="subledgerList"
-                                    bindLabel="CustomerName"
+                                    [items]="row.get('filteredSubledgers')?.value || []"
+                                    bindLabel="SubledgerName"
                                     bindValue="SubledgerMasterSid"
                                     appendTo="body"
                                     placeholder="Select Subledger">
@@ -247,7 +247,7 @@
 <td>
   <!-- <input type="text" formControlName="hsnsac" class="form-control" readonly /> -->
    <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
-                  placeholder="" formControlName="HSSACMasterSid" appendTo="body">
+                  placeholder="" formControlName="HSSACCode" appendTo="body">
                 </ng-select>
 </td>
 <td>
