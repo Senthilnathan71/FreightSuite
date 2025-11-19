@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -47,6 +47,14 @@ export class ReportMasterEntryComponent implements OnInit {
   ];
   reportMenus: any[] = [];
 
+  parameterFieldTypes = [
+    { value: 'DATE', label: 'Date' },
+    { value: 'DROPDOWN', label: 'Dropdown' },
+    { value: 'NUMBER', label: 'Number' },
+    { value: 'TEXT', label: 'Text' },
+    { value: 'YEAR', label: 'Year' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -80,9 +88,36 @@ export class ReportMasterEntryComponent implements OnInit {
       reportFormatId: [null, Validators.required],
       reportType: ["", Validators.required],
       excludedCompanyIds: ['', [Validators.pattern(/^(\d+)(,\s*\d+)*$/)]],
-      query: ['', Validators.required],
-      Status: ['A']
+      Status: ['A'],
+      parameters: this.fb.array([])
     });
+  }
+
+  // FormArray getter for parameters
+  get parameters(): FormArray {
+    return this.reportForm.get('parameters') as FormArray;
+  }
+
+  // Create a new parameter FormGroup
+  createParameterGroup(data: any = {}): FormGroup {
+    return this.fb.group({
+      ReportMasterDetailSid: [data.ReportMasterDetailSid || null],
+      ParameterName: [data.ParameterName || '', Validators.required],
+      ParameterFieldType: [data.ParameterFieldType || '', Validators.required],
+      DropDownValue: [data.DropDownValue || ''],
+      ParameterQuery: [data.ParameterQuery || ''],
+      Status: [data.Status || 'A']
+    });
+  }
+
+  // Add a new parameter row
+  addParameter(): void {
+    this.parameters.push(this.createParameterGroup());
+  }
+
+  // Remove a parameter row
+  removeParameter(index: number): void {
+    this.parameters.removeAt(index);
   }
 
   menuDropdown() {
@@ -116,8 +151,25 @@ export class ReportMasterEntryComponent implements OnInit {
           reportMenuId: resp.data.ReportMenuSid,
           reportFormatId: resp.data.ReportFormat,
           reportType: resp.data.ReportType,
-          excludedCompanyIds: this.formatExcludedCompanies(resp.data.ReportExcludedCompany),
-          query: resp.data.Query,
+          excludedCompanyIds: this.formatExcludedCompanies(resp.data.ReportExcludedCompany)
+        });
+
+        // Fetch and populate parameters
+        this.masterService.getReportMasterWithParameters(this.ReportMasterSid).subscribe({
+          next: (paramsResp: any) => {
+            // Clear existing parameters
+            this.parameters.clear();
+
+            // Add each parameter to FormArray
+            if (paramsResp.data && Array.isArray(paramsResp.data)) {
+              paramsResp.data.forEach((param: any) => {
+                this.parameters.push(this.createParameterGroup(param));
+              });
+            }
+          },
+          error: () => {
+            this.appSettingsService.showError('Failed to load parameters');
+          }
         });
       },
       error: () => {
@@ -139,7 +191,6 @@ export class ReportMasterEntryComponent implements OnInit {
       ReportDisplayName: formValue.displayName,
       ReportMenuSid: formValue.reportMenuId,
       ReportFormat: formValue.reportFormatId,
-      Query: formValue.query,
       ReportType: formValue.reportType,
       ReportExcludedCompany: formValue.excludedCompanyIds
         ? formValue.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
@@ -147,7 +198,7 @@ export class ReportMasterEntryComponent implements OnInit {
       CreatedBy: this.appSettingsService.userSettingSource.value?.userEmail,
       CompanySid: this.currentCompany?.CompanyMasterSid,
       Status: "A",
-      reportDetails: []
+      reportDetails: formValue.parameters || []
     };
 
     if (this.isEditMode) {
