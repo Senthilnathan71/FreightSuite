@@ -96,6 +96,14 @@ export class ReceiptService {
       );
   }
 
+  postReceipt(payload : any){
+    return this.http.post<any>(`${this.baseUrl}/post-receipt`, payload).pipe(
+      map((response) => {
+        return response;
+      })
+    );
+  }
+
   /**
    * Get customer outstanding invoices (convenience method)
    * REUSES existing OutstandingService
