@@ -210,7 +210,17 @@ export class CostEntryComponent implements OnInit {
     this.isEditMode = this.ParentSid !== null;
   }
 
-  
+  private _stateList: any[] = [];
+
+@Input()
+set stateList(value: any[]) {
+  this._stateList = value || [];
+}
+
+get stateList(): any[] {
+  return this._stateList;
+}
+
 
   @Output() dataEmitter = new EventEmitter<any[]>();
   @Output() validationResult = new EventEmitter<boolean>();
@@ -265,6 +275,7 @@ export class CostEntryComponent implements OnInit {
   billingPartyAddress: string = '';
   billingGST_VAT: string = '';
   taxGroupList: any[] = [];
+  currentBranchstate:string;
   chargeTaxGroupMap: Map<number, any> = new Map(); // Map of BookingRatesSid to selected tax group
   /**
    * Calculate local amount before round off the Currency Amount
@@ -310,6 +321,8 @@ export class CostEntryComponent implements OnInit {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentBranchstate= this.currentBranch?.StateMasterSid;
+    console.log("CURRENT BRANCH STATE", this.currentBranch);
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.isBooking = this.screenName === "Booking";
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -353,11 +366,13 @@ export class CostEntryComponent implements OnInit {
       charges: this.operationService.getAllCharges(this.currentCompany?.CompanyMasterSid).pipe(catchError(err => of([]))),
       revenueParties : this.operationService.getAllDebtorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
       costParties : this.operationService.getAllCreditorWithCOAMapped({CompanyMasterSid: this.currentCompany?.CompanyMasterSid}).pipe(catchError(err => of([]))),
-    }).subscribe(({ allMasters , charges , revenueParties, costParties }) => {
+      states :this.operationService.getAllState().pipe(catchError(err => of([]))),
+    }).subscribe(({ allMasters , charges , revenueParties, costParties, states }) => {
       this.chargeList = charges;
       this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
       this.uomList = allMasters.uoms;
       this.docTypeList = allMasters.docTypes;
+      this.stateList = states?.data || states || [];
       this.vouchers= allMasters.Vouchers;
       this.billingParties = revenueParties.data;
       this.parties = costParties.data;
@@ -1745,50 +1760,49 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   private showChargeSelectionModal(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
-    console.log('showChargeSelectionModal called with:', {
-      billingPartySid,
-      parentValue : this.parentFormValue,
-      chargesCount: pendingCharges.length,
-      charges: pendingCharges.map((c: any) => ({
-        id: c.RateSid,
-        desc: c.ChargeDescription,
-        agentMasterSid: c.CostAgentMasterSid
-      }))
-    });
+  console.log('showChargeSelectionModal called with:', {
+    billingPartySid,
+    parentValue: this.parentFormValue,
+    chargesCount: pendingCharges.length,
+    charges: pendingCharges.map((c: any) => ({
+      id: c.RateSid,
+      desc: c.ChargeDescription,
+      agentMasterSid: c.CostAgentMasterSid
+    }))
+  });
 
-    this.currentBillingPartySid = billingPartySid;
-    this.availableCharges = pendingCharges.map(charge => ({
-      ...charge,
-      isSelected: true // Select all by default
-    }));
+  this.currentBillingPartySid = billingPartySid;
+  this.availableCharges = pendingCharges.map(charge => ({
+    ...charge,
+    isSelected: true // Select all by default
+  }));
 
-    console.log('Available charges set:', {
-      count: this.availableCharges.length,
-      charges: this.availableCharges
-    });
+  console.log('Available charges set:', {
+    count: this.availableCharges.length,
+    charges: this.availableCharges
+  });
 
-    // Select all charges by default
-    this.selectedCharges = new Set(pendingCharges.map(c => c.RateSid));
+  // Select all charges by default
+  this.selectedCharges = new Set(pendingCharges.map(c => c.RateSid));
 
-    // Initialize invoice header
-    this.initializeInvoiceHeader(pendingCharges);
-    this.determineGSTTypeAndPlaceOfSupply();
+  // Initialize invoice header
+  this.initializeInvoiceHeader(pendingCharges);
+  this.determineGSTTypeAndPlaceOfSupply();
 
-    // Load tax groups
-    this.loadTaxGroups();
+  // ✅ ADD THIS: Initialize tax groups for charges
+  this.initializeTaxGroupsForCharges();
 
-    // Calculate initial tax
-    this.calculateChargeSelectionTax();
+  // Calculate initial tax
+  this.calculateChargeSelectionTax();
 
-    // Open charge selection modal with custom extra-wide size
-    this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
-      size: 'xl',
-      // windowClass: 'test-class',
-      backdrop: 'static',
-      keyboard: false,
-      scrollable: true
-    });
-  }
+  // Open charge selection modal with custom extra-wide size
+  this.chargeSelectionModalRef = this.modalService.open(this.chargeSelectionModal, {
+    size: 'xl',
+    backdrop: 'static',
+    keyboard: false,
+    scrollable: true
+  });
+}
 
   private initializeInvoiceHeader(charges: any[]) {
     if (!charges || charges.length === 0) {
@@ -1892,29 +1906,7 @@ createRateFormGroup(data?: any): FormGroup {
   console.log('Final GST-VAT:', this.billingGST_VAT);
 }
 
-  private loadTaxGroups() {
-    const params = {
-      search: '',
-      page: 1,
-      pageSize: 1000,
-      activeCompanyId: this.currentCompany?.CompanyMasterSid
-    };
-
-    this.masterService.searchTaxGroup(params).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          this.taxGroupList = response.data.items || [];
-          console.log('Tax groups loaded:', this.taxGroupList.length);
-
-          // Initialize tax group map from initial calculation
-          this.initializeTaxGroupsFromCalculation();
-        }
-      },
-      error: (error) => {
-        console.error('Error loading tax groups:', error);
-      }
-    });
-  }
+  
 
   private initializeTaxGroupsFromCalculation() {
     if (!this.chargeSelectionTaxResult || !this.chargeSelectionTaxResult.lineItems) {
@@ -2209,130 +2201,247 @@ createRateFormGroup(data?: any): FormGroup {
     console.log('Tax calculation result:', this.chargeSelectionTaxResult);
   }
 
-  private calculateManualTax(charges: any[], isRevenue: boolean) {
-    console.log('Manual tax calculation started for', charges.length, 'charges');
-    let subtotal = 0;
-    let totalCGST = 0;
-    let totalSGST = 0;
-    let totalIGST = 0;
-    let totalVAT = 0;
-    const lineItems: any[] = [];
-    let taxType = 'GST'; // Default
+private async calculateManualTax(charges: any[], isRevenue: boolean) {
+  console.log('Manual tax calculation started for', charges.length, 'charges');
+  
+  let subtotal = 0;
+  let totalCGST = 0;
+  let totalSGST = 0;
+  let totalIGST = 0;
+  let totalVAT = 0;
+  const lineItems: any[] = [];
+  let taxType = 'GST'; // Default
 
-    charges.forEach(charge => {
-      const amount = isRevenue
-        ? (charge.RevenueLocalAmount || 0)
-        : (charge.CostLocalAmount || 0);
+  // Get place of supply state
+  const placeOfSupplyState = this.placeOfSupply;
+  const companyState = this.getCompanyState();
 
-      const chargeAmount = parseFloat(amount.toString());
-      subtotal += chargeAmount;
+  for (const charge of charges) {
+    const amount = isRevenue
+      ? (charge.RevenueLocalAmount || 0)
+      : (charge.CostLocalAmount || 0);
 
-      // Get manually selected tax group for this charge
-      const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.RateSid);
+    const chargeAmount = parseFloat(amount.toString());
+    subtotal += chargeAmount;
 
-      if (selectedTaxGroup) {
-        const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
+    // Get manually selected tax group for this charge
+    const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.RateSid);
 
-        let lineItem: any = {
-          description: charge.ChargeDescription,
-          hsn: charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-',
-          amount: chargeAmount
-        };
+    if (selectedTaxGroup) {
+      // Get customer country for tax determination
+      const customerCountry = this.getCustomerCountryFromCharge(charge, isRevenue);
+      
+      console.log('=== TAX CALCULATION DEBUG ===');
+      console.log('Charge:', charge.ChargeDescription);
+      console.log('Company State:', companyState);
+      console.log('Place of Supply:', placeOfSupplyState);
+      console.log('Customer Country:', customerCountry);
+      console.log('Selected Tax Group:', selectedTaxGroup);
 
-        const isGSTType = selectedTaxGroup.TaxType === 'GST' || selectedTaxGroup.TaxType === 'Input' || selectedTaxGroup.TaxType === 'Output';
+      // Use the new tax ledger API
+      const taxLedger = await this.getTaxLedgerForCharge(charge, isRevenue, placeOfSupplyState);
+      
+      console.log('Tax Ledger API Response:', taxLedger);
+      
+      let lineItem: any = {
+        description: charge.ChargeDescription,
+        hsn: charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-',
+        amount: chargeAmount
+      };
 
-        if (isGSTType) {
-          // For GST, check if IGST or CGST+SGST
-          // You can determine this based on state comparison
-          const isInterState = this.checkIfInterState(charge);
+      if (taxLedger && taxLedger.length > 0) {
+        const taxData = taxLedger[0];
+        console.log('Processing tax data:', taxData);
+        
+        const taxRate = parseFloat(taxData.TaxRate || 0);
+        const taxCode = taxData.TaxCode || taxData.TaxType;
+        
+        console.log('Tax Rate from API:', taxRate);
+        console.log('Tax Code from API:', taxCode);
 
-          if (isInterState) {
-            // IGST
-            const igstAmount = (chargeAmount * taxRate) / 100;
-            lineItem.igstRate = taxRate;
-            lineItem.cgstRate = 0;
-            lineItem.sgstRate = 0;
-            lineItem.igstAmount = igstAmount;
-            lineItem.cgstAmount = 0;
-            lineItem.sgstAmount = 0;
-            lineItem.totalTaxAmount = igstAmount;
-            totalIGST += igstAmount;
-          } else {
-            // CGST + SGST
-            const halfRate = taxRate / 2;
-            const cgstAmount = (chargeAmount * halfRate) / 100;
-            const sgstAmount = (chargeAmount * halfRate) / 100;
-            lineItem.cgstRate = halfRate;
-            lineItem.sgstRate = halfRate;
-            lineItem.igstRate = 0;
-            lineItem.cgstAmount = cgstAmount;
-            lineItem.sgstAmount = sgstAmount;
-            lineItem.igstAmount = 0;
-            lineItem.totalTaxAmount = cgstAmount + sgstAmount;
-            totalCGST += cgstAmount;
-            totalSGST += sgstAmount;
-          }
-          taxType = 'GST';
-        } else if (selectedTaxGroup.TaxType === 'VAT') {
-          // VAT calculation
+        // Determine tax application based on tax code and customer location
+        const isIndianCustomer = customerCountry && 
+                                (customerCountry.toLowerCase() === 'india' || 
+                                 customerCountry.toLowerCase() === 'in');
+        
+        const isSameState = companyState && placeOfSupplyState && 
+                           companyState.toLowerCase() === placeOfSupplyState.toLowerCase();
+
+        console.log('Tax Application Logic:', {
+          isIndianCustomer,
+          isSameState,
+          taxRate,
+          taxCode,
+          taxType: taxData.TaxType
+        });
+
+        // Apply tax based on tax code
+        if (taxCode === 'VAT') {
+          // Apply VAT for international customers or specific VAT charges
           const vatAmount = (chargeAmount * taxRate) / 100;
           lineItem.vatRate = taxRate;
           lineItem.vatAmount = vatAmount;
           lineItem.totalTaxAmount = vatAmount;
           totalVAT += vatAmount;
           taxType = 'VAT';
-        } else {
-          // No tax or unknown type
-          lineItem.totalTaxAmount = 0;
+          console.log('VAT Applied:', { vatAmount, taxRate });
+        } 
+        else if (taxCode === 'GST' || !taxCode) {
+          // GST logic - determine IGST vs CGST+SGST
+          if (isIndianCustomer) {
+            // CORRECTED LOGIC:
+            // Same state = CGST + SGST (Inter)
+            // Different state = IGST (Intra)
+            if (isSameState) {
+              // Same state - Apply CGST + SGST (Inter)
+              const halfRate = taxRate / 2;
+              const cgstAmount = (chargeAmount * halfRate) / 100;
+              const sgstAmount = (chargeAmount * halfRate) / 100;
+              lineItem.cgstRate = halfRate;
+              lineItem.sgstRate = halfRate;
+              lineItem.igstRate = 0;
+              lineItem.cgstAmount = cgstAmount;
+              lineItem.sgstAmount = sgstAmount;
+              lineItem.igstAmount = 0;
+              lineItem.totalTaxAmount = cgstAmount + sgstAmount;
+              totalCGST += cgstAmount;
+              totalSGST += sgstAmount;
+              taxType = 'GST';
+              console.log('CGST+SGST Applied for same state (Inter):', { cgstAmount, sgstAmount, halfRate });
+            } else {
+              // Different state - Apply IGST (Intra)
+              const igstAmount = (chargeAmount * taxRate) / 100;
+              lineItem.igstRate = taxRate;
+              lineItem.cgstRate = 0;
+              lineItem.sgstRate = 0;
+              lineItem.igstAmount = igstAmount;
+              lineItem.cgstAmount = 0;
+              lineItem.sgstAmount = 0;
+              lineItem.totalTaxAmount = igstAmount;
+              totalIGST += igstAmount;
+              taxType = 'GST';
+              console.log('IGST Applied for different state (Intra):', { igstAmount, taxRate });
+            }
+          } else {
+            // International customer - apply VAT
+            const vatAmount = (chargeAmount * taxRate) / 100;
+            lineItem.vatRate = taxRate;
+            lineItem.vatAmount = vatAmount;
+            lineItem.totalTaxAmount = vatAmount;
+            totalVAT += vatAmount;
+            taxType = 'VAT';
+            console.log('VAT Applied for international customer:', vatAmount);
+          }
         }
-
-        lineItems.push(lineItem);
       } else {
-        // No tax group selected, add with 0 tax
-        lineItems.push({
-          description: charge.ChargeDescription,
-          hsn: charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-',
-          amount: chargeAmount,
-          totalTaxAmount: 0,
-          cgstRate: 0,
-          sgstRate: 0,
-          igstRate: 0,
-          vatRate: 0
-        });
+        console.log('No tax ledger data, using fallback');
+        // Fallback to selected tax group logic
+        this.applyFallbackTax(selectedTaxGroup, lineItem, chargeAmount, totalCGST, totalSGST, totalIGST, totalVAT);
       }
-    });
 
-    const totalTaxAmount = totalCGST + totalSGST + totalIGST + totalVAT;
-    const grandTotal = subtotal + totalTaxAmount;
-
-    this.chargeSelectionTaxResult = {
-      type: taxType,
-      lineItems: lineItems,
-      subtotal: subtotal,
-      totalAmount: subtotal,
-      totalCGST: totalCGST,
-      totalSGST: totalSGST,
-      totalIGST: totalIGST,
-      totalVAT: totalVAT,
-      totalTaxAmount: totalTaxAmount,
-      grandTotal: grandTotal,
-      totalInvoiceAmount: grandTotal,
-      isSameState: totalCGST > 0 || totalSGST > 0,
-      isInterState: totalIGST > 0,
-      vatRate: totalVAT > 0 ? (totalVAT / subtotal * 100) : 0
-    };
-
-    console.log('Manual tax calculation complete:', {
-      subtotal,
-      totalCGST,
-      totalSGST,
-      totalIGST,
-      totalVAT,
-      grandTotal,
-      lineItemsCount: lineItems.length
-    });
+      lineItems.push(lineItem);
+    } else {
+      console.log('No tax group selected for charge:', charge.ChargeDescription);
+      // No tax group selected, add with 0 tax
+      lineItems.push({
+        description: charge.ChargeDescription,
+        hsn: charge.ChargeMaster?.chargeTaxMaster?.[0]?.HSNCode || charge.ChargeMaster?.HSNSAC || '-',
+        amount: chargeAmount,
+        totalTaxAmount: 0,
+        cgstRate: 0,
+        sgstRate: 0,
+        igstRate: 0,
+        vatRate: 0
+      });
+    }
   }
 
+  const totalTaxAmount = totalCGST + totalSGST + totalIGST + totalVAT;
+  const grandTotal = subtotal + totalTaxAmount;
+
+  this.chargeSelectionTaxResult = {
+    type: taxType,
+    lineItems: lineItems,
+    subtotal: subtotal,
+    totalAmount: subtotal,
+    totalCGST: totalCGST,
+    totalSGST: totalSGST,
+    totalIGST: totalIGST,
+    totalVAT: totalVAT,
+    totalTaxAmount: totalTaxAmount,
+    grandTotal: grandTotal,
+    totalInvoiceAmount: grandTotal,
+    isSameState: totalCGST > 0 || totalSGST > 0,
+    isInterState: totalIGST > 0,
+    vatRate: totalVAT > 0 ? (totalVAT / subtotal * 100) : 0
+  };
+
+  console.log('Manual tax calculation complete:', {
+    subtotal,
+    totalCGST,
+    totalSGST,
+    totalIGST,
+    totalVAT,
+    grandTotal,
+    lineItemsCount: lineItems.length,
+    taxResult: this.chargeSelectionTaxResult
+  });
+}
+
+private applyFallbackTax(
+  selectedTaxGroup: any, 
+  lineItem: any, 
+  chargeAmount: number,
+  totalCGST: number,
+  totalSGST: number, 
+  totalIGST: number,
+  totalVAT: number
+) {
+  const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
+  const isGSTType = selectedTaxGroup.TaxType === 'GST' || selectedTaxGroup.TaxType === 'Input' || selectedTaxGroup.TaxType === 'Output';
+
+  console.log('Using fallback tax calculation:', { taxRate, isGSTType });
+
+  if (isGSTType) {
+    const companyState = this.getCompanyState();
+    const placeOfSupplyState = this.placeOfSupply;
+    const isInterState = companyState !== placeOfSupplyState;
+
+    if (isInterState) {
+      // IGST
+      const igstAmount = (chargeAmount * taxRate) / 100;
+      lineItem.igstRate = taxRate;
+      lineItem.cgstRate = 0;
+      lineItem.sgstRate = 0;
+      lineItem.igstAmount = igstAmount;
+      lineItem.cgstAmount = 0;
+      lineItem.sgstAmount = 0;
+      lineItem.totalTaxAmount = igstAmount;
+      totalIGST += igstAmount;
+    } else {
+      // CGST + SGST
+      const halfRate = taxRate / 2;
+      const cgstAmount = (chargeAmount * halfRate) / 100;
+      const sgstAmount = (chargeAmount * halfRate) / 100;
+      lineItem.cgstRate = halfRate;
+      lineItem.sgstRate = halfRate;
+      lineItem.igstRate = 0;
+      lineItem.cgstAmount = cgstAmount;
+      lineItem.sgstAmount = sgstAmount;
+      lineItem.igstAmount = 0;
+      lineItem.totalTaxAmount = cgstAmount + sgstAmount;
+      totalCGST += cgstAmount;
+      totalSGST += sgstAmount;
+    }
+  } else if (selectedTaxGroup.TaxType === 'VAT') {
+    // VAT calculation
+    const vatAmount = (chargeAmount * taxRate) / 100;
+    lineItem.vatRate = taxRate;
+    lineItem.vatAmount = vatAmount;
+    lineItem.totalTaxAmount = vatAmount;
+    totalVAT += vatAmount;
+  }
+}
   private checkIfInterState(charge: any): boolean {
     // Compare company state with billing party state
     const companyState = this.currentBranch?.StateName || '';
@@ -2481,53 +2590,75 @@ createRateFormGroup(data?: any): FormGroup {
 }
 
   getChargeTaxPercentage(charge: any): string {
-    // First check if there's a manually selected tax group
-    const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.RateSid);
+  // First check if there's a manually selected tax group
+  const selectedTaxGroup = this.chargeTaxGroupMap.get(charge.RateSid);
 
-    if (selectedTaxGroup) {
-      const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
-      const isGSTType = selectedTaxGroup.TaxType === 'GST' || selectedTaxGroup.TaxType === 'Input' || selectedTaxGroup.TaxType === 'Output';
+  if (selectedTaxGroup) {
+    const taxRate = parseFloat(selectedTaxGroup.TaxRate || 0);
+    const taxType = selectedTaxGroup.TaxType;
+    const taxCode = selectedTaxGroup.TaxCode;
 
-      if (isGSTType) {
-        // For GST, determine if IGST or CGST+SGST based on state
-        const isInterState = this.checkIfInterState(charge);
-        if (isInterState) {
-          return `IGST ${taxRate}%`;
-        } else {
-          const halfRate = taxRate / 2;
-          return `CGST ${halfRate}% + SGST ${halfRate}%`;
-        }
-      } else if (selectedTaxGroup.TaxType === 'VAT') {
+    console.log('Tax Percentage Display:', {
+      charge: charge.ChargeDescription,
+      taxRate,
+      taxType,
+      taxCode
+    });
+
+    // Use the tax code/type from the tax group
+    if (taxCode === 'VAT' || taxType === 'VAT') {
+      return `VAT ${taxRate}%`;
+    } else {
+      // For GST, determine if IGST or CGST+SGST based on state
+      const isRevenue = this.currentVoucherTypeFilter === 'revenue';
+      const customerCountry = this.getCustomerCountryFromCharge(charge, isRevenue);
+      const isIndianCustomer = customerCountry && 
+                              (customerCountry.toLowerCase() === 'india' || 
+                               customerCountry.toLowerCase() === 'in');
+      
+      const companyState = this.getCompanyState();
+      const billingPartyState = this.placeOfSupply;
+      const isSameState = companyState && billingPartyState && 
+                         companyState.toLowerCase() === billingPartyState.toLowerCase();
+
+      if (isIndianCustomer && isSameState) {
+        const halfRate = taxRate / 2;
+        return `CGST ${halfRate}% + SGST ${halfRate}%`;
+      } else if (isIndianCustomer) {
+        return `IGST ${taxRate}%`;
+      } else {
+        // International customer - show VAT if applicable
         return `VAT ${taxRate}%`;
       }
     }
+  }
 
-    // Fall back to calculation result
-    const notExist = !this.selectedCharges.has(charge.RateSid)
-    if (!this.chargeSelectionTaxResult || notExist) {
-      return '-';
-    }
-
-    const lineItem = this.chargeSelectionTaxResult.lineItems?.find(
-      item => item.description === charge.ChargeDescription
-    );
-
-    if (!lineItem) return '-';
-
-    if (this.chargeSelectionTaxResult.type === 'GST') {
-      const gstItem = lineItem as any;
-      if (gstItem.igstRate > 0) {
-        return `IGST ${gstItem.igstRate}%`;
-      } else if (gstItem.cgstRate > 0) {
-        return `CGST ${gstItem.cgstRate}% + SGST ${gstItem.sgstRate}%`;
-      }
-    } else if (this.chargeSelectionTaxResult.type === 'VAT') {
-      const vatItem = lineItem as any;
-      return `VAT ${vatItem.vatRate}%`;
-    }
-
+  // Fall back to calculation result
+  const notExist = !this.selectedCharges.has(charge.RateSid)
+  if (!this.chargeSelectionTaxResult || notExist) {
     return '-';
   }
+
+  const lineItem = this.chargeSelectionTaxResult.lineItems?.find(
+    item => item.description === charge.ChargeDescription
+  );
+
+  if (!lineItem) return '-';
+
+  if (this.chargeSelectionTaxResult.type === 'GST') {
+    const gstItem = lineItem as any;
+    if (gstItem.igstRate > 0) {
+      return `IGST ${gstItem.igstRate}%`;
+    } else if (gstItem.cgstRate > 0) {
+      return `CGST ${gstItem.cgstRate}% + SGST ${gstItem.sgstRate}%`;
+    }
+  } else if (this.chargeSelectionTaxResult.type === 'VAT') {
+    const vatItem = lineItem as any;
+    return `VAT ${vatItem.vatRate}%`;
+  }
+
+  return '-';
+}
 
   getChargeTaxAmount(charge: any): number {
     const isBooking = this.screenName === "Booking";
@@ -2776,11 +2907,79 @@ private getCustomerBranchSid(): number | null {
  
   }
   private getCompanyState(): string {
-  return this.currentBranch?.stateMaster?.stateName || 
-         this.currentBranch?.StateName ||
-         this.currentCompany?.stateMaster?.stateName || 
-         this.currentCompany?.StateName || 
-         '';
+  if (!this.currentCompany) {
+    console.warn('No current company data available');
+    return '';
+  }
+
+  console.log('=== COMPANY STATE DEBUG ===');
+  console.log('Current Company:', this.currentCompany);
+  console.log('Current Branch:', this.currentBranch);
+  console.log('User Data:', this.userData);
+
+  // Method 1: Check currentBranch stateMaster first
+  if (this.userData && this.userData.userCompanyMaster) {
+    const userCompanies = this.userData.userCompanyMaster;
+    
+    // Find the current company in user companies
+    const currentUserCompany = userCompanies.find((uc: any) => 
+      uc.CompanyMasterSid === this.currentCompany.CompanyMasterSid
+    );
+    
+    if (currentUserCompany && currentUserCompany.companyMaster) {
+      const companyMaster = currentUserCompany.companyMaster;
+      
+      // Check company master's userBranchMaster
+      if (companyMaster.userBranchMaster && Array.isArray(companyMaster.userBranchMaster)) {
+        // Find the current branch
+        const currentUserBranch = companyMaster.userBranchMaster.find((ub: any) => 
+          ub.BranchMasterSid === this.currentBranch.BranchMasterSid
+        );
+        
+        if (currentUserBranch && currentUserBranch.branchMaster) {
+          const branchMaster = currentUserBranch.branchMaster;
+          
+          // Method 5a: Check branchMaster's stateMaster
+          if (branchMaster.stateMaster) {
+            const state = branchMaster.stateMaster.stateName || branchMaster.stateMaster.StateName;
+            if (state) {
+              console.log('Company State from userData->branchMaster->stateMaster:', state);
+              return state;
+            }
+          }
+          
+          // Method 5b: Check branchMaster's StateMasterSid
+          if (branchMaster.StateMasterSid && this.stateList.length > 0) {
+            const state = this.stateList.find(s => 
+              s.StateMasterSid === branchMaster.StateMasterSid || 
+              s.stateMasterSid === branchMaster.StateMasterSid
+            );
+            if (state) {
+              const stateName = state.stateName || state.StateName;
+              console.log('Company State from userData->branchMaster->StateMasterSid lookup:', stateName);
+              return stateName;
+            }
+          }
+        }
+      }
+      
+      // Method 6: Check company master's StateMasterSid
+      if (companyMaster.StateMasterSid && this.stateList.length > 0) {
+        const state = this.stateList.find(s => 
+          s.StateMasterSid === companyMaster.StateMasterSid || 
+          s.stateMasterSid === companyMaster.StateMasterSid
+        );
+        if (state) {
+          const stateName = state.stateName || state.StateName;
+          console.log('Company State from userData->companyMaster->StateMasterSid lookup:', stateName);
+          return stateName;
+        }
+      }
+    }
+  }
+
+  console.log('No company state found after all attempts');
+  return '';
 }
 
   private determineGSTTypeAndPlaceOfSupply() {
@@ -2882,6 +3081,260 @@ private getCustomerBranchSid(): number | null {
 onGSTTypeChange() {
   console.log('GST Type changed to:', this.selectedGSTType);
   this.calculateChargeSelectionTax();
+}
+  
+
+private async getTaxLedgerForCharge(
+  charge: any, 
+  isRevenue: boolean, 
+  placeOfSupplyState: string
+): Promise<any> {
+  try {
+    const taxGroupSid = this.getTaxGroupSidFromCharge(charge);
+    
+    console.log('=== TAX GROUP SID DEBUG ===');
+    console.log('Charge:', charge.ChargeDescription);
+    console.log('Voucher Type:', this.selectedVoucherType);
+    console.log('Is Revenue:', isRevenue);
+    console.log('Extracted TaxGroupSid:', taxGroupSid);
+    
+    if (!taxGroupSid) {
+      console.log('No TaxGroupSid found for charge:', charge.ChargeDescription);
+      return null;
+    }
+
+    const currentCountry = Number(this.currentCompany?.CountryMasterSid);
+    
+    // ✅ CORRECTED LOGIC:
+    // Revenue (Invoice) = Input (we are receiving money from customer)
+    // Cost (Vendor Invoice) = Output (we are paying money to vendor)
+    const inputOrOutput: 'Input' | 'Output' = 
+      this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output';
+
+    console.log('Determined InputOrOutput:', {
+      voucherType: this.selectedVoucherType,
+      inputOrOutput
+    });
+
+    const companyState = this.getCompanyState();
+    
+    // Get customer country from charge data
+    const customerCountry = this.getCustomerCountryFromCharge(charge, isRevenue);
+    
+    // Use tax category determination (Same state = Inter, Different state = Intra)
+    const taxCategory = this.determineTaxCategory(companyState, placeOfSupplyState, customerCountry);
+
+    console.log('Tax Ledger Parameters:', {
+      charge: charge.ChargeDescription,
+      taxGroupSid,
+      inputOrOutput,
+      taxCategory,
+      companyState,
+      placeOfSupplyState,
+      customerCountry,
+      currentCountry,
+      voucherType: this.selectedVoucherType
+    });
+
+    const payload = {
+      taxGroup: taxGroupSid,
+      InputOrOutput: inputOrOutput,
+      TaxCategory: taxCategory, // This will be either 'Inter' or 'Intra'
+      CountryMasterSid: currentCountry
+    };
+
+    console.log('Calling tax ledger API with payload:', payload);
+
+    const response = await firstValueFrom(
+      this.operationService.getLedgerForTaxGroup(payload)
+    );
+
+    // ✅ Store the actual tax rate from API response
+    if (response?.status && response.data && response.data.length > 0) {
+      const taxData = response.data[0];
+      console.log('Tax Ledger Data with Rate:', taxData);
+      
+      // Update the tax group map with actual rate from API
+      this.updateTaxGroupWithRate(charge.RateSid, taxData);
+      
+      return response.data;
+    } else {
+      console.warn('No tax ledger data found for charge:', charge.ChargeDescription);
+      return null;
+    }
+
+  } catch (error) {
+    console.error('Error fetching tax ledger:', error);
+    return null;
+  }
+}
+private getCustomerCountryFromCharge(charge: any, isRevenue: boolean): string {
+  if (isRevenue) {
+    // For Revenue (Invoice) - get from customer
+    const customerMaster = charge?.customerMasterBP;
+    const customerBranch = charge?.customerBranch;
+    
+    const country = customerMaster?.countryMaster?.countryCode || 
+                   customerMaster?.Country ||
+                   customerBranch?.countryMaster?.countryCode ||
+                   customerBranch?.Country ||
+                   '';
+    
+    console.log('Customer Country (Revenue):', {
+      customerName: customerMaster?.CustomerName,
+      countryFromMaster: customerMaster?.countryMaster?.countryCode,
+      countryFromBranch: customerBranch?.countryMaster?.countryCode,
+      finalCountry: country
+    });
+    
+    return country;
+  } else {
+    // For Cost (Vendor Invoice) - get from agent
+    const agentMaster = charge?.AgentMaster;
+    const agentBranch = charge?.AgentBranch;
+    
+    const country = agentMaster?.countryMaster?.countryCode || 
+                   agentMaster?.Country ||
+                   agentBranch?.countryMaster?.countryCode ||
+                   agentBranch?.Country ||
+                   '';
+    
+    console.log('Agent Country (Cost):', {
+      agentName: agentMaster?.CustomerName,
+      countryFromMaster: agentMaster?.countryMaster?.countryCode,
+      countryFromBranch: agentBranch?.countryMaster?.countryCode,
+      finalCountry: country
+    });
+    
+    return country;
+  }
+}
+private updateTaxGroupWithRate(rateSid: number, taxData: any) {
+  const existingGroup = this.chargeTaxGroupMap.get(rateSid);
+  if (existingGroup && taxData) {
+    const updatedGroup = {
+      ...existingGroup,
+      TaxRate: taxData.TaxRate || 0,
+      TaxName: taxData.TaxName || existingGroup.TaxName,
+      TaxType: taxData.TaxType || existingGroup.TaxType
+    };
+    this.chargeTaxGroupMap.set(rateSid, updatedGroup);
+    console.log('Updated tax group with rate:', updatedGroup);
+  }
+}
+private getTaxGroupSidFromCharge(charge: any): number | null {
+  if (!charge?.ChargeMaster?.chargeTaxMaster?.length) {
+    return null;
+  }
+
+  const chargeTaxMaster = charge.ChargeMaster.chargeTaxMaster[0];
+  
+  // Try different possible field names for TaxGroupSid
+  const taxGroupSid = chargeTaxMaster.TaxGroupSid || 
+                     chargeTaxMaster.taxGroupSid || 
+                     chargeTaxMaster.TaxGroupMasterSid ||
+                     chargeTaxMaster.taxGroupMasterSid;
+
+  return taxGroupSid ? Number(taxGroupSid) : null;
+}
+
+/**
+ * Determine tax category based on company state and place of supply
+ */
+private determineTaxCategory(companyState: string, billingPartyState: string, customerCountry: string): 'Inter' | 'Intra' {
+  if (!companyState || !billingPartyState) {
+    console.warn('Missing state information, defaulting to Inter');
+    return 'Inter';
+  }
+
+  // Normalize country codes for comparison
+  const normalizedCustomerCountry = customerCountry?.toLowerCase() || '';
+  const isIndianCustomer = normalizedCustomerCountry === 'india' || normalizedCustomerCountry === 'in';
+  const isInternationalCustomer = !isIndianCustomer && normalizedCustomerCountry !== '';
+
+  console.log('Tax Category - Customer Country Analysis:', {
+    customerCountry,
+    normalizedCustomerCountry,
+    isIndianCustomer,
+    isInternationalCustomer
+  });
+
+  // For international customers (like Dubai), use 'Inter' category for VAT
+  if (isInternationalCustomer) {
+    console.log('International transaction - Using Inter category for customer country:', customerCountry);
+    return 'Inter'; // Use 'Inter' for international transactions (VAT)
+  }
+
+  // For Indian customers, check if same state or different state
+  const normalizedCompanyState = companyState.trim().toLowerCase();
+  const normalizedBillingState = billingPartyState.trim().toLowerCase();
+
+  const isSameState = normalizedCompanyState === normalizedBillingState;
+  
+  console.log('Tax Category Determination for Indian Customer:', {
+    companyState: normalizedCompanyState,
+    billingPartyState: normalizedBillingState,
+    isSameState,
+    // CORRECT: Same state = Inter, Different state = Intra
+    taxCategory: isSameState ? 'Inter' : 'Intra'
+  });
+
+  // CORRECT LOGIC:
+  // Same state = Inter (CGST+SGST)
+  // Different state = Intra (IGST)
+  return isSameState ? 'Inter' : 'Intra';
+}
+/**
+ * Initialize tax groups for available charges by extracting TaxGroupSid from charge data
+ */
+private async initializeTaxGroupsForCharges() {
+  console.log('=== INITIALIZING TAX GROUPS FOR CHARGES ===');
+  
+  this.chargeTaxGroupMap.clear();
+
+  // Get place of supply for tax category determination
+  const placeOfSupplyState = this.placeOfSupply;
+  const companyState = this.getCompanyState();
+
+  for (const charge of this.availableCharges) {
+    const taxGroupSid = this.getTaxGroupSidFromCharge(charge);
+    
+    console.log(`Charge: ${charge.ChargeDescription}`, {
+      taxGroupSid,
+      voucherType: this.selectedVoucherType
+    });
+
+    if (taxGroupSid) {
+      try {
+        // Fetch actual tax data from API immediately
+        const taxLedger = await this.getTaxLedgerForCharge(charge, this.currentVoucherTypeFilter === 'revenue', placeOfSupplyState);
+        
+        if (taxLedger && taxLedger.length > 0) {
+          const taxData = taxLedger[0];
+          const taxGroup = {
+            TaxMasterSid: taxGroupSid,
+            TaxName: taxData.TaxName || `Tax Group ${taxGroupSid}`,
+            TaxRate: taxData.TaxRate || 0,
+            TaxType: taxData.TaxType || 'GST'
+          };
+          
+          this.chargeTaxGroupMap.set(charge.RateSid, taxGroup);
+          console.log(`Mapped tax group to charge ${charge.RateSid}:`, taxGroup);
+        } else {
+          console.warn(`No tax data found for charge: ${charge.ChargeDescription}`);
+        }
+      } catch (error) {
+        console.error(`Error initializing tax group for charge ${charge.RateSid}:`, error);
+      }
+    } else {
+      console.log(`No TaxGroupSid found for charge: ${charge.ChargeDescription}`);
+    }
+  }
+
+  console.log('Tax group map after initialization:', {
+    size: this.chargeTaxGroupMap.size,
+    entries: Array.from(this.chargeTaxGroupMap.entries())
+  });
 }
 
 }
