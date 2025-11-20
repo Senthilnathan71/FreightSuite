@@ -1,672 +1,777 @@
-<!-- Payment Entry Component -->
-<ngx-spinner
-  bdColor="rgba(0,0,0,0.8)"
-  size="medium"
-  color="#fff"
-  type="ball-scale-ripple"
-  [fullScreen]="true">
-  <p style="color: white;" class="m-0">{{ loading ? 'Loading...' : 'Saving...' }}</p>
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
+<div class="row compact-form">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h5 class="page-title mb-0 text-info">{{ isViewMode ? 'View Payment' : (isEditMode ? 'Edit Payment' :
+                    'Create Payment') }}</h5>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                            (click)="openAuditLogs(auditLogModal)">
+                            <i class="fas fa-history me-1"></i>Logs
+                        </button> -->
+                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="postVoucher()"
+                        [disabled]="isPosted">
+                        <i class="fas fa-check-circle me-1"></i> Final
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+    
+                </div>
+            </div>
+            <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
 
-<div *ngIf="paymentForm" [formGroup]="paymentForm">
-  <div class="col-12">
-    <!-- Header Section -->
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-      <div class="col-md-4 d-flex pb-1">
-        <div class="d-flex align-items-center gap-2">
-          <div class="brand-icon">
-            <i class="fas fa-money-bill-wave"></i>
-          </div>
-          <h5 class="page-title mb-0 text-info">
-            {{ isEditMode ? 'Edit Payment' : 'New Payment' }}
-          </h5>
+                <div class="d-flex flex-wrap gap-2 mb-3 p-2 bg-light rounded">
+
+                    <!-- Search Type -->
+                    <div class="col-md-2 col-sm-4">
+                        <ng-select formControlName="SearchType" [items]="searchTypes" bindLabel="label" bindValue="value"
+                            clearable="false">
+                        </ng-select>
+                    </div>
+
+                    <!-- Party -->
+                    @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
+                    <div class="col-md-3">
+                        <ng-select 
+                            [items]="onlyCustomerList" 
+                            bindLabel="CustomerName" 
+                            bindValue="SubledgerMasterSid"
+                            formControlName="LedgerMasterSid"
+                            placeholder="Select Party"
+                        >
+                        </ng-select>
+                    </div>
+                    }  @else {
+                    <div class="col-md-3 col-sm-6">
+                        <input formControlName="FilterText" class="form-control" placeholder="Enter keyword">
+                    </div>
+                    }
+
+                    <!-- Search Button -->
+                    <div class="col-auto d-flex align-items-end">
+                        <button 
+                            class="btn btn-info px-4" 
+                            [disabled]="
+                                !searchOutstandingForm.get('SearchType')?.value || 
+                                !(searchOutstandingForm.get('LedgerMasterSid')?.value || searchOutstandingForm.get('FilterText')?.value) || 
+                                r['LedgerMasterSid']?.value
+                            " 
+                            (click)="searchOutstanding()"
+                        >
+                            <i class="fas fa-search me-1"></i> Get OS
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
         </div>
-      </div>
-      <div class="col-md-8 pb-1">
-        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
-            <i class="fas fa-chevron-left me-1"></i>
-            Back
-          </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
-            <i class="fas fa-sync-alt me-1"></i>
-            Reset
-          </button>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submit()" [disabled]="paymentForm.invalid || isSaving">
-            <i class="fas fa-save me-1"></i>
-            {{ isSaving ? 'Saving...' : 'Save' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Payment Details Form -->
-  <div class="col-md-12">
-    <div class="card h-100 mb-0">
-      <div class="card-body py-0 px-2">
-        <div class="row compact-form">
-          <!-- Search Type -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <select formControlName="searchType" class="custom-input-field sm">
-                <option value="VendorName">Vendor Name</option>
-                <option value="Invoice">Invoice</option>
-                <option value="HouseNo">House No</option>
-                <option value="MasterNo">Master No</option>
-              </select>
-              <label for="searchType" class="input-label">Search Type</label>
-            </div>
-          </aside>
-
-          <!-- Get Outstanding Button -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <button type="button" class="btn btn-sm btn-info w-100" (click)="searchOutstanding()"
-                      [disabled]="!paymentForm.get('vendor')?.value">
-                <i class="fas fa-search me-1"></i>
-                Get Outstanding
-              </button>
-            </div>
-          </aside>
-
-          <!-- Payment Number (Read-only for edit) -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" formControlName="paymentNumber" placeholder="" class="custom-input-field sm" readonly>
-              <label for="paymentNo" class="input-label">Payment No.</label>
-            </div>
-          </aside>
-
-          <!-- Payment Date -->
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select-date">
-              <div class="input-group">
-                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="paymentDate"
-                       ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" />
-                <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
-                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                </button>
-              </div>
-              <label class="input-label">Payment Date <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
-          <!-- Payment Mode -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <select formControlName="paymentMode" class="custom-input-field sm">
-                <option value="Cash">Cash</option>
-                <option value="Bank">Bank</option>
-              </select>
-              <label for="paymentMode" class="input-label">Payment Mode <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
-          <!-- Bank -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <ng-select formControlName="bank"
-                         [items]="bankList"
-                         bindLabel="SubledgerName"
-                         bindValue="SubledgerMasterSid"
-                         placeholder="Select Bank"
-                         class="custom-ng-select">
-              </ng-select>
-              <label for="bank" class="input-label">Bank <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
-          <!-- Currency -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <ng-select formControlName="currency"
-                         [items]="currencyList"
-                         bindLabel="CurrencyCode"
-                         bindValue="CurrencyMasterSid"
-                         placeholder="Select Currency"
-                         class="custom-ng-select">
-              </ng-select>
-              <label for="currency" class="input-label">Currency <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
-          <!-- Exchange Rate -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="number" formControlName="exchangeRate" placeholder="" class="custom-input-field sm" step="0.0001">
-              <label for="exRate" class="input-label">Ex Rate <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
-          <!-- Vendor -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <ng-select formControlName="vendor"
-                         [items]="vendorList"
-                         bindLabel="SubledgerName"
-                         bindValue="SubledgerMasterSid"
-                         placeholder="Select Vendor"
-                         class="custom-ng-select">
-              </ng-select>
-              <label for="vendor" class="input-label">Vendor</label>
-            </div>
-          </aside>
-
-          <!-- Paid To -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" formControlName="paidTo" placeholder="" class="custom-input-field sm">
-              <label for="paidTo" class="input-label">Paid To <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-
-          <!-- GST Number -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" formControlName="gstNumber" placeholder="" class="custom-input-field sm">
-              <label for="gstNo" class="input-label">GST No.</label>
-            </div>
-          </aside>
-
-          <!-- Instrument Mode -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <select formControlName="instrumentMode" class="custom-input-field sm">
-                <option value="">Select</option>
-                <option value="Cheque">Cheque</option>
-                <option value="DD">DD</option>
-                <option value="NEFT">NEFT</option>
-                <option value="RTGS">RTGS</option>
-                <option value="IMPS">IMPS</option>
-                <option value="Others">Others</option>
-              </select>
-              <label for="instMode" class="input-label">Inst. Mode</label>
-            </div>
-          </aside>
-
-          <!-- Instrument Number -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" formControlName="instrumentNumber" placeholder="" class="custom-input-field sm">
-              <label for="instNo" class="input-label">Inst No.</label>
-            </div>
-          </aside>
-
-          <!-- Instrument Date -->
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select-date">
-              <div class="input-group">
-                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="instrumentDate"
-                       ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" />
-                <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
-                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                </button>
-              </div>
-              <label class="input-label">Inst. Date</label>
-            </div>
-          </aside>
-
-          <!-- Clearance Date -->
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select-date">
-              <div class="input-group">
-                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="clearanceDate"
-                       ngbDatepicker #d3="ngbDatepicker" (click)="d3.toggle()" />
-                <button class="btn bi bi-calendar3" (click)="d3.toggle()" type="button">
-                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                </button>
-              </div>
-              <label class="input-label">Clearance Date</label>
-            </div>
-          </aside>
-
-          <!-- Address -->
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <textarea formControlName="address" placeholder="" class="custom-input-field sm" rows="1"></textarea>
-              <label for="address" class="input-label">Address</label>
-            </div>
-          </aside>
-
-          <!-- Narration -->
-          <aside class="col-md-3">
-            <div class="custom-form-group mt-0">
-              <textarea formControlName="narration" placeholder="" class="custom-input-field sm" rows="1"></textarea>
-              <label for="narration" class="input-label">Narration</label>
-            </div>
-          </aside>
-
-          <!-- Remarks -->
-          <aside class="col-md-3">
-            <div class="custom-form-group mt-0">
-              <textarea formControlName="remarks" placeholder="" class="custom-input-field sm" rows="1"></textarea>
-              <label for="remarks" class="input-label">Remarks</label>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tabs Section -->
-  <div class="mx-auto mt-1 px-0">
-    <div class="nav-pills-container">
-      <div class="nav-pills d-flex align-items-center w-100">
-        <div class="pills-left d-flex flex-nowrap" style="flex:1;">
-          <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.id"
-               (click)="selectTab(tab.id)">
-            <div class="pill-icon">
-              <i [class]="tab.icon"></i>
-            </div>
-            <span class="pill-label">{{ tab.name }}</span>
-            <div class="pill-indicator" *ngIf="selectedTab === tab.id"></div>
-          </div>
-        </div>
-
-        <!-- Tab-specific Add Buttons -->
-        <div [hidden]="selectedTab !== 'detail'">
-          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addDetailRow()">
-            <i class="fas fa-plus"></i> Add Detail
-          </button>
-        </div>
-        <div [hidden]="selectedTab !== 'tds'">
-          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addTDSRow()">
-            <i class="fas fa-plus"></i> Add TDS
-          </button>
-        </div>
-        <div [hidden]="selectedTab !== 'voucher'">
-          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="searchOutstanding()">
-            <i class="fas fa-search"></i> Search Outstanding
-          </button>
-        </div>
-        <div [hidden]="selectedTab !== 'interbranch'">
-          <button type="button" class="btn btn-sm btn-info mx-auto" (click)="addInterBranchRow()">
-            <i class="fas fa-plus"></i> Add Interbranch
-          </button>
-        </div>
-      </div>
     </div>
 
-    <!-- Tab Content -->
+    <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row" [formGroup]="paymentForm">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="VoucherNumber">
+                            <label for="text-input" class="input-label">Payment No <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select filled">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="VoucherDate"
+                                    [maxDate]="todayDateInNgbStruct" (click)="d1.toggle()" (keydown.arrowDown)="d1.open()"
+                                    readonly />
+                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">Payment Date <span class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0 mt-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                    formControlName="MultiBranch" (keydown.enter)="toggleMultiBranch($event)" (click)="toggleMultiBranch($event)">
+                                <label for="" class="form-check-label sm">Multi Branch <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0 mt-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                    formControlName="CashOrBank"
+                                (keydown.enter)="toggleCashOrBank($event)" (click)="toggleCashOrBank($event)">
+                                <!-- <label for="" class="form-check-label sm">Cash or Bank <span
+                                        class="text-danger"></span></label> -->
+                                <label class="form-check-label sm" for="paymentMode">
+                                    Mode of Payment : <b class="text-warning">
+                                        {{ paymentForm.get('CashOrBank')?.value ? 'Cash' : 'Bank' }}
+                                    </b>
+                                </label>
+                            </div>
+                        </div>
+                    </aside>
+                    @if(paymentForm.get('CashOrBank')?.value){
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
+                                <dofi-searchable-dropdown [items]="cashTypeLedgers" formControlName="BankCOA" placeholder=""
+                                    [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
+                                    [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                >
+                                </dofi-searchable-dropdown>
+                            <label for="text-input" class="input-label">Cash <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    } @else {
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['BankCOA']?.value">
+                                <dofi-searchable-dropdown [items]="bankTypedLedgers" formControlName="BankCOA" placeholder=""
+                                    [displayFields]="COALookupConfig.displayFields" [displayLabels]="COALookupConfig.displayLabels"
+                                    [labelFields]="COALookupConfig.labelFields" bindLabel="LedgerName" bindValue="COAMasterSid">
+                                </dofi-searchable-dropdown>
+                                <label for="text-input" class="input-label">Bank<span class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                    }
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!r['CurrencyMasterSid']?.value">
+                            <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyMasterSid"
+                                [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
+                                [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
+                                (itemSelected)="onCurrencyChange($event)">
+                            </dofi-searchable-dropdown>
+                            <label for="text-input" class="input-label">Currency <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="ExchangeRate">
+                            <label for="text-input" class="input-label">Ex Rate <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!paymentForm.get('CustomerBranchSid')?.value">
+                            <dofi-searchable-dropdown [items]="partyList" formControlName="CustomerBranchSid"
+                                placeholder="" [displayFields]="CustomerLookupConfig.displayFields"
+                                [displayLabels]="CustomerLookupConfig.displayLabels"
+                                [labelFields]="CustomerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerBranchSid" (itemSelected)="onPartyChange($event)">
+                            </dofi-searchable-dropdown>
+                            <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="BankPartyName">
+                            <label for="text-input" class="input-label">Received From <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="PartyAddress">
+                            <label for="text-input" class="input-label">Address <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="GST_VAT">
+                            <label for="text-input" class="input-label">{{(currentUserCountry === 'india' ? 'GST No.' :
+                                (currentUserCountry ? 'VAT No.' : 'GST No./VAT No.'))}}<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Narration">
+                            <label for="text-input" class="input-label">Narration <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Remarks">
+                            <label for="text-input" class="input-label">Remarks <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                   @if(!paymentForm.get('CashOrBank')?.value){
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['InstrumentMode']?.value">
+                            <ng-select 
+                                class="ng-select" 
+                                [items]="paymentModes" bindLabel="label" 
+                                bindValue="value"
+                                formControlName="InstrumentMode"
+                            >
+                            </ng-select>
+                            <label for="text-input" class="input-label">Inst Mode <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="InstrumentNumber">
+                            <label for="text-input" class="input-label">Inst No <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select filled">
+                            <div class="input-group">
+                                <input 
+                                    class="form-control" placeholder="dd-mm-yyyy" name="dp" 
+                                    ngbDatepicker
+                                    #d2="ngbDatepicker" formControlName="InstrumentDate"
+                                    (click)="d2.toggle()" 
+                                    (keydown.arrowDown)="d2.open()" readonly 
+                                />
+                                <button 
+                                    class="btn bi bi-calendar3 " (click)="d2.toggle()" type="button"
+                                >
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">Inst Date <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select filled">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d3="ngbDatepicker" formControlName="ClearanceDate" (click)="d3.toggle()" (keydown.arrowDown)="d3.open()" readonly/>
+                                <button class="btn  bi bi-calendar3 " (click)="d3.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">Clearance Date <span class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </aside>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="nav-pills-container mt-1">
+        <div class="nav-pills">
+            <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                (click)="selectTab(tab.name)">
+                <div class="pill-icon">
+                    <i [class]="tab.icon"></i>
+                </div>
+                <span class="pill-label">{{ tab.name }}</span>
+                <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+            </div>
+            <div class="text-end">
+                <span class="error-message fw-bold" *ngIf="matchingError">
+                    {{ matchingError }}
+                </span>
+            </div>
+        </div>
+    </div>
+
     <div class="content-workspace">
-      <!-- Detail Tab -->
-      <div class="workspace-content" [hidden]="selectedTab !== 'detail'">
-        <ng-container *ngTemplateOutlet="detailTab"></ng-container>
-      </div>
 
-      <!-- TDS Tab -->
-      <div class="workspace-content" [hidden]="selectedTab !== 'tds'">
-        <ng-container *ngTemplateOutlet="tdsTab"></ng-container>
-      </div>
+        <div class="workspace-content px-0" [hidden]="selectedTab !== 'Detail'"  [formGroup]="paymentForm">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info text-center">
+                            <th class="bg-transparent text-light" width="3%"></th>
+                            <th class="bg-transparent text-light">Ledger Name <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Subledger <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Curr. <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Ex. Rate <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Curr. Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Local Amt <span class="text-danger">*</span></th>
+                            <th class="bg-transparent text-light">Narration</th>
+                            <th class="bg-transparent text-light">Cost Center</th>
+                            <th class="bg-transparent text-light">Profit Center</th>
+                            <th class="bg-transparent text-light">Dept</th>
+                            <th class="bg-transparent text-light">Charge</th>
+                            <th class="bg-transparent text-light">Master</th>
+                            <th class="bg-transparent text-light">House</th>
+                        </tr>
+                    </thead>
+                    <tbody formArrayName="detailItems">
+                        <ng-container *ngIf="detailItems.length > 0; else noDetails">
+                            <tr *ngFor="let d of detailItems.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    @if(i === detailItems.length - 1){
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="addDetailRow()">
+                                        <i class="fas fa-plus text-info"></i>
+                                    </button>
+                                    }
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="removeDetail(i,d.get('VoucherDetailSid')?.value)">
+                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                    </button>
+                                </td>
+                                <td class="dofi-min-w-150">
+                                    <ng-select 
+                                        [items]="coaList" 
+                                        bindLabel="LedgerName" 
+                                        bindValue="COAMasterSid" 
+                                        formControlName="COAMasterSid" 
+                                        appendTo="body"
+                                        (change)="handleCOAChange($event,i)"
+                                    >
+                                    </ng-select>
+                                </td>
+                                <td class="dofi-min-w-150">
+                                   <ng-select 
+                                    [items]="ledgerList[i]" 
+                                    bindLabel="SubledgerName" 
+                                    bindValue="SubledgerMasterSid" 
+                                    formControlName="LedgerMasterSid"
+                                    appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-80">
+                                    <ng-select 
+                                        class="ng-select"
+                                        [items]="CrDr"
+                                        bindLabel="name"
+                                        bindValue="value"
+                                        formControlName="DrCr"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-80">
+                                    <dofi-searchable-dropdown 
+                                        [items]="currencyList" 
+                                        formControlName="CurrencyMasterSid" 
+                                        [placeholder]="''"
+                                        [displayFields]="CurrencyLookupConfig.displayFields" 
+                                        [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                        [labelFields]="CurrencyLookupConfig.labelFields" 
+                                        [bindValue]="'CurrencyMasterSid'"
+                                        (itemSelected)="onCurrencyChangeForEachRow($event,i)">
+                                    </dofi-searchable-dropdown>
+                                </td>
+                                <td class="dofi-min-w-80">
+                                    <input 
+                                        type="text" 
+                                        formControlName="ExchangeRate"
+                                        class="custom-input-field sm text-end" 
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="4"
+                                        [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <input 
+                                        type="text" 
+                                        formControlName="Amount"
+                                        class="custom-input-field sm text-end"
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="9"
+                                         [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <input 
+                                        type="text" 
+                                        formControlName="LocalAmount"
+                                        class="custom-input-field sm text-end"
+                                        DecimalPrecision
+                                        [DecimalPrecisionBefore]="9"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)"
+                                        readonly
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <input 
+                                        type="text" 
+                                        formControlName="Narration" 
+                                        class="custom-input-field sm"
+                                        [textWithNumbers]="200"
+                                    />
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="costCenterList"
+                                        bindLabel="CostCenterName" 
+                                        bindValue="CostCenterMasterSid" 
+                                        formControlName="CostCenter"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="profitCenterList"
+                                        bindLabel="ProfitCenterName" 
+                                        bindValue="ProfitCenterMasterSid" 
+                                        formControlName="ProfitCenter"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="deptList"
+                                        bindLabel="departmentName" 
+                                        bindValue="DepartmentMasterSid" 
+                                        formControlName="DepartmentMasterSid"
+                                        (change)="filterDetailsWithDept($event,i)"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                    <ng-select 
+                                        class="ng-select" 
+                                        [items]="filteredChargeList[i]"
+                                        bindLabel="chargeCode" 
+                                        bindValue="ChargeMasterSid" 
+                                        formControlName="ChargeMasterSid"
+                                        (change)="onChargeChange(i,$event)"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                <td class="dofi-min-w-100">
+                                     <ng-select 
+                                        class="ng-select"
+                                        [items]="masterJobList[i]" 
+                                        bindLabel="MasterJobNumber" bindValue="MasterJobSid" formControlName="MasterJobSid"
+                                        (change)="onMasterJobChange(i,$event)"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                                 <td class="dofi-min-w-100">
+                                    <ng-select
+                                        class="ng-select"
+                                        [items]="houseJobList[i]"
+                                        bindLabel="HBLNo"
+                                        bindValue="HouseJobSid" 
+                                        formControlName="HouseJobSid"
+                                        appendTo="body"
+                                    ></ng-select>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-template #noDetails>
+                            <tr>
+                                <td>
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0"
+                                        (click)="addDetailRow()">
+                                        <i class="fas fa-plus text-info"></i>
+                                    </button>
+                                </td>
+                                <td colspan="14">
+                                    <div class="text-center">No Detail added</div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
 
-      <!-- Voucher Tab -->
-      <div class="workspace-content" [hidden]="selectedTab !== 'voucher'">
-        <ng-container *ngTemplateOutlet="voucherTab"></ng-container>
-      </div>
 
-      <!-- Inter-branch Tab -->
-      <div class="workspace-content" [hidden]="selectedTab !== 'interbranch'">
-        <ng-container *ngTemplateOutlet="interbranchTab"></ng-container>
-      </div>
-    </div>
-  </div>
 
-  <!-- Totals Section -->
-  <div class="col-md-12 mt-2">
-    <div class="card">
-      <div class="card-body py-2">
-        <div class="row">
-          <div class="col-md-3">
-            <div class="d-flex justify-content-between">
-              <strong>Total Dr:</strong>
-              <span class="text-success">₹ {{ totalDr | number:'1.2-2' }}</span>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="d-flex justify-content-between">
-              <strong>Total Cr:</strong>
-              <span class="text-danger">₹ {{ totalCr | number:'1.2-2' }}</span>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="d-flex justify-content-between">
-              <strong>Total TDS:</strong>
-              <span class="text-warning">₹ {{ totalTDS | number:'1.2-2' }}</span>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="d-flex justify-content-between">
-              <strong>Difference:</strong>
-              <span [class.text-danger]="Math.abs(totalDr - totalCr) > 0.01"
-                    [class.text-success]="Math.abs(totalDr - totalCr) <= 0.01">
-                ₹ {{ Math.abs(totalDr - totalCr) | number:'1.2-2' }}
-              </span>
-            </div>
-          </div>
+
         </div>
-      </div>
+        <div class="workspace-content px-0" [formGroup]="paymentForm" [hidden]="selectedTab !== 'Voucher Matching'">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info  text-center">
+                            <th class="bg-transparent text-light">Voucher No</th>
+                            <th class="bg-transparent text-light">Voucher Type</th>
+                            <th class="bg-transparent text-light">Voucher Date</th>
+                            <th class="bg-transparent text-light"> Dr/Cr</th>
+                            <th class="bg-transparent text-light">Curr.</th>
+                            <th class="bg-transparent text-light">Ex. Rate</th>
+                            <!-- @if(!isEditMode){ -->
+                            <th class="bg-transparent text-light">Curr. Amt</th>
+                            <th class="bg-transparent text-light">Local Amt</th>
+                            <th class="bg-transparent text-light">OS Curr. Amt</th>
+                            <th class="bg-transparent text-light">OS Local Amt</th>
+                            <!-- } -->
+                            <th class="bg-warning text-light">Curr.</th>
+                            <th class="bg-warning text-light">Ex. Rate</th>
+                            <th class="bg-warning text-light">Curr Amt</th>
+                            <th class="bg-warning text-light">Local Amt</th>
+                            <th class="bg-warning text-light">TDS Amt</th>
+                            <th class="bg-warning text-light">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody formArrayName="voucherMatchings">
+
+                        <tr *ngFor="let v of voucherMatchings.controls; let i = index" [formGroupName]="i">
+
+                            <!-- Voucher No -->
+                            <td>
+                                <input type="text" formControlName="voucherNo" class="custom-input-field sm" />
+                            </td>
+
+                            <!-- Voucher Type -->
+                            <td>
+                                <input type="text" formControlName="voucherType" class="custom-input-field sm" />
+                            </td>
+
+                            <!-- Voucher Date -->
+                            <td>
+                                <div class="custom-form-group custom-form-group-select-date mt-0">
+                                    <div class="input-group">
+                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d4="ngbDatepicker"
+                                            (click)="d4.toggle()" formControlName="voucherDate" container="body" />
+                                        <!-- <button class="btn btn-sm" type="button" (click)="d4.toggle()">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                                        </button> -->
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Dr / Cr -->
+                            <td>
+                                <input type="text" formControlName="drCr" class="custom-input-field sm" />
+                            </td>
+
+                            <!-- Currency -->
+                            <td>
+                                <input type="text" formControlName="curr" class="custom-input-field sm" />
+                            </td>
+
+                            <!-- ExRate -->
+                            <td>
+                                <input type="text" formControlName="exRate" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('curr')?.value)" />
+                            </td>
+                            <!-- @if(!isEditMode){ -->
+                            <!-- Current Amount -->
+                            <td>
+                                <input type="text" formControlName="currAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
+                            </td>
+
+                            <!-- Local Amount -->
+                            <td>
+                                <input type="text" formControlName="localAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
+                            </td>
+
+                            <!-- OS Current Amount -->
+                            <td>
+                                <input type="text" formControlName="osCurrAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
+                            </td>
+
+                            <!-- OS Local Amount -->
+                            <td>
+                                <input type="text" formControlName="osLocalAmt" class="custom-input-field sm text-end" DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
+                            </td>
+                            <!-- } -->
+
+                            <!-- Match Curr -->
+                            <td class="dofi-min-w-80">
+                                <dofi-searchable-dropdown 
+                                    [items]="currencyList" formControlName="matchCurr" 
+                                    [placeholder]="''"
+                                    [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                    [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
+                                    (itemSelected)="patchExchangeRateForMatchRow(i)">
+                                </dofi-searchable-dropdown>
+                            </td>
+
+                            <!-- Match ExRate -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchExRate" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="4" 
+                                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('matchCurr')?.value)"
+                                    (input) = "calculateLocalAmountForMatchRow(i)"
+                                />
+                            </td>
+
+                            <!-- Match Curr Amount -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchCurrAmt" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)" 
+                                    (input) = "calculateLocalAmountForMatchRow(i)"
+                                />
+                            </td>
+
+                            <!-- Match Local Amount -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="matchLocalAmt" 
+                                    class="custom-input-field sm text-end" 
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
+                                    readonly
+                                />
+                            </td>
+
+                            <!-- TDS Amount -->
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="tdsAmt" 
+                                    class="custom-input-field sm text-end"
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"  
+                                />
+                            </td>
+                            <td>
+                                <input 
+                                    type="text" 
+                                    formControlName="balance" 
+                                    class="custom-input-field sm text-end"
+                                    DecimalPrecision
+                                    [DecimalPrecisionBefore]="9" 
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
+                                />
+                            </td>
+
+                        </tr>
+
+                        <!-- TOTAL ROW -->
+                        <tr class="table-info fw-bold text-end">
+                            <td colspan="6" class="text-end">Total</td>
+                            <!-- @if(!isEditMode){ -->
+                            <td>{{ getTotalCurrAmt() }}</td>
+                            <td>{{ getTotalLocalAmt() }}</td>
+
+                            <td>{{ getTotalOSCurrAmt() }}</td>
+                            <td>{{ getTotalOSLocalAmount() }}</td>
+                            <!-- } -->
+                            <td></td> <!-- matchCurr -->
+                            <td></td> <!-- matchExRate -->
+
+                            <td>{{ getTotalMatchCurrAmt() }}</td>
+                            <td>{{ getTotalMatchLocalAmt() }}</td>
+                            <td>{{ getTotalTdsAmt() }}</td>
+                            <td></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="workspace-content px-0" [formGroup]="paymentForm" [hidden]="selectedTab !== 'Interbranch'">
+            <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info  text-center">
+                            <th class="bg-transparent text-light" width="3%"></th>
+                            <th class="bg-transparent text-light">Branch</th>
+                            <th class="bg-transparent text-light">Curr. Amount</th>
+                            <th class="bg-transparent text-light">Inter Branch JV</th>
+                            <th class="bg-transparent text-light">Voucher Type</th>
+                            <!-- <th class="bg-transparent text-light">Add/Del</th> -->
+                        </tr>
+                    </thead>
+                    <tbody formArrayName="interBranches">
+                        <ng-container *ngIf="interBranches.length > 0; else nointerBranch">
+                            <tr *ngFor="let b of interBranches.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="addInterBranch()">
+                                        <i class="fas fa-plus text-info"></i>
+                                    </button>
+                                    <button type="button" class="btn waves-effect waves-light text-light py-0 px-1"
+                                        (click)="removeInterBranch(i)">
+                                        <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                    </button>
+                                </td>
+                                <td>
+                                    <input type="text" formControlName="BranchName" class="custom-input-field sm" readonly/>
+                                </td>
+                                <td>
+                                    <input type="number" formControlName="CurrAmount"
+                                        class="custom-input-field sm text-end" />
+                                </td>
+                                <td>
+                                    <input type="text" formControlName="InterBranchJV" class="custom-input-field sm" />
+                                </td>
+                                <td>
+                                    <input type="text" formControlName="VoucherType" class="custom-input-field sm" />
+                                </td>
+
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                    <ng-template #nointerBranch>
+                        <tr>
+                            <td>
+                                <button type="button" class="btn waves-effect waves-light text-light py-0"
+                                    (click)="addDetailRow()">
+                                    <i class="fas fa-plus text-info"></i>
+                                </button>
+                            </td>
+                            <td colspan="14">
+                                <div class="text-center">No InterBranch added</div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </table>
+            </div>
+
+        </div>
     </div>
-  </div>
 </div>
-
-<!-- Detail Tab Template -->
-<ng-template #detailTab>
-  <div>
-    <div class="table-responsive table-borderless">
-      <table class="table table-hover align-middle no-wrap table-sm mb-0">
-        <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light" width="2%"></th>
-            <th class="bg-transparent text-light">Ledger Name <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">Branch <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">Dr/Cr <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">Curr.</th>
-            <th class="bg-transparent text-light">Ex. Rate</th>
-            <th class="bg-transparent text-light">Curr. Amt</th>
-            <th class="bg-transparent text-light">Taxable Amt</th>
-            <th class="bg-transparent text-light">Tax %</th>
-            <th class="bg-transparent text-light">Tax Amt</th>
-            <th class="bg-transparent text-light">Local Amt</th>
-            <th class="bg-transparent text-light">Narration</th>
-            <th class="bg-transparent text-light">Cost Center</th>
-            <th class="bg-transparent text-light">Charge</th>
-            <th class="bg-transparent text-light">SAC/HSN</th>
-          </tr>
-        </thead>
-        <tbody formArrayName="details">
-          <tr *ngFor="let detail of detailsArray.controls; let i = index" [formGroupName]="i">
-            <td>
-              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeDetailRow(i)">
-                <i class="fas fa-trash text-center fs-2"></i>
-              </button>
-            </td>
-            <td>
-              <ng-select formControlName="ledger"
-                         [items]="ledgerList"
-                         bindLabel="SubledgerName"
-                         placeholder="Select Ledger"
-                         class="custom-ng-select-sm">
-              </ng-select>
-            </td>
-            <td>
-              <ng-select formControlName="branch"
-                         [items]="branchList"
-                         bindLabel="BranchName"
-                         placeholder="Select Branch"
-                         class="custom-ng-select-sm">
-              </ng-select>
-            </td>
-            <td>
-              <select formControlName="drCr" class="custom-input-field sm">
-                <option value="D">Debit</option>
-                <option value="C">Credit</option>
-              </select>
-            </td>
-            <td>
-              <input formControlName="currency" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="exchangeRate" type="number" class="custom-input-field sm" step="0.0001" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="currencyAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="taxableAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="taxPercentage" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="taxAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="localAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="narration" class="custom-input-field sm" placeholder=" " />
-            </td>
-            <td>
-              <ng-select formControlName="costCenter"
-                         [items]="costCenterList"
-                         bindLabel="CostCenterName"
-                         placeholder="Cost Center"
-                         class="custom-ng-select-sm">
-              </ng-select>
-            </td>
-            <td>
-              <ng-select formControlName="charge"
-                         [items]="chargeList"
-                         bindLabel="ChargeName"
-                         placeholder="Charge"
-                         class="custom-ng-select-sm">
-              </ng-select>
-            </td>
-            <td>
-              <input formControlName="sacHsnCode" class="custom-input-field sm" placeholder=" " />
-            </td>
-          </tr>
-          <tr *ngIf="detailsArray.length === 0">
-            <td colspan="15" class="text-center text-muted py-3">
-              No detail entries. Click "Add Detail" to add entries.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</ng-template>
-
-<!-- TDS Tab Template -->
-<ng-template #tdsTab>
-  <div>
-    <div class="table-responsive table-borderless">
-      <table class="table table-hover align-middle no-wrap table-sm mb-0">
-        <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light" width="2%"></th>
-            <th class="bg-transparent text-light">TDS Set <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">TDS Company Type</th>
-            <th class="bg-transparent text-light">IT Section Code</th>
-            <th class="bg-transparent text-light">Certificate No.</th>
-            <th class="bg-transparent text-light">Percentage</th>
-            <th class="bg-transparent text-light">Taxable Amt <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">TDS Amt</th>
-            <th class="bg-transparent text-light">Reason</th>
-          </tr>
-        </thead>
-        <tbody formArrayName="tdsDetails">
-          <tr *ngFor="let tds of tdsArray.controls; let i = index" [formGroupName]="i">
-            <td>
-              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeTDSRow(i)">
-                <i class="fas fa-trash text-center fs-2"></i>
-              </button>
-            </td>
-            <td>
-              <ng-select formControlName="tdsSet"
-                         [items]="tdsSetList"
-                         bindLabel="ITSectionCode"
-                         placeholder="Select TDS Set"
-                         class="custom-ng-select-sm">
-              </ng-select>
-            </td>
-            <td>
-              <input formControlName="tdsCompanyType" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="itSectionCode" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="certificateNumber" class="custom-input-field sm" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="tdsPercentage" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="taxableAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="tdsAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="reason" class="custom-input-field sm" placeholder=" " />
-            </td>
-          </tr>
-          <tr *ngIf="tdsArray.length === 0">
-            <td colspan="9" class="text-center text-muted py-3">
-              No TDS entries. Click "Add TDS" to add TDS deductions.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</ng-template>
-
-<!-- Voucher Matching Tab Template -->
-<ng-template #voucherTab>
-  <div>
-    <!-- Outstanding Invoices Search Results -->
-    <div class="alert alert-info mb-2" *ngIf="outstandingInvoices.length === 0">
-      <i class="fas fa-info-circle me-2"></i>
-      Click "Search Outstanding" to find vendor invoices for matching.
-    </div>
-
-    <div *ngIf="outstandingInvoices.length > 0" class="mb-3">
-      <h6 class="text-primary">Outstanding Invoices (Select to Match)</h6>
-      <div class="table-responsive">
-        <table class="table table-sm table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th width="5%"></th>
-              <th>Invoice No</th>
-              <th>Invoice Date</th>
-              <th>Vendor</th>
-              <th class="text-end">Original Amount</th>
-              <th class="text-end">Matched</th>
-              <th class="text-end">Outstanding</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let invoice of outstandingInvoices" [class.table-active]="invoice.selected">
-              <td>
-                <input type="checkbox" [(ngModel)]="invoice.selected" [ngModelOptions]="{standalone: true}"
-                       (change)="toggleInvoiceSelection(invoice)" />
-              </td>
-              <td>{{ invoice.VoucherNumber }}</td>
-              <td>{{ invoice.VoucherDate | date:'dd-MMM-yyyy' }}</td>
-              <td>{{ invoice.VendorName }}</td>
-              <td class="text-end">{{ invoice.OriginalAmount | number:'1.2-2' }}</td>
-              <td class="text-end">{{ invoice.MatchedAmount | number:'1.2-2' }}</td>
-              <td class="text-end">{{ invoice.OutstandingAmount | number:'1.2-2' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Matched Invoices Table -->
-    <div class="table-responsive table-borderless">
-      <table class="table table-hover align-middle no-wrap table-sm mb-0">
-        <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light" width="2%"></th>
-            <th class="bg-transparent text-light">Voucher No</th>
-            <th class="bg-transparent text-light">Voucher Date</th>
-            <th class="bg-transparent text-light">Original Amt</th>
-            <th class="bg-transparent text-light">OS Amt</th>
-            <th class="bg-transparent text-light">Matching Amt</th>
-            <th class="bg-transparent text-light">TDS Amt</th>
-            <th class="bg-transparent text-light">Balance</th>
-          </tr>
-        </thead>
-        <tbody formArrayName="voucherMatchings">
-          <tr *ngFor="let matching of voucherMatchingsArray.controls; let i = index" [formGroupName]="i">
-            <td>
-              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeMatchingRow(i)">
-                <i class="fas fa-trash text-center fs-2"></i>
-              </button>
-            </td>
-            <td>
-              <input formControlName="voucherNumber" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="voucherDate" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="originalAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="outstandingAmount" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="matchingAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="tdsAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="balance" type="number" class="custom-input-field sm" readonly placeholder=" " />
-            </td>
-          </tr>
-          <tr *ngIf="voucherMatchingsArray.length === 0">
-            <td colspan="8" class="text-center text-muted py-3">
-              No invoices matched. Search and select outstanding invoices to match.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</ng-template>
-
-<!-- Inter-branch Tab Template -->
-<ng-template #interbranchTab>
-  <div>
-    <div class="table-responsive table-borderless">
-      <table class="table table-hover align-middle no-wrap table-sm mb-0">
-        <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light" width="2%"></th>
-            <th class="bg-transparent text-light">Branch <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">Currency Amount <span class="text-danger">*</span></th>
-            <th class="bg-transparent text-light">Narration</th>
-            <th class="bg-transparent text-light">Inter Branch JV</th>
-          </tr>
-        </thead>
-        <tbody formArrayName="interBranch">
-          <tr *ngFor="let ib of interBranchArray.controls; let i = index" [formGroupName]="i">
-            <td>
-              <button class="btn btn-link text-danger py-0 px-1" ngbTooltip="Delete" (click)="removeInterBranchRow(i)">
-                <i class="fas fa-trash text-center fs-2"></i>
-              </button>
-            </td>
-            <td>
-              <ng-select formControlName="branch"
-                         [items]="branchList"
-                         bindLabel="BranchName"
-                         placeholder="Select Branch"
-                         class="custom-ng-select-sm">
-              </ng-select>
-            </td>
-            <td>
-              <input formControlName="currencyAmount" type="number" class="custom-input-field sm" step="0.01" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="narration" class="custom-input-field sm" placeholder=" " />
-            </td>
-            <td>
-              <input formControlName="jvNumber" class="custom-input-field sm" readonly placeholder="Auto-generated" />
-            </td>
-          </tr>
-          <tr *ngIf="interBranchArray.length === 0">
-            <td colspan="5" class="text-center text-muted py-3">
-              No inter-branch entries. Click "Add Interbranch" for multi-location payments.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</ng-template>
