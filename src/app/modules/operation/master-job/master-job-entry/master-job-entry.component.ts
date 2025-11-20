@@ -54,6 +54,7 @@ import { PackingListComponent } from '../reports/packing-list/packing-list.compo
 import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest.component';
 import { JobCardComponent } from '../reports/job-card/job-card.component';
 import { SailingConfirmationComponent } from '../reports/sailing-confirmation/sailing-confirmation.component';
+import { MblComponent } from '../reports/mbl/mbl.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -2469,6 +2470,20 @@ getAgentBranchName(AgentSid: number): string {
       modalRef.componentInstance.masterJobContainers=this.masterJobContainers.getRawValue() || [];
       modalRef.componentInstance.packageTypeList=this.packageTypeList;
     }
+
+
+    
+      reportMBLBill() {
+            const modalRef = this.modalService.open(MblComponent,{
+              size: 'xl',
+              scrollable: true,
+            })
+              modalRef.componentInstance.masterJobData=this.masterJobData;
+              modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+              modalRef.componentInstance.agentList = this.agentList || [];
+              modalRef.componentInstance.packageTypeList=this.packageTypeList;
+              
+          }
     
 
   calculateChargeWiseProfit() {
