@@ -361,5 +361,13 @@ export class AccountsService {
       })
     );
   }
+
+  postVoucherByVoucherSid(payload: any) {
+    return this.http.post<{ data: any }>('voucher/post-voucher', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
   
 }
