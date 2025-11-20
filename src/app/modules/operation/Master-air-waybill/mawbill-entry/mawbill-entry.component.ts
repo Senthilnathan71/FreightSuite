@@ -47,6 +47,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CommonService } from 'src/app/common/common.service';
+import { MAWBComponent } from '../report/mawb/mawb.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -117,6 +118,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   isEditContainer = false;
   editingContainerIndex: number | null = null;
   containerFormGroup!: FormGroup;
+  masterAirWayData:any;
   currentContainerModal: any;
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
@@ -695,6 +697,8 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status && response.data) {
           const data = response.data;
+          this.masterAirWayData= response.data;
+          console.log("Master Air Way Bill",this.masterAirWayData)
           console.log('API Response Data:', data); 
         console.log('Others Data:', data.others); 
         console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
@@ -2224,4 +2228,21 @@ onYardChange(selectedYard: any): void {
     console.log(shipment ,'shipment');
     this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
   }
+
+
+  // print
+
+   reportMAWBModel() {
+        const modalRef=this.modalService.open(MAWBComponent,{
+          size: 'xl',
+          scrollable: true,
+        })
+        console.log("Master Air way data",this.masterAirWayData);
+        modalRef.componentInstance.masterAirWayData=this.masterAirWayData || []; 
+        modalRef.componentInstance.containerTypeList=this.containerTypeList;
+        modalRef.componentInstance.packageTypeList=this.packageTypeList;
+        modalRef.componentInstance.agentList=this.agentList;
+        modalRef.componentInstance.currencyList=this.currencyList;
+      }
+  
 }
