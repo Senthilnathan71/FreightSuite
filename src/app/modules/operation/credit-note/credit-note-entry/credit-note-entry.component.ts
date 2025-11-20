@@ -248,7 +248,7 @@ export class CreditNoteEntryComponent {
         GSTType: [{ value: '', disabled: true }],
         PostStatus: [''],
         InvoiceType: [{value: null, disabled: true}],
-        VoucherType: [1],
+        VoucherType: [''],
         Narration: ['hi'],
         CreditNoteReason: [''],
         Remarks: [{ value: '', disabled: true }],
@@ -415,6 +415,34 @@ export class CreditNoteEntryComponent {
         }
       }
 
+      private autoGenerateNarration(reversalVoucher: any): string {
+  if (!reversalVoucher) return '';
+  
+  let voucherNumber = '';
+  let voucherType = '';
+  
+  // Extract voucher number
+  if (typeof reversalVoucher === 'object' && reversalVoucher !== null) {
+    voucherNumber = reversalVoucher.VoucherNumber || reversalVoucher.voucherNumber || '';
+    voucherType = reversalVoucher.VoucherType || reversalVoucher.voucherType || '';
+  } else {
+    // If it's just an ID, find the voucher in the list
+    const foundVoucher = this.invoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucher || inv.voucherHeaderSid === reversalVoucher
+    );
+    if (foundVoucher) {
+      voucherNumber = foundVoucher.VoucherNumber || foundVoucher.voucherNumber || '';
+      voucherType = foundVoucher.VoucherType || foundVoucher.voucherType || '';
+    }
+  }
+  
+  if (voucherNumber) {
+    return `Being reversal of ${voucherNumber}${voucherType ? ` - ${voucherType}` : ''}`;
+  }
+  
+  return '';
+}
+
       getInvoiceData(invoice?: any) {
   const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
   if (!invoiceId) {
@@ -429,12 +457,16 @@ export class CreditNoteEntryComponent {
   if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
     invoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
     reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   } else {
     // If it's just an ID, try to find the invoice in the list to get the number
     const foundInvoice = this.invoiceList.find(inv => 
       inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
     );
     invoiceNumber = foundInvoice?.VoucherNumber || foundInvoice?.voucherNumber || '';
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   }
 
   this.spinner.show();
@@ -532,10 +564,13 @@ private patchInvoiceData(invoiceData: any) {
   const header = invoiceData;
   const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
   this.originalInvoiceRates = new Map();
+  const currentNarration = this.creditNoteForm.get('Narration')?.value;
+  const autoNarration = this.autoGenerateNarration(this.creditNoteForm.get('ReversalVoucher')?.value);
   this.creditNoteForm.patchValue({
     ReversalVoucher: invoiceHeaderSid,
     CustomerMasterSid: header.CustomerMasterSid || null,
     PartyMasterSid: header.PartyMasterSid || null,
+    Narration: autoNarration || header.Narration || currentNarration || '',
     PartyName: header.PartyName || '',
     PartyAddress: header.PartyAddress || '',
     DocumentNumber: header.DocumentNumber || '',

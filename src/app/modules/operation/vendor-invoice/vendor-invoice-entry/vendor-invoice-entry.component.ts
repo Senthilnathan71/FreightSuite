@@ -343,6 +343,7 @@ currentUserState: string;
 
   createDetailGroup(data?: any): FormGroup {
   return this.fb.group({
+    VoucherDetailSid: [data?.VoucherDetailSid || null],
     CostRevenueChargesSid: [data?.CostRevenueChargesSid || null], // Store original cost ID
     ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
     ChargeDescription: [data?.ChargeDescription || ''],
@@ -1793,6 +1794,7 @@ getMasterJobNumber(jobSid: number): string {
   const formValue = this.vendorInvoiceForm.getRawValue();
 
   const payload: any = {
+    VoucherHeaderSid: this.headerId,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     PartyMasterSid: formValue.PartyMasterSid,
@@ -1817,7 +1819,7 @@ getMasterJobNumber(jobSid: number): string {
     HouseJobSid: formValue.HouseJobSid,
     VoucherDate: this.fromNgbDate(formValue.VoucherDate),
     PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
-    status: formValue.Status,
+    Status: formValue.Status,
     CreatedBy: this.currUserEmail || 'System',
     UpdatedBy: this.currUserEmail || 'System'
   };
@@ -1825,7 +1827,7 @@ getMasterJobNumber(jobSid: number): string {
   // Add details with CostRevenueChargesSid
   payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
     Sno: index + 1,
-    CostRevenueChargesSid: detail.CostRevenueChargesSid, // Include original cost ID
+    VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
     ChargeMasterSid: detail.ChargeMasterSid,
     ChargeDescription: detail.ChargeDescription,
     HSSACMasterSid: detail.HSSACMasterSid,

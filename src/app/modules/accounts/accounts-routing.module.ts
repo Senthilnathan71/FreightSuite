@@ -23,6 +23,8 @@ import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matchi
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
 import { PaymentEntryFinalComponent } from './payment/payment-entry-final/payment-entry-final.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
+import { ReverseVoucherEntryComponent } from './reverse-voucher/reverse-voucher-entry/reverse-voucher-entry.component';
+import { ReverseVoucherListComponent } from './reverse-voucher/reverse-voucher-list/reverse-voucher-list.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -317,6 +319,40 @@ export const AccountRoutes: Routes = [
             { title: "Accounts", url: "/accounts" },
             { title: "Journal-Voucher", url: "/accounts/journal-voucher/list" },
             { title: "Journal-Voucher" },
+          ],
+        },
+      },
+      {
+        path: "reverse-voucher/list",
+        component: ReverseVoucherListComponent,
+        data: {
+          title: "Reverse-Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Reverse-Voucher" },
+          ],
+        },
+      },
+      {
+        path: "reverse-voucher/entry",
+        component: ReverseVoucherEntryComponent,
+        data: {
+          title: "Reverse-Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Reverse-Voucher" },
+          ],
+        },
+      },
+      {
+        path: "reverse-voucher/entry/:id",
+        component: ReverseVoucherEntryComponent,
+        data: {
+          title: "Reverse-Voucher",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Reverse-Voucher", url: "/accounts/reverse-voucher/list" },
+            { title: "Reverse-Voucher" },
           ],
         },
       },

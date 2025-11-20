@@ -258,6 +258,7 @@ gstTypes = [
       const id = params.get('id');
       if (id) {
         this.headerId = Number(id);
+        this.isViewMode = false;
         this.loadVendorCreditNoteById(this.headerId);
       } else {
         const currencySettings = this.companySettings.getCurrencySettings();
@@ -340,6 +341,34 @@ gstTypes = [
     });
   }
 
+  private autoGenerateNarration(reversalVoucher: any): string {
+  if (!reversalVoucher) return '';
+  
+  let voucherNumber = '';
+  let voucherType = '';
+  
+  // Extract voucher number
+  if (typeof reversalVoucher === 'object' && reversalVoucher !== null) {
+    voucherNumber = reversalVoucher.VoucherNumber || reversalVoucher.voucherNumber || '';
+    voucherType = reversalVoucher.VoucherType || reversalVoucher.voucherType || '';
+  } else {
+    // If it's just an ID, find the voucher in the list
+    const foundVoucher = this.vendorInvoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucher || inv.voucherHeaderSid === reversalVoucher
+    );
+    if (foundVoucher) {
+      voucherNumber = foundVoucher.VoucherNumber || foundVoucher.voucherNumber || '';
+      voucherType = foundVoucher.VoucherType || foundVoucher.voucherType || '';
+    }
+  }
+  
+  if (voucherNumber) {
+    return `Being reversal of ${voucherNumber}${voucherType ? ` - ${voucherType}` : ''}`;
+  }
+  
+  return '';
+}
+
   getVendorInvoiceData(data?:any) {
     const id = data || this.vendorCreditNoteForm.get('ReversalVoucher')?.value;
     if (!id) {
@@ -353,11 +382,15 @@ gstTypes = [
     if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
       vendorInvoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
       reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+          const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.vendorCreditNoteForm.get('Narration')?.setValue(autoNarration);
     } else {
       const foundVendorInvoice = this.vendorInvoiceList.find(inv => 
         inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
       );
       vendorInvoiceNumber = foundVendorInvoice?.VoucherNumber || foundVendorInvoice?.voucherNumber || '';
+       const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.vendorCreditNoteForm.get('Narration')?.setValue(autoNarration);
     }
     this.spinner.show();
     this.operationService.getVendorInvoicesById(id).subscribe({
@@ -448,9 +481,11 @@ gstTypes = [
     const header = data;
     const vendorCreditNote = header.VoucherHeaderSid || header.voucherHeaderSid || null;
     this.originalInvoiceRates = new Map();
+      const currentNarration = this.vendorCreditNoteForm.get('Narration')?.value;
+  const autoNarration = this.autoGenerateNarration(this.vendorCreditNoteForm.get('ReversalVoucher')?.value);
     this.vendorCreditNoteForm.patchValue({
       ReversalVoucher: vendorCreditNote,
-      Narration: header.Narration || '',
+      Narration: autoNarration || header.Narration || '',
       PartyMasterSid: header.PartyMasterSid || null,
       PartyName: header.PartyName || '',
       PartyAddress: header.PartyAddress || '',
@@ -748,7 +783,7 @@ async loadDepartments(companyMasterSid: number) {
 
   createDetailGroup(data?: any): FormGroup {
   return this.fb.group({
-    VoucherDetailSid:[null],
+    VoucherDetailSid:[data?.VoucherDetailSid || null],
     CostRevenueChargesSid: [data?.CostRevenueChargesSid || null], // Store original cost ID
     ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
     ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
@@ -2036,6 +2071,7 @@ getMasterJobNumber(jobSid: number): string {
 
     this.spinner.show();
     if (this.isEditMode) {
+      console.log("UPDATE PAYLOAD:", payload);
       this.operationService.updateVendorCreditNoteById(this.headerId!, payload).subscribe({
         next: (response) => {
           this.spinner.hide();
@@ -2058,6 +2094,7 @@ getMasterJobNumber(jobSid: number): string {
           this.spinner.hide();
           if (response.status) {
             this.appSettingService.showSuccess('Vendor CreditNote created successfully');
+            
             this.router.navigate(['/operation/vendor-credit-note/list']);
           } else {
             this.appSettingService.showError(response.message || 'Failed to create Vendor CreditNote');
@@ -2075,8 +2112,10 @@ getMasterJobNumber(jobSid: number): string {
 
  preparePayload(): any {
   const formValue = this.vendorCreditNoteForm.getRawValue();
+  
 
   const payload: any = {
+    VoucherHeaderSid: this.headerId, 
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     ReversalVoucher: formValue.ReversalVoucher || null,
@@ -2102,7 +2141,7 @@ getMasterJobNumber(jobSid: number): string {
     HouseJobSid: formValue.HouseJobSid,
     VoucherDate: this.fromNgbDate(formValue.VoucherDate),
     PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
-    status: formValue.Status,
+    Status: formValue.Status,
     CreatedBy: this.currUserEmail || 'System',
     UpdatedBy: this.currUserEmail || 'System'
   };
@@ -2110,8 +2149,7 @@ getMasterJobNumber(jobSid: number): string {
   // Add details with CostRevenueChargesSid
   payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
     Sno: index + 1,
-    VoucherDetailSid: detail.VoucherDetailSid,
-    CostRevenueChargesSid: detail.CostRevenueChargesSid, // Include original cost ID
+    VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
     ChargeMasterSid: detail.ChargeMasterSid,
     ChargeDescription: detail.ChargeDescription,
     HSSACMasterSid: detail.HSSACMasterSid,
@@ -2146,9 +2184,12 @@ getMasterJobNumber(jobSid: number): string {
     ...formValue.voucherOthers,
     Remarks: formValue.Remarks || ''
   };
+  console.log("Header ID:", this.headerId);
+console.log("Detail IDs:", formValue.voucherDetails.map(d => d.VoucherDetailSid));
 
-  return payload;
+    return payload;
 }
+
 //   prepareVoucherTDSPayload(details: any[]): any[] {
 //   const taxRecords: any[] = [];
   
