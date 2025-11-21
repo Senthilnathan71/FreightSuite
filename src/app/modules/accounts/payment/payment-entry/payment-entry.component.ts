@@ -36,6 +36,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
+import { PaymentPrintComponent } from '../report/payment-print/payment-print.component';
+import { BankPaymentPrintComponent } from '../report/bank-payment-print/bank-payment-print.component';
 
 /**
  * Payment Entry Component
@@ -128,7 +130,7 @@ export class PaymentEntryComponent implements OnInit {
   outstandingInvoices: OutstandingInvoice[] = [];
   selectedInvoices: OutstandingInvoice[] = [];
   paymentModes: { value: string; label: string }[] = [];
-
+  paymentDataPrint:any;
   // Outstanding invoices
 
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
@@ -790,6 +792,8 @@ export class PaymentEntryComponent implements OnInit {
       (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
+          this.paymentDataPrint = resp.data;
+          console.log(this.paymentDataPrint,"PAYMENT PRINT")
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -1747,30 +1751,36 @@ export class PaymentEntryComponent implements OnInit {
     const ctrl = this.paymentForm.get('CashOrBank');
     if (event instanceof KeyboardEvent && event.key === 'Enter') {
       element.checked = !element.checked;
-      console.log("KEYBOARD EVENT TRIGGERED", {
-        isCheckBoxTicked: element.checked,
-        prevValue: ctrl.value,
-        newValue: !ctrl.value
-      })
     }
-    else if (event instanceof PointerEvent) {
-      console.log("POINTER EVENT TRIGGERED", {
-        isCheckBoxTicked: element.checked,
-        prevValue: ctrl.value,
-        newValue: !ctrl.value
-      })
-    }
-    this.r['BankCOA']?.setValue(null);
-    ctrl.setValue(element.checked);
 
-    if(element.checked){
-      this.paymentForm.patchValue({
-        InstrumentMode : null,
-        InstrumentNumber : '',
-        InstrumentDate : null,
-        ClearanceDate : null
-      })
+    ctrl?.setValue(element.checked);
+    this.r['BankCOA']?.setValue(null);
+
+    const mode = this.paymentForm.get('InstrumentMode');
+    const number = this.paymentForm.get('InstrumentNumber');
+    const date = this.paymentForm.get('InstrumentDate');
+
+    // Reset values
+    this.paymentForm.patchValue({
+      InstrumentMode: null,
+      InstrumentNumber: '',
+      InstrumentDate: null,
+      ClearanceDate: null
+    });
+
+    if (element.checked) {
+      mode?.clearValidators();
+      number?.clearValidators();
+      date?.clearValidators();
+    } else {
+      mode?.setValidators([Validators.required]);
+      number?.setValidators([Validators.required]);
+      date?.setValidators([Validators.required]);
     }
+
+    mode?.updateValueAndValidity();
+    number?.updateValueAndValidity();
+    date?.updateValueAndValidity();
   }
 
  
@@ -2058,4 +2068,23 @@ export class PaymentEntryComponent implements OnInit {
           
                 this.commonService.documentData.set(data)
               }
+
+              // print
+
+  reportPayment() {
+    const modalRef = this.modalService.open(PaymentPrintComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
+  }
+       
+  reportBankPayment() {
+    const modalRef = this.modalService.open(BankPaymentPrintComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.paymentDataPrint = this.paymentDataPrint || [];
+    modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
+  }
 }
