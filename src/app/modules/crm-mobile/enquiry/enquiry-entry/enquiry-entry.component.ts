@@ -409,7 +409,7 @@ export class EnquiryEntryComponent implements OnInit {
       weightUnits: this.leadService.getUOMsByType('W').pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getUOMsByType('P').pipe(catchError(() => of([]))),
       containerTypes: this.dropdownStore.loadContainerTypes().pipe(catchError(() => of([]))),
-      products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
+      products: this.leadService.getAllProducts().pipe(catchError(() => of([]))),
       salesman: this.leadService.getAllSalesman().pipe(catchError(() => of([]))),
     }).pipe(
       tap(({ departments, ports, customers, leads, incos, weightUnits, packageTypes, containerTypes, products, salesman }) => {
@@ -1482,6 +1482,8 @@ ${this.userData.userName}`;
       CustomerBranchSid: response.CustomerBranchSid,
       PreCustomerMasterSid: response.PreCustomerMasterSid,
       DepartmentMasterSid: response.DepartmentMasterSid,
+      ContactPerson: response.ContactPerson,
+      ContactNumber: response.ContactNumber,
       SalesmanSid: response.UserMasterSid,
       FreightPPCC: response.FreightPPCC,
       polList: polList,
@@ -1494,6 +1496,7 @@ ${this.userData.userName}`;
     };
     this.leadService.clearQuotationData();
     this.leadService.setQuotationData(enqData);
+    console.log(this.leadService.getQuotationData());
     this.router.navigate(['crm/quotation/entry']);
   }
 

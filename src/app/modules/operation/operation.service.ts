@@ -316,8 +316,8 @@ export class OperationService {
     );
   }
 
-  getAllProducts(CompanyMasterSid: number) {
-    return this.http.post<{ data: any[] }>('product', { CompanyMasterSid }).pipe(
+  getAllProducts() {
+    return this.http.get<{ data: any[] }>('product').pipe(
       map((resp: any) => {
         let response = resp;
         return response;

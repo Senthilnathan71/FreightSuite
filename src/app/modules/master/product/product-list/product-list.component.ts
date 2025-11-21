@@ -186,8 +186,6 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
             search: this.filterValue.trim(),
             page: Number(this.page),
             pageSize: Number(this.pageSize),
-            activeCompanyId: this.currentCompany?.CompanyMasterSid,
-            activeBranchId: this.currentBranch?.BranchMasterSid,
             sortColumn: this.sortColumn,
             sortDirection: this.sortDirection
         };
@@ -387,7 +385,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
 
     report(): void {
         const formattedData = this.allProduct;
-        const companyName = this.currentCompany?.companyName ?? 'Company';
+        
 
         // Get visible columns in their current order from the table component
         const visibleColumns = this.productTable.getVisibleColumns();
@@ -400,7 +398,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
             data: formattedData,
             headers: dynamicHeaders,
             fileName: 'Product-Report',
-            title: companyName
+           
         });
     }
 
@@ -560,9 +558,12 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     //     });
     // }
 
-    getProductType(id) {
-        return this.modeOfProductType.find(type => type.id === id).name;
-    }
+    getProductType(id: string | number): string {
+  if (!id) return 'Unknown';
+  
+  const productType = this.modeOfProductType.find(type => type.id === id.toString());
+  return productType?.name ;
+}
 
     // clearFilterValue() {
     //     this.filterValue = '';

@@ -245,8 +245,34 @@ export class CompanyEntryComponent implements OnInit {
     });
   }
 }
-	
-	
+
+	openConfigCompany() {
+  console.log("Opening config company", this.CompanyMasterSid);
+  
+  // Check if company is saved (has CompanyMasterSid)
+  if (this.CompanyMasterSid) {
+    // For existing company - open config with existing ID
+    this.route.navigate(['master/company', this.CompanyMasterSid, 'config-new'], {
+      state: {
+        companyName: this.companyForm.get('companyName')?.value,
+        companyId: this.CompanyMasterSid,
+        isCreateMode: false
+      }
+    });
+  } else {
+    // For new company - pass the form data to create config temporarily
+    const companyFormData = this.companyForm.value;
+    this.route.navigate(['master/company/config-new'], {
+      state: {
+        companyName: companyFormData.companyName,
+        companyData: companyFormData, // Pass entire form data
+        isCreateMode: true,
+        // Store temporary reference to link later
+        tempCompanyId: `temp_${Date.now()}`
+      }
+    });
+  }
+}
 	// FORM INITIALIZATION
 
 	initCompanyForm() {
@@ -296,6 +322,8 @@ export class CompanyEntryComponent implements OnInit {
 			branchReportLogo: [],
 			consolePrefix: ['', [Validators.maxLength(20)]],
             consoleNoLen: [null, [Validators.min(1), Validators.max(20)]],
+			BookingPrefix: ['', [Validators.maxLength(20)]],
+			BookingNoLen: [null, [Validators.min(1), Validators.max(20)]],
             shipmentPrefix: ['', [Validators.maxLength(20)]],
             shipmentNoLen: [null, [Validators.min(1), Validators.max(20)]],
             enquiryPrefix: ['', [Validators.maxLength(20)]],
@@ -350,6 +378,8 @@ export class CompanyEntryComponent implements OnInit {
 			reportLogo: [branchData?.branchReportLogo || null],
 			consolePrefix: [branchData?.consolePrefix || '', [Validators.maxLength(20)]],
             consoleNoLen: [branchData?.consoleNoLen || null],
+			BookingPrefix: [branchData?.BookingPrefix || '', [Validators.maxLength(20)]],
+			BookingNoLen: [branchData?.BookingNoLen || null],
             shipmentPrefix: [branchData?.shipmentPrefix || '', [Validators.maxLength(20)]],
             shipmentNoLen: [branchData?.shipmentNoLen || null],
             enquiryPrefix: [branchData?.enquiryPrefix || '', [Validators.maxLength(20)]],
@@ -438,6 +468,8 @@ export class CompanyEntryComponent implements OnInit {
 							cityName: branch.cityMaster?.cityName,
 							consolePrefix: branch?.consolePrefix || '',
 							consoleNoLen: branch?.consoleNoLen || null,
+							BookingPrefix: branch?.BookingPrefix || '',
+							BookingNoLen: branch?.BookingNoLen || null,
 							shipmentPrefix: branch?.shipmentPrefix || '',
 							shipmentNoLen: branch?.shipmentNoLen || null,
 							enquiryPrefix: branch?.enquiryPrefix || '',
@@ -544,6 +576,8 @@ export class CompanyEntryComponent implements OnInit {
 				branchconfig: this.branchData?.config,
 				consolePrefix: this.branchData?.consolePrefix || '',
                 consoleNoLen: this.branchData?.consoleNoLen || null,
+				BookingPrefix: this.branchData?.BookingPrefix || '',
+				BookingNoLen: this.branchData?.BookingNoLen || null,
                 shipmentPrefix: this.branchData?.shipmentPrefix || '',
                 shipmentNoLen: this.branchData?.shipmentNoLen || null,
                 enquiryPrefix: this.branchData?.enquiryPrefix || '',
@@ -630,6 +664,8 @@ export class CompanyEntryComponent implements OnInit {
 			config: formValue.config,
 			consolePrefix: formValue.consolePrefix,
             consoleNoLen: formValue.consoleNoLen,
+			BookingPrefix: formValue.BookingPrefix,
+			BookingNoLen: formValue.BookingNoLen,
             shipmentPrefix: formValue.shipmentPrefix,
             shipmentNoLen: formValue.shipmentNoLen,
             enquiryPrefix: formValue.enquiryPrefix,
@@ -806,6 +842,8 @@ export class CompanyEntryComponent implements OnInit {
 				status: branchValue.status === 'Active' ? 'A' : 'S',
 				consolePrefix: branchValue.consolePrefix,
             consoleNoLen: branchValue.consoleNoLen,
+			BookingPrefix: branchValue.BookingPrefix,
+			BookingNoLen: branchValue.BookingNoLen,
             shipmentPrefix: branchValue.shipmentPrefix,
             shipmentNoLen: branchValue.shipmentNoLen,
             enquiryPrefix: branchValue.enquiryPrefix,
@@ -862,6 +900,7 @@ export class CompanyEntryComponent implements OnInit {
 						this.appSettingService.showSuccess('Company created successfully.');
 						const companyId = resp.data.company?.CompanyMasterSid
 						console.log(resp);
+						 this.linkTemporaryConfigurations(companyId);
 						if (companyId) {
 							console.log(companyId);
 							this.route.navigate(['master/company/entry', companyId]);
@@ -877,7 +916,33 @@ export class CompanyEntryComponent implements OnInit {
 			);
 		}
 	}
+private linkTemporaryConfigurations(companyId: number) {
+  // Look for temporary configurations in localStorage
+  const tempConfigKeys = Object.keys(localStorage).filter(key => key.startsWith('temp_company_config_'));
+  
+  tempConfigKeys.forEach(key => {
+    const configData = JSON.parse(localStorage.getItem(key));
+    
+    // Check if this config belongs to the current company (by name or other identifier)
+    if (configData.companyName === this.companyForm.get('companyName')?.value) {
+      // Update the configurations with the actual company ID
+      const updatedConfigs = configData.configurations.map((config: any) => ({
+        ...config,
+        CompanyMasterSid: companyId
+      }));
 
+      // Save the configurations with the actual company ID
+      if (updatedConfigs.length === 1) {
+        this.masterService.createCompanyConfig(updatedConfigs[0]).subscribe();
+      } else if (updatedConfigs.length > 1) {
+        this.masterService.createBulkCompanyConfigs(updatedConfigs).subscribe();
+      }
+
+      // Remove temporary config
+      localStorage.removeItem(key);
+    }
+  });
+}
 	loadAllFields() {
 		forkJoin({
 			cities: this.masterService.getAllCity(),

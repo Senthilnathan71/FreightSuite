@@ -17,6 +17,7 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { getConcatenatedPorts } from 'src/app/common/helper';
+
 @Component({
     selector: 'app-booking-list',
     standalone: true,
@@ -28,8 +29,8 @@ import { getConcatenatedPorts } from 'src/app/common/helper';
         FavoriteStarComponent,
         NgxSpinnerModule,
         ReusableTableComponent,
-         PageHeaderComponent,
-         ToolsDropdownComponent
+        PageHeaderComponent,
+        ToolsDropdownComponent
     ],
     templateUrl: './booking-list.component.html',
     styleUrl: './booking-list.component.scss'
@@ -42,6 +43,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     currentMenuPermissions: any = {};
     currentCompany: any;
     currentBranch: any;
+    
     // Table configuration
     tableConfig: TableConfig = {
         columns: [],
@@ -116,7 +118,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                     this.permissions = Object.keys(this.currentMenuPermissions).filter(
                         key => this.currentMenuPermissions[key] === 'isTrue'
                     );
-                      this.initializeHeaderActions();
+                    this.initializeHeaderActions();
                 }
             });
         }
@@ -157,7 +159,10 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 vslvoy: item.VesselName && item.VoyageNo ? item.VesselName + ' / ' + item.VoyageNo : '',
                 milestone: item.Milestone?.MilestoneName,
                 salesman: item.salesman?.userName,
-                status: item.status === 'A' ? 'Active' : 'Suspended'
+                status: item.status === 'A' ? 'Active' : 'Suspended',
+                // Extract MasterJobNumber from houseJob array
+                MasterJobNumber: this.getMasterJobNumber(item),
+                MasterJobSid: this.getMasterJobSid(item)
             }));
             this.totalLengthOfCollection = response.data.totalCount || 0;
             this.applySorting();
@@ -169,6 +174,30 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         }
     }
 
+    // Helper method to extract MasterJobNumber from houseJob array
+    private getMasterJobNumber(item: any): string {
+        if (item.houseJob && item.houseJob.length > 0) {
+            // Find the first houseJob that has a masterJob with MasterJobNumber
+            const houseJobWithMaster = item.houseJob.find((hj: any) => 
+                hj.masterJob && hj.masterJob.MasterJobNumber
+            );
+            return houseJobWithMaster?.masterJob?.MasterJobNumber || '';
+        }
+        return '';
+    }
+
+    // Helper method to extract MasterJobSid from houseJob array
+    private getMasterJobSid(item: any): number | null {
+        if (item.houseJob && item.houseJob.length > 0) {
+            // Find the first houseJob that has a masterJob with MasterJobSid
+            const houseJobWithMaster = item.houseJob.find((hj: any) => 
+                hj.masterJob && hj.MasterJobSid
+            );
+            return houseJobWithMaster?.MasterJobSid || null;
+        }
+        return null;
+    }
+
     protected override handleSearchError(error: any): void {
         this.tableLoading = false;
         this.spinner.hide();
@@ -178,57 +207,62 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
 
     onSearchTriggered(searchValue: string): void {
-    this.filterValue = searchValue;
-    this.searchBookings();
-  }
-   onSearchCleared(): void {
-    this.filterValue = '';
-    this.clearFilterValue();
-  }
-    initializeHeaderActions(): void {
-    this.headerActions = [
-      {
-        label: 'Create',
-        icon: 'fas fa-plus',
-        action: 'create',
-        condition: this.hasPermission('Add')
-      },
-      {
-        label: 'Report',
-        icon: 'fas fa-file-alt',
-        action: 'report',
-        disabled: this.totalLengthOfCollection === 0
-      },
-      {
-        label: 'Reset',
-        icon: 'fas fa-sync-alt',
-        action: 'reset'
-      }
-    ];
-  }
-    onActionTriggered(action: string): void {
-    switch (action) {
-      case 'create':
-        this.navigateToCreate()
-        break;
-      case 'report':
-        this.report();
-        break;
-      case 'reset':
-        this.resetPage();
-        break;
-      default:
-        console.warn(`Unknown action: ${action}`);
+        this.filterValue = searchValue;
+        this.searchBookings();
     }
-  }
+
+    onSearchCleared(): void {
+        this.filterValue = '';
+        this.clearFilterValue();
+    }
+
+    initializeHeaderActions(): void {
+        this.headerActions = [
+            {
+                label: 'Create',
+                icon: 'fas fa-plus',
+                action: 'create',
+                condition: this.hasPermission('Add')
+            },
+            {
+                label: 'Report',
+                icon: 'fas fa-file-alt',
+                action: 'report',
+                disabled: this.totalLengthOfCollection === 0
+            },
+            {
+                label: 'Reset',
+                icon: 'fas fa-sync-alt',
+                action: 'reset'
+            }
+        ];
+    }
+
+    onActionTriggered(action: string): void {
+        switch (action) {
+            case 'create':
+                this.navigateToCreate()
+                break;
+            case 'report':
+                this.report();
+                break;
+            case 'reset':
+                this.resetPage();
+                break;
+            default:
+                console.warn(`Unknown action: ${action}`);
+        }
+    }
+
     private updateHeaderActionState(): void {
-    this.headerActions = this.headerActions.map(action => {
-      if (action.action === 'report') {
-        return { ...action, disabled: this.totalLengthOfCollection === 0 };
-      }
-      return action;
-    });
-  }
+        this.headerActions = this.headerActions.map(action => {
+            if (action.action === 'report') {
+                return { ...action, disabled: this.totalLengthOfCollection === 0 };
+            }
+            return action;
+        });
+    }
+
     // Legacy methods for template compatibility
     searchBookings() {
         this.search();
@@ -242,9 +276,17 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         return item.BookingHeaderSid || index;
     }
 
-
     viewBooking(booking: any): void {
         this.router.navigate(['/operation/booking/entry', booking.BookingHeaderSid]);
+    }
+
+    // New method to navigate to master job
+    navigateToMasterJob(masterJobSid: number): void {
+        if (masterJobSid) {
+            this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+        } else {
+            this.appSettingService.showWarning('Master Job not available');
+        }
     }
 
     navigateToCreate() {
@@ -262,6 +304,16 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 visible: true,
                 dataType: 'string'
             },
+           {
+            key: 'MasterJobNumber',
+            label: 'Master Job Number',
+            sortable: true,
+            filterable: true,
+            visible: true,
+            dataType: 'string',
+            template: 'link', 
+            cellClass: 'master-job-column'
+        },
             {
                 key: 'Dept',
                 label: 'Department',
@@ -342,11 +394,15 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
 
     // Table event handlers
-    onTableActionClick(event: TableEventData): void {
-        if (event.action === 'view') {
-            this.viewBooking(event.row);
-        }
+   onTableActionClick(event: TableEventData): void {
+    if (event.column?.template === "link") {
+        // Handle link template click (Master Job Number)
+        this.navigateToMasterJob(event.row.MasterJobSid)
+    } else if (event.action === 'view') {
+        // Handle view action - navigate to booking entry page
+        this.viewBooking(event.row);
     }
+}
 
     onTableRowClick(row: any): void {
         // Row clicking can be handled by the table component if needed
@@ -382,5 +438,4 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             title: companyName
         });
     }
-
 }

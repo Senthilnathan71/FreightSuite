@@ -1205,24 +1205,27 @@ filterChargesByDepartment(department: any): void {
  
 }
 
-  setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
+ setEffectiveDateBasedOnChargeCode(chargeCode?: string) {
   if (!chargeCode) {
     this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
     this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
     return;
   }
 
-  // Filter only active records with same charge code
   const sameChargeDetails = this.TariffDetailsList.filter(
     detail => detail.ChargeCode === chargeCode && detail.status === 'A'
   );
 
   if (sameChargeDetails.length === 0) {
-    // Different charge code - set to today
-    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(this.todayDate);
-    this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    // NEW charge code - set to today's date
+    // ✅ FIX: Add one day to compensate for the adapter issue
+    const adjustedToday = new Date(this.todayDate);
+    adjustedToday.setDate(adjustedToday.getDate() + 1);
+    
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(adjustedToday);
+    this.minEffectiveFrom = this.toNgbDateStruct(adjustedToday);
   } else {
-    // Same charge code - set to next day after last expired date
+    // EXISTING charge code logic remains the same
     const expiredDates = sameChargeDetails.map(detail => new Date(detail.ExpiredOn));
     const maxExpiredDate = new Date(Math.max(...expiredDates.map(date => date.getTime())));
     const nextDay = new Date(maxExpiredDate);
@@ -1232,18 +1235,18 @@ filterChargesByDepartment(department: any): void {
     this.minEffectiveFrom = this.toNgbDateStruct(nextDay);
   }
 }
-  onChargeCodeChange(chargeCode: string) {
-     const selectedCharge = this.chargeList.find(c => c.chargeCode === chargeCode);
+ onChargeCodeChange(chargeCode: string) {
+  const selectedCharge = this.chargeList.find(c => c.chargeCode === chargeCode);
+  
   // Skip auto date logic while editing
   if (this.isModalEditMode) {
-  
-      this.setChargeDetails(selectedCharge);
+    this.setChargeDetails(selectedCharge);
     return;
   }
   
   // CREATE flow - apply the business logic
-  
   this.setEffectiveDateBasedOnChargeCode(chargeCode);
+  console.log('Effective Date', this.tariffDetailsForm.get('detailEffectiveDate')?.value);
   this.setChargeDetails(selectedCharge);
 }
 

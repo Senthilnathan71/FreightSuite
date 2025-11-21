@@ -294,6 +294,7 @@
                 <label for="text-input" class="input-label">Contact Person <span class="text-danger"></span></label>
               </div>
             </aside>
+            
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="text" id="phone" placeholder="" class="custom-input-field sm"
@@ -328,6 +329,19 @@
                 </div>
               </div>
             </aside>
+            <aside class="col-md-4" *ngIf="canUserLockRates">
+  <div class="custom-form-group">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="rateLock" 
+             formControlName="RateLock"
+             (change)="onRateLockChange()"
+             [disabled]="!canUserLockRates || disableAllModification || quotationApproved">
+      <label class="form-check-label" for="rateLock">
+        Rate Lock
+      </label>
+    </div>
+  </div>
+</aside>
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('FreightPPCC')?.value">
@@ -471,29 +485,29 @@
                         </div>
                       </aside>
                       <aside class="col-md-2">
-                        <div class="custom-form-group custom-form-group-select"
-                          [class.filled]="!!quoteRoutes.at(routeIndex).get('PODSid')?.value">
-                          <!-- <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
-                            (change)="onRouteChange(routeIndex)">
-
-                          </ng-select> -->
-                          <dofi-searchable-dropdown [items]="filteredPODPorts[routeIndex]" formControlName="PODSid"
-                            placeholder="" [displayFields]="portLookupConfig.displayFields"
-                            [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
-                            (change)="onPODChange($event,routeIndex)">
-                          </dofi-searchable-dropdown>
-                          <label for="" class="input-label">POD <span class="text-danger">*</span></label>
-                          @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
-                          <div class="error-message">
-                            @if(route.get('PODSid')?.hasError('required')){
-                            <span>Required</span>
-                            }
-                          </div>
-                          }
-                        </div>
-                      </aside>
+  <div class="custom-form-group custom-form-group-select"
+    [class.filled]="!!quoteRoutes.at(routeIndex).get('PODSid')?.value">
+    <dofi-searchable-dropdown 
+      [items]="filteredPODPorts[routeIndex]" 
+      formControlName="PODSid"
+      placeholder="" 
+      [displayFields]="portLookupConfig.displayFields"
+      [displayLabels]="portLookupConfig.displayLabels"
+      [labelFields]="portLookupConfig.labelFields" 
+      bindLabel="PortName" 
+      bindValue="PortMasterSid"
+      (itemSelected)="onPODChange($event, routeIndex)">
+    </dofi-searchable-dropdown>
+    <label for="" class="input-label">POD <span class="text-danger">*</span></label>
+    @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
+    <div class="error-message">
+      @if(route.get('PODSid')?.hasError('required')){
+      <span>Required</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
                       <aside class="col-md-2">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('FPODSid')?.value">
@@ -1055,20 +1069,23 @@
                                       <aside class="col-md-12 d-flex justify-content-end">
                                         <div class="d-flex align-items-center px-0 py-1">
                                           <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
-                                          <a (click)="toggleLock()">
+                                        
+                                          <a (click)="toggleLock()" >
                                             <i [class]="isLocked ? 'fas fa-lock' : 'fas fa-unlock'"
                                               class="feather-sm me-1"></i>
                                           </a>
                                           <button class="btn btn-info btn-sm me-1" type="button"
-                                            (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
-                                            [disabled]="disableAllModification ||  quotationApproved">
-                                            <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
-                                          </button>
-                                          <button class="btn btn-info btn-sm " type="button"
-                                            (click)="addQuoteCharge(routeIndex,carrierIndex)"
-                                            [disabled]="disableAllModification ||  quotationApproved">
-                                            <i class="fas fa-plus me-1"></i> Add Charge
-                                          </button>
+        (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
+        [disabled]="disableAllModification || quotationApproved || isRateLocked()">
+  <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
+</button>
+
+<!-- Add Charge button -->
+<button class="btn btn-info btn-sm" type="button"
+        (click)="addQuoteCharge(routeIndex,carrierIndex)"
+        [disabled]="disableAllModification || quotationApproved || isRateLocked()">
+  <i class="fas fa-plus me-1"></i> Add Charge
+</button>
                                         </div>
                                       </aside>
                                     </div>
@@ -1184,12 +1201,13 @@
                                         *ngFor="let charge of quoteCharges(routeIndex,carrierIndex).controls; let chargeIndex = index"
                                         [formGroupName]="chargeIndex">
                                         <td *ngIf="quoteCharges(routeIndex,carrierIndex).length > 1">
-                                          <button class="btn btn-link text-danger py-0"
-                                            (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-                                            [disabled]="disableAllModification" ngbTooltip="Delete">
-                                            <i class="fas fa-trash text-center fs-2"></i>
-                                          </button>
-                                        </td>
+  <button class="btn btn-link text-danger py-0"
+          (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
+          [disabled]="disableAllModification || isRateLocked()" 
+          ngbTooltip="Delete">
+    <i class="fas fa-trash text-center fs-2"></i>
+  </button>
+</td>
                                         <td>
                                           <!-- <ng-select [items]="chargeMaster" bindLabel="chargeCode"
                                               bindValue="ChargeMasterSid" appendTo="body" formControlName="ChargeUomSid"
@@ -2097,9 +2115,11 @@
                                         }
                                       </div>
                                     </aside>
+                                    
                                   </div>
                                 </div>
                               </div>
+                              
                               <div class="card-header bg-white d-flex align-items-center px-0 py-1">
                                 <h6 class="card-title text-info ms-1">Charge Details</h6>
                                 <div class="ms-auto">
