@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { firstValueFrom } from 'rxjs';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-pre-alert',
@@ -12,74 +15,161 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
   styles: ``,
 })
 export class PreAlertComponent {
-  userData: any;
-  currentCompany: any;
-  currentBranch: any;
-  currentDate = new Date();
-  @Input() masterJobData: any;
-  @Input() containerTypeList: any[]= [];
-  @Input() masterJobContainers: any[] = [];
-  @Input() packageTypeList: any[] =[];
-  @Input() agentList:any[]=[];
-  constructor(
-    private appSettingsService: AppSettingsService,
-    private activeModal: NgbActiveModal
-  ) {}
-
-  ngOnInit() {
-    this.userData = this.appSettingsService.getDecryptedUserProfile();
-    this.currentCompany = this.appSettingsService.decrypt(
-      localStorage.getItem('selected-company')
-    );
-    this.currentBranch = this.appSettingsService.decrypt(
-      localStorage.getItem('selected-branch')
-    );
+    userData: any;
+    currentCompany: any;
+    currentBranch: any;
+    currentBranchCityName: string | null;
+    currentBranchCityId: number;
+    currentDate = new Date();
+    @Input() masterJobData: any;
+    @Input() containerTypeList: any[] = [];
+    @Input() masterJobContainers: any[] = [];
+    @Input() packageTypeList: any[] = [];
+    @Input() agentList: any[] = [];
+    @Input() yardList: any[] = [];
+    constructor(
+      private appSettingsService: AppSettingsService,
+      private activeModal: NgbActiveModal,
+      private masterService: MasterService,
+      private appSettingService: AppSettingsService,
+      private spinner: NgxSpinnerService,
+    ) { }
+  
+    ngOnInit() {
+      this.userData = this.appSettingsService.getDecryptedUserProfile();
+      this.currentCompany = this.appSettingsService.decrypt(
+        localStorage.getItem('selected-company')
+      );
+      this.currentBranch = this.appSettingsService.decrypt(
+        localStorage.getItem('selected-branch')
+      );
+      this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+      this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+      this.currentBranchCityId = this.currentBranch.CityMasterSid;
+    }
+  
+    async loadLookups() {
+      this.spinner.show();
+      const companyRaw = localStorage.getItem('selected-company');
+      const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
+      const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
+      Promise.all([
+        firstValueFrom(this.masterService.getCityById(this.currentBranchCityId)),
+      ]).then(([userCity]) => {
+        this.currentBranchCityName = userCity ? userCity.cityName : null;
+        this.spinner.hide();
+      }).catch(error => {
+        console.error('Error loading lookups:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error loading lookup data');
+      });
+    }
+  
+    getAgentName(AgentSid: number) {
+      if (!AgentSid || this.agentList.length === 0) return '';
+      const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
+      return agent ? agent.CustomerName : '';
+    }
+    getAgentAddress(AgentSid: number) {
+      if (!AgentSid || this.agentList.length === 0) return '';
+      const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
+      return agent ? agent.Address : '';
+    }
+  
+    get totalNoOfPkg(): number {
+      return this.masterJobContainers.reduce((sum, c) => {
+        const value = Number(c.NoOfPkg) || 0;
+        return sum + value;
+      }, 0);
+    }
+  
+    get totalGrossWeight(): number {
+      return this.masterJobContainers.reduce((sum, c) => {
+        const value = Number(c.GrossWeight) || 0;
+        return sum + value;
+      }, 0);
+    }
+  
+    get totalVolume(): number {
+      return this.masterJobContainers.reduce((sum, c) => {
+        const value = Number(c.Volume) || 0;
+        return sum + value;
+      }, 0);
+    }
+  
+    getYardName(yardSid: number): string {
+      if (!yardSid || this.yardList.length === 0) return '';
+      const yard = this.yardList.find(yard => yard.CustomerMasterSid === yardSid);
+      return yard ? yard.CustomerName : '';
+    }
+  
+    getPackageTypeName(pkgTypeSid: number): string {
+      if (!pkgTypeSid) return 'Unknown';
+      const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+      return packageType ? packageType.UOMName : 'Unknown';
+    }
+  
+    getContainerTypeName(ContainerTypeMasterSid: number): string {
+      if (!this.containerTypeList) return "";
+      const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
+      return containerType ? containerType.ContainerName : '';
+    }
+  
+  
+    getContainerSize(containerTypeMasterSid: number): string {
+      console.log("SID RECEIVED:", containerTypeMasterSid);
+      console.log("CONTAINER TYPE LIST:", this.containerTypeList);
+  
+      const containerType = this.containerTypeList?.find(
+        ct => +ct.ContainerTypeMasterSid === +containerTypeMasterSid
+      );
+  
+      return containerType?.ContainerSize?.trim() || '-';
+    }
+  
+    getTareWeight(containerTypeMasterSid: number): string {
+      const container = this.containerTypeList?.find(
+        ct => +ct.ContainerTypeMasterSid === +containerTypeMasterSid
+      );
+  
+      return container?.TareWeight || '-';
+    }
+  
+  
+    // Calculate total NoOfPackage for all houseJobs and their cargo
+    getTotalPackages(): number {
+      if (!this.masterJobData?.houseJob) return 0;
+      return this.masterJobData.houseJob.reduce((totalH, h) => {
+        const totalCargo = h.Cargo?.reduce((totalC, c) => totalC + (c.NoOfPackage || 0), 0) || 0;
+        return totalH + totalCargo;
+      }, 0);
+    }
+  
+    // Calculate total GrossWeight
+    getTotalGrossWeight(): number {
+      if (!this.masterJobData?.houseJob) return 0;
+      return this.masterJobData.houseJob.reduce((totalH, h) => {
+        const totalCargo = h.Cargo?.reduce((totalC, c) => totalC + (+c.GrossWeight || 0), 0) || 0;
+        return totalH + totalCargo;
+      }, 0);
+    }
+  
+    // Calculate total Volume
+    getTotalVolume(): number {
+      if (!this.masterJobData?.houseJob) return 0;
+      return this.masterJobData.houseJob.reduce((totalH, h) => {
+        const totalCargo = h.Cargo?.reduce((totalC, c) => totalC + (+c.Volume || 0), 0) || 0;
+        return totalH + totalCargo;
+      }, 0);
+    }
+  
+  
+    modalClose() {
+      this.activeModal.close();
+    }
   }
-
-  get totalNoOfPkg(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
-      const value = Number(c.NoOfPkg) || 0;
-      return sum + value;
-    }, 0);
+  
+  interface ContainerDetails {
+    tareWeight: number;
+    size: string;
   }
-
-  get totalGrossWeight(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
-      const value = Number(c.GrossWeight) || 0;
-      return sum + value;
-    }, 0);
-  }
-
-  get totalVolume(): number {
-    return this.masterJobContainers.reduce((sum, c) => {
-      const value = Number(c.Volume) || 0;
-      return sum + value;
-    }, 0);
-  }
-
-  getPackageTypeName(pkgTypeSid: number): string {
-    if (!pkgTypeSid) return 'Unknown';
-    const packageType = this.packageTypeList.find(
-      (pt) => pt.UOMMasterSid === pkgTypeSid
-    );
-    return packageType ? packageType.UOMName : 'Unknown';
-  }
-
-  getContainerTypeName(ContainerTypeMasterSid: number): string {
-    const containerType = this.containerTypeList.find(
-      (ct) => ct.ContainerTypeMasterSid === ContainerTypeMasterSid
-    );
-    return containerType ? containerType.ContainerName : 'Unknown';
-  }
-
-   getAgentName(AgentSid : number){
-    if(!AgentSid || this.agentList.length === 0) return '';
-    const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
-    return agent ? agent.CustomerName : '';
-  }
-
-
-  modalClose() {
-    this.activeModal.close();
-  }
-}

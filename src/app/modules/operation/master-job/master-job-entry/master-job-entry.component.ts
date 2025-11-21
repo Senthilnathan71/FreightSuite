@@ -2467,6 +2467,7 @@ getAgentBranchName(AgentSid: number): string {
         scrollable: true,
       });
        modalRef.componentInstance.masterJobData=this.masterJobData;
+        modalRef.componentInstance.containerTypeList=this.containerTypeList;
       modalRef.componentInstance.masterJobContainers=this.masterJobContainers.getRawValue() || [];
       modalRef.componentInstance.packageTypeList=this.packageTypeList;
     }

@@ -51,6 +51,8 @@ import { ReleaseOrderComponent } from '../report/release-order/release-order.com
 import { VehicleComponent } from '../vehicle/vehicle.component';
 import { CustomsComponent } from '../customs/customs.component';
 import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-invoice.component';
+import { DeliveryNoteComponent } from '../report/delivery-note/delivery-note.component';
+import { HAWBComponent } from '../report/hawb/hawb.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -146,6 +148,7 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
   filterOption : any;
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
+  masterJobData: any;
   selectTab(tab: string) {
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
@@ -2597,7 +2600,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
-        modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
   }
 
 
@@ -2696,15 +2699,44 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.salesmanList = this.salesmanList || [];
   }
 
-      // reportMilestoneSummary() {
-      //   const modalRef = this.modalService.open(MilestoneSummaryComponent,{
+      reportMilestoneSummary() {
+        const modalRef = this.modalService.open(MilestoneComponent,{
+          size: 'xl',
+          scrollable: true,
+        })
+        modalRef.componentInstance.housejobData = this.housejobData || [];
+        modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+        modalRef.componentInstance.agentList = this.agentList || [];
+      }
+
+
+      // Delivery Note
+
+      // reportDeliveryNote() {
+      //   const modalRef = this.modalService.open(DeliveryNoteComponent,{
       //     size: 'xl',
       //     scrollable: true,
       //   })
-      //   modalRef.componentInstance.housejobData = this.housejobData || [];
-      //   modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
-      //   modalRef.componentInstance.agentList = this.agentList || [];
+      //   modalRef.componentInstance.housejobData =  this.housejobData || [];
       // }
+
+      // House Air Way Bill
+
+      reportHAWB() {
+        const modalRef =this.modalService.open(HAWBComponent,{
+          size: 'xl',
+          scrollable: true,
+        })
+    modalRef.componentInstance.masterJobData=this.masterJobData; 
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.uomList = this.uomList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+      }
+
 // Helper Funstion 
 
  getDepartmentName(DepartmentMasterSid: number) {
