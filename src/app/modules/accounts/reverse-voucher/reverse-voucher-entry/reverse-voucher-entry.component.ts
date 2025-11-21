@@ -659,7 +659,7 @@ export class ReverseVoucherEntryComponent {
         this.reverseVoucherData.PostStatus = 'P'; // Update local state
         
         // Navigate to list or stay on page but disable edits
-        this.router.navigate(['operation/reverse-voucher/list']);
+        this.router.navigate(['accounts/reverse-voucher/list']);
       } else {
         this.appSettingService.showError(result.message || 'Failed to post Reverse Voucher.');
       }
@@ -704,8 +704,7 @@ export class ReverseVoucherEntryComponent {
       NumberOfUnit: [{value:data?.NumberOfUnit || 1, disabled: true}],
       DrCr: [{value: data?.DrCr || 'D', disabled: true}],
       CurrencyCode: [{value: data?.CurrencyCode || this.reverseVoucherForm.get('CurrencyCode')?.value || null, disabled: true}],
-      Rate: [data?.Rate != null ? Number(data.Rate) : 0, 
-            [Validators.required, Validators.min(0), this.rateValidator.bind(this)]],
+      Rate: [data?.Rate != null ? Number(data.Rate) : 0],
       ExchangeRate: [{value:data?.ExchangeRate || this.reverseVoucherForm.get('ExchangeRate')?.value || 1, disabled: true}],
       Amount: [{value:data?.Amount || 0 , disabled: true}],
       TaxableAmount: [{value: data?.TaxableAmount || 0, disabled: true}],
@@ -715,15 +714,15 @@ export class ReverseVoucherEntryComponent {
       TaxAmount2: [{value:data?.TaxAmount2 || 0, disabled: true}],
       TaxPercentageIGST: [{value: data?.TaxPercentageIGST || 0, disabled: true}],
       TaxAmountIGST: [{value:data?.TaxAmountIGST || 0, disabled: true}],
-      LocalAmount: [data?.LocalAmount || 0],
-      PartyAmount: [data?.PartyAmount || 0],
-      MasterJobSid: [data?.MasterJobSid || null],
-      HouseJobSid: [data?.HouseJobSid || null],
+      LocalAmount: [{value:data?.LocalAmount || 0, disabled: true}],
+      PartyAmount: [{value:data?.PartyAmount || 0, disabled: true}],
+      MasterJobSid: [{value:data?.MasterJobSid || null, disabled: true}],
+      HouseJobSid: [{value: data?.HouseJobSid || null, disabled: true}],
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
-      LedgerMasterSid: [data?.LedgerMasterSid || null],
-      COAMasterSid: [data?.COAMasterSid || null],
-      ProfitCenterMasterSid: [data?.ProfitCenterMasterSid || null],
-      CostCenterMasterSid: [data?.CostCenterMasterSid || null],
+      LedgerMasterSid: [{value: data?.LedgerMasterSid || null, disabled: true}],
+      COAMasterSid: [{value:data?.COAMasterSid || null, disabled: true}],
+      ProfitCenterMasterSid: [{value:data?.ProfitCenterMasterSid || null, disabled: true}],
+      CostCenterMasterSid: [{value:data?.CostCenterMasterSid || null, disabled: true}],
     });
   }
   
@@ -1803,14 +1802,14 @@ export class ReverseVoucherEntryComponent {
             this.setFormReadonly();
           } else {
             this.appSettingService.showError('Reverse Voucher not found');
-            this.router.navigate(['/operation/reverse-voucher/list']);
+            this.router.navigate(['/accounts/reverse-voucher/list']);
           }
         },
         error: (error) => {
           this.spinner.hide();
           this.appSettingService.showError('Error loading Reverse Voucher');
           console.error('Error:', error);
-          this.router.navigate(['/operation/reverse-voucher/list']);
+          this.router.navigate(['/accounts/reverse-voucher/list']);
         }
       });
     }
@@ -2022,7 +2021,7 @@ export class ReverseVoucherEntryComponent {
             this.spinner.hide();
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher updated successfully');
-              this.router.navigate(['/operation/reverse-voucher/list']);
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
               this.appSettingService.showError('Failed to update Reverse Voucher');
             }
@@ -2039,7 +2038,7 @@ export class ReverseVoucherEntryComponent {
             this.spinner.hide();
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher created successfully');
-              this.router.navigate(['/operation/reverse-voucher/list']);
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
               this.appSettingService.showError(response.message || 'Failed to create Reverse Voucher');
             }
@@ -2232,7 +2231,7 @@ export class ReverseVoucherEntryComponent {
     }
   
     onCancel() {
-      this.router.navigate(['/operation/reverse-voucher/list']);
+      this.router.navigate(['/accounts/reverse-voucher/list']);
     }
   
     onPrint() {
@@ -2268,7 +2267,7 @@ export class ReverseVoucherEntryComponent {
             this.isSaving = false;
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher updated successfully');
-              this.router.navigate(['/operation/reverse-voucher/list']);
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
               this.appSettingService.showError('Failed to update Reverse Voucher');
             }
@@ -2287,7 +2286,7 @@ export class ReverseVoucherEntryComponent {
             this.isSaving = false;
             if (response.status) {
               this.appSettingService.showSuccess('Reverse Voucher created successfully');
-              this.router.navigate(['/operation/reverse-voucher/list']);
+              this.router.navigate(['/accounts/reverse-voucher/list']);
             } else {
               this.appSettingService.showError('Failed to create Reverse Voucher');
             }
