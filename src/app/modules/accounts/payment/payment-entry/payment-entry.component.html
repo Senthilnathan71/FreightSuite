@@ -15,10 +15,10 @@
                             (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
                         </button> -->
-                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="postVoucher()"
+                    <!-- <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="postVoucher()"
                         [disabled]="isPosted">
                         <i class="fas fa-check-circle me-1"></i> Final
-                    </button>
+                    </button> -->
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
@@ -27,11 +27,25 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="isPosted">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-    
+                    <div *ngIf="hasAnyDropdownPermission()" ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button *ngIf="hasPermission('Edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button *ngIf="hasPermission('Terms and Condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button *ngIf="hasPermission('Authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button *ngIf="hasPermission('Email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <form [formGroup]="searchOutstandingForm" *ngIf="!isEditMode">
@@ -537,15 +551,19 @@
                             <!-- @if(!isEditMode){ -->
                             <th class="bg-transparent text-light">Curr. Amt</th>
                             <th class="bg-transparent text-light">Local Amt</th>
+                            @if(!isPosted){
                             <th class="bg-transparent text-light">OS Curr. Amt</th>
                             <th class="bg-transparent text-light">OS Local Amt</th>
+                            }
                             <!-- } -->
                             <th class="bg-warning text-light">Curr.</th>
                             <th class="bg-warning text-light">Ex. Rate</th>
                             <th class="bg-warning text-light">Curr Amt</th>
                             <th class="bg-warning text-light">Local Amt</th>
                             <th class="bg-warning text-light">TDS Amt</th>
+                            @if(!isPosted){
                             <th class="bg-warning text-light">Balance</th>
+                            }
                         </tr>
                     </thead>
                     <tbody formArrayName="voucherMatchings">
@@ -604,6 +622,7 @@
                             </td>
 
                             <!-- OS Current Amount -->
+                             @if(!isPosted){
                             <td>
                                 <input type="text" formControlName="osCurrAmt" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
@@ -614,6 +633,7 @@
                                 <input type="text" formControlName="osLocalAmt" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
+                            }
                             <!-- } -->
 
                             <!-- Match Curr -->
@@ -677,6 +697,7 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"  
                                 />
                             </td>
+                            @if(!isPosted){
                             <td>
                                 <input 
                                     type="text" 
@@ -687,6 +708,7 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('matchCurr')?.value)"
                                 />
                             </td>
+                            }
 
                         </tr>
 
@@ -696,9 +718,10 @@
                             <!-- @if(!isEditMode){ -->
                             <td>{{ getTotalCurrAmt() }}</td>
                             <td>{{ getTotalLocalAmt() }}</td>
-
+                            @if(!isPosted){
                             <td>{{ getTotalOSCurrAmt() }}</td>
                             <td>{{ getTotalOSLocalAmount() }}</td>
+                            }
                             <!-- } -->
                             <td></td> <!-- matchCurr -->
                             <td></td> <!-- matchExRate -->

@@ -30,6 +30,12 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ReceiptService } from '../../services/receipt.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { CommonService } from 'src/app/common/common.service';
 
 /**
  * Payment Entry Component
@@ -111,8 +117,10 @@ export class PaymentEntryComponent implements OnInit {
   masterJobList: any[][] = [];
   houseJobList: any[][] = [];
   currentCompanyBranches: any[] = [];
-
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  currentMenuId: number;
+  TandCList: any;
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
   COALookupConfig = DROPDOWN_CONFIGS.COA_LEDGER;
@@ -173,13 +181,15 @@ export class PaymentEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private modalService: NgbModal,
     private toastr: ToastrService,
+    private masterService: MasterService,
     private paymentService : PaymentService,
     private accountService : AccountsService,
     private appSettingService: AppSettingsService,
     private dropdownStore: DropdownStore,
     private currencyFormatService: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
-    private spinner : NgxSpinnerService
+    private spinner : NgxSpinnerService,
+    private commonService: CommonService
   ) { }
 
   ngOnInit(): void {
@@ -215,6 +225,28 @@ export class PaymentEntryComponent implements OnInit {
       this.subscribeToPartyAndBankChanges();
     }
   }
+
+  checkPermissions() {
+        const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+        if (currentMenuId && userRole) {
+            this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+                next: (response) => {
+                    this.currentMenuPermissions = response.data.MenuPermissions || {};
+                    this.permissions = Object.keys(this.currentMenuPermissions)
+                      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+                }
+            });
+        }
+    }
+
+    hasPermission(permission: string): boolean {
+        return this.permissions.includes(permission);
+    }
+    hasAnyDropdownPermission(): boolean {
+  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  return dropdownButtons.some((btn) => this.permissions?.includes(btn));
+}
 
   initSearchOutstandingForm() {
     this.searchOutstandingForm = this.fb.group({
@@ -622,8 +654,8 @@ export class PaymentEntryComponent implements OnInit {
       CurrencyMasterSid: formValue.CurrencyMasterSid,
       CurrencyCode: formValue.CurrencyCode,
       ExchangeRate: formValue.ExchangeRate,
-      Amount: totalAmount,
-      LocalAmount: totalLocalAmount,
+      Amount: Number(totalAmount),
+      LocalAmount: Number(totalLocalAmount),
       NetAmount: 0,
       TaxType: this.currentUserCountry === 'india' ? 'GST' : (this.currentUserCountry === 'united arab emirates' ? 'VAT' : ''),
       InstrumentMode: formValue.InstrumentMode,
@@ -668,7 +700,7 @@ export class PaymentEntryComponent implements OnInit {
             this.appSettingService.showSuccess('Payment created successfully');
             this.headerId = resp.data?.voucherHeader?.VoucherHeaderSid;
             this.appSettingService.showInfo(`Autoposting Payment : ${resp.data?.voucherHeader?.VoucherNumber}`)
-            // await this.postVoucher();
+            await this.postVoucher();
             if (this.headerId) {
               this.router.navigate(['accounts/payment/entry', this.headerId]);
             }
@@ -846,8 +878,8 @@ export class PaymentEntryComponent implements OnInit {
       })
     })
     console.log("Detail",this.paymentForm.value);
-    
-    if(response.PostStatus === 'P'){
+    this.isPosted = response.PostStatus === 'P';
+    if(this.isPosted){
       this.paymentForm.disable();
     }
 
@@ -1963,4 +1995,67 @@ export class PaymentEntryComponent implements OnInit {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  openTandC() {
+          this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+          const payload = { MenuMasterSid: this.currentMenuId };
+          this.masterService.getTandCByCondition(payload).subscribe(
+              (resp: any) => {
+                  if (resp.status) {
+                      this.TandCList = resp.data;
+                      const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                          size: 'lg',
+                          backdrop: 'static',
+                          centered: true
+                      });
+                      modalRef.componentInstance.terms = this.TandCList;
+                      modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+                      modalRef.componentInstance.DocumentSid = this.headerId;
+                  } else {
+                      this.appSettingService.showError('Error loading Terms and Conditions');
+                  }
+              },
+              (error) => {
+                  this.appSettingService.showError('Error loading Terms and Conditions', error);
+              }
+          );
+      }
+
+      openEmail() {
+              if (!this.paymentData) return;
+              const modalRef = this.modalService.open(EmailEntryComponent, {
+                  size: 'lg',
+                  centered: true,
+                  backdrop: 'static'
+              });
+          }
+
+          openAuthority() {
+                  const MenuMasterSid = localStorage.getItem('currentMenuId');
+                  if (!MenuMasterSid) return;
+                  const modalRef = this.modalService.open(AuthorityLogComponent, { 
+                      size: 'lg', 
+                      centered: true, 
+                      backdrop: 'static' 
+                  });
+                  modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+                  modalRef.componentInstance.documentSid = this.headerId;
+              }
+          
+              openEDoc() {
+                  if (!this.paymentData) return;
+                  const modalRef = this.modalService.open(EdocComponent, { 
+                      size: 'lg', 
+                      centered: true, 
+                      backdrop: 'static' 
+                  });
+                  const data:any={
+              CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+              BranchMasterSid: this.currentBranch.BranchMasterSid,
+              MenuMasterSid : this.currentMenuId,
+              DocumentSid: this.headerId
+            }
+          
+                this.commonService.documentData.set(data)
+              }
 }

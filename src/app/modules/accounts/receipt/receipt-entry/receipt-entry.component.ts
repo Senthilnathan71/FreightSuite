@@ -848,8 +848,8 @@ export class ReceiptEntryComponent implements OnInit {
       })
     })
     console.log("Detail",this.receiptForm.value);
-    
-    if(response.PostStatus === 'P'){
+    this.isPosted = response.PostStatus === 'P';
+    if(this.isPosted){
       this.receiptForm.disable();
     }
 
