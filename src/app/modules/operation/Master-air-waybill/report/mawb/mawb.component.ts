@@ -29,15 +29,18 @@ export class MAWBComponent implements OnChanges {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
+  @Input() chargeList: any;
   @Input() packageTypeList: any[] = [];
-  freightCostRevenueCharges : any[] = [];
-  
+  costRevenueCharges: any[] = [];
+  freightCharges: any[] = [];
+  otherCharges: any[] = [];
+
 
 
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.freightCostRevenueCharges = this.masterAirWayData?.costRevenueCharges || [];
+    this.handleCharges()
     this.currentCompany = this.appSettingService.decrypt(
       localStorage.getItem('selected-company')
     );
@@ -89,8 +92,37 @@ export class MAWBComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {
       console.log('Data changed', changes['masterAirWayData'])
+      this.handleCharges();
     }
   }
+
+  handleCharges() {
+    this.costRevenueCharges = this.masterAirWayData.costRevenueCharges || [];
+    const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
+    console.log("Filtered Charges", filteredCharges);
+
+    this.freightCharges = filteredCharges.filter(cr => {
+      const chargeGroupName = cr.chargeMaster?.chargeGroup?.GroupName || '';
+      return chargeGroupName === "Freight"
+    })
+
+    console.log("only freight charges", this.freightCharges);
+
+    const freightChargeIds = this.freightCharges.map(c => c.ChargeMasterSid);
+    console.log("Freight Charge Ids", freightChargeIds)
+
+    this.otherCharges = filteredCharges.filter(c => {
+      return !freightChargeIds.includes(c.ChargeMasterSid);
+    })
+
+    console.log("Other Charges", this.otherCharges)
+  }
+
+  getChargeCode(ChargeMasterSid: number) {
+    const chargeCode = this.chargeList.find((c: any) => c.ChargeMasterSid === ChargeMasterSid);
+    return chargeCode ? chargeCode.chargeCode : "";
+  }
+
 
   modalClose() {
     this.activeModal.close();
@@ -111,5 +143,47 @@ export class MAWBComponent implements OnChanges {
     const currency = this.currencyList.find((c: any) => c.CurrencyMasterSid === id);
     return currency ? currency.currencyCode : '';
   }
+
+  getFreightTotal() {
+    if (!this.freightCharges || this.freightCharges.length === 0) return 0;
+
+    return this.freightCharges.reduce((sum, c) => {
+      return sum + ((Number(c.RevenueExchangeRate) || 0) * (Number(c.RevenueAmount) || 0));
+    }, 0);
+  }
+
+  getTotalExchangeRate(): number {
+    if (!this.otherCharges || this.otherCharges.length === 0) return 0;
+
+    return this.otherCharges.reduce((sum, c) => {
+      return sum + (Number(c.RevenueExchangeRate) || 0);
+    }, 0);
+  }
+
+  getGrandTotal(): number {
+    const exchangeTotal = this.getTotalExchangeRate() || 0;
+    const freightAmount = Number(this.freightCharges?.[0]?.RevenueAmount) || 0;
+    return exchangeTotal * freightAmount;
+  }
+  // In your component.ts
+
+  getFreightTotals() {
+    if (!this.freightCharges?.length) return { totalExchangeRate: 0, totalRevenueAmount: 0 };
+
+    const totalExchangeRate = this.freightCharges.reduce(
+      (sum, c) => sum + Number(c.RevenueExchangeRate || 0),
+      0
+    );
+
+    const totalRevenueAmount = this.freightCharges.reduce(
+      (sum, c) => sum + Number(c.RevenueAmount || 0),
+      0
+    );
+
+    return { totalExchangeRate, totalRevenueAmount };
+  }
+
+
+
 
 }

@@ -147,7 +147,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   cfsList: any[] = [];
   yardList: any[] = [];
   decimalAfterPrecision = 3;
-  
+  chargeList : any[]=[];
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
   packageTypeList: any[] = [];
@@ -649,16 +649,19 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       .pipe(catchError(err => of([]))),
     customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
       .pipe(catchError(err => of([]))),
+    charge: this.operationService.getAllCharges(companySid)
+      .pipe(catchError(err => of({ data: [] }))),
     // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
   }).pipe(tap(({ 
     departments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers
+    containerTypes, currencies, packageTypes, customers,charge
   }) => {
      this.departments = departments || [];
     
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     this.vesselList = vessels.data || [];
-    
+    this.chargeList = charge || [];
+    console.log(this.chargeList,"CHARGELIST")
     // Update all customer type lists with data from the new API
     this.agentList = agents.data ;
     this.carrierList = carriers.data;
@@ -2243,6 +2246,7 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.packageTypeList=this.packageTypeList;
         modalRef.componentInstance.agentList=this.agentList;
         modalRef.componentInstance.currencyList=this.currencyList;
+         modalRef.componentInstance.chargeList=this.chargeList;
       }
   
 }

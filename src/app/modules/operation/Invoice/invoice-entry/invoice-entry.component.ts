@@ -2289,6 +2289,14 @@ getGrandRowTotal(): number {
     return sum + this.getRowTotal(detail);
   }, 0);
 }
+getInvoiceTitle(): string {
+  const postStatus = this.invoiceData?.PostStatus || 'U';
+  return postStatus === 'P' ? 'TAX INVOICE' : 'PROFORMA INVOICE';
+}
+
+getDisplayValue(cargoValue: any, bookingValue: any): string {
+  return cargoValue || bookingValue || '';
+}
 
 
 }
