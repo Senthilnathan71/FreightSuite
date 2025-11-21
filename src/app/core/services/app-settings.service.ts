@@ -90,6 +90,36 @@ export class AppSettingsService {
         }
         return null;
     }
+    getCurrentCompanyInfo() {
+        const encryptedCompany = localStorage.getItem('selected-company');
+        if (!encryptedCompany) return null;
+
+        const decryptedCompany = this.decrypt(encryptedCompany);
+        const CompanyMasterSid = Number(decryptedCompany?.CompanyMasterSid);
+        if (!CompanyMasterSid) return null;
+
+        const userProfile = this.getDecryptedUserProfile();
+        return userProfile?.userCompanyMaster
+            ?.find(c => c.CompanyMasterSid === CompanyMasterSid)
+            ?.companyMaster || null;
+    }
+
+
+    getCurrentBranchInfo() {
+        const encryptedBranch = localStorage.getItem('selected-branch');
+        if (!encryptedBranch) return null;
+
+        const decryptedBranch = this.decrypt(encryptedBranch);
+        const BranchMasterSid = Number(decryptedBranch?.BranchMasterSid);
+        if (!BranchMasterSid) return null;
+
+        const companyInfo = this.getCurrentCompanyInfo();
+        if (!companyInfo) return null;
+
+        return companyInfo.userBranchMaster
+            ?.find(b => b.BranchMasterSid === BranchMasterSid)
+            ?.branchMaster || null;
+    }
 
     public sessionExpire() {
         return new Promise((resolve) => {
