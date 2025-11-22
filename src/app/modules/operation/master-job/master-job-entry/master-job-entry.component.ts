@@ -410,15 +410,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
     this.updateAttachedBookingsPagination();
   }
-
-  getHouseJob(HouseJobSid) {
-    this.operationService.getHouseJobById(HouseJobSid).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          console.log(resp)
-        }
-      })
-  }
   uploadPDF() {
     this.modalService.open(MasterDocumentUploadComponent, {
       size: 'xl',
@@ -2615,23 +2606,29 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     };
   }
 
-  bookingCreateInMasterJob() {
-    const bookingPayload = {};
+  bookingCreateInMasterJob(HouseJobSid?:number) {
+    this.operationService.getHouseJobById(HouseJobSid).subscribe(
+      (resp: any) => {
+        if(resp.data){
+          const bookingPayload = resp.data;
 
-    this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
-      next: (resp: any) => {
-        if (resp.status) {
-          this.appSettingsService.showSuccess('Booking created successfully');
-        } else {
-          this.appSettingsService.showError('Failed to created booking');
+          this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
+            next: (resp: any) => {
+              if (resp.status) {
+                this.appSettingsService.showSuccess('Booking created successfully');
+              } else {
+                this.appSettingsService.showError('Failed to created booking');
+              }
+            },
+            error: (error) => {
+              this.toastr.error('Failed to create booking');
+              console.error('Error create booking:', error);
+            }
+          });
         }
-      },
-      error: (error) => {
-        this.toastr.error('Failed to create booking');
-        console.error('Error create booking:', error);
-      }
-    });
-  }
+      })
+    
+    }
 
 }
 interface CustomerProfit {
