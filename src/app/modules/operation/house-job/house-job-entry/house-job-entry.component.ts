@@ -201,6 +201,7 @@ resetTriggerCustoms: boolean = false; // trigger flag for reset
   followUpResetTrigger:any;
   currentFollowUpFormValue:any;
 auditLogs: any[] = []; // Stores audit logs
+  selectedShipment: any;
   auditLogModalRef!: NgbModalRef;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
@@ -1020,7 +1021,7 @@ loadHeaderLookups() {
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
-          this.patchValues(resp.data);   
+          this.patchValues(resp.data); 
           this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
           this.housejobData=resp.data;
