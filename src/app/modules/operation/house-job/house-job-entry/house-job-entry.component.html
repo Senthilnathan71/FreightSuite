@@ -40,6 +40,9 @@
             <i class="fas fa-print me-1"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+             @if(selectedDepartmentType === "AIR"){
+               <button class="text-dark" ngbDropdownItem (click)="reportHAWB()">HAWB</button>
+             }@else{ 
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
               Order</button>
             <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(true)">Cargo Arrival
@@ -59,9 +62,12 @@
             </button>
              <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
             </button>
-            <!-- <button class="text-dark" ngbDropdownItem (click)="reportMilestoneSummary()">Milestone Summary
-            </button> -->
+             <button class="text-dark" ngbDropdownItem (click)="reportMilestoneSummary()">Milestone Summary
+            </button> 
            
+            <!-- <button class="text-dark" ngbDropdownItem (click)="reportDeliveryNote()">Delivery Note
+            </button> -->
+             }
           </div>
         </div>
       </div>

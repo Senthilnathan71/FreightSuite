@@ -2471,15 +2471,16 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
   // sailing confirmation
 
-  reportSailingConfirmation() {
-    const modalRef = this.modalService.open(SailingConfirmationComponent, {
-      size: 'xl',
-      scrollable: true,
-    });
-    modalRef.componentInstance.masterJobData = this.masterJobData;
-    modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
-    modalRef.componentInstance.packageTypeList = this.packageTypeList;
-  }
+    reportSailingConfirmation(){
+      const modalRef  = this.modalService.open(SailingConfirmationComponent,{
+        size: 'xl',
+        scrollable: true,
+      });
+       modalRef.componentInstance.masterJobData=this.masterJobData;
+        modalRef.componentInstance.containerTypeList=this.containerTypeList;
+      modalRef.componentInstance.masterJobContainers=this.masterJobContainers.getRawValue() || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
+    }
 
 
 

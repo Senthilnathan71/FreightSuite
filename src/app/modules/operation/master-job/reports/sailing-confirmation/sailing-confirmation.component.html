@@ -22,7 +22,7 @@
         <div class="print-a4">
 
     <!-- Company Info -->
-    <!-- <div class="row ">
+    <div class="row ">
                     <div class="company-header">
                         <div class="company-logo">
                             <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
@@ -41,7 +41,7 @@
                             <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
                         </div>
                     </div>
-    </div> -->
+    </div>
 
                
     <!-- Horizontal Line -->
@@ -55,20 +55,20 @@
         <div class="col-12 col-md-6">
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong> MBL No</strong></div>
-                <div>: </div>
+                <div>: {{ masterJobData?.MasterJobNumber }}  </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>ETA</strong></div>
-                <div>: </div>
+                <div>: {{masterJobData?.voyages?.[0]?.ETA | formatDate }} </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Container</strong></div>
-                <div>: </div>
+                <div>:  {{ getContainerTypeName(masterJobData?.houseJob?.[0]?.Cargo?.[0]?.ContainerType) }} </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Shipment No </strong>
                 </div>
-                <div>: </div>
+                <div>: {{masterJobData?.allShipments?.[0]?.ShipmentNo }}  </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Place of Receipt</strong>
@@ -78,19 +78,19 @@
 
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Port Of Loading </strong></div>
-                <div>: </div>
+                <div>: {{masterJobData.POL}} </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Final Destination </strong></div>
-                <div>: </div>
+                <div>: {{masterJobData.FPD}}</div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Carrier </strong></div>
-                <div>: </div>
+                <div>: {{masterJobData?.voyages?.[0]?.CarrierName}} </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>PP/CC</strong></div>
-                <div>: </div>
+                <div>:  {{ masterJobData?.houseJob?.[0]?.FreightTerms }}  </div>
             </div>
 
         </div>
@@ -98,21 +98,25 @@
         <div class="col-12 col-md-6">
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>HBL No </strong></div>
-                <div>: </div>
+                <div>: {{ masterJobData?.houseJob?.[0]?.HBLNo }} </div>
             </div>
 
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>ETD</strong></div>
-                <div>: </div>
+                <div>: {{masterJobData?.voyages?.[0]?.ETD | formatDate }} </div>
             </div>
             <div class="d-flex mb-1">
-                <div style="width: 200px; white-space: nowrap;"><strong>Vessel / Voyage</strong></div>
-                <div>: </div>
+                <div style="width: 200px; white-space: nowrap;"><strong>Vessel</strong></div>
+                <div>: {{masterJobData?.voyages?.[0]?.VesselName}}  </div>
+            </div>
+             <div class="d-flex mb-1">
+                <div style="width: 200px; white-space: nowrap;"><strong>Voyage</strong></div>
+                <div>:  {{masterJobData?.voyages?.[0]?.VoyageNo}} </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Job No</strong>
                 </div>
-                <div>: </div>
+                <div>:  {{masterJobData.MasterJobNumber}} </div>
             </div>
 
             <div class="d-flex mb-1">
@@ -121,7 +125,7 @@
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Port of Discharge</strong></div>
-                <div>: </div>
+                <div>: {{masterJobData.POD}} </div>
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Place of Delivery</strong></div>
@@ -129,7 +133,7 @@
             </div>
             <div class="d-flex mb-1">
                 <div style="width: 200px; white-space: nowrap;"><strong>Movement Type </strong></div>
-                <div>: </div>
+                <div>:  {{ masterJobData?.houseJob?.[0]?.Cargo?.[0]?.MovementType }} </div>
             </div>
         </div>
     </div>
@@ -137,7 +141,7 @@
     <div>
         <p class="fs-3">Dear Sir,</p>
         <p></p>
-        <p>MBL No :</p>
+        <p>MBL No :  {{ masterJobData?.MasterJobNumber }}</p>
     </div>
     <footer class="text-center mb-0 px-2">
         <!-- <div class="d-flex justify-content-between">
