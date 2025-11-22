@@ -10,7 +10,7 @@ import {
   NgbPaginationModule,
   NgbDropdownModule,
   NgbTooltip,
-  
+
 } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -53,6 +53,9 @@ import { ReleaseLetterComponent } from '../reports/release-letter/release-letter
 import { ReleaseOrderComponent } from '../reports/release-order/release-order.component';
 import { PackingListComponent } from '../reports/packing-list/packing-list.component';
 import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest.component';
+import { JobCardComponent } from '../reports/job-card/job-card.component';
+import { SailingConfirmationComponent } from '../reports/sailing-confirmation/sailing-confirmation.component';
+import { MblComponent } from '../reports/mbl/mbl.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -81,10 +84,10 @@ import { CargoManifestComponent } from '../reports/cargo-manifest/cargo-manifest
     RouterModule,
     NgbPaginationModule,
     NgbDropdownModule,
-     NgxSpinnerModule,
-     SearchableDropdown,
-     NgbTooltip,
-     DecimalPrecisionDirective
+    NgxSpinnerModule,
+    SearchableDropdown,
+    NgbTooltip,
+    DecimalPrecisionDirective
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -99,9 +102,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   
 
   private destroy$ = new Subject<void>();
-  private vesselSearchSubject = new Subject<{POL: string | number, POD: string | number, MovementType: string}>();
+  private vesselSearchSubject = new Subject<{ POL: string | number, POD: string | number, MovementType: string }>();
   private isLoadingVessels = false;
-  private lastVesselSearchParams: {POL: string | number, POD: string | number, MovementType: string} | null = null;
+  private lastVesselSearchParams: { POL: string | number, POD: string | number, MovementType: string } | null = null;
 
   public ratecomponent = CostEntryComponent;
   public revenuecomponent = RevenueEntryComponent;
@@ -112,7 +115,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   public edocComponent = EdocComponent;
   public emailComponent = EmailEntryComponent;
   public containeractivity = ContainerActivityComponent;
-  
+
   masterJobForm: FormGroup;
   isEditMode = false;
   masterJobSid: number | null = null;
@@ -126,17 +129,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   containerFormGroup!: FormGroup;
   currentContainerModal: any;
   CurrencyLookupConfig = {
-    displayFields : ['currencyCode', 'currencyName','countryName'],
-    displayLabels : ['Code', 'Name','Country'],
-    labelFields :['currencyCode'],
+    displayFields: ['currencyCode', 'currencyName', 'countryName'],
+    displayLabels: ['Code', 'Name', 'Country'],
+    labelFields: ['currencyCode'],
   };
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
-  profitSummary : any;
-  customerWiseSummary : any;
-  
+  profitSummary: any;
+  customerWiseSummary: any;
+
   // Lookup data
   departments: any[] = [];
   portList: any[] = [];
@@ -154,22 +157,22 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   cfsList: any[] = [];
   yardList: any[] = [];
   decimalAfterPrecision = 3;
-  chargeList:any[]=[];
+  chargeList: any[] = [];
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
   packageTypeList: any[] = [];
-  
+
   // Department info
   selectedDepartment: any;
   selectedDepartmentType: string = '';
   selectedFCLLCL: string = '';
-  connectionResult : any[] =[];
+  connectionResult: any[] = [];
   connectionResetTrigger = false;
-  masterjobConnectionArr:any[]=[];
+  masterjobConnectionArr: any[] = [];
   currentFormValue: any;
-  customerList: any[] = []; 
+  customerList: any[] = [];
   rateResult: any[] = [];
-  masterJobRateArr : any[] = [];
+  masterJobRateArr: any[] = [];
   rateResetTrigger = false;
   currentRateFormValue: any;
   followUpData: any[] = [];
@@ -187,16 +190,17 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   containerActivityData: any[] = [];
   containerActivityResetTrigger = false;
   currentContainerActivityFormValue: any = null;
-  pdfModel:any
+  pdfModel: any
   // Shipment related variable declarations
-  attachedBookings : FormArray;
-  slicedAttachedBookings : any[] = [];
+  attachedBookings: FormArray;
+  slicedAttachedBookings: any[] = [];
   page = 1;
   pageSize = 5;
-  totalLengthOfAttachedBookings : number = 0;
+  totalLengthOfAttachedBookings: number = 0;
   userData: any;
   currentDate = new Date();
-  masterJobData : any;
+  masterJobData: any;
+  isTranshipment: boolean = false
 
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
@@ -274,7 +278,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   @ViewChild('masterDocumentUploadComponent') MasterDocumentUploadComponent!: TemplateRef<any>;
   selectedTab = 'Master';
   selectedTab1 = 'Product';
-  countryOfCompany : string;
+  countryOfCompany: string;
 
   constructor(
     private router: Router,
@@ -285,7 +289,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     private toastr: ToastrService,
     private appSettingsService: AppSettingsService,
     private cdr: ChangeDetectorRef,
-    private datepipe : CustomDatePipe,
+    private datepipe: CustomDatePipe,
     private spinner: NgxSpinnerService,
     private commonService: CommonService,
     private reportService: ReportService,
@@ -296,23 +300,23 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-     console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
-      this.userData = this.appSettingsService.getDecryptedUserProfile();
+    console.log('🚀 === MasterJobEntryComponent ngOnInit START ===');
+    this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
-     const storedMenuId = localStorage.getItem('currentMenuId');
-  console.log('📋 localStorage currentMenuId:', storedMenuId);
-  
-  this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
-  console.log('✅ MenuMasterSid after initialization:', this.MenuMasterSid);
+    const storedMenuId = localStorage.getItem('currentMenuId');
+    console.log('📋 localStorage currentMenuId:', storedMenuId);
+
+    this.MenuMasterSid = storedMenuId ? Number(storedMenuId) : null;
+    console.log('✅ MenuMasterSid after initialization:', this.MenuMasterSid);
 
     this.filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
     };
-      console.log('📋 Filter Option:', this.filterOption);
-  console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
+    console.log('📋 Filter Option:', this.filterOption);
+    console.log('🚀 === MasterJobEntryComponent ngOnInit END ===');
 
 
     // Setup debounced vessel search
@@ -320,7 +324,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
     this.loadInitialData().subscribe(() => {
       const loadingPlanData = this.operationService.getLoadingPlanData();
-      if(loadingPlanData){
+      if (loadingPlanData) {
         this.patchLoadingPlanData(loadingPlanData);
       }
       this.route.paramMap.subscribe((param) => {
@@ -356,37 +360,37 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  patchLoadingPlanData(data : any){
-    console.log(data);
+  patchLoadingPlanData(data: any) {
+    console.log(data, 'patchLoadingPlanData');
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     selectedDepartment ? this.onDeptChange(selectedDepartment) : null;
     const selectedPOL = this.portList.find(port => port.PortCode === data.POL);
     selectedPOL ? this.handlePOLChange(selectedPOL) : null;
     const selectedPOD = this.portList.find(port => port.PortCode === data.POD);
     selectedPOD ? this.handlePODChange(selectedPOD) : null;
-    
+
     this.masterJobForm.patchValue({
-      MasterJobVoyageSid: data .MasterJobVoyageSid,
-      DepartmentMasterSid : data.DepartmentMasterSid,
-      POL : selectedPOL.PortMasterSid,
-      POD : selectedPOD.PortMasterSid,
-      VoyageMasterSid : data.VoyageMasterSid,
-      VesselName : data.VesselName,
-      VoyageNo : data.VoyageNo,
-      CarrierName : data.CarrierName,
-      CutOffDate : data.CutOffDate ? new Date(data.CutOffDate) : null,
-      ETD : data.ETD ? new Date(data.ETD) : null,
-      ETA : data.ETA ? new Date(data.ETA) : null,
-      Haz : data.Haz === 'Y',
-      NoOfPkg : data.NoofPkg,
-      GrossWeight : data.GrossWeight,
-      NetWeight : data.NetWeight,
-      Volume : data.Volume,
+      MasterJobVoyageSid: data.MasterJobVoyageSid,
+      DepartmentMasterSid: data.DepartmentMasterSid,
+      POL: selectedPOL.PortMasterSid,
+      POD: selectedPOD.PortMasterSid,
+      VoyageMasterSid: data.VoyageMasterSid,
+      VesselName: data.VesselName,
+      VoyageNo: data.VoyageNo,
+      CarrierName: data.CarrierName,
+      CutOffDate: data.CutOffDate ? new Date(data.CutOffDate) : null,
+      ETD: data.ETD ? new Date(data.ETD) : null,
+      ETA: data.ETA ? new Date(data.ETA) : null,
+      Haz: data.Haz === 'Y',
+      NoOfPkg: data.NoofPkg,
+      GrossWeight: data.GrossWeight,
+      NetWeight: data.NetWeight,
+      Volume: data.Volume,
     });
 
     this.handlePOLChange(selectedPOL);
     this.handlePODChange(selectedPOD);
-    this.onVesselChange({VesselName : data.VesselName});
+    this.onVesselChange({ VesselName: data.VesselName });
     this.getVoyageForPortsAndVessels();
 
     const allContainers = data.masterJobContainers || [];
@@ -401,10 +405,16 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.attachedBookings.push(this.createShipmentGroup(shipment));
     });
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+
+    this.isTranshipment = allShipments.some(s => {
+      const lcl = this.getDepartmentName(s.DepartmentMasterSid);
+      return lcl === 'LCL Export' && s.JobType === 'Transhipment';
+    });
+
     this.updateAttachedBookingsPagination();
   }
   uploadPDF() {
-    this.modalService.open(MasterDocumentUploadComponent,{
+    this.modalService.open(MasterDocumentUploadComponent, {
       size: 'xl',
       backdrop: 'static',
       centered: true,
@@ -496,8 +506,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.masterJobForm = this.fb.group({
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
-      MasterJobNumber: [{ value :'' , disabled : true}],
-      MasterJobDate: [{value : null, disabled : true}],
+      MasterJobNumber: [{ value: '', disabled: true }],
+      MasterJobDate: [{ value: null, disabled: true }],
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [null],
       DestinationAgentAddress: [''],
@@ -527,9 +537,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       CommodityDescription: [''],
       MarksandNumber: [''],
       Status: ['Active', Validators.required],
-      
+
       // Voyage fields
-      MasterJobVoyageSid:[null],
+      MasterJobVoyageSid: [null],
       VoyageMasterSid: [null],
       VesselName: [''],
       VoyageNo: [''],
@@ -540,7 +550,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       DestinationATA: [null],
       // CarrierMasterSid: [null],
       CarrierName: [''],
-      
+
       // Others fields
       MasterJobOthersSid: [null],
       Yard: [null],
@@ -556,7 +566,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       SellExchangeRate: [null],
       AgentExchangeRate: [null],
       Coload: [false],
-      CoLoader: [{value: '', disabled: true}],
+      CoLoader: [{ value: '', disabled: true }],
       ExportDoNo: [''],
       ExportDoDate: [null],
       SOBDate: [null],
@@ -627,107 +637,107 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       NetWeight: [container?.NetWeight || 0, [Validators.min(0)]],
       ChargeableWeight: [container?.ChargeableWeight || 0, [Validators.min(0)]],
       Volume: [container?.Volume || 0, [Validators.min(0)]],
-      IsSoc: [container?.IsSoc === 'Y' || container?.IsSoc === true || false] 
+      IsSoc: [container?.IsSoc === 'Y' || container?.IsSoc === true || false]
     });
-    
+
     this.masterJobContainers.push(containerGroup);
   }
 
   loadInitialData() {
-  const companySid = this.currentCompany?.CompanyMasterSid;
-  
-  return forkJoin({
+    const companySid = this.currentCompany?.CompanyMasterSid;
+
+    return forkJoin({
       seaDepartments: this.operationService.getDepartmentByType('Sea', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    roadDepartments: this.operationService.getDepartmentByType('Road', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    transportDepartments: this.operationService.getDepartmentByType('Transport', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    otherDepartments: this.operationService.getDepartmentByType('Others', companySid)
-      .pipe(catchError(err => of({ data: [] }))),
-    ports: this.operationService.getAllPorts()
-      .pipe(catchError(err => of({ data: [] }))),
-    vessels: this.operationService.getAllVessels()
-      .pipe(catchError(err => of({ data: [] }))),
-    // Replace individual API calls with getCustomerByItsType
-    agents: this.operationService.getCustomerByItsType({companySid, types: ['vendor', 'transporter', 'agent']})
-      .pipe(catchError(err => of([]))),
-    carriers: this.operationService.getCustomerByItsType({ companySid , types : ['carrier']})
+        .pipe(catchError(err => of({ data: [] }))),
+      roadDepartments: this.operationService.getDepartmentByType('Road', companySid)
+        .pipe(catchError(err => of({ data: [] }))),
+      transportDepartments: this.operationService.getDepartmentByType('Transport', companySid)
+        .pipe(catchError(err => of({ data: [] }))),
+      otherDepartments: this.operationService.getDepartmentByType('Others', companySid)
+        .pipe(catchError(err => of({ data: [] }))),
+      ports: this.operationService.getAllPorts()
+        .pipe(catchError(err => of({ data: [] }))),
+      vessels: this.operationService.getAllVessels()
+        .pipe(catchError(err => of({ data: [] }))),
+      // Replace individual API calls with getCustomerByItsType
+      agents: this.operationService.getCustomerByItsType({ companySid, types: ['vendor', 'transporter', 'agent'] })
         .pipe(catchError(err => of([]))),
-    forwarders: this.operationService.getCustomerByItsType({ companySid , types : ['forwarder']})
-      .pipe(catchError(err => of({ data: [] }))),
-    cfsList: this.operationService.getCustomerByItsType({ companySid , types : ['cFS']})
-      .pipe(catchError(err => of({ data: [] }))),
-    yards: this.operationService.getCustomerByItsType({ companySid , types : ['yard']}) 
-         .pipe(catchError(err => of({ data: [] }))),
-    containerTypes: this.operationService.getAllContainerTypes()
-      .pipe(catchError(err => of({ data: [] }))),
-    currencies: this.operationService.getAllCurrencies()
-      .pipe(catchError(err => of({ data: [] }))),
-    packageTypes: this.operationService.getUOMsByType('P') 
-      .pipe(catchError(err => of([]))),
-    customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
-      .pipe(catchError(err => of([]))),
+      carriers: this.operationService.getCustomerByItsType({ companySid, types: ['carrier'] })
+        .pipe(catchError(err => of([]))),
+      forwarders: this.operationService.getCustomerByItsType({ companySid, types: ['forwarder'] })
+        .pipe(catchError(err => of({ data: [] }))),
+      cfsList: this.operationService.getCustomerByItsType({ companySid, types: ['cFS'] })
+        .pipe(catchError(err => of({ data: [] }))),
+      yards: this.operationService.getCustomerByItsType({ companySid, types: ['yard'] })
+        .pipe(catchError(err => of({ data: [] }))),
+      containerTypes: this.operationService.getAllContainerTypes()
+        .pipe(catchError(err => of({ data: [] }))),
+      currencies: this.operationService.getAllCurrencies()
+        .pipe(catchError(err => of({ data: [] }))),
+      packageTypes: this.operationService.getUOMsByType('P')
+        .pipe(catchError(err => of([]))),
+      customers: this.operationService.getAllCustomerRelatedLookups(this.filterOption)
+        .pipe(catchError(err => of([]))),
       charges: this.operationService.getAllCharges(companySid)
-      .pipe(catchError(err => of([]))),
-    // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
-  }).pipe(tap(({ 
-    seaDepartments, roadDepartments, transportDepartments, otherDepartments,  ports, vessels, agents, carriers, forwarders, cfsList, yards,
-    containerTypes, currencies, packageTypes, customers,charges
-  }) => {
-     this.departments = [
-      ...(seaDepartments || []),
-      ...(roadDepartments|| []),
-      ...(transportDepartments || []),
-      ...(otherDepartments || [])
-    ];
-    
-    this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
-    this.vesselList = vessels.data || [];
-    
-    // Update all customer type lists with data from the new API
-    this.agentList = agents.data ;
-    this.carrierList = carriers.data;
-    this.forwarderList = forwarders.data;
-    this.cfsList = cfsList.data ;
-    this.yardList = yards.data ; 
-    this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
+        .pipe(catchError(err => of([]))),
+      // userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
+    }).pipe(tap(({
+      seaDepartments, roadDepartments, transportDepartments, otherDepartments, ports, vessels, agents, carriers, forwarders, cfsList, yards,
+      containerTypes, currencies, packageTypes, customers, charges
+    }) => {
+      this.departments = [
+        ...(seaDepartments || []),
+        ...(roadDepartments || []),
+        ...(transportDepartments || []),
+        ...(otherDepartments || [])
+      ];
 
-    this.containerTypeList = containerTypes.data ;
-    const rawCurrencies: any[] = Array.isArray(currencies)
-    ? currencies
-    : currencies?.data || [];
-    this.currencyList = rawCurrencies.map((c: any) => ({
-      ...c,
-      countryName: c?.countryMaster?.countryName || ''
+      this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
+      this.vesselList = vessels.data || [];
+
+      // Update all customer type lists with data from the new API
+      this.agentList = agents.data;
+      this.carrierList = carriers.data;
+      this.forwarderList = forwarders.data;
+      this.cfsList = cfsList.data;
+      this.yardList = yards.data;
+      this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
+
+      this.containerTypeList = containerTypes.data;
+      const rawCurrencies: any[] = Array.isArray(currencies)
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
+      this.packageTypeList = packageTypes.data;
+      this.filteredDestinationAgents = [...this.agentList];
+      this.filteredOriginAgents = [...this.agentList];
+      this.customerList = customers.data;
+
+      // default filtered ports
+      this.filteredPorts = [...this.portList];
+      this.filteredPOL = [...this.filteredPorts];
+      this.filteredPOD = [...this.filteredPorts];
     }));
-    this.packageTypeList = packageTypes.data ;
-    this.filteredDestinationAgents = [...this.agentList];
-    this.filteredOriginAgents = [...this.agentList];
-    this.customerList = customers.data;
 
-    // default filtered ports
-    this.filteredPorts = [...this.portList];
-    this.filteredPOL = [...this.filteredPorts];
-    this.filteredPOD = [...this.filteredPorts];
-  }));
-  
-}
+  }
 
 
 
 
   loadMasterJobData(masterJobSid: number): void {
-      this.spinner.show();
+    this.spinner.show();
     this.operationService.getMasterJobById(masterJobSid).subscribe({
       next: (response: any) => {
         if (response.status && response.data) {
           const data = response.data;
-         this.masterJobData = response.data;
-         console.log("Master Job Data", this.masterJobData);
-          console.log('API Response Data:', data); 
-        console.log('Others Data:', data.others); 
-        console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
+          this.masterJobData = response.data;
+          console.log("Master Job Data", this.masterJobData);
+          console.log('API Response Data:', data);
+          console.log('Others Data:', data.others);
+          console.log('CurrencyCode in others:', data.others?.[0]?.CurrencyCode);
           this.patchFormValues(data);
         }
         this.isLoading = false;
@@ -742,197 +752,197 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
   patchFormValues(data: any) {
-  // Helper to find port SID by port code (if stored as code in data)
-  const findPortSidByCode = (portCodeOrSid: any): number | null => {
-    if (!portCodeOrSid && portCodeOrSid !== 0) return null;
-    // if it's a number, assume already SID
-    if (typeof portCodeOrSid === 'number') return portCodeOrSid;
-    // if string, try match by PortCode
-    const p = this.portList.find(p => p.PortCode === portCodeOrSid);
-    return p ? p.PortMasterSid : null;
-  };
-  
-
-  // Patch master job fields
-  this.masterJobForm.patchValue({
-    DepartmentMasterSid: data.DepartmentMasterSid,
-    MasterJobNumber: data.MasterJobNumber,
-    MasterJobDate: data.MasterJobDate ? new Date(data.MasterJobDate) : null,
-    FreightPPCC: data.FreightPPCC,
-    DestinationAgent: data.DestinationAgent,
-    DestinationAgentAddress: data.DestinationAgentAddress,
-    MBLNo: data.MBLNo,
-    MBLDate: data.MBLDate ? new Date(data.MBLDate) : null,
-    BLReleaseType: data.BLReleaseType,
-    NoofOriginal: data.NoofOriginal,
-    OriginAgent: data.OriginAgent,
-    POO: findPortSidByCode(data.POO),
-    POL: findPortSidByCode(data.POL),
-    POD: findPortSidByCode(data.POD),
-    FPD: findPortSidByCode(data.FPD),
-    POLTerminal: data.POLTerminal,
-    PODTerminal: data.PODTerminal,
-    MovementType: data.MovementType,
-    ShipmentTerms: data.ShipmentTerms,
-    PkgType: data.PkgType,
-    NoOfPkg: data.NoOfPkg,
-    WeightIn: data.WeightIn || 'Kg(s)',
-    GrossWeight: data.GrossWeight,
-    NetWeight: data.NetWeight,
-    ChargeableWeight: data.ChargeableWeight,
-    Volume: data.Volume,
-    Haz: data.Haz === 'Y',
-    DGBookingDate: data.DGBookingDate ? new Date(data.DGBookingDate) : null,
-    DGApprovedDate: data.DGApprovedDate ? new Date(data.DGApprovedDate) : null,
-    CommodityDescription: data.CommodityDescription,
-    MarksandNumber: data.MarksandNumber,
-    Status: data.Status === 'A' ? 'Active' : 'Suspended',
-    
-    // Voyage data
-    MasterJobVoyageSid: data.MasterJobVoyageSid || null,
-    VoyageMasterSid: data.VoyageMasterSid || null,
-    VesselName: data.VesselName || '',
-    VoyageNo: data.VoyageNo || '',
-    ETA: data.ETA ? new Date(data.ETA) : null,
-    ETD: data.ETD ? new Date(data.ETD) : null,
-    ATA: data.ATA ? new Date(data.ATA) : null,
-    ATD: data.ATD ? new Date(data.ATD) : null,
-    DestinationATA: data.DestinationATA ? new Date(data.DestinationATA) : null,
-    CarrierMasterSid: data.CarrierMasterSid || null,
-    CarrierName: data.CarrierName || '',
-  });
-  if (data.others && data.others.length > 0) {
-    const othersData = data.others[0];
-    
-    // Find the CFS object if CFS value exists
-    let cfsValue = othersData.CFS;
-    if (cfsValue && this.cfsList.length > 0) {
-      const foundCFS = this.cfsList.find(cfs => 
-        cfs.CustomerMasterSid === cfsValue || cfs.CustomerName === cfsValue
-      );
-      if (foundCFS) {
-        cfsValue = foundCFS.CustomerMasterSid;
-      }
-    }
-
-    // Find the Yard object if Yard value exists
-    let yardValue = othersData.Yard;
-    if (yardValue && this.yardList.length > 0) {
-      const foundYard = this.yardList.find(yard => 
-        yard.CustomerMasterSid === yardValue || yard.CustomerName === yardValue
-      );
-      if (foundYard) {
-        yardValue = foundYard.CustomerMasterSid;
-      }
-    }
+    // Helper to find port SID by port code (if stored as code in data)
+    const findPortSidByCode = (portCodeOrSid: any): number | null => {
+      if (!portCodeOrSid && portCodeOrSid !== 0) return null;
+      // if it's a number, assume already SID
+      if (typeof portCodeOrSid === 'number') return portCodeOrSid;
+      // if string, try match by PortCode
+      const p = this.portList.find(p => p.PortCode === portCodeOrSid);
+      return p ? p.PortMasterSid : null;
+    };
 
 
-  // ✅ PATCH OTHERS DATA WITH MasterJobOthersSid
-  if (data.others && data.others.length > 0) {
-    const othersData = data.others[0]; // Assuming others is an array with one object
+    // Patch master job fields
     this.masterJobForm.patchValue({
-      MasterJobOthersSid: othersData.MasterJobOthersSid || null, // ✅ ADD THIS
-      Yard: othersData.Yard || null,
-      YardAddress: othersData.YardAddress || '',
-      Transporter: othersData.Transporter || '',
-      HandlingInformation: othersData.HandlingInformation || '',
-      InternalNote: othersData.InternalNote || '',
-      CFS: othersData.CFS || null,
-      CFSAddress: othersData.CFSAddress || '',
-      StuffingStartDate: othersData.StuffingStartDate ? new Date(othersData.StuffingStartDate) : null,
-      StuffingEndDate: othersData.StuffingEndDate ? new Date(othersData.StuffingEndDate) : null,
-      CurrencyCode: othersData.CurrencyCode || '',
-      SellExchangeRate: othersData.SellExchangeRate || null,
-      AgentExchangeRate: othersData.AgentExchangeRate || null,
-      Coload: othersData.Coload === 'Y',
-      CoLoader: othersData.CoLoader || '',
-      ExportDoNo: othersData.ExportDoNo || '',
-      ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
-      SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
-    });
-    if (othersData.Coload === 'Y') {
-      this.masterJobForm.get('CoLoader')?.enable();
-    } else {
-      this.masterJobForm.get('CoLoader')?.disable();
-    }
-  
-  }
-}
+      DepartmentMasterSid: data.DepartmentMasterSid,
+      MasterJobNumber: data.MasterJobNumber,
+      MasterJobDate: data.MasterJobDate ? new Date(data.MasterJobDate) : null,
+      FreightPPCC: data.FreightPPCC,
+      DestinationAgent: data.DestinationAgent,
+      DestinationAgentAddress: data.DestinationAgentAddress,
+      MBLNo: data.MBLNo,
+      MBLDate: data.MBLDate ? new Date(data.MBLDate) : null,
+      BLReleaseType: data.BLReleaseType,
+      NoofOriginal: data.NoofOriginal,
+      OriginAgent: data.OriginAgent,
+      POO: findPortSidByCode(data.POO),
+      POL: findPortSidByCode(data.POL),
+      POD: findPortSidByCode(data.POD),
+      FPD: findPortSidByCode(data.FPD),
+      POLTerminal: data.POLTerminal,
+      PODTerminal: data.PODTerminal,
+      MovementType: data.MovementType,
+      ShipmentTerms: data.ShipmentTerms,
+      PkgType: data.PkgType,
+      NoOfPkg: data.NoOfPkg,
+      WeightIn: data.WeightIn || 'Kg(s)',
+      GrossWeight: data.GrossWeight,
+      NetWeight: data.NetWeight,
+      ChargeableWeight: data.ChargeableWeight,
+      Volume: data.Volume,
+      Haz: data.Haz === 'Y',
+      DGBookingDate: data.DGBookingDate ? new Date(data.DGBookingDate) : null,
+      DGApprovedDate: data.DGApprovedDate ? new Date(data.DGApprovedDate) : null,
+      CommodityDescription: data.CommodityDescription,
+      MarksandNumber: data.MarksandNumber,
+      Status: data.Status === 'A' ? 'Active' : 'Suspended',
 
-  // Set department info
+      // Voyage data
+      MasterJobVoyageSid: data.MasterJobVoyageSid || null,
+      VoyageMasterSid: data.VoyageMasterSid || null,
+      VesselName: data.VesselName || '',
+      VoyageNo: data.VoyageNo || '',
+      ETA: data.ETA ? new Date(data.ETA) : null,
+      ETD: data.ETD ? new Date(data.ETD) : null,
+      ATA: data.ATA ? new Date(data.ATA) : null,
+      ATD: data.ATD ? new Date(data.ATD) : null,
+      DestinationATA: data.DestinationATA ? new Date(data.DestinationATA) : null,
+      CarrierMasterSid: data.CarrierMasterSid || null,
+      CarrierName: data.CarrierName || '',
+    });
+    if (data.others && data.others.length > 0) {
+      const othersData = data.others[0];
+
+      // Find the CFS object if CFS value exists
+      let cfsValue = othersData.CFS;
+      if (cfsValue && this.cfsList.length > 0) {
+        const foundCFS = this.cfsList.find(cfs =>
+          cfs.CustomerMasterSid === cfsValue || cfs.CustomerName === cfsValue
+        );
+        if (foundCFS) {
+          cfsValue = foundCFS.CustomerMasterSid;
+        }
+      }
+
+      // Find the Yard object if Yard value exists
+      let yardValue = othersData.Yard;
+      if (yardValue && this.yardList.length > 0) {
+        const foundYard = this.yardList.find(yard =>
+          yard.CustomerMasterSid === yardValue || yard.CustomerName === yardValue
+        );
+        if (foundYard) {
+          yardValue = foundYard.CustomerMasterSid;
+        }
+      }
+
+
+      // ✅ PATCH OTHERS DATA WITH MasterJobOthersSid
+      if (data.others && data.others.length > 0) {
+        const othersData = data.others[0]; // Assuming others is an array with one object
+        this.masterJobForm.patchValue({
+          MasterJobOthersSid: othersData.MasterJobOthersSid || null, // ✅ ADD THIS
+          Yard: othersData.Yard || null,
+          YardAddress: othersData.YardAddress || '',
+          Transporter: othersData.Transporter || '',
+          HandlingInformation: othersData.HandlingInformation || '',
+          InternalNote: othersData.InternalNote || '',
+          CFS: othersData.CFS || null,
+          CFSAddress: othersData.CFSAddress || '',
+          StuffingStartDate: othersData.StuffingStartDate ? new Date(othersData.StuffingStartDate) : null,
+          StuffingEndDate: othersData.StuffingEndDate ? new Date(othersData.StuffingEndDate) : null,
+          CurrencyCode: othersData.CurrencyCode || '',
+          SellExchangeRate: othersData.SellExchangeRate || null,
+          AgentExchangeRate: othersData.AgentExchangeRate || null,
+          Coload: othersData.Coload === 'Y',
+          CoLoader: othersData.CoLoader || '',
+          ExportDoNo: othersData.ExportDoNo || '',
+          ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
+          SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
+        });
+        if (othersData.Coload === 'Y') {
+          this.masterJobForm.get('CoLoader')?.enable();
+        } else {
+          this.masterJobForm.get('CoLoader')?.disable();
+        }
+
+      }
+    }
+
+    // Set department info
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     if (selectedDepartment) {
       this.onDeptChange(selectedDepartment);
     }
 
     // Patch voyage fields if voyage data exists
-     if (data.voyages && data.voyages.length > 0) {
-    // Filter out voyages with null VoyageMasterSid and get the most recent one
-    const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
-   
-    let voyage;
-    if (validVoyages.length > 0) {
-      // Use the voyage with the highest MasterJobVoyageSid (most recent)
-      voyage = validVoyages.reduce((latest, current) =>
-        current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
-      );
-    } else {
-      // If no voyages with VoyageMasterSid, use the first one
-      voyage = data.voyages[0];
-    }
- 
-    console.log('Selected voyage for patching:', voyage);
- 
-    this.masterJobForm.patchValue({
-      MasterJobVoyageSid: voyage.MasterJobVoyageSid,
-      VoyageMasterSid: voyage.VoyageMasterSid,
-      VesselName: voyage.VesselName || '',
-      VoyageNo: voyage.VoyageNo || '',
-      ETA: voyage.ETA ? new Date(voyage.ETA) : null,
-      ETD: voyage.ETD ? new Date(voyage.ETD) : null,
-      ATA: voyage.ATA ? new Date(voyage.ATA) : null,
-      ATD: voyage.ATD ? new Date(voyage.ATD) : null,
-      DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
-      CarrierMasterSid: voyage.CarrierSid,
-      CarrierName: voyage.CarrierName || '',
-    });
-  }
- 
- 
+    if (data.voyages && data.voyages.length > 0) {
+      // Filter out voyages with null VoyageMasterSid and get the most recent one
+      const validVoyages = data.voyages.filter(voyage => voyage.VoyageMasterSid !== null);
 
-  // ✅ Fixed: Populate carrier dropdown for edit mode
-  if (data.CarrierName && data.CarrierMasterSid) {
-    const existingCarrier = this.carrierList.find(c => c.CarrierMasterSid === data.CarrierMasterSid);
-    if (!existingCarrier) {
-      this.carrierList.push({
-        CarrierMasterSid: data.CarrierMasterSid,
-        CarrierName: data.CarrierName
+      let voyage;
+      if (validVoyages.length > 0) {
+        // Use the voyage with the highest MasterJobVoyageSid (most recent)
+        voyage = validVoyages.reduce((latest, current) =>
+          current.MasterJobVoyageSid > latest.MasterJobVoyageSid ? current : latest
+        );
+      } else {
+        // If no voyages with VoyageMasterSid, use the first one
+        voyage = data.voyages[0];
+      }
+
+      console.log('Selected voyage for patching:', voyage);
+
+      this.masterJobForm.patchValue({
+        MasterJobVoyageSid: voyage.MasterJobVoyageSid,
+        VoyageMasterSid: voyage.VoyageMasterSid,
+        VesselName: voyage.VesselName || '',
+        VoyageNo: voyage.VoyageNo || '',
+        ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+        ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+        ATA: voyage.ATA ? new Date(voyage.ATA) : null,
+        ATD: voyage.ATD ? new Date(voyage.ATD) : null,
+        DestinationATA: voyage.DestinationATA ? new Date(voyage.DestinationATA) : null,
+        CarrierMasterSid: voyage.CarrierSid,
+        CarrierName: voyage.CarrierName || '',
       });
     }
-  }
 
-  // Patch connection, containers, rates, edocs, emails, container activities
-  this.masterjobConnectionArr = (data.masterJobConnection || []).map(connection => {
+
+
+    // ✅ Fixed: Populate carrier dropdown for edit mode
+    if (data.CarrierName && data.CarrierMasterSid) {
+      const existingCarrier = this.carrierList.find(c => c.CarrierMasterSid === data.CarrierMasterSid);
+      if (!existingCarrier) {
+        this.carrierList.push({
+          CarrierMasterSid: data.CarrierMasterSid,
+          CarrierName: data.CarrierName
+        });
+      }
+    }
+
+    // Patch connection, containers, rates, edocs, emails, container activities
+    this.masterjobConnectionArr = (data.masterJobConnection || []).map(connection => {
       return {
         ...connection,
-        TransactionSid : connection.MasterJobContainerSid,
+        TransactionSid: connection.MasterJobContainerSid,
       }
     }); // for child component
     this.connectionResult = [...this.masterjobConnectionArr]
 
-  // Patch containers
-  if (data.containers && data.containers.length > 0) {
-    this.masterJobContainers.clear(); 
-    data.containers.forEach((container: any) => {
-      this.addContainer(container);
-    });
-  }
+    // Patch containers
+    if (data.containers && data.containers.length > 0) {
+      this.masterJobContainers.clear();
+      data.containers.forEach((container: any) => {
+        this.addContainer(container);
+      });
+    }
 
-  // Patch cost revenue charges
+    // Patch cost revenue charges
     this.masterJobRateArr = (data.costRevenueCharges || []).map(rate => ({
       ...rate,
-      RateSid : rate.CostRevenueChargesSid,
-      status : rate.status  === "A" ? "Active" : "Suspended"
+      RateSid: rate.CostRevenueChargesSid,
+      status: rate.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.masterJobRateArr];
     // this.calculateChargeWiseProfit();
@@ -940,52 +950,52 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     console.log("CUSTOMER WISE SUMMARY",this.customerWiseSummary);
 
 
-  // Patch container activities
-  if (data.containerActivities && data.containerActivities.length > 0) {
-    this.containerActivityData = data.containerActivities.map((activity: any) => ({
-      ...activity,
-      JobMasterSid: activity.JobMasterSid || this.masterJobSid,
-      ActivityDate: activity.ActivityDate ? new Date(activity.ActivityDate) : new Date(activity.ActivityDate)
-    }));
-    this.containerActivityResetTrigger = !this.containerActivityResetTrigger;
-  }
+    // Patch container activities
+    if (data.containerActivities && data.containerActivities.length > 0) {
+      this.containerActivityData = data.containerActivities.map((activity: any) => ({
+        ...activity,
+        JobMasterSid: activity.JobMasterSid || this.masterJobSid,
+        ActivityDate: activity.ActivityDate ? new Date(activity.ActivityDate) : new Date(activity.ActivityDate)
+      }));
+      this.containerActivityResetTrigger = !this.containerActivityResetTrigger;
+    }
 
-  if (data.edocs && data.edocs.length > 0) {
-    this.edocData = data.edocs.map(edoc => ({
-      ...edoc,
-      status: edoc.status === "A" ? "Active" : "Suspended"
-    }));
-  }
-  
-  if (data.emails && data.emails.length > 0) {
-    this.emailData = data.emails.map(email => ({
-      ...email,
-      status: email.status === "A" ? "Active" : "Suspended"
-    }));
-  }
+    if (data.edocs && data.edocs.length > 0) {
+      this.edocData = data.edocs.map(edoc => ({
+        ...edoc,
+        status: edoc.status === "A" ? "Active" : "Suspended"
+      }));
+    }
 
-  // Handle agent filtering
-  const destinationAgent = data.DestinationAgent;
-  const originAgent = data.OriginAgent;
-  
-  if (destinationAgent) {
-    this.filteredOriginAgents = this.agentList.filter(agent => 
-      agent.CustomerName !== destinationAgent
-    );
-  }
-  
-  if (originAgent) {
-    this.filteredDestinationAgents = this.agentList.filter(agent => 
-      agent.CustomerName !== originAgent
-    );
-  }
+    if (data.emails && data.emails.length > 0) {
+      this.emailData = data.emails.map(email => ({
+        ...email,
+        status: email.status === "A" ? "Active" : "Suspended"
+      }));
+    }
 
-  const allShipments = data.allShipments || [];
+    // Handle agent filtering
+    const destinationAgent = data.DestinationAgent;
+    const originAgent = data.OriginAgent;
 
-  if(data.allShipments.length > 0) {
-    this.patchShipments(allShipments);
+    if (destinationAgent) {
+      this.filteredOriginAgents = this.agentList.filter(agent =>
+        agent.CustomerName !== destinationAgent
+      );
+    }
+
+    if (originAgent) {
+      this.filteredDestinationAgents = this.agentList.filter(agent =>
+        agent.CustomerName !== originAgent
+      );
+    }
+
+    const allShipments = data.allShipments || [];
+
+    if (data.allShipments.length > 0) {
+      this.patchShipments(allShipments);
+    }
   }
-}
 
   onDestinationAgentChange(selectedAgent: any) {
     if (!selectedAgent) {
@@ -993,11 +1003,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.masterJobForm.get('DestinationAgentAddress')?.setValue('');
       return;
     }
-    
-    this.filteredOriginAgents = this.agentList.filter(agent => 
+
+    this.filteredOriginAgents = this.agentList.filter(agent =>
       agent.CustomerName !== selectedAgent.CustomerName
     );
-    
+
     this.masterJobForm.get('DestinationAgentAddress')?.setValue(
       selectedAgent.CustomerAddress1 || ''
     );
@@ -1008,8 +1018,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.filteredDestinationAgents = [...this.agentList];
       return;
     }
-    
-    this.filteredDestinationAgents = this.agentList.filter(agent => 
+
+    this.filteredDestinationAgents = this.agentList.filter(agent =>
       agent.CustomerName !== selectedAgent.CustomerName
     );
   }
@@ -1019,10 +1029,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   //   return packageType ? packageType.UOMName : 'Unknown';
   // }
   getPackageTypeName(pkgTypeSid: number): string {
-  if (!pkgTypeSid) return 'Unknown';
-  const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
-  return packageType ? packageType.UOMName : 'Unknown';
-}
+    if (!pkgTypeSid) return 'Unknown';
+    const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+    return packageType ? packageType.UOMName : 'Unknown';
+  }
 
   setAddress(controlName: string, item: any) {
     this.masterJobForm.get(controlName)?.setValue(item ? item.CustomerAddress1 : '');
@@ -1043,22 +1053,22 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       this.masterJobForm.get('MovementType')?.setValue(null);
       return;
     }
-    
+
     this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? 
+    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ?
       (department.FCLLCL?.toUpperCase() || "LCL") : "AIR";
-    
+
     // Filter ports based on department type
     this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
     this.filteredPOL = [...this.filteredPorts];
     this.filteredPOD = [...this.filteredPorts];
-    
+
     if (this.selectedDepartmentType === "SEA") {
       this.masterJobForm.get('MovementType')?.setValue('Sea');
     } else if (this.selectedDepartmentType === "AIR") {
       this.masterJobForm.get('MovementType')?.setValue('Flight');
     }
-    
+
     // Trigger vessel search after department change
     this.triggerVesselSearch();
   }
@@ -1069,12 +1079,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     const segment = this.selectedFCLLCL;
 
     this.filteredPorts = this.getFilteredPortsBySegment(segment);
-    
+
     // Filter POL and POD to exclude each other
     // Values are PortMasterSid, so compare accordingly
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== podSid);
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== polSid);
-    
+
     if (polSid && podSid && polSid === podSid) {
       this.masterJobForm.get('POD')?.setErrors({ samePort: true });
       this.masterJobForm.get('POL')?.setErrors({ samePort: true });
@@ -1135,7 +1145,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     const POL = this.masterJobForm.get('POL')?.value;
     const POD = this.masterJobForm.get('POD')?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    
+
     if (POL && POD && MovementType) {
       // Use the subject to trigger debounced search
       this.vesselSearchSubject.next({
@@ -1150,9 +1160,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.vesselSearchSubject
       .pipe(
         debounceTime(500), // Wait 500ms after the last emission
-        distinctUntilChanged((prev, curr) => 
-          prev.POL === curr.POL && 
-          prev.POD === curr.POD && 
+        distinctUntilChanged((prev, curr) =>
+          prev.POL === curr.POL &&
+          prev.POD === curr.POD &&
           prev.MovementType === curr.MovementType
         ),
         takeUntil(this.destroy$)
@@ -1163,207 +1173,207 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   }
 
 
-  private performVesselSearch(params: {POL: string | number, POD: string | number, MovementType: string}): void {
-  if (this.isLoadingVessels) {
-    return;
-  }
+  private performVesselSearch(params: { POL: string | number, POD: string | number, MovementType: string }): void {
+    if (this.isLoadingVessels) {
+      return;
+    }
 
-  if (!params.POL || !params.POD) {
-    return;
-  }
+    if (!params.POL || !params.POD) {
+      return;
+    }
 
-  this.isLoadingVessels = true;
-  this.lastVesselSearchParams = { ...params };
+    this.isLoadingVessels = true;
+    this.lastVesselSearchParams = { ...params };
 
-  const payload = { 
-    POL: params.POL, 
-    POD: params.POD, 
-    segment: this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid)
-  };
-  
-  this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe({
-    next: (resp: any) => {
-      this.isLoadingVessels = false;
-      if (resp.status) {
-        this.headerVesselList = resp.data.map((vslVoy: any) => ({
-          ...vslVoy,
-          VesselName: vslVoy.VesselName,
-          VoyageNo: vslVoy.VoyageNo,
-          ETD: this.datepipe.transform(vslVoy.ETD),
-          ETA: this.datepipe.transform(vslVoy.ETA),
-          // Store original dates for auto-population
-          originalETD: vslVoy.ETD,
-          originalETA: vslVoy.ETA
-        }));
-        
-        if (this.headerVesselList.length === 0) {
-          this.toastr.warning("No Vessel/Voyage has been scheduled for the requested route.");
+    const payload = {
+      POL: params.POL,
+      POD: params.POD,
+      segment: this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid)
+    };
+
+    this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe({
+      next: (resp: any) => {
+        this.isLoadingVessels = false;
+        if (resp.status) {
+          this.headerVesselList = resp.data.map((vslVoy: any) => ({
+            ...vslVoy,
+            VesselName: vslVoy.VesselName,
+            VoyageNo: vslVoy.VoyageNo,
+            ETD: this.datepipe.transform(vslVoy.ETD),
+            ETA: this.datepipe.transform(vslVoy.ETA),
+            // Store original dates for auto-population
+            originalETD: vslVoy.ETD,
+            originalETA: vslVoy.ETA
+          }));
+
+          if (this.headerVesselList.length === 0) {
+            this.toastr.warning("No Vessel/Voyage has been scheduled for the requested route.");
+          }
+        } else {
+          this.toastr.error("Error loading Vessel");
         }
-      } else {
+      },
+      error: (error) => {
+        this.isLoadingVessels = false;
+        console.error('Error loading vessels:', error);
         this.toastr.error("Error loading Vessel");
       }
-    },
-    error: (error) => {
-      this.isLoadingVessels = false;
-      console.error('Error loading vessels:', error);
-      this.toastr.error("Error loading Vessel");
-    }
-  });
-}
-
-// Helper method to determine voyage type based on department
-private getVoyageTypeBasedOnDept(deptId: number): string {
-  const dept = this.departments.find(dept => dept.DepartmentMasterSid === deptId);
-  const deptType = dept?.departmentType;
-  switch (deptType) {
-    case 'Sea':
-      return 'Sea';
-    case 'Air':
-      return 'Air';
-    case 'Transport':
-      return 'Road';
-    default:
-      return 'Sea';
+    });
   }
-}
+
+  // Helper method to determine voyage type based on department
+  private getVoyageTypeBasedOnDept(deptId: number): string {
+    const dept = this.departments.find(dept => dept.DepartmentMasterSid === deptId);
+    const deptType = dept?.departmentType;
+    switch (deptType) {
+      case 'Sea':
+        return 'Sea';
+      case 'Air':
+        return 'Air';
+      case 'Transport':
+        return 'Road';
+      default:
+        return 'Sea';
+    }
+  }
 
   // Vessel change handler
   onVesselChange(vessel: any) {
-  if (!vessel) {
-    this.voyageList = [];
-    this.masterJobForm.get('VoyageNo')?.setValue(null);
-    this.masterJobForm.get('ETA')?.setValue('');
-    this.masterJobForm.get('ETD')?.setValue('');
-    return;
+    if (!vessel) {
+      this.voyageList = [];
+      this.masterJobForm.get('VoyageNo')?.setValue(null);
+      this.masterJobForm.get('ETA')?.setValue('');
+      this.masterJobForm.get('ETD')?.setValue('');
+      return;
+    }
+
+    // Set vessel name
+    this.masterJobForm.get('VesselName')?.setValue(vessel.VesselName);
+
+    // Get voyages for the selected vessel and ports
+    this.getVoyageForPortsAndVessels();
+
+    // If vessel has voyage data, auto-populate
+    if (vessel.VoyageNo) {
+      this.masterJobForm.patchValue({
+        VoyageNo: vessel.VoyageNo,
+        ETA: vessel.ETA ? new Date(vessel.ETA) : null,
+        ETD: vessel.ETD ? new Date(vessel.ETD) : null
+      });
+    }
   }
-  
-  // Set vessel name
-  this.masterJobForm.get('VesselName')?.setValue(vessel.VesselName);
-  
-  // Get voyages for the selected vessel and ports
-  this.getVoyageForPortsAndVessels();
-  
-  // If vessel has voyage data, auto-populate
-  if (vessel.VoyageNo) {
-    this.masterJobForm.patchValue({
-      VoyageNo: vessel.VoyageNo,
-      ETA: vessel.ETA ? new Date(vessel.ETA) : null,
-      ETD: vessel.ETD ? new Date(vessel.ETD) : null
-    });
-  }
-}
 
   getVoyageForPortsAndVessels() {
-  const POL = this.masterJobForm.get('POL')?.value;
-  const POD = this.masterJobForm.get('POD')?.value;
-  const vessel = this.masterJobForm.get('VesselName')?.value;
-  
-  if (!POL || !POD || !vessel) {
-    return;
-  }
-  
-  // Get port details
-  const polPort = this.portList.find(p => p.PortMasterSid === POL);
-  const podPort = this.portList.find(p => p.PortMasterSid === POD);
-  
-  if (!polPort || !podPort) {
-    return;
-  }
-  
-  const payload = { 
-    VesselName: vessel, 
-    POL: polPort.PortMasterSid, 
-    POD: podPort.PortMasterSid, 
-    MovementType: this.selectedDepartment?.departmentType 
-  };
-  
-  this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
-    (resp: any) => {
-      if (resp.status) {
-        this.voyageList = resp.data.map((voyage: any) => {
-          // Format the voyage data similar to booking component
-          return {
-            VoyageNo: voyage.VoyageNo,
-            ETD: voyage.ETD ? new Date(voyage.ETD) : null,
-            ETA: voyage.ETA ? new Date(voyage.ETA) : null,
-            VoyageMasterHeaderSid: voyage.VoyageMasterHeaderSid,
-            VesselName: voyage.VesselName,
-            // Include port information for display
-            POL: polPort,
-            POD: podPort
-          };
-        });
-        
-        // Auto-select if only one voyage exists
-        if (this.voyageList.length === 1) {
-          this.onVoyageChange(this.voyageList[0]);
+    const POL = this.masterJobForm.get('POL')?.value;
+    const POD = this.masterJobForm.get('POD')?.value;
+    const vessel = this.masterJobForm.get('VesselName')?.value;
+
+    if (!POL || !POD || !vessel) {
+      return;
+    }
+
+    // Get port details
+    const polPort = this.portList.find(p => p.PortMasterSid === POL);
+    const podPort = this.portList.find(p => p.PortMasterSid === POD);
+
+    if (!polPort || !podPort) {
+      return;
+    }
+
+    const payload = {
+      VesselName: vessel,
+      POL: polPort.PortMasterSid,
+      POD: podPort.PortMasterSid,
+      MovementType: this.selectedDepartment?.departmentType
+    };
+
+    this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.voyageList = resp.data.map((voyage: any) => {
+            // Format the voyage data similar to booking component
+            return {
+              VoyageNo: voyage.VoyageNo,
+              ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+              ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+              VoyageMasterHeaderSid: voyage.VoyageMasterHeaderSid,
+              VesselName: voyage.VesselName,
+              // Include port information for display
+              POL: polPort,
+              POD: podPort
+            };
+          });
+
+          // Auto-select if only one voyage exists
+          if (this.voyageList.length === 1) {
+            this.onVoyageChange(this.voyageList[0]);
+          }
+        } else {
+          this.toastr.error("Error loading sailing schedules.");
         }
-      } else {
+      },
+      (err) => {
+        console.error('Error loading voyages:', err);
         this.toastr.error("Error loading sailing schedules.");
       }
-    },
-    (err) => {
-      console.error('Error loading voyages:', err);
-      this.toastr.error("Error loading sailing schedules.");
-    }
-  );
-}
+    );
+  }
   // Voyage change handler
   onVoyageChange(voyage: any) {
-  if (!voyage) {
-    this.masterJobForm.get('ETA')?.setValue('');
-    this.masterJobForm.get('ETD')?.setValue('');
-    this.masterJobForm.get('VoyageMasterSid')?.setValue(null);
-    return;
-  }
-  
-  // Set voyage details
-  this.masterJobForm.patchValue({
-    MasterJobVoyageSid: voyage.MasterJobVoyageSid || null,
-    VoyageMasterSid: voyage.VoyageMasterHeaderSid || null,
-    VoyageNo: voyage.VoyageNo,
-    VesselName: voyage.VesselName || this.masterJobForm.get('VesselName')?.value
-  });
-  
-  // Auto-set ETD and ETA from voyage data
-  if (voyage.ETD) {
-    this.masterJobForm.get('ETD')?.setValue(new Date(voyage.ETD));
-  }
-  
-  if (voyage.ETA) {
-    this.masterJobForm.get('ETA')?.setValue(new Date(voyage.ETA));
-    this.minStartDate = new Date(voyage.ETA); // Set min date for connections
-  }
-  
-  // If voyage has specific port ETD/ETA, use those
-  const POL = this.masterJobForm.get('POL')?.value;
-  const POD = this.masterJobForm.get('POD')?.value;
-  
-  if (voyage.Ports && Array.isArray(voyage.Ports)) {
-    const polDetail = voyage.Ports.find((p: any) => p.POLSid === POL);
-    const podDetail = voyage.Ports.find((p: any) => p.PODSid === POD);
-    
-    if (polDetail?.ETD) {
-      this.masterJobForm.get('ETD')?.setValue(new Date(polDetail.ETD));
+    if (!voyage) {
+      this.masterJobForm.get('ETA')?.setValue('');
+      this.masterJobForm.get('ETD')?.setValue('');
+      this.masterJobForm.get('VoyageMasterSid')?.setValue(null);
+      return;
     }
-    
-    if (podDetail?.ETA) {
-      this.masterJobForm.get('ETA')?.setValue(new Date(podDetail.ETA));
-      this.minStartDate = new Date(podDetail.ETA);
+
+    // Set voyage details
+    this.masterJobForm.patchValue({
+      MasterJobVoyageSid: voyage.MasterJobVoyageSid || null,
+      VoyageMasterSid: voyage.VoyageMasterHeaderSid || null,
+      VoyageNo: voyage.VoyageNo,
+      VesselName: voyage.VesselName || this.masterJobForm.get('VesselName')?.value
+    });
+
+    // Auto-set ETD and ETA from voyage data
+    if (voyage.ETD) {
+      this.masterJobForm.get('ETD')?.setValue(new Date(voyage.ETD));
+    }
+
+    if (voyage.ETA) {
+      this.masterJobForm.get('ETA')?.setValue(new Date(voyage.ETA));
+      this.minStartDate = new Date(voyage.ETA); // Set min date for connections
+    }
+
+    // If voyage has specific port ETD/ETA, use those
+    const POL = this.masterJobForm.get('POL')?.value;
+    const POD = this.masterJobForm.get('POD')?.value;
+
+    if (voyage.Ports && Array.isArray(voyage.Ports)) {
+      const polDetail = voyage.Ports.find((p: any) => p.POLSid === POL);
+      const podDetail = voyage.Ports.find((p: any) => p.PODSid === POD);
+
+      if (polDetail?.ETD) {
+        this.masterJobForm.get('ETD')?.setValue(new Date(polDetail.ETD));
+      }
+
+      if (podDetail?.ETA) {
+        this.masterJobForm.get('ETA')?.setValue(new Date(podDetail.ETA));
+        this.minStartDate = new Date(podDetail.ETA);
+      }
     }
   }
-}
 
   private convertPortFields(data: any): any {
     const portFields = ['POO', 'POL', 'POD', 'FPD'];
     const convertedData = { ...data };
-    
+
     portFields.forEach(field => {
       if (convertedData[field] !== null && convertedData[field] !== undefined) {
         convertedData[field] = convertedData[field].toString();
       }
     });
-    
+
     return convertedData;
   }
 
@@ -1382,98 +1392,98 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
 
   onSubmit(): void {
     if (this.masterJobForm.invalid) {
-        this.toastr.error('Please fill all required fields');
-        this.masterJobForm.markAllAsTouched();
-        return;
+      this.toastr.error('Please fill all required fields');
+      this.masterJobForm.markAllAsTouched();
+      return;
     }
 
     this.isLoading = true;
-    
+
     const getPortCode = (portSid: any): string => {
-        if (!portSid && portSid !== 0) return '';
-        const port = this.portList.find(p => p.PortMasterSid === portSid);
-        return port ? port.PortCode : portSid?.toString().substring(0, 100);
+      if (!portSid && portSid !== 0) return '';
+      const port = this.portList.find(p => p.PortMasterSid === portSid);
+      return port ? port.PortCode : portSid?.toString().substring(0, 100);
     };
 
     const formValue = this.masterJobForm.value;
     const voyageData = {
-      MasterJobVoyageSid:formValue.MasterJobVoyageSid,
-  VoyageMasterSid: formValue.VoyageMasterSid,
-  VesselName: formValue.VesselName,
-  VoyageNo: formValue.VoyageNo,
-  ETD: this.formatDate(formValue.ETD),
-  ETA: this.formatDate(formValue.ETA),
-  ATA: this.formatDate(formValue.ATA),
-  ATD: this.formatDate(formValue.ATD),
-  DestinationATA: this.formatDate(formValue.DestinationATA),
-  CarrierSid: formValue.CarrierMasterSid,
-  CarrierName: formValue.CarrierName,
-};
- 
+      MasterJobVoyageSid: formValue.MasterJobVoyageSid,
+      VoyageMasterSid: formValue.VoyageMasterSid,
+      VesselName: formValue.VesselName,
+      VoyageNo: formValue.VoyageNo,
+      ETD: this.formatDate(formValue.ETD),
+      ETA: this.formatDate(formValue.ETA),
+      ATA: this.formatDate(formValue.ATA),
+      ATD: this.formatDate(formValue.ATD),
+      DestinationATA: this.formatDate(formValue.DestinationATA),
+      CarrierSid: formValue.CarrierMasterSid,
+      CarrierName: formValue.CarrierName,
+    };
+
 
     // Create the others object from form values
     const othersData = {
-        MasterJobOthersSid: formValue.MasterJobOthersSid || null,
-        Yard: formValue.Yard,
-        YardAddress: formValue.YardAddress,
-        Transporter: formValue.Transporter,
-        HandlingInformation: formValue.HandlingInformation,
-        InternalNote: formValue.InternalNote,
-        CFS: formValue.CFS,
-        CFSAddress: formValue.CFSAddress,
-        StuffingStartDate: formValue.StuffingStartDate,
-        StuffingEndDate: formValue.StuffingEndDate,
-        CurrencyCode: formValue.CurrencyCode || '',
-        SellExchangeRate: formValue.SellExchangeRate,
-        AgentExchangeRate: formValue.AgentExchangeRate,
-        Coload: formValue.Coload ? 'Y' : 'N',
-        CoLoader: formValue.CoLoader,
-        ExportDoNo: formValue.ExportDoNo,
-        ExportDoDate: formValue.ExportDoDate,
-        SOBDate: formValue.SOBDate,
+      MasterJobOthersSid: formValue.MasterJobOthersSid || null,
+      Yard: formValue.Yard,
+      YardAddress: formValue.YardAddress,
+      Transporter: formValue.Transporter,
+      HandlingInformation: formValue.HandlingInformation,
+      InternalNote: formValue.InternalNote,
+      CFS: formValue.CFS,
+      CFSAddress: formValue.CFSAddress,
+      StuffingStartDate: formValue.StuffingStartDate,
+      StuffingEndDate: formValue.StuffingEndDate,
+      CurrencyCode: formValue.CurrencyCode || '',
+      SellExchangeRate: formValue.SellExchangeRate,
+      AgentExchangeRate: formValue.AgentExchangeRate,
+      Coload: formValue.Coload ? 'Y' : 'N',
+      CoLoader: formValue.CoLoader,
+      ExportDoNo: formValue.ExportDoNo,
+      ExportDoDate: formValue.ExportDoDate,
+      SOBDate: formValue.SOBDate,
     };
 
     const formData: any = {
-        ...formValue,
-        // Use port codes instead of SIDs
-        POO: getPortCode(formValue.POO),
-        POL: getPortCode(formValue.POL),
-        POD: getPortCode(formValue.POD),
-        FPD: getPortCode(formValue.FPD),
-        
-        // Add the others data as a separate object
-        others: othersData,
-        voyages:[voyageData],
-        
-        // Ensure other string fields don't exceed limits
-        DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
-        POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
-        PODTerminal: formValue.PODTerminal?.substring(0, 200) || '',
-        CommodityDescription: formValue.CommodityDescription?.substring(0, 500) || '',
-        MarksandNumber: formValue.MarksandNumber?.substring(0, 200) || '',
-        Status: formValue.Status === 'Active' ? 'A' : 'S',
-        
-        // Your existing arrays
-        masterJobConnection: this.connectionResult,
-        costRevenueCharges: this.rateResult,
-        masterJobContainers: this.formatContainerData(),
-        
-        // Format dates
-        MasterJobDate: this.formatDate(formValue.MasterJobDate),
-        MBLDate: this.formatDate(formValue.MBLDate),
-        DGBookingDate: this.formatDate(formValue.DGBookingDate),
-        DGApprovedDate: this.formatDate(formValue.DGApprovedDate),
-        ETA: this.formatDate(formValue.ETA),
-        ETD: this.formatDate(formValue.ETD),
-        ATA: this.formatDate(formValue.ATA),
-        ATD: this.formatDate(formValue.ATD),
-        DestinationATA: this.formatDate(formValue.DestinationATA),
-        Haz: formValue.Haz ? 'Y' : 'N',
-        
-        CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-        BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
+      ...formValue,
+      // Use port codes instead of SIDs
+      POO: getPortCode(formValue.POO),
+      POL: getPortCode(formValue.POL),
+      POD: getPortCode(formValue.POD),
+      FPD: getPortCode(formValue.FPD),
+
+      // Add the others data as a separate object
+      others: othersData,
+      voyages: [voyageData],
+
+      // Ensure other string fields don't exceed limits
+      DestinationAgentAddress: formValue.DestinationAgentAddress?.substring(0, 200) || '',
+      POLTerminal: formValue.POLTerminal?.substring(0, 200) || '',
+      PODTerminal: formValue.PODTerminal?.substring(0, 200) || '',
+      CommodityDescription: formValue.CommodityDescription?.substring(0, 500) || '',
+      MarksandNumber: formValue.MarksandNumber?.substring(0, 200) || '',
+      Status: formValue.Status === 'Active' ? 'A' : 'S',
+
+      // Your existing arrays
+      masterJobConnection: this.connectionResult,
+      costRevenueCharges: this.rateResult,
+      masterJobContainers: this.formatContainerData(),
+
+      // Format dates
+      MasterJobDate: this.formatDate(formValue.MasterJobDate),
+      MBLDate: this.formatDate(formValue.MBLDate),
+      DGBookingDate: this.formatDate(formValue.DGBookingDate),
+      DGApprovedDate: this.formatDate(formValue.DGApprovedDate),
+      ETA: this.formatDate(formValue.ETA),
+      ETD: this.formatDate(formValue.ETD),
+      ATA: this.formatDate(formValue.ATA),
+      ATD: this.formatDate(formValue.ATD),
+      DestinationATA: this.formatDate(formValue.DestinationATA),
+      Haz: formValue.Haz ? 'Y' : 'N',
+
+      CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: Number(localStorage.getItem('currentMenuId')),
     };
 
     // Add shipment list if needed
@@ -1484,7 +1494,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
           BookingHeaderSid: shipment.BookingHeaderSid,
           HBLNo: shipment.HBLNo,
         }
-    });
+      });
     formData['shipmentList'] = [...allShipments];
 
     // Debug to check the payload
@@ -1492,53 +1502,53 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
     console.log('Others data:', othersData);
 
     if (this.isEditMode && this.masterJobSid) {
-        formData.MasterJobSid = this.masterJobSid;
-        this.operationService.updateMasterJob(formData).subscribe({
-            next: (response: any) => {
-                this.isLoading = false;
-                if (response.status) {
-                    this.toastr.success('Master Job updated successfully');
-                    this.loadMasterJobData(this.masterJobSid);
-                } else {
-                    this.toastr.error(response.message || 'Failed to update Master Job');
-                }
-            },
-            error: (error) => {
-                this.isLoading = false;
-                this.toastr.error('Failed to update Master Job');
-                console.error('Error updating master job:', error);
-            }
-        });
+      formData.MasterJobSid = this.masterJobSid;
+      this.operationService.updateMasterJob(formData).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          if (response.status) {
+            this.toastr.success('Master Job updated successfully');
+            this.loadMasterJobData(this.masterJobSid);
+          } else {
+            this.toastr.error(response.message || 'Failed to update Master Job');
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.toastr.error('Failed to update Master Job');
+          console.error('Error updating master job:', error);
+        }
+      });
     } else {
-        this.operationService.createMasterJob(formData).subscribe({
-            next: (response: any) => {
-                this.isLoading = false;
-                if (response.status) {
-                    this.toastr.success('Master Job created successfully');
-                    this.router.navigate(['/operation/master-job/list']);
-                } else {
-                    this.toastr.error(response.message || 'Failed to create Master Job');
-                }
-            },
-            error: (error) => {
-                this.isLoading = false;
-                this.toastr.error('Failed to create Master Job');
-                console.error('Error creating master job:', error);
-            }
-        });
+      this.operationService.createMasterJob(formData).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          if (response.status) {
+            this.toastr.success('Master Job created successfully');
+            this.router.navigate(['/operation/master-job/list']);
+          } else {
+            this.toastr.error(response.message || 'Failed to create Master Job');
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.toastr.error('Failed to create Master Job');
+          console.error('Error creating master job:', error);
+        }
+      });
     }
-}
+  }
 
 
   onContainerSubmit(): void {
     if (this.containerFormGroup.valid) {
       const containerData = this.containerFormGroup.value;
-      
+
       if (this.isEditContainer && this.editingContainerIndex !== null) {
         // Update existing container - preserve the MasterJobContainerSid
         const containerGroup = this.masterJobContainers.at(this.editingContainerIndex);
         const existingContainerSid = containerGroup.value.MasterJobContainerSid;
-        
+
         containerGroup.patchValue({
           ...containerData,
           MasterJobContainerSid: existingContainerSid, // Preserve the existing SID
@@ -1548,15 +1558,15 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         // Add new container - MasterJobContainerSid will be null for new containers
         this.addContainer(containerData);
       }
-      
+
       this.currentContainerModal.close();
-      
+
     } else {
       this.toastr.error('Please fill all required container fields');
       this.containerFormGroup.markAllAsTouched();
     }
   }
-  
+
   // Helper methods
   getContainerTypeName(ContainerTypeMasterSid: number): string {
     const containerType = this.containerTypeList.find(ct => ct.ContainerTypeMasterSid === ContainerTypeMasterSid);
@@ -1579,7 +1589,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
 
   formatArrayDates(array: any[], dateFields: string[]): void {
     if (!array) return;
-    
+
     array.forEach(item => {
       dateFields.forEach(field => {
         if (item[field]) {
@@ -1597,12 +1607,12 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
       Haz: false,
       FreightPPCC: 'Prepaid'
     });
-    
+
     this.connections.clear();
     this.masterJobContainers.clear();
     this.costRevenueCharges.clear();
     this.containerActivities.clear();
-    
+
     // Reset vessel search state
     this.headerVesselList = [];
     this.voyageList = [];
@@ -1611,7 +1621,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
 
   onHazChange(): void {
     const hazValue = this.masterJobForm.get('Haz')?.value;
-    
+
     if (!hazValue) {
       this.masterJobForm.get('DGBookingDate')?.setValue(null);
       this.masterJobForm.get('DGApprovedDate')?.setValue(null);
@@ -1629,7 +1639,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   openContainerModal(content: any, container?: any, index?: number): void {
     this.isEditContainer = !!container;
     this.editingContainerIndex = index !== undefined ? index : null;
-    
+
     if (this.isEditContainer && container) {
       // Patch the form with existing container data
       this.containerFormGroup.patchValue({
@@ -1647,7 +1657,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
         IsSoc: false
       });
     }
-    
+
     this.currentContainerModal = this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
@@ -1660,7 +1670,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   syncFormValueWithConnectionComponent() {
-   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
     const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
     const MBLNo = this.masterJobForm.get('MBLNo')?.value;
@@ -1690,7 +1700,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
       CompanyMasterSid,
       DepartmentMasterSid,
       MasterJobNumber,
-      ParentSid : this.masterJobSid,
+      ParentSid: this.masterJobSid,
       // CustomerMasterSid,
       // CustomerBranchSid,
       MBLNo,
@@ -1708,7 +1718,7 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
       Volume,
       NoofContainers,
       ChargeableWeight,
-      countryOfCompany : this.countryOfCompany
+      countryOfCompany: this.countryOfCompany
     }
   }
 
@@ -1766,18 +1776,18 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
       countryOfCompany: this.countryOfCompany
     }
   }
-  
- handleRateChange(allRates: any[]) {
-  if (allRates && allRates.length > 0) {
-    this.rateResult = [...allRates];
+
+  handleRateChange(allRates: any[]) {
+    if (allRates && allRates.length > 0) {
+      this.rateResult = [...allRates];
+    }
   }
-}
-  
+
 
   syncFormValueWithFollowUpComponent() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-    
+
     this.currentFollowUpFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
@@ -1793,89 +1803,89 @@ private getVoyageTypeBasedOnDept(deptId: number): string {
   }
 
   // Add sync method for Edoc
-syncFormValueWithEdocComponent() {
-  console.log('🔍 === syncFormValueWithEdocComponent START ===');
-  
-  // Log all relevant properties
-  console.log('📋 Current Component State:');
-  console.log('  - masterJobSid:', this.masterJobSid);
-  console.log('  - MenuMasterSid:', this.MenuMasterSid);
-  console.log('  - currentCompany:', this.currentCompany);
-  console.log('  - currentBranch:', this.currentBranch);
-  console.log('  - isEditMode:', this.isEditMode);
-  
-  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-  const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-  const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
-  
-  console.log('📊 Form Values:');
-  console.log('  - CompanyMasterSid:', CompanyMasterSid);
-  console.log('  - DepartmentMasterSid:', DepartmentMasterSid);
-  console.log('  - MasterJobNumber:', MasterJobNumber);
-  
-  this.currentEdocFormValue = {
-    CompanyMasterSid,
-    DepartmentMasterSid,
-    DocumentSid: this.masterJobSid || 0,
-    MasterJobNumber: MasterJobNumber,
-  };
+  syncFormValueWithEdocComponent() {
+    console.log('🔍 === syncFormValueWithEdocComponent START ===');
 
-  console.log('📄 currentEdocFormValue:', this.currentEdocFormValue);
+    // Log all relevant properties
+    console.log('📋 Current Component State:');
+    console.log('  - masterJobSid:', this.masterJobSid);
+    console.log('  - MenuMasterSid:', this.MenuMasterSid);
+    console.log('  - currentCompany:', this.currentCompany);
+    console.log('  - currentBranch:', this.currentBranch);
+    console.log('  - isEditMode:', this.isEditMode);
 
-  const data: any = {
-    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-    BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    MenuMasterSid: this.MenuMasterSid,
-    DocumentSid: this.masterJobSid,
-  };
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
+    const MasterJobNumber = this.masterJobForm.get('MasterJobNumber')?.value;
 
-  console.log('🚀 Data being set to commonService:');
-  console.log('  - CompanyMasterSid:', data.CompanyMasterSid);
-  console.log('  - BranchMasterSid:', data.BranchMasterSid);
-  console.log('  - MenuMasterSid:', data.MenuMasterSid);
-  console.log('  - DocumentSid:', data.DocumentSid);
-  
-  // Check if any values are null/undefined
-  const missingFields = [];
-  if (!data.CompanyMasterSid) missingFields.push('CompanyMasterSid');
-  if (!data.BranchMasterSid) missingFields.push('BranchMasterSid');
-  if (!data.MenuMasterSid) missingFields.push('MenuMasterSid');
-  if (!data.DocumentSid && data.DocumentSid !== 0) missingFields.push('DocumentSid');
-  
-  if (missingFields.length > 0) {
-    console.warn('⚠️  Missing fields:', missingFields);
-  } else {
-    console.log('✅ All fields are present');
+    console.log('📊 Form Values:');
+    console.log('  - CompanyMasterSid:', CompanyMasterSid);
+    console.log('  - DepartmentMasterSid:', DepartmentMasterSid);
+    console.log('  - MasterJobNumber:', MasterJobNumber);
+
+    this.currentEdocFormValue = {
+      CompanyMasterSid,
+      DepartmentMasterSid,
+      DocumentSid: this.masterJobSid || 0,
+      MasterJobNumber: MasterJobNumber,
+    };
+
+    console.log('📄 currentEdocFormValue:', this.currentEdocFormValue);
+
+    const data: any = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid,
+      DocumentSid: this.masterJobSid,
+    };
+
+    console.log('🚀 Data being set to commonService:');
+    console.log('  - CompanyMasterSid:', data.CompanyMasterSid);
+    console.log('  - BranchMasterSid:', data.BranchMasterSid);
+    console.log('  - MenuMasterSid:', data.MenuMasterSid);
+    console.log('  - DocumentSid:', data.DocumentSid);
+
+    // Check if any values are null/undefined
+    const missingFields = [];
+    if (!data.CompanyMasterSid) missingFields.push('CompanyMasterSid');
+    if (!data.BranchMasterSid) missingFields.push('BranchMasterSid');
+    if (!data.MenuMasterSid) missingFields.push('MenuMasterSid');
+    if (!data.DocumentSid && data.DocumentSid !== 0) missingFields.push('DocumentSid');
+
+    if (missingFields.length > 0) {
+      console.warn('⚠️  Missing fields:', missingFields);
+    } else {
+      console.log('✅ All fields are present');
+    }
+
+    console.log('📤 Setting data to commonService.documentData...');
+    this.commonService.documentData.set(data);
+
+    // Verify the data was set
+    const currentData = this.commonService.documentData();
+    console.log('✅ Data in commonService after set:', currentData);
+
+    console.log('🔍 === syncFormValueWithEdocComponent END ===');
   }
 
-  console.log('📤 Setting data to commonService.documentData...');
-  this.commonService.documentData.set(data);
-  
-  // Verify the data was set
-  const currentData = this.commonService.documentData();
-  console.log('✅ Data in commonService after set:', currentData);
-  
-  console.log('🔍 === syncFormValueWithEdocComponent END ===');
-}
+  // Add handler for Edoc data changes
+  handleEdocChange(event: any) {
+    console.log('📨 === handleEdocChange START ===');
+    console.log('Event received:', event);
 
-// Add handler for Edoc data changes
-handleEdocChange(event: any) {
-  console.log('📨 === handleEdocChange START ===');
-  console.log('Event received:', event);
-  
-  this.edocData = event.dataItems || [];   
-  this.currentEdocFormValue = event.formData; 
-  
-  console.log('📊 Updated edocData:', this.edocData);
-  console.log('📊 Updated currentEdocFormValue:', this.currentEdocFormValue);
-  console.log('📨 === handleEdocChange END ===');
-}
+    this.edocData = event.dataItems || [];
+    this.currentEdocFormValue = event.formData;
+
+    console.log('📊 Updated edocData:', this.edocData);
+    console.log('📊 Updated currentEdocFormValue:', this.currentEdocFormValue);
+    console.log('📨 === handleEdocChange END ===');
+  }
 
   // Add sync method for Email component
   syncFormValueWithEmailComponent() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-    
+
     this.currentEmailFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
@@ -1898,7 +1908,7 @@ handleEdocChange(event: any) {
   syncFormValueWithContainerActivityComponent() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.masterJobForm.get('DepartmentMasterSid')?.value;
-    
+
     this.currentContainerActivityFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
@@ -1912,14 +1922,14 @@ handleEdocChange(event: any) {
   // Add this handler for container activity data changes
   handleContainerActivityChange(activities: any[]) {
     console.log('Container Activities received from component:', activities);
-    
+
     // Ensure we have an array and properly store it
     this.containerActivityData = Array.isArray(activities) ? [...activities] : [];
-    
+
     // Update the form array as well to keep it in sync
     const containerActivitiesFormArray = this.containerActivities;
     containerActivitiesFormArray.clear();
-    
+
     this.containerActivityData.forEach(activity => {
       const activityGroup = this.fb.group({
         ContainerActivitySid: [activity.ContainerActivitySid || null],
@@ -1934,7 +1944,7 @@ handleEdocChange(event: any) {
       });
       containerActivitiesFormArray.push(activityGroup);
     });
-    
+
     console.log('Updated containerActivityData:', this.containerActivityData);
     console.log('Updated form array length:', containerActivitiesFormArray.length);
   }
@@ -1977,14 +1987,14 @@ handleEdocChange(event: any) {
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.masterJobSid) return;
-  
+
     this.operationService.getAuditLogsmasterjob(
       'MasterJob',
       this.masterJobSid.toString()
     ).subscribe({
       next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
-  
+        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+
         const formatFields = (val: any) => {
           if (!val) return [];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
@@ -1993,7 +2003,7 @@ handleEdocChange(event: any) {
             .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
             .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
         };
-  
+
         this.auditLogs = logs
           .map(log => ({
             ...log,
@@ -2001,7 +2011,7 @@ handleEdocChange(event: any) {
             newValDisplay: formatFields(log.newVal),
           }))
           .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-  
+
         this.auditLogModalRef = this.modalService.open(modal, {
           centered: true,
           scrollable: true,
@@ -2017,7 +2027,7 @@ handleEdocChange(event: any) {
   //     this.toastr.warning('No audit logs to export');
   //     return;
   //   }
-    
+
   //   // Simple CSV export implementation
   //   const headers = ['Changed At', 'Changed By', 'Operation', 'Old Value', 'New Value'];
   //   const csvData = this.auditLogs.map(log => [
@@ -2027,7 +2037,7 @@ handleEdocChange(event: any) {
   //     JSON.stringify(log.oldVal || {}),
   //     JSON.stringify(log.newVal || {})
   //   ]);
-    
+
   //   const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
   //   const blob = new Blob([csvContent], { type: 'text/csv' });
   //   const url = window.URL.createObjectURL(blob);
@@ -2046,11 +2056,11 @@ handleEdocChange(event: any) {
     this.router.navigate(['/operation/master-job/list']);
   }
 
-   toggleMinimizeMaximize(){
-      toggleFullScreen();
-    }
-  
-  
+  toggleMinimizeMaximize() {
+    toggleFullScreen();
+  }
+
+
 
   addContainerActivity(activity?: any): void {
     if (activity) {
@@ -2066,49 +2076,57 @@ handleEdocChange(event: any) {
   }
 
   // Shipment Related Works
-  
+
   createShipmentGroup(data?: any): FormGroup {
     const shipmentForm = this.fb.group({
-      HouseJobSid : [data?.HouseJobSid || null],
-      BookingHeaderSid : [data?.BookingHeaderSid || ''],
-      BookingNo : [data?.BookingNo || '', Validators.required],
-      BookingDateTime : [data?.BookingDateTime ? new Date(data?.BookingDateTime) : null],
-      DepartmentMasterSid : [data?.DepartmentMasterSid || null],
-      HBLNo : [data?.HBLNo || null],
-      CustomerMasterSid : [data?.CustomerMasterSid || null],
-      CustomerName : [data?.CustomerName || ''],
-      CustomerAddress : [data?.CustomerAddress || ''],
-      ShipperName : [data?.ShipperName || ''],
-      ShipperAddress : [data?.ShipperAddress || ''],
-      ConsigneeName : [data?.ConsigneeName || ''],
-      ConsigneeAddress : [data?.ConsigneeAddress || ''],
-      DestinationAgent : [data?.DestinationAgent || ''],
-      MBLDate : [data?.MBLDate || null],
-      MasterJobSid : [data?.MasterJobSid || null],
-      POL : [data?.POL || null],
-      POD : [data?.POD || null],
-      FreightTerms : [data?.FreightTerms || ''],
+      HouseJobSid: [data?.HouseJobSid || null],
+      BookingHeaderSid: [data?.BookingHeaderSid || ''],
+      BookingNo: [data?.BookingNo || '', Validators.required],
+      BookingDateTime: [data?.BookingDateTime ? new Date(data?.BookingDateTime) : null],
+      DepartmentMasterSid: [data?.DepartmentMasterSid || null],
+      HBLNo: [data?.HBLNo || null],
+      CustomerMasterSid: [data?.CustomerMasterSid || null],
+      CustomerName: [data?.CustomerName || ''],
+      CustomerAddress: [data?.CustomerAddress || ''],
+      ShipperName: [data?.ShipperName || ''],
+      ShipperAddress: [data?.ShipperAddress || ''],
+      ConsigneeName: [data?.ConsigneeName || ''],
+      ConsigneeAddress: [data?.ConsigneeAddress || ''],
+      DestinationAgent: [data?.DestinationAgent || ''],
+      MBLDate: [data?.MBLDate || null],
+      MasterJobSid: [data?.MasterJobSid || null],
+      POL: [data?.POL || null],
+      POD: [data?.POD || null],
+      FreightTerms: [data?.FreightTerms || ''],
+      JobType: [data?.JobType || '']
     })
     return shipmentForm;
   }
 
-  updateAttachedBookingsPagination(){
+  updateAttachedBookingsPagination() {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
     this.slicedAttachedBookings = this.attachedBookings.getRawValue().slice(start, end);
+    console.log('slicedAttachedBookings', this.slicedAttachedBookings)
   }
 
-  getDepartmentName(DepartmentMasterSid : number){
-    if(!DepartmentMasterSid || this.departments.length === 0) return '';
+  getDepartmentName(DepartmentMasterSid: number) {
+    if (!DepartmentMasterSid || this.departments.length === 0) return '';
     const department = this.departments.find(dep => dep.DepartmentMasterSid === DepartmentMasterSid);
     return department ? department.departmentName : '';
   }
 
-  getAgentName(AgentSid : number){
-    if(!AgentSid || this.agentList.length === 0) return '';
+  getAgentName(AgentSid: number) {
+    if (!AgentSid || this.agentList.length === 0) return '';
     const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
     return agent ? agent.CustomerName : '';
   }
+  getYardName(yardSid: number): string {
+    if (!yardSid || this.yardList.length === 0) return '';
+    const yard = this.yardList.find(yard => yard.CustomerMasterSid === yardSid);
+    return yard ? yard.CustomerName : '';
+  }
+
 
   patchShipments(shipments: any[]) {
     this.attachedBookings.clear();
@@ -2127,22 +2145,23 @@ handleEdocChange(event: any) {
     const HouseJobSid = booking.HouseJobSid;
     console.log(HouseJobSid);
     if (HouseJobSid) {
-      this.operationService.detachBooking(HouseJobSid).subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.appSettingsService.showSuccess('Booking detached successfully');
-            this.attachedBookings.removeAt(realIndex);
-            this.totalLengthOfAttachedBookings = this.attachedBookings.length;
-            this.updateAttachedBookingsPagination();
-          } else {
-            this.appSettingsService.showError('Failed to detach booking');
+      this.operationService.detachBooking(HouseJobSid).subscribe
+        ({
+          next: (resp: any) => {
+            if (resp.status) {
+              this.appSettingsService.showSuccess('Booking detached successfully');
+              this.attachedBookings.removeAt(realIndex);
+              this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+              this.updateAttachedBookingsPagination();
+            } else {
+              this.appSettingsService.showError('Failed to detach booking');
+            }
+          },
+          error: (error) => {
+            this.toastr.error('Failed to detach booking');
+            console.error('Error detaching booking:', error);
           }
-        },
-        error: (error) => {
-          this.toastr.error('Failed to detach booking');
-          console.error('Error detaching booking:', error);
-        }
-      });
+        });
     } else {
       this.appSettingsService.showSuccess('Booking detached successfully');
       this.attachedBookings.removeAt(realIndex);
@@ -2151,9 +2170,9 @@ handleEdocChange(event: any) {
     }
   }
 
-  openAttachModal(){
-    const requiredFields = ['DepartmentMasterSid','POL','POD'];
-    if(!this.hasEveryRequiredFieldsFilled(requiredFields , this.masterJobForm)){
+  openAttachModal() {
+    const requiredFields = ['DepartmentMasterSid', 'POL', 'POD'];
+    if (!this.hasEveryRequiredFieldsFilled(requiredFields, this.masterJobForm)) {
       requiredFields.forEach(field => {
         this.masterJobForm.get(field)?.markAsTouched();
         this.masterJobForm.get(field)?.updateValueAndValidity();
@@ -2166,8 +2185,8 @@ handleEdocChange(event: any) {
       .filter(booking => booking.HouseJobSid === null)
       .map(bk => bk.BookingHeaderSid);
 
-    const modalRef = this.modalService.open(LoadingPlanEntryComponent,{
-      size : 'xl',
+    const modalRef = this.modalService.open(LoadingPlanEntryComponent, {
+      size: 'xl',
       backdrop: 'static',
       centered: true,
       windowClass: 'custom-modal-size'
@@ -2175,18 +2194,18 @@ handleEdocChange(event: any) {
     modalRef.componentInstance.screenName = 'Master Job';
     const value = this.masterJobForm.value;
     modalRef.componentInstance.masterJobFormValue = {
-      DepartmentMasterSid : value.DepartmentMasterSid,
-      POL : this.getPortCode(value.POL),
-      POD : this.getPortCode(value.POD),
-      hasValue : true
+      DepartmentMasterSid: value.DepartmentMasterSid,
+      POL: this.getPortCode(value.POL),
+      POD: this.getPortCode(value.POD),
+      hasValue: true
     }
     modalRef.componentInstance.exceptionalBookings = exceptionalBookings;
-    modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
-      if(data){
+    modalRef.componentInstance.closeModal.subscribe((data: boolean) => {
+      if (data) {
         this.modalService.dismissAll();
       }
     });
-    modalRef.componentInstance.onSubmit.subscribe((data:any[]) => {
+    modalRef.componentInstance.onSubmit.subscribe((data: any[]) => {
       data.forEach(booking => {
         const formGroup = this.createShipmentGroup(booking);
         this.attachedBookings.push(formGroup);
@@ -2197,79 +2216,64 @@ handleEdocChange(event: any) {
     });
   }
 
-  hasEveryRequiredFieldsFilled(requiredFields:string[],group: FormGroup): boolean {
+  hasEveryRequiredFieldsFilled(requiredFields: string[], group: FormGroup): boolean {
     const formValue = group.value;
     return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined && group.get(field)?.valid);
   }
 
-  getPortCode(portSid:number){
-    if(!portSid || this.portList.length === 0) return '';
+  getPortCode(portSid: number) {
+    if (!portSid || this.portList.length === 0) return '';
     const port = this.portList.find(p => p.PortMasterSid === portSid);
     return port ? port.PortCode : '';
   }
 
-  getMBLDate(){
+  getMBLDate() {
     const date = this.masterJobForm.get('MBLDate')?.value;
     return date ? this.datepipe.transform(date) : 'N/A'
   }
   onColoadChange(): void {
-  const coloadValue = this.masterJobForm.get('Coload')?.value;
-  
-  // Show/hide CoLoader field based on Coload value
-  if (coloadValue) {
-    this.masterJobForm.get('CoLoader')?.enable();
-  } else {
-    this.masterJobForm.get('CoLoader')?.setValue('');
-    this.masterJobForm.get('CoLoader')?.disable();
+    const coloadValue = this.masterJobForm.get('Coload')?.value;
+
+    // Show/hide CoLoader field based on Coload value
+    if (coloadValue) {
+      this.masterJobForm.get('CoLoader')?.enable();
+    } else {
+      this.masterJobForm.get('CoLoader')?.setValue('');
+      this.masterJobForm.get('CoLoader')?.disable();
+    }
   }
-}
-onCFSChange(selectedCFS: any): void {
-  if (!selectedCFS) {
-    this.masterJobForm.get('CFSAddress')?.setValue('');
-    return;
+  onCFSChange(selectedCFS: any): void {
+    if (!selectedCFS) {
+      this.masterJobForm.get('CFSAddress')?.setValue('');
+      return;
+    }
+
+    // Auto-set the CFSAddress from the selected CFS's CustomerAddress1
+    this.masterJobForm.get('CFSAddress')?.setValue(
+      selectedCFS.CustomerAddress1 || ''
+    );
   }
-  
-  // Auto-set the CFSAddress from the selected CFS's CustomerAddress1
-  this.masterJobForm.get('CFSAddress')?.setValue(
-    selectedCFS.CustomerAddress1 || ''
-  );
-}
-onYardChange(selectedYard: any): void {
-  if (!selectedYard) {
-    this.masterJobForm.get('YardAddress')?.setValue('');
-    return;
+
+
+
+  onYardChange(selectedYard: any): void {
+    if (!selectedYard) {
+      this.masterJobForm.get('YardAddress')?.setValue('');
+      return;
+    }
+
+    // Auto-set the YardAddress from the selected Yard's CustomerAddress1
+    this.masterJobForm.get('YardAddress')?.setValue(
+      selectedYard.CustomerAddress1 || ''
+    );
   }
-  
-  // Auto-set the YardAddress from the selected Yard's CustomerAddress1
-  this.masterJobForm.get('YardAddress')?.setValue(
-    selectedYard.CustomerAddress1 || ''
-  );
-}
 
   navigateToHouse(shipment) {
-    console.log(shipment ,'shipment');
-    this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
+    console.log(shipment, 'shipment');
+    this.router.navigate(['/operation/house-job/entry', shipment.HouseJobSid]);
   }
-get totalNoOfPkg(): number {
-  return this.masterJobContainers.value.reduce((sum, c) => {
-    const value = Number(c.NoOfPkg) || 0;
-    return sum + value;
-  }, 0);
-}
 
-get totalGrossWeight(): number {
-  return this.masterJobContainers.value.reduce((sum, c) => {
-    const value = Number(c.GrossWeight) || 0;
-    return sum + value;
-  }, 0);
-}
 
-get totalVolume(): number {
-  return this.masterJobContainers.value.reduce((sum, c) => {
-    const value = Number(c.Volume) || 0;
-    return sum + value;
-  }, 0);
-}
 
 
   // reportPreAlertModel(content: TemplateRef<any>) {
@@ -2345,8 +2349,371 @@ get totalVolume(): number {
 
     this.reportService.openReportModal(reportType, masterJobSid);
   }
+  getCfsValue(cfsSid: number): string {
+    if (!cfsSid || this.cfsList.length === 0) return '';
+    // Look for CFS by CustomerMasterSid instead of CfsMasterSid
+    const cfs = this.cfsList.find(c => c.CustomerMasterSid === cfsSid);
+    return cfs ? cfs.CustomerName : '';
+  }
+  get totalNoOfPkg(): number {
+    return this.masterJobContainers.value.reduce((sum, c) => {
+      const value = Number(c.NoOfPkg) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get totalGrossWeight(): number {
+    return this.masterJobContainers.value.reduce((sum, c) => {
+      const value = Number(c.GrossWeight) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get totalVolume(): number {
+    return this.masterJobContainers.value.reduce((sum, c) => {
+      const value = Number(c.Volume) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+
+  get totalNetWeight(): number {
+    return this.masterJobContainers.value.reduce((sum, c) => {
+      const value = Number(c.NetWeight) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+
+  get totalChargeableWeight(): number {
+    return this.masterJobContainers.value.reduce((sum, c) => {
+      const value = Number(c.ChargeableWeight) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+
+  get totalSales() {
+    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+      return 0;
+    }
+
+    return this.profitSummary.reduce((sum, c) => {
+      const value = Number(c.totalSales) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get totalCost() {
+    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+      return 0;
+    }
+
+    return this.profitSummary.reduce((sum, c) => {
+      const value = Number(c.totalCost) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get profit() {
+    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+      return 0;
+    }
+
+    return this.profitSummary.reduce((sum, c) => {
+      const value = Number(c.profit) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  // Charge 
+
+  getChargeName(ChargeMasterSid: number): string {
+    if (!ChargeMasterSid || !this.chargeList || this.chargeList.length === 0) {
+      return 'N/A';
+    }
+    const charge = this.chargeList.find(c => c.ChargeMasterSid === ChargeMasterSid);
+    return charge ? (charge.chargeCode || charge.ChargeCode || 'N/A') : 'N/A';
+  }
+  // getChargeName(ChargeMasterSid) {
+  //   console.log(this.getChargeName,"CHARGE ")
+  //   if (!ChargeMasterSid || this.chargeList.length === 0) {
+  //     return '';
+  //   }
+  //   return (this.chargeList.find(charge => charge.ChargeMasterSid === ChargeMasterSid)?.chargeCode);
+  // }
+
+  // Add this method to your component
+  getCurrencyName(CurrencyMasterSid: number): string {
+    console.log('🔍 getCurrencyName called with:', CurrencyMasterSid);
+    console.log('📋 currencyList:', this.currencyList);
+
+    if (!CurrencyMasterSid || !this.currencyList || this.currencyList.length === 0) {
+      return 'N/A';
+    }
+
+    const currency = this.currencyList.find(c => c.CurrencyMasterSid === CurrencyMasterSid);
+    return currency ? (currency.currencyCode || currency.CurrencyCode || 'N/A') : 'N/A';
+  }
+
+
+  getAgentBranchName(AgentSid: number): string {
+    console.log('🔍 Looking up AgentBranchSid:', AgentSid);
+
+    if (!AgentSid || !this.agentList || this.agentList.length === 0) {
+      return 'N/A';
+    }
+
+    const agent = this.agentList.find(a => a.CustomerMasterSid === AgentSid);
+
+    if (agent) {
+      return agent.CustomerName || agent.customerName || 'N/A';
+    }
+
+    return 'N/A';
+  }
+
+  reportPreAlertModel() {
+    const modalRef = this.modalService.open(PreAlertComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.containerTypeList = this.containerTypeList;
+    modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.agentList = this.agentList;
+  }
+
+  reportcargomanifest() {
+    const modalRef = this.modalService.open(CargoManifestComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.containerTypeList = this.containerTypeList;
+    modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.agentList = this.agentList;
+    modalRef.componentInstance.yardList = this.yardList;
+
+  }
+
+
+  reportreleaseLetter() {
+    const modalRef = this.modalService.open(ReleaseLetterComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.cfsList = this.cfsList || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+  }
+
+
+  reportreleaseOrder() {
+    const modalRef = this.modalService.open(ReleaseOrderComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.cfsList = this.cfsList || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList;
+  }
+
+  reportjobCard() {
+    const modalRef = this.modalService.open(JobCardComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.containerTypeList = this.containerTypeList;
+    modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.agentList = this.agentList;
+    modalRef.componentInstance.currencyList = this.currencyList;
+    modalRef.componentInstance.chargeList = this.chargeList;
+    modalRef.componentInstance.profitSummary = this.profitSummary || [];
+    modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
+  }
+
+  reportPackingList() {
+    const modalRef = this.modalService.open(PackingListComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+  }
+
+  // sailing confirmation
+
+    reportSailingConfirmation(){
+      const modalRef  = this.modalService.open(SailingConfirmationComponent,{
+        size: 'xl',
+        scrollable: true,
+      });
+       modalRef.componentInstance.masterJobData=this.masterJobData;
+        modalRef.componentInstance.containerTypeList=this.containerTypeList;
+      modalRef.componentInstance.masterJobContainers=this.masterJobContainers.getRawValue() || [];
+      modalRef.componentInstance.packageTypeList=this.packageTypeList;
+    }
+
+
+
+  reportMBLBill() {
+    const modalRef = this.modalService.open(MblComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.agentList = this.agentList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+
+  }
+
+
+  calculateChargeWiseProfit() {
+    this.profitSummary = [];
+    const rateFormValue = this.rateResult || [];
+    const data = [...rateFormValue];
+
+    data.forEach(item => {
+      console.log(item);
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
+      const chargeName = charge ? charge.chargeName : "Unknown";
+
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
+
+      // if (item.CostRevenue === "Cost") {
+      existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
+
+      // if (item.CostRevenue === "Revenue") {
+      existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
+
+    this.profitSummary.forEach(p => {
+      let profit: number;
+      let profitPercent: number;
+
+      if (p.totalSales > p.totalCost) {
+        profit = p.totalSales - p.totalCost;
+        profitPercent = p.totalSales !== 0 ? (profit / p.totalSales) * 100 : 0;
+      } else {
+        profit = -(p.totalCost - p.totalSales);
+        profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
+      }
+
+      p.profit = profit.toFixed(2);
+      p.profitPercent = profitPercent.toFixed(2) + "%";
+      p.totalSales = p.totalSales.toFixed(2);
+      p.totalCost = p.totalCost.toFixed(2);
+    });
+
+    console.log(this.profitSummary);
+  }
+
+  calculateCustomerWiseAmount() {
+    this.customerWiseSummary = {};
+    const data = this.rateResult || [];
+
+    const costHmap = new Map<number, CustomerProfit>();
+    const revenueHmap = new Map<number, CustomerProfit>();
+
+    // --- COST SUMMARY ---
+    data.forEach(item => {
+      const costAmt = parseFloat(item.CostLocalAmount) || 0;
+      const customerName = item.costCustomerMaster?.CustomerName || "Unknown";
+      const customerId = item.costCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = costHmap.get(customerId);
+      const amtChange = item.CostDrCr === "D" ? costAmt : -costAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        costHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- REVENUE SUMMARY ---
+    data.forEach(item => {
+      const revenueAmt = parseFloat(item.RevenueLocalAmount) || 0;
+      const customerName = item.revenueCustomerMaster?.CustomerName || "Unknown";
+      const customerId = item.revenueCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = revenueHmap.get(customerId);
+      const amtChange = item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        revenueHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- LOGS & ASSIGNMENT ---
+    console.log("Cost Summary:", costHmap);
+    console.log("Revenue Summary:", revenueHmap);
+
+    this.customerWiseSummary = {
+      cost: Array.from(costHmap.values()),
+      revenue: Array.from(revenueHmap.values())
+    };
+  }
+
+  bookingCreateInMasterJob(HouseJobSid?:number) {
+    this.operationService.getHouseJobById(HouseJobSid).subscribe(
+      (resp: any) => {
+        if(resp.data){
+          const bookingPayload = resp.data;
+
+          this.operationService.createBookingFromMasterJob(bookingPayload).subscribe({
+            next: (resp: any) => {
+              if (resp.status) {
+                this.appSettingsService.showSuccess('Booking created successfully');
+              } else {
+                this.appSettingsService.showError('Failed to created booking');
+              }
+            },
+            error: (error) => {
+              this.toastr.error('Failed to create booking');
+              console.error('Error create booking:', error);
+            }
+          });
+        }
+      })
+    
+    }
+
 }
 interface CustomerProfit {
-  CustomerName : string,
-  Amount : number
+  CustomerName: string,
+  Amount: number
 }

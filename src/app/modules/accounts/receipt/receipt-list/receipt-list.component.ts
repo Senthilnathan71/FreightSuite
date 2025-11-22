@@ -73,12 +73,12 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   tableConfig: TableConfig = {
     columns: [],
     actions: [
-      {
-        icon: 'fas fa-file',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View Receipt',
-      },
+      // {
+      //   icon: 'fas fa-file',
+      //   label: 'View',
+      //   action: 'view',
+      //   tooltip: 'View Receipt',
+      // },
       {
         icon: 'fas fa-eye',
         label: 'Edit',

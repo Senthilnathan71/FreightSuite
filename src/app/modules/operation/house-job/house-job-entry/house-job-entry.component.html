@@ -40,6 +40,9 @@
             <i class="fas fa-print me-1"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+             @if(selectedDepartmentType === "AIR"){
+               <button class="text-dark" ngbDropdownItem (click)="reportHAWB()">HAWB</button>
+             }@else{ 
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
               Order</button>
             <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(true)">Cargo Arrival
@@ -59,6 +62,12 @@
             </button>
              <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
             </button>
+             <button class="text-dark" ngbDropdownItem (click)="reportMilestoneSummary()">Milestone Summary
+            </button> 
+           
+            <!-- <button class="text-dark" ngbDropdownItem (click)="reportDeliveryNote()">Delivery Note
+            </button> -->
+             }
           </div>
         </div>
       </div>
@@ -1026,7 +1035,7 @@
                 </div>
               </div>
             </div>
-            } @else if(selectedFCLLCL === "AIR"){
+            } @else if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">Chargeable Weight</div>
@@ -1238,7 +1247,7 @@
               }
             </div>
           </aside>
-          @if(selectedFCLLCL === "AIR") {
+          @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL") {
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -1387,7 +1396,7 @@
                 <th>Date</th>
                 <th>External Pkg</th>
                 <th>No of Pkg</th>
-                @if(selectedFCLLCL === "AIR"){
+                @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
                 <th>UOM</th>
                 <th>Length</th>
                 <th>Width</th>
@@ -1421,7 +1430,7 @@
                 <td>{{product.value.ShippingBillDate | formatDate}}</td>
                 <td>{{product.value.ExternaPkg}}</td>
                 <td>{{product.value.ExternlQty}}</td>
-                @if(selectedFCLLCL === "AIR"){
+                @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
                 <td>{{getUomName(product.value.UomMasterSid)}}</td>
                 <td>{{product.value.Length}}</td>
                 <td>{{product.value.Width}}</td>
@@ -2060,7 +2069,7 @@
           }
         </div>
       </aside>
-      @if(selectedDepartmentType === "AIR"){
+      @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('UomMasterSid')?.value">
@@ -4655,7 +4664,7 @@
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
       </div>
-      } @else if(selectedFCLLCL === "AIR"){
+      } @else if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
       <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>

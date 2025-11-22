@@ -246,9 +246,8 @@ export class CreditNoteEntryComponent {
         ExchangeRate: [{ value: 1, disabled: true }],
         GST_VAT: [{ value: '', disabled: true }],
         GSTType: [{ value: '', disabled: true }],
-        PostStatus: [''],
+        PostStatus: ['U'],
         InvoiceType: [{value: null, disabled: true}],
-        VoucherType: [1],
         Narration: ['hi'],
         CreditNoteReason: [''],
         Remarks: [{ value: '', disabled: true }],
@@ -415,6 +414,34 @@ export class CreditNoteEntryComponent {
         }
       }
 
+      private autoGenerateNarration(reversalVoucher: any): string {
+  if (!reversalVoucher) return '';
+  
+  let voucherNumber = '';
+  let voucherType = '';
+  
+  // Extract voucher number
+  if (typeof reversalVoucher === 'object' && reversalVoucher !== null) {
+    voucherNumber = reversalVoucher.VoucherNumber || reversalVoucher.voucherNumber || '';
+    voucherType = reversalVoucher.VoucherType || reversalVoucher.voucherType || '';
+  } else {
+    // If it's just an ID, find the voucher in the list
+    const foundVoucher = this.invoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucher || inv.voucherHeaderSid === reversalVoucher
+    );
+    if (foundVoucher) {
+      voucherNumber = foundVoucher.VoucherNumber || foundVoucher.voucherNumber || '';
+      voucherType = foundVoucher.VoucherType || foundVoucher.voucherType || '';
+    }
+  }
+  
+  if (voucherNumber) {
+    return `Being reversal of ${voucherNumber}${voucherType ? ` - ${voucherType}` : ''}`;
+  }
+  
+  return '';
+}
+
       getInvoiceData(invoice?: any) {
   const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
   if (!invoiceId) {
@@ -429,12 +456,16 @@ export class CreditNoteEntryComponent {
   if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
     invoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
     reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   } else {
     // If it's just an ID, try to find the invoice in the list to get the number
     const foundInvoice = this.invoiceList.find(inv => 
       inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
     );
     invoiceNumber = foundInvoice?.VoucherNumber || foundInvoice?.voucherNumber || '';
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   }
 
   this.spinner.show();
@@ -495,7 +526,7 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
       );
       
       if (matchingOutstanding) {
-        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
+        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingLocalAmount);
         
         console.log('DEBUG - Outstanding amount found:', {
           invoiceNumber: invoiceNumber,
@@ -532,10 +563,13 @@ private patchInvoiceData(invoiceData: any) {
   const header = invoiceData;
   const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
   this.originalInvoiceRates = new Map();
+  const currentNarration = this.creditNoteForm.get('Narration')?.value;
+  const autoNarration = this.autoGenerateNarration(this.creditNoteForm.get('ReversalVoucher')?.value);
   this.creditNoteForm.patchValue({
     ReversalVoucher: invoiceHeaderSid,
     CustomerMasterSid: header.CustomerMasterSid || null,
     PartyMasterSid: header.PartyMasterSid || null,
+    Narration: autoNarration || header.Narration || currentNarration || '',
     PartyName: header.PartyName || '',
     PartyAddress: header.PartyAddress || '',
     DocumentNumber: header.DocumentNumber || '',
@@ -741,15 +775,6 @@ onFinalSave() {
         // Add PostStatus to payload
         const postStatus = isFinal ? 'P' : 'D'; // 'P' for Posted, 'D' for Draft
       
-        let normalizedVoucherType: number | null = null;
-        const vt = raw.VoucherType;
-        if (Array.isArray(vt) && vt.length > 0) {
-          normalizedVoucherType = Number(vt[0]);
-        } else if (vt !== null && vt !== undefined && vt !== '') {
-          normalizedVoucherType = Number(vt);
-        }
-        if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-      
         let voucherDate: Date;
         if (!raw.VoucherDate) {
           voucherDate = new Date();
@@ -772,6 +797,7 @@ onFinalSave() {
       
         const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
           const detail = {
+            VoucherDetailSid: d.VoucherDetailSid,
             ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
             ChargeDescription: d.ChargeDescription || '',
             HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -779,7 +805,6 @@ onFinalSave() {
             DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
             NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
             DrCr: d.DrCr || 'D',
-            PlaceOfSupply: d.PlaceOfSupply || '',
             CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
             CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
             Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -821,11 +846,10 @@ onFinalSave() {
           CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
           PlaceOfSupply: raw.PlaceOfSupply || '',
           COAMasterSid: raw.COAMasterSid ?? 1,
-          VoucherType: normalizedVoucherType,
-          VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
           InvoiceType: raw.InvoiceType || 'REG',
           GSTType: raw.GSTType || '',
           CurrencyMasterSid: currencyMasterId,
+          PostStatus: raw.PostStatus || '',
           CurrencyCode: raw.CurrencyCode || undefined,
           ExchangeRate: raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
           MasterJobSid: masterJobSid,
@@ -834,7 +858,6 @@ onFinalSave() {
           Remarks: raw.Remarks || undefined,
           Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
           status: (raw.status != null ? raw.status : 'A'),
-          PostStatus: postStatus, // Add PostStatus here
           VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
         };
       
@@ -919,18 +942,18 @@ onFinalSave() {
           
           this.spinner.hide();
           if (result.status) {
-            this.appSettingService.showSuccess('Invoice posted successfully!');
+            this.appSettingService.showSuccess('Credted Note posted successfully!');
             this.creditNoteData.PostStatus = 'P'; // Update local state
             
             // Navigate to list or stay on page but disable edits
-            this.router.navigate(['operation/invoice/list']);
+            this.router.navigate(['operation/credit-note/list']);
           } else {
-            this.appSettingService.showError(result.message || 'Failed to post invoice.');
+            this.appSettingService.showError(result.message || 'Failed to post Credit Note.');
           }
         } catch (error) {
           this.spinner.hide();
           console.error('Post voucher error:', error);
-          this.appSettingService.showError('Failed to post invoice. Please try again.');
+          this.appSettingService.showError('Failed to post Credit Note. Please try again.');
         }
       }
       async loadDepartments(companyMasterSid: number) {
@@ -1304,7 +1327,6 @@ private getCustomerCountryCode(customer: any): string {
       GST_VAT: header.GST_VAT || '',
       InvoiceType: header.InvoiceType || null,
       GSTType: header.GSTType || null,
-      VoucherType: voucherTypeForControl,
       Narration: header.Narration || '',
       CreditNoteReason: header.CreditNoteReason || '',
       Remarks: header.Remarks || '',
@@ -1425,6 +1447,7 @@ private getCustomerCountryCode(customer: any): string {
 
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
+      VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
       ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null, disabled: true}],
@@ -2000,15 +2023,6 @@ private normalizeParty(raw: any) {
     const createdByValue = userEmailFromSettings || this.currUserEmail || null;
     const updatedByValue = this.isEditMode ? (userEmailFromSettings || this.currUserEmail || null) : null;
 
-    let normalizedVoucherType: number | null = null;
-    const vt = raw.VoucherType;
-    if (Array.isArray(vt) && vt.length > 0) {
-      normalizedVoucherType = Number(vt[0]);
-    } else if (vt !== null && vt !== undefined && vt !== '') {
-      normalizedVoucherType = Number(vt);
-    }
-    if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-
     let voucherDate: Date;
     if (!raw.VoucherDate) {
       voucherDate = new Date();
@@ -2083,8 +2097,6 @@ private normalizeParty(raw: any) {
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
       CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
       COAMasterSid: raw.COAMasterSid ?? 1,
-      VoucherType: normalizedVoucherType,
-      VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
       CurrencyMasterSid: currencyMasterId,
@@ -2556,5 +2568,15 @@ private normalizeParty(raw: any) {
       }
     });
   }
+
+  getRowTotal(detail: any): number {
+    const taxable = Number(detail.get('TaxableAmount')?.value || 0);
+    const cgst = Number(detail.get('TaxAmount1')?.value || 0);
+    const sgst = Number(detail.get('TaxAmount2')?.value || 0);
+    const igst = Number(detail.get('TaxAmountIGST')?.value || 0);
+
+    return taxable + cgst + sgst + igst;
+  }
+
 
 }

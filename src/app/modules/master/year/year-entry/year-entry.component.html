@@ -125,7 +125,7 @@
                                 </div>
 
                                 <label class="input-label" for="dp">
-                                    Start Date <span class="text-danger">*</span>
+                                    Start Date <span class="text-danger"></span>
                                 </label>
                                 <div *ngIf="yearForm.get('StartDate')?.touched && yearForm.get('StartDate')?.invalid">
                                     <p *ngIf="yearForm.get('StartDate')?.errors?.['required']" class="error-message">
@@ -165,44 +165,45 @@
                                 </div>
 
                                <label class="input-label" for="dp">End Date <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                 <div *ngIf="yearForm.get('EndDate')?.touched && yearForm.get('EndDate')?.invalid">
                                         <p *ngIf="yearForm.get('EndDate')?.errors?.['required']" class="error-message">
                                             Required</p>
                                     </div>
+                                    <div class="error-message" *ngIf="yearForm.errors?.['dateRangeInvalid']">
+  Start and End date must cover exactly 364 days.
+</div>
                             </div>
                         </aside>
+                        
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="CurrentYear" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
+  <div class="custom-form-group">
+    <div class="form-check mt-3">
+      <input class="form-check-input" type="checkbox" formControlName="CurrentYear" id="currentYear">
+      <label class="form-check-label" for="currentYear">
+        Current Year <span class="text-danger fw-bold">*</span>
+      </label>
+    </div>
+    <div class="error-message" *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.invalid">
+      <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Required</span>
+    </div>
+  </div>
+</aside>
 
-                                <label for="text-input" class="input-label">Current Year <span
-                                        class="text-danger fw-bold">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.invalid">
-                                    <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Required</span>
-                                    <span *ngIf="yearForm.get('CurrentYear')?.hasError('maxlength')">Only 1 character
-                                        allowed</span>
-                                </div>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="YearEndCompleted" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-
-                                <label for="text-input" class="input-label">Year-End Completed <span
-                                        class="text-danger fw-bold">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.invalid">
-                                    <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Required</span>
-                                    <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('maxlength')">Only 1
-                                        character allowed</span>
-                                </div>
-                            </div>
-                        </aside>
+<aside class="col-md-4">
+  <div class="custom-form-group">
+    <div class="form-check mt-3">
+      <input class="form-check-input" type="checkbox" formControlName="YearEndCompleted" id="yearEndCompleted">
+      <label class="form-check-label" for="yearEndCompleted">
+        Year-End Completed <span class="text-danger fw-bold">*</span>
+      </label>
+    </div>
+    <div class="error-message" 
+         *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.invalid">
+      <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Required</span>
+    </div>
+  </div>
+</aside>
 
                         
                         <aside class="col-md-4">

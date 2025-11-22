@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // Add this import
 import { environment } from '../../../../environments/environment';
 
 export interface JournalVoucherDetail {
@@ -72,6 +73,18 @@ export interface JournalVoucherListResponse {
   totalPages: number;
 }
 
+// Add this interface for the search API response
+export interface JournalVoucherSearchResponse {
+  status: boolean;
+  data: {
+    items: any[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+  };
+  message?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -83,64 +96,61 @@ export class JournalVoucherService {
   /**
    * Create a new journal voucher (draft)
    */
-  createJournalVoucher(request: CreateJournalVoucherRequest): Observable<JournalVoucherResponse> {
-    return this.http.post<JournalVoucherResponse>(this.baseUrl, request);
-  }
+  createJournalVoucher(payload: any) {
+  return this.http.post<{ status: boolean; message: string; data: any }>('accounts/journal-voucher/create', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 
   /**
    * Update an existing journal voucher (unposted only)
    */
-  updateJournalVoucher(id: number, request: UpdateJournalVoucherRequest, companyMasterSid: number, branchMasterSid: number): Observable<JournalVoucherResponse> {
-    const params = new HttpParams()
-      .set('CompanyMasterSid', companyMasterSid.toString())
-      .set('BranchMasterSid', branchMasterSid.toString());
-    return this.http.put<JournalVoucherResponse>(`${this.baseUrl}/${id}`, request, { params });
-  }
+  updateJournalVoucherById(VoucherHeaderSid: number, payload: any) {
+  return this.http.patch<{ status: boolean; data: any }>(`accounts/journal-voucher/update/${VoucherHeaderSid}`, payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 
   /**
    * Get journal voucher by ID
    */
-  getJournalVoucherById(id: number, companyMasterSid: number, branchMasterSid: number): Observable<JournalVoucherResponse> {
-    const params = new HttpParams()
-      .set('CompanyMasterSid', companyMasterSid.toString())
-      .set('BranchMasterSid', branchMasterSid.toString());
-    return this.http.get<JournalVoucherResponse>(`${this.baseUrl}/${id}`, { params });
-  }
+  getJournalVoucherById(VoucherHeaderSid: number) {
+  return this.http.get<{ status: boolean; data: any }>(`accounts/journal-voucher/fetch/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 
   /**
    * Get list of journal vouchers with filters
    */
-  searchJournalVouchers(params: {
-    CompanyMasterSid: number;
-    BranchMasterSid: number;
-    page?: number;
-    limit?: number;
-    voucherNumber?: string;
-    fromDate?: string;
-    toDate?: string;
-    postStatus?: 'U' | 'P';
-    searchTerm?: string;
-  }): Observable<JournalVoucherListResponse> {
-    let httpParams = new HttpParams();
-
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
-        httpParams = httpParams.set(key, params[key].toString());
-      }
-    });
-
-    return this.http.get<JournalVoucherListResponse>(`${this.baseUrl}/list`, { params: httpParams });
-  }
+  searchJournalVouchers(payload: any) {
+  return this.http.post<{ status: boolean; data: any }>('accounts/journal-voucher/search-list', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
 
   /**
    * Delete journal voucher (unposted only)
    */
-  deleteJournalVoucher(id: number, companyMasterSid: number, branchMasterSid: number): Observable<{ message: string }> {
-    const params = new HttpParams()
-      .set('CompanyMasterSid', companyMasterSid.toString())
-      .set('BranchMasterSid', branchMasterSid.toString());
-    return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`, { params });
-  }
+  deleteJournalVoucherById(VoucherHeaderSid: number) {
+  return this.http.delete<{ status: boolean; data: any }>(`accounts/journal-voucher/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 
   /**
    * Validate journal voucher before posting
@@ -152,9 +162,13 @@ export class JournalVoucherService {
   /**
    * Post journal voucher to VoucherTransaction
    */
-  postJournalVoucher(id: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/${id}/post`, {});
-  }
+  postJournalVoucher(VoucherHeaderSid: number) {
+  return this.http.post<{ status: boolean; data: any }>(`accounts/journal-voucher/post/${VoucherHeaderSid}`, {}).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
 
   /**
    * Get voucher transactions for a posted journal voucher

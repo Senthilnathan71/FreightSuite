@@ -316,8 +316,8 @@ export class OperationService {
     );
   }
 
-  getAllProducts(CompanyMasterSid: number) {
-    return this.http.post<{ data: any[] }>('product', { CompanyMasterSid }).pipe(
+  getAllProducts() {
+    return this.http.get<{ data: any[] }>('product').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -817,7 +817,7 @@ export class OperationService {
 
 
   createVendorCreditNote(payload: any) {
-    return this.http.post<{ data: any }>('vendor-credit-note/create', payload).pipe(
+    return this.http.post<{ status: boolean; message: string; data: any }>('vendor-credit-note/create', payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -825,7 +825,7 @@ export class OperationService {
   }
 
   getAllVendorCreditNote() {
-    return this.http.get<{ data: any[] }>('vendor-credit-note').pipe(
+    return this.http.get<{ status: boolean; data: any[] }>('vendor-credit-note').pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -833,7 +833,7 @@ export class OperationService {
     )
   }
   getAllVendorInvoice() {
-    return this.http.get<{ data: any[] }>('vendor-credit-note/vendor-invoice').pipe(
+    return this.http.get<{ status: boolean; data: any[] }>('vendor-credit-note/vendor-invoice').pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -842,7 +842,7 @@ export class OperationService {
   }
 
   getVendorInvoicesById(VoucherHeaderSid: number) {
-    return this.http.get<{ data: any }>(`vendor-credit-note/fetch/vendor-invoice/${VoucherHeaderSid}`).pipe(
+    return this.http.get<{ status: boolean; data: any }>(`vendor-credit-note/fetch/vendor-invoice/${VoucherHeaderSid}`).pipe(
       map((resp) => {
         return resp;
       })
@@ -851,7 +851,7 @@ export class OperationService {
 
 
   getVendorCreditNoteById(VoucherHeaderSid: number) {
-    return this.http.get<{ data: any }>(`vendor-credit-note/fetch/${VoucherHeaderSid}`).pipe(
+    return this.http.get<{ status: boolean; data: any }>(`vendor-credit-note/fetch/${VoucherHeaderSid}`).pipe(
       map((resp) => {
         return resp;
       })
@@ -859,7 +859,7 @@ export class OperationService {
   }
 
   updateVendorCreditNoteById(VoucherHeaderSid: number, payload: any) {
-    return this.http.patch<{ data: any }>(`vendor-credit-note/update/${VoucherHeaderSid}`, payload).pipe(
+    return this.http.patch<{ status: boolean; data: any }>(`vendor-credit-note/update/${VoucherHeaderSid}`, payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -867,7 +867,7 @@ export class OperationService {
   }
 
   deleteVendorCreditNoteById(VoucherHeaderSid: number) {
-    return this.http.delete<{ data: any }>(`vendor-credit-note/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    return this.http.delete<{ status: boolean; data: any }>(`vendor-credit-note/deleteVoucher/${VoucherHeaderSid}`).pipe(
       map((resp) => {
         return resp;
       })
@@ -1291,4 +1291,98 @@ export class OperationService {
     );
   }
 
+  getLedgerForTaxGroup(payload: {
+  taxGroup: number | number[];
+  InputOrOutput: 'Input' | 'Output';
+  TaxCategory: 'Intra' | 'Inter';
+  CountryMasterSid: number;
+}) {
+  return this.http.post<{ data: any }>('subledgermaster/tax-group', payload).pipe(
+    map((resp: any) => {
+      return resp;
+    })
+  );
+}
+
+
+  createBookingFromMasterJob(payload: any) {
+    return this.http.post<{ data: any }>('master-job/booking-create/transhipment', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+createReverseVoucher(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>('reverse-voucher/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllReverseVoucher() {
+    return this.http.get<{ status: boolean; data: any[] }>('reverse-voucher').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  getAllVoucher() {
+    return this.http.get<{ status: boolean; data: any[] }>('reverse-voucher/voucher').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getVoucherById(VoucherHeaderSid: number) {
+    return this.http.get<{ status: boolean; data: any }>(`reverse-voucher/fetch/voucher/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+
+  getReverseVoucherById(VoucherHeaderSid: number) {
+    return this.http.get<{ status: boolean; data: any }>(`reverse-voucher/fetch/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateReverseVoucherById(VoucherHeaderSid: number, payload: any) {
+    return this.http.patch<{ status: boolean; data: any }>(`reverse-voucher/update/${VoucherHeaderSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  deleteReverseVoucherById(VoucherHeaderSid: number) {
+    return this.http.delete<{ status: boolean; data: any }>(`reverse-voucher/deleteVoucher/${VoucherHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  searchReverseVoucher(payload: any) {
+    return this.http.post<{ data: any }>('reverse-voucher/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  postVoucherSid(payload: any) {
+    return this.http.post<{ data: any }>('reverse-voucher/post', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
 }

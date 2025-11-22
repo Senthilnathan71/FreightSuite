@@ -38,6 +38,10 @@
                             [disabled]="isLoading">Job Card</button>
                             <button class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
                             </button>
+                             <button class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
+                            </button>
+                            <button class="text-dark" ngbDropdownItem (click)="reportMBLBill()">MBL</button>
+                            
                     </div>
                 </div>
             </div>
@@ -1254,7 +1258,12 @@
 
 
                 </div>
+                <div>
+                    <button *ngIf="isTranshipment" class="table-action-btn primary" (click)="bookingCreateInMasterJob()">
+                        <i class="fas fa-history"></i> Create Booking
+            </button>
 
+                </div>
             </div>
         </div>
 

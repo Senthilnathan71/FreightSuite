@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import {
   CreatePaymentRequest,
   PaymentResponse,
@@ -14,8 +14,11 @@ import {
   UpdatePaymentRequest,
   ReversePaymentRequest,
   PaymentSummary,
+  InstrumentMode,
 } from '../models/payment.model';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { SearchParams } from 'src/app/shared/interfaces/pagination.interface';
+import { ApiResponse, OutstandingInvoice, PaymentMode, SearchOutstandingRequest } from '../models/receipt.model';
 
 /**
  * Payment Service
@@ -25,12 +28,41 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
   providedIn: 'root'
 })
 export class PaymentService {
-  private apiUrl = '/api/accounts/payment';
+  private apiUrl = 'api/accounts/payment';
 
   constructor(
     private http: HttpClient,
     private appSettingsService: AppSettingsService
   ) {}
+
+
+  /**
+   * Helper: Get available payment modes
+   * @returns List of payment modes
+   */
+  getPaymentModes(): { value: string; label: string }[] {
+    return [
+      { value: PaymentMode.CASH, label: 'Cash' },
+      { value: PaymentMode.CHEQUE, label: 'Cheque' },
+      { value: PaymentMode.NEFT, label: 'NEFT' },
+      { value: PaymentMode.RTGS, label: 'RTGS' },
+      { value: PaymentMode.IMPS, label: 'IMPS' },
+      { value: PaymentMode.UPI, label: 'UPI' },
+      { value: PaymentMode.CARD, label: 'Card' },
+      { value: PaymentMode.ONLINE, label: 'Online' },
+    ];
+  }
+
+  getInstrumentModes(): { value: string; label: string }[] {
+    return [
+      { value: InstrumentMode.Cheque, label: 'Cheque' },
+      { value: InstrumentMode.DD, label: 'DD' },
+      { value: InstrumentMode.IMPS, label: 'IMPS' },
+      { value: InstrumentMode.NEFT, label: 'NEFT' },
+      { value: InstrumentMode.RTGS, label: 'RTGS' },
+      { value: InstrumentMode.Others, label: 'Others' },
+    ];
+  }
 
   /**
    * Create a new payment voucher
@@ -38,7 +70,7 @@ export class PaymentService {
    * @param request Payment creation request
    * @returns Payment response with voucher number and JV details
    */
-  createPayment(request: CreatePaymentRequest): Observable<PaymentResponse> {
+  createPayment(request: any) {
     return this.http.post<PaymentResponse>(this.apiUrl, request).pipe(
       map((response: any) => {
         // Handle API response format
@@ -53,6 +85,14 @@ export class PaymentService {
           error.error?.message || 'Failed to create payment voucher'
         );
         return throwError(() => error);
+      })
+    );
+  }
+
+  postPayment(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/post`, payload).pipe(
+      map((response: any) => {
+        return response;
       })
     );
   }
@@ -85,25 +125,37 @@ export class PaymentService {
   }
 
   /**
+   * Search outstanding invoices for receipt matching
+   * @param searchRequest - Search criteria
+   * @returns Observable of outstanding invoices
+   */
+  searchOutstandingInvoices(searchRequest: SearchOutstandingRequest): Observable<OutstandingInvoice[]> {
+    return this.http
+      .post<ApiResponse<OutstandingInvoice[]>>(`${this.apiUrl}/search-outstanding`, searchRequest)
+      .pipe(
+        tap((response) => {
+          console.log('Outstanding invoices found:', response);
+        }),
+        map((response) => {
+          if (!response.status) {
+            throw new Error(response.message || 'Failed to search outstanding invoices');
+          }
+          return response.data;
+        }),
+        catchError((error) => this.handleError(error, 'searchOutstandingInvoices')),
+      );
+  }
+
+  /**
    * Get payment voucher by ID
    *
    * @param id Voucher Header SID
    * @returns Payment details
    */
-  getPaymentById(id: number): Observable<PaymentDetailView> {
-    return this.http.get<PaymentDetailView>(`${this.apiUrl}/${id}`).pipe(
+  getPaymentById(payload:any) {
+    return this.http.post<PaymentDetailView>(`${this.apiUrl}/fetch`,payload).pipe(
       map((response: any) => {
-        if (response.data) {
-          return this.processPaymentData(response.data);
-        }
-        return this.processPaymentData(response);
-      }),
-      catchError((error) => {
-        console.error('Error fetching payment:', error);
-        this.appSettingsService.showError(
-          error.error?.message || 'Failed to load payment voucher'
-        );
-        return throwError(() => error);
+        return response;
       })
     );
   }
@@ -142,14 +194,10 @@ export class PaymentService {
    * @param request Update data
    * @returns Updated payment
    */
-  updatePayment(id: number, request: UpdatePaymentRequest): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, request).pipe(
-      catchError((error) => {
-        console.error('Error updating payment:', error);
-        this.appSettingsService.showError(
-          error.error?.message || 'Failed to update payment'
-        );
-        return throwError(() => error);
+  updatePaymentById(id: number, payload: any): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/update/${id}`, payload).pipe(
+      map((response : any)=>{
+        return response;
       })
     );
   }
@@ -234,6 +282,14 @@ export class PaymentService {
         console.error('Error fetching TDS sets:', error);
         // Return empty array instead of error for optional data
         return [];
+      })
+    );
+  }
+
+  searchPayment(payload: SearchParams): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/search-list`, payload).pipe(
+      map((response: any) => {
+        return response;
       })
     );
   }
@@ -505,4 +561,43 @@ export class PaymentService {
       OutstandingAmount: Number(matching.OutstandingAmount || 0)
     }));
   }
+
+  /**
+   * Centralized error handling
+   * @param error - HTTP error response
+   * @param operation - Name of the operation that failed
+   * @returns Observable that throws the error
+   */
+  private handleError(error: HttpErrorResponse, operation: string): Observable<never> {
+    console.error(`${operation} failed:`, error);
+
+    let errorMessage = 'An error occurred';
+
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Client Error: ${error.error.message}`;
+    } else {
+      // Server-side error
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = `Server Error: ${error.status} - ${error.statusText}`;
+      }
+    }
+
+    // Log to console for debugging
+    console.error(`Operation: ${operation}`);
+    console.error(`Error Message: ${errorMessage}`);
+    console.error(`Full Error:`, error);
+
+    return throwError(() => ({
+      message: errorMessage,
+      status: error.status,
+      error: error.error,
+      operation,
+    }));
+  }
+
 }

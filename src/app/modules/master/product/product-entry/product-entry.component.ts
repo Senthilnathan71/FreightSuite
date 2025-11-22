@@ -205,7 +205,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 UNNo : parseInt(formValue.UNNo),
                 status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
                 createdBy:createdBy,
-                CompanyMasterSid:this.currentCompany?.CompanyMasterSid
+               
             }
             if(this.isEditMode){
                 this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(

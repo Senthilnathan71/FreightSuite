@@ -179,6 +179,13 @@ MenuMasterSid:any
     console.info(this.currentBranch, this.userData, 'userData')
     this.MenuMasterSid =  localStorage.getItem('currentMenuId');
 
+    console.log("Current Company", this.currentCompany);
+    console.log("Current Branch", this.currentBranch);
+
+    const currentCompanyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const currentBranchInfo = this.appSettingService.getCurrentBranchInfo();
+    console.log("Current Company Info", currentCompanyInfo);
+    console.log("Current Branch Info", currentBranchInfo);
 
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
@@ -189,11 +196,11 @@ MenuMasterSid:any
       }
       else {
         // 👇 Only patch default Country when creating new
-        if (this.userData?.CountryMasterSid) {
+        if (currentCompanyInfo?.CountryMasterSid) {
           this.leadForm.patchValue({
-            CountryMasterSid: this.userData.CountryMasterSid
+            CountryMasterSid: currentCompanyInfo?.CountryMasterSid
           });
-          this.filterStateByCountryId({ CountryMasterSid: this.userData.CountryMasterSid })
+          this.filterStateByCountryId({ CountryMasterSid: currentCompanyInfo?.CountryMasterSid })
         }
       }
 

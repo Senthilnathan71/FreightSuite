@@ -96,8 +96,19 @@
                                 *ngIf="chartForm.get('LedgerCategory')?.touched && chartForm.get('LedgerCategory')?.invalid">
                                 <span>Required</span>
                             </div>
-                        </div>
+                        </div>  
                     </aside>
+                     <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="LedgerCode">
+                                <label for="text-input" class="input-label">Ledger Code <span class="text-danger">*</span></label>
+                                <div class="error-message"
+                                    *ngIf="chartForm.get('LedgerCode')?.touched && chartForm.get('LedgerCode')?.invalid">
+                                    <span>Required</span>
+                                </div>
+                            </div>
+                        </aside>
 
                     <!-- Group Name Field - Show for Group, Subgroup, and Ledger -->
                     <aside class="col-md-4" *ngIf="shouldShowGroupName()">
@@ -150,7 +161,7 @@
                             </div>
                         </ng-template>
                     </aside>
-
+                   
                     <!-- Ledger-specific fields - Show only for Ledger Category -->
                     <ng-container *ngIf="shouldShowLedgerFields()">
                         <aside class="col-md-4">
@@ -164,17 +175,7 @@
                                 </div>
                             </div>
                         </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="LedgerCode">
-                                <label for="text-input" class="input-label">Ledger Code <span class="text-danger">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="chartForm.get('LedgerCode')?.touched && chartForm.get('LedgerCode')?.invalid">
-                                    <span>Required</span>
-                                </div>
-                            </div>
-                        </aside>
+                        
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!chartForm.get('LedgerCurrency')?.value">

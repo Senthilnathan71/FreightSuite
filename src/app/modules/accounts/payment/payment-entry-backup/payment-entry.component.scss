@@ -1,0 +1,230 @@
+// payment-entry.component.scss
+// Styling for payment entry form
+
+.compact-form {
+  margin: 0;
+  padding: 0;
+}
+
+.page-title {
+  font-weight: 600;
+}
+
+.brand-icon {
+  font-size: 1.5rem;
+  color: #17a2b8;
+}
+
+.custom-form-group {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.custom-input-field {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+
+  &:focus {
+    outline: none;
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+  }
+
+  &.sm {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+}
+
+.input-label {
+  position: absolute;
+  top: -0.5rem;
+  left: 0.75rem;
+  background: white;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.nav-pills-container {
+  background: white;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.nav-pills {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 0.25rem 0.25rem 0 0;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  &.active {
+    color: #17a2b8;
+    font-weight: 600;
+
+    .pill-icon {
+      color: #17a2b8;
+    }
+
+    .pill-indicator {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #17a2b8;
+    }
+  }
+}
+
+.pill-icon {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.pill-label {
+  font-size: 0.875rem;
+}
+
+.content-workspace {
+  background: white;
+  border-radius: 0 0.25rem 0.25rem 0.25rem;
+  padding: 1rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.workspace-content {
+  min-height: 200px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  font-size: 0.875rem;
+  margin-bottom: 0;
+
+  thead {
+    tr.bg-info {
+      th {
+        padding: 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      td {
+        padding: 0.375rem;
+        vertical-align: middle;
+
+        input,
+        select,
+        textarea {
+          margin: 0;
+        }
+      }
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+}
+
+.custom-ng-select,
+.custom-ng-select-sm {
+  ::ng-deep {
+    .ng-select-container {
+      min-height: 32px;
+      border-radius: 0.25rem;
+      border-color: #ced4da;
+    }
+
+    .ng-value-container {
+      padding: 0.25rem 0.5rem;
+    }
+  }
+}
+
+.custom-ng-select-sm {
+  ::ng-deep {
+    .ng-select-container {
+      min-height: 28px;
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+// Totals section styling
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+// Button styling
+.btn {
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  }
+}
+
+.dofi-min-w-80 {
+  min-width: 80px;
+}
+
+.dofi-max-w-80 {
+  max-width: 80px;
+}
+
+// Alert styling
+.alert {
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .nav-pill {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .pill-label {
+    display: none;
+  }
+
+  .pill-icon {
+    font-size: 1.25rem;
+  }
+}

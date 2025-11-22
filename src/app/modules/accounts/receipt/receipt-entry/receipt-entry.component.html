@@ -15,6 +15,10 @@
                             (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
                         </button> -->
+                    <!-- <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" (click)="postVoucher()"
+                        [disabled]="isPosted">
+                        <i class="fas fa-check-circle me-1"></i> Final
+                    </button> -->
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
@@ -23,7 +27,7 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="isPosted">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
@@ -45,7 +49,7 @@
                     @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
                     <div class="col-md-3">
                         <ng-select 
-                            [items]="partyList" 
+                            [items]="onlyCustomerList" 
                             bindLabel="CustomerName" 
                             bindValue="SubledgerMasterSid"
                             formControlName="LedgerMasterSid"
@@ -70,7 +74,7 @@
                             " 
                             (click)="searchOutstanding()"
                         >
-                            <i class="fas fa-search me-1"></i> Search
+                            <i class="fas fa-search me-1"></i> Get OS
                         </button>
                     </div>
 
@@ -234,6 +238,7 @@
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
+                   @if(!receiptForm.get('CashOrBank')?.value){
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!r['InstrumentMode']?.value">
                             <ng-select 
@@ -288,6 +293,7 @@
 
                         </div>
                     </aside>
+                    }
                 </div>
             </div>
         </div>
@@ -304,6 +310,11 @@
                 </div>
                 <span class="pill-label">{{ tab.name }}</span>
                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+            </div>
+            <div class="text-end">
+                <span class="error-message fw-bold" *ngIf="matchingError">
+                    {{ matchingError }}
+                </span>
             </div>
         </div>
     </div>
@@ -523,12 +534,12 @@
                             <th class="bg-transparent text-light"> Dr/Cr</th>
                             <th class="bg-transparent text-light">Curr.</th>
                             <th class="bg-transparent text-light">Ex. Rate</th>
-                            @if(!isEditMode){
+                            <!-- @if(!isEditMode){ -->
                             <th class="bg-transparent text-light">Curr. Amt</th>
                             <th class="bg-transparent text-light">Local Amt</th>
                             <th class="bg-transparent text-light">OS Curr. Amt</th>
                             <th class="bg-transparent text-light">OS Local Amt</th>
-                            }
+                            <!-- } -->
                             <th class="bg-warning text-light">Curr.</th>
                             <th class="bg-warning text-light">Ex. Rate</th>
                             <th class="bg-warning text-light">Curr Amt</th>
@@ -557,9 +568,9 @@
                                     <div class="input-group">
                                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d4="ngbDatepicker"
                                             (click)="d4.toggle()" formControlName="voucherDate" container="body" />
-                                        <button class="btn btn-sm" type="button" (click)="d4.toggle()">
+                                        <!-- <button class="btn btn-sm" type="button" (click)="d4.toggle()">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
-                                        </button>
+                                        </button> -->
                                     </div>
                                 </div>
                             </td>
@@ -579,7 +590,7 @@
                                 <input type="text" formControlName="exRate" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(v.get('curr')?.value)" />
                             </td>
-                            @if(!isEditMode){
+                            <!-- @if(!isEditMode){ -->
                             <!-- Current Amount -->
                             <td>
                                 <input type="text" formControlName="currAmt" class="custom-input-field sm text-end" DecimalPrecision
@@ -603,7 +614,7 @@
                                 <input type="text" formControlName="osLocalAmt" class="custom-input-field sm text-end" DecimalPrecision
                                     [DecimalPrecisionBefore]="9" [DecimalPrecisionAfter]="getAmountDecimalPlaces(v.get('curr')?.value)" />
                             </td>
-                            }
+                            <!-- } -->
 
                             <!-- Match Curr -->
                             <td class="dofi-min-w-80">
@@ -611,7 +622,7 @@
                                     [items]="currencyList" formControlName="matchCurr" 
                                     [placeholder]="''"
                                     [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                                    [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'"
+                                    [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'"
                                     (itemSelected)="patchExchangeRateForMatchRow(i)">
                                 </dofi-searchable-dropdown>
                             </td>
@@ -682,13 +693,13 @@
                         <!-- TOTAL ROW -->
                         <tr class="table-info fw-bold text-end">
                             <td colspan="6" class="text-end">Total</td>
-                            @if(!isEditMode){
+                            <!-- @if(!isEditMode){ -->
                             <td>{{ getTotalCurrAmt() }}</td>
                             <td>{{ getTotalLocalAmt() }}</td>
 
                             <td>{{ getTotalOSCurrAmt() }}</td>
                             <td>{{ getTotalOSLocalAmount() }}</td>
-                            }
+                            <!-- } -->
                             <td></td> <!-- matchCurr -->
                             <td></td> <!-- matchExRate -->
 

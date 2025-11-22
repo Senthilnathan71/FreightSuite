@@ -426,61 +426,83 @@ export class ConnectionComponent implements OnInit {
   }
 
   getVoyageForPortsAndVessels() {
-    if (this.isAirMode()) {
+  if (this.isAirMode()) {
     this.voyageList = [];
     return;
   }
-    const POL = this.c['POL']?.value;
-    const POD = this.c['POD']?.value;
-    const MovementType = this.selectedMode;
-    const POLSid = (this.portList.find(port => port.PortName === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
-    const vessel = this.c['VesselName']?.value;
-    const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
-    console.log(POL,POD,vesselId);
-    if (!POL || !POD || !vesselId) {
-      return;
-    }
-    const payload = { VesselMasterSid: vesselId, POL: POLSid, POD: PODSid, MovementType: MovementType }
-    this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.voyageList = resp.data;
-        } else {
-          this.appSettingService.showError("Error loading sailing schedules.")
-        }
-      }
-    )
+  
+  const POL = this.c['POL']?.value;
+  const POD = this.c['POD']?.value;
+  const vessel = this.c['VesselName']?.value;
+  
+  if (!POL || !POD || !vessel) {
+    this.voyageList = [];
+    return;
   }
+
+  const POLSid = this.portList.find(port => port.PortName === POL)?.PortMasterSid;
+  const PODSid = this.portList.find(port => port.PortName === POD)?.PortMasterSid;
+  const vesselId = this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid;
+  
+  if (!POLSid || !PODSid || !vesselId) {
+    this.voyageList = [];
+    return;
+  }
+
+  const payload = { 
+    VesselMasterSid: vesselId, 
+    POL: POLSid, 
+    POD: PODSid, 
+    MovementType: this.selectedMode 
+  };
+  
+  this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
+    (resp: any) => {
+      if (resp.status && resp.data && resp.data.length > 0) {
+        this.voyageList = resp.data;
+        
+        // Auto-select if there's only one voyage
+        if (this.voyageList.length === 1) {
+          this.c['VoyageNo'].setValue(this.voyageList[0].VoyageNo);
+          this.onVoyageChange(this.voyageList[0]);
+        }
+      } else {
+        this.voyageList = [];
+        this.appSettingService.showWarning("No voyages found for the selected route and vessel.");
+      }
+    },
+    (error) => {
+      this.voyageList = [];
+      this.appSettingService.showError("Error loading sailing schedules.");
+    }
+  );
+}
 
 
   onVoyageChange(voyage: any) {
-      if (this.isAirMode()) {
-    // For Air mode, don't auto-populate dates from voyage
+  if (this.isAirMode()) {
     return;
   }
-    if (!voyage) {
-      this.c['ETA'].setValue('');
-      this.c['ETD'].setValue('');
-      return;
-    }
-    const POL = this.c['POL'].value;
-    const POD = this.c['POD'].value;
-    const POLSid = (this.portList.find(port => port.PortName === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
-    const details = voyage.Ports || [];
-
-    const polDetail = details.find(d => d.POLSid === POLSid);
-    const polETA = polDetail?.ETD || null;
-
-    const podDetail = details.find(d => d.POLSid === PODSid);
-    const podETD = podDetail?.ETA || null;
-
-
-    this.c['ETD'].setValue(new Date(polETA));
-    this.c['ETA'].setValue(new Date(podETD));
-    this.validateDisabledFields();
+  
+  if (!voyage) {
+    this.c['ETA'].setValue('');
+    this.c['ETD'].setValue('');
+    return;
   }
+
+  try {
+    const etd = voyage.ETD ? new Date(voyage.ETD) : null;
+    const eta = voyage.ETA ? new Date(voyage.ETA) : null;
+
+    this.c['ETD'].setValue(etd);
+    this.c['ETA'].setValue(eta);
+    
+    this.validateDisabledFields();
+  } catch (error) {
+    console.error('Error setting voyage dates:', error);
+    this.appSettingService.showWarning('Error setting voyage dates');
+  }
+}
 
   validateDisabledFields() {
     const etdControl = this.c['ETD'];

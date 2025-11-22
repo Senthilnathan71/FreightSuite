@@ -332,7 +332,7 @@
     <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!scheduleForm.get('POLSid')?.value" >
         <dofi-searchable-dropdown 
-            [items]="portList" 
+            [items]="filteredPOLList" 
             formControlName="POLSid" 
             placeholder=""
             [displayFields]="portLookupConfig.displayFields" 
@@ -393,7 +393,7 @@
     <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!scheduleForm.get('PODSid')?.value" >
         <dofi-searchable-dropdown 
-            [items]="portList" 
+            [items]="filteredPODList" 
             formControlName="PODSid" 
             placeholder=""
             [displayFields]="portLookupConfig.displayFields" 
