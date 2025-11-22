@@ -2688,17 +2688,6 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.salesmanList = this.salesmanList || [];
   }
 
-  reportPerformaInvoice() {
-    const modalRef = this.modalService.open(PerformaInvoiceComponent, {
-      size: 'xl',
-      scrollable: true,
-    });
-    modalRef.componentInstance.housejobData = this.housejobData || [];
-    // modalRef.componentInstance.cfsList=this.cfsList || [];
-    modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
-    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
-    modalRef.componentInstance.salesmanList = this.salesmanList || [];
-  }
 
       reportMilestoneSummary() {
         const modalRef = this.modalService.open(MilestoneComponent,{
