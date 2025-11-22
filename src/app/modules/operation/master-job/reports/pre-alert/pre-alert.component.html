@@ -1,37 +1,231 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
+    <h5 class="modal-title text-white mb-0">Pre Alert</h5>
+    <div class="d-flex gap-2 align-items-center">
 
-
-
-    <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-        <h5 class="modal-title text-white mb-0">Pre Alert </h5>
-        <div class="d-flex gap-2 align-items-center">
-
-            <div class="spinner-overlay">
-                <div class="spinner"></div>
-            </div>
-            <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" >
-                <i class="fas fa-download me-1"></i> Download PDF
-            </button>
-            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" >
-                <i class="fas fa-envelope me-1"></i>Send Email
-            </button>
-
-            <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                (click)="modalClose()"></button>
-
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
         </div>
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0">
+            <i class="fas fa-envelope me-1"></i>Send Email
+        </button>
+
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)=" modalClose()"></button>
+
     </div>
+</div>
 
 
-    <div class="modal-body">
-        <div id="printContent">
+<div class="modal-body">
+    <div id="printContent">
+        <div>
             <div class="print-a4">
+                <!-- Company Info -->
+                <div class="row">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
+                                class="img-fluid">
+                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                        </div>
+                        <div class="company-info ">
+                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
+                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
+                            <p class="my-0">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
+                            <p class="my-0">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
+                            <p class="my-0">
+                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
+                                || '' }}
+                            </p>
+                            <p class="my-0">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
+                            <p class="my-0"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+                <h5 class="text-center fw-bold pb-2" style="margin: 0;">Pre Alert</h5>
+
+                <div class="row mx-0 px-4 mb-0" style="border: 1px solid black; ">
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;">
+                                <strong> Agent </strong>
+                            </div>
+                            <div style="width: 8px;">:</div>
+                            <p class=""> {{getAgentName(masterJobData?.DestinationAgent)}} <br>
+                                {{masterJobData.DestinationAgentAddress}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Job No </strong></div>
+                            <div>: {{masterJobData.MasterJobNumber}} </div>
+                        </div>
+                        <div class="d-flex mt-1">
+                            <div style="width: 130px; white-space: nowrap;"><strong>MBL</strong></div>
+                            <p class="">: {{masterJobData.MBLNo}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>MBL Date</strong></div>
+                            <p class="">: {{ masterJobData.MasterJobDate | formatDate }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mx-0 px-4  mb-0"
+                    style=" border-bottom: 1px solid black; border-left:1px solid black ; border-right: 1px solid black;">
+                    <div class="col-md-6">
+                        <div class="d-flex">
+                            <strong style="width: 130px; white-space: nowrap;">Originating Agent </strong>
+                            <div style="width: 8px;">:</div>
+                            <p class="my-0"> {{getAgentName(masterJobData?.OriginAgent)}} <br>
+                                {{getAgentAddress(masterJobData?.OriginAgent)}}</p>
+                        </div>
+
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex">
+                            <strong style="width: 130px; white-space: nowrap;">Freight Depot </strong>
+                            <p class="my-0">: {{ getYardName(masterJobData?.others[0]?.Yard) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mx-0 px-4  "
+                    style=" border-bottom: 1px solid black; border-left:1px solid black ; border-right: 1px solid black;">
+                    <div class="col-md-6 ">
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Vessel</strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.VesselName}}
+                                {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                        </div>
+                        <div class="d-flex ">
+                            <div style="width: 130px; white-space: nowrap;"><strong>POL </strong></div>
+                            <p class="my-0">: {{masterJobData.POL}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>POD </strong></div>
+                            <p class="my-0">: {{masterJobData.POD}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>ETD </strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.ETD | formatDate }}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>ETA </strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.ETA | formatDate }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Carrier </strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.CarrierName}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Carrier Ref</strong></div>
+                            <div class="my-0">: </div>
+                        </div>
+                        <div class="d-flex mt-1">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Agents Ref </strong></div>
+                            <div class="my-0">: </div>
+                        </div>
+                        <div class="d-flex mt-1">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Package </strong></div>
+                            <p class="my-0">: {{masterJobData.NoOfPkg}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong> Gross Weight </strong></div>
+                            <p class="my-0">: {{masterJobData.GrossWeight }}</p>
+                        </div>
+                        <div class="d-flex ">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Volume </strong></div>
+                            <p class="my-0">: {{masterJobData.Volume}}</p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div>
+                    <div class="table-responsive ">
+                        <table class="table tablebordered  table-sm" style="margin: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Container</th>
+                                    <th>Seal</th>
+                                    <th>Size</th>
+                                    <th>Tare Weight</th>
+                                    <th>Packages</th>
+                                    <th>Gross Weight</th>
+                                    <th>Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let container of masterJobData?.containers">
+                                    <td>{{container.ContainerNumber}}</td>
+                                    <td>{{container.LineSeal}}</td>
+                                    <td>{{getContainerSize(container.ContainerType)}}</td>
+                                    <td>{{getTareWeight(container.ContainerType)}}</td>
+                                    <td class="text-end">{{container.NoOfPkg || 0}} {{
+                                        getPackageTypeName(masterJobData?.containers?.[0]?.PkgType) }}</td>
+                                    <td class="text-end">{{container.GrossWeight |number:'1.3-3'}}</td>
+                                    <td class="text-end">{{container.Volume | number:'1.3-3'}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-end fw-bold">Total</td>
+                                    <td class="text-end fw-bold">{{ totalNoOfPkg }}</td>
+                                    <td class="text-end fw-bold">{{ totalGrossWeight | number:'1.3-3' }}</td>
+                                    <td class="text-end fw-bold">{{ totalVolume | number:'1.3-3' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+                <!-- <div style="margin-top: 1rem; margin-bottom: 3rem;">
+                            <p style="font-weight: bold;"> Remarks :</p>
+                            <div style="height: 80px; "> {{ enquiryData?.Remarks || '' }}</div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Terms and Conditions:</h6>
+                            <ul>
+                                @for(term of TandCList; track term){
+                                <li>{{ term.TandC }}</li>
+                                }
+                            </ul>
+                        </div> -->
+
+                <footer class="text-center mb-0 px-2">
+                    <div class="d-flex justify-content-between">
+                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
+                        <span>
+                            This document is computer-generated and does not require a signature.
+                        </span>
+                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
+                    </div>
+                    <div class="text-end fw-bold mt-2">Page 1 of 2</div>
+                </footer>
+
+            </div>
+            <div class="page-break"></div>
+            <div class="print-a4">
+                <!-- Company Info -->
                 <div class="row ">
                     <div class="company-header">
                         <div class="company-logo">
                             <img src="assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo" class="img-fluid">
                             <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                         </div>
-            
+
                         <div class="company-info ">
                             <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
                             <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
@@ -44,153 +238,165 @@
                         </div>
                     </div>
                 </div>
-            
-                <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-                <h5 class="text-center  fw-bold mb-2"> PRE-ALERT</h5>
-            
-                <div class="row">
+                <div style="height: 1px; background-color: black; width: 100%; margin: 0.3rem 0;"></div>
+
+                <div class="row mx-0 mt-4 px-5  " style="border: 1px solid black; ">
                     <div class="col-md-6">
-                        <div class="d-flex "><strong class="" style="width: 200px;"> MBL </strong>
-                            <p class="mb-0">: {{masterJobData.MBLNo}}</p>
-                        </div>
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">HBL</strong>
-                            <p class="mb-0">: </p>
-                        </div>
-            
-                        <!-- Vessel -->
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Vessel</strong>
-                            <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
-                        </div>
-            
-                        <!-- Voyage -->
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Voyage</strong>
-                            <p class="mb-0">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
-                        </div>
-            
-                        <!-- Origin -->
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Port of Origin</strong>
-                            <p class="mb-0">: {{masterJobData.POO}}</p>
-                        </div>
-                         <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Final Destination</strong>
-                            <p class="mb-0">: {{masterJobData.FPD}}</p>
-                        </div>
-                      
                         <div class="d-flex">
-                            <strong style="width: 200px;" class=" ">Shipper</strong>
-                            <p class="mb-0">: </p>
+                            <div style="width: 130px; white-space: nowrap;"><strong>Manifest No </strong></div>
+                            <p>: {{masterJobData.MasterJobNumber}}</p>
                         </div>
-                         <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Consignee</strong>
-                            <p class="mb-0">: </p>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Manifest Date </strong></div>
+                            <p class="my-0">: {{masterJobData.MasterJobDate | formatDate}}</p>
                         </div>
-            
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Vessel</strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Voyage</strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                        </div>
+
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Booking No</strong></div>
+                            <p class="my-0">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
+                        </div>
+                        <!-- <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Line</strong></div>
+                            <p class="">: {{masterJobData?.voyages?.[0]?.CarrierSid}}</p>
+                        </div> -->
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Sailing Date</strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.ATA | formatDate }}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Master PP/CC</strong></div>
+                            <p class="my-0">: {{masterJobData.FreightPPCC}}</p>
+                        </div>
                     </div>
-            
-            
-            
+
                     <div class="col-md-6">
-                        <!-- ETD -->
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">ETD</strong>
-                            <p class="mb-0">: {{ masterJobData?.voyages?.[0]?.ETD | formatDate }} </p>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Load Port </strong></div>
+                            <p class="my-0">: {{masterJobData.POL}}</p>
                         </div>
-                           <!-- ETA -->
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">ETA</strong>
-                            <p class="mb-0">: {{ masterJobData?.voyages?.[0]?.ETA | formatDate }} </p>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Discharge Port</strong></div>
+                            <p class="my-0">: {{masterJobData.POD}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>Delivery Port</strong></div>
+                            <p class="my-0">: {{masterJobData.FPD}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>MBL No</strong></div>
+                            <p class="my-0">: {{masterJobData.MBLNo}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>MBL Date </strong></div>
+                            <p class="my-0">: {{ masterJobData.MasterJobDate | formatDate }}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>ETD</strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.ETD | formatDate }}</p>
+                        </div>
+                        <div class="d-flex">
+                            <div style="width: 130px; white-space: nowrap;"><strong>ETA</strong></div>
+                            <p class="my-0">: {{masterJobData?.voyages?.[0]?.ETA | formatDate }}</p>
                         </div>
 
-                       
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Destination</strong>
-                            <p class="mb-0">: {{masterJobData.DestinationAgentName}}</p>
-                        </div>
-            
-                      
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Agent</strong>
-                            <p class="mb-0">:</p>
-                        </div>
-            
-                      
-                        <div class="d-flex ">
-                            <strong class=" " style="width: 200px;">Carrier Name</strong>
-                            <p class="mb-0">: {{ masterJobData?.voyages?.[0]?.CarrierName }} </p>
-                        </div>
-            
                     </div>
-            
-            
+
                 </div>
-            
-                <div class="table-responsive">
-                    <table class="table tablebordered align-middle">
-                        <thead class="">
-                            <tr>
-                                <th>Container No</th>
-                                <th>Seal No</th>
-                                <th>Container Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let container of masterJobContainers">
-                                <td>{{ container?.ContainerNumber }}</td>
-                                <td>{{ container?.LineSeal }}</td>
-                                <td>{{ getContainerTypeName(container?.ContainerType) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                            
-                    <div class="table-responsive">
-                    <table class="table tablebordered align-middle">
-                        <thead>
+
+                <table class="table tablebordered table-sm mb-0">
+                    <thead>
                         <tr>
-                            <th>Commodity Description</th>
-                            <th>Package Type</th>
-                            <th>No of Pkg</th>
-                            <th>Gross Weight</th>
-                            <th>Volume</th>
+                            <th>Container No</th>
+                            <th>Container Type</th>
+                            <th>SOC Container</th>
+                            <th>Seal</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let container of masterJobData?.containers">
+                            <td>{{ container.ContainerNumber || '' }}</td>
+                            <td>{{ getContainerTypeName(container.ContainerType) || '' }}</td>
+                            <td>{{ container.IsSoc || '' }}</td>
+                            <td>{{ container.LineSeal || '' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+                <div class="table-responsive">
+                    <table class="table tablebordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>SNo</th>
+                                <th>HBL No</th>
+                                <th>Shipper / Consignee / Notify</th>
+                                <th>Mark & Number</th>
+                                <th>Pkg & Desc</th>
+                                <th>Weight (KGS)</th>
+                                <th>Vol (CBM)</th>
+                                <th>PP/CC</th>
+                                <!-- <th>Charge Desc</th> -->
+                                <th>AMS Ref No</th>
+                                <th>Service</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <!-- Display all containers -->
-                        <tr *ngFor="let container of masterJobContainers">
-                            <td>{{ container.CommodityDescription }}</td>
-                            <td>{{ getPackageTypeName(container.PkgType) }}</td>
-                            <td class="text-end">{{ container.NoOfPkg || 0 }}</td>
-                            <td class="text-end">{{ container.GrossWeight || 0 }}</td>
-                            <td class="text-end">{{ container.Volume || 0 }}</td>
-                        </tr>
-
-                        <!-- Total row -->
-                       <tr class="fw-bold">
-                        
-                        <td rowspan="2" class="text-end">Total</td>
-                        <td></td>
-                        <td class="text-end">{{ totalNoOfPkg }}</td>
-                        <td class="text-end">{{ totalGrossWeight | number:'1.0-3' }}</td>
-                        <td class="text-end">{{ totalVolume | number:'1.0-3' }}</td>
-                        </tr>
+                            <ng-container *ngFor="let h of masterJobData?.houseJob; let i = index">
+                                <ng-container *ngFor="let c of h.Cargo; let j = index">
+                                    <tr>
+                                        <td>{{ j === 0 ? (i + 1) : '' }}</td>
+                                        <td>{{ j === 0 ? (h.HBLNo || '') : '' }}</td>
+                                        <td>
+                                            <ng-container *ngIf="j === 0">
+                                                <strong>Shipper:</strong> {{ h.ShipperName || '' }}<br>
+                                                <strong>Consignee:</strong> {{ h.ConsigneeName || '' }}<br>
+                                                <strong>Notify:</strong> {{ h.Notify || '' }} {{ h.NotifyAddress || ''
+                                                }}
+                                            </ng-container>
+                                        </td>
+                                        <td class="">{{ c.MarksAndNumber }}</td>
+                                        <td>
+                                            {{ c.NoOfPackage || '' }} Pkg <br>
+                                            {{ c.CommodityDescription || '' }}
+                                        </td>
+                                        <td class="text-end">{{ c.GrossWeight | number: '1.3-3' }}</td>
+                                        <td class="text-end">{{ c.Volume | number: '1.3-3' }}</td>
+                                        <td>{{ h.FreightTerms || '' }}</td>
+                                        <!-- <td></td> -->
+                                        <td></td>
+                                        <td>{{ c.ShipmentTerms || '' }}</td>
+                                    </tr>
+                                </ng-container>
+                            </ng-container>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Total</td>
+                                <td class="text-end fw-bold">{{ getTotalPackages() }}</td>
+                                <td class="text-end fw-bold">{{ getTotalGrossWeight() | number:'1.3-3' }}</td>
+                                <td class="text-end fw-bold">{{ getTotalVolume() | number:'1.3-3' }}</td>
+                                <td colspan="4"></td>
+                            </tr>
                         </tbody>
                     </table>
-                    </div>
 
+
+                </div>
                 <footer class="text-center mb-0 px-2">
                     <div class="d-flex justify-content-between">
-                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                        <span>
-                            This document is computer-generated and does not require a signature.
-                        </span>
+                        <div><span>Printed By :</span> {{userData.userName}}</div>
+                        <span>This document is computer-generated and does not require a signature.</span>
                         <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
                     </div>
+                    <div class="text-end fw-bold mt-2">Page 2 of 2</div>
                 </footer>
             </div>
         </div>
     </div>
-
+</div>

@@ -206,40 +206,67 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
     this.initializeModalDropdownItems();
     this.loadTaxData();
   }
-  loadTaxData(): void {
-    this.masterService.getAllTax().subscribe({
-      next: (response: any[]) => {
+  // In the component class
+// In the component class
+loadTaxData(): void {
+  this.masterService.getAllTaxGroup().subscribe({
+    next: (response: any) => {
+      console.log('Complete API Response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response));
+      
+      // Handle different possible response structures
+      if (Array.isArray(response)) {
+        // If response is directly an array
         this.taxList = response;
-        console.log('Tax data loaded:', this.taxList);
-      },
-      error: (error) => {
-        console.error('Error loading tax data:', error);
-        this.appSettingService.showError('Failed to load tax data');
+      } else if (response && Array.isArray(response.data)) {
+        // If response has data property containing array
+        this.taxList = response.data;
+      } else if (response && response.data && Array.isArray(response.data.items)) {
+        // If response has data.items structure (common in paginated APIs)
+        this.taxList = response.data.items;
+      } else {
+        console.warn('Unexpected response structure:', response);
+        this.taxList = [];
       }
-    });
-  }
-
-  // Add this method to handle tax type selection change
-  onTaxTypeChange(selectedTaxType: string): void {
-    if (selectedTaxType) {
-      // Find the selected tax object from the taxList
-      const selectedTax = this.taxList.find(tax => tax.TaxCode === selectedTaxType);
-
-      if (selectedTax) {
-        // Auto-fill the TaxRate field with the selected tax's rate
-        this.hssacForm.patchValue({
-          TaxRate: selectedTax.TaxRate,
-          TaxGroupSid: selectedTax.TaxGroupSid,
-        });
+      
+      console.log('Processed taxList:', this.taxList);
+      console.log('Tax list length:', this.taxList.length);
+      
+      if (this.taxList.length > 0) {
+        console.log('First tax item:', this.taxList[0]);
+        console.log('Available properties in first item:', Object.keys(this.taxList[0]));
       }
-    } else {
-      // Clear TaxRate if no tax type is selected
+    },
+    error: (error) => {
+      console.error('Error loading tax data:', error);
+      console.error('Error details:', error.error);
+      this.appSettingService.showError('Failed to load tax data');
+    }
+  });
+}
+
+// Update the tax type change handler
+onTaxTypeChange(selectedTaxGroup: string): void {
+  if (selectedTaxGroup) {
+    // Find the selected tax object from the taxList using TaxGroup
+    const selectedTax = this.taxList.find(tax => tax.TaxGroup === selectedTaxGroup);
+
+    if (selectedTax) {
+      // Auto-fill the TaxRate field with the selected tax's rate
       this.hssacForm.patchValue({
-        TaxRate: '',
-        TaxGroupSid: '',
+        TaxRate: selectedTax.TaxRate,
+        TaxGroupSid: selectedTax.TaxGroupSid,
       });
     }
+  } else {
+    // Clear TaxRate if no tax type is selected
+    this.hssacForm.patchValue({
+      TaxRate: '',
+      TaxGroupSid: '',
+    });
   }
+}
 
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));

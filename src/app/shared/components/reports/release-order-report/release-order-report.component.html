@@ -1,0 +1,137 @@
+<div class="print-a4">
+  <app-report-header
+    [companyName]="company.name"
+    [branchName]="company.branchName"
+    [address]="company.address"
+    [logoUrl]="company.logoUrl"
+    [phone]="company.phone"
+    [email]="company.email"
+    [gst]="company.gst">
+  </app-report-header>
+
+  <h4 class="report-title text-center fw-bold">DELIVERY/RELEASE ORDER</h4>
+
+  <div class="order-meta">
+    <div class="row">
+      <div class="col-6">
+        <p><strong>Release Order No:</strong> {{ company.name }}/DO/{{ masterJob.jobNumber }}</p>
+        <p><strong>Date:</strong> {{ todayDate | formatDate:'dd-MMM-yyyy' }}</p>
+      </div>
+      <div class="col-6 text-end">
+        <p><strong>Job No:</strong> {{ masterJob.jobNumber }}</p>
+        <p><strong>MBL No:</strong> {{ masterJob.mblNumber }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-content">
+    <h6 class="section-title">Shipment Information</h6>
+    <div class="row">
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">Vessel:</span>
+            <span class="value">{{ masterJob.vesselName }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Voyage:</span>
+            <span class="value">{{ masterJob.voyageNumber }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Port of Discharge:</span>
+            <span class="value">{{ masterJob.pod }}</span>
+          </p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">Consignee:</span>
+            <span class="value fw-bold">{{ masterJob.consigneeName }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Commodity:</span>
+            <span class="value">{{ masterJob.commodity }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">ETA:</span>
+            <span class="value">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-content mt-3">
+    <h6 class="section-title">Containers to be Released</h6>
+    <table class="table table-bordered table-sm">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 25%">Container No</th>
+          <th style="width: 15%">Size/Type</th>
+          <th style="width: 15%">Seal No</th>
+          <th style="width: 15%" class="text-end">Weight (KG)</th>
+          <th style="width: 15%" class="text-end">Packages</th>
+          <th style="width: 10%">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let container of containers; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="fw-bold">{{ container.containerNumber }}</td>
+          <td>{{ container.containerType }}</td>
+          <td>{{ container.sealNumber }}</td>
+          <td class="text-end">{{ container.weight | number:'1.2-2' }}</td>
+          <td class="text-end">{{ container.packages }}</td>
+          <td>
+            <span class="badge bg-success">Ready</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="authorization-box mt-4">
+    <h6 class="box-title">AUTHORIZATION</h6>
+    <p class="mb-3">
+      This is to authorize the delivery of the above-mentioned containers to <strong>{{ masterJob.consigneeName }}</strong>
+      or their authorized representative.
+    </p>
+    <p class="mb-3">
+      <strong>Terms & Conditions:</strong>
+    </p>
+    <ul class="conditions-list">
+      <li>All freight charges and port dues must be settled before release</li>
+      <li>Original Bill of Lading must be surrendered</li>
+      <li>Valid identification required for container collection</li>
+      <li>This delivery order is valid for 5 working days from date of issue</li>
+      <li>Containers must be returned within free time to avoid detention charges</li>
+    </ul>
+  </div>
+
+  <div class="signature-row mt-5">
+    <div class="row">
+      <div class="col-6">
+        <div class="signature-box">
+          <div class="sig-line"></div>
+          <p class="fw-bold mb-1">Authorized Signatory</p>
+          <p class="text-muted">{{ company.name }}</p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="signature-box">
+          <div class="sig-line"></div>
+          <p class="fw-bold mb-1">Received By</p>
+          <p class="text-muted">Name & Signature</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-report-footer
+    [printedBy]="printInfo.printedBy"
+    [printedOn]="printInfo.printedOn"
+    [showSignature]="false">
+  </app-report-footer>
+</div>

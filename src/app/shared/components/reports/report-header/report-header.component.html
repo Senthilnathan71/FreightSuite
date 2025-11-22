@@ -1,0 +1,71 @@
+<div class="report-header" [ngClass]="customClass">
+  <div class="header-content">
+    <!-- Logo and Company Info Row -->
+    <div class="header-main">
+      <!-- Company Logo -->
+      <div class="company-logo" *ngIf="shouldShowLogo">
+        <img
+          [src]="logoUrl"
+          [alt]="companyName + ' Logo'"
+          class="logo-image"
+          onerror="this.style.display='none'"
+        />
+      </div>
+
+      <!-- Company Information -->
+      <div class="company-info">
+        <!-- Company Name -->
+        <h3 class="company-name" *ngIf="companyName">
+          {{ companyName }}
+        </h3>
+
+        <!-- Branch Name -->
+        <h5 class="branch-name" *ngIf="branchName">
+          {{ branchName }}
+        </h5>
+
+        <!-- Address -->
+        <p class="company-address" *ngIf="fullAddress">
+          <i class="fas fa-map-marker-alt me-1"></i>
+          {{ fullAddress }}
+        </p>
+
+        <!-- Contact Details Row -->
+        <div class="contact-details" *ngIf="showContactDetails && hasContactDetails">
+          <span *ngIf="phone" class="contact-item">
+            <i class="fas fa-phone me-1"></i>
+            {{ phone }}
+          </span>
+
+          <span *ngIf="email" class="contact-item">
+            <i class="fas fa-envelope me-1"></i>
+            {{ email }}
+          </span>
+
+          <span *ngIf="website" class="contact-item">
+            <i class="fas fa-globe me-1"></i>
+            {{ website }}
+          </span>
+        </div>
+
+        <!-- Tax Details Row -->
+        <div class="tax-details" *ngIf="showTaxDetails && hasTaxDetails">
+          <span *ngIf="gst" class="tax-item">
+            <strong>GSTIN:</strong> {{ gst }}
+          </span>
+
+          <span *ngIf="pan" class="tax-item">
+            <strong>PAN:</strong> {{ pan }}
+          </span>
+
+          <span *ngIf="iec" class="tax-item">
+            <strong>IEC:</strong> {{ iec }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Border -->
+  <div class="header-border"></div>
+</div>

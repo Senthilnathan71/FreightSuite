@@ -23,7 +23,18 @@
         [disabled]="isViewMode">
   <i class="fas fa-upload me-1"></i> Upload
 </button>
- 
+ <button  type="button" 
+            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
+            (click)="onFinalSave()" 
+            [disabled]="vendorInvoiceForm.invalid || isSaving">
+      <i class="fas fa-check-circle me-1"></i> Final
+    </button>
+
+    <button *ngIf="isViewMode && isPosted" type="button" 
+            class="btn btn-success btn-sm dofi-min-w-100 dofi-max-w-100" 
+            disabled>
+      <i class="fas fa-check-circle me-1"></i> Posted
+    </button>
     
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()">
             <i class="fas fa-chevron-left me-1"></i> Back
@@ -447,7 +458,7 @@
 
               <!-- Dr/Cr -->
               <td>
-                <ng-select [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]"
+                <ng-select [items]="[{id:'D', name:'D'},{id:'C', name:'C'}]"
                   bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
               </td>
 

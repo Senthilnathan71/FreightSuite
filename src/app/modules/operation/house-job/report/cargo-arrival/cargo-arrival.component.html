@@ -1,7 +1,7 @@
 <!-- <ng-template #CargoArrivalPrint let-modal> -->
 
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Cargo Arrival Notice with charges</h5>
+    <h5 class="modal-title text-white mb-0">Cargo Arrival Notice {{ withOrWithoutCharge ? 'With' : 'Without'}} charges</h5>
     <div class="d-flex gap-2 align-items-center">
 
         <div class="spinner-overlay">
@@ -266,9 +266,7 @@
                     <thead>
                         <tr>
                             <th width="15%">No of Packages</th>
-                            <!-- <th>Package Type</th> -->
-                            <th width="15%">Mode</th>
-                            <th width="15%" class="text-center">Qty</th>
+                            <!-- <th width="15%" class="text-center">Qty</th> -->
                             <th width="15%" class="text-center">Volume</th>
                             <th width="15%" class="text-center">Gross Weight</th>
                             <th width="15%" class="text-center">Net Weight</th>
@@ -277,12 +275,10 @@
                     <tbody>
                         <tr>
                             <td>{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
-                            <!-- <td >{{housejobData?.Cargo?.[0]?.ContainerType}}</td> -->
-                            <td>{{ housejobData?.Cargo?.[0]?.ModeOfTransport }} </td>
-                            <!-- <td class="text-end">{{ products?.ExternlQty | number: '1.3-3'}}</td> -->
+                             <!-- <td>{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td> -->
                             <td class="text-end">{{housejobData?.Cargo?.[0]?.Volume | number: '1.3-3' }}</td>
                             <td class="text-end">{{housejobData?.Cargo?.[0]?.GrossWeight | number: '1.3-3' }}</td>
-                               <td class="text-end">{{housejobData?.Cargo?.[0]?.NetWeight | number: '1.3-3' }}</td>
+                            <td class="text-end"> {{ housejobData?.Cargo?.[0]?.NetWeight || 0 | number:'1.3-3'}}</td>
                         </tr>
                     </tbody>
                 </table>

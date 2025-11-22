@@ -1,0 +1,200 @@
+.report-header {
+  margin-bottom: 1.5rem;
+  page-break-inside: avoid;
+
+  .header-content {
+    padding: 1rem 0;
+  }
+
+  .header-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .company-logo {
+    flex-shrink: 0;
+
+    .logo-image {
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: contain;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 4px;
+      background-color: #fff;
+    }
+  }
+
+  .company-info {
+    flex: 1;
+    text-align: center;
+
+    .company-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0 0 0.25rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .branch-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #34495e;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .company-address {
+      font-size: 0.875rem;
+      color: #5a6c7d;
+      margin: 0.5rem 0;
+      line-height: 1.4;
+
+      i {
+        color: #17a2b8;
+      }
+    }
+
+    .contact-details {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 0.5rem 0;
+      font-size: 0.8125rem;
+      color: #5a6c7d;
+
+      .contact-item {
+        display: inline-flex;
+        align-items: center;
+
+        i {
+          color: #17a2b8;
+          font-size: 0.75rem;
+        }
+
+        &:not(:last-child)::after {
+          content: '|';
+          margin-left: 1rem;
+          color: #dee2e6;
+        }
+      }
+    }
+
+    .tax-details {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 0.5rem 0;
+      font-size: 0.75rem;
+      color: #6c757d;
+
+      .tax-item {
+        display: inline-flex;
+        align-items: center;
+
+        strong {
+          margin-right: 0.25rem;
+          font-weight: 600;
+          color: #495057;
+        }
+
+        &:not(:last-child)::after {
+          content: '|';
+          margin-left: 1rem;
+          color: #dee2e6;
+        }
+      }
+    }
+  }
+
+  .header-border {
+    margin-top: 1rem;
+    height: 3px;
+    background: linear-gradient(to right, #17a2b8, #0d6efd);
+    border-radius: 2px;
+  }
+}
+
+// Print-specific styles
+@media print {
+  .report-header {
+    margin-bottom: 1rem;
+
+    .header-content {
+      padding: 0.5rem 0;
+    }
+
+    .company-logo {
+      .logo-image {
+        max-width: 60px;
+        max-height: 60px;
+      }
+    }
+
+    .company-info {
+      .company-name {
+        font-size: 1.25rem;
+      }
+
+      .branch-name {
+        font-size: 1rem;
+      }
+
+      .company-address,
+      .contact-details,
+      .tax-details {
+        font-size: 0.75rem;
+      }
+    }
+
+    .header-border {
+      height: 2px;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .report-header {
+    .header-main {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .company-logo {
+      .logo-image {
+        max-width: 60px;
+        max-height: 60px;
+      }
+    }
+
+    .company-info {
+      .company-name {
+        font-size: 1.125rem;
+      }
+
+      .branch-name {
+        font-size: 1rem;
+      }
+
+      .contact-details,
+      .tax-details {
+        flex-direction: column;
+        gap: 0.25rem;
+
+        .contact-item,
+        .tax-item {
+          &:not(:last-child)::after {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}

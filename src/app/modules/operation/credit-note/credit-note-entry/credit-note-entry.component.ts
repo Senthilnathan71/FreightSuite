@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormGroup, AbstractControl, FormArray, FormBuilder, Validators, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -50,8 +50,7 @@ export class CreditNoteEntryComponent {
   get isEditMode() { return !!this.headerId && !this.isViewMode; }
 
   @ViewChild('printModal') printModalRef: any;
-  @ViewChild('emailModal') emailModalRef: any;
-
+  private originalInvoiceRates: Map<number, number> = new Map();
   customerList: any[] = [];
   customerBranchList: any[] = [];
   bankDetails : any;
@@ -61,7 +60,7 @@ export class CreditNoteEntryComponent {
   hssacList: any[] = [];
   invoiceList:any[] =[];
   subledgerList: any[] = [];
-    invoiceOutstandingAmount: number = 0;
+  invoiceOutstandingAmount: number = 0;
   selectedOutstandingInvoice: any = null;
   showOutstandingInfo: boolean = false;
   uomList: any[] = [];
@@ -247,9 +246,8 @@ export class CreditNoteEntryComponent {
         ExchangeRate: [{ value: 1, disabled: true }],
         GST_VAT: [{ value: '', disabled: true }],
         GSTType: [{ value: '', disabled: true }],
-        PostStatus: [''],
+        PostStatus: ['U'],
         InvoiceType: [{value: null, disabled: true}],
-        VoucherType: [1],
         Narration: ['hi'],
         CreditNoteReason: [''],
         Remarks: [{ value: '', disabled: true }],
@@ -416,6 +414,34 @@ export class CreditNoteEntryComponent {
         }
       }
 
+      private autoGenerateNarration(reversalVoucher: any): string {
+  if (!reversalVoucher) return '';
+  
+  let voucherNumber = '';
+  let voucherType = '';
+  
+  // Extract voucher number
+  if (typeof reversalVoucher === 'object' && reversalVoucher !== null) {
+    voucherNumber = reversalVoucher.VoucherNumber || reversalVoucher.voucherNumber || '';
+    voucherType = reversalVoucher.VoucherType || reversalVoucher.voucherType || '';
+  } else {
+    // If it's just an ID, find the voucher in the list
+    const foundVoucher = this.invoiceList.find(inv => 
+      inv.VoucherHeaderSid === reversalVoucher || inv.voucherHeaderSid === reversalVoucher
+    );
+    if (foundVoucher) {
+      voucherNumber = foundVoucher.VoucherNumber || foundVoucher.voucherNumber || '';
+      voucherType = foundVoucher.VoucherType || foundVoucher.voucherType || '';
+    }
+  }
+  
+  if (voucherNumber) {
+    return `Being reversal of ${voucherNumber}${voucherType ? ` - ${voucherType}` : ''}`;
+  }
+  
+  return '';
+}
+
       getInvoiceData(invoice?: any) {
   const invoiceId = invoice || this.creditNoteForm.get('ReversalVoucher')?.value;
   if (!invoiceId) {
@@ -430,12 +456,16 @@ export class CreditNoteEntryComponent {
   if (typeof reversalVoucherId === 'object' && reversalVoucherId !== null) {
     invoiceNumber = reversalVoucherId.VoucherNumber || reversalVoucherId.voucherNumber || '';
     reversalVoucherId = reversalVoucherId.VoucherHeaderSid || reversalVoucherId.voucherHeaderSid;
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   } else {
     // If it's just an ID, try to find the invoice in the list to get the number
     const foundInvoice = this.invoiceList.find(inv => 
       inv.VoucherHeaderSid === reversalVoucherId || inv.voucherHeaderSid === reversalVoucherId
     );
     invoiceNumber = foundInvoice?.VoucherNumber || foundInvoice?.voucherNumber || '';
+     const autoNarration = this.autoGenerateNarration(reversalVoucherId);
+    this.creditNoteForm.get('Narration')?.setValue(autoNarration);
   }
 
   this.spinner.show();
@@ -496,7 +526,7 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
       );
       
       if (matchingOutstanding) {
-        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingAmount);
+        const outstandingAmount = Math.abs(matchingOutstanding.OutstandingLocalAmount);
         
         console.log('DEBUG - Outstanding amount found:', {
           invoiceNumber: invoiceNumber,
@@ -532,11 +562,14 @@ private searchOutstandingForInvoice(invoiceNumber: string, invoiceData: any) {
 private patchInvoiceData(invoiceData: any) {
   const header = invoiceData;
   const invoiceHeaderSid = header.VoucherHeaderSid || header.voucherHeaderSid || null;
-  
+  this.originalInvoiceRates = new Map();
+  const currentNarration = this.creditNoteForm.get('Narration')?.value;
+  const autoNarration = this.autoGenerateNarration(this.creditNoteForm.get('ReversalVoucher')?.value);
   this.creditNoteForm.patchValue({
     ReversalVoucher: invoiceHeaderSid,
     CustomerMasterSid: header.CustomerMasterSid || null,
     PartyMasterSid: header.PartyMasterSid || null,
+    Narration: autoNarration || header.Narration || currentNarration || '',
     PartyName: header.PartyName || '',
     PartyAddress: header.PartyAddress || '',
     DocumentNumber: header.DocumentNumber || '',
@@ -596,7 +629,14 @@ private patchInvoiceData(invoiceData: any) {
       .map((transaction: any) => {
         const detail = transaction.voucherDetail;
         const transactionData = transaction; // Main transaction data
-        
+        if (detail.ChargeMasterSid && detail.Rate != null) {
+          const chargeId = Number(detail.ChargeMasterSid);
+          const originalRate = Number(detail.Rate);
+          
+          this.originalInvoiceRates.set(chargeId, originalRate);
+          
+          console.log(`DEBUG - Stored original rate for charge ${chargeId}: ${originalRate}`);
+        }
         return {
           ...detail,
           // Include transaction-level data that might be needed
@@ -657,6 +697,7 @@ private patchInvoiceData(invoiceData: any) {
     });
 
     this.details.push(this.createDetailGroup({
+      VoucherDetailSid: detail.VoucherDetailSid,
       ChargeMasterSid: detail.ChargeMasterSid,
       ChargeDescription: detail.ChargeDescription,
       HSSACMasterSid: detail.HSSACMasterSid,
@@ -665,7 +706,7 @@ private patchInvoiceData(invoiceData: any) {
       NumberOfUnit: detail.NumberOfUnit,
       DrCr: swappedDrCr,
       CurrencyCode: detail.CurrencyCode,
-      Rate: detail.Rate,
+      Rate: detail.Rate != null ? Number(detail.Rate) : 0,
       ExchangeRate: detail.ExchangeRate,
       Amount: amount,
       TaxableAmount: taxableAmount,
@@ -734,15 +775,6 @@ onFinalSave() {
         // Add PostStatus to payload
         const postStatus = isFinal ? 'P' : 'D'; // 'P' for Posted, 'D' for Draft
       
-        let normalizedVoucherType: number | null = null;
-        const vt = raw.VoucherType;
-        if (Array.isArray(vt) && vt.length > 0) {
-          normalizedVoucherType = Number(vt[0]);
-        } else if (vt !== null && vt !== undefined && vt !== '') {
-          normalizedVoucherType = Number(vt);
-        }
-        if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
-      
         let voucherDate: Date;
         if (!raw.VoucherDate) {
           voucherDate = new Date();
@@ -765,6 +797,7 @@ onFinalSave() {
       
         const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
           const detail = {
+            VoucherDetailSid: d.VoucherDetailSid,
             ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
             ChargeDescription: d.ChargeDescription || '',
             HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
@@ -772,7 +805,6 @@ onFinalSave() {
             DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
             NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
             DrCr: d.DrCr || 'D',
-            PlaceOfSupply: d.PlaceOfSupply || '',
             CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
             CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
             Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -814,11 +846,10 @@ onFinalSave() {
           CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
           PlaceOfSupply: raw.PlaceOfSupply || '',
           COAMasterSid: raw.COAMasterSid ?? 1,
-          VoucherType: normalizedVoucherType,
-          VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
           InvoiceType: raw.InvoiceType || 'REG',
           GSTType: raw.GSTType || '',
           CurrencyMasterSid: currencyMasterId,
+          PostStatus: raw.PostStatus || '',
           CurrencyCode: raw.CurrencyCode || undefined,
           ExchangeRate: raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
           MasterJobSid: masterJobSid,
@@ -827,7 +858,6 @@ onFinalSave() {
           Remarks: raw.Remarks || undefined,
           Narration: (raw.Narration !== undefined ? raw.Narration : undefined),
           status: (raw.status != null ? raw.status : 'A'),
-          PostStatus: postStatus, // Add PostStatus here
           VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
         };
       
@@ -900,7 +930,7 @@ onFinalSave() {
             LocalCurrencyCode: currentCompany.CurrencyCode , 
             PostedBy: currentUserEmail ,
             TaxDetails: {
-              CountryMasterSid: currentCountry,
+              CountryMasterSid: currentCountry || this.currentUserCountry,
               countryName: currentCompany.CountryName,
               TaxCategory: 'Inter', 
               EffectiveFrom: new Date().toISOString(),
@@ -911,19 +941,19 @@ onFinalSave() {
           const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
           
           this.spinner.hide();
-          if (result.success) {
-            this.appSettingService.showSuccess('Invoice posted successfully!');
+          if (result.status) {
+            this.appSettingService.showSuccess('Credted Note posted successfully!');
             this.creditNoteData.PostStatus = 'P'; // Update local state
             
             // Navigate to list or stay on page but disable edits
-            this.router.navigate(['operation/invoice/list']);
+            this.router.navigate(['operation/credit-note/list']);
           } else {
-            this.appSettingService.showError(result.message || 'Failed to post invoice.');
+            this.appSettingService.showError(result.message || 'Failed to post Credit Note.');
           }
         } catch (error) {
           this.spinner.hide();
           console.error('Post voucher error:', error);
-          this.appSettingService.showError('Failed to post invoice. Please try again.');
+          this.appSettingService.showError('Failed to post Credit Note. Please try again.');
         }
       }
       async loadDepartments(companyMasterSid: number) {
@@ -1297,7 +1327,6 @@ private getCustomerCountryCode(customer: any): string {
       GST_VAT: header.GST_VAT || '',
       InvoiceType: header.InvoiceType || null,
       GSTType: header.GSTType || null,
-      VoucherType: voucherTypeForControl,
       Narration: header.Narration || '',
       CreditNoteReason: header.CreditNoteReason || '',
       Remarks: header.Remarks || '',
@@ -1353,6 +1382,7 @@ private getCustomerCountryCode(customer: any): string {
       });
 
       this.details.push(this.createDetailGroup({
+        VoucherDetailSid: det.VoucherDetailSid,
         ChargeMasterSid: det.ChargeMasterSid,
         ChargeDescription: det.ChargeDescription,
         HSSACMasterSid: det.HSSACMasterSid,
@@ -1417,15 +1447,17 @@ private getCustomerCountryCode(customer: any): string {
 
   createDetailGroup(data?: any): FormGroup {
     return this.fb.group({
+      VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [{value: data?.ChargeMasterSid || null, disabled: true}],
       ChargeDescription: [{value:data?.ChargeDescription || '', disabled: true}],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null, disabled: true}],
       DepartmentMasterSid: [{value:data?.DepartmentMasterSid || null, disabled: true}],
       ChargeUOMSid: [{value:data?.ChargeUOMSid || null, disabled: true}], // will hold the UOM id (UOMMasterSid)
       NumberOfUnit: [{value:data?.NumberOfUnit || 1, disabled: true}],
-      DrCr: [{value: data?.DrCr || 'Cr', disabled: true}], // Default to Cr for Invoice (revenue)
+      DrCr: [{value: data?.DrCr || 'C', disabled: true}], // Default to Cr for Invoice (revenue)
       CurrencyCode: [{value: data?.CurrencyCode || this.creditNoteForm.get('CurrencyCode')?.value || null, disabled: true}],
-      Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
+      Rate: [ data?.Rate != null ? Number(data.Rate) : 0, 
+      [Validators.required, Validators.min(0), this.rateValidator.bind(this)]],
       ExchangeRate: [{value:data?.ExchangeRate || this.creditNoteForm.get('ExchangeRate')?.value || 1, disabled: true}],
       Amount: [{value:data?.Amount || 0 , disabled: true}],
       TaxableAmount: [{value: data?.TaxableAmount || 0, disabled: true}],
@@ -1931,6 +1963,52 @@ private normalizeParty(raw: any) {
     }
   }
 
+  private rateValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value && control.value !== 0) {
+    return null; // Let required validator handle empty values
+  }
+
+  const rate = Number(control.value);
+  const rowIndex = this.getRowIndexFromControl(control);
+  
+  if (rowIndex === -1) return null;
+
+  const row = this.details.at(rowIndex);
+  if (!row) return null;
+
+  const chargeMasterSid = row.get('ChargeMasterSid')?.value;
+  
+  if (!chargeMasterSid || !this.originalInvoiceRates) {
+    return null; // No original rate to compare against
+  }
+
+  const originalRate = this.originalInvoiceRates.get(Number(chargeMasterSid));
+  
+  // Allow rates less than or equal to original rate, but not greater
+  if (originalRate !== undefined && rate > originalRate) {
+    return { 
+      rateExceeded: {
+        actualRate: rate,
+        maxAllowedRate: originalRate
+      }
+    };
+  }
+
+  return null;
+}
+
+  private getRowIndexFromControl(control: AbstractControl): number {
+  if (!this.details) return -1;
+  
+  for (let i = 0; i < this.details.length; i++) {
+    const row = this.details.at(i);
+    if (row.get('Rate') === control) {
+      return i;
+    }
+  }
+  return -1;
+}
+
   async onSave() {
     if (this.creditNoteForm.invalid) {
       this.creditNoteForm.markAllAsTouched();
@@ -1944,15 +2022,6 @@ private normalizeParty(raw: any) {
     const userEmailFromSettings = (this.appSettingService as any).userSettingSource?.value?.['userEmail'] || null;
     const createdByValue = userEmailFromSettings || this.currUserEmail || null;
     const updatedByValue = this.isEditMode ? (userEmailFromSettings || this.currUserEmail || null) : null;
-
-    let normalizedVoucherType: number | null = null;
-    const vt = raw.VoucherType;
-    if (Array.isArray(vt) && vt.length > 0) {
-      normalizedVoucherType = Number(vt[0]);
-    } else if (vt !== null && vt !== undefined && vt !== '') {
-      normalizedVoucherType = Number(vt);
-    }
-    if (isNaN(normalizedVoucherType)) normalizedVoucherType = null;
 
     let voucherDate: Date;
     if (!raw.VoucherDate) {
@@ -1978,13 +2047,14 @@ private normalizeParty(raw: any) {
 
     const voucherDetailArray = (raw.voucherDetails || []).map((d: any, index: number) => {
       const detail = {
+        VoucherDetailSid: d.VoucherDetailSid,
         ChargeMasterSid: d.ChargeMasterSid != null ? Number(d.ChargeMasterSid) : null,
         ChargeDescription: d.ChargeDescription || '',
         HSSACMasterSid: d.HSSACMasterSid != null ? Number(d.HSSACMasterSid) : null,
         ChargeUOMSid: d.ChargeUOMSid != null ? Number(d.ChargeUOMSid) : null,
         DepartmentMasterSid: d.DepartmentMasterSid != null ? Number(d.DepartmentMasterSid) : null,
         NumberOfUnit: d.NumberOfUnit != null ? Number(d.NumberOfUnit) : 0,
-        DrCr: d.DrCr || 'Dr',
+        DrCr: d.DrCr || 'D',
         CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
         CurrencyMasterSid: this.getCurrencyId(d.CurrencyCode || raw.CurrencyCode),
         Rate: d.Rate != null ? Number(d.Rate) : 0,
@@ -2027,8 +2097,6 @@ private normalizeParty(raw: any) {
       PartyAddress: normalizedParty.PartyAddress || raw.PartyAddress || '',
       CustomerBranchSid: normalizedParty.CustomerBranchSid ?? null,
       COAMasterSid: raw.COAMasterSid ?? 1,
-      VoucherType: normalizedVoucherType,
-      VoucherTypeMasterSid: raw.VoucherTypeMasterSid ? Number(raw.VoucherTypeMasterSid) : (normalizedVoucherType ?? undefined),
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
       CurrencyMasterSid: currencyMasterId,
@@ -2061,7 +2129,8 @@ private normalizeParty(raw: any) {
         next: (resp: any) => {
           if (resp?.status) {
             this.appSettingService.showSuccess('CreditNote updated successfully.');
-            this.router.navigate(['operation/credit-note/list']);
+            const id = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || resp.data?.voucherHeaderSid || null;
+            this.router.navigate(['operation/credit-note/entry', id]);
           } else {
             this.appSettingService.showError('Error updating CreditNote.');
             console.error('updateCreditNote resp', resp);
@@ -2265,11 +2334,6 @@ private normalizeParty(raw: any) {
     }
   }
 
-  openEmailModal() {
-    this.initializeEmailForm();
-    this.modalService.open(this.emailModalRef, { size: 'lg' });
-  }
-
   initializeEmailForm() {
     const customerBranchSid = this.creditNoteForm.get('PartyName')?.value;
     const customerBranch = this.customerBranchList.find(b => b.CustomerBranchSid === customerBranchSid);
@@ -2339,22 +2403,22 @@ private normalizeParty(raw: any) {
         };
 
         // Call API to send email
-        this.operationService.sendCreditNoteEmail(payload).subscribe({
-          next: (resp: any) => {
-            this.spinner.hide();
-            if (resp?.status) {
-              this.appSettingService.showSuccess('creditNote email sent successfully!');
-              this.modalService.dismissAll();
-            } else {
-              this.appSettingService.showError(resp?.message || 'Failed to send email.');
-            }
-          },
-          error: (err) => {
-            this.spinner.hide();
-            console.error('Error sending email:', err);
-            this.appSettingService.showError('Failed to send creditNote email. Please try again.');
-          }
-        });
+        // this.operationService.sendCreditNoteEmail(payload).subscribe({
+        //   next: (resp: any) => {
+        //     this.spinner.hide();
+        //     if (resp?.status) {
+        //       this.appSettingService.showSuccess('creditNote email sent successfully!');
+        //       this.modalService.dismissAll();
+        //     } else {
+        //       this.appSettingService.showError(resp?.message || 'Failed to send email.');
+        //     }
+        //   },
+        //   error: (err) => {
+        //     this.spinner.hide();
+        //     console.error('Error sending email:', err);
+        //     this.appSettingService.showError('Failed to send creditNote email. Please try again.');
+        //   }
+        // });
       };
 
       reader.onerror = () => {
@@ -2504,5 +2568,15 @@ private normalizeParty(raw: any) {
       }
     });
   }
+
+  getRowTotal(detail: any): number {
+    const taxable = Number(detail.get('TaxableAmount')?.value || 0);
+    const cgst = Number(detail.get('TaxAmount1')?.value || 0);
+    const sgst = Number(detail.get('TaxAmount2')?.value || 0);
+    const igst = Number(detail.get('TaxAmountIGST')?.value || 0);
+
+    return taxable + cgst + sgst + igst;
+  }
+
 
 }

@@ -1,0 +1,116 @@
+<!-- Modal Header -->
+<div class="modal-header report-modal-header">
+  <h5 class="modal-title text-white">
+    <i class="fas fa-file-alt me-2"></i>
+    {{ reportConfig?.title || 'Report' }}
+  </h5>
+
+  <div class="header-actions" *ngIf="!loading && !error">
+    <button
+      type="button"
+      class="btn btn-sm btn-light me-2"
+      (click)="downloadPDF()"
+      title="Download PDF"
+    >
+      <i class="fas fa-download me-1"></i>
+      Download PDF
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-light me-2"
+      (click)="sendEmail()"
+      title="Send Email"
+    >
+      <i class="fas fa-envelope me-1"></i>
+      Send Email
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-light me-2"
+      (click)="print()"
+      title="Print"
+    >
+      <i class="fas fa-print me-1"></i>
+      Print
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-light"
+      (click)="close()"
+      aria-label="Close"
+    >
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <button
+    *ngIf="loading || error"
+    type="button"
+    class="btn-close btn-close-white"
+    aria-label="Close"
+    (click)="close()"
+  ></button>
+</div>
+
+<!-- Modal Body -->
+<div class="modal-body report-modal-body">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container text-center py-5">
+    <ngx-spinner
+      [fullScreen]="false"
+      type="ball-clip-rotate-multiple"
+      size="medium"
+    >
+      <p class="loading-text mt-3">Loading report...</p>
+    </ngx-spinner>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container text-center py-5">
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+      <h5>Failed to Load Report</h5>
+      <p>{{ error }}</p>
+      <button
+        type="button"
+        class="btn btn-primary mt-3"
+        (click)="retry()"
+      >
+        <i class="fas fa-redo me-2"></i>
+        Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Report Content -->
+  <div
+    *ngIf="!loading && !error"
+    [id]="printElementId"
+    class="report-content-wrapper"
+  >
+    <!-- Dynamic report component will be loaded here -->
+    <ng-template #reportContainer></ng-template>
+  </div>
+</div>
+
+<!-- Modal Footer -->
+<div class="modal-footer report-modal-footer" *ngIf="!loading && !error">
+  <div class="footer-info">
+    <small class="text-muted">
+      <i class="fas fa-info-circle me-1"></i>
+      Use the buttons above to download PDF, send email, or print this report.
+    </small>
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="close()"
+  >
+    <i class="fas fa-times me-1"></i>
+    Close
+  </button>
+</div>

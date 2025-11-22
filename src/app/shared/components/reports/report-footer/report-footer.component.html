@@ -1,0 +1,61 @@
+<div class="report-footer" [ngClass]="customClass">
+  <!-- Top Border -->
+  <div class="footer-border"></div>
+
+  <!-- Terms and Conditions -->
+  <div class="terms-section" *ngIf="showTerms && termsText">
+    <h6 class="terms-title">Terms and Conditions:</h6>
+    <p class="terms-text">{{ termsText }}</p>
+  </div>
+
+  <!-- Additional Notes -->
+  <div class="notes-section" *ngIf="notes">
+    <p class="notes-text">
+      <strong>Note:</strong> {{ notes }}
+    </p>
+  </div>
+
+  <!-- Signature Section -->
+  <div class="signature-section" *ngIf="showSignature">
+    <div class="signature-box">
+      <div class="signature-line"></div>
+      <p class="signature-label">{{ signatureLabel }}</p>
+    </div>
+  </div>
+
+  <!-- Footer Information Row -->
+  <div class="footer-info">
+    <!-- Print Information -->
+    <div class="print-info">
+      <span *ngIf="printedBy" class="info-item">
+        <i class="fas fa-user me-1"></i>
+        <strong>Printed By:</strong> {{ printedBy }}
+      </span>
+
+      <span class="info-item">
+        <i class="fas fa-calendar me-1"></i>
+        <strong>Printed On:</strong> {{ formattedDate | formatDate:'dd-MMM-yyyy HH:mm' }}
+      </span>
+    </div>
+
+    <!-- Page Number -->
+    <div class="page-info" *ngIf="showPageNumber && pageInfo">
+      <span class="info-item">
+        <i class="fas fa-file me-1"></i>
+        {{ pageInfo }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Tagline -->
+  <div class="tagline-section" *ngIf="tagline">
+    <p class="tagline-text">{{ tagline }}</p>
+  </div>
+
+  <!-- System Info -->
+  <div class="system-info">
+    <p class="system-text">
+      This is a computer-generated document. No signature is required.
+    </p>
+  </div>
+</div>

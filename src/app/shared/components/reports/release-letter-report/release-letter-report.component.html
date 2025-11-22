@@ -1,0 +1,175 @@
+<div class="print-a4">
+  <!-- Company Header -->
+  <app-report-header
+    [companyName]="company.name"
+    [branchName]="company.branchName"
+    [address]="company.address"
+    [addressLine2]="company.addressLine2"
+    [city]="company.city"
+    [state]="company.state"
+    [postalCode]="company.postalCode"
+    [logoUrl]="company.logoUrl"
+    [phone]="company.phone"
+    [email]="company.email"
+    [website]="company.website"
+    [gst]="company.gst"
+    [pan]="company.pan">
+  </app-report-header>
+
+  <!-- Report Title -->
+  <h4 class="report-title text-center fw-bold">CARGO RELEASE LETTER</h4>
+
+  <!-- Letter Date and Reference -->
+  <div class="letter-meta">
+    <p class="mb-2"><strong>Date:</strong> {{ todayDate | formatDate:'dd-MMM-yyyy' }}</p>
+    <p class="mb-2"><strong>Ref:</strong> {{ company.name }}/REL/{{ masterJob.jobNumber }}</p>
+  </div>
+
+  <!-- To Address -->
+  <div class="to-address">
+    <p class="mb-1"><strong>To,</strong></p>
+    <p class="mb-1 fw-bold">{{ masterJob.consigneeName || 'The Consignee' }}</p>
+    <p class="mb-1">Subject: Cargo Release Authorization</p>
+  </div>
+
+  <!-- Letter Salutation -->
+  <div class="letter-body mt-4">
+    <p class="mb-3">Dear Sir/Madam,</p>
+
+    <p class="mb-3">
+      With reference to the above, we are pleased to inform you that the following shipment has arrived
+      and is ready for clearance and release.
+    </p>
+
+    <!-- Shipment Details Box -->
+    <div class="details-box mt-4 mb-4">
+      <h6 class="box-title">Shipment Details</h6>
+
+      <div class="row">
+        <div class="col-6">
+          <div class="info-group">
+            <p class="info-item">
+              <span class="label">Job No:</span>
+              <span class="value">{{ masterJob.jobNumber }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">MBL No:</span>
+              <span class="value">{{ masterJob.mblNumber }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Vessel Name:</span>
+              <span class="value">{{ masterJob.vesselName }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Voyage No:</span>
+              <span class="value">{{ masterJob.voyageNumber }}</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="info-group">
+            <p class="info-item">
+              <span class="label">Port of Loading:</span>
+              <span class="value">{{ masterJob.pol }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Port of Discharge:</span>
+              <span class="value">{{ masterJob.pod }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Arrival Date (ETA):</span>
+              <span class="value">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Commodity:</span>
+              <span class="value">{{ masterJob.commodity }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container Details -->
+    <div class="container-details mb-4">
+      <h6 class="section-subtitle">Container Details ({{ containerCount }} Container<span *ngIf="containerCount !== 1">s</span>)</h6>
+
+      <table class="table table-bordered table-sm">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 5%">#</th>
+            <th style="width: 25%">Container No</th>
+            <th style="width: 15%">Size/Type</th>
+            <th style="width: 20%">Seal No</th>
+            <th style="width: 15%" class="text-end">Weight (KG)</th>
+            <th style="width: 10%" class="text-end">Packages</th>
+            <th style="width: 10%">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let container of containers; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="fw-bold">{{ container.containerNumber }}</td>
+            <td>{{ container.containerType }}</td>
+            <td>{{ container.sealNumber }}</td>
+            <td class="text-end">{{ container.weight | number:'1.2-2' }}</td>
+            <td class="text-end">{{ container.packages }}</td>
+            <td>
+              <span class="badge bg-success" *ngIf="container.status === 'Loaded'">Loaded</span>
+              <span class="badge bg-warning" *ngIf="container.status === 'Empty'">Empty</span>
+            </td>
+          </tr>
+          <tr *ngIf="containers.length === 0">
+            <td colspan="7" class="text-center text-muted">No containers available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Release Authorization Paragraph -->
+    <p class="mb-3">
+      This is to authorize the release of the above-mentioned cargo to <strong>{{ masterJob.consigneeName }}</strong>
+      or their authorized representative upon presentation of this letter along with necessary original documents.
+    </p>
+
+    <p class="mb-3">
+      Kindly arrange for the release of cargo at the earliest convenience. All charges, duties, and fees must be
+      settled prior to cargo release as per the terms and conditions.
+    </p>
+
+    <!-- Important Note -->
+    <div class="note-box mt-4 mb-4">
+      <p class="mb-2"><strong>Important Notes:</strong></p>
+      <ul class="mb-0">
+        <li>All customs formalities must be completed before cargo release</li>
+        <li>Original documents must be presented for verification</li>
+        <li>Demurrage and detention charges (if any) must be settled</li>
+        <li>This release letter is valid for 7 days from the date of issue</li>
+      </ul>
+    </div>
+
+    <!-- Closing -->
+    <p class="mb-4">
+      Should you require any further assistance or clarification, please do not hesitate to contact us.
+    </p>
+
+    <p class="mb-3">Thanking you,</p>
+    <p class="mb-5">Yours faithfully,</p>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+      <div class="signature-line"></div>
+      <p class="mb-1 fw-bold">Authorized Signatory</p>
+      <p class="mb-1">{{ company.name }}</p>
+      <p class="text-muted" style="font-size: 0.875rem;">{{ company.branchName }}</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-report-footer
+    [printedBy]="printInfo.printedBy"
+    [printedOn]="printInfo.printedOn"
+    [showSignature]="false"
+    [notes]="'This is a system-generated release letter. Please verify all details before proceeding.'">
+  </app-report-footer>
+</div>

@@ -40,13 +40,16 @@
             <i class="fas fa-print me-1"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+             @if(selectedDepartmentType === "AIR"){
+               <button class="text-dark" ngbDropdownItem (click)="reportHAWB()">HAWB</button>
+             }@else{ 
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
               Order</button>
             <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(true)">Cargo Arrival
               Notice with charges</button>
                <button class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
-            <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Landing</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportBill()">House Bill of Lading</button>
             <button class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">Shipment Profit and
               Loss</button>
             <button class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Imdeminty</button>
@@ -55,6 +58,16 @@
             <button class="text-dark" ngbDropdownItem (click)="reportCertificateofOrgin()">Certificate of
               Origin
             </button>
+              <button class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
+            </button>
+             <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
+            </button>
+             <button class="text-dark" ngbDropdownItem (click)="reportMilestoneSummary()">Milestone Summary
+            </button> 
+           
+            <!-- <button class="text-dark" ngbDropdownItem (click)="reportDeliveryNote()">Delivery Note
+            </button> -->
+             }
           </div>
         </div>
       </div>
@@ -91,7 +104,7 @@
           <label for="text-input" [ngClass]="{
             'input-label': true,
             'bg-transparent': !b['HBLNo']?.getRawValue()
-           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger">*</span></label>
+           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}} <span class="text-danger">*</span></label>
         </div>
       </div>
 
@@ -1022,7 +1035,7 @@
                 </div>
               </div>
             </div>
-            } @else if(selectedFCLLCL === "AIR"){
+            } @else if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">Chargeable Weight</div>
@@ -1091,6 +1104,43 @@
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
         (reloadParent)="loadHouseById($event)"></app-cost-entry>
     </div>
+<!-- BOE -->
+  <div class="workspace-content" [hidden]="selectedTab !== 'BOE'">
+  <app-boe-entry
+    #boeEntryComponent
+    screenName="HouseJob"
+    [dataItems]="boeDataArray"
+    [resetTrigger]="resetTriggerBOE"
+    [formData]="commonFormValue"
+    (dataEmitter)="handleBOEChange($event)"
+    (reloadParent)="loadHouseById($event)">
+  </app-boe-entry>
+</div>
+
+<div class="workspace-content" [hidden]="selectedTab !== 'Vehicle'">
+  <app-vehicle
+    #vehicleComponent
+    screenName="HouseJob"
+    [dataItems]="vehicleDataArray"
+    [resetTrigger]="resetTriggerVehicle"
+    [formData]="commonFormValue"
+    (dataEmitter)="handleVehicleChange($event)"
+    (reloadParent)="loadHouseById($event)">
+  </app-vehicle>
+</div>
+
+<div class="workspace-content" [hidden]="selectedTab !== 'Customs'">
+  <app-customs
+    #customsComponent
+    screenName="HouseJob"
+    [dataItems]="customsDataArray"
+    [resetTrigger]="resetTriggerCustoms"
+    [formData]="commonFormValue"
+    (dataEmitter)="handleCustomsChange($event)"
+    (reloadParent)="loadHouseById($event)">
+  </app-customs>
+</div>
+
 
     <!-- Other Tabs -->
     <div class="workspace-content" [hidden]="selectedTab !== 'Cargo'">
@@ -1197,7 +1247,7 @@
               }
             </div>
           </aside>
-          @if(selectedFCLLCL === "AIR") {
+          @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL") {
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -1346,7 +1396,7 @@
                 <th>Date</th>
                 <th>External Pkg</th>
                 <th>No of Pkg</th>
-                @if(selectedFCLLCL === "AIR"){
+                @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
                 <th>UOM</th>
                 <th>Length</th>
                 <th>Width</th>
@@ -1380,7 +1430,7 @@
                 <td>{{product.value.ShippingBillDate | formatDate}}</td>
                 <td>{{product.value.ExternaPkg}}</td>
                 <td>{{product.value.ExternlQty}}</td>
-                @if(selectedFCLLCL === "AIR"){
+                @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
                 <td>{{getUomName(product.value.UomMasterSid)}}</td>
                 <td>{{product.value.Length}}</td>
                 <td>{{product.value.Width}}</td>
@@ -1768,6 +1818,27 @@
             </div>
           </aside>
           }
+           <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="DONo" >
+              <label for="text-input" class="input-label">DO No<span class="text-danger"></span></label>
+            </div>
+          </aside>
+           <aside class="col-md-3">
+            <div class=" custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  formControlName="DODate" [minDate]="minDate" #d16="ngbDatepicker" (keydown.arrowDown)="d16.open()"
+                  (click)="d16.toggle()" container="body" />
+                <button class="btn  bi bi-calendar3 px-0" (click)="d16.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+              <label for="" class="input-label">Do Date <span class="text-danger"></span>
+              </label>
+
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -1797,6 +1868,19 @@
       </app-follow-up>
     </div>
 
+    <!-- <div class="workspace-content" [hidden]="selectedTab !== 'BOE'">
+      <div class="col-md-12">
+        <div class="row compact-form">
+           <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                >
+              <label for="text-input" class="input-label"><span class="text-danger"></span></label>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div> -->
     <!-- <div class="workspace-content" *ngIf="selectedTab === 'Product'">
       <div class="modern-table-container">
         <div>
@@ -1985,7 +2069,7 @@
           }
         </div>
       </aside>
-      @if(selectedDepartmentType === "AIR"){
+      @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('UomMasterSid')?.value">
@@ -4580,7 +4664,7 @@
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
       </div>
-      } @else if(selectedFCLLCL === "AIR"){
+      } @else if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
       <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>

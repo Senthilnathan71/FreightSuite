@@ -230,6 +230,18 @@ export enum PaymentMode {
 }
 
 /**
+ * Instrument Mode enum
+ */
+export enum InstrumentMode {
+  Cheque = 'Cheque',
+  DD = 'DD',
+  IMPS = 'IMPS',
+  NEFT = 'NEFT',
+  RTGS = 'RTGS',
+  Others = 'Others'
+}
+
+/**
  * Receipt voucher status
  */
 export enum ReceiptStatus {

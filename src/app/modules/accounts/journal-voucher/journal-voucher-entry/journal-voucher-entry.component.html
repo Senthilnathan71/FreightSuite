@@ -28,11 +28,13 @@
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
-                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="postVoucher()" [disabled]="isPosted || !voucherHeaderSid">
-                        <i class="fas fa-check-circle me-1"></i>
-                        Post
-                    </button>
+                    <button type="button" 
+        class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+        (click)="onFinalSave()" 
+        [disabled]="isPosted || isSaving || form.invalid">
+    <i class="fas fa-check-circle me-1"></i>
+    Post
+</button>
                 </div>
             </div>
         </div>
@@ -80,7 +82,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <textarea formControlName="narration" class="custom-input-field sm" rows="1" placeholder=""
                                 maxlength="200"></textarea>
@@ -88,16 +90,16 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
+                    <!-- <aside class="col-md-4">
                         <div class="custom-form-group">
                             <textarea formControlName="remarks" class="custom-input-field sm" rows="1" placeholder=""
                                 maxlength="200"></textarea>
                             <label class="input-label">Remarks</label>
                         </div>
-                    </aside>
+                    </aside> -->
 
                     <aside class="col-md-2">
-                        <div class="custom-form-group custom-form-group-select">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!form.get('status')?.value">
                             <ng-select formControlName="status" [items]="statusList" bindLabel="name" bindValue="id"
                                 placeholder="">
                             </ng-select>
@@ -124,9 +126,10 @@
                     <thead class="bg-info">
                         <tr>
                             <th class="bg-transparent text-light" width="3%"></th>
-                            <th class="bg-transparent text-light" style="min-width:160px">Subledger</th>
+                            
                             <th class="bg-transparent text-light" style="min-width:160px">Ledger <span
                                     class="text-danger">*</span></th>
+                             <th class="bg-transparent text-light" style="min-width:160px">Subledger</th>
                             <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
                                     class="text-danger">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:90px">Ex.Rate <span
@@ -149,15 +152,7 @@
                                 </button>
                             </td>
 
-                            <td>
-                                <ng-select formControlName="ledgerMasterSid"
-                                    [items]="subledgerList"
-                                    bindLabel="CustomerName"
-                                    bindValue="SubledgerMasterSid"
-                                    appendTo="body"
-                                    placeholder="Select Subledger">
-                                </ng-select>
-                            </td>
+                           
                             <td>
                                 <ng-select formControlName="coaMasterSid"
                                     [items]="coaList"
@@ -165,6 +160,15 @@
                                     bindValue="COAMasterSid"
                                     appendTo="body"
                                     placeholder="Select Ledger">
+                                </ng-select>
+                            </td>
+                             <td>
+                                <ng-select formControlName="ledgerMasterSid"
+                                    [items]="row.get('filteredSubledgers')?.value || []"
+                                    bindLabel="SubledgerName"
+                                    bindValue="SubledgerMasterSid"
+                                    appendTo="body"
+                                    placeholder="Select Subledger">
                                 </ng-select>
                             </td>
                             <td>
@@ -211,10 +215,10 @@
                             <th class="bg-transparent text-light" style="min-width:130px">Dept</th>
                             <th class="bg-transparent text-light" style="min-width:150px">Charge</th>
                             <th class="bg-transparent text-light" style="min-width:90px">HS/SAC</th>
-                            <th class="bg-transparent text-light" style="min-width:120px">Master Job</th>
-                            <th class="bg-transparent text-light" style="min-width:120px">House Job</th>
                             <th class="bg-transparent text-light" style="min-width:70px">Tax%</th>
                             <th class="bg-transparent text-light" style="min-width:90px">Tax Amt</th>
+                            <th class="bg-transparent text-light" style="min-width:120px">Master Job</th>
+                            <th class="bg-transparent text-light" style="min-width:120px">House Job</th>
                             <th class="bg-transparent text-light" style="min-width:130px">Cost Center</th>
                             <th class="bg-transparent text-light" style="min-width:130px">Profit Center</th>
                         </tr>
@@ -232,17 +236,26 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <ng-select formControlName="chargeMasterSid"
-                                    [items]="chargeList"
-                                    bindLabel="chargeName"
-                                    bindValue="ChargeMasterSid"
-                                    appendTo="body"
-                                    placeholder="Charge">
-                                </ng-select>
-                            </td>
-                            <td>
-                                <input type="text" formControlName="hsnsac" class="form-control" readonly />
-                            </td>
+  <ng-select formControlName="chargeMasterSid"
+      [items]="chargeList"
+      bindLabel="chargeName"
+      bindValue="ChargeMasterSid"
+      appendTo="body"
+      placeholder="Charge">
+  </ng-select>
+</td>
+<td>
+  <!-- <input type="text" formControlName="hsnsac" class="form-control" readonly /> -->
+   <ng-select [items]="hssacList" bindLabel="HSSACCode" bindValue="HSSACMasterSid"
+                  placeholder="" formControlName="HSSACCode" appendTo="body">
+                </ng-select>
+</td>
+<td>
+  <input type="number" step="0.01" formControlName="taxPercentage" class="form-control" />
+</td>
+<td>
+  <input type="number" step="0.01" formControlName="taxAmount" class="form-control" readonly />
+</td>
                             <td>
                                 <ng-select formControlName="masterJobSid"
                                     [items]="masterJobList"
@@ -260,12 +273,6 @@
                                     appendTo="body"
                                     placeholder="House Job">
                                 </ng-select>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" formControlName="taxPercentage" class="form-control" readonly />
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" formControlName="taxAmount" class="form-control" readonly />
                             </td>
                             <td>
                                 <ng-select formControlName="costCenterMasterSid"

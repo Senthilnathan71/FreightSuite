@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, TemplateRef } from '@angular/core';
-import { FormBuilder,FormGroup,Validators,ReactiveFormsModule, FormsModule,} from '@angular/forms';
+import { FormBuilder,FormGroup,Validators,ReactiveFormsModule, FormsModule, ValidationErrors, AbstractControl, ValidatorFn,} from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -156,13 +156,50 @@ hasAnyDropdownPermission(): boolean {
       YearName: ['', Validators.required],
       YearCode: ['', Validators.required],
       StartDate: [this.todayDate, Validators.required],
-      EndDate: [this.todayDate, Validators.required],
-      CurrentYear: ['', [Validators.required, Validators.maxLength(1)]],
-    YearEndCompleted: ['', [Validators.required, Validators.maxLength(1)]],
+      EndDate: [{ value: this.calculateEndDate(this.todayDate), disabled: true }, Validators.required],
+      CurrentYear: [false], 
+      YearEndCompleted: [false],
       Remarks: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
       CompanyMasterSid: [null],
     });
+    this.yearForm.get('StartDate')?.valueChanges.subscribe((startDate) => {
+    if (startDate) {
+      const endDate = this.calculateEndDate(startDate);
+      this.yearForm.patchValue({
+        EndDate: endDate
+      });
+    }
+  });
+}
+
+// Calculate end date as 364 days from start date
+calculateEndDate(startDate: any): any {
+  if (!startDate) return this.todayDate;
+  
+  let start: Date;
+  
+  // Handle both NgbDateStruct and Date objects
+  if (startDate instanceof Date) {
+    start = startDate;
+  } else {
+    start = new Date(startDate.year, startDate.month - 1, startDate.day);
+  }
+  
+  const end = new Date(start);
+  end.setDate(start.getDate() + 364); // Add exactly 364 days
+  
+  // Convert back to NgbDateStruct if needed
+  if (typeof startDate === 'object' && startDate.year) {
+    return {
+      year: end.getFullYear(),
+      month: end.getMonth() + 1,
+      day: end.getDate()
+    };
+  }
+  
+  return end;
+
   }
 
   resetForm(): void {
@@ -184,19 +221,23 @@ hasAnyDropdownPermission(): boolean {
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail']};
-      const formValue = this.yearForm.value;
+      const formValue = this.yearForm.getRawValue();
 
       const payload = (this.isEditMode) ? {
         ...formValue,
         YearCode: Number(formValue.YearCode),
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         ...updatedBy,
+        CurrentYear: formValue.CurrentYear ? 'Y' : 'N', 
+  YearEndCompleted: formValue.YearEndCompleted ? 'Y' : 'N',
         status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       } : {
         ...formValue,
         YearCode: Number(formValue.YearCode),
         CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         ...createdBy,
+        CurrentYear: formValue.CurrentYear ? 'Y' : 'N', 
+  YearEndCompleted: formValue.YearEndCompleted ? 'Y' : 'N',
         status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       };
 
@@ -318,6 +359,8 @@ hasAnyDropdownPermission(): boolean {
           ...data,
           StartDate:startDate,
           EndDate: endDate,
+           CurrentYear: data.CurrentYear === 'Y',
+        YearEndCompleted: data.YearEndCompleted === 'Y',
           status: this.statusMap[data.status] || 'Active' 
         },
       );
@@ -425,13 +468,16 @@ hasAnyDropdownPermission(): boolean {
   }
 
   // Create-mode: reset to sensible defaults
+  const startDate = this.todayDate;
+  const endDate = this.calculateEndDate(startDate);
+  
   this.yearForm.reset({
     YearName: '',
     YearCode: '',
-    StartDate: this.todayDate,
-    EndDate: this.todayDate,
-    CurrentYear: '',
-    YearEndCompleted: '',
+    StartDate: startDate,
+    EndDate: endDate,
+    CurrentYear: false,
+    YearEndCompleted: false,
     Remarks: '',
     status: 'Active'
   });
@@ -445,6 +491,23 @@ hasAnyDropdownPermission(): boolean {
 
   // Disable save button until form becomes valid again
   this.btnDisable = true;
+}
+dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const startDate = control.get('StartDate')?.value;
+  const endDate = control.get('EndDate')?.value;
+  
+  if (!startDate || !endDate) {
+    return null;
+  }
+
+  const start = new Date(startDate.year, startDate.month - 1, startDate.day);
+  const end = new Date(endDate.year, endDate.month - 1, endDate.day);
+  
+  // Calculate difference in days
+  const diffTime = end.getTime() - start.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays === 364 ? null : { dateRangeInvalid: true };
 }
 
 }

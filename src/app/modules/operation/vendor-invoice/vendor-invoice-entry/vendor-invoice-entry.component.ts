@@ -165,7 +165,12 @@ gstTypes = [
 
   // TDS Configuration
   tdsConfig: any = null;
-
+currentUserState: string;
+  currentFinancialYear : number;
+  currentCountry : number;
+  currentCurrency: number;
+  currentUserCurrency : string;
+  currentUserCountry : string;
   // Country/Tax mode
   bookingModeCountry: string = 'india';
 
@@ -204,24 +209,36 @@ gstTypes = [
     }
 
     try {
-      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-      this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-      console.log('=== INITIAL COMPANY DATA ===');
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
+    this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    this.currentCountry= Number(this.currentCompany?.CountryMasterSid)
+    this.currentCurrency=Number(this.currentCompany?.CurrencyMasterSid)
+    this.currentUserCurrency = String(this.currentCompany?.currencyMaster?.currencyName).trim().toLowerCase();
+    this.currentUserState = String(this.currentBranch?.stateMaster?.stateName).trim().toLowerCase();
+
+    console.log('=== INITIAL COMPANY DATA ===');
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    console.log('Company State:', this.getCompanyState());
+    console.log('Company State:', this.currentUserState);
+    console.log('Company Currency:', this.currentUserCurrency);
+    console.log('Current Country:', this.currentCountry);
+    console.log('Current Currency:', this.currentCurrency);
+    console.log('Current Financial Year:', this.currentFinancialYear);
 
-      // Set country mode from company settings
-      if (this.currentCompany?.CountryName) {
-        this.bookingModeCountry = this.currentCompany.CountryName.toLowerCase();
-      }
-      // if (this.currentBranch?.stateName) {
-      //   this.bookingModeCountry = this.currentBranch.stateName.toLowerCase();
-      // }
-    } catch (e) {
-      this.currentCompany = null;
-      this.currentBranch = null;
+    // Set country mode from company settings
+    if (this.currentCompany?.CountryName) {
+      this.bookingModeCountry = this.currentCompany.CountryName.toLowerCase();
+      console.log('DEBUG - Booking mode country:', this.bookingModeCountry);
     }
+  } catch (e) {
+    console.error('Error loading company data:', e);
+    this.currentCompany = null;
+    this.currentBranch = null;
+  }
+
 
     this.initForm();
     this.loadLookups();
@@ -284,6 +301,7 @@ gstTypes = [
       BillAmt: [0, [Validators.required, Validators.min(0)]],
       MBLNo: [''],
       HBLNo: [''],
+      PostStatus:['U'],
       InvoiceType: ['B2B'],
       GSTType: [''],
       Narration: [''],
@@ -300,10 +318,11 @@ gstTypes = [
         TDSSet: [{ value: '', disabled: true }],
         TDSCompany: [{ value: '', disabled: true }],
         ITSectionType: [{ value: '', disabled: true }],
-        ITSectionCode: [{ value: '', disabled: true }],
+        ITSectionCode: [{ value: 'null', disabled: true }],
         CertificateNo: [{ value: '', disabled: true }],
         Percentage: [{ value: 0, disabled: true }],
         TaxableAmt: [{ value: 0, disabled: true }],
+        TDSSetRateSid: [{ value: 0, disabled: true }],
         TDSAmt: [{ value: 0, disabled: true }],
         Reason: [''],
         TDSSectionCode:[''],
@@ -324,13 +343,14 @@ gstTypes = [
 
   createDetailGroup(data?: any): FormGroup {
   return this.fb.group({
+    VoucherDetailSid: [data?.VoucherDetailSid || null],
     CostRevenueChargesSid: [data?.CostRevenueChargesSid || null], // Store original cost ID
     ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
     ChargeDescription: [data?.ChargeDescription || ''],
     HSSACMasterSid: [data?.HSSACMasterSid || null],
     ChargeUOMSid: [data?.ChargeUOMSid || null],
     NumberOfUnit: [data?.NumberOfUnit || 1, [Validators.required, Validators.min(0)]],
-    DrCr: [data?.DrCr || 'Dr', Validators.required],
+    DrCr: [data?.DrCr || 'D', Validators.required],
     CurrencyCode: [data?.CurrencyCode || this.vendorInvoiceForm.get('CurrencyCode')?.value || null],
     Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
     ExchangeRate: [data?.ExchangeRate || this.vendorInvoiceForm.get('ExchangeRate')?.value || 1],
@@ -926,48 +946,48 @@ getCompanyState(): string {
   console.log('User Data:', this.userData);
 
   // Method 1: Check if currentCompany has stateMaster directly
-  if (this.currentCompany.stateMaster) {
-    const state = this.currentCompany.stateMaster.stateName || this.currentCompany.stateMaster.StateName;
-    if (state) {
-      console.log('Company State from currentCompany.stateMaster:', state);
-      return state;
-    }
-  }
+  // if (this.currentCompany.stateMaster) {
+  //   const state = this.currentCompany.stateMaster.stateName || this.currentCompany.stateMaster.StateName;
+  //   if (state) {
+  //     console.log('Company State from currentCompany.stateMaster:', state);
+  //     return state;
+  //   }
+  // }
 
   // Method 2: Check if currentCompany has StateMasterSid and look up in stateList
-  if (this.currentCompany.StateMasterSid && this.stateList.length > 0) {
-    const state = this.stateList.find(s => 
-      s.StateMasterSid === this.currentCompany.StateMasterSid || 
-      s.stateMasterSid === this.currentCompany.StateMasterSid
-    );
-    if (state) {
-      const stateName = state.stateName || state.StateName;
-      console.log('Company State from currentCompany.StateMasterSid lookup:', stateName);
-      return stateName;
-    }
-  }
+  // if (this.currentCompany.StateMasterSid && this.stateList.length > 0) {
+  //   const state = this.stateList.find(s => 
+  //     s.StateMasterSid === this.currentCompany.StateMasterSid || 
+  //     s.stateMasterSid === this.currentCompany.StateMasterSid
+  //   );
+  //   if (state) {
+  //     const stateName = state.stateName || state.StateName;
+  //     console.log('Company State from currentCompany.StateMasterSid lookup:', stateName);
+  //     return stateName;
+  //   }
+  // }
 
   // Method 3: Check currentBranch state information
-  if (this.currentBranch && this.currentBranch.stateMaster) {
-    const state = this.currentBranch.stateMaster.stateName || this.currentBranch.stateMaster.StateName;
-    if (state) {
-      console.log('Company State from currentBranch.stateMaster:', state);
-      return state;
-    }
-  }
+  // if (this.currentBranch && this.currentBranch.stateMaster) {
+  //   const state = this.currentBranch.stateMaster.stateName || this.currentBranch.stateMaster.StateName;
+  //   if (state) {
+  //     console.log('Company State from currentBranch.stateMaster:', state);
+  //     return state;
+  //   }
+  // }
 
-  // Method 4: Check currentBranch StateMasterSid
-  if (this.currentBranch && this.currentBranch.StateMasterSid && this.stateList.length > 0) {
-    const state = this.stateList.find(s => 
-      s.StateMasterSid === this.currentBranch.StateMasterSid || 
-      s.stateMasterSid === this.currentBranch.StateMasterSid
-    );
-    if (state) {
-      const stateName = state.stateName || state.StateName;
-      console.log('Company State from currentBranch.StateMasterSid lookup:', stateName);
-      return stateName;
-    }
-  }
+  // // Method 4: Check currentBranch StateMasterSid
+  // if (this.currentBranch && this.currentBranch.StateMasterSid && this.stateList.length > 0) {
+  //   const state = this.stateList.find(s => 
+  //     s.StateMasterSid === this.currentBranch.StateMasterSid || 
+  //     s.stateMasterSid === this.currentBranch.StateMasterSid
+  //   );
+  //   if (state) {
+  //     const stateName = state.stateName || state.StateName;
+  //     console.log('Company State from currentBranch.StateMasterSid lookup:', stateName);
+  //     return stateName;
+  //   }
+  // }
 
   // Method 5: Navigate through userData structure to get branch state
   if (this.userData && this.userData.userCompanyMaster) {
@@ -1132,6 +1152,7 @@ private getCustomerCountryCode(vendor: any): string {
             TDSCompany: this.currentCompany?.CompanyName || '',
             ITSectionType: this.tdsConfig.companyType || '',
             ITSectionCode: this.tdsConfig.itSectionCode || '',
+            TDSSetRateSid: this.tdsConfig.tdsSetRateSid || 0,
             CertificateNo: this.tdsConfig.certificateNo || '',
             Percentage: this.tdsConfig.tdsRate || 0
           });
@@ -1146,6 +1167,7 @@ private getCustomerCountryCode(vendor: any): string {
             TDSCompany: '',
             ITSectionType: '',
             ITSectionCode: '',
+            TDSSetRateSid: 0,
             CertificateNo: '',
             Percentage: 0,
             TDSAmt: 0
@@ -1549,11 +1571,27 @@ getMasterJobNumber(jobSid: number): string {
     });
   }
 
-  setFormReadonly() {
-    if (this.isViewMode) {
-      this.vendorInvoiceForm.disable();
-    }
+ setFormReadonly() {
+  if (this.isViewMode || this.isPosted) {
+    this.vendorInvoiceForm.disable();
+    
+    // Also disable details array if posted
+    // if (this.isPosted) {
+    //   this.details.disable();
+    // }
+  } else {
+    this.vendorInvoiceForm.enable();
+    this.details.enable();
+    
+    // Keep readonly fields as is
+    this.vendorInvoiceForm.get('VoucherNumber')?.disable();
+    this.vendorInvoiceForm.get('PostedOn')?.disable();
+    this.vendorInvoiceForm.get('PartyAddress')?.disable();
+    this.vendorInvoiceForm.get('GSTNo')?.disable();
+    this.vendorInvoiceForm.get('PlaceOfSupply')?.disable();
   }
+}
+
 
   formatDateForDisplay(date: string | Date | null): string {
   if (!date) return '';
@@ -1592,6 +1630,7 @@ getMasterJobNumber(jobSid: number): string {
       BillAmt: data.Amount || 0,
       MBLNo: data.MasterNumber,
       HBLNo: data.HouseNumber,
+      PostStatus: data.PostStatus,
       InvoiceType: data.InvoiceType || 'B2B',
       GSTType: data.GSTType,
       Narration: data.Narration || '',
@@ -1678,6 +1717,7 @@ getMasterJobNumber(jobSid: number): string {
       const tds = data.VoucherTDS[0];
       this.tdsGroup.patchValue({
         ITSectionCode: tds.ITSectionCode,
+        TDSSetRateSid: tds.TDSSetRateSid,
         Percentage: tds.TDSRate,
         TaxableAmt: tds.TaxableAmount,
         TDSAmt: tds.TDSAmount,
@@ -1754,6 +1794,7 @@ getMasterJobNumber(jobSid: number): string {
   const formValue = this.vendorInvoiceForm.getRawValue();
 
   const payload: any = {
+    VoucherHeaderSid: this.headerId,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     PartyMasterSid: formValue.PartyMasterSid,
@@ -1766,18 +1807,19 @@ getMasterJobNumber(jobSid: number): string {
     CurrencyMasterSid: this.currencyList.find(c => c.currencyCode === formValue.CurrencyCode)?.CurrencyMasterSid,
     ExchangeRate: formValue.ExchangeRate,
     BillNo: formValue.BillNo,
-    BillDate: this.parseNgbDateToISO(formValue.BillDate),
+    BillDate: this.fromNgbDate(formValue.BillDate),
     BillAmt: formValue.BillAmt,
     MBLNo: formValue.MBLNo,
     HBLNo: formValue.HBLNo,
+    PostStatus: formValue.PostStatus,
     InvoiceType: formValue.InvoiceType,
     GSTType: formValue.GSTType,
     Narration: formValue.Narration,
     MasterJobSid: formValue.MasterJobSid,
     HouseJobSid: formValue.HouseJobSid,
-    VoucherDate: this.parseNgbDateToISO(formValue.VoucherDate),
-    PostDate: formValue.PostedOn ? this.parseNgbDateToISO(formValue.PostedOn) : null,
-    status: formValue.Status,
+    VoucherDate: this.fromNgbDate(formValue.VoucherDate),
+    PostDate: formValue.PostedOn ? this.fromNgbDate(formValue.PostedOn) : null,
+    Status: formValue.Status,
     CreatedBy: this.currUserEmail || 'System',
     UpdatedBy: this.currUserEmail || 'System'
   };
@@ -1785,7 +1827,7 @@ getMasterJobNumber(jobSid: number): string {
   // Add details with CostRevenueChargesSid
   payload.VoucherDetail = formValue.voucherDetails.map((detail: any, index: number) => ({
     Sno: index + 1,
-    CostRevenueChargesSid: detail.CostRevenueChargesSid, // Include original cost ID
+    VoucherDetailSid: detail.VoucherDetailSid ? Number(detail.VoucherDetailSid) : null,
     ChargeMasterSid: detail.ChargeMasterSid,
     ChargeDescription: detail.ChargeDescription,
     HSSACMasterSid: detail.HSSACMasterSid,
@@ -1813,7 +1855,7 @@ getMasterJobNumber(jobSid: number): string {
   }));
 
   // Add TDS
-  payload.VoucherTDS = this.prepareVoucherTDSPayload(formValue.voucherDetails);
+  // payload.VoucherTDS = this.prepareVoucherTDSPayload(formValue.voucherDetails);
 
   // Add others
   payload.VoucherOthers = {
@@ -1823,41 +1865,168 @@ getMasterJobNumber(jobSid: number): string {
 
   return payload;
 }
-  prepareVoucherTDSPayload(details: any[]): any[] {
-  const taxRecords: any[] = [];
+//   prepareVoucherTDSPayload(details: any[]): any[] {
+//   const taxRecords: any[] = [];
   
-  details.forEach((detail: any) => {
-    if (detail.TaxAmount1 > 0 || detail.TaxAmount2 > 0 || detail.TaxAmountIGST > 0) {
-      if (detail.TaxAmountIGST > 0) {
-        taxRecords.push({
-          TaxType: 'IGST',
-          TaxPercentage: detail.TaxPercentageIGST,
-          TaxAmount: detail.TaxAmountIGST,
-          HSSACMasterSid: detail.HSSACMasterSid
-        });
+//   details.forEach((detail: any) => {
+//     if (detail.TaxAmount1 > 0 || detail.TaxAmount2 > 0 || detail.TaxAmountIGST > 0) {
+//       if (detail.TaxAmountIGST > 0) {
+//         taxRecords.push({
+//           TaxType: 'IGST',
+//           TaxPercentage: detail.TaxPercentageIGST,
+//           TaxAmount: detail.TaxAmountIGST,
+//           HSSACMasterSid: detail.HSSACMasterSid,
+//           TDSSetRateSid: detail.TDSSetRateSid,
+//           ITSectionCode: this.tdsGroup.get('ITSectionCode')?.value || ''
+//         });
+//       } else {
+//         if (detail.TaxAmount1 > 0) {
+//           taxRecords.push({
+//             TaxType: 'CGST',
+//             TaxPercentage: detail.TaxPercentage1,
+//             TaxAmount: detail.TaxAmount1,
+//             TDSSetRateSid: detail.TDSSetRateSid,
+//             HSSACMasterSid: detail.HSSACMasterSid,
+//             ITSectionCode: this.tdsGroup.get('ITSectionCode')?.value || ''
+//           });
+//         }
+//         if (detail.TaxAmount2 > 0) {
+//           taxRecords.push({
+//             TaxType: 'SGST',
+//             TaxPercentage: detail.TaxPercentage2,
+//             TaxAmount: detail.TaxAmount2,
+//             TDSSetRateSid: detail.TDSSetRateSid,
+//             HSSACMasterSid: detail.HSSACMasterSid,
+//             ITSectionCode: this.tdsGroup.get('ITSectionCode')?.value || ''
+//           });
+//         }
+//       }
+//     }
+//   });
+  
+//   return taxRecords;
+// }
+
+onFinalSave() {
+  if (this.vendorInvoiceForm.invalid) {
+    this.vendorInvoiceForm.markAllAsTouched();
+    this.appSettingService.showWarning('Please fill required vendor invoice fields.');
+    return;
+  }
+
+  if (this.details.length === 0) {
+    this.appSettingService.showWarning('Please add at least one charge line.');
+    return;
+  }
+
+  this.recalculateAllRows();
+  this.saveVendorInvoice(true); // true indicates final save
+}
+
+private saveVendorInvoice(isFinal: boolean) {
+  const payload = this.preparePayload();
+
+  this.spinner.show();
+  
+  const saveObservable = this.headerId 
+    ? this.operationService.updateVendorInvoiceById(this.headerId, payload)
+    : this.operationService.createVendorInvoice(payload);
+
+  saveObservable.subscribe({
+    next: async (resp: any) => {
+      if (resp?.status) {
+        const voucherHeaderSid = resp.data?.newVoucher?.VoucherHeaderSid || resp.data?.VoucherHeaderSid || this.headerId;
+        
+        if (isFinal && voucherHeaderSid) {
+          // If final save, post the voucher
+          await this.postVoucher(voucherHeaderSid);
+        } else {
+          this.spinner.hide();
+          const message = isFinal ? 'Vendor invoice saved and posted successfully!' : 'Vendor invoice saved as draft successfully!';
+          this.appSettingService.showSuccess(message);
+          
+          if (!this.headerId && voucherHeaderSid) {
+            this.headerId = voucherHeaderSid;
+            this.router.navigate(['operation/vendor-invoice/entry', voucherHeaderSid]);
+          }
+        }
       } else {
-        if (detail.TaxAmount1 > 0) {
-          taxRecords.push({
-            TaxType: 'CGST',
-            TaxPercentage: detail.TaxPercentage1,
-            TaxAmount: detail.TaxAmount1,
-            HSSACMasterSid: detail.HSSACMasterSid
-          });
-        }
-        if (detail.TaxAmount2 > 0) {
-          taxRecords.push({
-            TaxType: 'SGST',
-            TaxPercentage: detail.TaxPercentage2,
-            TaxAmount: detail.TaxAmount2,
-            HSSACMasterSid: detail.HSSACMasterSid
-          });
-        }
+        this.spinner.hide();
+        this.appSettingService.showError('Error saving vendor invoice.');
       }
+    },
+    error: (err) => {
+      this.spinner.hide();
+      console.error('Save vendor invoice error', err);
+      this.appSettingService.showError('Failed to save vendor invoice.');
     }
   });
-  
-  return taxRecords;
 }
+
+
+
+private async postVoucher(voucherHeaderSid: number) {
+  try {
+    const currentCompany = this.currentCompany;
+    const currentBranch = this.currentBranch;
+    const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
+    const currentCountry =Number(this.currentCompany?.CountryMasterSid);
+    const currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+    const currentCountryName = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    const currentUserEmail =  this.userData?.userEmail;
+    
+ 
+    
+    if (!currentCompany || !currentBranch || !currentFinancialYear || !currentCountry || !currentCurrency) {
+      throw new Error('Company, branch, or financial year or country information is missing');
+     
+    }
+
+    const postPayload = {
+      VoucherHeaderSid: voucherHeaderSid,
+      CompanyMasterSid: currentCompany.CompanyMasterSid,
+      BranchMasterSid: currentBranch.BranchMasterSid,
+      YearMasterSid: currentFinancialYear,
+      LocalCurrencyMasterSid: currentCurrency  ,
+      LocalCurrencyCode: currentCompany.CurrencyCode , 
+      PostedBy: currentUserEmail ,
+      TaxDetails: {
+        CountryMasterSid: currentCountry,
+        countryName: currentCountryName,
+        TaxCategory: 'Inter', 
+        EffectiveFrom: new Date().toISOString(),
+        TaxType: 'Output' 
+      }
+    };
+
+    const result = await firstValueFrom(this.operationService.postVoucherByVoucherSid(postPayload));
+    
+    this.spinner.hide();
+    if (result.status) {
+      this.appSettingService.showSuccess('Invoice posted successfully!');
+      this.vendorInvoiceData.PostStatus = 'P'; // Update local state
+      
+      // Navigate to list or stay on page but disable edits
+      this.router.navigate(['/operation/vendor-invoice/list']);
+    } else {
+      this.appSettingService.showError(result.message || 'Failed to post invoice.');
+    }
+  } catch (error) {
+    this.spinner.hide();
+    console.error('Post voucher error:', error);
+    this.appSettingService.showError('Failed to post invoice. Please try again.');
+  }
+}
+// Check if voucher is posted (for UI controls)
+get isPosted(): boolean {
+  return this.vendorInvoiceData?.PostStatus === 'P';
+}
+
+// Check if voucher is draft
+get isDraft(): boolean {
+  return !this.vendorInvoiceData?.PostStatus || this.vendorInvoiceData?.PostStatus === 'U';
+}
+
 
   onReset() {
     if (this.isEditMode) {
@@ -1997,10 +2166,14 @@ getMasterJobNumber(jobSid: number): string {
     return { day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear() };
   }
 
-  parseNgbDateToISO(ngbDate: NgbDateStructLike | null): string | null {
-    if (!ngbDate) return null;
-    const d = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day);
-    return d.toISOString();
+  // parseNgbDateToISO(ngbDate: NgbDateStructLike | null): string | null {
+  //   if (!ngbDate) return null;
+  //   const d = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day);
+  //   return d.toISOString();
+  // }
+  private fromNgbDate(s: NgbDateStructLike | null): Date | null {
+    if (!s || !s.year) return null;
+    return new Date(s.year, (s.month || 1) - 1, s.day || 1);
   }
 
   markFormGroupTouched(formGroup: FormGroup | FormArray) {

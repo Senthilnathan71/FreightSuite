@@ -1888,8 +1888,8 @@ getFieldConfiguration() {
   }
   // Product Master
 
-  getAllProducts(CompanyMasterSid:number) {
-    return this.http.post<{ data: Product[] }>('product',{ CompanyMasterSid }).pipe(
+  getAllProducts() {
+    return this.http.get<{ data: Product[] }>('product').pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -4085,6 +4085,76 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     map((resp) => resp.data)
   );
 }
+
+ // Company Configuration
+  getAllCompanyConfigsByCompanyId(companyId: number) {
+    return this.http.get<{ data: any }>(`company-config/company/${companyId}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getCompanyConfigById(id: number) {
+    return this.http.get<{ data: any }>(`company-config/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCompanyConfig(payload: any) {
+    return this.http.post('company-config/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  createBulkCompanyConfigs(payload: any[]) {
+    return this.http.post('company-config/bulk-create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCompanyConfigById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`company-config/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteCompanyConfigById(id: number) {
+    return this.http.delete<{ data: any }>(`company-config/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  bulkUpdateCompanyConfigs(payload: any) {
+    return this.http.post('company-config/bulk-update', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  getConfigurationValue(companyId: number, configName: string) {
+    return this.http.get<{ data: any }>(`company-config/value/${companyId}/${configName}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 }
 
 

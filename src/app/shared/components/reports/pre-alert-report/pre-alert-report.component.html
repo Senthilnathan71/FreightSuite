@@ -1,0 +1,209 @@
+<div class="print-a4">
+  <!-- Company Header -->
+  <app-report-header
+    [companyName]="company.name"
+    [branchName]="company.branchName"
+    [address]="company.address"
+    [addressLine2]="company.addressLine2"
+    [city]="company.city"
+    [state]="company.state"
+    [postalCode]="company.postalCode"
+    [logoUrl]="company.logoUrl"
+    [phone]="company.phone"
+    [email]="company.email"
+    [website]="company.website"
+    [gst]="company.gst"
+    [pan]="company.pan">
+  </app-report-header>
+
+  <!-- Report Title -->
+  <h4 class="report-title text-center fw-bold">PRE-ALERT</h4>
+
+  <!-- Job Details Section -->
+  <div class="section-content">
+    <h6 class="section-title">Shipment Information</h6>
+
+    <div class="row">
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">Job No:</span>
+            <span class="value">{{ masterJob.jobNumber }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Job Date:</span>
+            <span class="value">{{ masterJob.jobDate | formatDate:'dd-MMM-yyyy' }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Customer:</span>
+            <span class="value">{{ masterJob.customerName }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Shipper:</span>
+            <span class="value">{{ masterJob.shipperName }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Consignee:</span>
+            <span class="value">{{ masterJob.consigneeName }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">Vessel:</span>
+            <span class="value fw-bold">{{ masterJob.vesselName }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Voyage:</span>
+            <span class="value">{{ masterJob.voyageNumber }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Port of Loading:</span>
+            <span class="value">{{ masterJob.pol }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Port of Discharge:</span>
+            <span class="value">{{ masterJob.pod }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Final Destination:</span>
+            <span class="value">{{ masterJob.finalDestination || 'N/A' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-2">
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">ETD:</span>
+            <span class="value text-primary fw-bold">{{ masterJob.etd | formatDate:'dd-MMM-yyyy' }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">ETA:</span>
+            <span class="value text-success fw-bold">{{ masterJob.eta | formatDate:'dd-MMM-yyyy' }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="info-group">
+          <p class="info-item">
+            <span class="label">Commodity:</span>
+            <span class="value">{{ masterJob.commodity }}</span>
+          </p>
+          <p class="info-item">
+            <span class="label">Service Type:</span>
+            <span class="value">{{ masterJob.serviceType || 'FCL' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container Details Section -->
+  <div class="section-content mt-3">
+    <h6 class="section-title">Container Details (Total: {{ containerCount }})</h6>
+
+    <table class="table table-bordered table-sm">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 20%">Container No</th>
+          <th style="width: 15%">Type/Size</th>
+          <th style="width: 15%">Seal No</th>
+          <th style="width: 12%" class="text-end">Weight (KG)</th>
+          <th style="width: 12%" class="text-end">CBM</th>
+          <th style="width: 10%" class="text-end">Packages</th>
+          <th style="width: 11%">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let container of containers; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="fw-bold">{{ container.containerNumber }}</td>
+          <td>{{ container.containerType }}</td>
+          <td>{{ container.sealNumber }}</td>
+          <td class="text-end">{{ container.weight | number:'1.2-2' }}</td>
+          <td class="text-end">{{ container.cbm | number:'1.2-2' }}</td>
+          <td class="text-end">{{ container.packages }}</td>
+          <td>
+            <span class="badge bg-success" *ngIf="container.status === 'Loaded'">Loaded</span>
+            <span class="badge bg-warning" *ngIf="container.status === 'Empty'">Empty</span>
+            <span class="badge bg-info" *ngIf="!container.status">N/A</span>
+          </td>
+        </tr>
+        <tr *ngIf="containers.length === 0">
+          <td colspan="8" class="text-center text-muted">No containers available</td>
+        </tr>
+      </tbody>
+      <tfoot class="table-secondary" *ngIf="containers.length > 0">
+        <tr>
+          <th colspan="4" class="text-end">Total:</th>
+          <th class="text-end">{{ totalWeight | number:'1.2-2' }}</th>
+          <th class="text-end">{{ totalCBM | number:'1.2-2' }}</th>
+          <th class="text-end">{{ totalPackages }}</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- House Job Details (if LCL or multiple HBLs) -->
+  <div class="section-content mt-3" *ngIf="houseJobs.length > 0">
+    <h6 class="section-title">House Job Details (Total: {{ houseJobs.length }})</h6>
+
+    <table class="table table-bordered table-sm">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 20%">HBL No</th>
+          <th style="width: 25%">Consignee</th>
+          <th style="width: 15%">Commodity</th>
+          <th style="width: 10%" class="text-end">Packages</th>
+          <th style="width: 12%" class="text-end">Weight (KG)</th>
+          <th style="width: 13%" class="text-end">CBM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let house of houseJobs; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="fw-bold">{{ house.hblNumber }}</td>
+          <td>{{ house.consigneeName }}</td>
+          <td>{{ house.commodity }}</td>
+          <td class="text-end">{{ house.packages }}</td>
+          <td class="text-end">{{ house.weight | number:'1.2-2' }}</td>
+          <td class="text-end">{{ house.cbm | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Special Instructions / Remarks -->
+  <div class="section-content mt-3" *ngIf="masterJob.remarks">
+    <h6 class="section-title">Remarks / Special Instructions</h6>
+    <div class="remarks-box">
+      <p>{{ masterJob.remarks }}</p>
+    </div>
+  </div>
+
+  <!-- Contact Information -->
+  <div class="section-content mt-3">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      <strong>Important:</strong> Please confirm receipt of this pre-alert and advise of any discrepancies immediately.
+      For any queries, please contact us at {{ company.email }} or {{ company.phone }}.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-report-footer
+    [printedBy]="printInfo.printedBy"
+    [printedOn]="printInfo.printedOn"
+    [showSignature]="false"
+    [notes]="'This is a pre-arrival notification. Final details may vary upon actual arrival.'">
+  </app-report-footer>
+</div>

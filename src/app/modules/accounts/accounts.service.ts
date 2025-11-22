@@ -226,8 +226,16 @@ export class AccountsService {
     );
   }
 
+  getCoaWithSubledger(payload) {
+    return this.http.post<{ data: any }>('coa/with-subledger', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
   getAllLedgersByItsType(payload){
-    return this.http.post<{ data: any }>('coa/ledger-type', payload).pipe(
+    return this.http.post<{ data: any }>('coa/cashOrBank', payload).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -351,6 +359,75 @@ export class AccountsService {
         return resp;
       })
     );
+  }
+
+  softDeleteVoucherDetail(voucherDetailSid: number) {
+    return this.http.delete<{ data: any }>(`voucher/delete-detail/${voucherDetailSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  postVoucherByVoucherSid(payload: any) {
+    return this.http.post<{ data: any }>('voucher/post-voucher', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+  /**
+   * Payment related Service
+   */
+
+  getPaymentOutstanding(payload: any){
+    return this.http.post<any>(`api/accounts/payment/search-outstanding`, payload).pipe(
+      map((response: any) => {
+        return response;
+      })
+    );
+  }
+
+  searchPayment(payload: any){
+    return this.http.post<any>(`api/accounts/payment/search-list`, payload).pipe(
+      map((response: any) => {
+        return response;
+      })
+    );
+  }
+
+  getPaymentById(payload:any){
+    return this.http.post<any>(`api/accounts/payment/fetch`, payload).pipe(
+      map((response: any) => {
+        return response;
+      })
+    );
+  }
+
+  createPayment(payload:any){
+    return this.http.post<any>(`api/accounts/payment/create`, payload).pipe(
+      map((response: any) => {
+        return response;
+      })
+    );
+  }
+
+  updatePaymentById(VoucherHeaderSid:number,payload:any){
+    return this.http.post<any>(`api/accounts/payment/update/${VoucherHeaderSid}`, payload).pipe(
+      map((response: any) => {
+        return response;
+      })
+    );
+  }
+
+  postPaymentByVoucherSid(payload: any) {
+    return this.http.post<{ data: any }>('api/accounts/payment/post', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
   }
 
 }

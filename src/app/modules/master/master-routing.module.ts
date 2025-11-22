@@ -81,6 +81,7 @@ import { MawbStockComponent } from './Mawb-stock/mawb-stock/mawb-stock.component
 import { NetworkEntryComponent } from './network/network-entry/network-entry.component';
 import { TaxGroupComponent } from './tax-group/tax-group/tax-group.component';
 import { TaxMasterComponent } from './tax-master/tax-master.component';
+import { CompanyConfigComponent } from './company/company-config/company-config.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -401,18 +402,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
         },
       },
-//       {
-//   path: 'company/:id/config',
-//   component: ConfigComponent,
-//   data: {
-//     title: 'Configuration',
-//     urls: [
-//       { title: 'Master', url: '/master' },
-//       { title: 'Company', url: '/master/company/list' },
-//       { title: 'Configuration' }
-//     ],
-//   },
-// },
+
 {
   path: 'company/:id/config',
   component: ConfigNewComponent,
@@ -425,7 +415,30 @@ export const MasterRoutes: Routes = [
     ],
   },
 },
-
+{
+  path: 'company/config-new',
+  component: CompanyConfigComponent,
+  data: {
+    title: 'Create Company Configuration',
+    urls: [
+      { title: 'Master', url: '/master' },
+      { title: 'Company', url: '/master/company/list' },
+      { title: 'Create Configuration' }
+    ],
+  },
+},
+{
+  path: 'company/:id/config-new',
+  component: CompanyConfigComponent ,
+  data: {
+    title: 'Company Configuration',
+    urls: [
+      { title: 'Master', url: '/master' },
+      { title: 'Company', url: '/master/company/list' },
+      { title: 'Company Configuration' }
+    ],
+  },
+},
       {
         path: 'container-type/list',
         component: ContainerTypeListComponent,

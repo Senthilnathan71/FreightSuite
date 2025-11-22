@@ -61,11 +61,11 @@
             </div>
             <div class="d-flex mb-1">
               <strong style="width: 100px;">DO Number</strong>
-              <span>: </span>
+              <span>: {{ housejobData?.Others?.[0]?.DONo }}</span>
             </div>
             <div class="d-flex mb-1">
-              <strong style="width: 100px;">Date</strong>
-              <span>: {{ housejobData?.BookingDateTime | formatDate}}</span>
+              <strong style="width: 100px;">Do Date</strong>
+              <span>: {{ housejobData?.DODate | formatDate}}</span>
             </div>
             <div class="d-flex mb-1">
               <strong style="width: 100px;">Shipment</strong>
@@ -94,13 +94,13 @@
         <div class="row mb-0 p-1 mx-0"
           style="border-left: 1px solid black;border-right: 1px solid black;border-top: 1px solid black;">
           <div class="col-12 col-md-6 ps-5 ">
-            <div class="d-flex">
-              <strong style="width: 135px;">Notify Party</strong>
+            <div class="d-flex flex-column">
+              <strong style="width: 135px;">Notify Party</strong> 
               <span style="height: 70px;"> {{ housejobData?.Others?.[0]?.NotifyParty }} </span>
             </div>
           </div>
           <div class="col-12 col-md-6 mt-2 mt-md-0">
-            <div class="d-flex">
+            <div class="d-flex flex-column">
               <strong style="width: 170px;">Goods Available At</strong>
               <span> {{ housejobData?.Others?.[0]?.YardCFS }} </span>
             </div>
