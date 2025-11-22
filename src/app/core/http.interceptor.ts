@@ -1,128 +1,125 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from "@angular/common/http";
-import { Injectable, ViewChild } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { StorageMap } from "@ngx-pwa/local-storage";
 import { AppSettingsService } from "./services/app-settings.service";
-import { catchError, from, map, Observable, switchMap, takeUntil, throwError, timeout } from "rxjs";
-import { environment } from '../../environments/environment';
+import { catchError, from, map, Observable, switchMap, throwError, timeout } from "rxjs";
+import { environment } from "../../environments/environment";
 import { CompanySettingsManagerService } from "./services/company-settings-manager.service";
 import { Router } from "@angular/router";
 
 @Injectable()
-export class HttpInterceptorService implements HttpInterceptor{
-    private baseURL = environment.apiUrl;
+export class HttpInterceptorService implements HttpInterceptor {
 
-    private jwtToken:any;
-    private openULRS: Array<string> = ["/auth/login"];
-    private defaultTimeout:number = 60*5;
+    private baseURL = environment.apiUrl;
+    private jwtToken: any = null;
+
+    // APIs that should NOT have Authorization header
+    private openURLs: string[] = ["/auth/login"];
+
+    private defaultTimeout = 60 * 5; // 5 mins
 
     constructor(
-        private localStorage : StorageMap,
-        private appSettingService : AppSettingsService,
+        private localStorage: StorageMap,
+        private appSettingService: AppSettingsService,
         private companySettingsManager: CompanySettingsManagerService,
-        private router : Router
-    ){}
+        private router: Router
+    ) { }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        if(this.openULRS.indexOf(req.url)> -1){
-            this.jwtToken = undefined
+
+        const skipAuth = this.openURLs.includes(req.url);
+        const showLoader = req.headers.get('showLoader') === 'true';
+
+        // If token already in memory OR skipping auth
+        if (skipAuth || this.jwtToken) {
+            return this.prepareRequest(req, next, showLoader, skipAuth);
         }
 
-        let showLoader = false;
-
-        if(req.headers.has('showLoader') && req.headers.get('showLoader') == 'true'){
-            showLoader = true;
-        }
-
-        if(this.jwtToken){
-            return this.prepareUrlAndHeaders(req, next, showLoader);
-        }else{
-            return from(this.localStorage.get(this.appSettingService.tokenName))
-            .pipe(
-                switchMap((token)=>{
-                    this.jwtToken = token;
-                    return this.prepareUrlAndHeaders(req, next, showLoader)
-                })
-            )
-        }
+        // Load token from localStorage once
+        return from(this.localStorage.get(this.appSettingService.tokenName)).pipe(
+            switchMap(token => {
+                this.jwtToken = token;
+                return this.prepareRequest(req, next, showLoader, skipAuth);
+            })
+        );
     }
-    
-    private prepareUrlAndHeaders(req: HttpRequest <any>, next: HttpHandler, showloader: boolean = false): Observable<HttpEvent<any>> {
+
+    private prepareRequest(
+        req: HttpRequest<any>,
+        next: HttpHandler,
+        showLoader: boolean,
+        skipAuth: boolean
+    ): Observable<HttpEvent<any>> {
 
         let baseUrl = this.baseURL;
-        
-        if (req.url.indexOf('118') !== -1 || (req.url.indexOf('http://') === 0 || req.url.indexOf('https://') === 0)){
-            baseUrl = '';
+
+        // Skip adding base URL only if request is full URL
+        if (
+            req.url.startsWith("http://") ||
+            req.url.startsWith("https://") ||
+            req.url.includes("118")
+        ) {
+            baseUrl = "";
         }
 
-        if (req.url.indexOf("rptalpha") !== -1) {
-        } else {
+        // Attach token only if NOT login URL
+        if (!skipAuth) {
             req = req.clone({
                 url: baseUrl + req.url,
-                setHeaders:{
+                setHeaders: {
                     Authorization: `Bearer ${this.jwtToken}`
                 }
             });
+        } else {
+            req = req.clone({
+                url: baseUrl + req.url
+            });
         }
-        
-        //Make request
-        
-        return next
-        .handle(req)
-        .pipe(
-            // takeUntil(this.httpCancelService.onCancelPendingRequests()),
+
+        // Handle request
+        return next.handle(req).pipe(
             timeout(1000 * this.defaultTimeout),
-            map((event) => {
-                if (event instanceof HttpResponse) {
-                    if (showloader) {
-                        setTimeout(()=>{
-                        
-                        // spinner ends after 0.2 seconds "/
-                        
-                        // this.spinner.hide();
-                        
-                        },1000 * 0.2);
-                    }
-                if(event.body && (event.body.sessionExpired || event.body.returnCode == 'WRONG_PASSWORD')){
 
+            map((event: HttpEvent<any>) => {
+                return event;
+            }),
+
+            catchError((error: HttpErrorResponse) => {
+
+                console.log("HTTP Error:", error);
+
+                // Handle Unauthorized → Session Expired
+                if (error.status === 401) {
+
+                    this.appSettingService.sessionExpire().then(flag => {
+
+                        if (flag) {
+                            // Clear cached data
+                            this.companySettingsManager.clearCompanySettings();
+
+                            // Save remembered credentials
+                            const rememberedEmail = localStorage.getItem("rememberedEmail");
+                            const rememberedPassword = localStorage.getItem("rememberedPassword");
+
+                            // Clear all data
+                            localStorage.clear();
+
+                            // Restore remembered creds
+                            if (rememberedEmail) localStorage.setItem("rememberedEmail", rememberedEmail);
+                            if (rememberedPassword) localStorage.setItem("rememberedPassword", rememberedPassword);
+
+                            this.router.navigate(["auth/login"]);
+                        }
+                    });
                 }
-            }
-        return event;
-    }),
-    catchError((error: HttpErrorResponse) => {
-        console.log("HttpError", error);
-        if(error.status == 401){
-            this.appSettingService.sessionExpire().then((flag)=>{
-                console.log(flag);
-                if(flag){
-                    // Clear company settings to prevent API loops during logout
-                    this.companySettingsManager.clearCompanySettings();
-                    // Preserve remembered credentials
-                    const rememberedEmail = localStorage.getItem('rememberedEmail');
-                    const rememberedPassword = localStorage.getItem('rememberedPassword');
 
-                    // Clear all localStorage data
-                    localStorage.clear();
-
-                    // Restore remembered credentials
-                    if (rememberedEmail) {
-                    localStorage.setItem('rememberedEmail', rememberedEmail);
-                    }
-                    if (rememberedPassword) {
-                    localStorage.setItem('rememberedPassword', rememberedPassword);
-                    }
-                    this.router.navigate(['auth/login']);
+                if (error.status === 403) {
+                    // Permission error
+                    // this.appSettingService.showError("You don’t have permission");
                 }
+
+                return throwError(() => error);
             })
-        }
-        if(error.status == 403){
-            // this.appSettingService.showError(`You dont have permission`)
-        }
-
-        if(showloader){
-            // this.spinner.hide();
-        }
-        return throwError(error)
-    })
-    )
-  }
+        );
+    }
 }
