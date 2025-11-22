@@ -135,17 +135,7 @@
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Type" [textWithNumbers]="100"
                                     >
-                                <label for="text-input" class="input-label">Type <span
-                                        class="text-danger">*</span></label>
-                                @if(documentForm.get('Type').touched && documentForm.get('Type').invalid){
-                                    <div class="error-message">
-                                        @if(documentForm.get('Type').hasError('required')){
-                                            <span>Required</span>
-                                        } @else if(documentForm.get('Type').hasError('maxlength')){
-                                            <span>Max 100 Characters</span>
-                                        }
-                                    </div>
-                                }
+                                <label for="text-input" class="input-label">Type </label>
                             </div>
                         </aside>
                         <aside class="col-md-12">
@@ -184,14 +174,8 @@
                   (change)="onCOASelected($event)"
                   >
         </ng-select>
-        <label for="text-input" class="input-label">COA Ledger <span class="text-danger">*</span></label>
-        @if(documentForm.get('COALedger').touched && documentForm.get('COALedger').invalid){
-            <div class="error-message">
-                @if(documentForm.get('COALedger').hasError('required')){
-                    <span>Required</span>
-                }
-            </div>
-        }
+        <label for="text-input" class="input-label">COA Ledger</label>
+        
     </div>
 </aside>
 

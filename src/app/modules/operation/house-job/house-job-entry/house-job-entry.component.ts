@@ -271,9 +271,9 @@ auditLogs: any[] = []; // Stores audit logs
   imcoList: any[] = [];
   uomList: any[] = [];
     measurementUnitList =[
-    { id: 1, name: 'm' },
-    { id: 2, name: 'cm' },
-    { id: 3, name: 'inch'}
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
+    { id: 3, name: 'Inch'}
   ]
   otherForm !: FormGroup;
 
@@ -491,7 +491,6 @@ auditLogs: any[] = []; // Stores audit logs
       InternalNote: [''],
       GeneralNote: [''],
       NominatedBy: ['Self'],
-
       ShipmentNo: [{value : '',disabled : true}]
     })
     this.houseJobForm.valueChanges.subscribe(()=>{
@@ -742,7 +741,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CarrierBookingRef : [''],
       CarrierBookingDate : [''],
       DONo : [''],
-      DODate : ['']
+      DODate : [''],
     })
   }
 
@@ -1175,6 +1174,8 @@ loadHeaderLookups() {
       CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
       DONo: otherData?.DONo || '',
       DODate: otherData?.DODate || '',
+      InternalNote: otherData?.InternalNote || '',
+      GeneralNote: otherData?.GeneralNote || ''
     })
 
     this.bookingProducts.clear();
@@ -1438,6 +1439,8 @@ console.log('Full otherForm value:', otherFormValue);
         CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
         DONo: otherFormValue?.DoNo || otherFormValue?.DONo || '',
        DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,
+       InternalNote: otherFormValue?.InternalNote || '',
+       GeneralNote: otherFormValue?.GeneralNote || ''
       },
       houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
         HouseJobProductSid : product.HouseJobProductSid || null,

@@ -30,7 +30,6 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 })
 export class CompanyListComponent extends BaseListComponent implements OnInit {
   @ViewChild('companyTable') companyTable!: ReusableTableComponent;
-  searchType = 'companyName';
   results: any[] = [];
   searchResults: any[] = []
   companyList: any[] = []
@@ -56,7 +55,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     showColumnToggle: true,
     showFilters: true,
     showPagination: true,
-    trackByKey: '',
+    trackByKey: 'CompanyMasterSid',
     emptyMessage: 'No comapny found',
     dragAndDrop: true
   };
@@ -66,7 +65,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'company-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'companyName',
+    defaultSortColumn: 'CompanyMasterSid',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3

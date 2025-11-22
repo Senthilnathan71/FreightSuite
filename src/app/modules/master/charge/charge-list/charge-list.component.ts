@@ -424,7 +424,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
       },
       {
         key: 'HSNSAC',
-        label: 'HSN/SAC',
+        label: 'HS/SAC Code',
         sortable: true,
         filterable: true,
         visible: true,
