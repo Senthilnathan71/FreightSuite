@@ -848,8 +848,8 @@ export class ReceiptEntryComponent implements OnInit {
       })
     })
     console.log("Detail",this.receiptForm.value);
-    
-    if(response.PostStatus === 'P'){
+    this.isPosted = response.PostStatus === 'P';
+    if(this.isPosted){
       this.receiptForm.disable();
     }
 
@@ -1024,7 +1024,7 @@ export class ReceiptEntryComponent implements OnInit {
       Sno: 1,
       COAMasterSid: partyLedger.COAMappedId,
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
-      DrCr: 'D',
+      DrCr: 'C',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount : outstandingCurrencyAmount,
@@ -1039,7 +1039,7 @@ export class ReceiptEntryComponent implements OnInit {
       Sno: 2,
       COAMasterSid: bankLedger.COAMasterSid,
       LedgerMasterSid: bankLedger.LedgerMasterSid,
-      DrCr: 'C',
+      DrCr: 'D',
       CurrencyMasterSid: this.r['CurrencyMasterSid']?.value,
       ExchangeRate: this.r['ExchangeRate']?.value,
       Amount : outstandingCurrencyAmount,

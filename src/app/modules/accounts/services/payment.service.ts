@@ -89,6 +89,14 @@ export class PaymentService {
     );
   }
 
+  postPayment(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/post`, payload).pipe(
+      map((response: any) => {
+        return response;
+      })
+    );
+  }
+
   /**
    * Search vendor outstanding invoices
    *
@@ -186,7 +194,7 @@ export class PaymentService {
    * @param request Update data
    * @returns Updated payment
    */
-  updatePayment(id: number, payload: any): Observable<any> {
+  updatePaymentById(id: number, payload: any): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/update/${id}`, payload).pipe(
       map((response : any)=>{
         return response;

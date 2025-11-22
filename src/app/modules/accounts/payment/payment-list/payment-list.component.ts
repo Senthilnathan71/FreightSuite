@@ -310,7 +310,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     if (response.status) {
       this.allItems = response.data.items.map(item => ({
         ...item,
-        LocalAmount : Number(item.LocalAmount).toFixed(2),
+        LocalAmount : Number(item.VoucherDetail[0]?.LocalAmount || 0).toFixed(2),
         VoucherDate : this.datePipe.transform(item.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'

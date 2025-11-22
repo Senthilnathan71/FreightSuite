@@ -5,6 +5,7 @@ import { AppSettingsService } from "./services/app-settings.service";
 import { catchError, from, map, Observable, switchMap, takeUntil, throwError, timeout } from "rxjs";
 import { environment } from '../../environments/environment';
 import { CompanySettingsManagerService } from "./services/company-settings-manager.service";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class HttpInterceptorService implements HttpInterceptor{
@@ -17,7 +18,8 @@ export class HttpInterceptorService implements HttpInterceptor{
     constructor(
         private localStorage : StorageMap,
         private appSettingService : AppSettingsService,
-        private companySettingsManager: CompanySettingsManagerService
+        private companySettingsManager: CompanySettingsManagerService,
+        private router : Router
     ){}
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -108,7 +110,7 @@ export class HttpInterceptorService implements HttpInterceptor{
                     if (rememberedPassword) {
                     localStorage.setItem('rememberedPassword', rememberedPassword);
                     }
-                    window.location.href = '/auth/login';
+                    this.router.navigate(['auth/login']);
                 }
             })
         }

@@ -14,17 +14,16 @@ import { ReceiptListComponent } from './receipt/receipt-list/receipt-list.compon
 import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
 import { ReceiptViewComponent } from './receipt/receipt-view/receipt-view.component';
 import { PrintsComponent } from './print-structure/prints/prints.component';
-import { PaymentListComponent } from './payment/payment-list/payment-list.component';
-import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 import { PaymentViewComponent } from './payment/payment-view/payment-view.component';
 import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-list/journal-voucher-list.component';
 
 import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
-import { PaymentEntryFinalComponent } from './payment/payment-entry-final/payment-entry-final.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
 import { ReverseVoucherEntryComponent } from './reverse-voucher/reverse-voucher-entry/reverse-voucher-entry.component';
 import { ReverseVoucherListComponent } from './reverse-voucher/reverse-voucher-list/reverse-voucher-list.component';
+import { PaymentListComponent } from './payment/payment-list/payment-list.component';
+import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -252,7 +251,7 @@ export const AccountRoutes: Routes = [
 
       {
         path: "payment/entry",
-        component: PaymentEntryFinalComponent,
+        component: PaymentEntryComponent,
         data: {
           title: "Add Payment Voucher",
           urls: [
@@ -264,7 +263,7 @@ export const AccountRoutes: Routes = [
       },
       {
         path: "payment/entry/:id",
-        component: PaymentEntryFinalComponent,
+        component: PaymentEntryComponent,
         data: {
           title: "Edit Payment Voucher",
           urls: [
@@ -274,18 +273,18 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-      {
-        path: "payment/view/:id",
-        component: PaymentEntryFinalComponent,
-        data: {
-          title: "View Payment Voucher",
-          urls: [
-            { title: "Accounts", url: "/accounts" },
-            { title: "Payment Voucher", url: "/accounts/payment/list" },
-            { title: "View Payment" },
-          ],
-        },
-      },
+      // {
+      //   path: "payment/view/:id",
+      //   component: PaymentEntryComponent,
+      //   data: {
+      //     title: "View Payment Voucher",
+      //     urls: [
+      //       { title: "Accounts", url: "/accounts" },
+      //       { title: "Payment Voucher", url: "/accounts/payment/list" },
+      //       { title: "View Payment" },
+      //     ],
+      //   },
+      // },
 
        {
         path: "journal-voucher/list",
